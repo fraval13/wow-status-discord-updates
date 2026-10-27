@@ -16,7 +16,7 @@ filename. There is no dependency on the repository's shared directory at runtime
 Do not install both into the same AddOns directory or load one on the wrong client.
 
 The Vanilla folder has `Vanilla.lua`; Forever has `Forever.lua`. Both include the
-same group selector, logs, line graph, Norwegian dates, privacy controls and popup
+same account-wide group selector, logs, line graph, Norwegian dates, privacy controls and popup
 module. `Safe.lua` excludes secret/restricted values before comparisons or exports.
 Forever uses the documented Camelot client constant plus the 160xx interface band,
 modern `C_Item.GetItemInfo`, and namespaced chat sending. It waits for readable
@@ -52,6 +52,10 @@ file belonging to the game being tested, or repeat `--saved-variables` for both.
 Live popups use `WSTATUS2` with the client identity, and ignore the other edition's
 packets. The Vanilla version can read the previous experimental `WSTATUS1` format;
 Forever does not assume that an unlabelled packet belongs to Forever.
+
+Settings are available in **Options → AddOns → WoW Status**, with a **Groups**
+subpage. Slash commands open the same pages. On clients without a supported
+settings menu API, the standalone windows remain available.
 
 ## Maintaining shared features
 

@@ -121,13 +121,16 @@ existing WoWStatus addon directory. The interface argument changes addon metadat
 it does not make an incompatible API compatible. For updates, back up the existing
 addon directory, remove it, and install again. Preserve SavedVariables separately.
 
-Log in. The setup panel should appear with sharing off. Open it later using
-`/wstatus`. Confirm the following:
+Log in. New characters start with all sharing checkboxes enabled. Existing saved
+choices are preserved. Open **Options → AddOns → WoW Status**, or use `/wstatus`.
+The account-wide group editor is its **Groups** subpage (`/wstatus groups`). Confirm the following:
 
 - No introduction is queued before opting in and confirming the preview.
 - Name, realm, client and GUID are required metadata for enrollment.
-- Choose profile fields and announcement categories; leave sensitive options off.
-- Enable sharing and press **Confirm introduction** only after reading the preview.
+- Review profile fields, event collection and announcement categories; turn off anything
+  you do not want to share. These choices apply to the current character only.
+- Add the account’s destination IDs in **Groups**.
+- Press **Confirm introduction** only after reading the preview.
 - Run `/wstatus test` to queue a synthetic level-10 event (requires the level field,
   level collection; immediate messages additionally require level announcements
   and a milestone interval that permits level 10).
@@ -147,8 +150,7 @@ companion never executes this file as Lua.
 wow-status companion --saved-variables "C:\Games\World of Warcraft\_classic_era_\WTF\Account\YOUR_ACCOUNT\SavedVariables\WoWStatus.lua" --dry-run
 ```
 
-Check the dry-run output for your selected fields only. New characters that never
-opted in are omitted. A previously enrolled paused character exports an empty
+Check the dry-run output for your selected fields only. Characters with sharing disabled and no previous enrollment are omitted. A previously enrolled paused character exports an empty
 snapshot and no events so the service can apply the pause. Continue using the local
 test service and simulate with real exports if desired.
 

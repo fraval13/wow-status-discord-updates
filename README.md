@@ -1,6 +1,6 @@
 # WoW character status and Discord updates
 
-An opt-in WoW addon, local companion uploader, authenticated service and Discord
+A configurable WoW addon, local companion uploader, authenticated service and Discord
 bot for friends sharing character progress across guilds.
 
 **Two addon editions written; in-game validation pending.** At the owner's
@@ -40,8 +40,12 @@ The older linking commands remain available for legacy single-service installati
 - Linux/Windows checks and addon ZIP artifacts on GitHub, followed by isolated
   deployments for `ronkalot` and `navsquad`. See [server/pipeline setup](deploy/SERVER.md).
 
-The first addon run opens setup with sharing **off**. The player chooses fields,
-checks sharing, previews the introduction and confirms it. Export follows `/reload`
+Addon settings are in **Options → AddOns → WoW Status**, with an account-wide
+**Groups** subpage. `/wstatus` and `/wstatus groups` open those pages directly.
+New characters start with sharing, profile fields, event collection and immediate
+announcement checkboxes **on**; existing character choices are preserved.
+The introduction still requires preview and confirmation. Groups and the optional
+player name are shared across this WoW account; other choices remain per character. Export follows `/reload`
 or logout. The companion uploads exported data; the service deduplicates and the
 bot posts to the configured chat. This is delayed, last-known telemetry, not live
 presence. The addon never sends HTTP or reads game memory.
@@ -56,6 +60,7 @@ flowchart LR
 
 Group-ID users enter their name in the addon and manage group privacy in the
 companion. The Discord-name instructions below apply to optional linked installations.
+See [decisions and tomorrow’s checks](decisions_i_made.md) for the settings-menu update.
 
 See [friends, names and recaps](docs/FRIENDS_AND_RECAPS.md) for how your gang’s
 characters stay together and how names are selected. No real name is needed in the addon.

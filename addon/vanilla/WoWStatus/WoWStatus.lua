@@ -17,13 +17,13 @@ end
 
 local function defaults()
     return {
-        enabled = false, introduction_confirmed = false, character_role = "alt",
-        fields = {level = true, class = true, race = true, faction = true, guild = false,
-                  gear = false, zone = false, playtime = false, professions = false},
-        collection = {introduction = true, level = true, loot = true, equipment = false,
-                      death = false, zone = false, session = false, lfg = false},
+        enabled = true, introduction_confirmed = false, character_role = "alt",
+        fields = {level = true, class = true, race = true, faction = true, guild = true,
+                  gear = true, zone = true, playtime = true, professions = true},
+        collection = {introduction = true, level = true, loot = true, equipment = true,
+                      death = true, zone = true, session = true, lfg = true},
         announcements = {introduction = true, level = true, loot = true,
-                         equipment = false, death = false, zone = false, session = false, lfg = false},
+                         equipment = true, death = true, zone = true, session = true, lfg = true},
         loot_quality = 4, level_interval = 10,
     }
 end
@@ -128,7 +128,9 @@ local function label(parent, text, x, y, width)
     return t
 end
 
-local function showPanel()
+local openSettings, registerSettings
+
+local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
@@ -168,7 +170,7 @@ local function showPanel()
             end)
             table.insert(panel.checks, {widget = check, key = key, group = group})
         end
-        checkbox("enabled", "Share this character (opt in)", 24, -128)
+        checkbox("enabled", "Share this character", 24, -128)
         button(panel, "Mark as my main", 600, -128, 180, function()
             for _, character in pairs(WoWStatusDB.characters) do
                 character.settings.character_role = "alt"
@@ -209,16 +211,87 @@ local function showPanel()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
         button(panel, "Popup help", 224, -600, 140, function() WoWStatusPopups.command("") end)
-        button(panel, "Groups", 384, -600, 90, function() WoWStatusGroups.show() end)
-        button(panel, "Close", 480, -600, 110, function() panel:Hide() end)
+        button(panel, "Groups", 384, -600, 90, function() openSettings(true) end)
+        panel.close = button(panel, "Close", 480, -600, 110, function() panel:Hide() end)
         label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
             .. "Test: /wstatus test    LFG: /wstatus lfg <your message>\n"
             .. "Server data removal: /privacy in Discord. Pausing takes effect on upload.\n"
             .. "Enabled data is retained until deletion. Posting filters do not limit stored events.", 24, -550)
-        table.insert(UISpecialFrames, "WoWStatusSetup")
     end
+    for i = #UISpecialFrames, 1, -1 do
+        if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
+    end
+    if not host then table.insert(UISpecialFrames, "WoWStatusSetup") end
+    panel.close:SetShown(not host)
+    panel:SetScale(1)
+    panel:SetParent(host or UIParent)
+    panel:ClearAllPoints()
+    panel:SetPoint(host and "TOPLEFT" or "CENTER")
+    panel:SetMovable(not host)
+    if host then panel:SetScript("OnDragStart", nil)
+    else panel:SetScript("OnDragStart", panel.StartMoving) end
+    panel:SetFrameStrata(host and host:GetFrameStrata() or "DIALOG")
+    if host then panel:SetFrameLevel(host:GetFrameLevel() + 1) end
+    if not host and WoWStatusGroupWindow then WoWStatusGroupWindow:Hide() end
     refresh()
     panel:Show()
+end
+
+-- Both pages live inside the game's AddOns settings, with scrollable content.
+local settingsCategory, groupsCategory
+local function settingsPage(name, width, show)
+    local page = CreateFrame("Frame")
+    page.name = name
+    local scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", 0, -8)
+    scroll:SetPoint("BOTTOMRIGHT", -30, 8)
+    local content
+    local function resize()
+        if content then
+            local available = scroll:GetWidth()
+            if available and available > 0 then
+                content:SetScale(math.min(1, available / width))
+            end
+        end
+    end
+    page:SetScript("OnShow", function()
+        show(scroll)
+        content = name == "Groups" and WoWStatusGroupWindow or WoWStatusSetup
+        scroll:SetScrollChild(content)
+        resize()
+    end)
+    page:SetScript("OnSizeChanged", resize)
+    return page
+end
+registerSettings = function()
+    if settingsCategory then return end
+    if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterCanvasLayoutSubcategory
+        and Settings.RegisterAddOnCategory then
+        local page = settingsPage("WoW Status", 900, showPanel)
+        settingsCategory = Settings.RegisterCanvasLayoutCategory(page, "WoW Status")
+        Settings.RegisterAddOnCategory(settingsCategory)
+        local groups = settingsPage("Groups", 620, WoWStatusGroups.show)
+        groupsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, groups, "Groups")
+        Settings.RegisterAddOnCategory(groupsCategory)
+    elseif InterfaceOptions_AddCategory then
+        local page = settingsPage("WoW Status", 900, showPanel)
+        InterfaceOptions_AddCategory(page)
+        settingsCategory = page
+        local groups = settingsPage("Groups", 620, WoWStatusGroups.show)
+        groups.parent = page.name
+        InterfaceOptions_AddCategory(groups)
+        groupsCategory = groups
+    end
+end
+openSettings = function(groups)
+    registerSettings()
+    local category = groups and groupsCategory or settingsCategory
+    if category and category.GetID and Settings and Settings.OpenToCategory then
+        Settings.OpenToCategory(category:GetID())
+    elseif category and InterfaceOptionsFrame_OpenToCategory then
+        InterfaceOptionsFrame_OpenToCategory(category)
+    elseif groups then WoWStatusGroups.show()
+    else showPanel() end
 end
 
 refresh = function()
@@ -266,16 +339,18 @@ local function initialize()
     if level then H.sync(current, level, time()) end
     snapshot()
     for slot = 1, 19 do equipmentBaseline[slot] = A.equipment(slot) end
+    registerSettings()
     if current.settings.enabled then
-        queue("session", {state = "addon_loaded"})
+        if not first then queue("session", {state = "addon_loaded"}) end
         if current.settings.fields.playtime then A.requestPlaytime() end
     end
     if first then
-        say("First run: sharing is OFF. Choose fields and preview your introduction with /wstatus.")
-        showPanel()
+        say("Sharing defaults are ON. Review character options and account groups in Options > AddOns > WoW Status.")
+        openSettings()
     end
 end
 
+frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -287,6 +362,10 @@ frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_DEAD")
 frame:RegisterEvent("TIME_PLAYED_MSG")
 frame:SetScript("OnEvent", function(_, event, ...)
+    if event == "ADDON_LOADED" then
+        if current then registerSettings() end
+        return
+    end
     if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_REGEN_ENABLED" then
         if not current then initialize()
         elseif event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_ENTERING_WORLD" then
@@ -382,7 +461,7 @@ SlashCmdList.WOWSTATUS = function(message)
             current.exported_at = time()
             WoWStatusPopups.groupsChanged()
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
-        else WoWStatusGroups.show() end
+        else openSettings(true) end
     elseif command == "popup" then
         WoWStatusPopups.command(rest)
     elseif command == "logs" or command == "graph" or command == "times" then
@@ -424,7 +503,7 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "lfg" and #rest > 0 and #rest <= 200 then
         queue("lfg", {text = rest})
         say("LFG update requested; requires sharing and LFG storage.")
-    else showPanel() end
+    else openSettings() end
 end
 
 if C_Timer and C_Timer.NewTicker then C_Timer.NewTicker(30, snapshot) end

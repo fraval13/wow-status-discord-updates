@@ -1,7 +1,7 @@
 # One group ID or several, entered directly in WoW
 
 No invitation link or Discord `/link` code is required for the group-ID flow.
-Open **Groups** in `/wstatus`, or type:
+Open **Options → AddOns → WoW Status → Groups**, use **Groups** in `/wstatus`, or type:
 
 ```text
 /wstatus groups
@@ -21,7 +21,12 @@ A shared Unicode case-fold table keeps the game and service consistent. Blank li
 ordinary characters inside a name; use newlines to separate groups.
 
 Your two IDs send your selected character to both destinations; another friend
-can enter only one. Repeat the choice per character. The name labels your characters
+can enter only one. Group IDs and your name are saved once per WoW account and apply to all its
+characters, including new characters. Character sharing, profile fields, collection
+and announcement checkboxes remain independent for each character. New characters
+default to all those sharing checkboxes enabled; saved character choices are preserved.
+Account-wide means this client’s account SavedVariables file, not automatic syncing
+between computers or between Vanilla and Forever installations. The name labels your characters
 in both selected groups and is not verified against a Discord account. Without a
 name, the service assigns a stable generic friend label for that installation.
 Use the addon’s **Mark as my main** button for main/alt labels in ID-joined groups.
@@ -107,6 +112,12 @@ configure that name first.
 
 ## Event history and leaving
 
+Existing per-character group lists are merged once into the account list on upgrade
+(up to eight groups, with a visible chat warning if old lists exceed that limit).
+Existing membership timestamps remain unchanged; newly inherited groups get a new
+join boundary so earlier history is not backfilled. Removing a group updates every
+saved character in this account, including characters currently offline.
+
 Only events captured for a selected ID at the time they happened are eligible for
 that group. New groups receive current selected status, a consented enrollment
 introduction, and future events; your earlier private logs are not backfilled.
@@ -146,7 +157,7 @@ wow-status group-privacy --group GROUP_KEY delete
 Discord-linked installations. They cannot identify an ID-only owner as the current
 Discord user; use the companion/addon controls described here. Advanced legacy
 users can explicitly select `/wstatus groups legacy` with their direct-service
-credentials. Saving a group list switches back to ID routing; there is no implicit
+credentials. Saving an account group list switches all saved characters back to ID routing; there is no implicit
 legacy fallback for an empty or unknown group list. `/roster`, profiles
 and group announcements show ID-joined shared characters normally.
 

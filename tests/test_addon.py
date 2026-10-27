@@ -55,6 +55,14 @@ function methods:RegisterEvent(name)
     __events[name] = __events[name] or {}
     table.insert(__events[name],self)
 end
+function methods:GetFrameStrata() return "DIALOG" end
+function methods:GetFrameLevel() return 5 end
+function methods:SetParent(parent) self.parent=parent end
+function methods:GetParent() return self.parent end
+function methods:SetScale(value) self.scale=value end
+function methods:GetWidth() return self.width or 700 end
+function methods:GetVerticalScroll() return self.scroll or 0 end
+function methods:SetShown(value) self.visible=value end
 function methods:SetScript(name, fn) self[name]=fn end
 function methods:GetChecked() return self.checked end
 function methods:SetChecked(value) self.checked=value end
@@ -73,9 +81,9 @@ function methods:CreateFontString() return setmetatable({}, {__index=methods}) e
 for _, name in ipairs({"SetPoint","SetSize","SetWidth","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters","SetMultiLine"}) do methods[name]=function() end end
-function CreateFrame(_, name)
-    local f=setmetatable({}, {__index=methods})
+    "SetFrameLevel","SetFontObject","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters","SetMultiLine"}) do methods[name]=function() end end
+function CreateFrame(kind, name, parent, template)
+    local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
     table.insert(__frames,f)
     if name then _G[name]=f end
     return f
@@ -118,11 +126,10 @@ def lua():
     return runtime
 
 
-def test_first_run_is_private_and_confirmation_is_required(lua):
-    assert lua.eval('character().settings.enabled') is False
+def test_first_run_sharing_defaults_on_and_introduction_requires_confirmation(lua):
+    assert lua.eval('character().settings.enabled') is True
     assert lua.eval('#character().events') == 0
-    lua.eval('confirmIntro')()
-    assert lua.eval('#character().events') == 0
+    assert lua.eval('character().settings.introduction_confirmed') is False
     lua.eval('clickSharing')()
     assert lua.eval('character().enrolled') is True
     assert lua.eval('#character().events') == 0
@@ -283,6 +290,7 @@ def test_real_levels_broadcast_only_after_explicit_opt_in_and_sharing(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
     command('popup channel WStatusFriends')
     command('popup send on')
+    command('pause')
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert lua.eval('#__sent') == 0
     lua.eval('clickSharing')()
@@ -313,11 +321,12 @@ def test_local_popup_preview_never_broadcasts_or_changes_progress(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
     command('popup channel WStatusFriends')
     command('popup on')
+    points_before = lua.eval('#character().history.tracking.points')
     command('popup test')
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
     assert lua.eval('#__sent') == 0
     assert lua.eval('#character().events') == 0
-    assert lua.eval('#character().history.tracking.points') == 0
+    assert lua.eval('#character().history.tracking.points') == points_before
 
 
 def test_popup_preferences_never_enter_exported_character_snapshot(lua):
@@ -428,3 +437,156 @@ def test_unavailable_loading_level_is_omitted_instead_of_exporting_zero(lua):
     lua.eval('clickSharing')()
     lua.execute('__level=0; fire("PLAYER_ENTERING_WORLD")')
     assert lua.eval('character().snapshot.level') is None
+
+
+
+def test_all_new_character_sharing_checkboxes_default_on(lua):
+    assert lua.eval('character().settings.enabled') is True
+    for section in ['fields', 'collection', 'announcements']:
+        assert lua.eval(f"function() for _, enabled in pairs(character().settings.{section}) "
+                        "do if not enabled then return false end end return true end")()
+    assert lua.eval('character().settings.introduction_confirmed') is False
+
+
+def test_groups_apply_account_wide_without_changing_character_settings_or_history(lua):
+    lua.execute('''
+        active = character()
+        other = WoWStatusHistory.copy(active)
+        other.identity.guid = "Player-other"
+        other.settings.enabled = false
+        other.settings.fields.gear = false
+        WoWStatusDB.characters.other = other
+        clock = 1793000100
+        function time() return clock end
+    ''')
+    update = lua.eval('WoWStatusGroups.update')
+    assert update('Weekend Crew', 'Frank')[0]
+    lua.eval('fire')('PLAYER_LEVEL_UP', 10)
+    lua.execute('clock = clock + 100')
+    assert update('Weekend Crew\nSecond group', 'Frank')[0]
+    assert lua.eval('WoWStatusGroups.text(other,true)') == 'Second group\nWeekend Crew'
+    assert lua.eval('other.player_name') == 'Frank'
+    assert lua.eval('other.settings.enabled') is False
+    assert lua.eval('other.settings.fields.gear') is False
+    assert lua.eval('function() for _, m in pairs(other.group_ids) do '
+                    'if m.label == "Weekend Crew" then return m.joined_at end end end')() == 1793000100
+    assert lua.eval('function() for _, m in pairs(active.group_ids) do '
+                    'if m.label == "Second group" then return m.joined_at end end end')() == 1793000200
+    assert lua.eval('function() local n=0; for _ in pairs(active.events[1].group_ids) '
+                    'do n=n+1 end return n end')() == 1
+    assert update('', 'Frank')[0]
+    assert lua.eval('next(other.group_ids)') is None
+    assert lua.eval('next(active.group_ids)') is None
+    assert lua.eval('next(WoWStatusDB.account_groups)') is None
+
+
+def test_account_groups_migrate_and_new_characters_inherit_them(lua):
+    lua.execute('''
+        local key = WoWStatusGroups.key("Old crew")
+        character().group_ids = {[key] = {label="Old crew", joined_at=1792000000}}
+        WoWStatusDB.account_groups = nil
+        WoWStatusGroups.init(WoWStatusDB, character, function() end)
+        assert(WoWStatusDB.account_groups[key] == "Old crew")
+        assert(character().group_ids[key].joined_at == 1792000000)
+        newcomer = WoWStatusHistory.copy(character())
+        newcomer.group_ids = {}
+        WoWStatusDB.characters.newcomer = newcomer
+        WoWStatusGroups.init(WoWStatusDB, function() return newcomer end, function() end)
+        assert(newcomer.group_ids[key].joined_at == time())
+        assert(newcomer.group_ids[key].baseline_level == 1)
+    ''')
+
+
+def test_group_window_hides_sharing_and_uses_a_real_multiline_editor(lua):
+    command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('groups')
+    assert lua.eval('WoWStatusSetup:IsShown()') is False
+    assert lua.eval('WoWStatusGroupWindow:IsShown()') is True
+    assert lua.eval('WoWStatusGroupWindow.ids.template') is None
+    lua.execute('''
+        local editor = WoWStatusGroupWindow.ids
+        editor:SetText("First")
+        editor.OnEnterPressed(editor)
+        editor:Insert("Second")
+        editor.OnTextChanged(editor)
+    ''')
+    assert lua.eval('WoWStatusGroupWindow.ids:GetText()') == 'First\nSecond'
+    command('')
+    assert lua.eval('WoWStatusSetup:IsShown()') is True
+    assert lua.eval('WoWStatusGroupWindow:IsShown()') is False
+
+
+def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
+    lua.execute('''
+        __categories = {}
+        Settings = {
+            RegisterCanvasLayoutCategory = function(page, name)
+                local c = {page=page,name=name,GetID=function(self) return self.name end}
+                __categories[name] = c
+                return c
+            end,
+            RegisterCanvasLayoutSubcategory = function(parent, page, name)
+                local c = Settings.RegisterCanvasLayoutCategory(page, name)
+                c.parent = parent
+                return c
+            end,
+            RegisterAddOnCategory = function(category)
+                category.registrations = (category.registrations or 0) + 1
+            end,
+            OpenToCategory = function(id)
+                __opened = id
+                __categories[id].page.OnShow()
+            end,
+        }
+        fire("ADDON_LOADED", "Blizzard_Settings")
+        assert(__categories["WoW Status"] ~= nil)
+        SlashCmdList.WOWSTATUS("")
+        assert(__opened == "WoW Status")
+        assert(WoWStatusSetup:GetParent() ~= UIParent)
+        assert(not WoWStatusSetup.close:IsShown())
+        SlashCmdList.WOWSTATUS("groups")
+        assert(__opened == "Groups")
+        assert(__categories.Groups.parent == __categories["WoW Status"])
+        assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
+        assert(not WoWStatusGroupWindow.close:IsShown())
+        WoWStatusGroupWindow.ids:SetText("Unsaved edits")
+        __categories.Groups.page.OnSizeChanged()
+        assert(WoWStatusGroupWindow.ids:GetText() == "Unsaved edits")
+        SlashCmdList.WOWSTATUS("")
+        assert(__categories["WoW Status"].registrations == 1)
+        assert(__categories.Groups.registrations == 1)
+        for _, name in ipairs(UISpecialFrames) do
+            assert(name ~= "WoWStatusSetup" and name ~= "WoWStatusGroupWindow")
+        end
+    ''')
+
+
+
+def test_legacy_options_menu_registers_both_pages(lua):
+    lua.execute('''
+        __pages = {}
+        function InterfaceOptions_AddCategory(page) __pages[page.name] = page end
+        function InterfaceOptionsFrame_OpenToCategory(page)
+            __opened = page.name
+            page.OnShow()
+        end
+        SlashCmdList.WOWSTATUS("")
+        assert(__opened == "WoW Status")
+        SlashCmdList.WOWSTATUS("groups")
+        assert(__opened == "Groups")
+        assert(__pages.Groups.parent == "WoW Status")
+        assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
+    ''')
+
+
+def test_legacy_upload_choice_survives_account_group_initialization(lua):
+    lua.execute('''
+        WoWStatusGroups.update("Crew", "Frank")
+        SlashCmdList.WOWSTATUS("groups legacy")
+        WoWStatusGroups.init(WoWStatusDB, character, function() end)
+        assert(character().legacy_upload)
+        assert(next(character().group_ids) == nil)
+        WoWStatusGroups.update("Crew", "Frank")
+        assert(not character().legacy_upload)
+        assert(next(character().group_ids) ~= nil)
+    ''')
