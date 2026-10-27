@@ -1,6 +1,9 @@
 # WoW character logs and Discord bot — project plan
 
-Status: planning. Independent from the Forever news feed project.
+Status: initial implementation written; runtime and in-game validation pending.
+Independent from the Forever news feed project. See
+[implementation status](docs/IMPLEMENTATION_STATUS.md) and
+[home testing guide](docs/HOME_TESTING.md).
 
 ## Goal
 
@@ -27,7 +30,9 @@ Offline delivery should queue locally and retry when connectivity returns. Abrup
 
 ## Client strategy
 
-Test the first pipeline on the WoW client the user has installed, potentially Vanilla Classic / Classic Era. Confirm the exact edition and build first.
+Target Vanilla Classic / Classic Era for the initial pipeline test on the owner's home computer. The intended long-term target is WoW Forever, which is not yet
+available to the owner. Confirm the exact installed Classic Era build and operating
+system at home. Do not test or install dependencies on the work computer.
 
 Classic testing proves collection, export, upload, and Discord delivery. It does not prove Forever compatibility. Keep client-specific event handling, item APIs, and addon metadata separate; verify Forever's actual APIs and event behavior in its client.
 
@@ -171,3 +176,21 @@ The bot can handle both announcements and commands; a separate webhook is unnece
 - Hosting/runtime and friend onboarding method.
 - Character ownership verification and retention/deletion policy.
 - Which dungeon events are reliable on each supported client.
+
+## Structured history and daily recap (confirmed requirements)
+
+- Automatically maintain one structured JSON file per character, grouping identity,
+  selected profile snapshots, level history, loot/equipment, activity and daily recaps.
+- Retain all collected, consented snapshot and event history until deletion. Storage
+  controls are separate from immediate announcement controls; milestone and rarity
+  filters apply to immediate messages without discarding enabled event history.
+- Preserve actual level-up event time separately from first upload time. A first
+  observed level is a baseline and must not fabricate historical level-up times.
+- Use `Europe/Oslo` in every JSON file and each timestamp, with offset-aware
+  ISO 8601 values that automatically reflect Norwegian summer/winter time.
+- At the owner-approved time of **00:05 Europe/Oslo**, post the previous Norwegian
+  day's recap covering every currently shared character known by that day's end.
+  Include zero-event characters honestly, late uploads, per-kind counts and highlights.
+- Keep the full detailed data in JSON for later use. Field/category disabling scrubs
+  related historical data; deletion removes managed JSON and database records.
+- See [JSON format](docs/JSON_FORMAT.md) for grouping, timestamp and export details.

@@ -1,0 +1,207 @@
+"""Guild-scoped commands, private linking and controlled outbox delivery."""
+import asyncio
+import logging
+import time
+
+import discord
+from discord import app_commands
+
+from .daily import DailyRecaps
+from .formatting import announcement, profile, safe
+
+log = logging.getLogger(__name__)
+
+
+class CommunityTree(app_commands.CommandTree):
+    async def interaction_check(self, interaction):
+        if interaction.guild_id != self.client.guild_id:
+            await interaction.response.send_message('Use this in the configured server.', ephemeral=True)
+            return False
+        return True
+
+    async def on_error(self, interaction, error):
+        log.error('Discord command failed (%s)', type(error).__name__)
+        send = interaction.followup.send if interaction.response.is_done() else \
+            interaction.response.send_message
+        await send('The command could not complete. Please try again later.', ephemeral=True)
+
+
+class StatusBot(discord.Client):
+    def __init__(self, store, guild_id, channel_id):
+        super().__init__(intents=discord.Intents.none(),
+                         allowed_mentions=discord.AllowedMentions.none())
+        self.store, self.guild_id, self.channel_id = store, guild_id, channel_id
+        self.recaps = DailyRecaps(store)
+        self.tree = CommunityTree(self)
+        self.worker = None
+        self.register_commands()
+
+    async def setup_hook(self):
+        guild = discord.Object(id=self.guild_id)
+        self.tree.copy_global_to(guild=guild)
+        await self.tree.sync(guild=guild)
+        self.worker = asyncio.create_task(self.deliver())
+
+    async def close(self):
+        if self.worker:
+            self.worker.cancel()
+            try:
+                await self.worker
+            except asyncio.CancelledError:
+                pass
+        await super().close()
+
+    def visible(self):
+        return [c for c in self.store.characters() if c['settings']['enabled']]
+
+    def register_commands(self):
+        @self.tree.command(name='link', description='Privately link your companion uploader')
+        async def link(interaction: discord.Interaction):
+            code = self.store.create_link(str(interaction.user.id))
+            await interaction.response.send_message(
+                'One-use code (expires in 10 minutes):\n' + f'`{code}`\n'
+                'On your gaming computer run `wow-status link --url YOUR_SERVICE_URL` '
+                'and paste this code at the hidden prompt. Keep it private.', ephemeral=True)
+
+        @self.tree.command(name='characters', description='List characters sharing with this server')
+        async def characters(interaction: discord.Interaction):
+            chars = self.visible()
+            lines = [f"{safe(c['identity']['name'])} · {safe(c['identity']['realm'])} · "
+                     f"{safe(c['identity']['client'])}" for c in chars[:25]]
+            await interaction.response.send_message(
+                '\n'.join(lines)[:1900] or 'No characters are sharing yet.', ephemeral=True)
+
+        @self.tree.command(name='character', description='Show a last-uploaded character profile')
+        async def character(interaction: discord.Interaction, name: str,
+                            realm: str = '', client: str = ''):
+            chars = [c for c in self.visible() if c['identity']['name'].casefold() == name.casefold()
+                     and (not realm or c['identity']['realm'].casefold() == realm.casefold())
+                     and (not client or c['identity']['client'].casefold() == client.casefold())]
+            text = profile(chars[0]) if len(chars) == 1 else (
+                'Several characters match. Specify realm and client.' if chars else 'No shared match.')
+            await interaction.response.send_message(text, ephemeral=True)
+
+        @self.tree.command(name='activity', description='Show recent shared character milestones')
+        async def activity(interaction: discord.Interaction, name: str,
+                           realm: str = '', client: str = ''):
+            chars = [c for c in self.visible() if c['identity']['name'].casefold() == name.casefold()
+                     and (not realm or c['identity']['realm'].casefold() == realm.casefold())
+                     and (not client or c['identity']['client'].casefold() == client.casefold())]
+            if len(chars) != 1:
+                await interaction.response.send_message(
+                    'Specify a unique shared name, realm and client.', ephemeral=True)
+                return
+            char = chars[0]
+            lines = [announcement(dict(char, **event))
+                     for event in self.store.activity(char['id'])[:8]]
+            await interaction.response.send_message(
+                '\n\n'.join(lines)[:1900] or 'No recent shared activity.', ephemeral=True)
+
+        @self.tree.command(name='privacy', description='Inspect, pause, unlink, or delete your data')
+        @app_commands.choices(action=[
+            app_commands.Choice(name='Show my sharing settings', value='show'),
+            app_commands.Choice(name='Pause all sharing and revoke uploaders', value='pause'),
+            app_commands.Choice(name='Delete my stored data and unlink uploaders', value='delete')])
+        async def privacy(interaction: discord.Interaction, action: str = 'show', confirm: bool = False):
+            owner = str(interaction.user.id)
+            if action not in ('show', 'pause', 'delete'):
+                await interaction.response.send_message('Unknown privacy action.', ephemeral=True)
+                return
+            if action == 'delete' and not confirm:
+                await interaction.response.send_message(
+                    'Run `/privacy action:delete confirm:True` to delete stored data and credentials. '
+                    'Historical Discord posts are not deleted. Disable the addon first; '
+                    'a future enrollment can introduce the character again.', ephemeral=True)
+                return
+            if action == 'delete':
+                self.store.delete(owner)
+                text = 'Stored characters, events, credentials and link codes deleted.'
+            elif action == 'pause':
+                self.store.pause(owner)
+                with self.store.db:
+                    self.store.db.execute('DELETE FROM installations WHERE owner=?', (owner,))
+                    self.store.db.execute('DELETE FROM links WHERE owner=?', (owner,))
+                text = ('Sharing paused, queued messages removed, uploader credentials revoked. '
+                        'Pause the addon too. To resume, link again and export current settings.')
+            else:
+                lines = []
+                for char in self.store.characters(owner):
+                    settings = char['settings']
+                    fields = ', '.join(k for k, v in settings['fields'].items() if v) or 'none'
+                    events = ', '.join(k for k, v in settings['announcements'].items() if v) or 'none'
+                    collected = ', '.join(k for k, v in settings['collection'].items() if v) or 'none'
+                    lines.append(f"{safe(char['identity']['name'])}: sharing={settings['enabled']}; "
+                                 f'profile: {fields}; stored: {collected}; announcements: {events}')
+                text = ('\n'.join(lines) or 'No uploaded characters.') + (
+                    '\nIdentity (name, realm, client, GUID) is required for enrollment. '
+                    'Consented history is retained in structured per-character JSON until deletion. '
+                    'Stored events also feed daily recaps at 00:05 Europe/Oslo. '
+                    'Historical Discord messages remain after deletion.')
+            await interaction.response.send_message(text[:1900], ephemeral=True)
+
+    async def deliver(self):
+        await self.wait_until_ready()
+        last_schedule = 0
+        while not self.is_closed():
+            if time.time() - last_schedule > 30:
+                self.recaps.schedule()
+                last_schedule = time.time()
+            item = self.store.pending()
+            if not item:
+                await self.deliver_recap()
+                await asyncio.sleep(2)
+                continue
+            delivery_id = item['delivery_id']
+            try:
+                channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
+                if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
+                    self.store.delivery(delivery_id, 'failed')
+                    log.error('Announcement channel does not belong to configured server')
+                    continue
+                # Re-read after network await so privacy changes cancel pending messages.
+                current = self.store.pending()
+                if current is None or current['delivery_id'] != delivery_id:
+                    continue
+                self.store.delivery(delivery_id, 'sending')
+                message = await channel.send(announcement(current),
+                                             allowed_mentions=discord.AllowedMentions.none())
+                self.store.delivery(delivery_id, 'sent', message_id=str(message.id))
+            except discord.Forbidden:
+                self.store.delivery(delivery_id, 'failed')
+                log.error('Discord denied channel access; fix permissions then resolve the delivery')
+            except discord.HTTPException as exc:
+                if exc.status == 429:
+                    self.store.delivery(delivery_id, 'pending', delay=60)
+                else:
+                    self.store.delivery(delivery_id, 'uncertain' if exc.status >= 500 else 'failed')
+            except (OSError, asyncio.TimeoutError):
+                self.store.delivery(delivery_id, 'uncertain')
+            await asyncio.sleep(1)
+
+    async def deliver_recap(self):
+        item = self.recaps.pending()
+        if item is None:
+            return
+        key = item['key']
+        try:
+            channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
+            if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
+                self.recaps.delivery(key, 'failed')
+                return
+            # Refresh all content after awaits: data removal must also affect queued recaps.
+            current = self.recaps.pending()
+            if current is None or current['key'] != key:
+                return
+            self.recaps.delivery(key, 'sending')
+            message = await channel.send(current['text'],
+                                         allowed_mentions=discord.AllowedMentions.none())
+            self.recaps.delivery(key, 'sent', str(message.id))
+        except discord.Forbidden:
+            self.recaps.delivery(key, 'failed')
+        except discord.HTTPException as exc:
+            if exc.status == 429:
+                self.recaps.delivery(key, 'pending', delay=60)
+            else:
+                self.recaps.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
+        except (OSError, asyncio.TimeoutError):
+            self.recaps.delivery(key, 'uncertain')

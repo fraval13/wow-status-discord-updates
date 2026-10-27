@@ -1,28 +1,105 @@
 # WoW character status and Discord updates
 
-An independent project for friends to opt in to sharing WoW character progress
-and milestones in Discord, regardless of guild membership.
+An opt-in WoW addon, local companion uploader, authenticated service and Discord
+bot for friends sharing character progress across guilds.
 
-**Status: planning.** See the [project plan](character-logs-plan.md) for scope,
-privacy controls, implementation milestones, and acceptance checks.
+**Implementation written; runtime and in-game validation pending.** At the owner's
+request, no project dependencies were installed and no application or tests were
+run on the work computer. Start with the [home testing guide](docs/HOME_TESTING.md).
+Do not deploy this unvalidated build before completing those checks.
 
-## Intended pipeline
+## Included
 
-WoW addon → local companion uploader → authenticated service and database → Discord bot.
+- Classic Era addon with per-character sharing and announcement checkboxes.
+- Previewed, explicitly confirmed one-time introduction when a character first
+  joins the tracker, including existing characters installing the addon later.
+- Level milestones, self-loot rarity filtering, equipment changes, optional death,
+  last-known zone, addon-session updates and player-entered LFG messages.
+- Selected profile fields: level, class, race, faction, guild, equipped gear/item
+  links, last-known zone and requested playtime.
+- Data-only SavedVariables parser, cross-platform uploader, local restart recovery,
+  HTTPS enforcement and repeated-upload suppression.
+- One-use Discord linking codes, per-installation credentials, ownership checks,
+  SQLite state, privacy scrubbing and a persistent announcement outbox.
+- `/character`, `/characters`, `/activity`, `/link` and `/privacy`, restricted to one
+  configured Discord community. Commands respond privately to the requesting user.
+- One structured JSON file per character, grouped history and level-up times, explicit
+  `Europe/Oslo` timestamps, and a daily recap at **00:05 Oslo time**.
+- Server deployment examples and manually triggered Windows/Linux validation workflow.
 
-The initial version uses SavedVariables exported on `/reload` or logout, so
-announcements are delayed and character commands show last-known status.
+The first addon run opens setup with sharing **off**. The player chooses fields,
+checks sharing, previews the introduction and confirms it. Export follows `/reload`
+or logout. The companion uploads exported data; the service deduplicates and the
+bot posts to the configured chat. This is delayed, last-known telemetry, not live
+presence. The addon never sends HTTP or reads game memory.
 
-## First milestone
+```mermaid
+flowchart LR
+    A[Classic Era addon] -->|reload or logout| B[SavedVariables]
+    B --> C[Local companion]
+    C -->|selected data over HTTPS| D[Service and SQLite]
+    D --> E[Discord announcements and slash commands]
+```
 
-Confirm the gaming operating system, exact WoW edition and build, addon path,
-and test Discord channel. Then prove one real level-up can travel through the
-pipeline after export without creating duplicate announcements.
+## Getting started at home
 
-Client-specific APIs must be validated before implementing additional events.
-Classic testing does not establish compatibility with other WoW clients.
+Python 3.11+ is required for the companion and service. The addon needs no Python
+inside WoW. Each participating friend installs the addon and companion; only one
+host runs the service and bot.
 
-## Repository scope
+Follow [HOME_TESTING.md](docs/HOME_TESTING.md) for commands to install, validate the
+pipeline without keys, install into the correct Classic Era client and then connect
+Discord. The addon installer takes your client's actual interface version; the TOC
+in the repository is a template and does not establish current-client compatibility.
 
-This repository contains the character logs plan. The Forever news feed bot is
-a separate project and is not included here.
+No OpenAI key is required. All announcements use deterministic templates and no
+character data is sent to OpenAI. Discord delivery stays disabled unless the service
+is explicitly started with `--discord` and its environment variables are configured.
+
+## Scope and remaining validation
+
+Classic Era is the initial adapter, aimed at testing the shared pipeline for future
+WoW Forever use. Forever support is unverified and collection is disabled on other
+client families. Its adapter can be added once the actual client and APIs are
+available. This repository makes no promise about Forever's release, APIs, or
+compatibility.
+
+Automatic dungeon/boss/completion attribution, group-run merging, quest chains,
+attunements, talents, profession tracking, mount/pet discovery, reputation, PvP,
+recipe tracking, item allowlists, first-acquisition detection and digests remain
+future milestones. They are not silently inferred from instance entry or inventory
+baselines. See the [full plan](character-logs-plan.md) and
+[implementation status](docs/IMPLEMENTATION_STATUS.md).
+
+## Privacy and operations
+
+Name, realm, client identifier and character GUID are required enrollment metadata;
+other profile fields and event categories are independently selected. Loot events
+can share an item even when the equipment profile is hidden. Historical Discord
+posts are not removed automatically by changing settings or deleting service data.
+
+Addon changes reach the server only after export and upload. For immediate server-side
+pause/revocation, use `/privacy action:pause`. An already in-flight message may finish.
+Deleting service data also revokes uploader credentials. Linking again requires consent;
+it can introduce the character again after deletion.
+
+Consented snapshot and event history is retained until deletion, with privacy
+changes scrubbing related historical fields. Each character has its own structured
+JSON archive; see [the JSON format](docs/JSON_FORMAT.md). Collection and immediate
+announcement settings are separate, so non-milestone level-ups can be retained
+without producing extra chat messages. Data is self-reported, not verified
+Battle.net account ownership. Hosting, backups and operator access belong to your
+private community. See [deployment and operator instructions](deploy/README.md).
+
+## Development checks (run at home only)
+
+```sh
+python -m pip install -e ".[dev]"
+python -m pytest
+```
+
+The suite includes a mocked Lua environment through Lupa. It cannot replace actual
+WoW API checks. GitHub Actions is manual-only and has not been triggered by this work.
+
+Discord integration follows the [discord.py application-command example](https://github.com/Rapptz/discord.py/blob/master/examples/app_commands/basic.py)
+and [interaction API documentation](https://discordpy.readthedocs.io/en/stable/interactions/api.html).

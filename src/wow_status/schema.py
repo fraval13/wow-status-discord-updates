@@ -1,0 +1,128 @@
+"""Shared protocol validation and a second privacy filter at the server boundary."""
+import json
+import time
+
+FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime'}
+KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg'}
+
+
+class ValidationError(ValueError):
+    pass
+
+
+def string(value, name, limit=120):
+    if not isinstance(value, str) or not value.strip() or len(value) > limit:
+        raise ValidationError(f'Invalid {name}')
+    if any(ord(c) < 32 for c in value):
+        raise ValidationError(f'Control characters in {name}')
+    return value
+
+
+def integer(value, name, low, high):
+    if type(value) is not int or not low <= value <= high:
+        raise ValidationError(f'Invalid {name}')
+    return value
+
+
+def validate(payload):
+    if (not isinstance(payload, dict) or type(payload.get('version')) is not int
+            or payload['version'] != 1):
+        raise ValidationError('Unsupported payload version')
+    identity = payload.get('identity', {})
+    settings = payload.get('settings', {})
+    if not isinstance(identity, dict) or not isinstance(settings, dict):
+        raise ValidationError('Invalid identity or settings')
+    if identity.get('client') != 'classic-era':
+        raise ValidationError('Unsupported client adapter')
+    clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
+                                      ('guid', 'name', 'realm', 'client')},
+             'settings': {}, 'snapshot': {}, 'events': []}
+    if 'build' in identity:
+        clean['identity']['build'] = string(identity['build'], 'client build', 40)
+    if 'interface' in identity:
+        clean['identity']['interface'] = integer(identity['interface'], 'interface', 1, 1_000_000)
+    for key in ('enabled', 'introduction_confirmed'):
+        clean['settings'][key] = settings.get(key) is True
+    for key, allowed in [('fields', FIELDS), ('collection', KINDS), ('announcements', KINDS)]:
+        values = settings.get(key, settings.get('announcements', {}) if key == 'collection' else {})
+        if not isinstance(values, dict):
+            raise ValidationError(f'Invalid {key}')
+        clean['settings'][key] = {k: values.get(k) is True for k in sorted(allowed)}
+    clean['settings']['loot_quality'] = integer(settings.get('loot_quality', 4),
+                                               'loot_quality', 0, 5)
+    clean['settings']['level_interval'] = integer(settings.get('level_interval', 10),
+                                                 'level_interval', 1, 100)
+    clean['exported_at'] = integer(payload.get('exported_at'), 'exported_at',
+                                    1, int(time.time()) + 300)
+    snapshot = payload.get('snapshot', {})
+    if not isinstance(snapshot, dict):
+        raise ValidationError('Invalid snapshot')
+    if clean['settings']['enabled']:
+        for key in FIELDS:
+            if clean['settings']['fields'][key] and key in snapshot:
+                val = snapshot[key]
+                if key in ('level', 'playtime'):
+                    integer(val, key, 0, 2_000_000_000 if key == 'playtime' else 1000)
+                elif key == 'gear':
+                    if not isinstance(val, dict) or len(val) > 20:
+                        raise ValidationError('Invalid gear')
+                    for slot, item in val.items():
+                        string(str(slot), 'gear slot', 2)
+                        string(item, 'gear item', 500)
+                else:
+                    string(val, key, 200)
+                clean['snapshot'][key] = val
+    events = payload.get('events', [])
+    if not isinstance(events, list) or len(events) > 500:
+        raise ValidationError('Maximum 500 events per upload')
+    for event in events:
+        if not isinstance(event, dict):
+            raise ValidationError('Invalid event')
+        kind = event.get('kind')
+        if kind not in KINDS:
+            raise ValidationError('Unsupported event kind')
+        eid = string(event.get('id'), 'event ID', 180)
+        at = integer(event.get('at'), 'event timestamp', 1, clean['exported_at'] + 300)
+        if not clean['settings']['enabled'] or not clean['settings']['collection'][kind]:
+            continue
+        if kind == 'introduction' and not clean['settings']['introduction_confirmed']:
+            continue
+        data = event.get('data', {})
+        if not isinstance(data, dict):
+            raise ValidationError('Invalid event data')
+        filtered = {}
+        if kind == 'level':
+            if not clean['settings']['fields']['level']:
+                continue
+            level = integer(data.get('level'), 'event level', 1, 1000)
+            filtered = {'level': level, 'maximum': data.get('maximum') is True}
+        elif kind == 'loot':
+            quality = integer(data.get('quality'), 'quality', 0, 5)
+            filtered = {'quality': quality, 'item': string(data.get('item'), 'item', 500)}
+        elif kind == 'equipment':
+            if not clean['settings']['fields']['gear']:
+                continue
+            filtered = {'item': string(data.get('item'), 'item', 500)}
+        elif kind == 'zone':
+            if not clean['settings']['fields']['zone']:
+                continue
+            filtered = {'zone': string(data.get('zone'), 'zone', 200)}
+        elif kind == 'lfg':
+            filtered = {'text': string(data.get('text'), 'LFG text', 200)}
+        elif kind == 'session':
+            filtered = {'state': string(data.get('state'), 'session state', 20)}
+        clean['events'].append({'id': eid, 'kind': kind, 'at': at, 'data': filtered})
+    if len(json.dumps(clean)) > 256_000:
+        raise ValidationError('Payload too large')
+    return clean
+
+
+def should_announce(settings, event):
+    if not settings['enabled'] or not settings['announcements'].get(event['kind']):
+        return False
+    if event['kind'] == 'level':
+        return (event['data']['level'] % settings['level_interval'] == 0
+                or event['data'].get('maximum') is True)
+    if event['kind'] == 'loot':
+        return event['data']['quality'] >= settings['loot_quality']
+    return True
