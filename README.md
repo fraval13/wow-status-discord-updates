@@ -11,6 +11,8 @@ Do not deploy this unvalidated build before completing those checks.
 ## Included
 
 - Classic Era addon with per-character sharing and announcement checkboxes.
+- Scrollable in-game event history, export preview, level-versus-time line graph
+  and per-level elapsed durations. Open with `/wstatus logs`, `graph`, or `times`.
 - Previewed, explicitly confirmed one-time introduction when a character first
   joins the tracker, including existing characters installing the addon later.
 - Level milestones, self-loot rarity filtering, equipment changes, optional death,
@@ -46,6 +48,9 @@ flowchart LR
 
 See [friends, names and recaps](docs/FRIENDS_AND_RECAPS.md) for how your gang’s
 characters stay together and how names are selected. No real name is needed in the addon.
+
+See [in-game history and graph](docs/IN_GAME_HISTORY.md) for persistent logs,
+partial level durations, Norwegian time and the graph’s data format.
 
 ## Getting started at home
 

@@ -111,7 +111,7 @@ python scripts/install_addon.py --addons-dir "C:\Games\World of Warcraft\_classi
 python scripts/install_addon.py --addons-dir "/your/game/_classic_era_/Interface/AddOns" --interface YOUR_INTERFACE_NUMBER
 ```
 
-The installer copies only this addon's three files. It refuses to overwrite an
+The installer copies only this addon's files. It refuses to overwrite an
 existing WoWStatus addon directory. The interface argument changes addon metadata;
 it does not make an incompatible API compatible. For updates, back up the existing
 addon directory, remove it, and install again. Preserve SavedVariables separately.
@@ -231,7 +231,7 @@ pause and deletion. Full format: [JSON_FORMAT.md](JSON_FORMAT.md).
 - Test `/character` and `/activity` with duplicate names across realms; require a
   unique realm/client match and show export/upload timestamps honestly.
 - Disconnect the uploader, export, then reconnect it: selected data should retry.
-  Keep the latest SavedVariables file; there is a 500-event rolling buffer per character.
+  Keep the latest SavedVariables file; the companion now uploads retained full history in batches beyond the recent 500-event buffer.
 - Run `/privacy action:delete confirm:True`: profiles, queued events and credentials
   must disappear; previously issued credentials must be rejected.
 - Test with two friends and separate Discord identities before inviting everyone.
@@ -286,3 +286,8 @@ wow-status weekly --db state/home-test.sqlite3 --week YYYY-MM-DD
 Choose an actual Monday date for a week containing your test uploads. Ambiguous
 weekly sends are listed by `outbox` and can be resolved using `resolve-weekly`
 with `--week`, `--character-id`, and `sent`, `retry`, or `discard`.
+
+
+In-game history and line-graph checks are in [IN_GAME_HISTORY.md](IN_GAME_HISTORY.md).
+Open `/wstatus logs`, `/wstatus graph`, and `/wstatus times` at home. Graph time is
+elapsed clock time including offline hours; partial first intervals stay labeled.

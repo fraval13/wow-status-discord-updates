@@ -159,6 +159,123 @@
       "properties": {
         "level_history": {
           "$ref": "#/$defs/events"
+        },
+        "level_timeline": {
+          "type": "object",
+          "required": [
+            "timezone",
+            "time_basis",
+            "x_axis",
+            "y_axis",
+            "points",
+            "durations"
+          ],
+          "properties": {
+            "timezone": {
+              "const": "Europe/Oslo"
+            },
+            "time_basis": {
+              "const": "elapsed_wall_clock_including_offline"
+            },
+            "x_axis": {
+              "const": "elapsed_seconds"
+            },
+            "y_axis": {
+              "const": "level"
+            },
+            "observed_until": {
+              "$ref": "#/$defs/timestamp"
+            },
+            "points": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "level",
+                  "recorded_at",
+                  "elapsed_seconds",
+                  "segment",
+                  "source",
+                  "event_id"
+                ],
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  },
+                  "recorded_at": {
+                    "$ref": "#/$defs/timestamp"
+                  },
+                  "elapsed_seconds": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "segment": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "enum": [
+                      "level_up_event",
+                      "baseline_observation"
+                    ]
+                  },
+                  "event_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                }
+              }
+            },
+            "durations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "level",
+                  "next_level",
+                  "partial",
+                  "elapsed_seconds",
+                  "elapsed_lower_bound_seconds",
+                  "started_at",
+                  "finished_at",
+                  "source"
+                ],
+                "properties": {
+                  "level": {
+                    "type": "integer"
+                  },
+                  "next_level": {
+                    "type": "integer"
+                  },
+                  "partial": {
+                    "type": "boolean"
+                  },
+                  "elapsed_seconds": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "elapsed_lower_bound_seconds": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ]
+                  },
+                  "started_at": {
+                    "$ref": "#/$defs/timestamp"
+                  },
+                  "finished_at": {
+                    "$ref": "#/$defs/timestamp"
+                  },
+                  "source": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },

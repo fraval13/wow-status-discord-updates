@@ -3,7 +3,7 @@ import json
 import pytest
 
 from wow_status.companion import endpoint, exports
-from wow_status.savedvariables import ParseError, parse
+from wow_status.savedvariables import MAX_BYTES, ParseError, parse
 from wow_status.schema import ValidationError, should_announce, validate
 
 
@@ -35,7 +35,7 @@ def test_parser_limits_size_and_nesting():
     with pytest.raises(ParseError):
         parse('WoWStatusDB = {' + 'x={' * 30 + '}' * 31)
     with pytest.raises(ParseError):
-        parse(' ' * (2 * 1024 * 1024 + 1))
+        parse(' ' * (MAX_BYTES + 1))
 
 
 def test_privacy_filters_fields_and_events(payload):

@@ -122,6 +122,30 @@ def validate(payload):
         elif kind == 'session':
             filtered = {'state': string(data.get('state'), 'session state', 20)}
         clean['events'].append({'id': eid, 'kind': kind, 'at': at, 'data': filtered})
+    tracking = payload.get('tracking')
+    if tracking is not None:
+        if not isinstance(tracking, dict) or not isinstance(tracking.get('points', []), list):
+            raise ValidationError('Invalid level tracking')
+        if len(tracking.get('points', [])) > 2000:
+            raise ValidationError('Too many level observations')
+        filtered_points = []
+        enabled = (clean['settings']['enabled'] and clean['settings']['fields']['level']
+                   and clean['settings']['collection']['level'])
+        if enabled:
+            for point in tracking.get('points', []):
+                if not isinstance(point, dict) or point.get('kind') not in ('baseline', 'level'):
+                    raise ValidationError('Invalid level observation')
+                item = {'kind': point['kind'],
+                        'level': integer(point.get('level'), 'observed level', 1, 1000),
+                        'at': integer(point.get('at'), 'observation time', 1, clean['exported_at'] + 300),
+                        'segment': string(point.get('segment'), 'tracking segment', 120)}
+                if point.get('event_id') is not None:
+                    item['event_id'] = string(point['event_id'], 'observation event ID', 180)
+                filtered_points.append(item)
+        clean['tracking'] = {'points': filtered_points}
+        if enabled and tracking.get('observed_until') is not None:
+            clean['tracking']['observed_until'] = integer(tracking['observed_until'],
+                'last level observation', 1, clean['exported_at'] + 300)
     if len(json.dumps(clean)) > 256_000:
         raise ValidationError('Payload too large')
     return clean

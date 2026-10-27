@@ -39,7 +39,7 @@ def exports(path):
     with Path(path).open('rb') as stream:
         raw = stream.read(MAX_BYTES + 1)
     if len(raw) > MAX_BYTES:
-        raise ValueError('SavedVariables file exceeds 2 MiB')
+        raise ValueError('SavedVariables file exceeds 32 MiB')
     db = parse(raw.decode('utf-8-sig'))
     if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
         raise ValueError('Unsupported addon data')
@@ -52,11 +52,24 @@ def exports(path):
         snapshot = payload.get('snapshot', {})
         if isinstance(snapshot, dict) and isinstance(snapshot.get('professions'), dict):
             snapshot['professions'] = list(snapshot['professions'].values())
-        events = payload.get('events', {})
+        history = char.get('history', {})
+        if not isinstance(history, dict):
+            raise ValueError('Invalid addon history')
+        events = history.get('events', payload.get('events', {}))
         if not isinstance(events, dict):
             raise ValueError('Invalid addon events')
-        payload['events'] = list(events.values())
-        yield validate(payload)
+        records = list(events.values())
+        if 'tracking' in history:
+            tracking = history['tracking']
+            if not isinstance(tracking, dict):
+                raise ValueError('Invalid level tracking')
+            points = tracking.get('points', {})
+            if isinstance(points, dict):
+                points = list(points.values())
+            payload['tracking'] = dict(tracking, points=points)
+        # The persistent local history can exceed the rolling buffer/API batch size.
+        for offset in range(0, max(1, len(records)), 100):
+            yield validate(dict(payload, events=records[offset:offset + 100]))
 
 
 async def link(url, code, credentials):
@@ -88,7 +101,9 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                         status(last_export=payload['exported_at'])
                         encoded = json.dumps(payload, sort_keys=True)
                         key = hashlib.sha256((json.dumps(payload['identity'], sort_keys=True)
-                                              + config.get('token', '')).encode()).hexdigest()
+                                              + config.get('token', '')
+                                              + (payload['events'][0]['id'] if payload['events'] else ':snapshot'))
+                                             .encode()).hexdigest()
                         fingerprint = hashlib.sha256(encoded.encode()).hexdigest()
                         if dry_run:
                             print(json.dumps(payload, indent=2))

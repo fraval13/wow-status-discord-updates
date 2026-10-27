@@ -62,6 +62,7 @@ Illustrative excerpt (not a real account export):
 | `profile.current` | Latest selected snapshot fields |
 | `profile.snapshot_history` | Distinct selected exports, sharing choices at export, export/upload times |
 | `enrollment.introductions` | Confirmed introduction event and timestamps |
+| `progression.level_timeline` | Level/time line points, segments, baselines and complete/partial elapsed durations |
 | `progression.level_history` | Every collected level-up, actual level and event/upload timestamps |
 | `items.loot` | Collected self-loot item links and rarity |
 | `items.equipment_changes` | Collected changes to equipped items |
@@ -135,3 +136,7 @@ Friend aliases, main/alt labels, source/evidence metadata and snapshot compariso
 are documented in [FRIENDS_AND_RECAPS.md](FRIENDS_AND_RECAPS.md). Weekly group reports
 run Monday at 00:05 Oslo time. Synthetic test events remain archived but are excluded
 from daily/weekly real-progress totals.
+
+The addon retains full consented local history. The companion uploads it in batches
+of 100 events; level observation metadata is separately validated and archived.
+[In-game history](IN_GAME_HISTORY.md) describes graph axes and partial duration semantics.

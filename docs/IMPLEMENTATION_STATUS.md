@@ -59,3 +59,7 @@ roster, combined daily/weekly group reports, snapshot-change evidence, group noi
 settings, optional Tk desktop uploader, player-entered profession labels, and
 friend/role/source context in per-character JSON. Automatic party attribution and
 profession skill collection still require actual client evidence and validation.
+
+Scrollable in-game history, a step-line graph (level versus elapsed time), per-level
+duration records, persistent local history upload batches and timezone-aware JSON
+timeline data are written. Runtime/in-game validation remains pending at home.

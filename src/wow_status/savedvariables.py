@@ -4,7 +4,7 @@ No Lua runtime, evaluation, function calls, expressions, or metatables are accep
 """
 import re
 
-MAX_BYTES = 2 * 1024 * 1024
+MAX_BYTES = 32 * 1024 * 1024
 TOKEN = re.compile(
     r'\s+|--[^\n]*|(?P<string>"(?:[^"\\\r\n]|\\(?:[abfnrtv\\"\']|\d{1,3}|\r?\n))*"|'
     r"'(?:[^'\\\r\n]|\\(?:[abfnrtv\\\"']|\d{1,3}|\r?\n))*')|"
@@ -47,7 +47,7 @@ def _string(raw):
 
 def parse(text):
     if len(text.encode('utf-8')) > MAX_BYTES:
-        raise ParseError('SavedVariables file exceeds 2 MiB')
+        raise ParseError('SavedVariables file exceeds 32 MiB')
     tokens = []
     pos = 0
     while pos < len(text):
@@ -57,7 +57,7 @@ def parse(text):
         pos = match.end()
         if match.lastgroup:
             tokens.append((match.lastgroup, match.group()))
-        if len(tokens) > 200_000:
+        if len(tokens) > 2_000_000:
             raise ParseError('Too many tokens')
     index = 0
 

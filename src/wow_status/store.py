@@ -22,6 +22,8 @@ class Store:
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.executescript('''
+        CREATE TABLE IF NOT EXISTS level_tracking(
+            character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS people(
             owner TEXT PRIMARY KEY, display_name TEXT NOT NULL, nickname TEXT);
         CREATE TABLE IF NOT EXISTS character_labels(
@@ -135,6 +137,12 @@ class Store:
                 exported=excluded.exported,uploaded=excluded.uploaded''',
                 (cid, owner, json.dumps(p['identity']), json.dumps(p['settings']),
                  json.dumps(p['snapshot']), p['exported_at'], now))
+            if (not p['settings']['enabled'] or not p['settings']['fields']['level']
+                    or not p['settings']['collection']['level']):
+                self.db.execute('DELETE FROM level_tracking WHERE character=?', (cid,))
+            elif 'tracking' in p:
+                self.db.execute('INSERT OR REPLACE INTO level_tracking VALUES(?,?)',
+                                (cid, json.dumps(p['tracking'])))
             # Archive each distinct consented export; retries do not create extra history.
             snapshot_id = self.digest(json.dumps([cid, p['exported_at'], p['snapshot'],
                                                   p['settings']], sort_keys=True))
@@ -142,36 +150,40 @@ class Store:
                             (snapshot_id, cid, p['exported_at'], now,
                              json.dumps(p['snapshot']), json.dumps(p['settings'])))
             # Privacy changes scrub old snapshots too, without discarding permitted history.
-            for row in self.db.execute('SELECT * FROM snapshots WHERE character=?', (cid,)).fetchall():
-                old_snapshot = json.loads(row['snapshot'])
-                kept = {k: v for k, v in old_snapshot.items()
-                        if p['settings']['enabled'] and p['settings']['fields'].get(k)}
-                self.db.execute('UPDATE snapshots SET snapshot=? WHERE id=?',
-                                (json.dumps(kept), row['id']))
+            if old and json.loads(old['settings']) != p['settings']:
+                for row in self.db.execute('SELECT * FROM snapshots WHERE character=?', (cid,)).fetchall():
+                    old_snapshot = json.loads(row['snapshot'])
+                    kept = {k: v for k, v in old_snapshot.items()
+                            if p['settings']['enabled'] and p['settings']['fields'].get(k)}
+                    self.db.execute('UPDATE snapshots SET snapshot=? WHERE id=?',
+                                    (json.dumps(kept), row['id']))
             if not p['settings']['enabled']:
                 self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (cid,))
                 self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (cid,))
             # Purge disabled categories and hidden event data, including already delivered history.
-            for row in self.db.execute('SELECT * FROM events WHERE character=?', (cid,)).fetchall():
-                if row['suppressed']:
-                    continue
-                candidate = dict(p, events=[{'id': row['id'], 'kind': row['kind'],
-                                            'at': row['at'], 'data': json.loads(row['data'])}])
-                try:
-                    permitted = validate(candidate)['events']
-                except ValidationError:
-                    permitted = []
-                if permitted and not self.should_announce(p['settings'], permitted[0]):
-                    self.db.execute("DELETE FROM outbox WHERE character=? AND event_id=? "
-                                    "AND status NOT IN ('sent','simulated')", (cid, row['id']))
-                if not permitted:
-                    self.db.execute('DELETE FROM outbox WHERE character=? AND event_id=?',
-                                    (cid, row['id']))
-                    # Keep an empty deduplication marker; never resurrect a discarded event.
-                    self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=? AND id=?",
-                                    (cid, row['id']))
+            if old and json.loads(old['settings']) != p['settings']:
+                for row in self.db.execute('SELECT * FROM events WHERE character=?', (cid,)).fetchall():
+                    if row['suppressed']:
+                        continue
+                    candidate = {key: p[key] for key in
+                                 ('version', 'identity', 'settings', 'exported_at')}
+                    candidate['events'] = [{'id': row['id'], 'kind': row['kind'],
+                                            'at': row['at'], 'data': json.loads(row['data'])}]
+                    try:
+                        permitted = validate(candidate)['events']
+                    except ValidationError:
+                        permitted = []
+                    if permitted and not self.should_announce(p['settings'], permitted[0]):
+                        self.db.execute("DELETE FROM outbox WHERE character=? AND event_id=? "
+                                        "AND status NOT IN ('sent','simulated')", (cid, row['id']))
+                    if not permitted:
+                        self.db.execute('DELETE FROM outbox WHERE character=? AND event_id=?',
+                                        (cid, row['id']))
+                        # Keep an empty deduplication marker; never resurrect a discarded event.
+                        self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=? AND id=?",
+                                        (cid, row['id']))
             accepted = 0
             for event in p['events']:
                 eid = 'introduction' if event['kind'] == 'introduction' else event['id']
@@ -220,6 +232,7 @@ class Store:
                 self.db.execute("UPDATE characters SET settings=?,snapshot='{}' WHERE id=?",
                                 (json.dumps(char['settings']), char['id']))
                 self.db.execute('DELETE FROM outbox WHERE character=?', (char['id'],))
+                self.db.execute('DELETE FROM level_tracking WHERE character=?', (char['id'],))
                 self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (char['id'],))
                 self.db.execute("UPDATE snapshots SET snapshot='{}' WHERE character=?", (char['id'],))

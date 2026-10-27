@@ -95,6 +95,11 @@ def character_document(store, cid):
                                      else 'addon_event'), 'certainty': 'player_reported',
                          'client': char['identity']['client']},
             'immediate_delivery': dict(delivery) if delivery else {'status': 'not_queued'}})
+    from .progression import timeline
+    tracking_row = store.db.execute('SELECT data FROM level_tracking WHERE character=?',
+                                     (cid,)).fetchone()
+    result['progression']['level_timeline'] = timeline(
+        json.loads(tracking_row['data']) if tracking_row else {})
     for recap in store.db.execute('SELECT p.*,d.start,d.end,d.generated FROM digest_parts p '
                                   'JOIN digests d USING(day,timezone) WHERE character=? ORDER BY day',
                                   (cid,)):

@@ -1,5 +1,6 @@
 local ADDON = ...
 local A = WoWStatusAdapter
+local H = WoWStatusHistory
 local current, panel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions"}
 local kinds = {"introduction", "level", "loot", "equipment", "death", "zone", "session", "lfg"}
@@ -28,6 +29,9 @@ end
 local function snapshot()
     if not current then return end
     current.exported_at = time()
+    if current.history and current.history.tracking.active then
+        current.history.tracking.observed_until = current.exported_at
+    end
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
     if current.settings.enabled and current.settings.fields.professions then
         current.snapshot.professions = current.professions or {}
@@ -48,11 +52,13 @@ local function queue(kind, data, fixed)
     if #current.events >= 500 then
         table.remove(current.events, 1)
         if not current.warned then
-            say("Export buffer is full. Oldest events are being removed. Run your companion regularly.")
+            say("Recent buffer is full; older events remain in History and will still be uploaded.")
             current.warned = true
         end
     end
-    table.insert(current.events, {id = id, kind = kind, at = time(), data = data or {}})
+    local event = {id = id, kind = kind, at = time(), data = data or {}}
+    table.insert(current.events, event)
+    H.record(current, event)
     snapshot()
 end
 
@@ -79,6 +85,8 @@ local function scrub()
         if allowed then table.insert(retained, event) end
     end
     current.events = retained
+    H.scrub(current)
+    H.sync(current, UnitLevel("player"), time())
     if not current.settings.fields.playtime then playtime = nil end
     if not current.settings.fields.professions then current.professions = nil end
     snapshot()
@@ -179,6 +187,9 @@ local function showPanel()
             refresh()
             say("Paused locally. /reload and upload to apply remotely, or use /privacy in Discord now.")
         end)
+        button(panel, "History / graph", 24, -600, 180, function()
+            WoWStatusHistoryUI.show(function() return current end, "logs")
+        end)
         button(panel, "Close", 480, -600, 110, function() panel:Hide() end)
         label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
             .. "Test: /wstatus test    LFG: /wstatus lfg <your message>\n"
@@ -216,6 +227,9 @@ local function initialize()
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity
+    H.init(current)
+    H.scrub(current)
+    H.sync(current, UnitLevel("player"), time())
     snapshot()
     for slot = 1, 19 do equipmentBaseline[slot] = GetInventoryItemLink("player", slot) end
     if current.settings.enabled then
@@ -286,7 +300,10 @@ SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match("^(%S*)%s*(.-)$")
     if not current then say("Classic Era character is not ready."); return end
-    if command == "pause" then
+    if command == "logs" or command == "graph" or command == "times" then
+        local mode = command == "graph" and "graph" or (command == "times" and "timing" or "logs")
+        WoWStatusHistoryUI.show(function() return current end, mode)
+    elseif command == "pause" then
         current.settings.enabled = false
         current.settings.introduction_confirmed = false
         scrub()

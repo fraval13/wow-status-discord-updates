@@ -206,3 +206,12 @@ celebrations versus routine activity, snapshot progress labeled as inferred, a
 friendly desktop uploader, and structured source metadata for later analysis.
 See [friend-group behavior](docs/FRIENDS_AND_RECAPS.md) for the written implementation,
 home acceptance checks, and still-deferred client-dependent context collection.
+
+## In-game history and level graph (approved)
+
+Add a scrollable, saved log of collected export events, an export preview, and a
+line graph with level vertically and elapsed time horizontally. Record complete
+consecutive level durations, label the first mid-level observation as partial, and
+leave missing tracking segments disconnected. Preserve the graph source records
+in character JSON with explicit Europe/Oslo metadata. In-game logs must not claim
+confirmed network delivery. See [history details](docs/IN_GAME_HISTORY.md).
