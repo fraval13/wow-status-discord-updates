@@ -3,7 +3,7 @@
 An opt-in WoW addon, local companion uploader, authenticated service and Discord
 bot for friends sharing character progress across guilds.
 
-**Implementation written; runtime and in-game validation pending.** At the owner's
+**Two addon editions written; in-game validation pending.** At the owner's
 request, no project dependencies were installed and no application or tests were
 run on the work computer. Start with the [home testing guide](docs/HOME_TESTING.md).
 Deployment uses isolated server services and GitHub checks; actual game validation remains a home task.
@@ -37,7 +37,8 @@ The older linking commands remain available for legacy single-service installati
   daily reports, weekly adventures, community posting filters and an optional desktop uploader.
 - One structured JSON file per character, grouped history and level-up times, explicit
   `Europe/Oslo` timestamps, and a daily recap at **00:05 Oslo time**.
-- Server deployment examples and manually triggered Windows/Linux validation workflow.
+- Linux/Windows checks and addon ZIP artifacts on GitHub, followed by isolated
+  deployments for `ronkalot` and `navsquad`. See [server/pipeline setup](deploy/SERVER.md).
 
 The first addon run opens setup with sharing **off**. The player chooses fields,
 checks sharing, previews the introduction and confirms it. Export follows `/reload`

@@ -1,0 +1,3 @@
+#!/bin/sh
+# Forced SSH command: no interactive shell, forwarding, arbitrary commands or root SSH key.
+exec sudo -n /usr/local/sbin/wow-character-status-deploy

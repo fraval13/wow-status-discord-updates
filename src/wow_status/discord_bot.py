@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 class CommunityTree(app_commands.CommandTree):
     async def interaction_check(self, interaction):
         if interaction.guild_id != self.client.guild_id:
-            await interaction.response.send_message('Use this in the configured server.', ephemeral=True)
+            # Another instance of this bot may own that server; never race its response.
             return False
         remember(self.client.store, str(interaction.user.id), interaction.user.display_name)
         return True

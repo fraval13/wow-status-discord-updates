@@ -75,3 +75,9 @@ name entry, deterministic route/channel keys, isolated service/database per grou
 automatic credential enrollment without /link, scoped history and membership
 withdrawals, companion privacy controls, and matching popup groups. No runtime or
 in-game validation has been performed. Forever compatibility remains planned only.
+
+The Vanilla and Forever packages now have separate complete folders and a shared
+Python service. Group IDs use the same Unicode case-fold map in Lua and Python,
+so capitalization does not create another group. GitHub checks run remotely, and
+the deployment pipeline targets dedicated server paths/users/ports for `ronkalot`
+and `navsquad`. No application or dependency installation runs on the work computer.

@@ -31,3 +31,41 @@ jobs:
         with:
           name: WoWStatus-addons-${{ matrix.os }}
           path: dist/*.zip
+  deploy:
+    needs: validate
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: character-status-production
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Prepare private deployment archive
+        env:
+          RONKALOT_DISCORD_BOT_TOKEN: ${{ secrets.RONKALOT_DISCORD_BOT_TOKEN }}
+          RONKALOT_DISCORD_GUILD_ID: ${{ vars.RONKALOT_DISCORD_GUILD_ID }}
+          RONKALOT_DISCORD_CHANNEL_ID: ${{ vars.RONKALOT_DISCORD_CHANNEL_ID }}
+          NAVSQUAD_DISCORD_BOT_TOKEN: ${{ secrets.NAVSQUAD_DISCORD_BOT_TOKEN }}
+          NAVSQUAD_DISCORD_GUILD_ID: ${{ vars.NAVSQUAD_DISCORD_GUILD_ID }}
+          NAVSQUAD_DISCORD_CHANNEL_ID: ${{ vars.NAVSQUAD_DISCORD_CHANNEL_ID }}
+        run: python deploy/make_release.py "$RUNNER_TEMP/wow-character-release.tar"
+      - name: Deploy using restricted project key
+        env:
+          DEPLOY_KEY: ${{ secrets.WOW_STATUS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WOW_STATUS_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.WOW_STATUS_SSH_HOST }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          key_file="$RUNNER_TEMP/wow-character-key"
+          host_file="$RUNNER_TEMP/wow-character-known-hosts"
+          trap 'rm -f "$key_file" "$host_file" "$RUNNER_TEMP/wow-character-release.tar"' EXIT
+          printf '%s\n' "$DEPLOY_KEY" > "$key_file"
+          printf '%s\n' "$KNOWN_HOSTS" > "$host_file"
+          ssh -T -o BatchMode=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$host_file" -o IdentitiesOnly=yes -i "$key_file" \
+            "wow-character-deploy@$DEPLOY_HOST" < "$RUNNER_TEMP/wow-character-release.tar"

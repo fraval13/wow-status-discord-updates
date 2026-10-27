@@ -5,7 +5,7 @@ import json
 from functools import lru_cache
 from importlib.resources import files
 
-from .schema import ValidationError, integer
+from .schema import ValidationError, integer, validate
 
 GROUP_ID = re.compile(r'[a-f0-9]{22}\Z')
 
@@ -68,7 +68,7 @@ def for_group(payload, target, minimum=0):
     selected = payload.get('_groups', {})
     member = selected[target]
     since = max(member['joined_at'], minimum)
-    result = copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')})
+    result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
     result['group_id'] = group_id(target)
     result['group_name'] = member['label']
     result['player_name'] = payload.get('_player_name', '')
@@ -102,7 +102,7 @@ def for_group(payload, target, minimum=0):
 
 
 def withdrawal(payload, target):
-    result = copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')})
+    result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
     result['group_id'] = group_id(target)
     result['settings']['enabled'] = False
     result['settings']['introduction_confirmed'] = False

@@ -36,8 +36,10 @@ characters and requires operator assistance to restore or reset ownership.
 ## How you connect each ID to Discord
 
 For each group, run a separate service instance with its own database and Discord
-guild/channel configuration. Use a separate bot application/token for each instance in this version. This
-avoids overlapping gateway handlers when running two independent bot processes. The destination
+guild/channel configuration. You can use separate bot applications, or the same bot invited to two different
+Discord servers. Each instance ignores the other server’s interactions. Keep the
+guild IDs distinct if sharing a bot; multiple group instances in the same guild
+need a separate channel-aware command router and are not enabled by this setup. The destination
 is selected by operator configuration; addon users never supply arbitrary webhook
 URLs or Discord channel IDs in their uploads.
 

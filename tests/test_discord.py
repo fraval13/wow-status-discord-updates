@@ -24,7 +24,7 @@ async def test_commands_are_guild_scoped_and_need_no_message_content(store):
         interaction = SimpleNamespace(guild_id=999,
                                       response=SimpleNamespace(send_message=AsyncMock()))
         assert await bot.tree.interaction_check(interaction) is False
-        interaction.response.send_message.assert_awaited_once()
+        interaction.response.send_message.assert_not_awaited()
     finally:
         await bot.close()
 

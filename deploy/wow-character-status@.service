@@ -1,0 +1,25 @@
+[Unit]
+Description=WoW character status group %i
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=wow-character-%i
+Group=wow-character-%i
+WorkingDirectory=/opt/wow-character-status/current
+EnvironmentFile=/etc/wow-character-status/%i.env
+ExecStart=/opt/wow-character-status/current/.venv/bin/python /opt/wow-character-status/current/deploy/run_group.py
+Restart=on-failure
+RestartSec=10
+StateDirectory=wow-character-%i
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/wow-character-%i
+
+[Install]
+WantedBy=multi-user.target
