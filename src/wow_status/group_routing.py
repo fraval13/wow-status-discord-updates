@@ -105,8 +105,6 @@ def for_group(payload, target, minimum=0):
 
 def withdrawal(payload, target):
     result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
-    if result['snapshot'].get('playtime_recorded_at', since) < since:
-        result['snapshot'].pop('playtime_recorded_at', None)
     result['group_id'] = group_id(target)
     result['settings']['enabled'] = False
     result['settings']['introduction_confirmed'] = False

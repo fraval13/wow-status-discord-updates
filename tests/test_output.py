@@ -76,7 +76,7 @@ def test_cap_has_gold_embed_without_invented_timing(store, payload):
     assert 'played from' not in output['content'] and 'elapsed since' not in output['content']
 
 
-def test_daily_time_uses_observed_samples_only_inside_oslo_day(store, payload):
+def test_daily_time_uses_observed_samples_only_inside_oslo_day(store, payload, monkeypatch):
     day = datetime.fromtimestamp(payload['exported_at'], ZoneInfo('Europe/Oslo')).date()
     start, end = window(day)
     # Use yesterday if today's clock is too close to midnight for these fixed observations.
@@ -84,6 +84,7 @@ def test_daily_time_uses_observed_samples_only_inside_oslo_day(store, payload):
         from datetime import timedelta
         day -= timedelta(days=1)
         start, end = window(day)
+    monkeypatch.setattr('wow_status.store.time.time', lambda: start + 4000)
     payload['settings']['fields']['playtime'] = True
     payload['events'] = []
     first = copy.deepcopy(payload)
