@@ -1,0 +1,146 @@
+# WoW character logs and Discord bot — project plan
+
+Status: planning. Independent from the Forever news feed project.
+
+## Goal
+
+Let friends opt in to sharing character progress and celebrate milestones in Discord, regardless of guild membership. Provide slash commands for the latest uploaded character status.
+
+## Architecture
+
+WoW addon → local companion uploader → authenticated service and database → Discord bot.
+
+- Addon: collects supported events and character snapshots, with per-character sharing controls.
+- Companion: reads exported addon data and uploads only selected information.
+- Service: validates uploads, stores profiles and events, applies filters, and deduplicates announcements.
+- Discord bot: posts milestones and answers slash commands.
+
+Each participating friend runs the addon and companion. One player's addon cannot reliably observe everything other friends do.
+
+## First technical constraint to prove
+
+Addons cannot directly send HTTP requests to Discord. The initial supported export uses SavedVariables, normally written on `/reload` or logout. A file watcher cannot see events that remain only in the game's memory.
+
+Therefore the initial version provides delayed announcements and last-known status. Immediate notifications require a separate feasibility investigation; do not promise them or use memory reading, client injection, or gameplay automation as a workaround.
+
+Offline delivery should queue locally and retry when connectivity returns. Abrupt game termination may lose events not yet saved to disk.
+
+## Client strategy
+
+Test the first pipeline on the WoW client the user has installed, potentially Vanilla Classic / Classic Era. Confirm the exact edition and build first.
+
+Classic testing proves collection, export, upload, and Discord delivery. It does not prove Forever compatibility. Keep client-specific event handling, item APIs, and addon metadata separate; verify Forever's actual APIs and event behavior in its client.
+
+Treat all features below as candidates pending client validation. Dungeon completion and boss attribution may need client-specific rules, and entering or leaving an instance alone is not proof of completion.
+
+## Sharing settings
+
+For each character, provide three independent controls:
+
+1. Share this character at all.
+2. Which fields are visible through Discord status commands.
+3. Which events produce automatic announcements.
+
+Start sharing only after explicit setup. Include preview, pause-all-sharing, and deletion of uploaded character data. Support disabling a category and removing previously stored fields; deleting historical Discord announcements requires a separate policy.
+
+### Character profile checkboxes
+
+- Level, class, race, faction, realm, and guild.
+- Equipped gear and enchants.
+- Talents.
+- Profession choices and skill levels.
+- Last-known zone.
+- Playtime.
+
+Show a last-uploaded timestamp. Do not imply that last-known location or session state is live presence.
+
+### Announcement checkboxes
+
+- Every level-up, selected milestones, and maximum level.
+- Loot by minimum rarity; watched items; first acquisition.
+- Newly equipped items, weapon changes, and equipment sets where supported.
+- Dungeon starts, boss kills, completions, first completions, and participating friends.
+- Selected quests, major quest chains, and attunement progress.
+- Profession milestones, maximum skill, notable recipes, and crafted items.
+- New mounts, companion pets, and reputation milestones.
+- PvP honor/rank milestones, battleground wins, and notable rewards.
+- Session start/end and last-known zone changes.
+- Optional deaths, cause of death where available, and session summaries.
+- Player-entered looking-for-group status and dungeon interests.
+
+Suggested initial selections, presented during opt-in: level milestones, epic loot, dungeon completions, profession milestones, and mounts. Keep location, deaths, playtime, and session activity unchecked.
+
+## Noise controls
+
+- Minimum loot quality and item allowlists/exclusions.
+- Level milestone interval.
+- Individual messages or session digest per category.
+- Only announce group runs involving registered friends.
+- Group duplicate reports into one dungeon announcement when event evidence supports matching.
+- Suppress duplicate uploads using stable event IDs and per-character sequences.
+- Treat newly observed items as a baseline; do not announce existing inventory as fresh loot.
+- Optional role mentions; leave mass mentions disabled.
+
+## Discord commands
+
+- `/character name:<name> realm:<realm>`: latest shared profile, gear, and upload timestamp.
+- `/characters`: shared characters within this Discord community.
+- `/activity character:<character>`: recent shared milestones.
+- `/link`: securely associate a companion installation and character with a Discord user.
+- `/privacy`: inspect sharing choices and request data removal.
+
+Resolve duplicate character names using realm and client identity. Restrict profile visibility to the intended Discord community by default. Users can only change sharing and ownership settings for their own linked characters.
+
+## Discord access
+
+- A server owner or someone with **Manage Server** installs the app.
+- Bot permissions: **View Channel**, **Send Messages**, and **Embed Links** in selected channels.
+- Members need **Use Application Commands** where commands are offered.
+- No Administrator permission is needed.
+- Slash commands do not require reading ordinary chat messages or enabling the Message Content privileged intent.
+- Phone alerts depend on members' Discord notification settings.
+
+The bot can handle both announcements and commands; a separate webhook is unnecessary for this project.
+
+## Data and security
+
+- Never request Battle.net passwords or upload whole account folders.
+- Upload only this addon's selected data, using revocable per-installation credentials over HTTPS.
+- Read SavedVariables as data with a constrained parser; never execute its Lua contents in the companion.
+- Validate event types, sizes, timestamps, ownership, and item metadata server-side.
+- Keep bot tokens and uploader credentials out of source control and logs.
+- Store client, realm, character identity, owner, sharing settings, snapshot timestamp, and event IDs.
+- Choose event retention and deletion behavior before launch.
+- Treat uploads as player-reported telemetry, not authoritative anti-cheat evidence.
+
+## Implementation milestones
+
+1. Confirm gaming OS, exact WoW client, addon installation path, and test Discord channel.
+2. Create an addon with `/test`-style synthetic event support, real level-up capture, and SavedVariables export.
+3. Build a companion with dry-run output, constrained parsing, stable IDs, and restart recovery.
+4. Connect one character to the service and post a test announcement after `/reload`.
+5. Add `/character` showing level, class, realm, and last upload time.
+6. Add opt-in checkbox settings, pause, linking, and data removal.
+7. Add loot filters and test with two friends; add dungeon detection only after validating event evidence.
+8. Test Forever separately and adapt its client-specific APIs.
+9. Investigate supported lower-latency exports if delayed announcements do not meet the group's needs.
+
+## Acceptance checks
+
+- Synthetic and real level-up events reach the private channel after export.
+- Reloading, companion restarts, and repeated uploads do not create routine duplicate announcements.
+- An unchecked field is neither uploaded nor returned by commands.
+- A paused or unlinked character stops generating new shared events.
+- Commands show stale timestamps honestly and distinguish characters with identical names.
+- Retries recover from network failures and Discord rate limits.
+- A malformed SavedVariables file cannot execute code in the uploader.
+- Two friends reporting one run do not produce duplicate completion messages when matching is reliable.
+
+## Decisions still open
+
+- Gaming operating systems and exact clients.
+- Whether `/reload`/logout delivery is acceptable.
+- Preferred default checkbox selections and milestone interval.
+- Hosting/runtime and friend onboarding method.
+- Character ownership verification and retention/deletion policy.
+- Which dungeon events are reliable on each supported client.
