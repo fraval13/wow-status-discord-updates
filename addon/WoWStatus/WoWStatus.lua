@@ -60,6 +60,7 @@ local function queue(kind, data, fixed)
     table.insert(current.events, event)
     H.record(current, event)
     snapshot()
+    return event
 end
 
 local function introductionText()
@@ -87,6 +88,7 @@ local function scrub()
     current.events = retained
     H.scrub(current)
     H.sync(current, UnitLevel("player"), time())
+    WoWStatusPopups.privacyChanged()
     if not current.settings.fields.playtime then playtime = nil end
     if not current.settings.fields.professions then current.professions = nil end
     snapshot()
@@ -190,6 +192,7 @@ local function showPanel()
         button(panel, "History / graph", 24, -600, 180, function()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
+        button(panel, "Popup help", 224, -600, 140, function() WoWStatusPopups.command("") end)
         button(panel, "Close", 480, -600, 110, function() panel:Hide() end)
         label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
             .. "Test: /wstatus test    LFG: /wstatus lfg <your message>\n"
@@ -227,6 +230,7 @@ local function initialize()
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity
+    WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
     H.init(current)
     H.scrub(current)
     H.sync(current, UnitLevel("player"), time())
@@ -260,7 +264,8 @@ frame:SetScript("OnEvent", function(_, event, ...)
         local level = ...
         if current.settings.fields.level then
             local maxLevel = GetMaxPlayerLevel and GetMaxPlayerLevel() or 60
-            queue("level", {level = level, maximum = level == maxLevel})
+            local event = queue("level", {level = level, maximum = level == maxLevel})
+            WoWStatusPopups.broadcast(current, event)
         end
     elseif event == "CHAT_MSG_LOOT" then
         -- Match only localized self-loot formats, never another party member's loot.
@@ -300,7 +305,9 @@ SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match("^(%S*)%s*(.-)$")
     if not current then say("Classic Era character is not ready."); return end
-    if command == "logs" or command == "graph" or command == "times" then
+    if command == "popup" then
+        WoWStatusPopups.command(rest)
+    elseif command == "logs" or command == "graph" or command == "times" then
         local mode = command == "graph" and "graph" or (command == "times" and "timing" or "logs")
         WoWStatusHistoryUI.show(function() return current end, mode)
     elseif command == "pause" then

@@ -11,6 +11,8 @@ Do not deploy this unvalidated build before completing those checks.
 ## Included
 
 - Classic Era addon with per-character sharing and announcement checkboxes.
+- Experimental in-game friend level popups through an explicitly selected, visible
+  custom chat channel; off by default, trusted senders only, combat deferral.
 - Scrollable in-game event history, export preview, level-versus-time line graph
   and per-level elapsed durations. Open with `/wstatus logs`, `graph`, or `times`.
 - Previewed, explicitly confirmed one-time introduction when a character first
@@ -51,6 +53,9 @@ characters stay together and how names are selected. No real name is needed in t
 
 See [in-game history and graph](docs/IN_GAME_HISTORY.md) for persistent logs,
 partial level durations, Norwegian time and the graph’s data format.
+
+See [live popup setup](docs/LIVE_POPUPS.md) for channel/trust commands and the
+unverified Classic communication limits.
 
 ## Getting started at home
 

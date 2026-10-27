@@ -291,3 +291,9 @@ with `--week`, `--character-id`, and `sent`, `retry`, or `discard`.
 In-game history and line-graph checks are in [IN_GAME_HISTORY.md](IN_GAME_HISTORY.md).
 Open `/wstatus logs`, `/wstatus graph`, and `/wstatus times` at home. Graph time is
 elapsed clock time including offline hours; partial first intervals stay labeled.
+
+
+Optional in-game level notifications have a separate two-friend checklist in
+[LIVE_POPUPS.md](LIVE_POPUPS.md). First try the local `/wstatus popup test` preview
+after enabling reception. The experimental transport uses visible custom-channel
+messages and needs real client validation; it does not require service or bot keys.

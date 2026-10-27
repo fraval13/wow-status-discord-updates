@@ -215,3 +215,13 @@ consecutive level durations, label the first mid-level observation as partial, a
 leave missing tracking segments disconnected. Preserve the graph source records
 in character JSON with explicit Europe/Oslo metadata. In-game logs must not claim
 confirmed network delivery. See [history details](docs/IN_GAME_HISTORY.md).
+
+## Experimental in-game level popups (approved)
+
+Add optional low-latency level notifications alongside the exported Discord path.
+Use a manually joined custom channel, explicit outgoing sharing consent, trusted
+actual game senders, duplicate/rate limits and combat deferral. Keep sound off by
+default, never merge peer reports into the local character's graph, and respect
+client chat restrictions. The first transport sends visible messages; actual
+cross-guild/faction/realm and Forever compatibility must be established at home.
+See [popup setup and acceptance](docs/LIVE_POPUPS.md).

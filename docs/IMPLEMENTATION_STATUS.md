@@ -63,3 +63,9 @@ profession skill collection still require actual client evidence and validation.
 Scrollable in-game history, a step-line graph (level versus elapsed time), per-level
 duration records, persistent local history upload batches and timezone-aware JSON
 timeline data are written. Runtime/in-game validation remains pending at home.
+
+Experimental in-game level popups are written: explicit receive/send consent,
+visible custom-channel transport, trusted sender list, local friend labels, bounded
+queues, deduplication, combat deferral and privacy cancellation. Client chat API
+restrictions, cross-guild/faction/realm behavior and Forever support remain
+unverified. No popup or communication tests have run on the work computer.
