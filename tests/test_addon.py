@@ -409,3 +409,16 @@ def test_missing_played_boundary_does_not_invent_level_duration(lua):
         fire("TIME_PLAYED_MSG", 9000, 5)
     ''')
     assert lua.eval('character().events[1].data.played_level_seconds') is None
+
+
+def test_rapid_distinct_popup_levels_are_coalesced_and_replay_stays_blocked(lua):
+    command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
+    command('popup on')
+    command('popup trust Eldrin-TestRealm')
+    receive = lua.eval('WoWStatusPopups.receive')
+    assert receive('WSTATUS1 LEVEL 10 1793000000 a', 'Eldrin-TestRealm', 'WStatusFriends')
+    assert receive('WSTATUS1 LEVEL 11 1793000000 b', 'Eldrin-TestRealm', 'WStatusFriends')
+    assert receive('WSTATUS1 LEVEL 12 1793000000 c', 'Eldrin-TestRealm', 'WStatusFriends')
+    lua.execute('function time() return 1793000700 end')
+    assert receive('WSTATUS1 LEVEL 10 1793000700 d', 'Eldrin-TestRealm', 'WStatusFriends') is False

@@ -7,6 +7,7 @@ import time
 from pathlib import Path
 
 from .schema import ValidationError, should_announce, validate
+from . import limits
 
 
 class Conflict(ValidationError):
@@ -22,6 +23,13 @@ class Store:
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.executescript('''
+        CREATE TABLE IF NOT EXISTS resource_usage(
+            scope TEXT NOT NULL, bucket INTEGER NOT NULL, amount INTEGER NOT NULL,
+            PRIMARY KEY(scope,bucket));
+        CREATE TABLE IF NOT EXISTS posting_cooldowns(scope TEXT PRIMARY KEY, next_at REAL NOT NULL);
+        CREATE TABLE IF NOT EXISTS level_claims(
+            character TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+            claim TEXT NOT NULL, PRIMARY KEY(character,claim));
         CREATE TABLE IF NOT EXISTS group_pauses(owner TEXT PRIMARY KEY);
         CREATE TABLE IF NOT EXISTS level_tracking(
             character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE, data TEXT NOT NULL);
@@ -81,6 +89,15 @@ class Store:
             self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
             self.db.execute("UPDATE digest_parts SET status='uncertain' WHERE status='sending'")
             self.db.execute("UPDATE weekly_parts SET status='uncertain' WHERE status='sending'")
+        # Backfill deduplication markers without rewriting existing event IDs or history.
+        if not self.db.execute("SELECT 1 FROM meta WHERE key='level_claims_v1'").fetchone():
+            with self.db:
+                for row in self.db.execute("SELECT character,data FROM events WHERE kind='level' AND suppressed=0").fetchall():
+                    data = json.loads(row['data'])
+                    if type(data.get('level')) is int:
+                        self.db.execute('INSERT OR IGNORE INTO level_claims VALUES(?,?)',
+                            (row['character'], self.level_claim(data)))
+                self.db.execute("INSERT INTO meta VALUES('level_claims_v1','1')")
         self.sync_archives()
         known = {char['id'] for char in self.characters()}
         for archive in self.archive_directory.glob('*.json'):
@@ -97,6 +114,34 @@ class Store:
     @staticmethod
     def character_id(identity):
         return Store.digest(json.dumps([identity['client'], identity['realm'], identity['guid']]))
+
+    @staticmethod
+    def level_claim(data):
+        # Separate local test observations from real progress. Markers contain no profile data.
+        return Store.digest(f"level:{data['level']}:{data.get('synthetic') is True}")
+
+    def request_budget(self, scope, count, seconds):
+        with self.db:
+            limits.charge(self.db, [(scope, count, seconds, 1)], time.time())
+
+    def can_post(self, character=None, now=None):
+        now = time.time() if now is None else now
+        scopes = ['group'] + (['character:' + character] if character else [])
+        return not any(self.db.execute('SELECT 1 FROM posting_cooldowns WHERE scope=? AND next_at>?',
+                                      (scope, now)).fetchone() for scope in scopes)
+
+    def reserve_post(self, character=None):
+        now = time.time()
+        with self.db:
+            self.db.execute('INSERT OR REPLACE INTO posting_cooldowns VALUES(?,?)',
+                            ('group', now + limits.GROUP_POST_SECONDS))
+            if character:
+                owner = self.db.execute('SELECT owner FROM characters WHERE id=?', (character,)).fetchone()
+                if owner:
+                    self.db.execute('INSERT OR REPLACE INTO posting_cooldowns VALUES(?,?)',
+                                    ('owner:' + owner['owner'], now))
+                self.db.execute('INSERT OR REPLACE INTO posting_cooldowns VALUES(?,?)',
+                                ('character:' + character, now + limits.CHARACTER_POST_SECONDS))
 
     def create_link(self, owner):
         code = secrets.token_urlsafe(18)
@@ -150,9 +195,9 @@ class Store:
             # Archive each distinct consented export; retries do not create extra history.
             snapshot_id = self.digest(json.dumps([cid, p['exported_at'], p['snapshot'],
                                                   p['settings']], sort_keys=True))
-            self.db.execute('INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?,?,?)',
+            snapshot_added = self.db.execute('INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?,?,?)',
                             (snapshot_id, cid, p['exported_at'], now,
-                             json.dumps(p['snapshot']), json.dumps(p['settings'])))
+                             json.dumps(p['snapshot']), json.dumps(p['settings']))).rowcount
             # Privacy changes scrub old snapshots too, without discarding permitted history.
             if old and json.loads(old['settings']) != p['settings']:
                 for row in self.db.execute('SELECT * FROM snapshots WHERE character=?', (cid,)).fetchall():
@@ -192,14 +237,35 @@ class Store:
                         # Keep an empty deduplication marker; never resurrect a discarded event.
                         self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=? AND id=?",
                                         (cid, row['id']))
-            accepted = 0
+            accepted, new_bytes = 0, 0
             for event in p['events']:
                 eid = 'introduction' if event['kind'] == 'introduction' else event['id']
+                claim = self.level_claim(event['data']) if event['kind'] == 'level' else None
+                if claim and self.db.execute('SELECT 1 FROM level_claims WHERE character=? AND claim=?',
+                                             (cid, claim)).fetchone():
+                    continue
                 inserted = self.db.execute('INSERT OR IGNORE INTO events(character,id,kind,at,received,data) VALUES(?,?,?,?,?,?)',
                     (cid, eid, event['kind'], event['at'], now, json.dumps(event['data']))).rowcount
+                if inserted:
+                    new_bytes += len(json.dumps(event).encode('utf-8'))
+                    if claim:
+                        self.db.execute('INSERT INTO level_claims VALUES(?,?)', (cid, claim))
                 if inserted and self.should_announce(p['settings'], event):
                     self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)', (cid, eid))
                 accepted += inserted
+            # A retry costs no storage budget. Disabled-sharing uploads can always scrub
+            # retained data even after the owner's daily growth budget has been exhausted.
+            if p['settings']['enabled']:
+                new_bytes += len(json.dumps({k: p[k] for k in
+                    ('identity', 'snapshot', 'settings', 'exported_at')}).encode('utf-8')) if snapshot_added else 0
+                limits.charge(self.db, [
+                    ('characters:' + owner, limits.NEW_CHARACTERS_PER_OWNER_DAY, 86400, int(old is None)),
+                    ('characters:group', limits.NEW_CHARACTERS_PER_GROUP_DAY, 86400, int(old is None)),
+                    ('events:' + owner, limits.NEW_EVENTS_PER_OWNER_DAY, 86400, accepted),
+                    ('events:group', limits.NEW_EVENTS_PER_GROUP_DAY, 86400, accepted),
+                    ('bytes:' + owner, limits.NEW_BYTES_PER_OWNER_DAY, 86400, new_bytes),
+                    ('bytes:group', limits.NEW_BYTES_PER_GROUP_DAY, 86400, new_bytes),
+                ], now)
         from .people import set_role
         role = p['settings'].get('character_role')
         old_role = self.db.execute('SELECT source,role FROM character_labels WHERE character=?',
@@ -269,12 +335,18 @@ class Store:
         for char in self.characters():
             self.sync_archive(char['id'])
 
-    def pending(self):
+    def pending(self, ready_only=False):
+        if ready_only and not self.can_post():
+            return None
+        readiness = ("AND NOT EXISTS (SELECT 1 FROM posting_cooldowns pc "
+                     "WHERE pc.scope='character:' || c.id AND pc.next_at>?) " if ready_only else '')
+        ordering = ("COALESCE((SELECT next_at FROM posting_cooldowns pc WHERE pc.scope='owner:' || c.owner),0), "
+                    if ready_only else '')
         row = self.db.execute('''SELECT o.id AS delivery_id,e.id AS event_id,e.kind,e.at,e.data,c.*
             FROM outbox o JOIN characters c ON c.id=o.character
             JOIN events e ON e.character=o.character AND e.id=o.event_id
-            WHERE o.status='pending' AND e.suppressed=0 AND o.next_try<=? ORDER BY o.id LIMIT 1''',
-            (time.time(),)).fetchone()
+            WHERE o.status='pending' AND e.suppressed=0 AND o.next_try<=? ''' + readiness +
+            'ORDER BY ' + ordering + 'o.id LIMIT 1', (time.time(), time.time()) if ready_only else (time.time(),)).fetchone()
         if not row:
             return None
         item = self.decode(row)
@@ -283,6 +355,10 @@ class Store:
         return decorate(self, item)
 
     def delivery(self, delivery_id, status, delay=0, message_id=None):
+        if status == 'sending':
+            row = self.db.execute('SELECT character FROM outbox WHERE id=?', (delivery_id,)).fetchone()
+            if row:
+                self.reserve_post(row['character'])
         with self.db:
             self.db.execute('''UPDATE outbox SET status=?,next_try=?,message_id=?,
                 attempts=attempts+? WHERE id=?''',

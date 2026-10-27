@@ -1,11 +1,11 @@
 """Private-community HTTP ingestion service; localhost behind a TLS reverse proxy."""
 import asyncio
 import hmac
+import ipaddress
 import logging
 import os
 import secrets
 import time
-from collections import defaultdict, deque
 
 from aiohttp import web
 
@@ -13,11 +13,12 @@ from .group_routing import group_id as validate_group_id, group_key, group_label
 from .people import remember
 from .schema import ValidationError, string
 from .store import Conflict
+from . import limits
 
 log = logging.getLogger(__name__)
 
 
-def create_app(store, group=None, name=None):
+def create_app(store, group=None, name=None, trust_proxy=False):
     if group is not None:
         group = validate_group_id(group)
         previous = store.db.execute("SELECT value FROM meta WHERE key='active_group_id'").fetchone()
@@ -35,15 +36,19 @@ def create_app(store, group=None, name=None):
             with store.db:
                 store.db.execute("INSERT OR REPLACE INTO meta VALUES('active_group_name',?)", (name,))
         store.sync_archives()
-    attempts = defaultdict(deque)
 
     @web.middleware
     async def errors(request, handler):
         try:
+            if request.method == 'POST' and request.content_type != 'application/json':
+                raise web.HTTPUnsupportedMediaType()
             return await handler(request)
+        except limits.Limited as exc:
+            return web.json_response({'error': 'Temporarily limited; retry retained data'}, status=429,
+                                     headers={'Retry-After': str(exc.retry_after)})
         except Conflict as exc:
             return web.json_response({'error': str(exc)}, status=409)
-        except (ValidationError, ValueError, KeyError, TypeError):
+        except (ValidationError, ValueError, KeyError, TypeError, RecursionError, OverflowError):
             return web.json_response({'error': 'Invalid request'}, status=400)
         except web.HTTPException:
             raise
@@ -54,27 +59,31 @@ def create_app(store, group=None, name=None):
 
     app = web.Application(client_max_size=256_000, middlewares=[errors])
 
-    def throttle(request):
-        # Never trust forwarded IP headers supplied directly by clients.
-        key = request.remote or 'unknown'
-        queue = attempts[key]
-        now = time.monotonic()
-        while queue and queue[0] < now - 60:
-            queue.popleft()
-        if len(queue) >= 120:
-            raise web.HTTPTooManyRequests(headers={'Retry-After': '60'})
-        queue.append(now)
-        if len(attempts) > 4096:
-            for ip in list(attempts):
-                if not attempts[ip] or attempts[ip][-1] < now - 60:
-                    del attempts[ip]
+    def client_ip(request):
+        # Only an explicitly trusted local reverse proxy may supply this header.
+        remote = request.remote or 'unknown'
+        if trust_proxy and remote in ('127.0.0.1', '::1'):
+            forwarded = request.headers.get('X-WoW-Client-IP', '')
+            try:
+                return str(ipaddress.ip_address(forwarded))
+            except ValueError:
+                pass
+        return remote
+
+    def throttle(request, operation, count, seconds):
+        key = store.digest(client_ip(request))
+        store.request_budget(operation + ':' + key, count, seconds)
+
+    def authenticated_budget(owner, operation):
+        count = limits.PRIVACY_PER_MINUTE if operation == 'privacy' else limits.UPLOADS_PER_MINUTE
+        store.request_budget(operation + ':' + owner, count, 60)
 
     async def health(request):
         return web.json_response({'status': 'ok', 'protocol': 1, 'service': 'wow-character-status',
                                   'revision': os.environ.get('WOW_STATUS_REVISION')})
 
     async def redeem(request):
-        throttle(request)
+        throttle(request, 'link', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
         body = await request.json()
         if not isinstance(body, dict):
             raise ValidationError('Expected an object')
@@ -89,7 +98,7 @@ def create_app(store, group=None, name=None):
         return group is not None and hmac.compare_digest(value.encode(), group.encode())
 
     async def enroll_group(request):
-        throttle(request)
+        throttle(request, 'enroll', limits.ENROLLMENTS_PER_IP_HOUR, 3600)
         if not correct_group(request):
             raise web.HTTPForbidden()
         body = await request.json()
@@ -100,6 +109,7 @@ def create_app(store, group=None, name=None):
         owner = 'group:' + secrets.token_urlsafe(12)
         player = body.get('player_name') or ('Friend ' + owner[-6:])
         string(player, 'player name', 40)
+        store.request_budget('enroll:group', limits.ENROLLMENTS_PER_GROUP_DAY, 86400)
         token = store.redeem(store.create_link(owner))
         remember(store, owner, player, source='addon')
         return web.json_response({'token': token, 'owner': owner},
@@ -108,19 +118,21 @@ def create_app(store, group=None, name=None):
     def authenticate(request):
         header = request.headers.get('Authorization', '')
         if not header.startswith('Bearer ') or len(header) > 200:
+            throttle(request, 'invalid-auth', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
             raise web.HTTPUnauthorized()
         if group is not None and not correct_group(request):
             raise web.HTTPForbidden()
         owner = store.owner(header[7:])
         if owner is None:
+            throttle(request, 'invalid-auth', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
             raise web.HTTPUnauthorized()
         return owner, header[7:]
 
     async def privacy(request):
-        throttle(request)
         if group is None:
             raise web.HTTPNotFound()
         owner, token = authenticate(request)
+        authenticated_budget(owner, 'privacy')
         body = await request.json()
         if store.owner(token) != owner:
             raise web.HTTPUnauthorized()
@@ -139,8 +151,8 @@ def create_app(store, group=None, name=None):
         return web.json_response({'status': action})
 
     async def ingest(request):
-        throttle(request)
         owner, token = authenticate(request)
+        authenticated_budget(owner, 'upload')
         payload = await request.json()
         if store.owner(token) != owner:
             raise web.HTTPUnauthorized()
@@ -163,8 +175,8 @@ def create_app(store, group=None, name=None):
     return app
 
 
-async def serve(store, host, port, bot=None, group=None, name=None):
-    runner = web.AppRunner(create_app(store, group, name), access_log=None)
+async def serve(store, host, port, bot=None, group=None, name=None, trust_proxy=False):
+    runner = web.AppRunner(create_app(store, group, name, trust_proxy), access_log=None)
     await runner.setup()
     try:
         await web.TCPSite(runner, host, port).start()

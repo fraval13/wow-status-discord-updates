@@ -9,6 +9,9 @@ def safe(value):
     text = re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', text)
     text = re.sub(r'\|H[^|]+\|h(.*?)\|h', r'\1', text)
     text = text.replace('@', '@\u200b')
+    # Keep raw evidence in JSON, but user text cannot create clickable URLs/invites.
+    text = re.sub(r'(?i)\b([a-z][a-z0-9+.-]{1,31}):(?=//)', r'\1:​', text)
+    text = re.sub(r'(?i)\b(www|discord|discordapp)\.', r'\1​.', text)
     return re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text)[:500]
 
 

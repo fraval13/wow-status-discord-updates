@@ -6,10 +6,14 @@ wow.frankvalde.com {
         max_size 256000
     }
     handle_path /groups/19e32befc180a1cfdea5c3/* {
-        reverse_proxy 127.0.0.1:18081
+        reverse_proxy 127.0.0.1:18081 {
+            header_up X-WoW-Client-IP {http.request.remote.host}
+        }
     }
     handle_path /groups/466f79683c7465bc3a5ba0/* {
-        reverse_proxy 127.0.0.1:18082
+        reverse_proxy 127.0.0.1:18082 {
+            header_up X-WoW-Client-IP {http.request.remote.host}
+        }
     }
     handle {
         respond "Unknown group" 404

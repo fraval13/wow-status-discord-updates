@@ -40,10 +40,18 @@ class GroupUploader:
             return None
         if route and route.get('token'):
             return route
+        if route and route.get('retry_enroll_at', 0) > time.time():
+            self.failed = True
+            self.status(connection='Enrollment is temporarily limited; retained data will retry automatically.')
+            return None
         url = endpoint(self.config['url']) + '/groups/' + target
         async with self.session.post(url + '/v1/group-enroll',
             json={'group_id': target, 'group_name': label, 'player_name': player_name},
             headers={'X-WoW-Group': target}, allow_redirects=False) as response:
+            if response.status == 429:
+                from .companion import retry_seconds
+                routes[target] = dict(route or {}, retry_enroll_at=time.time() + retry_seconds(response))
+                atomic_json(self.credentials, self.config)
             if response.status != 200:
                 self.status(connection=f'Group enrollment rejected (HTTP {response.status}); check the selected ID.')
                 self.failed = True
@@ -60,18 +68,27 @@ class GroupUploader:
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
         if fingerprint_key and self.cache.get(fingerprint_key) == fingerprint:
             return True
+        if payload['settings']['enabled'] and route.get('retry_upload_at', 0) > time.time():
+            self.failed = True
+            self.status(connection='Uploads are temporarily limited; retained data will retry automatically.')
+            return False
         async with self.session.post(route['url'] + '/v1/upload', json=payload,
             headers={'Authorization': 'Bearer ' + route['token'], 'X-WoW-Group': target},
             allow_redirects=False) as response:
+            if response.status == 429:
+                from .companion import retry_seconds
+                route['retry_upload_at'] = time.time() + retry_seconds(response)
+                atomic_json(self.credentials, self.config)
             if response.status != 200:
                 self.failed = True
                 self.status(connection=f'Group upload rejected (HTTP {response.status}); data remains local.')
                 return False
             await response.read()
+        route.pop('retry_upload_at', None)
+        atomic_json(self.credentials, self.config)
         if fingerprint_key:
             self.cache[fingerprint_key] = fingerprint
         atomic_json(self.state, self.cache)
-        import time
         self.status(connection='Selected group upload accepted', last_upload=int(time.time()))
         return True
 

@@ -5,10 +5,14 @@ characters.example.com {
         max_size 256KB
     }
     handle_path /groups/FIRST_GROUP_KEY/* {
-        reverse_proxy 127.0.0.1:8081
+        reverse_proxy 127.0.0.1:8081 {
+            header_up X-WoW-Client-IP {http.request.remote.host}
+        }
     }
     handle_path /groups/SECOND_GROUP_KEY/* {
-        reverse_proxy 127.0.0.1:8082
+        reverse_proxy 127.0.0.1:8082 {
+            header_up X-WoW-Client-IP {http.request.remote.host}
+        }
     }
     handle {
         respond "Unknown group" 404

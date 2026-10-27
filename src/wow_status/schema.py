@@ -4,6 +4,7 @@ import re
 import time
 
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions'}
+LEVEL_CAPS = {'classic-era': 60, 'forever': 60}
 KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg'}
 
 
@@ -35,6 +36,7 @@ def validate(payload):
         raise ValidationError('Invalid identity or settings')
     if identity.get('client') not in ('classic-era', 'forever'):
         raise ValidationError('Unsupported client adapter')
+    cap = LEVEL_CAPS[identity['client']]
     clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
                                       ('guid', 'name', 'realm', 'client')},
              'settings': {}, 'snapshot': {}, 'events': []}
@@ -76,7 +78,8 @@ def validate(payload):
             if clean['settings']['fields'][key] and key in snapshot:
                 val = snapshot[key]
                 if key in ('level', 'playtime'):
-                    integer(val, key, 0, 2_000_000_000 if key == 'playtime' else 1000)
+                    integer(val, key, 0 if key == 'playtime' else 1,
+                            2_000_000_000 if key == 'playtime' else cap)
                 elif key == 'professions':
                     if not isinstance(val, list) or len(val) > 6:
                         raise ValidationError('Invalid professions')
@@ -119,8 +122,8 @@ def validate(payload):
         if kind == 'level':
             if not clean['settings']['fields']['level']:
                 continue
-            level = integer(data.get('level'), 'event level', 1, 1000)
-            filtered = {'level': level, 'maximum': data.get('maximum') is True,
+            level = integer(data.get('level'), 'event level', 1, cap)
+            filtered = {'level': level, 'maximum': level == cap,
                         'synthetic': data.get('synthetic') is True}
         elif kind == 'loot':
             quality = integer(data.get('quality'), 'quality', 0, 5)
@@ -160,7 +163,7 @@ def validate(payload):
                 if not isinstance(point, dict) or point.get('kind') not in ('baseline', 'level'):
                     raise ValidationError('Invalid level observation')
                 item = {'kind': point['kind'],
-                        'level': integer(point.get('level'), 'observed level', 1, 1000),
+                        'level': integer(point.get('level'), 'observed level', 1, cap),
                         'at': integer(point.get('at'), 'observation time', 1, clean['exported_at'] + 300),
                         'segment': string(point.get('segment'), 'tracking segment', 120)}
                 if point.get('event_id') is not None:

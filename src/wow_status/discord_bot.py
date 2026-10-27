@@ -212,13 +212,18 @@ class StatusBot(discord.Client):
 
     async def deliver(self):
         await self.wait_until_ready()
-        last_schedule = 0
+        last_schedule, last_recap = 0, 0
         while not self.is_closed():
             if time.time() - last_schedule > 30:
                 self.recaps.schedule()
                 self.weekly.schedule()
                 last_schedule = time.time()
-            item = self.store.pending()
+            # A continuous upload backlog must not starve scheduled summaries.
+            if time.time() - last_recap >= 60 and self.store.can_post():
+                await self.deliver_recap()
+                await self.deliver_recap(self.weekly)
+                last_recap = time.time()
+            item = self.store.pending(ready_only=True)
             if not item:
                 await self.deliver_recap()
                 await self.deliver_recap(self.weekly)
@@ -232,7 +237,7 @@ class StatusBot(discord.Client):
                     log.error('Announcement channel does not belong to configured server')
                     continue
                 # Re-read after network await so privacy changes cancel pending messages.
-                current = self.store.pending()
+                current = self.store.pending(ready_only=True)
                 if current is None or current['delivery_id'] != delivery_id:
                     continue
                 self.store.delivery(delivery_id, 'sending')
@@ -252,6 +257,8 @@ class StatusBot(discord.Client):
             await asyncio.sleep(1)
 
     async def deliver_recap(self, recaps=None):
+        if not self.store.can_post():
+            return
         recaps = recaps or self.recaps
         item = recaps.pending()
         if item is None:
@@ -266,6 +273,7 @@ class StatusBot(discord.Client):
             current = recaps.pending()
             if current is None or current['key'] != key:
                 return
+            self.store.reserve_post()
             recaps.delivery(key, 'sending')
             message = await channel.send(emoji('recap', self.custom_emojis()) + ' ' + current['text'],
                                          allowed_mentions=discord.AllowedMentions.none())

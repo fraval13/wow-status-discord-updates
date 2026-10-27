@@ -3,7 +3,7 @@ WoWStatusPopups = {}
 local P = WoWStatusPopups
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local prefs, getCharacter, notify, toast, active
-local incoming, outgoing, senderTimes = {}, {}, {}
+local incoming, outgoing = {}, {}
 local lastDisplay, lastAttempt = 0, 0
 local joinedByAddon, syncPending = {}, false
 local frame = CreateFrame("Frame")
@@ -100,7 +100,7 @@ local function pruneSeen(now)
         end
     end
     if count >= 256 and oldest then prefs.seen[oldest] = nil end
-    for key, at in pairs(senderTimes) do if now - at > 600 then senderTimes[key] = nil end end
+
 end
 
 function P.init(database, getter, reporter)
@@ -110,6 +110,7 @@ function P.init(database, getter, reporter)
     }
     prefs, getCharacter, notify = database.popups, getter, reporter
     prefs.trusted, prefs.seen = prefs.trusted or {}, prefs.seen or {}
+    prefs.level_claims = prefs.level_claims or {}
     prefs.channel = prefs.channel or "WStatusFriends"
     clear()
     pruneSeen(time())
@@ -137,11 +138,34 @@ function P.receive(text, sender, channel)
         or at < now - 120 or at > now + 300 then return false end
     pruneSeen(now)
     local duplicateKey = key .. ":" .. level
-    if prefs.seen[duplicateKey] or (senderTimes[key] and now - senderTimes[key] < 3)
-        or #incoming >= 20 then return false end
-    prefs.seen[duplicateKey], senderTimes[key] = now, now
-    table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
-        group_id = group ~= "legacy" and group or nil})
+    local claims = prefs.level_claims[key]
+    if prefs.seen[duplicateKey] or (claims and claims.levels[level]) then return false end
+    local waiting
+    for _, item in ipairs(incoming) do
+        if item.key == key and item.group_id == (group ~= "legacy" and group or nil) then waiting = item; break end
+    end
+    -- Distinct rapid levels are queued/coalesced, not rejected as implausibly fast.
+    if not waiting and #incoming >= 128 then return false end
+    if not claims then
+        local count, oldest, oldestAt = 0, nil, math.huge
+        for senderKey, value in pairs(prefs.level_claims) do
+            count = count + 1
+            if value.at < oldestAt then oldest, oldestAt = senderKey, value.at end
+        end
+        if count >= 512 and oldest then prefs.level_claims[oldest] = nil end
+        claims = {levels = {}, at = now}
+        prefs.level_claims[key] = claims
+    end
+    claims.levels[level], claims.at = true, now
+    prefs.seen[duplicateKey] = now
+    if waiting then
+        waiting.level = math.max(waiting.level, level)
+        waiting.count = (waiting.count or 1) + 1
+        waiting.received_at = now
+    else
+        table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
+            count = 1, group_id = group ~= "legacy" and group or nil})
+    end
     P.tick()
     return true
 end
@@ -167,7 +191,8 @@ local function show(item, now)
     local alias = not item.preview and prefs.trusted[item.key]
     local name = item.sender:match("^[^-]+") or item.sender
     if type(alias) == "string" and alias ~= "" then name = alias .. "’s " .. name end
-    toast.message:SetText(name .. " reached level " .. item.level .. "!")
+    toast.message:SetText(name .. " reached level " .. item.level .. "!"
+        .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
     toast.detail:SetText(item.preview and "Local preview — not sent or saved as progress"
         or ("Reported in " .. (item.group_id and ("group " .. ((WoWStatusGroups.selected(getCharacter())[item.group_id] or {}).label or item.group_id)) or "your legacy channel") .. " · player-reported"))
     toast:Show()
@@ -283,7 +308,7 @@ function P.command(text)
             for _ in pairs(prefs.trusted) do count = count + 1 end
             if count >= 200 and not prefs.trusted[key] then notify("Trust list is full."); return end
             prefs.trusted[key] = alias ~= "" and alias or true
-        else prefs.trusted[key] = nil; senderTimes[key] = nil end
+        else prefs.trusted[key] = nil end
         notify("Trust preference updated for " .. sender .. ".")
         P.tick()
     elseif command == "test" then

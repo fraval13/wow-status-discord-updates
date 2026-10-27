@@ -97,6 +97,14 @@ async def link(url, code, credentials):
     atomic_json(credentials, {'url': url, 'token': token})
 
 
+def retry_seconds(response):
+    try:
+        seconds = int(response.headers.get('Retry-After', '60'))
+    except (AttributeError, ValueError, TypeError):
+        seconds = 60
+    return min(86400, max(1, seconds))
+
+
 async def upload(paths, credentials, state, once=False, dry_run=False, interval=5,
                  status=None, stop_event=None):
     if status is None:
@@ -140,10 +148,18 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                             raise ValueError('Configure group mode before uploading selected group IDs')
                         if cache.get(key) == fingerprint:
                             continue
+                        if (payload['settings']['enabled']
+                                and cache.get('_retry_upload_at', 0) > time.time()):
+                            failed = True
+                            status(connection='Temporarily limited; retained data will retry automatically.')
+                            continue
                         async with session.post(url + '/v1/upload',
                             json={k: v for k, v in payload.items() if not k.startswith('_')},
                             headers={'Authorization': 'Bearer ' + config['token']},
                             allow_redirects=False) as response:
+                            if response.status == 429:
+                                cache['_retry_upload_at'] = time.time() + retry_seconds(response)
+                                atomic_json(state, cache)
                             if response.status != 200:
                                 # Never log request bodies or authentication headers.
                                 print(f'Upload not accepted (HTTP {response.status}); export retained.')
@@ -154,6 +170,7 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                                 failed = True
                                 continue
                             await response.read()
+                        cache.pop('_retry_upload_at', None)
                         cache[key] = fingerprint
                         atomic_json(state, cache)
                         print(f'Uploaded selected character data at {int(time.time())}.')

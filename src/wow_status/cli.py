@@ -30,6 +30,8 @@ def parser():
     key.add_argument('name')
     service.add_argument('--group-id', default=os.environ.get('DISCORD_GROUP_ID'),
                          help='One group ID for this service/database; use a different instance per group')
+    service.add_argument('--trust-proxy', action='store_true',
+                         help='Trust X-WoW-Client-IP only from a local proxy that overwrites it')
     service.add_argument('--discord', action='store_true', help='Requires bot token and server/channel IDs')
     config = commands.add_parser('configure', help='Set the shared service URL; groups are selected in WoW')
     config.add_argument('--url', required=True)
@@ -123,7 +125,7 @@ def main():
                             await client.start(token)
                 from .group_routing import group_key
                 selected_group = group_key(args.group) if args.group else args.group_id
-                asyncio.run(serve(store, args.host, args.port, bot, selected_group, args.group))
+                asyncio.run(serve(store, args.host, args.port, bot, selected_group, args.group, args.trust_proxy))
             elif args.command == 'create-link':
                 print(store.create_link(args.owner))
             elif args.command == 'outbox':

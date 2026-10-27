@@ -44,3 +44,62 @@ at the next upload. Historical Discord messages already sent remain unchanged.
 
 The new addon behavior still needs actual-client testing at home. CI uses mocked
 Vanilla and Forever APIs; the work computer does not run the addon or test suite.
+
+## Automatic abuse protection
+
+Level caps are enforced by edition (currently 60 for Vanilla Classic and Forever)
+for profiles, events and graph observations. Cap celebrations are calculated by the
+server, never taken from a client-supplied flag. Reaching a level is deduplicated per
+character, including when the event ID changes; real and explicitly synthetic test
+observations are separate. Existing installations keep their credentials and ownership.
+
+There are no speed checks, progression approval queues or manual onboarding approvals.
+Existing high-level characters, skipped levels, offline uploads, old timestamps and
+out-of-order level events remain supported within the existing export protocol.
+An in-range fabricated claim cannot be distinguished from genuine gameplay without
+an authoritative game-server source; these controls prevent abuse, not prove gameplay.
+
+Discord announcements are durably queued, spaced at least 3 seconds apart per group
+and 10 seconds apart per character. Queued work rotates between owners so one owner's
+many characters cannot stay ahead of everyone else. Summary delivery gets a periodic
+opportunity during continuous upload backlogs. Records and recap totals are retained
+when Discord delivery waits; posting delays do not reject uploaded progression.
+
+Resource budgets are deliberately generous and do not judge gameplay:
+
+| Resource | Automatic limit |
+| --- | --- |
+| Upload requests | 600 per minute per owner/installation identity |
+| Privacy requests | Separate 120 per minute per owner |
+| Enrollment attempts | 30 per source IP per hour |
+| New enrollments | 1,000 per group per day |
+| New characters | 256 per owner and 2,000 per group per day |
+| New events | 100,000 per owner and 1,000,000 per group per day |
+| New serialized event/snapshot bytes | 200 MiB per owner and 2 GiB per group per day |
+| Request body | 256,000 bytes; at most 500 events |
+
+Resource windows use fixed UTC boundaries, independent of the Oslo gameplay calendar.
+Budgets persist across service restarts. Retries of already stored events/snapshots
+spend no additional growth budget. A growth-limited upload rolls back entirely and
+returns HTTP 429 with Retry-After. The companion keeps SavedVariables unacknowledged
+and automatically retries after that delay; another group continues independently.
+Disabling sharing can still scrub data after a growth budget is exhausted. Privacy
+controls have a separate request allowance. No retained history is automatically
+pruned to enforce these budgets; ongoing disk usage still needs normal server capacity
+monitoring and backups.
+
+Production enables `--trust-proxy` only behind its loopback-only Caddy upstreams.
+Caddy overwrites `X-WoW-Client-IP` with the actual TCP peer address; client-supplied
+forwarding headers cannot choose their own enrollment-rate identity. Direct service
+setups leave proxy trust disabled. User-provided URLs, invites, markdown and mentions
+are neutralized in displayed text; item hyperlinks are constructed from numeric IDs
+by the service.
+
+In-game group popups continue to join automatically with no approval requirement.
+Rapid distinct levels are queued/coalesced, not rejected for being too fast. Popup
+queues are bounded to 128 pending senders/groups and recent level claims persist for
+up to 512 sender identities, with at most the edition's 60 levels per sender. The
+oldest sender is evicted when that bound is reached. Popups are transient notifications,
+not a durable progress archive; saturation/expiry can still omit a notification, while
+own-character upload history remains retained. A modified receiving addon can bypass
+its own local popup protections.
