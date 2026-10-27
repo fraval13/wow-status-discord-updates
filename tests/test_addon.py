@@ -106,14 +106,14 @@ def lua():
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
-    runtime.execute((root / 'Safe.lua').read_text())
-    runtime.execute((root / 'CaseFold.lua').read_text())
-    runtime.execute((root / 'Vanilla.lua').read_text())
-    runtime.execute((root / 'History.lua').read_text())
-    runtime.execute((root / 'HistoryUI.lua').read_text())
-    runtime.execute((root / 'Groups.lua').read_text())
-    runtime.execute((root / 'Popups.lua').read_text())
-    runtime.execute((root / 'WoWStatus.lua').read_text())
+    runtime.execute((root / 'Safe.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'CaseFold.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Vanilla.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'History.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'HistoryUI.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
     return runtime
 

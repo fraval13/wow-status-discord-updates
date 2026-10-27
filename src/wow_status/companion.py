@@ -103,10 +103,10 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
         def status(**values):
             if 'connection' in values:
                 print(values['connection'])
-    config = {} if dry_run else json.loads(Path(credentials).read_text())
+    config = {} if dry_run else json.loads(Path(credentials).read_text(encoding='utf-8'))
     url = endpoint(config['url']) if config else None
     grouped = config.get('mode') == 'groups'
-    cache = {} if dry_run or not Path(state).exists() else json.loads(Path(state).read_text())
+    cache = {} if dry_run or not Path(state).exists() else json.loads(Path(state).read_text(encoding='utf-8'))
     timeout = aiohttp.ClientTimeout(total=30)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         group_uploader = None

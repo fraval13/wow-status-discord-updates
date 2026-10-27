@@ -2,6 +2,7 @@
 import asyncio
 import hmac
 import logging
+import os
 import secrets
 import time
 from collections import defaultdict, deque
@@ -69,7 +70,8 @@ def create_app(store, group=None, name=None):
                     del attempts[ip]
 
     async def health(request):
-        return web.json_response({'status': 'ok', 'protocol': 1})
+        return web.json_response({'status': 'ok', 'protocol': 1, 'service': 'wow-character-status',
+                                  'revision': os.environ.get('WOW_STATUS_REVISION')})
 
     async def redeem(request):
         throttle(request)

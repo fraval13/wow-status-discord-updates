@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """Root-owned deployment receiver. Its authority is limited to this project's fixed paths."""
 import io
+import fcntl
 import json
 import os
 import pwd
@@ -43,10 +44,13 @@ def root_readonly_tree(path):
     os.chown(path, 0, 0)
 
 
-def healthy(port):
+def healthy(port, revision):
     try:
         with urllib.request.urlopen(f'http://127.0.0.1:{port}/health', timeout=3) as response:
-            return response.status == 200 and json.load(response).get('status') == 'ok'
+            data = json.load(response)
+            return (response.status == 200 and data.get('status') == 'ok'
+                    and data.get('service') == 'wow-character-status'
+                    and data.get('revision') == revision)
     except Exception:
         return False
 
@@ -55,6 +59,8 @@ def main():
     if os.geteuid() != 0:
         raise SystemExit('Receiver requires the dedicated sudo rule')
     os.umask(0o077)
+    deployment_lock = (BASE / 'deployment.lock').open('a')
+    fcntl.flock(deployment_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     raw = sys.stdin.buffer.read(LIMIT + 1)
     if len(raw) > LIMIT:
         raise ValueError('Release archive is too large')
@@ -119,6 +125,7 @@ def main():
             values = merged[group]
             data = environment({
                 'DISCORD_GROUP_NAME': group, 'WOW_STATUS_PORT': str(port),
+                'WOW_STATUS_REVISION': revision,
                 'WOW_STATUS_DATABASE': f'/var/lib/wow-character-{group}/service.sqlite3',
                 'DISCORD_BOT_TOKEN': values.get('bot_token', ''),
                 'DISCORD_GUILD_ID': values.get('guild_id', ''),
@@ -135,7 +142,7 @@ def main():
         for group in GROUPS:
             run('systemctl', 'restart', f'wow-character-status@{group}.service')
         for _ in range(20):
-            if all(healthy(port) for port in GROUPS.values()):
+            if all(healthy(port, revision) for port in GROUPS.values()):
                 for group in GROUPS:
                     run('systemctl', 'enable', f'wow-character-status@{group}.service')
                 print('Activated', revision, 'for ronkalot and navsquad; both local health endpoints passed.')

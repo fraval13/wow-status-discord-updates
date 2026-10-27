@@ -27,7 +27,7 @@ def forever_lua():
     root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
     for name in ('Safe.lua', 'CaseFold.lua', 'Forever.lua', 'History.lua', 'HistoryUI.lua',
                  'Groups.lua', 'Popups.lua', 'WoWStatus.lua'):
-        runtime.execute((root / name).read_text())
+        runtime.execute((root / name).read_text(encoding='utf-8'))
     return runtime
 
 
@@ -117,7 +117,7 @@ def test_each_client_is_a_complete_folder_with_identical_shared_files():
     assert shared
     for client, adapter in [('vanilla', 'Vanilla.lua'), ('forever', 'Forever.lua')]:
         folder = root / client / 'WoWStatus'
-        toc = (folder / 'WoWStatus.toc').read_text()
+        toc = (folder / 'WoWStatus.toc').read_text(encoding='utf-8')
         assert adapter in toc and toc.index('Safe.lua') < toc.index(adapter)
         assert (folder / adapter).exists()
         for source in shared:
