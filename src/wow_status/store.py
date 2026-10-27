@@ -135,7 +135,7 @@ class Store:
                 raise Conflict('Character already belongs to another linked user')
             if old and p['exported_at'] < old['exported']:
                 raise Conflict('Stale export rejected; export current settings with /reload')
-            self.db.execute('''INSERT INTO characters VALUES(?,?,?,?,?,?,?,?)
+            self.db.execute('''INSERT INTO characters(id,owner,identity,settings,snapshot,exported,uploaded) VALUES(?,?,?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET identity=excluded.identity,
                 settings=excluded.settings,snapshot=excluded.snapshot,
                 exported=excluded.exported,uploaded=excluded.uploaded''',

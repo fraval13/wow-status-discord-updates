@@ -377,8 +377,8 @@ SlashCmdList.WOWSTATUS = function(message)
             return
         end
         local names = {}
-        for name in rest:gmatch("[^,]+") do
-            name = name:match("^%s*(.-)%s*$")
+        for rawName in rest:gmatch("[^,]+") do
+            local name = rawName:match("^%s*(.-)%s*$")
             if #name > 0 and #name <= 50 and #names < 6 then
                 table.insert(names, {name = name, source = "player_entered"})
             end
