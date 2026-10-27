@@ -1,0 +1,16 @@
+# Replace host and BOTH keys using `wow-status group-key "Exact group name"` at home.
+# Keep upstream ports private. Do not enable URL/header/body logs containing group access data.
+characters.example.com {
+    request_body {
+        max_size 256KB
+    }
+    handle_path /groups/FIRST_GROUP_KEY/* {
+        reverse_proxy 127.0.0.1:8081
+    }
+    handle_path /groups/SECOND_GROUP_KEY/* {
+        reverse_proxy 127.0.0.1:8082
+    }
+    handle {
+        respond "Unknown group" 404
+    }
+}

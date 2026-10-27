@@ -1,3 +1,8 @@
+For direct group-ID joining and two isolated Discord destinations, follow
+[GROUPS.md](../docs/GROUPS.md), `wow-status@.service`, and `Caddyfile.groups.example`.
+No Discord `/link` code is required in that flow. The single-instance linked
+deployment instructions below remain available as a legacy option.
+
 # Host setup (later, on your own server)
 
 Nothing is deployed or started by this repository. One service represents one

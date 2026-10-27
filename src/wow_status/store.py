@@ -22,10 +22,12 @@ class Store:
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.executescript('''
+        CREATE TABLE IF NOT EXISTS group_pauses(owner TEXT PRIMARY KEY);
         CREATE TABLE IF NOT EXISTS level_tracking(
             character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS people(
-            owner TEXT PRIMARY KEY, display_name TEXT NOT NULL, nickname TEXT);
+            owner TEXT PRIMARY KEY, display_name TEXT NOT NULL, nickname TEXT,
+            source TEXT NOT NULL DEFAULT 'discord');
         CREATE TABLE IF NOT EXISTS character_labels(
             character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
             role TEXT NOT NULL DEFAULT 'alt', source TEXT NOT NULL DEFAULT 'addon');
@@ -72,6 +74,8 @@ class Store:
             PRIMARY KEY(day,timezone,character),
             FOREIGN KEY(day,timezone) REFERENCES digests(day,timezone) ON DELETE CASCADE);
         ''')
+        if 'source' not in {row['name'] for row in self.db.execute('PRAGMA table_info(people)')}:
+            self.db.execute("ALTER TABLE people ADD COLUMN source TEXT NOT NULL DEFAULT 'discord'")
         # A previous process might have died after sending but before recording success.
         with self.db:
             self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
@@ -249,6 +253,7 @@ class Store:
             self.db.execute('DELETE FROM installations WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM links WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
+            self.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
         for cid in ids:
             (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
 

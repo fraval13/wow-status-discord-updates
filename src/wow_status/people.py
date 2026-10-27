@@ -2,16 +2,16 @@
 from .schema import ValidationError, string
 
 
-def remember(store, owner, display_name):
+def remember(store, owner, display_name, source='discord'):
     owner = string(str(owner), 'Discord owner', 120)
     display_name = string(display_name, 'Discord display name', 80)
-    old = store.db.execute('SELECT display_name FROM people WHERE owner=?', (owner,)).fetchone()
-    if old and old['display_name'] == display_name:
+    old = store.db.execute('SELECT display_name,source FROM people WHERE owner=?', (owner,)).fetchone()
+    if old and old['display_name'] == display_name and old['source'] == source:
         return
     with store.db:
-        store.db.execute('INSERT INTO people(owner,display_name) VALUES(?,?) '
-                         'ON CONFLICT(owner) DO UPDATE SET display_name=excluded.display_name',
-                         (owner, display_name))
+        store.db.execute('INSERT INTO people(owner,display_name,source) VALUES(?,?,?) '
+                         'ON CONFLICT(owner) DO UPDATE SET display_name=excluded.display_name,source=excluded.source',
+                         (owner, display_name, source))
     for char in store.characters(owner):
         store.sync_archive(char['id'])
 
@@ -30,9 +30,9 @@ def nickname(store, owner, name=None):
 
 def person(store, owner):
     row = store.db.execute('SELECT * FROM people WHERE owner=?', (owner,)).fetchone()
-    return {'discord_user_id': owner,
+    return {'discord_user_id': None if owner.startswith('group:') else owner,
             'display_name': (row['nickname'] or row['display_name']) if row else 'Linked friend',
-            'name_source': ('nickname' if row['nickname'] else 'discord') if row else 'unavailable'}
+            'name_source': ('nickname' if row['nickname'] else row['source']) if row else 'unavailable'}
 
 
 def character_role(store, cid):

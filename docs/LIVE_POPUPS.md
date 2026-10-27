@@ -9,6 +9,10 @@ computer. Validate this on your actual Classic Era clients at home. Cross-guild,
 realm, faction and Forever support are not promised. Game chat restrictions may
 prevent automatic sending; the addon does not bypass them.
 
+For the new flow, select free-text IDs in `/wstatus groups`; popup channels follow
+those IDs automatically, with no per-alt trust list requirement. See [GROUPS.md](GROUPS.md).
+The manual channel/trust setup below is an optional legacy mode.
+
 ## Setup with two friends
 
 Each person must install this addon version, log into a supported Classic Era

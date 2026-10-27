@@ -69,3 +69,9 @@ visible custom-channel transport, trusted sender list, local friend labels, boun
 queues, deduplication, combat deferral and privacy cancellation. Client chat API
 restrictions, cross-guild/faction/realm behavior and Forever support remain
 unverified. No popup or communication tests have run on the work computer.
+
+Direct group-ID membership is written: free-text one/many ID list in WoW, addon
+name entry, deterministic route/channel keys, isolated service/database per group,
+automatic credential enrollment without /link, scoped history and membership
+withdrawals, companion privacy controls, and matching popup groups. No runtime or
+in-game validation has been performed. Forever compatibility remains planned only.

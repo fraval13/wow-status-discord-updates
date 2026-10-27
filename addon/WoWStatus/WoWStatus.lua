@@ -29,6 +29,7 @@ end
 local function snapshot()
     if not current then return end
     current.exported_at = time()
+    current.player_name = WoWStatusDB.player_name or ""
     if current.history and current.history.tracking.active then
         current.history.tracking.observed_until = current.exported_at
     end
@@ -56,7 +57,8 @@ local function queue(kind, data, fixed)
             current.warned = true
         end
     end
-    local event = {id = id, kind = kind, at = time(), data = data or {}}
+    local event = {id = id, kind = kind, at = time(), data = data or {},
+        group_ids = H.copy(current.group_ids or {})}
     table.insert(current.events, event)
     H.record(current, event)
     snapshot()
@@ -193,6 +195,7 @@ local function showPanel()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
         button(panel, "Popup help", 224, -600, 140, function() WoWStatusPopups.command("") end)
+        button(panel, "Groups", 384, -600, 90, function() WoWStatusGroups.show() end)
         button(panel, "Close", 480, -600, 110, function() panel:Hide() end)
         label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
             .. "Test: /wstatus test    LFG: /wstatus lfg <your message>\n"
@@ -230,6 +233,7 @@ local function initialize()
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity
+    WoWStatusGroups.init(WoWStatusDB, function() return current end, say)
     WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
     H.init(current)
     H.scrub(current)
@@ -305,7 +309,15 @@ SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match("^(%S*)%s*(.-)$")
     if not current then say("Classic Era character is not ready."); return end
-    if command == "popup" then
+    if command == "groups" then
+        if rest == "legacy" then
+            current.group_ids = {}
+            current.legacy_upload = true
+            current.exported_at = time()
+            WoWStatusPopups.groupsChanged()
+            say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
+        else WoWStatusGroups.show() end
+    elseif command == "popup" then
         WoWStatusPopups.command(rest)
     elseif command == "logs" or command == "graph" or command == "times" then
         local mode = command == "graph" and "graph" or (command == "times" and "timing" or "logs")

@@ -1,5 +1,6 @@
 """Shared protocol validation and a second privacy filter at the server boundary."""
 import json
+import re
 import time
 
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions'}
@@ -37,6 +38,15 @@ def validate(payload):
     clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
                                       ('guid', 'name', 'realm', 'client')},
              'settings': {}, 'snapshot': {}, 'events': []}
+    if 'group_id' in payload:
+        target = payload['group_id']
+        if not isinstance(target, str) or not re.fullmatch('[a-f0-9]{22}', target):
+            raise ValidationError('Invalid group ID')
+        clean['group_id'] = target
+    if payload.get('group_name'):
+        clean['group_name'] = string(payload['group_name'], 'group name', 80)
+    if payload.get('player_name'):
+        clean['player_name'] = string(payload['player_name'], 'player name', 40)
     if 'build' in identity:
         clean['identity']['build'] = string(identity['build'], 'client build', 40)
     if 'interface' in identity:
@@ -100,6 +110,8 @@ def validate(payload):
         if not isinstance(data, dict):
             raise ValidationError('Invalid event data')
         filtered = {}
+        if kind == 'introduction' and data.get('source') == 'group_enrollment':
+            filtered = {'source': 'group_enrollment'}
         if kind == 'level':
             if not clean['settings']['fields']['level']:
                 continue

@@ -64,7 +64,10 @@ def character_document(store, cid):
     result = {
         'schema_version': 1,
         'timezone': TIMEZONE,
-        'character': {'id': cid, **char['identity'], 'discord_owner_id': char['owner'],
+        'group_id': (store.db.execute("SELECT value FROM meta WHERE key='active_group_id'").fetchone() or [None])[0],
+        'group_name': (store.db.execute("SELECT value FROM meta WHERE key='active_group_name'").fetchone() or [None])[0],
+        'character': {'id': cid, **char['identity'], 'owner_id': char['owner'],
+                      'discord_owner_id': person(store, char['owner'])['discord_user_id'],
                       'friend': person(store, char['owner']), 'role': character_role(store, cid)},
         'sharing': char['settings'],
         'profile': {'current': fields_document(char['snapshot']), 'last_exported_at': timestamp(char['exported']),
@@ -92,7 +95,7 @@ def character_document(store, cid):
             'event_id': event['id'], 'recorded_at': timestamp(event['at']),
             'first_uploaded_at': timestamp(event['received']), 'data': event_document(json.loads(event['data'])),
             'evidence': {'source': ('addon_test' if json.loads(event['data']).get('synthetic')
-                                     else 'addon_event'), 'certainty': 'player_reported',
+                                     else json.loads(event['data']).get('source', 'addon_event')), 'certainty': 'player_reported',
                          'client': char['identity']['client']},
             'immediate_delivery': dict(delivery) if delivery else {'status': 'not_queued'}})
     from .progression import timeline

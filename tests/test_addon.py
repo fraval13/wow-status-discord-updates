@@ -56,6 +56,8 @@ function methods:SetScript(name, fn) self[name]=fn end
 function methods:GetChecked() return self.checked end
 function methods:SetChecked(value) self.checked=value end
 function methods:SetText(value) self.text=value end
+function methods:GetText() return self.text or "" end
+function methods:Insert(value) self.text=(self.text or "")..value end
 function methods:Show() self.visible=true end
 function methods:Hide() self.visible=false end
 function methods:IsShown() return self.visible end
@@ -68,7 +70,7 @@ function methods:CreateFontString() return setmetatable({}, {__index=methods}) e
 for _, name in ipairs({"SetPoint","SetSize","SetWidth","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetThickness","SetStartPoint","SetEndPoint"}) do methods[name]=function() end end
+    "SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters","SetMultiLine"}) do methods[name]=function() end end
 function CreateFrame(_, name)
     local f=setmetatable({}, {__index=methods})
     table.insert(__frames,f)
@@ -105,6 +107,7 @@ def lua():
     runtime.execute((root / 'Classic.lua').read_text())
     runtime.execute((root / 'History.lua').read_text())
     runtime.execute((root / 'HistoryUI.lua').read_text())
+    runtime.execute((root / 'Groups.lua').read_text())
     runtime.execute((root / 'Popups.lua').read_text())
     runtime.execute((root / 'WoWStatus.lua').read_text())
     runtime.eval('fire')('PLAYER_LOGIN')
@@ -211,6 +214,7 @@ def test_live_popups_are_off_and_untrusted_senders_are_ignored(lua):
     packet = 'WSTATUS1 LEVEL 25 1793000000 event-1'
     receive = lua.eval('WoWStatusPopups.receive')
     assert receive(packet, 'Eldrin-TestRealm', 'WStatusFriends') is False
+    lua.eval('SlashCmdList.WOWSTATUS')('popup channel WStatusFriends')
     lua.eval('SlashCmdList.WOWSTATUS')('popup on')
     assert receive(packet, 'Eldrin-TestRealm', 'WStatusFriends') is False
     assert lua.eval('WoWStatusLevelPopup') is None
@@ -218,6 +222,7 @@ def test_live_popups_are_off_and_untrusted_senders_are_ignored(lua):
 
 def test_trusted_friend_popup_uses_sender_and_suppresses_duplicates(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup on')
     command('popup trust Eldrin-TestRealm Frank')
     receive = lua.eval('WoWStatusPopups.receive')
@@ -232,6 +237,7 @@ def test_trusted_friend_popup_uses_sender_and_suppresses_duplicates(lua):
 
 def test_popup_waits_for_combat_and_off_discards_it(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup on')
     command('popup trust Eldrin-TestRealm')
     lua.execute('__combat=true')
@@ -245,6 +251,7 @@ def test_popup_waits_for_combat_and_off_discards_it(lua):
 
 def test_popup_appears_after_combat_when_still_enabled(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup on')
     command('popup trust Eldrin-TestRealm')
     lua.execute('__combat=true')
@@ -256,6 +263,7 @@ def test_popup_appears_after_combat_when_still_enabled(lua):
 
 def test_bad_stale_other_channel_and_self_messages_are_rejected(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup on')
     command('popup trust Eldrin-TestRealm')
     command('popup trust Thora-TestRealm')
@@ -269,6 +277,7 @@ def test_bad_stale_other_channel_and_self_messages_are_rejected(lua):
 
 def test_real_levels_broadcast_only_after_explicit_opt_in_and_sharing(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup send on')
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert lua.eval('#__sent') == 0
@@ -284,6 +293,7 @@ def test_real_levels_broadcast_only_after_explicit_opt_in_and_sharing(lua):
 
 def test_restrictions_hold_broadcast_and_privacy_pause_cancels(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     lua.eval('clickSharing')()
     command('popup send on')
     lua.execute('__restricted=true')
@@ -297,6 +307,7 @@ def test_restrictions_hold_broadcast_and_privacy_pause_cancels(lua):
 
 def test_local_popup_preview_never_broadcasts_or_changes_progress(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup on')
     command('popup test')
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
@@ -307,6 +318,7 @@ def test_local_popup_preview_never_broadcasts_or_changes_progress(lua):
 
 def test_popup_preferences_never_enter_exported_character_snapshot(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     command('popup on')
     command('popup trust Eldrin-TestRealm PrivateLocalLabel')
     assert lua.eval('WoWStatusDB.popups.sound') is False
@@ -316,6 +328,7 @@ def test_popup_preferences_never_enter_exported_character_snapshot(lua):
 
 def test_no_auto_retry_after_send_raises(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup channel WStatusFriends')
     lua.eval('clickSharing')()
     command('popup send on')
     lua.execute('C_ChatInfo.SendChatMessage=function() error("restricted") end')
@@ -326,3 +339,40 @@ def test_no_auto_retry_after_send_raises(lua):
         WoWStatusPopups.tick()
     ''')
     assert lua.eval('#__sent') == 0
+
+
+def test_free_text_groups_match_python_keys_and_support_two_destinations(lua):
+    from wow_status.group_routing import group_key
+    for label in ['Weekend Crew', 'Old friends #2', 'Ærlig gjeng! 🎮']:
+        key, cleaned = lua.eval('WoWStatusGroups.key')(label)
+        assert key == group_key(label)
+        assert cleaned == label
+    ok, _ = lua.eval('WoWStatusGroups.update')('Weekend Crew\nOld friends #2', 'Frank')
+    assert ok is True
+    assert lua.eval('WoWStatusDB.player_name') == 'Frank'
+    assert lua.eval('WoWStatusGroups.text(character(),true)') == 'Old friends #2\nWeekend Crew'
+    lua.eval('SlashCmdList.WOWSTATUS')('groups')
+    assert lua.eval('WoWStatusGroupWindow:IsShown()') is True
+
+
+def test_group_popups_do_not_require_character_trust_and_dedupe_between_groups(lua):
+    from wow_status.group_routing import group_key
+    first, second = group_key('Weekend Crew'), group_key('Old friends #2')
+    lua.eval('WoWStatusGroups.update')('Weekend Crew\nOld friends #2', 'Frank')
+    lua.eval('SlashCmdList.WOWSTATUS')('popup on')
+    receive = lua.eval('WoWStatusPopups.receive')
+    packet = 'WSTATUS1 LEVEL 25 1793000000 e1'
+    assert receive(packet, 'Eldrin-TestRealm', 'WStatus' + first) is True
+    assert receive(packet, 'Eldrin-TestRealm', 'WStatus' + second) is False
+    assert receive(packet, 'Other-TestRealm', 'WStatusFriends') is False
+    lua.eval('WoWStatusGroups.update')('Old friends #2', 'Frank')
+    assert receive(packet.replace('25', '26'), 'Eldrin-TestRealm', 'WStatus' + first) is False
+
+
+def test_empty_group_list_has_no_implicit_popup_destination(lua):
+    lua.eval('clickSharing')()
+    command = lua.eval('SlashCmdList.WOWSTATUS')
+    command('popup send on')
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    assert lua.eval('#__sent') == 0
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'no_group_selected'

@@ -143,7 +143,7 @@ function UI.refresh()
             if category == "all" or event.kind == category then
                 table.insert(rows, H.oslo(event.at) .. " · " .. event.kind
                     .. (event.data.synthetic and " [TEST]" or "") .. "\n"
-                    .. "Event ID: " .. event.id .. "\nData: " .. H.serialize(event.data)
+                    .. "Event ID: " .. event.id .. "\nSelected groups: " .. H.serialize(event.group_ids or {}) .. "\nData: " .. H.serialize(event.data)
                     .. "\nStatus: collected locally; upload/delivery not confirmed in game.\n")
             end
         end
@@ -155,6 +155,7 @@ function UI.refresh()
         end
     else
         rows = {"Identity: " .. H.serialize(character.identity),
+            "Selected group IDs: " .. H.serialize(character.group_ids or {}),
             "Sharing settings: " .. H.serialize(character.settings),
             "Current selected snapshot: " .. H.serialize(character.snapshot),
             "Snapshot observed at: " .. H.oslo(character.exported_at),

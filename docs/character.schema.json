@@ -48,7 +48,10 @@
           "type": "string"
         },
         "discord_owner_id": {
-          "type": "string"
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "build": {
           "type": "string"
@@ -71,7 +74,10 @@
           ],
           "properties": {
             "discord_user_id": {
-              "type": "string"
+              "type": [
+                "string",
+                "null"
+              ]
             },
             "display_name": {
               "type": "string"
@@ -80,10 +86,14 @@
               "enum": [
                 "nickname",
                 "discord",
-                "unavailable"
+                "unavailable",
+                "addon"
               ]
             }
           }
+        },
+        "owner_id": {
+          "type": "string"
         }
       }
     },
@@ -406,6 +416,18 @@
           }
         }
       }
+    },
+    "group_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group_name": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "$defs": {

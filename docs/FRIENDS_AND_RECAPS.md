@@ -4,6 +4,10 @@ Your Discord identity links your characters together. Nobody needs to type a rea
 name into the addon. Everybody in the configured server can view the shared roster
 and announcements; grouping adds context rather than separating your friends.
 
+For the new ID-only flow, enter your name in the addon. Groups, membership and
+privacy are described in [GROUPS.md](GROUPS.md). The Discord-name/link steps below
+apply to the optional legacy linked flow.
+
 ## How names work
 
 1. Invoke `/link` in Discord. The bot remembers your Discord user ID and current

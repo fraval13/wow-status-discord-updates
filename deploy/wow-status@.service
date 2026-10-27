@@ -1,0 +1,25 @@
+[Unit]
+Description=WoW character status group %i
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=wow-status
+Group=wow-status
+WorkingDirectory=/opt/wow-status
+EnvironmentFile=/etc/wow-status/%i.env
+ExecStart=/opt/wow-status/.venv/bin/wow-status serve --db /var/lib/wow-status-%i/service.sqlite3 --port ${WOW_STATUS_PORT} --discord
+Restart=on-failure
+RestartSec=10
+StateDirectory=wow-status-%i
+StateDirectoryMode=0700
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/wow-status-%i
+
+[Install]
+WantedBy=multi-user.target

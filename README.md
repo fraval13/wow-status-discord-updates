@@ -8,6 +8,10 @@ request, no project dependencies were installed and no application or tests were
 run on the work computer. Start with the [home testing guide](docs/HOME_TESTING.md).
 Do not deploy this unvalidated build before completing those checks.
 
+The default group flow is now **IDs entered directly in WoW**, one free-text ID
+per line, with no Discord `/link` step. See [group setup and Discord mapping](docs/GROUPS.md).
+The older linking commands remain available for legacy single-service installations.
+
 ## Included
 
 - Classic Era addon with per-character sharing and announcement checkboxes.
@@ -47,6 +51,9 @@ flowchart LR
     C -->|selected data over HTTPS| D[Service and SQLite]
     D --> E[Discord announcements and slash commands]
 ```
+
+Group-ID users enter their name in the addon and manage group privacy in the
+companion. The Discord-name instructions below apply to optional linked installations.
 
 See [friends, names and recaps](docs/FRIENDS_AND_RECAPS.md) for how your gang’s
 characters stay together and how names are selected. No real name is needed in the addon.
@@ -119,3 +126,5 @@ WoW API checks. GitHub Actions is manual-only and has not been triggered by this
 
 Discord integration follows the [discord.py application-command example](https://github.com/Rapptz/discord.py/blob/master/examples/app_commands/basic.py)
 and [interaction API documentation](https://discordpy.readthedocs.io/en/stable/interactions/api.html).
+
+Forever support is planned, not implemented. See [compatibility status and references](docs/FOREVER_COMPATIBILITY.md).

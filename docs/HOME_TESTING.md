@@ -4,6 +4,11 @@ This guide is for your personal gaming computer and later your own hosting serve
 No tests or project processes were run on the work computer. No real keys are in
 this repository. Do the keyless checks first; Discord can be connected afterwards.
 
+**New default flow:** [GROUPS.md](GROUPS.md) explains entering free-text group IDs
+in WoW, automatic enrollment, two Discord destinations, and companion privacy controls.
+The explicit `/link`/create-link examples below remain a legacy/keyless protocol
+exercise, rather than a requirement for ID-only group membership.
+
 ## 1. Install the project at home
 
 Clone the new repository into its own directory:

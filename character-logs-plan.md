@@ -225,3 +225,13 @@ default, never merge peer reports into the local character's graph, and respect
 client chat restrictions. The first transport sends visible messages; actual
 cross-guild/faction/realm and Forever compatibility must be established at home.
 See [popup setup and acceptance](docs/LIVE_POPUPS.md).
+
+## Direct group IDs (confirmed requirement)
+
+Allow free text group IDs, one per line in WoW. Each character can select one or
+several IDs, with two independent Discord destinations as the initial operator
+setup. No /link step is required. Store per-installation credentials automatically;
+use addon name entry because group-only membership does not verify Discord identity.
+Only selected targets receive post-join events. Removing a group stops local popup
+routing immediately and withdraws the shared character after export/upload.
+See [group design, setup and limits](docs/GROUPS.md).

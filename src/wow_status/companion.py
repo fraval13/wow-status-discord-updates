@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import aiohttp
 
 from .savedvariables import MAX_BYTES, parse
-from .schema import validate
+from .schema import string, validate
 
 
 def endpoint(url):
@@ -69,7 +69,21 @@ def exports(path):
             payload['tracking'] = dict(tracking, points=points)
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
-            yield validate(dict(payload, events=records[offset:offset + 100]))
+            batch = records[offset:offset + 100]
+            result = validate(dict(payload, events=batch))
+            if 'group_ids' in char and char.get('legacy_upload') is not True:
+                from .group_routing import memberships
+                result['_groups'] = memberships(char['group_ids'], result['exported_at'])
+                name = db.get('player_name', char.get('player_name', ''))
+                result['_player_name'] = string(name, 'player name', 40) if name else ''
+                targets = {}
+                for event in batch:
+                    ids = event.get('group_ids')
+                    if ids is not None and not isinstance(ids, dict):
+                        raise ValueError('Invalid event group targets')
+                    targets[event['id']] = list(ids) if ids is not None else None
+                result['_event_targets'] = targets
+            yield result
 
 
 async def link(url, code, credentials):
@@ -85,16 +99,26 @@ async def link(url, code, credentials):
 
 async def upload(paths, credentials, state, once=False, dry_run=False, interval=5,
                  status=None, stop_event=None):
-    status = status or (lambda **values: None)
+    if status is None:
+        def status(**values):
+            if 'connection' in values:
+                print(values['connection'])
     config = {} if dry_run else json.loads(Path(credentials).read_text())
     url = endpoint(config['url']) if config else None
+    grouped = config.get('mode') == 'groups'
     cache = {} if dry_run or not Path(state).exists() else json.loads(Path(state).read_text())
     timeout = aiohttp.ClientTimeout(total=30)
     async with aiohttp.ClientSession(timeout=timeout) as session:
+        group_uploader = None
+        if grouped:
+            from .group_client import GroupUploader
+            group_uploader = GroupUploader(config, credentials, cache, state, session, status)
         while True:
             if stop_event is not None and stop_event.is_set():
                 return True
             failed = False
+            if group_uploader:
+                group_uploader.failed = False
             for path in paths:
                 try:
                     for payload in exports(path):
@@ -108,9 +132,16 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                         if dry_run:
                             print(json.dumps(payload, indent=2))
                             continue
+                        if group_uploader:
+                            if not await group_uploader.upload(payload):
+                                failed = True
+                            continue
+                        if '_groups' in payload:
+                            raise ValueError('Configure group mode before uploading selected group IDs')
                         if cache.get(key) == fingerprint:
                             continue
-                        async with session.post(url + '/v1/upload', json=payload,
+                        async with session.post(url + '/v1/upload',
+                            json={k: v for k, v in payload.items() if not k.startswith('_')},
                             headers={'Authorization': 'Bearer ' + config['token']},
                             allow_redirects=False) as response:
                             if response.status != 200:

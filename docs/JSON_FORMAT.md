@@ -140,3 +140,8 @@ from daily/weekly real-progress totals.
 The addon retains full consented local history. The companion uploads it in batches
 of 100 events; level observation metadata is separately validated and archived.
 [In-game history](IN_GAME_HISTORY.md) describes graph axes and partial duration semantics.
+
+In ID-joined groups, archives also identify the single destination using `group_id`
+and `group_name`. Other selected group IDs are not included. `character.owner_id`
+is the private installation owner reference; `discord_owner_id` is null when no
+Discord account was linked, and the friend name has `name_source: "addon"`.

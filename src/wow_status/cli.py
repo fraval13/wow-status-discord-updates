@@ -24,7 +24,21 @@ def parser():
     service.add_argument('--db', default='state/service.sqlite3')
     service.add_argument('--host', default='127.0.0.1')
     service.add_argument('--port', type=int, default=8080)
+    service.add_argument('--group', default=os.environ.get('DISCORD_GROUP_NAME'),
+                         help='Exact free-text group name, for example Weekend Crew')
+    key = commands.add_parser('group-key', help='Print the routing key for a free-text group name')
+    key.add_argument('name')
+    service.add_argument('--group-id', default=os.environ.get('DISCORD_GROUP_ID'),
+                         help='One group ID for this service/database; use a different instance per group')
     service.add_argument('--discord', action='store_true', help='Requires bot token and server/channel IDs')
+    config = commands.add_parser('configure', help='Set the shared service URL; groups are selected in WoW')
+    config.add_argument('--url', required=True)
+    config.add_argument('--credentials', default=str(Path.home() / '.wow-status/credentials.json'))
+    privacy = commands.add_parser('group-privacy', help='Pause, resume or delete your data in one ID-joined group')
+    privacy.add_argument('--group', required=True)
+    privacy.add_argument('--state', default=str(Path.home() / '.wow-status/upload-state.json'))
+    privacy.add_argument('action', choices=['pause', 'resume', 'delete'])
+    privacy.add_argument('--credentials', default=str(Path.home() / '.wow-status/credentials.json'))
     enroll = commands.add_parser('link', help='Redeem a private /link code; credentials stay on disk')
     enroll.add_argument('--url', required=True)
     enroll.add_argument('--credentials', default=str(Path.home() / '.wow-status/credentials.json'))
@@ -63,6 +77,21 @@ def main():
             from .gui import launch
             launch()
             return
+        if args.command == 'group-key':
+            from .group_routing import group_key
+            print(group_key(args.name))
+            return
+        if args.command == 'configure':
+            from .group_client import configure
+            configure(args.url, args.credentials)
+            print('Service saved. Select group IDs in WoW; no Discord link code is required.')
+            return
+        if args.command == 'group-privacy':
+            from .group_client import privacy_action
+            with FileLock(args.state):
+                asyncio.run(privacy_action(args.credentials, args.group, args.action))
+            print('Group privacy action completed.')
+            return
         if args.command == 'link':
             asyncio.run(link(args.url, getpass.getpass('Private linking code: '), args.credentials))
             print('Linked. Credentials stored privately; do not share this file.')
@@ -92,7 +121,9 @@ def main():
                     async def bot():
                         async with client:
                             await client.start(token)
-                asyncio.run(serve(store, args.host, args.port, bot))
+                from .group_routing import group_key
+                selected_group = group_key(args.group) if args.group else args.group_id
+                asyncio.run(serve(store, args.host, args.port, bot, selected_group, args.group))
             elif args.command == 'create-link':
                 print(store.create_link(args.owner))
             elif args.command == 'outbox':

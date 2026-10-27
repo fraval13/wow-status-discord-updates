@@ -102,7 +102,7 @@ class StatusBot(discord.Client):
                        and (not client or c['identity']['client'].casefold() == client.casefold())]
             if len(matches) != 1:
                 await interaction.response.send_message(
-                    'Choose one of your own uploaded characters; specify realm/client if needed.',
+                    'Choose one of your Discord-linked characters, or mark your main in the addon for ID-joined groups.',
                     ephemeral=True)
                 return
             set_role(self.store, str(interaction.user.id), matches[0]['id'], 'main')
@@ -194,7 +194,8 @@ class StatusBot(discord.Client):
                     lines.append(f"{safe(char['identity']['name'])}: sharing={settings['enabled']}; "
                                  f'profile: {fields}; stored: {collected}; announcements: {events}')
                 text = ('\n'.join(lines) or 'No uploaded characters.') + (
-                    '\nIdentity (name, realm, client, GUID) is required for enrollment. '
+                    '\nFor ID-joined groups, use the companion’s group privacy controls; no Discord link is needed. '
+                    'Identity (name, realm, client, GUID) is required for enrollment. '
                     'Consented history is retained in structured per-character JSON until deletion. '
                     'Stored events also feed daily recaps at 00:05 Europe/Oslo. '
                     'Historical Discord messages remain after deletion.')
