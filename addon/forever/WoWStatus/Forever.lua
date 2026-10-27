@@ -26,7 +26,12 @@ function A.playerName() return cachedIdentity and cachedIdentity.name or S.strin
 function A.realmName()
     return S.stringCall(GetNormalizedRealmName) or (cachedIdentity and cachedIdentity.realm) or S.stringCall(GetRealmName)
 end
-function A.level() return S.number(S.call(UnitLevel, "player")) end
+function A.level()
+    local level = S.number(S.call(UnitLevel, "player"))
+    -- Loading/restricted values are unavailable observations, not a level-zero claim.
+    if level and level >= 1 and level <= A.max_level then return level end
+    return nil
+end
 function A.equipment(slot) return S.stringCall(GetInventoryItemLink, "player", slot) end
 function A.zone() return S.stringCall(GetRealZoneText) end
 function A.requestPlaytime() S.call(RequestTimePlayed) end

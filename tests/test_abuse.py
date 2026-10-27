@@ -94,7 +94,10 @@ def test_post_cooldowns_preserve_queue_and_allow_other_characters(store, payload
     assert store.pending(ready_only=True) is None
     assert store.db.execute("SELECT count(*) FROM outbox WHERE status='pending'").fetchone()[0] == 3
     monkeypatch.setattr('wow_status.store.time.time', lambda: now + limits.GROUP_POST_SECONDS + 1)
-    assert store.pending(ready_only=True)['identity']['name'] == 'Other'
+    other = store.pending(ready_only=True)
+    assert other['identity']['name'] == 'Other'
+    store.delivery(other['delivery_id'], 'sending')
+    store.delivery(other['delivery_id'], 'sent')
     monkeypatch.setattr('wow_status.store.time.time', lambda: now + limits.CHARACTER_POST_SECONDS + 1)
     assert store.pending(ready_only=True)['id'] == first['id']
 
@@ -192,3 +195,23 @@ async def test_group_client_honours_retry_after_without_acknowledging_data(tmp_p
     assert session.calls == 1
     assert 'fingerprint' not in uploader.cache
     assert json.loads((tmp_path / 'credentials.json').read_text(encoding='utf-8'))['groups']['test']['retry_upload_at'] > payload['exported_at']
+
+
+def test_growth_budgets_survive_restart_and_expire_automatically(tmp_path, payload, monkeypatch):
+    path = tmp_path / 'persistent.sqlite3'
+    monkeypatch.setattr(limits, 'NEW_EVENTS_PER_OWNER_DAY', 2)
+    now = payload['exported_at']
+    monkeypatch.setattr('wow_status.store.time.time', lambda: now)
+    first = Store(path)
+    first.ingest('owner', payload)
+    first.close()
+    reopened = Store(path)
+    extra = copy.deepcopy(payload)
+    extra['events'] = [{'id': 'level20', 'kind': 'level', 'at': now, 'data': {'level': 20}}]
+    try:
+        with pytest.raises(limits.Limited):
+            reopened.ingest('owner', extra)
+        monkeypatch.setattr('wow_status.store.time.time', lambda: now + 86400)
+        assert reopened.ingest('owner', extra)['accepted'] == 1
+    finally:
+        reopened.close()

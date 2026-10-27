@@ -422,3 +422,9 @@ def test_rapid_distinct_popup_levels_are_coalesced_and_replay_stays_blocked(lua)
     assert receive('WSTATUS1 LEVEL 12 1793000000 c', 'Eldrin-TestRealm', 'WStatusFriends')
     lua.execute('function time() return 1793000700 end')
     assert receive('WSTATUS1 LEVEL 10 1793000700 d', 'Eldrin-TestRealm', 'WStatusFriends') is False
+
+
+def test_unavailable_loading_level_is_omitted_instead_of_exporting_zero(lua):
+    lua.eval('clickSharing')()
+    lua.execute('__level=0; fire("PLAYER_ENTERING_WORLD")')
+    assert lua.eval('character().snapshot.level') is None
