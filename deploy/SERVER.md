@@ -63,12 +63,35 @@ values, avoiding accidental credential deletion on later deployments.
 
 ## Network access and home testing
 
-The two HTTP ports bind to localhost only. No public HTTP listener, DNS or reverse
-proxy is installed automatically. A public HTTPS hostname/gateway is still required
-before home companions can connect over the internet. The group gateway example in
-`Caddyfile.groups.example` needs this server's ports **18081/18082**, not the generic
-8081/8082 examples. Configure HTTPS once a hostname is supplied. For private home
-checks an owner-controlled SSH tunnel can forward these local ports instead.
+The public companion address is **https://wow.frankvalde.com**. Its DNS A record
+points to this server. Caddy terminates HTTPS on port 443, manages certificate
+renewal, and redirects HTTP on port 80 to HTTPS. The two application ports remain
+bound to localhost only. No request access log is enabled.
+
+The deployed gateway configuration is tracked in `Caddyfile.production`:
+
+| Group | URL prefix | Private upstream |
+| --- | --- | --- |
+| ronkalot | `/groups/19e32befc180a1cfdea5c3/` | `127.0.0.1:18081` |
+| navsquad | `/groups/466f79683c7465bc3a5ba0/` | `127.0.0.1:18082` |
+
+Unknown groups return 404. Friends configure only the shared base address; the
+companion derives routing keys from the names selected in WoW. At home:
+
+```sh
+wow-status configure --url https://wow.frankvalde.com
+```
+
+Caddy was installed separately through Debian's package manager. App deployments
+do not modify its configuration or restart it. To change the gateway, copy the
+tracked production file to `/etc/caddy/Caddyfile`, validate it with
+`caddy validate --config /etc/caddy/Caddyfile`, then `systemctl reload caddy`.
+Certificates live in Caddy's persistent state, outside app releases. The generic
+`Caddyfile.groups.example` remains available for other deployments.
+
+External checks confirmed valid HTTPS and healthy responses from both group
+`/health` routes, HTTP-to-HTTPS redirects, and rejection of unknown group routes.
+No enrollment or character data was created by these read-only checks.
 
 Root administration examples:
 
