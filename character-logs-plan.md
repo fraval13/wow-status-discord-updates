@@ -194,3 +194,15 @@ The bot can handle both announcements and commands; a separate webhook is unnece
 - Keep the full detailed data in JSON for later use. Field/category disabling scrubs
   related historical data; deletion removes managed JSON and database records.
 - See [JSON format](docs/JSON_FORMAT.md) for grouping, timestamp and export details.
+
+
+## Friend-group improvements (approved)
+
+Use the linked Discord member's server display name by default; offer `/nickname`
+for a preferred label. Never require real-name input in the addon. Keep identity
+and authorization tied to Discord user ID, independent of display name. Group the
+roster and combined daily/weekly recaps by that owner. Support one main plus alts,
+celebrations versus routine activity, snapshot progress labeled as inferred, a
+friendly desktop uploader, and structured source metadata for later analysis.
+See [friend-group behavior](docs/FRIENDS_AND_RECAPS.md) for the written implementation,
+home acceptance checks, and still-deferred client-dependent context collection.

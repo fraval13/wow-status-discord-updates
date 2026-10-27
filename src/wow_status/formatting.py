@@ -19,8 +19,12 @@ def norwegian(value):
 
 def profile(char):
     ident, snap = char['identity'], char['snapshot']
-    lines = [f"**{safe(ident['name'])}** · {safe(ident['realm'])} · {safe(ident['client'])}"]
+    owner = char.get('friend', {}).get('display_name', 'Linked friend')
+    lines = [f"**{safe(owner)}’s {safe(ident['name'])}** · {char.get('role', 'alt')} · "
+             f"{safe(ident['realm'])} · {safe(ident['client'])}"]
     for key, value in snap.items():
+        if key == 'professions':
+            value = ', '.join(p['name'] + ' (player-entered)' for p in value)
         if key == 'gear':
             value = ', '.join(f'{slot}: {item}' for slot, item in value.items())
         lines.append(f'{key.title()}: {safe(value)}')
@@ -30,7 +34,9 @@ def profile(char):
 
 
 def announcement(item):
-    name = safe(item['identity']['name'])
+    character_name = safe(item['identity']['name'])
+    owner = item.get('friend', {}).get('display_name')
+    name = f'{safe(owner)}’s {character_name}' if owner else character_name
     data, kind = item['data'], item['kind']
     if kind == 'introduction':
         snap = item['snapshot']
@@ -46,4 +52,36 @@ def announcement(item):
         'session': f"**{name}** shared a session update: {safe(data.get('state', '?'))}.",
         'lfg': f"**{name}** is looking for a group: {safe(data.get('text', '?'))}",
     }
-    return messages[kind][:1800] + f"\nRecorded {norwegian(item['at'])} · uploaded character data"
+    prefix = '[TEST] ' if data.get('synthetic') else ''
+    return prefix + messages[kind][:1780] + f"\nRecorded {norwegian(item['at'])} · uploaded character data"
+
+
+def roster_pages(store, characters):
+    from .people import decorate
+    chars = [decorate(store, c) for c in characters if c['settings']['enabled']]
+    chars.sort(key=lambda c: (c['friend']['display_name'].casefold(), c['owner'],
+                              c['role'] != 'main', c['identity']['name'].casefold()))
+    pages, lines, previous = [], [], None
+    for char in chars:
+        owner = char['friend']['display_name']
+        identity, snapshot = char['identity'], char['snapshot']
+        header = f"**{safe(owner)[:100]}**" if previous != char['owner'] else ''
+        details = ' · '.join(str(snapshot[k]) for k in ('level', 'class') if k in snapshot)
+        line = (f"• {safe(identity['name'])[:100]} · {char['role']} · {safe(details)[:100]} · "
+                f"{safe(identity['realm'])[:100]} · {safe(identity['client'])[:50]}\n"
+                f"  Last upload: {norwegian(char['uploaded'])}")
+        professions = snapshot.get('professions', [])
+        if professions:
+            line += '\n  Professions: ' + ', '.join(safe(p['name'])[:40] for p in professions[:6])
+        addition = ('\n' + header if header else '') + '\n' + line
+        if lines and len('\n'.join(lines)) + len(addition) > 1750:
+            pages.append('\n'.join(lines))
+            lines = [f"**{safe(owner)[:100]}**", line]
+        else:
+            if header:
+                lines.append(header)
+            lines.append(line)
+        previous = char['owner']
+    if lines:
+        pages.append('\n'.join(lines))
+    return pages or ['No characters are sharing yet.']

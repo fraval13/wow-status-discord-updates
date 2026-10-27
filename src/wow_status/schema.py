@@ -2,7 +2,7 @@
 import json
 import time
 
-FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime'}
+FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions'}
 KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg'}
 
 
@@ -48,6 +48,10 @@ def validate(payload):
         if not isinstance(values, dict):
             raise ValidationError(f'Invalid {key}')
         clean['settings'][key] = {k: values.get(k) is True for k in sorted(allowed)}
+    role = settings.get('character_role', 'alt')
+    if role not in ('main', 'alt'):
+        raise ValidationError('Invalid character role')
+    clean['settings']['character_role'] = role
     clean['settings']['loot_quality'] = integer(settings.get('loot_quality', 4),
                                                'loot_quality', 0, 5)
     clean['settings']['level_interval'] = integer(settings.get('level_interval', 10),
@@ -63,6 +67,11 @@ def validate(payload):
                 val = snapshot[key]
                 if key in ('level', 'playtime'):
                     integer(val, key, 0, 2_000_000_000 if key == 'playtime' else 1000)
+                elif key == 'professions':
+                    if not isinstance(val, list) or len(val) > 6:
+                        raise ValidationError('Invalid professions')
+                    val = [{'name': string(p.get('name'), 'profession name', 50),
+                            'source': 'player_entered'} for p in val if isinstance(p, dict)]
                 elif key == 'gear':
                     if not isinstance(val, dict) or len(val) > 20:
                         raise ValidationError('Invalid gear')
@@ -95,7 +104,8 @@ def validate(payload):
             if not clean['settings']['fields']['level']:
                 continue
             level = integer(data.get('level'), 'event level', 1, 1000)
-            filtered = {'level': level, 'maximum': data.get('maximum') is True}
+            filtered = {'level': level, 'maximum': data.get('maximum') is True,
+                        'synthetic': data.get('synthetic') is True}
         elif kind == 'loot':
             quality = integer(data.get('quality'), 'quality', 0, 5)
             filtered = {'quality': quality, 'item': string(data.get('item'), 'item', 500)}

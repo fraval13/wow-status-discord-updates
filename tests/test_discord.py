@@ -19,7 +19,8 @@ async def test_commands_are_guild_scoped_and_need_no_message_content(store):
     try:
         assert bot.intents.message_content is False
         assert {c.name for c in bot.tree.get_commands()} == {
-            'link', 'characters', 'character', 'activity', 'privacy'}
+            'link', 'characters', 'character', 'activity', 'privacy',
+            'roster', 'nickname', 'main', 'settings'}
         interaction = SimpleNamespace(guild_id=999,
                                       response=SimpleNamespace(send_message=AsyncMock()))
         assert await bot.tree.interaction_check(interaction) is False

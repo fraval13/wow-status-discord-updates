@@ -51,3 +51,11 @@ Confirmed archive/recap requirements: retain every collected event independently
 of immediate announcement filters, one JSON archive per character with grouped
 records, actual level-up time plus upload time, explicit `Europe/Oslo` timezone
 and ISO offset on every timestamp, and daily recaps at 00:05 Oslo time.
+
+
+Friend-group improvements are also written and await home validation: Discord
+names with optional self-service nicknames, main/alt ownership controls, paginated
+roster, combined daily/weekly group reports, snapshot-change evidence, group noise
+settings, optional Tk desktop uploader, player-entered profession labels, and
+friend/role/source context in per-character JSON. Automatic party attribution and
+profession skill collection still require actual client evidence and validation.

@@ -2,7 +2,7 @@
 ## Title: WoW Status
 ## Notes: Opt-in character progress export for your private Discord community
 ## Author: fraval13
-## Version: 0.1.0
+## Version: 0.2.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Classic Era adapter; verify interface number against installed client
 Classic.lua

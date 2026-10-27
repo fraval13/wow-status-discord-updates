@@ -19,6 +19,7 @@ from .store import Store
 def parser():
     root = argparse.ArgumentParser(description='Opt-in WoW character status and Discord updates')
     commands = root.add_subparsers(dest='command', required=True)
+    commands.add_parser('desktop', help='Open the optional companion window (run at home)')
     service = commands.add_parser('serve', help='Run ingestion and optional Discord bot')
     service.add_argument('--db', default='state/service.sqlite3')
     service.add_argument('--host', default='127.0.0.1')
@@ -34,14 +35,16 @@ def parser():
     companion.add_argument('--once', action='store_true')
     companion.add_argument('--dry-run', action='store_true')
     companion.add_argument('--interval', type=int, default=5)
-    for name in ('create-link', 'outbox', 'resolve', 'simulate', 'export', 'recap', 'resolve-recap'):
+    for name in ('create-link', 'outbox', 'resolve', 'simulate', 'export', 'recap', 'resolve-recap', 'weekly', 'resolve-weekly'):
         command = commands.add_parser(name)
         command.add_argument('--db', default='state/service.sqlite3')
         if name == 'export':
             command.add_argument('--directory', required=True)
         if name in ('recap', 'resolve-recap'):
             command.add_argument('--day', required=True, help='Oslo calendar date YYYY-MM-DD')
-        if name == 'resolve-recap':
+        if name in ('weekly', 'resolve-weekly'):
+            command.add_argument('--week', required=True, help='Week starting Monday YYYY-MM-DD, Oslo')
+        if name in ('resolve-recap', 'resolve-weekly'):
             command.add_argument('--character-id', required=True)
             command.add_argument('resolution', choices=['retry', 'sent', 'discard'])
         if name == 'create-link':
@@ -56,6 +59,10 @@ def main():
     args = parser().parse_args()
     logging.basicConfig(level=logging.INFO, format='%(levelname)s %(message)s')
     try:
+        if args.command == 'desktop':
+            from .gui import launch
+            launch()
+            return
         if args.command == 'link':
             asyncio.run(link(args.url, getpass.getpass('Private linking code: '), args.credentials))
             print('Linked. Credentials stored privately; do not share this file.')
@@ -91,8 +98,10 @@ def main():
             elif args.command == 'outbox':
                 rows = store.db.execute('SELECT id,status,attempts,message_id FROM outbox').fetchall()
                 recaps = store.db.execute('SELECT * FROM digest_parts').fetchall()
+                weekly = store.db.execute('SELECT * FROM weekly_parts').fetchall()
                 print(json.dumps({'events': [dict(row) for row in rows],
-                                  'recaps': [dict(row) for row in recaps]}, indent=2))
+                                  'recaps': [dict(row) for row in recaps],
+                                  'weekly': [dict(row) for row in weekly]}, indent=2))
             elif args.command == 'export':
                 count = export_characters(store, args.directory)
                 print(f'Exported {count} structured character JSON files.')
@@ -102,6 +111,17 @@ def main():
                 while item := recaps.pending():
                     print(item['text'])
                     recaps.delivery(item['key'], 'simulated')
+            elif args.command in ('weekly', 'resolve-weekly'):
+                from .weekly import WeeklyRecaps
+                weekly = WeeklyRecaps(store)
+                if args.command == 'weekly':
+                    weekly.prepare(args.week)
+                    while item := weekly.pending():
+                        print(item['text'])
+                        weekly.delivery(item['key'], 'simulated')
+                else:
+                    weekly.delivery({'week': args.week, 'character': args.character_id},
+                        {'retry': 'pending', 'sent': 'sent', 'discard': 'discarded'}[args.resolution])
             elif args.command == 'resolve-recap':
                 DailyRecaps(store).delivery(
                     {'day': args.day, 'timezone': 'Europe/Oslo', 'character': args.character_id},

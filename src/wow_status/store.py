@@ -22,6 +22,16 @@ class Store:
         self.db.execute('PRAGMA foreign_keys=ON')
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.executescript('''
+        CREATE TABLE IF NOT EXISTS people(
+            owner TEXT PRIMARY KEY, display_name TEXT NOT NULL, nickname TEXT);
+        CREATE TABLE IF NOT EXISTS character_labels(
+            character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
+            role TEXT NOT NULL DEFAULT 'alt', source TEXT NOT NULL DEFAULT 'addon');
+        CREATE TABLE IF NOT EXISTS community_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS weekly_parts(
+            week TEXT NOT NULL, character TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+            generated INTEGER NOT NULL, status TEXT NOT NULL DEFAULT 'pending', message_id TEXT,
+            next_try REAL NOT NULL DEFAULT 0, PRIMARY KEY(week,character));
         CREATE TABLE IF NOT EXISTS installations(
             token_hash TEXT PRIMARY KEY, owner TEXT NOT NULL, created INTEGER NOT NULL);
         CREATE TABLE IF NOT EXISTS links(
@@ -64,6 +74,7 @@ class Store:
         with self.db:
             self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
             self.db.execute("UPDATE digest_parts SET status='uncertain' WHERE status='sending'")
+            self.db.execute("UPDATE weekly_parts SET status='uncertain' WHERE status='sending'")
         self.sync_archives()
         known = {char['id'] for char in self.characters()}
         for archive in self.archive_directory.glob('*.json'):
@@ -140,6 +151,8 @@ class Store:
             if not p['settings']['enabled']:
                 self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (cid,))
+                self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? "
+                                "AND status IN ('pending','uncertain','failed')", (cid,))
             # Purge disabled categories and hidden event data, including already delivered history.
             for row in self.db.execute('SELECT * FROM events WHERE character=?', (cid,)).fetchall():
                 if row['suppressed']:
@@ -150,7 +163,7 @@ class Store:
                     permitted = validate(candidate)['events']
                 except ValidationError:
                     permitted = []
-                if permitted and not should_announce(p['settings'], permitted[0]):
+                if permitted and not self.should_announce(p['settings'], permitted[0]):
                     self.db.execute("DELETE FROM outbox WHERE character=? AND event_id=? "
                                     "AND status NOT IN ('sent','simulated')", (cid, row['id']))
                 if not permitted:
@@ -164,9 +177,19 @@ class Store:
                 eid = 'introduction' if event['kind'] == 'introduction' else event['id']
                 inserted = self.db.execute('INSERT OR IGNORE INTO events(character,id,kind,at,received,data) VALUES(?,?,?,?,?,?)',
                     (cid, eid, event['kind'], event['at'], now, json.dumps(event['data']))).rowcount
-                if inserted and should_announce(p['settings'], event):
+                if inserted and self.should_announce(p['settings'], event):
                     self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)', (cid, eid))
                 accepted += inserted
+        from .people import set_role
+        role = p['settings'].get('character_role')
+        old_role = self.db.execute('SELECT source,role FROM character_labels WHERE character=?',
+                                   (cid,)).fetchone()
+        discord_main = self.db.execute("SELECT 1 FROM character_labels l JOIN characters c "
+            "ON c.id=l.character WHERE c.owner=? AND l.source='discord' AND l.role='main'",
+            (owner,)).fetchone()
+        if role and not discord_main and (not old_role or old_role['source'] == 'addon'):
+            if not old_role or old_role['role'] != role:
+                set_role(self, owner, cid, role, source='addon')
         self.sync_archive(cid)
         return {'character_id': cid, 'accepted': accepted}
 
@@ -197,6 +220,8 @@ class Store:
                 self.db.execute("UPDATE characters SET settings=?,snapshot='{}' WHERE id=?",
                                 (json.dumps(char['settings']), char['id']))
                 self.db.execute('DELETE FROM outbox WHERE character=?', (char['id'],))
+                self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? "
+                                "AND status IN ('pending','uncertain','failed')", (char['id'],))
                 self.db.execute("UPDATE snapshots SET snapshot='{}' WHERE character=?", (char['id'],))
                 self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (char['id'],))
@@ -210,6 +235,7 @@ class Store:
             self.db.execute('DELETE FROM characters WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM installations WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM links WHERE owner=?', (owner,))
+            self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
         for cid in ids:
             (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
 
@@ -231,7 +257,8 @@ class Store:
             return None
         item = self.decode(row)
         item['data'] = json.loads(item['data'])
-        return item
+        from .people import decorate
+        return decorate(self, item)
 
     def delivery(self, delivery_id, status, delay=0, message_id=None):
         with self.db:
@@ -243,3 +270,42 @@ class Store:
                               (delivery_id,)).fetchone()
         if row:
             self.sync_archive(row['character'])
+
+    def should_announce(self, settings, event):
+        mode = self.community_setting('immediate_mode', 'celebrations')
+        if mode == 'daily_only':
+            return False
+        if mode == 'celebrations' and event['kind'] not in ('introduction', 'level', 'loot'):
+            return False
+        if not should_announce(settings, event):
+            return False
+        if event['kind'] == 'level':
+            interval = int(self.community_setting('level_interval', '10'))
+            return event['data']['level'] % interval == 0 or event['data'].get('maximum') is True
+        if event['kind'] == 'loot':
+            return event['data']['quality'] >= int(self.community_setting('loot_quality', '4'))
+        return True
+
+    def community_setting(self, key, default):
+        row = self.db.execute('SELECT value FROM community_settings WHERE key=?', (key,)).fetchone()
+        return row['value'] if row else default
+
+    def set_community_setting(self, key, value):
+        if key not in ('immediate_mode', 'level_interval', 'loot_quality'):
+            raise ValidationError('Unknown community setting')
+        if key == 'immediate_mode' and value not in ('celebrations', 'daily_only', 'all'):
+            raise ValidationError('Unknown announcement mode')
+        if key != 'immediate_mode':
+            limit = 100 if key == 'level_interval' else 5
+            low = 1 if key == 'level_interval' else 0
+            if not low <= int(value) <= limit:
+                raise ValidationError('Invalid community filter')
+        with self.db:
+            self.db.execute('INSERT OR REPLACE INTO community_settings VALUES(?,?)', (key, str(value)))
+            for row in self.db.execute("SELECT o.*,e.kind,e.data,c.settings FROM outbox o "
+                'JOIN events e ON e.character=o.character AND e.id=o.event_id '
+                "JOIN characters c ON c.id=o.character WHERE o.status IN ('pending','failed','uncertain')").fetchall():
+                event = {'kind': row['kind'], 'data': json.loads(row['data'])}
+                if not self.should_announce(json.loads(row['settings']), event):
+                    self.db.execute("UPDATE outbox SET status='discarded' WHERE id=?", (row['id'],))
+        self.sync_archives()

@@ -57,7 +57,7 @@ Illustrative excerpt (not a real account export):
 
 | Group | Contents |
 | --- | --- |
-| `character` | Stable identity and linked Discord owner |
+| `character` | Stable identity, linked Discord owner, chosen friend display name and main/alt role |
 | `sharing` | Current field, collection, announcement and filter choices |
 | `profile.current` | Latest selected snapshot fields |
 | `profile.snapshot_history` | Distinct selected exports, sharing choices at export, export/upload times |
@@ -66,6 +66,7 @@ Illustrative excerpt (not a real account export):
 | `items.loot` | Collected self-loot item links and rarity |
 | `items.equipment_changes` | Collected changes to equipped items |
 | `activity` | Selected deaths, zones, addon lifecycle updates and LFG text |
+| `weekly_recaps` | Monday–Sunday structured reports and delivery state |
 | `daily_recaps` | Day, explicit Oslo window, preparation time, delivery status and structured summary |
 
 A baseline snapshot is an observation, not proof of when a level was earned. Only
@@ -111,9 +112,9 @@ The archive includes personal data; do not commit it or publish it as a public s
 
 ## Daily recaps
 
-At **00:05 Europe/Oslo**, the bot prepares the previous local day's recap. Each
-currently shared character known by that day's end gets one recap message, including
-characters with no recorded activity. It contains last-known profile, event counts,
+At **00:05 Europe/Oslo**, the bot prepares the previous local day's recap. Currently shared characters known by that day's end are combined under friend
+headings in one group report, with continuation messages only when needed. This
+includes characters with no recorded activity. It contains last-known profile, event counts,
 level-up times and a bounded set of item/LFG highlights. Full records remain in JSON;
 absence of uploaded events is not a claim that the player was offline or inactive.
 
@@ -129,3 +130,8 @@ the latest privacy-filtered records before sending. Already posted recaps remain
 No OpenAI key is needed. The deterministic recap is fully supported by stored data;
 an optional AI-written narrative could be added later with separate data-sharing
 consent. This version sends no data to OpenAI.
+
+Friend aliases, main/alt labels, source/evidence metadata and snapshot comparisons
+are documented in [FRIENDS_AND_RECAPS.md](FRIENDS_AND_RECAPS.md). Weekly group reports
+run Monday at 00:05 Oslo time. Synthetic test events remain archived but are excluded
+from daily/weekly real-progress totals.

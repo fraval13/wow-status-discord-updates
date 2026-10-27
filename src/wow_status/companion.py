@@ -49,6 +49,9 @@ def exports(path):
         if char.get('enrolled') is not True:
             continue
         payload = dict(char, version=1)
+        snapshot = payload.get('snapshot', {})
+        if isinstance(snapshot, dict) and isinstance(snapshot.get('professions'), dict):
+            snapshot['professions'] = list(snapshot['professions'].values())
         events = payload.get('events', {})
         if not isinstance(events, dict):
             raise ValueError('Invalid addon events')
@@ -67,17 +70,22 @@ async def link(url, code, credentials):
     atomic_json(credentials, {'url': url, 'token': token})
 
 
-async def upload(paths, credentials, state, once=False, dry_run=False, interval=5):
+async def upload(paths, credentials, state, once=False, dry_run=False, interval=5,
+                 status=None, stop_event=None):
+    status = status or (lambda **values: None)
     config = {} if dry_run else json.loads(Path(credentials).read_text())
     url = endpoint(config['url']) if config else None
     cache = {} if dry_run or not Path(state).exists() else json.loads(Path(state).read_text())
     timeout = aiohttp.ClientTimeout(total=30)
     async with aiohttp.ClientSession(timeout=timeout) as session:
         while True:
+            if stop_event is not None and stop_event.is_set():
+                return True
             failed = False
             for path in paths:
                 try:
                     for payload in exports(path):
+                        status(last_export=payload['exported_at'])
                         encoded = json.dumps(payload, sort_keys=True)
                         key = hashlib.sha256((json.dumps(payload['identity'], sort_keys=True)
                                               + config.get('token', '')).encode()).hexdigest()
@@ -93,15 +101,26 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                             if response.status != 200:
                                 # Never log request bodies or authentication headers.
                                 print(f'Upload not accepted (HTTP {response.status}); export retained.')
+                                reason = {401: 'Link again using a new Discord /link code.',
+                                          409: 'Run /reload to export current data; check character ownership.'}.get(
+                                              response.status, 'Check service configuration and try again.')
+                                status(connection=f'Upload rejected (HTTP {response.status}). {reason}')
                                 failed = True
                                 continue
                             await response.read()
                         cache[key] = fingerprint
                         atomic_json(state, cache)
                         print(f'Uploaded selected character data at {int(time.time())}.')
+                        status(connection='Connected; latest exported data uploaded',
+                               last_upload=int(time.time()))
                 except (OSError, ValueError, aiohttp.ClientError, asyncio.TimeoutError) as exc:
                     print(f'Upload deferred ({type(exc).__name__}); will retry from SavedVariables.')
                     failed = True
+                    status(connection='Waiting: check file path or service connection; will retry.')
             if once or dry_run:
                 return not failed
-            await asyncio.sleep(max(interval, 30 if failed else interval))
+            delay = max(interval, 30 if failed else interval)
+            for _ in range(delay):
+                if stop_event is not None and stop_event.is_set():
+                    return True
+                await asyncio.sleep(1)

@@ -95,3 +95,19 @@ wow-status resolve-recap --db /var/lib/wow-status/service.sqlite3 --day YYYY-MM-
 ```
 
 Use `retry` only after verifying that the corresponding recap did not arrive.
+
+## Friend-group behavior
+
+`/link` remembers the member's server display name; `/nickname` sets an optional
+preferred name. Discord IDs remain the ownership key. `/main` selects one owned
+main, `/roster` shows everyone grouped by friend, and `/settings` is restricted to
+Manage Server members. Default immediate posts are celebrations; routine collected
+activity goes to combined daily reports. Weekly reports run Monday at 00:05 Oslo.
+See [friends and recaps](../docs/FRIENDS_AND_RECAPS.md).
+
+Grouped recap pages share a Discord message ID across their character delivery
+rows. When reviewing an ambiguous page, inspect and resolve all affected character
+rows consistently; retry only after verifying that the page did not arrive.
+Weekly entries appear under `weekly` in `outbox` and use `resolve-weekly --week
+YYYY-MM-DD --character-id CHARACTER_ID sent` (or `retry`/`discard`) with the same
+stopped-service procedure. Privacy removal also scrubs pending weekly content.

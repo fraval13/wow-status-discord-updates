@@ -194,8 +194,8 @@ grouped together. Each level-up has a recorded and first-uploaded timestamp with
 `timezone: "Europe/Oslo"` and an explicit ISO UTC offset. Inspect those files locally.
 
 The bot posts daily recaps at **00:05 Europe/Oslo**. It uses the previous day's
-Norwegian calendar window and one message per shared character, including those
-with no recorded events. Collect level-ups with immediate announcements disabled:
+Norwegian calendar window and combines shared characters under friend headings,
+including those with no recorded events. Long group reports paginate. Collect level-ups with immediate announcements disabled:
 non-milestone levels should remain in JSON and the daily recap.
 
 Stop the local test service before trying operator tools. Use an actual Oslo date
@@ -248,3 +248,41 @@ Additional archive/recap checks: verify Norwegian summer and winter offsets, the
 late events counted in their assigned upload-day recap, and collection retained
 when immediate announcements are disabled. These cases are authored in the test
 suite and still need execution at home.
+
+
+## Friend grouping, group reports and desktop acceptance
+
+At home, run `wow-status desktop` to try the optional uploader window. Confirm
+linking works with a private Discord code, the file picker selects only this addon,
+status/timestamps update, Stop ends uploads, and closing waits for an in-flight
+request. Check credentials stay out of messages and exports. CLI and desktop must
+not run concurrently against the same upload state.
+
+With two friends and at least two characters each, confirm:
+
+- `/link` supplies each owner's server display name. `/nickname name:...` changes
+  that person's labels only; reset restores the remembered Discord name.
+- `/main` accepts only your own character and leaves one main per person. Addon
+  exports cannot override an explicitly chosen Discord main.
+- `/roster` groups the gang by owner, mains first, includes all shared characters
+  across pages, and excludes paused characters.
+- The daily recap combines characters under owner headings; large groups continue
+  without dropping characters. Weekly recaps are due Monday at 00:05 Oslo time.
+- Daily-only mode stores enabled events without immediate messages. Only Manage
+  Server members can change community settings. Individual privacy stays enforced.
+- Snapshot comparisons are labeled as inferred. Actual level-up times remain in
+  JSON. Synthetic tests show [TEST] and do not count as real recap progress.
+- Manually shared profession names are labeled player-entered and disappear from
+  the roster and archive after disabling that profile field and uploading.
+- Pause/deletion cancels pending daily and weekly report entries. Aliases/roles are
+  removed on deletion, along with the managed character JSON files.
+
+Offline weekly simulation (test database only, service stopped):
+
+```sh
+wow-status weekly --db state/home-test.sqlite3 --week YYYY-MM-DD
+```
+
+Choose an actual Monday date for a week containing your test uploads. Ambiguous
+weekly sends are listed by `outbox` and can be resolved using `resolve-weekly`
+with `--week`, `--character-id`, and `sent`, `retry`, or `discard`.

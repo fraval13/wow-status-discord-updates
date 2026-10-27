@@ -21,8 +21,11 @@ Do not deploy this unvalidated build before completing those checks.
   HTTPS enforcement and repeated-upload suppression.
 - One-use Discord linking codes, per-installation credentials, ownership checks,
   SQLite state, privacy scrubbing and a persistent announcement outbox.
-- `/character`, `/characters`, `/activity`, `/link` and `/privacy`, restricted to one
+- `/character`, `/characters`, `/roster`, `/activity`, `/link`, `/nickname`, `/main`,
+  `/settings` and `/privacy`, restricted to one
   configured Discord community. Commands respond privately to the requesting user.
+- Discord names with optional nicknames, friend grouping, main/alt labels, combined
+  daily reports, weekly adventures, community posting filters and an optional desktop uploader.
 - One structured JSON file per character, grouped history and level-up times, explicit
   `Europe/Oslo` timestamps, and a daily recap at **00:05 Oslo time**.
 - Server deployment examples and manually triggered Windows/Linux validation workflow.
@@ -40,6 +43,9 @@ flowchart LR
     C -->|selected data over HTTPS| D[Service and SQLite]
     D --> E[Discord announcements and slash commands]
 ```
+
+See [friends, names and recaps](docs/FRIENDS_AND_RECAPS.md) for how your gang’s
+characters stay together and how names are selected. No real name is needed in the addon.
 
 ## Getting started at home
 
@@ -65,7 +71,7 @@ available. This repository makes no promise about Forever's release, APIs, or
 compatibility.
 
 Automatic dungeon/boss/completion attribution, group-run merging, quest chains,
-attunements, talents, profession tracking, mount/pet discovery, reputation, PvP,
+attunements, talents, automatic profession skill tracking, mount/pet discovery, reputation, PvP,
 recipe tracking, item allowlists, first-acquisition detection and digests remain
 future milestones. They are not silently inferred from instance entry or inventory
 baselines. See the [full plan](character-logs-plan.md) and

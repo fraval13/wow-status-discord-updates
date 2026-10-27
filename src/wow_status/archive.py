@@ -60,10 +60,12 @@ def character_document(store, cid):
     if not row:
         return None
     char = store.decode(row)
+    from .people import character_role, person
     result = {
         'schema_version': 1,
         'timezone': TIMEZONE,
-        'character': {'id': cid, **char['identity'], 'discord_owner_id': char['owner']},
+        'character': {'id': cid, **char['identity'], 'discord_owner_id': char['owner'],
+                      'friend': person(store, char['owner']), 'role': character_role(store, cid)},
         'sharing': char['settings'],
         'profile': {'current': fields_document(char['snapshot']), 'last_exported_at': timestamp(char['exported']),
                     'last_uploaded_at': timestamp(char['uploaded']), 'snapshot_history': []},
@@ -71,14 +73,15 @@ def character_document(store, cid):
         'progression': {'level_history': []},
         'items': {'loot': [], 'equipment_changes': []},
         'activity': {'deaths': [], 'zones': [], 'addon_sessions': [], 'looking_for_group': []},
-        'daily_recaps': [],
+        'daily_recaps': [], 'weekly_recaps': [],
     }
     for snap in store.db.execute('SELECT * FROM snapshots WHERE character=? ORDER BY exported,id',
                                  (cid,)):
         result['profile']['snapshot_history'].append({
             'id': snap['id'], 'exported_at': timestamp(snap['exported']),
             'uploaded_at': timestamp(snap['uploaded']), 'fields': fields_document(json.loads(snap['snapshot'])),
-            'sharing_at_export': json.loads(snap['settings'])})
+            'sharing_at_export': json.loads(snap['settings']),
+            'evidence': {'source': 'addon_snapshot', 'certainty': 'observed_at_export'}})
     for event in store.db.execute('SELECT * FROM events WHERE character=? AND suppressed=0 '
                                   'ORDER BY at,id', (cid,)):
         group, category = GROUPS[event['kind']]
@@ -88,6 +91,9 @@ def character_document(store, cid):
         result[group][category].append({
             'event_id': event['id'], 'recorded_at': timestamp(event['at']),
             'first_uploaded_at': timestamp(event['received']), 'data': event_document(json.loads(event['data'])),
+            'evidence': {'source': ('addon_test' if json.loads(event['data']).get('synthetic')
+                                     else 'addon_event'), 'certainty': 'player_reported',
+                         'client': char['identity']['client']},
             'immediate_delivery': dict(delivery) if delivery else {'status': 'not_queued'}})
     for recap in store.db.execute('SELECT p.*,d.start,d.end,d.generated FROM digest_parts p '
                                   'JOIN digests d USING(day,timezone) WHERE character=? ORDER BY day',
@@ -99,6 +105,14 @@ def character_document(store, cid):
             'prepared_at': timestamp(recap['generated']), 'delivery_status': recap['status'],
             'discord_message_id': recap['message_id'],
             'summary': report(store, cid, recap['day'], recap['generated'])})
+    for recap in store.db.execute('SELECT * FROM weekly_parts WHERE character=? ORDER BY week',
+                                  (cid,)):
+        from .weekly import week_report
+        result['weekly_recaps'].append({
+            'week_start': recap['week'], 'timezone': TIMEZONE,
+            'prepared_at': timestamp(recap['generated']), 'delivery_status': recap['status'],
+            'discord_message_id': recap['message_id'],
+            'summary': week_report(store, cid, recap['week'], recap['generated'])})
     return result
 
 

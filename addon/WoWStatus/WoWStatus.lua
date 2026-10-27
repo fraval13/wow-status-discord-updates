@@ -1,7 +1,7 @@
 local ADDON = ...
 local A = WoWStatusAdapter
 local current, panel
-local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime"}
+local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions"}
 local kinds = {"introduction", "level", "loot", "equipment", "death", "zone", "session", "lfg"}
 local equipmentBaseline = {}
 local playtime
@@ -14,9 +14,9 @@ end
 
 local function defaults()
     return {
-        enabled = false, introduction_confirmed = false,
+        enabled = false, introduction_confirmed = false, character_role = "alt",
         fields = {level = true, class = true, race = true, faction = true, guild = false,
-                  gear = false, zone = false, playtime = false},
+                  gear = false, zone = false, playtime = false, professions = false},
         collection = {introduction = true, level = true, loot = true, equipment = false,
                       death = false, zone = false, session = false, lfg = false},
         announcements = {introduction = true, level = true, loot = true,
@@ -29,6 +29,9 @@ local function snapshot()
     if not current then return end
     current.exported_at = time()
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
+    if current.settings.enabled and current.settings.fields.professions then
+        current.snapshot.professions = current.professions or {}
+    end
     if current.settings.enabled and current.settings.fields.playtime and playtime then
         current.snapshot.playtime = playtime
     end
@@ -77,6 +80,7 @@ local function scrub()
     end
     current.events = retained
     if not current.settings.fields.playtime then playtime = nil end
+    if not current.settings.fields.professions then current.professions = nil end
     snapshot()
 end
 
@@ -139,6 +143,16 @@ local function showPanel()
             table.insert(panel.checks, {widget = check, key = key, group = group})
         end
         checkbox("enabled", "Share this character (opt in)", 24, -128)
+        button(panel, "Mark as my main", 600, -128, 180, function()
+            for _, character in pairs(WoWStatusDB.characters) do
+                character.settings.character_role = "alt"
+                character.exported_at = time()
+            end
+            current.settings.character_role = "main"
+            snapshot()
+            refresh()
+            say("Main selected locally. Export and upload; Discord /main takes priority if set.")
+        end)
         label(panel, "Profile fields", 24, -172, 250)
         label(panel, "Store events / daily recap", 300, -172, 280)
         label(panel, "Immediate announcements", 600, -172, 280)
@@ -147,8 +161,8 @@ local function showPanel()
             checkbox(key, key, 300, -190 - (i - 1) * 30, "collection")
             checkbox(key, key, 600, -190 - (i - 1) * 30, "announcements")
         end
-        panel.preview = label(panel, "", 24, -442, 850)
-        button(panel, "Confirm introduction", 24, -494, 180, function()
+        panel.preview = label(panel, "", 24, -470, 850)
+        button(panel, "Confirm introduction", 24, -514, 180, function()
             if not current.settings.enabled then say("Enable sharing first."); return end
             if not current.settings.collection.introduction then
                 say("Enable introduction storage first."); return
@@ -158,7 +172,7 @@ local function showPanel()
             refresh()
             say("Introduction queued. Use /reload, then run the companion.")
         end)
-        button(panel, "Pause sharing", 220, -494, 160, function()
+        button(panel, "Pause sharing", 220, -514, 160, function()
             current.settings.enabled = false
             current.settings.introduction_confirmed = false
             scrub()
@@ -169,7 +183,7 @@ local function showPanel()
         label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
             .. "Test: /wstatus test    LFG: /wstatus lfg <your message>\n"
             .. "Server data removal: /privacy in Discord. Pausing takes effect on upload.\n"
-            .. "Enabled data is retained until deletion. Posting filters do not limit stored events.", 24, -536)
+            .. "Enabled data is retained until deletion. Posting filters do not limit stored events.", 24, -550)
         table.insert(UISpecialFrames, "WoWStatusSetup")
     end
     refresh()
@@ -182,7 +196,7 @@ refresh = function()
         local target = entry.group and current.settings[entry.group] or current.settings
         entry.widget:SetChecked(target[entry.key])
     end
-    panel.preview:SetText("Introduction preview: " .. introductionText()
+    panel.preview:SetText("Character role: " .. (current.settings.character_role or "alt") .. " | Introduction: " .. introductionText()
         .. (current.settings.introduction_confirmed and "\nConfirmed." or "\nNot confirmed."))
 end
 
@@ -279,7 +293,7 @@ SlashCmdList.WOWSTATUS = function(message)
         refresh()
         say("Paused. /reload and upload to apply remotely, or use Discord /privacy immediately.")
     elseif command == "test" then
-        queue("level", {level = 10})
+        queue("level", {level = 10, synthetic = true})
         say("Synthetic level 10 event requested; requires sharing, level field and level storage.")
     elseif command == "interval" or command == "quality" then
         local number = tonumber(rest)
@@ -290,6 +304,21 @@ SlashCmdList.WOWSTATUS = function(message)
             scrub()
             say("Filter updated.")
         else say("Invalid filter value.") end
+    elseif command == "professions" then
+        if not current.settings.enabled or not current.settings.fields.professions then
+            say("Enable profession sharing first. Names are player-entered, not verified skill ranks.")
+            return
+        end
+        local names = {}
+        for name in rest:gmatch("[^,]+") do
+            name = name:match("^%s*(.-)%s*$")
+            if #name > 0 and #name <= 50 and #names < 6 then
+                table.insert(names, {name = name, source = "player_entered"})
+            end
+        end
+        current.professions = names
+        snapshot()
+        say("Shared profession labels updated. /reload to export.")
     elseif command == "lfg" and #rest > 0 and #rest <= 200 then
         queue("lfg", {text = rest})
         say("LFG update requested; requires sharing and LFG storage.")

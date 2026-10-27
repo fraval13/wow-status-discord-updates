@@ -2,43 +2,139 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "WoW Status character archive v1",
   "type": "object",
-  "required": ["schema_version", "timezone", "character", "sharing", "profile", "enrollment", "progression", "items", "activity", "daily_recaps"],
+  "required": [
+    "schema_version",
+    "timezone",
+    "character",
+    "sharing",
+    "profile",
+    "enrollment",
+    "progression",
+    "items",
+    "activity",
+    "daily_recaps"
+  ],
   "properties": {
-    "schema_version": {"const": 1},
-    "timezone": {"const": "Europe/Oslo"},
+    "schema_version": {
+      "const": 1
+    },
+    "timezone": {
+      "const": "Europe/Oslo"
+    },
     "character": {
       "type": "object",
-      "required": ["id", "guid", "name", "realm", "client", "discord_owner_id"],
+      "required": [
+        "id",
+        "guid",
+        "name",
+        "realm",
+        "client",
+        "discord_owner_id"
+      ],
       "properties": {
-        "id": {"type": "string"},
-        "guid": {"type": "string"},
-        "name": {"type": "string"},
-        "realm": {"type": "string"},
-        "client": {"type": "string"},
-        "discord_owner_id": {"type": "string"},
-        "build": {"type": "string"},
-        "interface": {"type": "integer"}
+        "id": {
+          "type": "string"
+        },
+        "guid": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "realm": {
+          "type": "string"
+        },
+        "client": {
+          "type": "string"
+        },
+        "discord_owner_id": {
+          "type": "string"
+        },
+        "build": {
+          "type": "string"
+        },
+        "interface": {
+          "type": "integer"
+        },
+        "role": {
+          "enum": [
+            "main",
+            "alt"
+          ]
+        },
+        "friend": {
+          "type": "object",
+          "required": [
+            "discord_user_id",
+            "display_name",
+            "name_source"
+          ],
+          "properties": {
+            "discord_user_id": {
+              "type": "string"
+            },
+            "display_name": {
+              "type": "string"
+            },
+            "name_source": {
+              "enum": [
+                "nickname",
+                "discord",
+                "unavailable"
+              ]
+            }
+          }
+        }
       }
     },
-    "sharing": {"type": "object"},
+    "sharing": {
+      "type": "object"
+    },
     "profile": {
       "type": "object",
-      "required": ["current", "last_exported_at", "last_uploaded_at", "snapshot_history"],
+      "required": [
+        "current",
+        "last_exported_at",
+        "last_uploaded_at",
+        "snapshot_history"
+      ],
       "properties": {
-        "current": {"type": "object"},
-        "last_exported_at": {"$ref": "#/$defs/timestamp"},
-        "last_uploaded_at": {"$ref": "#/$defs/timestamp"},
+        "current": {
+          "type": "object"
+        },
+        "last_exported_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "last_uploaded_at": {
+          "$ref": "#/$defs/timestamp"
+        },
         "snapshot_history": {
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["id", "exported_at", "uploaded_at", "fields", "sharing_at_export"],
+            "required": [
+              "id",
+              "exported_at",
+              "uploaded_at",
+              "fields",
+              "sharing_at_export"
+            ],
             "properties": {
-              "id": {"type": "string"},
-              "exported_at": {"$ref": "#/$defs/timestamp"},
-              "uploaded_at": {"$ref": "#/$defs/timestamp"},
-              "fields": {"type": "object"},
-              "sharing_at_export": {"type": "object"}
+              "id": {
+                "type": "string"
+              },
+              "exported_at": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "uploaded_at": {
+                "$ref": "#/$defs/timestamp"
+              },
+              "fields": {
+                "type": "object"
+              },
+              "sharing_at_export": {
+                "type": "object"
+              }
             }
           }
         }
@@ -46,46 +142,151 @@
     },
     "enrollment": {
       "type": "object",
-      "required": ["introductions"],
-      "properties": {"introductions": {"$ref": "#/$defs/events"}}
+      "required": [
+        "introductions"
+      ],
+      "properties": {
+        "introductions": {
+          "$ref": "#/$defs/events"
+        }
+      }
     },
     "progression": {
       "type": "object",
-      "required": ["level_history"],
-      "properties": {"level_history": {"$ref": "#/$defs/events"}}
+      "required": [
+        "level_history"
+      ],
+      "properties": {
+        "level_history": {
+          "$ref": "#/$defs/events"
+        }
+      }
     },
     "items": {
       "type": "object",
-      "required": ["loot", "equipment_changes"],
+      "required": [
+        "loot",
+        "equipment_changes"
+      ],
       "properties": {
-        "loot": {"$ref": "#/$defs/events"},
-        "equipment_changes": {"$ref": "#/$defs/events"}
+        "loot": {
+          "$ref": "#/$defs/events"
+        },
+        "equipment_changes": {
+          "$ref": "#/$defs/events"
+        }
       }
     },
     "activity": {
       "type": "object",
-      "required": ["deaths", "zones", "addon_sessions", "looking_for_group"],
+      "required": [
+        "deaths",
+        "zones",
+        "addon_sessions",
+        "looking_for_group"
+      ],
       "properties": {
-        "deaths": {"$ref": "#/$defs/events"},
-        "zones": {"$ref": "#/$defs/events"},
-        "addon_sessions": {"$ref": "#/$defs/events"},
-        "looking_for_group": {"$ref": "#/$defs/events"}
+        "deaths": {
+          "$ref": "#/$defs/events"
+        },
+        "zones": {
+          "$ref": "#/$defs/events"
+        },
+        "addon_sessions": {
+          "$ref": "#/$defs/events"
+        },
+        "looking_for_group": {
+          "$ref": "#/$defs/events"
+        }
       }
     },
     "daily_recaps": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["day", "timezone", "window_start", "window_end_exclusive", "prepared_at", "delivery_status", "discord_message_id", "summary"],
+        "required": [
+          "day",
+          "timezone",
+          "window_start",
+          "window_end_exclusive",
+          "prepared_at",
+          "delivery_status",
+          "discord_message_id",
+          "summary"
+        ],
         "properties": {
-          "day": {"type": "string", "format": "date"},
-          "timezone": {"const": "Europe/Oslo"},
-          "window_start": {"$ref": "#/$defs/timestamp"},
-          "window_end_exclusive": {"$ref": "#/$defs/timestamp"},
-          "prepared_at": {"$ref": "#/$defs/timestamp"},
-          "delivery_status": {"type": "string"},
-          "discord_message_id": {"type": ["string", "null"]},
-          "summary": {"type": ["object", "null"]}
+          "day": {
+            "type": "string",
+            "format": "date"
+          },
+          "timezone": {
+            "const": "Europe/Oslo"
+          },
+          "window_start": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "window_end_exclusive": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "prepared_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "delivery_status": {
+            "type": "string"
+          },
+          "discord_message_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "weekly_recaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "week_start",
+          "timezone",
+          "prepared_at",
+          "delivery_status",
+          "discord_message_id",
+          "summary"
+        ],
+        "properties": {
+          "week_start": {
+            "type": "string",
+            "format": "date"
+          },
+          "timezone": {
+            "const": "Europe/Oslo"
+          },
+          "prepared_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "delivery_status": {
+            "type": "string"
+          },
+          "discord_message_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "summary": {
+            "type": [
+              "object",
+              "null"
+            ]
+          }
         }
       }
     }
@@ -93,25 +294,55 @@
   "$defs": {
     "timestamp": {
       "type": "object",
-      "required": ["iso", "unix", "timezone"],
+      "required": [
+        "iso",
+        "unix",
+        "timezone"
+      ],
       "additionalProperties": false,
       "properties": {
-        "iso": {"type": "string", "format": "date-time"},
-        "unix": {"type": "integer"},
-        "timezone": {"const": "Europe/Oslo"}
+        "iso": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "unix": {
+          "type": "integer"
+        },
+        "timezone": {
+          "const": "Europe/Oslo"
+        }
       }
     },
     "events": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["event_id", "recorded_at", "first_uploaded_at", "data", "immediate_delivery"],
+        "required": [
+          "event_id",
+          "recorded_at",
+          "first_uploaded_at",
+          "data",
+          "immediate_delivery"
+        ],
         "properties": {
-          "event_id": {"type": "string"},
-          "recorded_at": {"$ref": "#/$defs/timestamp"},
-          "first_uploaded_at": {"$ref": "#/$defs/timestamp"},
-          "data": {"type": "object"},
-          "immediate_delivery": {"type": "object"}
+          "event_id": {
+            "type": "string"
+          },
+          "recorded_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "first_uploaded_at": {
+            "$ref": "#/$defs/timestamp"
+          },
+          "data": {
+            "type": "object"
+          },
+          "immediate_delivery": {
+            "type": "object"
+          },
+          "evidence": {
+            "type": "object"
+          }
         }
       }
     }

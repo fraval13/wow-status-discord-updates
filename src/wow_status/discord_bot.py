@@ -7,7 +7,9 @@ import discord
 from discord import app_commands
 
 from .daily import DailyRecaps
-from .formatting import announcement, profile, safe
+from .formatting import announcement, profile, roster_pages, safe
+from .people import decorate, nickname, remember, set_role
+from .weekly import WeeklyRecaps
 
 log = logging.getLogger(__name__)
 
@@ -17,6 +19,7 @@ class CommunityTree(app_commands.CommandTree):
         if interaction.guild_id != self.client.guild_id:
             await interaction.response.send_message('Use this in the configured server.', ephemeral=True)
             return False
+        remember(self.client.store, str(interaction.user.id), interaction.user.display_name)
         return True
 
     async def on_error(self, interaction, error):
@@ -32,6 +35,7 @@ class StatusBot(discord.Client):
                          allowed_mentions=discord.AllowedMentions.none())
         self.store, self.guild_id, self.channel_id = store, guild_id, channel_id
         self.recaps = DailyRecaps(store)
+        self.weekly = WeeklyRecaps(store)
         self.tree = CommunityTree(self)
         self.worker = None
         self.register_commands()
@@ -60,16 +64,73 @@ class StatusBot(discord.Client):
             code = self.store.create_link(str(interaction.user.id))
             await interaction.response.send_message(
                 'One-use code (expires in 10 minutes):\n' + f'`{code}`\n'
-                'On your gaming computer run `wow-status link --url YOUR_SERVICE_URL` '
-                'and paste this code at the hidden prompt. Keep it private.', ephemeral=True)
+                'On your gaming computer open `wow-status desktop` and paste the code to link. '
+                'You can also use `wow-status link --url YOUR_SERVICE_URL`. Keep the code private.', ephemeral=True)
 
         @self.tree.command(name='characters', description='List characters sharing with this server')
         async def characters(interaction: discord.Interaction):
-            chars = self.visible()
-            lines = [f"{safe(c['identity']['name'])} · {safe(c['identity']['realm'])} · "
-                     f"{safe(c['identity']['client'])}" for c in chars[:25]]
+            pages = roster_pages(self.store, self.visible())
+            await interaction.response.send_message(pages[0], ephemeral=True)
+            for page in pages[1:]:
+                await interaction.followup.send(page, ephemeral=True)
+
+        @self.tree.command(name='roster', description='Show friends, mains and alts with latest uploads')
+        async def roster(interaction: discord.Interaction):
+            pages = roster_pages(self.store, self.visible())
+            await interaction.response.send_message(pages[0], ephemeral=True)
+            for page in pages[1:]:
+                await interaction.followup.send(page, ephemeral=True)
+
+        @self.tree.command(name='nickname', description='Choose your name for the roster and updates')
+        async def choose_nickname(interaction: discord.Interaction, name: str = '', reset: bool = False):
+            if not reset and not name.strip():
+                await interaction.response.send_message(
+                    'Enter a nickname, or reset:True to use your Discord display name.', ephemeral=True)
+                return
+            try:
+                nickname(self.store, str(interaction.user.id), None if reset else name)
+            except ValueError:
+                await interaction.response.send_message('Use a name of 1–40 characters.', ephemeral=True)
+                return
+            await interaction.response.send_message('Your display name preference is saved.', ephemeral=True)
+
+        @self.tree.command(name='main', description='Choose your main character; your others become alts')
+        async def main(interaction: discord.Interaction, name: str, realm: str = '', client: str = ''):
+            matches = [c for c in self.store.characters(str(interaction.user.id))
+                       if c['identity']['name'].casefold() == name.casefold()
+                       and (not realm or c['identity']['realm'].casefold() == realm.casefold())
+                       and (not client or c['identity']['client'].casefold() == client.casefold())]
+            if len(matches) != 1:
+                await interaction.response.send_message(
+                    'Choose one of your own uploaded characters; specify realm/client if needed.',
+                    ephemeral=True)
+                return
+            set_role(self.store, str(interaction.user.id), matches[0]['id'], 'main')
+            await interaction.response.send_message('Main character saved; your others are alts.',
+                                                     ephemeral=True)
+
+        @self.tree.command(name='settings', description='Set community announcements (Manage Server)')
+        @app_commands.default_permissions(manage_guild=True)
+        @app_commands.choices(mode=[
+            app_commands.Choice(name='Celebrations now; routine activity in recaps', value='celebrations'),
+            app_commands.Choice(name='Daily and weekly recaps only', value='daily_only'),
+            app_commands.Choice(name='Allow every individually selected announcement', value='all')])
+        async def settings(interaction: discord.Interaction, mode: str = '',
+                           level_interval: app_commands.Range[int, 1, 100] = 10,
+                           loot_quality: app_commands.Range[int, 0, 5] = 4):
+            if not interaction.permissions.manage_guild:
+                await interaction.response.send_message('Manage Server is required.', ephemeral=True)
+                return
+            if mode and mode not in ('celebrations', 'daily_only', 'all'):
+                await interaction.response.send_message('Unknown announcement mode.', ephemeral=True)
+                return
+            if mode:
+                self.store.set_community_setting('immediate_mode', mode)
+            self.store.set_community_setting('level_interval', str(level_interval))
+            self.store.set_community_setting('loot_quality', str(loot_quality))
             await interaction.response.send_message(
-                '\n'.join(lines)[:1900] or 'No characters are sharing yet.', ephemeral=True)
+                'Community posting filters saved. Collection history and personal privacy stay separate.',
+                ephemeral=True)
 
         @self.tree.command(name='character', description='Show a last-uploaded character profile')
         async def character(interaction: discord.Interaction, name: str,
@@ -77,7 +138,7 @@ class StatusBot(discord.Client):
             chars = [c for c in self.visible() if c['identity']['name'].casefold() == name.casefold()
                      and (not realm or c['identity']['realm'].casefold() == realm.casefold())
                      and (not client or c['identity']['client'].casefold() == client.casefold())]
-            text = profile(chars[0]) if len(chars) == 1 else (
+            text = profile(decorate(self.store, chars[0])) if len(chars) == 1 else (
                 'Several characters match. Specify realm and client.' if chars else 'No shared match.')
             await interaction.response.send_message(text, ephemeral=True)
 
@@ -91,7 +152,7 @@ class StatusBot(discord.Client):
                 await interaction.response.send_message(
                     'Specify a unique shared name, realm and client.', ephemeral=True)
                 return
-            char = chars[0]
+            char = decorate(self.store, chars[0])
             lines = [announcement(dict(char, **event))
                      for event in self.store.activity(char['id'])[:8]]
             await interaction.response.send_message(
@@ -145,10 +206,12 @@ class StatusBot(discord.Client):
         while not self.is_closed():
             if time.time() - last_schedule > 30:
                 self.recaps.schedule()
+                self.weekly.schedule()
                 last_schedule = time.time()
             item = self.store.pending()
             if not item:
                 await self.deliver_recap()
+                await self.deliver_recap(self.weekly)
                 await asyncio.sleep(2)
                 continue
             delivery_id = item['delivery_id']
@@ -178,30 +241,31 @@ class StatusBot(discord.Client):
                 self.store.delivery(delivery_id, 'uncertain')
             await asyncio.sleep(1)
 
-    async def deliver_recap(self):
-        item = self.recaps.pending()
+    async def deliver_recap(self, recaps=None):
+        recaps = recaps or self.recaps
+        item = recaps.pending()
         if item is None:
             return
         key = item['key']
         try:
             channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
             if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
-                self.recaps.delivery(key, 'failed')
+                recaps.delivery(key, 'failed')
                 return
             # Refresh all content after awaits: data removal must also affect queued recaps.
-            current = self.recaps.pending()
+            current = recaps.pending()
             if current is None or current['key'] != key:
                 return
-            self.recaps.delivery(key, 'sending')
+            recaps.delivery(key, 'sending')
             message = await channel.send(current['text'],
                                          allowed_mentions=discord.AllowedMentions.none())
-            self.recaps.delivery(key, 'sent', str(message.id))
+            recaps.delivery(key, 'sent', str(message.id))
         except discord.Forbidden:
-            self.recaps.delivery(key, 'failed')
+            recaps.delivery(key, 'failed')
         except discord.HTTPException as exc:
             if exc.status == 429:
-                self.recaps.delivery(key, 'pending', delay=60)
+                recaps.delivery(key, 'pending', delay=60)
             else:
-                self.recaps.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
+                recaps.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
         except (OSError, asyncio.TimeoutError):
-            self.recaps.delivery(key, 'uncertain')
+            recaps.delivery(key, 'uncertain')
