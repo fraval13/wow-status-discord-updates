@@ -89,3 +89,11 @@ def test_fixture_exports_only_selected_data():
     values = list(exports(Path(__file__).parent / 'fixtures/WoWStatus.lua'))
     assert len(values) == 1
     assert 'PRIVATE' not in json.dumps(values)
+
+
+def test_forever_is_accepted_and_other_unknown_clients_are_rejected(payload):
+    payload['identity']['client'] = 'forever'
+    assert validate(payload)['identity']['client'] == 'forever'
+    payload['identity']['client'] = 'retail'
+    with pytest.raises(ValidationError):
+        validate(payload)

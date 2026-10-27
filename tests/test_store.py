@@ -84,3 +84,13 @@ def test_failed_validation_does_not_partially_commit(store, payload):
     with pytest.raises(ValidationError):
         store.ingest('owner', payload)
     assert store.characters() == []
+
+
+def test_vanilla_and_forever_keep_separate_character_histories(store, payload, clone):
+    first = store.ingest('owner', payload)['character_id']
+    forever = clone(payload)
+    forever['identity']['client'] = 'forever'
+    second = store.ingest('owner', forever)['character_id']
+    assert first != second
+    assert len(store.characters()) == 2
+    assert len(store.activity(first)) == len(store.activity(second)) == 2

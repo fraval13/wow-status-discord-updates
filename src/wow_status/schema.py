@@ -33,7 +33,7 @@ def validate(payload):
     settings = payload.get('settings', {})
     if not isinstance(identity, dict) or not isinstance(settings, dict):
         raise ValidationError('Invalid identity or settings')
-    if identity.get('client') != 'classic-era':
+    if identity.get('client') not in ('classic-era', 'forever'):
         raise ValidationError('Unsupported client adapter')
     clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
                                       ('guid', 'name', 'realm', 'client')},

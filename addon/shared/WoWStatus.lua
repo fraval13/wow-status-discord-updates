@@ -1,6 +1,8 @@
 local ADDON = ...
 local A = WoWStatusAdapter
 local H = WoWStatusHistory
+local S = WoWStatusSafe
+local waitingForIdentity, unsupportedWarned = false, false
 local current, panel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions"}
 local kinds = {"introduction", "level", "loot", "equipment", "death", "zone", "session", "lfg"}
@@ -30,10 +32,12 @@ local function snapshot()
     if not current then return end
     current.exported_at = time()
     current.player_name = WoWStatusDB.player_name or ""
-    if current.history and current.history.tracking.active then
-        current.history.tracking.observed_until = current.exported_at
-    end
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
+    local tracking = current.history and current.history.tracking
+    local last = tracking and tracking.points[#tracking.points]
+    if tracking and tracking.active and last and current.snapshot.level == last.level then
+        tracking.observed_until = current.exported_at
+    end
     if current.settings.enabled and current.settings.fields.professions then
         current.snapshot.professions = current.professions or {}
     end
@@ -89,7 +93,8 @@ local function scrub()
     end
     current.events = retained
     H.scrub(current)
-    H.sync(current, UnitLevel("player"), time())
+    local level = A.level()
+    if level then H.sync(current, level, time()) end
     WoWStatusPopups.privacyChanged()
     if not current.settings.fields.playtime then playtime = nil end
     if not current.settings.fields.professions then current.professions = nil end
@@ -147,7 +152,7 @@ local function showPanel()
                     current.settings.introduction_confirmed = false
                 end
                 if key == "playtime" and target[key] and current.settings.enabled then
-                    RequestTimePlayed()
+                    A.requestPlaytime()
                 end
                 scrub()
                 refresh()
@@ -219,12 +224,23 @@ end
 
 local function initialize()
     if not A.supported() then
-        say("Unsupported client. This build targets Classic Era; collection is disabled.")
+        if not unsupportedWarned then
+            say("This addon folder targets " .. A.display_name .. ". Collection is disabled on this client.")
+            unsupportedWarned = true
+        end
         return
     end
     WoWStatusDB = WoWStatusDB or {version = 1, characters = {}}
     if WoWStatusDB.version ~= 1 then say("Unsupported saved data version."); return end
     local identity = A.identity()
+    if not identity then
+        if not waitingForIdentity then
+            say("Waiting for readable player identity. Collection will retry after loading/combat.")
+            waitingForIdentity = true
+        end
+        return
+    end
+    waitingForIdentity = false
     local key = identity.client .. ":" .. identity.realm .. ":" .. identity.guid
     local first = not WoWStatusDB.characters[key]
     WoWStatusDB.characters[key] = WoWStatusDB.characters[key] or {
@@ -237,12 +253,13 @@ local function initialize()
     WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
     H.init(current)
     H.scrub(current)
-    H.sync(current, UnitLevel("player"), time())
+    local level = A.level()
+    if level then H.sync(current, level, time()) end
     snapshot()
-    for slot = 1, 19 do equipmentBaseline[slot] = GetInventoryItemLink("player", slot) end
+    for slot = 1, 19 do equipmentBaseline[slot] = A.equipment(slot) end
     if current.settings.enabled then
         queue("session", {state = "addon_loaded"})
-        if current.settings.fields.playtime then RequestTimePlayed() end
+        if current.settings.fields.playtime then A.requestPlaytime() end
     end
     if first then
         say("First run: sharing is OFF. Choose fields and preview your introduction with /wstatus.")
@@ -251,6 +268,8 @@ local function initialize()
 end
 
 frame:RegisterEvent("PLAYER_LOGIN")
+frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:RegisterEvent("PLAYER_LOGOUT")
 frame:RegisterEvent("PLAYER_LEVEL_UP")
 frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
@@ -259,22 +278,32 @@ frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_DEAD")
 frame:RegisterEvent("TIME_PLAYED_MSG")
 frame:SetScript("OnEvent", function(_, event, ...)
-    if event == "PLAYER_LOGIN" then initialize(); return end
+    if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_REGEN_ENABLED" then
+        if not current then initialize()
+        elseif event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_ENTERING_WORLD" then
+            local level = A.level()
+            if level then H.sync(current, level, time()) end
+            snapshot()
+        end
+        return
+    end
     if not current then return end
     if event == "PLAYER_LOGOUT" then
         queue("session", {state = "addon_unloading"})
         scrub()
     elseif event == "PLAYER_LEVEL_UP" then
-        local level = ...
-        if current.settings.fields.level then
-            local maxLevel = GetMaxPlayerLevel and GetMaxPlayerLevel() or 60
+        local level = S.number(...)
+        if level and level >= 1 and level <= A.max_level and current.settings.fields.level then
+            local maxLevel = A.max_level
             local event = queue("level", {level = level, maximum = level == maxLevel})
             WoWStatusPopups.broadcast(current, event)
         end
     elseif event == "CHAT_MSG_LOOT" then
         -- Match only localized self-loot formats, never another party member's loot.
-        local message = ...
+        local message = S.string(...)
+        if not message then return end
         local function matches(format)
+            format = S.string(format)
             if not format then return false end
             local pattern = format:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
             pattern = pattern:gsub("%%%%s", ".+"):gsub("%%%%d", "%%d+")
@@ -288,19 +317,21 @@ frame:SetScript("OnEvent", function(_, event, ...)
             end
         end
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
-        local slot = ...
-        local link = GetInventoryItemLink("player", slot)
+        local slot = S.number(...)
+        if not slot or slot < 1 or slot > 19 then return end
+        local link = A.equipment(slot)
         if current.settings.fields.gear and link and equipmentBaseline[slot] ~= link then
             queue("equipment", {item = link})
         end
         equipmentBaseline[slot] = link
         snapshot()
     elseif event == "ZONE_CHANGED_NEW_AREA" then
-        if current.settings.fields.zone then queue("zone", {zone = GetRealZoneText()}) end
+        local zone = A.zone()
+        if zone and current.settings.fields.zone then queue("zone", {zone = zone}) end
         snapshot()
     elseif event == "PLAYER_DEAD" then queue("death")
     elseif event == "TIME_PLAYED_MSG" then
-        if current.settings.enabled and current.settings.fields.playtime then playtime = ... end
+        if current.settings.enabled and current.settings.fields.playtime then playtime = S.number(...) end
         snapshot()
     end
 end)
@@ -308,7 +339,7 @@ end)
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match("^(%S*)%s*(.-)$")
-    if not current then say("Classic Era character is not ready."); return end
+    if not current then say(A.display_name .. " character is not ready or identity is currently restricted."); return end
     if command == "groups" then
         if rest == "legacy" then
             current.group_ids = {}

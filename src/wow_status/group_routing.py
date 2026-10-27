@@ -1,6 +1,9 @@
 """Explicit addon group selection; destinations never learn other selected IDs."""
 import copy
 import re
+import json
+from functools import lru_cache
+from importlib.resources import files
 
 from .schema import ValidationError, integer
 
@@ -22,9 +25,18 @@ def group_label(value):
     return value
 
 
+@lru_cache(maxsize=1)
+def _folds():
+    return json.loads(files('wow_status').joinpath('group_fold.json').read_text(encoding='utf-8'))
+
+
+def canonical_group(value):
+    return ''.join(_folds().get(char, char) for char in group_label(value))
+
+
 def group_key(value):
-    """Portable Lua/Python routing key. Exact, case-sensitive UTF-8; not a password hash."""
-    value = group_label(value)
+    """Portable Lua/Python routing key. Case-insensitive UTF-8; not a password hash."""
+    value = canonical_group(value)
     a, b, c = 5381, 2166136261, 104729
     for byte in value.encode('utf-8'):
         a = (a * 33 + byte) % 4294967296

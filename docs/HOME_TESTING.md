@@ -108,12 +108,12 @@ a typical installation uses `_classic_era_`, but use the real path on your compu
 
 ```powershell
 # Replace the path and interface number with your actual values.
-python scripts/install_addon.py --addons-dir "C:\Games\World of Warcraft\_classic_era_\Interface\AddOns" --interface YOUR_INTERFACE_NUMBER
+python scripts/install_addon.py --client vanilla --addons-dir "C:\Games\World of Warcraft\_classic_era_\Interface\AddOns" --interface YOUR_INTERFACE_NUMBER
 ```
 
 ```sh
 # Same installer works with your actual Linux/Wine/macOS path.
-python scripts/install_addon.py --addons-dir "/your/game/_classic_era_/Interface/AddOns" --interface YOUR_INTERFACE_NUMBER
+python scripts/install_addon.py --client vanilla --addons-dir "/your/game/_classic_era_/Interface/AddOns" --interface YOUR_INTERFACE_NUMBER
 ```
 
 The installer copies only this addon's files. It refuses to overwrite an
@@ -302,3 +302,6 @@ Optional in-game level notifications have a separate two-friend checklist in
 [LIVE_POPUPS.md](LIVE_POPUPS.md). First try the local `/wstatus popup test` preview
 after enabling reception. The experimental transport uses visible custom-channel
 messages and needs real client validation; it does not require service or bot keys.
+
+Two game editions now have separate folders. Follow [ADDON_EDITIONS.md](ADDON_EDITIONS.md)
+for Vanilla and Forever installation and client-specific checks.

@@ -8,7 +8,7 @@ from collections import defaultdict, deque
 
 from aiohttp import web
 
-from .group_routing import group_id as validate_group_id, group_key, group_label
+from .group_routing import group_id as validate_group_id, group_key, group_label, canonical_group
 from .people import remember
 from .schema import ValidationError, string
 from .store import Conflict
@@ -29,7 +29,7 @@ def create_app(store, group=None, name=None):
             if group_key(name) != group:
                 raise ValueError('Group name does not match group key')
             previous_name = store.db.execute("SELECT value FROM meta WHERE key='active_group_name'").fetchone()
-            if previous_name and previous_name['value'] != name:
+            if previous_name and canonical_group(previous_name['value']) != canonical_group(name):
                 raise ValueError('Group name collision: use a different database/name')
             with store.db:
                 store.db.execute("INSERT OR REPLACE INTO meta VALUES('active_group_name',?)", (name,))
@@ -93,7 +93,7 @@ def create_app(store, group=None, name=None):
         body = await request.json()
         if not isinstance(body, dict) or body.get('group_id') != group:
             raise ValidationError('Wrong group')
-        if name is not None and body.get('group_name') != name:
+        if name is not None and canonical_group(body.get('group_name')) != canonical_group(name):
             raise web.HTTPForbidden()
         owner = 'group:' + secrets.token_urlsafe(12)
         player = body.get('player_name') or ('Friend ' + owner[-6:])
@@ -145,7 +145,7 @@ def create_app(store, group=None, name=None):
         if group is not None:
             if not isinstance(payload, dict) or payload.get('group_id') != group:
                 raise ValidationError('Wrong group')
-            if name is not None and payload.get('group_name', name) != name:
+            if name is not None and canonical_group(payload.get('group_name', name)) != canonical_group(name):
                 raise web.HTTPForbidden()
             if store.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (owner,)).fetchone():
                 raise web.HTTPForbidden()

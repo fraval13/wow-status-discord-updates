@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wow-status-discord-updates"
-version = "0.5.0"
+version = "0.6.0"
 description = "Opt-in WoW character milestones and Discord status"
 requires-python = ">=3.11"
 dependencies = ["aiohttp>=3.12,<4", "discord.py>=2.6,<3", "tzdata>=2025.1"]
@@ -27,3 +27,6 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.setuptools.package-data]
+wow_status = ["group_fold.json"]

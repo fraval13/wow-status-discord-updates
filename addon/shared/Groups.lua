@@ -12,8 +12,9 @@ function G.key(text)
     local _, characters = text:gsub("[^\128-\191]", "")
     if text == "" or characters > 80 or text:find("[%c]") then return nil end
     local a, b, c = 5381, 2166136261, 104729
-    for i = 1, #text do
-        local byte = text:byte(i)
+    local canonical = WoWStatusCaseFold(text)
+    for i = 1, #canonical do
+        local byte = canonical:byte(i)
         a = (a * 33 + byte) % 4294967296
         b = (b * 65599 + byte) % 4294967296
         c = (c * 131 + byte) % 4294967296
@@ -38,7 +39,7 @@ local function update(text, playerName)
     for label in text:gmatch("[^\r\n]+") do
         local id, cleaned = G.key(label)
         if not id then return false, "Use a non-empty group name of up to 80 characters, one per line." end
-        if selected[id] and selected[id].label ~= cleaned then
+        if selected[id] and WoWStatusCaseFold(selected[id].label) ~= WoWStatusCaseFold(cleaned) then
             return false, "These group names collide; choose a different name."
         end
         if not selected[id] then
@@ -48,7 +49,7 @@ local function update(text, playerName)
             selected[id].label = cleaned
             if not character.group_ids[id] and character.settings.enabled
                 and character.settings.fields.level and character.settings.collection.level then
-                selected[id].baseline_level = UnitLevel("player")
+                selected[id].baseline_level = WoWStatusAdapter.level()
             end
         end
     end

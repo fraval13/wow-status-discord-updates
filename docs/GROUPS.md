@@ -16,8 +16,8 @@ Old friends #2
 
 The field accepts ordinary printable text, spaces, punctuation and Unicode, up to
 80 characters per ID and eight groups per character. Leading/trailing whitespace
-is trimmed. IDs otherwise match exactly, including case: `Weekend Crew` and
-`weekend crew` are different. Blank list means no group destination. Commas are
+is trimmed. IDs ignore capitalization: `Weekend Crew` and `weekend crew` are the same.
+A shared Unicode case-fold table keeps the game and service consistent. Blank list means no group destination. Commas are
 ordinary characters inside a name; use newlines to separate groups.
 
 Your two IDs send your selected character to both destinations; another friend
@@ -83,7 +83,7 @@ in WoW. Addon and companion derive the same compact key for URL paths and popup
 channel names. This deterministic key is not a password hash. Names are also
 checked by the receiving service, and reusing a database for a different group is
 rejected. Unknown group IDs have no fallback destination and do not send anywhere.
-Changing a group name creates a different ID; it is not a cosmetic rename.
+Changing a name beyond capitalization creates a different ID; changing its capitalization does not.
 
 Each instance’s archives and SQLite data remain separate. JSON records contain
 only that destination’s group name/key, not the person’s complete group list.
@@ -171,3 +171,7 @@ scoped event history, wrong-group headers/tokens, automatic enrollment, privacy,
 and popup isolation. At home validate two independent Discord destinations, a
 member of both groups, group removal while offline, partial network failures,
 no-history-backfill, and the relevant in-game channel behavior before inviting friends.
+
+The configured groups for this server are `ronkalot` and `navsquad`. Case variants
+route to the same destination. Their Discord credentials/channel IDs can be supplied
+later; group services stay separate.

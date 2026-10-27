@@ -51,7 +51,10 @@ LOOT_ITEM_SELF = "You receive loot: %s."
 LOOT_ITEM_SELF_MULTIPLE = "You receive loot: %sx%d."
 C_Timer = {NewTicker=function(_, fn) __tick=fn end}
 local methods = {}
-function methods:RegisterEvent(name) __events[name]=self end
+function methods:RegisterEvent(name)
+    __events[name] = __events[name] or {}
+    table.insert(__events[name],self)
+end
 function methods:SetScript(name, fn) self[name]=fn end
 function methods:GetChecked() return self.checked end
 function methods:SetChecked(value) self.checked=value end
@@ -78,8 +81,7 @@ function CreateFrame(_, name)
     return f
 end
 function fire(event, ...)
-    local f=__events[event]
-    if f then f.OnEvent(f,event,...) end
+    for _,f in ipairs(__events[event] or {}) do f.OnEvent(f,event,...) end
 end
 function character()
     for _, c in pairs(WoWStatusDB.characters) do return c end
@@ -103,8 +105,10 @@ def lua():
     runtime.execute(STUBS)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
-    root = Path(__file__).parents[1] / 'addon/WoWStatus'
-    runtime.execute((root / 'Classic.lua').read_text())
+    root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
+    runtime.execute((root / 'Safe.lua').read_text())
+    runtime.execute((root / 'CaseFold.lua').read_text())
+    runtime.execute((root / 'Vanilla.lua').read_text())
     runtime.execute((root / 'History.lua').read_text())
     runtime.execute((root / 'HistoryUI.lua').read_text())
     runtime.execute((root / 'Groups.lua').read_text())
@@ -288,7 +292,7 @@ def test_real_levels_broadcast_only_after_explicit_opt_in_and_sharing(lua):
     assert lua.eval('#__sent') == 1
     assert lua.eval('__sent[1].kind') == 'CHANNEL'
     assert lua.eval('__sent[1].target') == '8'
-    assert lua.eval('__sent[1].text').startswith('WSTATUS1 LEVEL 2 ')
+    assert lua.eval('__sent[1].text').startswith('WSTATUS2 classic-era LEVEL 2 ')
 
 
 def test_restrictions_hold_broadcast_and_privacy_pause_cancels(lua):

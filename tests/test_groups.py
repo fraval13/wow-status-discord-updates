@@ -24,7 +24,10 @@ def routed(payload, clone):
 def test_group_names_are_free_text_and_exact():
     assert len(group_key('Weekend Crew')) == 22
     assert group_key('  Weekend Crew  ') == group_key('Weekend Crew')
-    assert group_key('Weekend Crew') != group_key('weekend crew')
+    assert group_key('Weekend Crew') == group_key('weekend crew')
+    assert group_key('RONKALOT') == group_key('ronkalot')
+    assert group_key('NavSquad') == group_key('navsquad')
+    assert group_key('ÆRLIG GJENG') == group_key('ærlig gjeng')
     assert len(group_key('Ærlig gjeng! 🎮')) == 22
     with pytest.raises(ValidationError):
         group_key('line\nbreak')

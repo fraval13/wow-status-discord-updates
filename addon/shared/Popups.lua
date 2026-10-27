@@ -1,6 +1,7 @@
 -- Experimental Classic channel transport. No HTTP, hidden chat or delivery promises.
 WoWStatusPopups = {}
 local P = WoWStatusPopups
+local A, S = WoWStatusAdapter, WoWStatusSafe
 local prefs, getCharacter, notify, toast, active
 local incoming, outgoing, senderTimes = {}, {}, {}
 local lastDisplay, lastAttempt = 0, 0
@@ -9,10 +10,11 @@ local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
 
 local function realm()
-    local value = GetNormalizedRealmName and GetNormalizedRealmName() or GetRealmName()
-    return value:gsub("%s", "")
+    local value = A.realmName()
+    return value and value:gsub("%s", "") or ""
 end
 function P.senderKey(sender)
+    sender = S.string(sender)
     if type(sender) ~= "string" or #sender == 0 or #sender > 120 or sender:find("[%c|]") then return nil end
     if not sender:find("-", 1, true) then sender = sender .. "-" .. realm() end
     return sender:gsub("%s", ""):lower()
@@ -39,7 +41,7 @@ local function joined(group)
     if not prefs or not GetChannelName then return nil end
     local name = group and WoWStatusGroups.channel(group) or prefs.channel
     if not channels()[name:lower()] then return nil end
-    local id, actual = GetChannelName(name)
+    local id, actual = S.call(GetChannelName, name)
     if type(id) ~= "number" or id < 1 or type(actual) ~= "string" or actual:lower() ~= name:lower() then return nil end
     return id
 end
@@ -116,16 +118,22 @@ function P.init(database, getter, reporter)
 end
 
 function P.receive(text, sender, channel)
+    text, sender, channel = S.string(text), S.string(sender), S.string(channel)
     if not prefs or not prefs.receive or type(text) ~= "string" or #text > 160
         or type(channel) ~= "string" then return false end
     local group = channels()[channel:lower()]
     if not group then return false end
     local key = P.senderKey(sender)
-    local selfKey = P.senderKey(UnitName("player") .. "-" .. realm())
+    local selfKey = P.senderKey((A.playerName() or "") .. "-" .. realm())
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
-    local levelText, atText, nonce = text:match("^" .. PREFIX .. " LEVEL (%d+) (%d+) ([%w%-]+)$")
+    local client, levelText, atText, nonce = text:match("^WSTATUS2 ([%w%-]+) LEVEL (%d+) (%d+) ([%w%-]+)$")
+    if not client and A.client_id == "classic-era" then
+        levelText, atText, nonce = text:match("^" .. PREFIX .. " LEVEL (%d+) (%d+) ([%w%-]+)$")
+        if levelText then client = "classic-era" end
+    end
+    if client ~= A.client_id then return false end
     local level, at, now = tonumber(levelText), tonumber(atText), time()
-    if not level or level < 2 or level > 60 or not at or not nonce or #nonce > 64
+    if not level or level < 2 or level > A.max_level or not at or not nonce or #nonce > 64
         or at < now - 120 or at > now + 300 then return false end
     pruneSeen(now)
     local duplicateKey = key .. ":" .. level
@@ -206,12 +214,8 @@ function P.tick()
         return
     end
     if not joined(item.group_id) then status("not_joined", item.event); return end
-    local restricted = C_ChatInfo and C_ChatInfo.InChatMessagingLockdown
-    if restricted then
-        local ok, locked = pcall(restricted)
-        if not ok or locked then status("chat_restricted", item.event); return end
-    end
-    local send = C_ChatInfo and C_ChatInfo.SendChatMessage or SendChatMessage
+    if A.chatRestricted() then status("chat_restricted", item.event); return end
+    local send = A.chatSender()
     if not send then status("unsupported_api", item.event); return end
     lastAttempt = now
     table.remove(outgoing, 1)
@@ -223,9 +227,9 @@ end
 
 function P.broadcast(character, event)
     if not canShare(character) or not event or event.kind ~= "level" or event.data.synthetic then return end
-    if event.data.level < 2 or event.data.level > 60 or #outgoing >= 10 then return end
+    if event.data.level < 2 or event.data.level > A.max_level or #outgoing >= 10 then return end
     local nonce = character.epoch .. "-" .. character.sequence
-    local text = PREFIX .. " LEVEL " .. event.data.level .. " " .. event.at .. " " .. nonce
+    local text = "WSTATUS2 " .. A.client_id .. " LEVEL " .. event.data.level .. " " .. event.at .. " " .. nonce
     local groups = WoWStatusGroups.selected(character)
     for id in pairs(groups) do
         if #outgoing < 10 and event.group_ids and event.group_ids[id] then

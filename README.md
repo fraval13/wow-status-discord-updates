@@ -6,7 +6,7 @@ bot for friends sharing character progress across guilds.
 **Implementation written; runtime and in-game validation pending.** At the owner's
 request, no project dependencies were installed and no application or tests were
 run on the work computer. Start with the [home testing guide](docs/HOME_TESTING.md).
-Do not deploy this unvalidated build before completing those checks.
+Deployment uses isolated server services and GitHub checks; actual game validation remains a home task.
 
 The default group flow is now **IDs entered directly in WoW**, one free-text ID
 per line, with no Discord `/link` step. See [group setup and Discord mapping](docs/GROUPS.md).
@@ -14,7 +14,8 @@ The older linking commands remain available for legacy single-service installati
 
 ## Included
 
-- Classic Era addon with per-character sharing and announcement checkboxes.
+- Two complete addon folders: `addon/vanilla/WoWStatus` and `addon/forever/WoWStatus`,
+  with separate client adapters and metadata. See [edition setup](docs/ADDON_EDITIONS.md).
 - Experimental in-game friend level popups through an explicitly selected, visible
   custom chat channel; off by default, trusted senders only, combat deferral.
 - Scrollable in-game event history, export preview, level-versus-time line graph
@@ -46,7 +47,7 @@ presence. The addon never sends HTTP or reads game memory.
 
 ```mermaid
 flowchart LR
-    A[Classic Era addon] -->|reload or logout| B[SavedVariables]
+    A[Vanilla or Forever addon] -->|reload or logout| B[SavedVariables]
     B --> C[Local companion]
     C -->|selected data over HTTPS| D[Service and SQLite]
     D --> E[Discord announcements and slash commands]
@@ -81,11 +82,9 @@ is explicitly started with `--discord` and its environment variables are configu
 
 ## Scope and remaining validation
 
-Classic Era is the initial adapter, aimed at testing the shared pipeline for future
-WoW Forever use. Forever support is unverified and collection is disabled on other
-client families. Its adapter can be added once the actual client and APIs are
-available. This repository makes no promise about Forever's release, APIs, or
-compatibility.
+Vanilla and Forever implementations are available in separate folders. The Forever
+adapter is based on the available client API documentation. Both still need actual
+in-game validation; see [compatibility status](docs/FOREVER_COMPATIBILITY.md).
 
 Automatic dungeon/boss/completion attribution, group-run merging, quest chains,
 attunements, talents, automatic profession skill tracking, mount/pet discovery, reputation, PvP,
@@ -122,9 +121,9 @@ python -m pytest
 ```
 
 The suite includes a mocked Lua environment through Lupa. It cannot replace actual
-WoW API checks. GitHub Actions is manual-only and has not been triggered by this work.
+WoW API checks. GitHub Actions runs checks remotely and produces both addon ZIPs. No tests run on the work computer.
 
 Discord integration follows the [discord.py application-command example](https://github.com/Rapptz/discord.py/blob/master/examples/app_commands/basic.py)
 and [interaction API documentation](https://discordpy.readthedocs.io/en/stable/interactions/api.html).
 
-Forever support is planned, not implemented. See [compatibility status and references](docs/FOREVER_COMPATIBILITY.md).
+The Forever implementation is written; in-game compatibility is unverified. See [compatibility status and references](docs/FOREVER_COMPATIBILITY.md).

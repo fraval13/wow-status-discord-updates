@@ -1,0 +1,15 @@
+## Interface: 11509
+## Title: WoW Status — Vanilla Classic
+## Notes: Opt-in progress, group updates, saved logs and level graph. Home validation pending.
+## Author: fraval13
+## Version: 0.6.0
+## SavedVariables: WoWStatusDB
+## X-Client-Support: Vanilla Classic / Classic Era only
+Safe.lua
+CaseFold.lua
+Vanilla.lua
+History.lua
+HistoryUI.lua
+Groups.lua
+Popups.lua
+WoWStatus.lua
