@@ -124,11 +124,19 @@ function H.record(character, event)
     end
 end
 
+function H.scrubEvent(character, event)
+    if not character.settings.fields.zone then event.data.zone = nil end
+    if not character.settings.fields.playtime then event.data.played_level_seconds = nil end
+end
+
 function H.scrub(character)
     if not character.history then H.init(character) end
     local events = {}
     for _, event in ipairs(character.history.events) do
-        if allowed(character, event) then table.insert(events, event) end
+        if allowed(character, event) then
+            H.scrubEvent(character, event)
+            table.insert(events, event)
+        end
     end
     character.history.events = events
     indices[character] = nil

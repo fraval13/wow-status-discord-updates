@@ -69,6 +69,8 @@ def for_group(payload, target, minimum=0):
     member = selected[target]
     since = max(member['joined_at'], minimum)
     result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
+    if result['snapshot'].get('playtime_recorded_at', since) < since:
+        result['snapshot'].pop('playtime_recorded_at', None)
     result['group_id'] = group_id(target)
     result['group_name'] = member['label']
     result['player_name'] = payload.get('_player_name', '')
@@ -103,6 +105,8 @@ def for_group(payload, target, minimum=0):
 
 def withdrawal(payload, target):
     result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
+    if result['snapshot'].get('playtime_recorded_at', since) < since:
+        result['snapshot'].pop('playtime_recorded_at', None)
     result['group_id'] = group_id(target)
     result['settings']['enabled'] = False
     result['settings']['introduction_confirmed'] = False

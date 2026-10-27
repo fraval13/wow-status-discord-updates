@@ -380,3 +380,32 @@ def test_empty_group_list_has_no_implicit_popup_destination(lua):
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert lua.eval('#__sent') == 0
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'no_group_selected'
+
+
+def test_level_context_uses_client_played_boundaries_and_scrubs_privacy(lua):
+    lua.eval('clickSharing')()
+    lua.execute('''
+        character().settings.fields.playtime=true
+        character().settings.fields.zone=true
+        fire("TIME_PLAYED_MSG", 1000, 200)
+        __level=2; fire("PLAYER_LEVEL_UP", 2)
+        fire("TIME_PLAYED_MSG", 1505, 5)
+    ''')
+    assert lua.eval('character().events[1].data.played_level_seconds') == 700
+    assert lua.eval('character().history.events[1].data.played_level_seconds') == 700
+    assert lua.eval('character().events[1].data.zone') == 'Dun Morogh'
+    lua.execute('character().settings.fields.playtime=false; character().settings.fields.zone=false')
+    lua.eval('fire')('PLAYER_LOGOUT')
+    assert lua.eval('character().events[1].data.played_level_seconds') is None
+    assert lua.eval('character().history.events[1].data.zone') is None
+    assert lua.eval('character().played_boundary') is None
+
+
+def test_missing_played_boundary_does_not_invent_level_duration(lua):
+    lua.eval('clickSharing')()
+    lua.execute('''
+        character().settings.fields.playtime=true
+        __level=10; fire("PLAYER_LEVEL_UP",10)
+        fire("TIME_PLAYED_MSG", 9000, 5)
+    ''')
+    assert lua.eval('character().events[1].data.played_level_seconds') is None

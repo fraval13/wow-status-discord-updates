@@ -7,7 +7,7 @@ local current, panel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions"}
 local kinds = {"introduction", "level", "loot", "equipment", "death", "zone", "session", "lfg"}
 local equipmentBaseline = {}
-local playtime
+local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
 
@@ -43,6 +43,7 @@ local function snapshot()
     end
     if current.settings.enabled and current.settings.fields.playtime and playtime then
         current.snapshot.playtime = playtime
+        current.snapshot.playtime_recorded_at = playtimeRecordedAt
     end
 end
 
@@ -61,7 +62,9 @@ local function queue(kind, data, fixed)
             current.warned = true
         end
     end
-    local event = {id = id, kind = kind, at = time(), data = data or {},
+    data = H.copy(data or {})
+    if current.settings.fields.zone then data.zone = A.zone() end
+    local event = {id = id, kind = kind, at = time(), data = data,
         group_ids = H.copy(current.group_ids or {})}
     table.insert(current.events, event)
     H.record(current, event)
@@ -89,14 +92,20 @@ local function scrub()
         if event.kind == "introduction" and not current.settings.introduction_confirmed then
             allowed = false
         end
-        if allowed then table.insert(retained, event) end
+        if allowed then
+            H.scrubEvent(current, event)
+            table.insert(retained, event)
+        end
     end
     current.events = retained
     H.scrub(current)
     local level = A.level()
     if level then H.sync(current, level, time()) end
     WoWStatusPopups.privacyChanged()
-    if not current.settings.fields.playtime then playtime = nil end
+    if not current.settings.enabled or not current.settings.fields.playtime then
+        playtime, playtimeRecordedAt, pendingPlayedLevel = nil, nil, nil
+        current.played_boundary = nil
+    end
     if not current.settings.fields.professions then current.professions = nil end
     snapshot()
 end
@@ -297,6 +306,10 @@ frame:SetScript("OnEvent", function(_, event, ...)
             local maxLevel = A.max_level
             local event = queue("level", {level = level, maximum = level == maxLevel})
             WoWStatusPopups.broadcast(current, event)
+            if event and current.settings.fields.playtime then
+                pendingPlayedLevel = event
+                A.requestPlaytime()
+            end
         end
     elseif event == "CHAT_MSG_LOOT" then
         -- Match only localized self-loot formats, never another party member's loot.
@@ -321,7 +334,8 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if not slot or slot < 1 or slot > 19 then return end
         local link = A.equipment(slot)
         if current.settings.fields.gear and link and equipmentBaseline[slot] ~= link then
-            queue("equipment", {item = link})
+            local _, quality = A.item(link)
+            queue("equipment", {item = link, quality = quality})
         end
         equipmentBaseline[slot] = link
         snapshot()
@@ -331,7 +345,28 @@ frame:SetScript("OnEvent", function(_, event, ...)
         snapshot()
     elseif event == "PLAYER_DEAD" then queue("death")
     elseif event == "TIME_PLAYED_MSG" then
-        if current.settings.enabled and current.settings.fields.playtime then playtime = S.number(...) end
+        if current.settings.enabled and current.settings.fields.playtime then
+            local total, thisLevel = ...
+            total, thisLevel = S.number(total), S.number(thisLevel)
+            local level = A.level()
+            if total and total >= 0 then playtime, playtimeRecordedAt = total, time() end
+            if total and thisLevel and level and thisLevel >= 0 and total >= thisLevel then
+                local boundary = total - thisLevel
+                local previous = current.played_boundary
+                if pendingPlayedLevel and pendingPlayedLevel.data.level == level and previous
+                    and previous.level == level - 1 and boundary >= previous.total then
+                    local seconds = boundary - previous.total
+                    -- Update both retained copies before the next SavedVariables export.
+                    for _, events in ipairs({current.events, current.history.events}) do
+                        for _, saved in ipairs(events) do
+                            if saved.id == pendingPlayedLevel.id then saved.data.played_level_seconds = seconds end
+                        end
+                    end
+                end
+                current.played_boundary = {level = level, total = boundary}
+                pendingPlayedLevel = nil
+            end
+        end
         snapshot()
     end
 end)

@@ -8,6 +8,7 @@ from discord import app_commands
 
 from .daily import DailyRecaps
 from .formatting import announcement, profile, roster_pages, safe
+from .output import message as announcement_message, emoji
 from .people import decorate, nickname, remember, set_role
 from .weekly import WeeklyRecaps
 
@@ -31,7 +32,10 @@ class CommunityTree(app_commands.CommandTree):
 
 class StatusBot(discord.Client):
     def __init__(self, store, guild_id, channel_id):
-        super().__init__(intents=discord.Intents.none(),
+        intents = discord.Intents.none()
+        intents.guilds = True
+        intents.emojis_and_stickers = True
+        super().__init__(intents=intents,
                          allowed_mentions=discord.AllowedMentions.none())
         self.store, self.guild_id, self.channel_id = store, guild_id, channel_id
         self.recaps = DailyRecaps(store)
@@ -39,6 +43,11 @@ class StatusBot(discord.Client):
         self.tree = CommunityTree(self)
         self.worker = None
         self.register_commands()
+
+    def custom_emojis(self):
+        guild = self.get_guild(self.guild_id)
+        return {e.name: str(e) for e in guild.emojis
+                if e.available and not e.roles} if guild else {}
 
     async def setup_hook(self):
         guild = discord.Object(id=self.guild_id)
@@ -227,7 +236,7 @@ class StatusBot(discord.Client):
                 if current is None or current['delivery_id'] != delivery_id:
                     continue
                 self.store.delivery(delivery_id, 'sending')
-                message = await channel.send(announcement(current),
+                message = await channel.send(**announcement_message(self.store, current, self.custom_emojis()),
                                              allowed_mentions=discord.AllowedMentions.none())
                 self.store.delivery(delivery_id, 'sent', message_id=str(message.id))
             except discord.Forbidden:
@@ -258,7 +267,7 @@ class StatusBot(discord.Client):
             if current is None or current['key'] != key:
                 return
             recaps.delivery(key, 'sending')
-            message = await channel.send(current['text'],
+            message = await channel.send(emoji('recap', self.custom_emojis()) + ' ' + current['text'],
                                          allowed_mentions=discord.AllowedMentions.none())
             recaps.delivery(key, 'sent', str(message.id))
         except discord.Forbidden:

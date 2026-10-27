@@ -2,7 +2,7 @@
 ## Title: WoW Status — Vanilla Classic
 ## Notes: Opt-in progress, group updates, saved logs and level graph. Home validation pending.
 ## Author: fraval13
-## Version: 0.6.0
+## Version: 0.7.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Vanilla Classic / Classic Era only
 Safe.lua

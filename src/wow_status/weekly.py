@@ -21,6 +21,16 @@ def week_report(store, cid, week, generated):
     result['events'] = [event for day in days for event in day['events']]
     result['day'] = str(start_date)
     result['period'] = 'week'
+    summaries = [day.get('activity_summary', {}) for day in days]
+    played = [s['played_seconds_lower_bound'] for s in summaries
+              if s.get('played_seconds_lower_bound') is not None]
+    result['activity_summary'] = {
+        'recorded_level_ups': sum(s.get('recorded_level_ups', 0) for s in summaries),
+        'recorded_deaths': sum(s.get('recorded_deaths', 0) for s in summaries),
+        'played_seconds_lower_bound': sum(played) if played else None,
+        'playtime_sample_count': sum(s.get('playtime_sample_count', 0) for s in summaries),
+        'playtime_basis': 'sum_of_observed_daily_lower_bounds',
+    }
     start, _ = window(start_date)
     _, end = window(start_date + timedelta(days=6))
     result['window_start'] = timestamp(start)

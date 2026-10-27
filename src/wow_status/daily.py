@@ -43,6 +43,29 @@ def report(store, cid, day, generated=None):
         OR (at<? AND received>=? AND received<?))
         ORDER BY at,id''', (cid, cutoff, start, end, end + 300, start, start + 300, end + 300)).fetchall()
     events = [row for row in events if json.loads(row['data']).get('synthetic') is not True]
+    # Only compare actual /played samples taken inside this Oslo day. A sample
+    # before midnight could contain playtime from the preceding day.
+    samples = {}
+    for snap in snapshots:
+        fields = json.loads(snap['snapshot'])
+        observed = fields.get('playtime_recorded_at')
+        if observed is not None and start <= observed < end and 'playtime' in fields:
+            samples[observed] = fields['playtime']
+    values = [value for _, value in sorted(samples.items())]
+    recorded_playtime = (sum(max(0, b - a) for a, b in zip(values, values[1:]))
+                         if len(values) >= 2 else None)
+    level_played = []
+    previous_level = None
+    for event in events:
+        if event['kind'] != 'level' or event['at'] < start:
+            continue
+        data = json.loads(event['data'])
+        if (previous_level is not None and data['level'] == previous_level + 1
+                and data.get('played_level_seconds') is not None):
+            level_played.append(data['played_level_seconds'])
+        previous_level = data['level']
+    if level_played:
+        recorded_playtime = max(recorded_playtime or 0, sum(level_played))
     return {
         'schema_version': 1, 'timezone': TIMEZONE, 'day': str(day),
         'window_start': timestamp(start), 'window_end_exclusive': timestamp(end),
@@ -52,6 +75,13 @@ def report(store, cid, day, generated=None):
         'last_known_export_at': timestamp(latest['exported']) if latest else None,
         'snapshot_exports': sum(start <= row['exported'] < end for row in snapshots),
         'event_counts': dict(Counter(row['kind'] for row in events)),
+        'activity_summary': {
+            'recorded_level_ups': sum(row['kind'] == 'level' and row['at'] >= start for row in events),
+            'recorded_deaths': sum(row['kind'] == 'death' and row['at'] >= start for row in events),
+            'played_seconds_lower_bound': recorded_playtime,
+            'playtime_sample_count': len(samples),
+            'playtime_basis': 'client_samples_or_complete_same_day_level_intervals_lower_bound',
+        },
         'events': [{'event_id': row['id'], 'type': row['kind'],
                     'recorded_at': timestamp(row['at']), 'first_uploaded_at': timestamp(row['received']),
                     'late_upload': row['at'] < start, 'data': event_document(json.loads(row['data']))} for row in events],
@@ -174,6 +204,7 @@ class DailyRecaps:
 
 def render_group(store, reports, title):
     from .people import character_role, person
+    from .output import duration
     ordered = sorted(reports, key=lambda r: (person(store, r['owner'])['display_name'].casefold(),
                                              r['owner'], character_role(store, r['character_id']) != 'main',
                                              r['identity']['name'].casefold()))
@@ -182,7 +213,8 @@ def render_group(store, reports, title):
         counts.update(recap['event_counts'])
     lines = [f'**{title} · Europe/Oslo**',
              f"Group highlights on this page: {counts['level']} level-ups, "
-             f"{counts['loot']} loot events, {counts['introduction']} new adventurers."]
+             f"{counts['loot']} loot events, {counts['death']} deaths, "
+             f"{counts['introduction']} newly tracked characters."]
     previous = None
     for recap in ordered:
         if previous != recap['owner']:
@@ -195,6 +227,13 @@ def render_group(store, reports, title):
                      f"{safe(identity['realm'])[:60]}")
         progress = recap['progress_between_exports']
         changes = []
+        summary = recap.get('activity_summary', {})
+        levels = summary.get('recorded_level_ups', 0)
+        if levels:
+            changes.append(f'+{levels} recorded level-up{"s" if levels != 1 else ""}')
+        played = summary.get('played_seconds_lower_bound')
+        if played is not None:
+            changes.append(f'at least {duration(played)} played (recorded lower bound)')
         if 'level' in progress:
             change = progress['level']
             changes.append(f"level {change['from']} → {change['to']} (snapshot comparison)")
@@ -209,7 +248,26 @@ def render_group(store, reports, title):
         items = [e for e in recap['events'] if e['type'] == 'loot']
         if items:
             best = max(items, key=lambda e: e['data'].get('quality', 0))
-            lines.append('  Loot highlight: ' + safe(best['data']['item'])[:90])
+            from .archive import item_reference
+            from .output import RARITIES
+            reference = item_reference(best['data']['item'])
+            label = reference.get('display_name') or best['data']['item']
+            quality = RARITIES.get(best['data'].get('quality'), ('Quality not recorded', 0))[0]
+            lines.append('  Loot highlight: ' + safe(label)[:90] + ' · ' + quality)
+        level_events = [e for e in recap['events'] if e['type'] == 'level' and not e['late_upload']]
+        if level_events:
+            details = []
+            for event in level_events[:4]:
+                detail = f"level {event['data']['level']} at {event['recorded_at']['iso'][11:16]}"
+                if event['data'].get('played_level_seconds') is not None:
+                    detail += ' · ' + duration(event['data']['played_level_seconds']) + ' played'
+                if event['data'].get('zone'):
+                    detail += ' · ' + safe(event['data']['zone'])[:45]
+                details.append(detail)
+            lines.append('  ' + '; '.join(details))
+        death_events = [e for e in recap['events'] if e['type'] == 'death' and e['data'].get('zone')]
+        if death_events:
+            lines.append('  Last recorded death: ' + safe(death_events[-1]['data']['zone'])[:90])
         known = recap['last_known_export_at']
         if known:
             lines.append('  Last export: ' + known['iso'])

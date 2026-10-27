@@ -158,7 +158,8 @@ class Store:
                 for row in self.db.execute('SELECT * FROM snapshots WHERE character=?', (cid,)).fetchall():
                     old_snapshot = json.loads(row['snapshot'])
                     kept = {k: v for k, v in old_snapshot.items()
-                            if p['settings']['enabled'] and p['settings']['fields'].get(k)}
+                            if p['settings']['enabled'] and p['settings']['fields'].get(
+                                'playtime' if k == 'playtime_recorded_at' else k)}
                     self.db.execute('UPDATE snapshots SET snapshot=? WHERE id=?',
                                     (json.dumps(kept), row['id']))
             if not p['settings']['enabled']:
@@ -179,6 +180,9 @@ class Store:
                         permitted = validate(candidate)['events']
                     except ValidationError:
                         permitted = []
+                    if permitted:
+                        self.db.execute('UPDATE events SET data=? WHERE character=? AND id=?',
+                            (json.dumps(permitted[0]['data']), cid, row['id']))
                     if permitted and not self.should_announce(p['settings'], permitted[0]):
                         self.db.execute("DELETE FROM outbox WHERE character=? AND event_id=? "
                                         "AND status NOT IN ('sent','simulated')", (cid, row['id']))
@@ -266,7 +270,7 @@ class Store:
             self.sync_archive(char['id'])
 
     def pending(self):
-        row = self.db.execute('''SELECT o.id AS delivery_id,e.kind,e.at,e.data,c.*
+        row = self.db.execute('''SELECT o.id AS delivery_id,e.id AS event_id,e.kind,e.at,e.data,c.*
             FROM outbox o JOIN characters c ON c.id=o.character
             JOIN events e ON e.character=o.character AND e.id=o.event_id
             WHERE o.status='pending' AND e.suppressed=0 AND o.next_try<=? ORDER BY o.id LIMIT 1''',

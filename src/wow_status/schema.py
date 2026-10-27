@@ -91,6 +91,10 @@ def validate(payload):
                 else:
                     string(val, key, 200)
                 clean['snapshot'][key] = val
+    if (clean['settings']['enabled'] and clean['settings']['fields']['playtime']
+            and 'playtime' in clean['snapshot'] and snapshot.get('playtime_recorded_at') is not None):
+        clean['snapshot']['playtime_recorded_at'] = integer(snapshot['playtime_recorded_at'],
+            'playtime observation', 1, clean['exported_at'] + 300)
     events = payload.get('events', [])
     if not isinstance(events, list) or len(events) > 500:
         raise ValidationError('Maximum 500 events per upload')
@@ -125,6 +129,8 @@ def validate(payload):
             if not clean['settings']['fields']['gear']:
                 continue
             filtered = {'item': string(data.get('item'), 'item', 500)}
+            if data.get('quality') is not None:
+                filtered['quality'] = integer(data['quality'], 'quality', 0, 5)
         elif kind == 'zone':
             if not clean['settings']['fields']['zone']:
                 continue
@@ -133,6 +139,12 @@ def validate(payload):
             filtered = {'text': string(data.get('text'), 'LFG text', 200)}
         elif kind == 'session':
             filtered = {'state': string(data.get('state'), 'session state', 20)}
+        if clean['settings']['fields']['zone'] and data.get('zone') is not None:
+            filtered['zone'] = string(data['zone'], 'event zone', 200)
+        if (kind == 'level' and clean['settings']['fields']['playtime']
+                and data.get('played_level_seconds') is not None):
+            filtered['played_level_seconds'] = integer(data['played_level_seconds'],
+                'played level seconds', 0, 2_000_000_000)
         clean['events'].append({'id': eid, 'kind': kind, 'at': at, 'data': filtered})
     tracking = payload.get('tracking')
     if tracking is not None:
