@@ -54,7 +54,29 @@ Start sharing only after explicit setup. Include preview, pause-all-sharing, and
 
 Show a last-uploaded timestamp. Do not imply that last-known location or session state is live presence.
 
+### First-run character introduction
+
+On the first run of the addon for a character, offer to introduce that character
+in the configured Discord chat. Queue the introduction only after the player
+explicitly enables sharing and confirms the introduction preview. A character
+that was already created before installing the addon is still eligible; describe
+this as joining the tracker, not proof that the character was just created.
+
+- Example: “A new adventurer joins: Thora — level 1 Dwarf Warrior on Realm!”
+- Include only profile fields the player has chosen to share.
+- Deliver after the first SavedVariables export and successful upload, normally
+  following `/reload` or logout; first-run detection itself does not send HTTP.
+- Use a stable per-character introduction event ID and persist delivery state so
+  reloads, retries, companion restarts, and addon reinstalls do not routinely
+  repeat the introduction. The service must retain the deduplication state needed
+  for this behavior under the agreed retention/deletion policy.
+- Existing characters also receive at most one introduction when first enrolled.
+- Paused or unlinked characters must not deliver queued introductions. After data
+  deletion, a later enrollment requires fresh consent and may introduce again.
+
 ### Announcement checkboxes
+
+- One-time character introduction on first addon setup, after opt-in.
 
 - Every level-up, selected milestones, and maximum level.
 - Loot by minimum rarity; watched items; first acquisition.
@@ -120,13 +142,18 @@ The bot can handle both announcements and commands; a separate webhook is unnece
 3. Build a companion with dry-run output, constrained parsing, stable IDs, and restart recovery.
 4. Connect one character to the service and post a test announcement after `/reload`.
 5. Add `/character` showing level, class, realm, and last upload time.
-6. Add opt-in checkbox settings, pause, linking, and data removal.
+6. Add opt-in checkbox settings, pause, linking, data removal, and the one-time first-run character introduction.
 7. Add loot filters and test with two friends; add dungeon detection only after validating event evidence.
 8. Test Forever separately and adapt its client-specific APIs.
 9. Investigate supported lower-latency exports if delayed announcements do not meet the group's needs.
 
 ## Acceptance checks
 
+- First addon setup offers an introduction preview; after opt-in and export,
+  exactly one introduction reaches the configured chat using only shared fields.
+- Reloads, repeated uploads, restarts, and reinstalls do not repeat introductions
+  while the service retains the character enrollment and deduplication state.
+- Declining introduction or pausing/unlinking before delivery prevents the post.
 - Synthetic and real level-up events reach the private channel after export.
 - Reloading, companion restarts, and repeated uploads do not create routine duplicate announcements.
 - An unchecked field is neither uploaded nor returned by commands.
