@@ -144,6 +144,7 @@ def make_lua(stubs=STUBS):
     runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Milestones.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
     return runtime

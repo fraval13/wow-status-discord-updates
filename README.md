@@ -130,3 +130,8 @@ No OpenAI key is needed. Character data is not sent to OpenAI. Telemetry is
 player-reported, not Battle.net ownership verification. Dungeon completion,
 quest chains, talents, profession recipe collection, mounts/pets, reputation and PvP
 remain separate unimplemented collectors; they are not inferred from zone entry.
+
+Milestones and voluntary discoveries are available under **WoW Status → Milestones**
+(`/wstatus milestones`). All notification types can be tried under **Notification
+previews**. See [in-game sharing](docs/LIVE_POPUPS.md) for detection and fallback
+behavior. Dungeon invitations are not included.

@@ -5,7 +5,7 @@ local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests"}
-local kinds = {"introduction", "level", "loot", "death", "zone", "quest", "profession", "lfg"}
+local kinds = {"introduction", "level", "loot", "death", "zone", "quest", "profession", "lfg", "dungeon", "mount", "reputation", "unlock", "pvp", "discovery"}
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
@@ -144,7 +144,7 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, 1256)
+        panel:SetSize(600, 1496)
         panel:SetPoint("CENTER")
         panel:SetFrameStrata("DIALOG")
         panel:EnableMouse(true)
@@ -203,12 +203,12 @@ local function showPanel(host)
         label(panel, "Share in WoW", 408, -530, 170)
         for i, key in ipairs(kinds) do
             local y = -564 - (i - 1) * 38
-            label(panel, key == "quest" and "100 quests milestone" or key == "profession" and "Profession title" or key, 24, y - 6, 190)
+            label(panel, key == "quest" and "100 quests milestone" or key == "profession" and "Profession title" or key == "unlock" and "Class ability unlock" or key == "pvp" and "PvP rank" or key == "dungeon" and "First dungeon clear" or key, 24, y - 6, 190)
             checkbox(key, "", 270, y, "collection")
             checkbox(key, "", 460, y, "in_game")
         end
-        panel.preview = label(panel, "", 24, -928, 550)
-        button(panel, "Introduce character", 24, -1016, 190, function()
+        panel.preview = label(panel, "", 24, -1168, 550)
+        button(panel, "Introduce character", 24, -1256, 190, function()
             if not current.settings.enabled then say("Enable sharing first."); return end
             if not current.settings.collection.introduction then
                 say("Enable introduction storage first."); return
@@ -218,23 +218,24 @@ local function showPanel(host)
             refresh()
             say("Introduction queued for your WoW groups. Discord receives it only if opted in and uploaded.")
         end)
-        button(panel, "Pause sharing", 230, -1016, 160, function()
+        button(panel, "Pause sharing", 230, -1256, 160, function()
             current.settings.enabled = false
             current.settings.introduction_confirmed = false
             scrub()
             refresh()
             say("In-game sending paused. For opted-in Discord data, export and upload the pause or use companion privacy controls.")
         end)
-        button(panel, "History / graph", 24, -1156, 160, function()
+        button(panel, "History / graph", 24, -1396, 160, function()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
-        button(panel, "Group activity", 194, -1156, 120, function() WoWStatusPopups.showActivity() end)
-        button(panel, "Groups", 324, -1156, 90, function() openSettings(true) end)
-        panel.close = button(panel, "Close", 424, -1156, 110, function() panel:Hide() end)
-        button(panel, "Preview toast", 24, -1196, 160, function() openSettings("previews") end)
+        button(panel, "Group activity", 194, -1396, 120, function() WoWStatusPopups.showActivity() end)
+        button(panel, "Groups", 324, -1396, 90, function() openSettings(true) end)
+        panel.close = button(panel, "Close", 424, -1396, 110, function() panel:Hide() end)
+        button(panel, "Preview toast", 24, -1436, 160, function() openSettings("previews") end)
+        button(panel, "Milestones / discovery", 210, -1436, 230, function() openSettings("milestones") end)
         label(panel, "In-game level updates include every level, not only milestones.\n"
             .. "Loot follows /wstatus quality. Groups must be reachable in WoW.\n"
-            .. "Local history and graphs work without Discord.", 24, -1070, 550)
+            .. "Local history and graphs work without Discord.", 24, -1310, 550)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
@@ -258,7 +259,7 @@ end
 local function showDiscord(host)
     if not discordPanel then
         discordPanel = CreateFrame("Frame", "WoWStatusDiscordSettings", UIParent)
-        discordPanel:SetSize(600, 680)
+        discordPanel:SetSize(600, 930)
         discordPanel:EnableMouse(true)
         local bg = discordPanel:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints(); bg:SetColorTexture(.04, .04, .07, .98)
@@ -278,10 +279,6 @@ local function showDiscord(host)
                     current.discord_enrolled, current.discord_since = true, time()
                 end
                 current.settings.discord_delivery = "summary"
-    current.settings.collection.equipment = false
-    current.settings.announcements.equipment = false
-    current.settings.in_game = current.settings.in_game or {}
-    current.settings.in_game.equipment = false
                 snapshot()
             end)
             table.insert(discordPanel.checks, {widget=widget, key=key, group=group})
@@ -291,9 +288,9 @@ local function showDiscord(host)
         for i, kind in ipairs(kinds) do check(kind, kind, -238 - (i - 1) * 38, "announcements") end
         label(discordPanel, "Repeat uploads do not repeat old activity. Already posted messages\n"
             .. "remain in Discord. Turn off, then export and upload to apply a pause\n"
-            .. "remotely; companion group privacy controls can pause immediately.", 24, -580, 550)
+            .. "remotely; companion group privacy controls can pause immediately.", 24, -820, 550)
     end
-        discordPanel.close = discordPanel.close or button(discordPanel, "Close", 424, -640, 110,
+        discordPanel.close = discordPanel.close or button(discordPanel, "Close", 424, -880, 110,
             function() discordPanel:Hide() end)
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusDiscordSettings" then table.remove(UISpecialFrames, i) end
@@ -315,7 +312,7 @@ local function showDiscord(host)
 end
 
 -- Both pages live inside the game's AddOns settings, with scrollable content.
-local settingsCategory, groupsCategory, discordCategory, previewsCategory
+local settingsCategory, groupsCategory, discordCategory, previewsCategory, milestonesCategory
 local function settingsPage(name, width, show)
     local page = CreateFrame("Frame")
     page:Hide()
@@ -336,7 +333,9 @@ local function settingsPage(name, width, show)
     end
     local function display()
         show(scroll)
-        content = name == "Groups" and WoWStatusGroupWindow or (name == "Discord" and WoWStatusDiscordSettings or (name == "Notification previews" and WoWStatusNotificationPreviews or WoWStatusSetup))
+        local pages = {Groups=WoWStatusGroupWindow, Discord=WoWStatusDiscordSettings,
+            ["Notification previews"]=WoWStatusNotificationPreviews, Milestones=WoWStatusMilestoneSettings}
+        content = pages[name] or WoWStatusSetup
         scroll:SetScrollChild(content)
         resize()
     end
@@ -366,6 +365,9 @@ registerSettings = function()
         local previews = settingsPage("Notification previews", 600, WoWStatusPreviews.show)
         previewsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, previews, "Notification previews")
         Settings.RegisterAddOnCategory(previewsCategory)
+        local milestones = settingsPage("Milestones", 600, WoWStatusMilestones.show)
+        milestonesCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, milestones, "Milestones")
+        Settings.RegisterAddOnCategory(milestonesCategory)
     elseif InterfaceOptions_AddCategory then
         local page = settingsPage("WoW Status", 600, showPanel)
         InterfaceOptions_AddCategory(page)
@@ -382,15 +384,20 @@ registerSettings = function()
         previews.parent = page.name
         InterfaceOptions_AddCategory(previews)
         previewsCategory = previews
+        local milestones = settingsPage("Milestones", 600, WoWStatusMilestones.show)
+        milestones.parent = page.name
+        InterfaceOptions_AddCategory(milestones)
+        milestonesCategory = milestones
     end
 end
 openSettings = function(groups)
     registerSettings()
-    local category = groups == "previews" and previewsCategory or groups == "discord" and discordCategory or (groups and groupsCategory or settingsCategory)
+    local category = groups == "milestones" and milestonesCategory or groups == "previews" and previewsCategory or groups == "discord" and discordCategory or (groups and groupsCategory or settingsCategory)
     if category and category.GetID and Settings and Settings.OpenToCategory then
         Settings.OpenToCategory(category:GetID())
     elseif category and InterfaceOptionsFrame_OpenToCategory then
         InterfaceOptionsFrame_OpenToCategory(category)
+    elseif groups == "milestones" then WoWStatusMilestones.show()
     elseif groups == "previews" then WoWStatusPreviews.show()
     elseif groups == "discord" then showDiscord()
     elseif groups then WoWStatusGroups.show()
@@ -446,7 +453,7 @@ local function initialize()
     for _, field in ipairs({"deaths", "quests"}) do
         if current.settings.fields[field] == nil then current.settings.fields[field] = true end
     end
-    for _, kind in ipairs({"quest", "profession"}) do
+    for _, kind in ipairs({"quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp", "discovery"}) do
         if current.settings.collection[kind] == nil then current.settings.collection[kind] = true end
         if current.settings.announcements[kind] == nil then current.settings.announcements[kind] = true end
     end
@@ -466,6 +473,7 @@ local function initialize()
     if dead ~= nil then current.death_latched = dead == true or dead == 1 end
     WoWStatusProgress.questMilestone(current, current.snapshot.quests_completed, current.snapshot.quests_source, true)
     if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
+    WoWStatusMilestones.init(current, queue, say)
     registerSettings()
     if current.settings.enabled then
         if current.settings.fields.playtime then A.requestPlaytime() end
@@ -614,6 +622,15 @@ SlashCmdList.WOWSTATUS = function(message)
             WoWStatusPopups.groupsChanged()
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
         else openSettings(true) end
+    elseif command == "milestones" then openSettings("milestones")
+    elseif command == "discover" then
+        if not current.settings.enabled or not current.settings.collection.discovery then say("Enable discovery sharing first.");return end
+        if WoWStatusMilestones.discover(rest) then say("Discovery queued; details are hidden until friends reveal them in Group activity.")
+        else say("Use /wstatus discover <text> (up to 120 bytes; no chat links).") end
+    elseif command == "dungeon" then
+        if not current.settings.enabled or not current.settings.collection.dungeon then say("Enable dungeon sharing first.");return end
+        if WoWStatusMilestones.dungeon(rest,"player_entered") then say("First clear recorded and queued.")
+        else say("Use /wstatus dungeon <dungeon name>; duplicate clears are ignored.") end
     elseif command == "previews" then openSettings("previews")
     elseif command == "discord" then openSettings("discord")
     elseif command == "friends" or command == "activity" then WoWStatusPopups.showActivity()

@@ -333,6 +333,24 @@
         },
         "status_updates": {
           "$ref": "#/$defs/events"
+        },
+        "dungeon_milestones": {
+          "$ref": "#/$defs/events"
+        },
+        "mount_milestones": {
+          "$ref": "#/$defs/events"
+        },
+        "reputation_milestones": {
+          "$ref": "#/$defs/events"
+        },
+        "unlock_milestones": {
+          "$ref": "#/$defs/events"
+        },
+        "pvp_milestones": {
+          "$ref": "#/$defs/events"
+        },
+        "discovery_milestones": {
+          "$ref": "#/$defs/events"
         }
       }
     },

@@ -1,5 +1,46 @@
 # Decisions I made — 27 October 2026
 
+## Friend milestones — 0.12.0, 29 October
+
+Added first dungeon clears, first mount, major reputation promotions, selected
+class ability unlocks, PvP rank promotions and voluntary discoveries. Explicitly
+excluded dungeon invitations, as requested. Existing rarity-filtered loot remains
+and has Rare + epic / Epic-only buttons under the new Milestones settings page.
+All six new notifications use the existing FIFO queue and have local previews.
+
+Decisions about evidence and spam:
+
+- Existing observed progress is baselined silently on login. Milestone observations
+  are per character; account group membership is unchanged.
+- Dungeon completion requires a completion event or all recorded encounters killed
+  after a successful encounter. An arbitrary boss is never called a full clear.
+  A manual Record first clear control covers clients without a completion API;
+  these records are labelled player-entered in stored data. Dungeons deduplicate
+  by name. First means first recorded since using this addon, not reconstructed
+  lifetime history.
+- A supported mount journal detects first collection. Without it, announce the
+  first *observed ride*, with that wording. Existing/late-loaded collections stay
+  silent. Reputation announces Honored/Revered/Exalted; PvP requires an observed
+  classic rank increase. New Forever-specific rank APIs are not invented.
+- Class unlocks use a conservative list of first-rank spells, not every spell or
+  training rank. Missing APIs do not crash startup or fabricate notifications.
+- Discoveries are manually shared (120 bytes). Details stay hidden on the toast
+  and in activity until the reader clicks Reveal discoveries. Reopening activity
+  hides them again. This hides spoilers visually; it is not encryption.
+- A bounded WSTATUS4 raw-text payload preserves full discovery text within a single
+  addon whisper. Old clients retain existing notifications but must update for
+  new milestone types. New event settings default on while Discord stays opt-in.
+- Optional Discord validation, rendering and JSON archives support all six types.
+  No new emoji uploads or slots are needed. No live test notification is sent.
+
+Validation: 183 tests passed; the 80 addon/milestone tests also passed under Lua
+5.1. Ruff and whitespace checks passed. Installable Vanilla/Forever ZIPs include
+the new module. This computer's Vanilla addon is updated with a backup of the
+previous files; SavedVariables are preserved. GitHub SSH authentication remains
+unavailable, so the release is deployed directly through the existing receiver.
+
+See docs/LIVE_POPUPS.md for controls, automatic API coverage and fallbacks.
+
 ## Clearer, queued in-game notifications — 0.11.0, 29 October
 
 - Gold upward arrow for levels (bundled TGA converted from the generated Discord

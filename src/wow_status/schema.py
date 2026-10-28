@@ -5,7 +5,7 @@ import time
 
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions', 'deaths', 'quests'}
 LEVEL_CAPS = {'classic-era': 60, 'forever': 60}
-KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status'}
+KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status', 'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery'}
 STATUS_FIELDS = {
     'level': ('level','level'), 'xp_current': ('level','level'), 'xp_max': ('level','level'),
     'class': ('class','introduction'), 'class_id': ('class','introduction'),
@@ -206,6 +206,16 @@ def validate(payload):
                         'skill': integer(data.get('skill'), 'profession skill', 0, maximum), 'max_skill': maximum}
             if data.get('title') in ('Apprentice', 'Journeyman', 'Expert', 'Artisan'):
                 filtered['title'] = data['title']
+        elif kind in {'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery'}:
+            filtered = {'text': string(data.get('text'), 'milestone text', 160)}
+            if data.get('source') in ('game_api', 'player_entered', 'collection', 'observed_ride'):
+                filtered['source'] = data['source']
+            if kind == 'unlock' and 'spell_id' in data:
+                filtered['spell_id'] = integer(data['spell_id'], 'unlock spell', 1, 2_000_000_000)
+            if kind == 'reputation' and 'standing' in data:
+                filtered['standing'] = integer(data['standing'], 'reputation standing', 6, 8)
+            if kind == 'pvp' and 'rank' in data:
+                filtered['rank'] = integer(data['rank'], 'PvP rank', 1, 100)
         elif kind == 'status':
             changes = data.get('changed', [])
             if not isinstance(changes, list) or len(changes) > len(STATUS_FIELDS):

@@ -21,6 +21,13 @@ GROUPS = {
     'quest': ('activity', 'quests_completed'),
     'profession': ('activity', 'profession_changes'),
     'status': ('activity', 'status_updates'),
+    'dungeon': ('activity', 'dungeon_milestones'),
+    'mount': ('activity', 'mount_milestones'),
+    'reputation': ('activity', 'reputation_milestones'),
+    'unlock': ('activity', 'unlock_milestones'),
+    'pvp': ('activity', 'pvp_milestones'),
+    'discovery': ('activity', 'discovery_milestones'),
+
 }
 
 
@@ -79,7 +86,8 @@ def character_document(store, cid):
         'progression': {'level_history': []},
         'items': {'loot': [], 'equipment_changes': []},
         'activity': {'deaths': [], 'zones': [], 'addon_sessions': [], 'looking_for_group': [],
-                         'quests_completed': [], 'profession_changes': [], 'status_updates': []},
+                         'quests_completed': [], 'profession_changes': [], 'status_updates': [],
+                         'dungeon_milestones': [], 'mount_milestones': [], 'reputation_milestones': [], 'unlock_milestones': [], 'pvp_milestones': [], 'discovery_milestones': []},
         'daily_recaps': [], 'weekly_recaps': [],
     }
     for snap in store.db.execute('SELECT * FROM snapshots WHERE character=? ORDER BY exported,id',

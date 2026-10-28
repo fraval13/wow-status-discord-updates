@@ -5,7 +5,7 @@ same group ID. Discord and the companion are optional.
 
 ## Two-player acceptance test
 
-Install version 0.11.0 on both clients and restart them. Use two characters that can
+Install version 0.12.0 on both clients and restart them. Use two characters that can
 communicate through the same custom channel (normally the same realm and faction).
 Do not run a companion for this test.
 
@@ -91,3 +91,47 @@ status. Death counters are cumulative recorded totals rather than per-session de
   feed or tracker data. Group removal cancels that group's pending messages.
 - Discord remains a progress-card summary on upload; it can include updated
   quest totals and profession points. These milestone rules govern in-game toasts.
+
+## Friend milestones (0.12.0)
+
+**Milestones** is a new settings subpage (`/wstatus milestones`). Notification
+previews include every new type. Collection and in-game send controls remain
+per character; existing progress is silently baselined at login.
+
+- **First dungeon clear:** automatic from LFG completion, or a successful boss
+  encounter with a complete, killed encounter roster in a party instance. A boss
+  kill by itself is insufficient. When those APIs are unavailable, enter the name
+  after a clear and choose **Record first clear**, or `/wstatus dungeon <name>`.
+  It records each dungeon once per character, since installation. Manual reports
+  retain `source=player_entered`; no dungeon invitation feature was added.
+- **First mount:** collection-based when the mount journal reports a first
+  acquisition. Existing and late-loading collections stay silent. Clients without
+  the journal announce **First mount ride recorded!** on the first observed ride;
+  acquisition cannot be reconstructed there. Either path runs only once.
+- **Reputation:** new high-water standings of Honored, Revered and Exalted. Initial
+  observations, reputation points within a standing, and recovering an old rank
+  are silent. Collapsed/unavailable factions are not guessed or expanded.
+- **Class unlocks:** a curated set of first-rank class spells, including druid
+  forms, warlock pets, major stances, Ghost Wolf, Tame Beast, Shadowform,
+  Redemption, Pick Lock and mage city teleports/portals. Existing spells and
+  relearning are silent. This is not a universal detector of new Forever-specific
+  abilities; unsupported spell APIs disable detection safely.
+- **PvP:** increases in the classic rank exposed by UnitPVPRank/GetPVPRankInfo.
+  No kill spam. If Forever exposes no compatible rank API, no promotion is guessed.
+- **Rare/epic loot:** uses the existing loot notification/filter. Milestones now
+  offers **Rare + epic loot** and **Epic loot only** buttons; existing filters are
+  preserved. The threshold also includes higher rarities.
+- **Discoveries:** manually share up to 120 UTF-8 bytes through the settings field
+  or `/wstatus discover <text>`. The toast hides details. Group activity hides
+  details until **Reveal discoveries** is clicked; reopening hides them again.
+  Details are still transmitted to selected groups and saved in the activity feed.
+
+New milestones use bounded `WSTATUS4` plain-text addon payloads so full discovery
+text fits inside a single whisper. They retain the same membership, sender,
+client, freshness and deduplication checks. Older versions should be upgraded to
+receive the new types. No new Discord emojis are needed. Optional Discord upload
+supports the new events and continues posting structured character summaries.
+
+Install the complete addon folder, restart WoW, and restart an optional companion
+so it loads the new event validator. Mocked API tests cover behavior; actual
+Forever API availability and presentation require checking in the running game.
