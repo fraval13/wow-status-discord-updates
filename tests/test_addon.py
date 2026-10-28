@@ -15,6 +15,8 @@ __combat = false
 __sent = {}
 __joined = true
 __restricted = false
+__channelNames = {}
+__peers = {"Eldrin-TestRealm"}
 __tick = nil
 WoWStatusDB = nil
 UIParent = {}
@@ -29,9 +31,22 @@ function UnitName() return "Thora" end
 function GetRealmName() return "Test Realm" end
 function GetNormalizedRealmName() return "TestRealm" end
 function InCombatLockdown() return __combat end
-function GetChannelName(name) if __joined then return 8,name end return 0,nil end
+function GetChannelName(name)
+    __channelNames[1] = name
+    if __joined then return 8,name end return 0,nil
+end
+function GetNumDisplayChannels() return #__channelNames end
+function GetChannelDisplayInfo(index)
+    return __channelNames[index],false,false,8,#__peers
+end
 C_ChatInfo = {
     InChatMessagingLockdown=function() return __restricted end,
+    RegisterAddonMessagePrefix=function() return true end,
+    GetChannelRosterInfo=function(_, index) return __peers[index] end,
+    SendAddonMessage=function(prefix,text,kind,target)
+        table.insert(__sent,{prefix=prefix,text=text,kind=kind,target=target})
+        return true
+    end,
     SendChatMessage=function(text,kind,language,target)
         table.insert(__sent,{text=text,kind=kind,target=target})
     end,
@@ -60,6 +75,8 @@ function methods:GetFrameLevel() return 5 end
 function methods:SetParent(parent) self.parent=parent end
 function methods:GetParent() return self.parent end
 function methods:SetScale(value) self.scale=value end
+function methods:SetAlpha(value) self.alpha=value end
+function methods:SetTexture(value) self.texture=value end
 function methods:GetWidth() return self.width or 700 end
 function methods:SetWidth(width) self.width=width end
 function methods:SetSize(width, height) self.width=width; self.height=height end
@@ -86,7 +103,7 @@ function methods:CreateFontString(_, _, font) return setmetatable({font=font}, {
 for _, name in ipairs({"SetPoint","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
+    "SetBlendMode","SetVertexColor","SetTextColor","SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
 function CreateFrame(kind, name, parent, template)
     local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
     table.insert(__frames,f)
@@ -106,16 +123,15 @@ function clickSharing()
 end
 function confirmIntro()
     for _,f in ipairs(__frames) do
-        if f.text=="Confirm introduction" then f.OnClick(f); return end
+        if f.text=="Introduce character" then f.OnClick(f); return end
     end
 end
 '''
 
 
-@pytest.fixture
-def lua():
+def make_lua(stubs=STUBS):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
-    runtime.execute(STUBS)
+    runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
@@ -129,6 +145,11 @@ def lua():
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
     return runtime
+
+
+@pytest.fixture
+def lua():
+    return make_lua()
 
 
 def test_first_run_sharing_defaults_on_and_introduction_requires_confirmation(lua):
@@ -226,7 +247,7 @@ def test_oslo_offsets_ignore_host_timezone(lua):
     assert lua.eval('WoWStatusHistory.oslo')(summer) == '2026-07-01 14:00:00 +02:00'
 
 
-def test_live_popups_are_off_and_untrusted_senders_are_ignored(lua):
+def test_legacy_messages_require_explicit_channel_and_trusted_sender(lua):
     packet = 'WSTATUS1 LEVEL 25 1793000000 event-1'
     receive = lua.eval('WoWStatusPopups.receive')
     assert receive(packet, 'Eldrin-TestRealm', 'WStatusFriends') is False
@@ -447,6 +468,7 @@ def test_unavailable_loading_level_is_omitted_instead_of_exporting_zero(lua):
 
 def test_all_new_character_sharing_checkboxes_default_on(lua):
     assert lua.eval('character().settings.enabled') is True
+    assert lua.eval('character().enrolled') is True
     for section in ['fields', 'collection', 'announcements']:
         assert lua.eval(f"function() for _, enabled in pairs(character().settings.{section}) "
                         "do if not enabled then return false end end return true end")()
@@ -663,3 +685,127 @@ def test_legacy_upload_choice_survives_account_group_initialization(lua):
         assert(not character().legacy_upload)
         assert(next(character().group_ids) ~= nil)
     ''')
+
+
+
+def test_snapshot_repairs_missing_enrollment_on_enabled_characters(lua):
+    lua.execute('character().enrolled=nil')
+    lua.eval('fire')('PLAYER_ENTERING_WORLD')
+    assert lua.eval('character().enrolled') is True
+    lua.execute('character().enrolled=nil; character().settings.enabled=false')
+    lua.eval('fire')('PLAYER_ENTERING_WORLD')
+    assert lua.eval('character().enrolled') is None
+
+
+
+def test_ingame_default_does_not_enable_discord(lua):
+    assert lua.eval('WoWStatusDB.popups.receive') is True
+    assert lua.eval('WoWStatusDB.popups.broadcast') is True
+    assert lua.eval('character().settings.discord_enabled') is False
+    lua.eval('SlashCmdList.WOWSTATUS')('discord')
+    assert lua.eval('WoWStatusDiscordSettings.checks[1].widget:GetChecked()') is False
+    lua.execute('''
+        local toggle = WoWStatusDiscordSettings.checks[1].widget
+        toggle:SetChecked(true); toggle.OnClick(toggle)
+        assert(character().settings.discord_enabled)
+        assert(character().discord_enrolled)
+        assert(character().discord_since == time())
+        assert(character().settings.discord_delivery == "summary")
+        toggle:SetChecked(false); toggle.OnClick(toggle)
+        assert(not character().settings.discord_enabled)
+        assert(WoWStatusDB.popups.broadcast)
+    ''')
+
+
+def test_two_clients_share_level_updates_without_companion_or_discord():
+    sender = make_lua()
+    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    for client in [sender, receiver]:
+        client.eval('WoWStatusGroups.update')('navsquad', 'Friend')
+    sender.eval('fire')('PLAYER_LEVEL_UP', 2)
+    packet = sender.eval('__sent[1].text')
+    assert sender.eval('__sent[1].kind') == 'WHISPER'
+    assert sender.eval('__sent[1].target') == 'Eldrin-TestRealm'
+    assert sender.eval('character().settings.discord_enabled') is False
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert receiver.eval('WoWStatusLevelPopup.message:GetText()') == 'Thora reached level 2!'
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 1
+    assert receiver.eval('#character().events') == 0
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 1
+    receiver.eval('SlashCmdList.WOWSTATUS')('activity')
+    assert 'Thora' in receiver.eval('WoWStatusActivity.text:GetText()')
+    receiver.eval('WoWStatusGroups.update')('', 'Friend')
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 0
+    assert 'Thora' not in receiver.eval('WoWStatusActivity.text:GetText()')
+
+
+def test_generic_events_share_only_with_selected_groups_and_honor_privacy():
+    sender = make_lua()
+    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    for client in [sender, receiver]:
+        client.eval('WoWStatusGroups.update')('navsquad', '')
+    sender.eval('fire')('PLAYER_DEAD')
+    packet = sender.eval('__sent[1].text')
+    assert 'WSTATUS3 classic-era death' in packet
+    assert len(packet.encode()) <= 243
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert 'Died' in receiver.eval('WoWStatusLevelPopup.message:GetText()')
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 1
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'OtherAddon', packet, 'WHISPER', 'Thora-TestRealm')
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 1
+    sender.execute('character().settings.in_game.death=false')
+    sender.eval('fire')('PLAYER_DEAD')
+    assert sender.eval('#__sent') == 1
+    receiver.eval('WoWStatusGroups.update')('', '')
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 0
+
+
+def test_discovery_waits_for_real_peers_and_never_sends_custom_channel_data(lua):
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.execute('__peers = {}')
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    assert lua.eval('#__sent') == 0
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'waiting_for_group_peers'
+    lua.execute('__peers={"Eldrin-TestRealm"}; fire("CHANNEL_ROSTER_UPDATE")')
+    assert lua.eval('__sent[1].kind') == 'WHISPER'
+    assert lua.eval('__sent[1].prefix') == 'WoWStatus'
+
+
+
+def test_synchronous_roster_events_do_not_duplicate_outgoing_updates(lua):
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.execute('''
+        function SetSelectedDisplayChannel(index) fire("CHANNEL_ROSTER_UPDATE",index,1) end
+    ''')
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    assert lua.eval('#__sent') == 1
+
+
+
+def test_toast_has_event_icon_and_fades_without_recording_preview(lua):
+    lua.eval('SlashCmdList.WOWSTATUS')('popup test')
+    assert lua.eval('WoWStatusLevelPopup.icon.texture').endswith('Spell_Holy_BlessingOfStrength')
+    assert lua.eval('WoWStatusLevelPopup.heading:GetText()') == 'LEVEL UP!'
+    assert lua.eval('WoWStatusLevelPopup.alpha') == 0
+    lua.execute('WoWStatusLevelPopup.OnUpdate(WoWStatusLevelPopup, .11)')
+    assert lua.eval('WoWStatusLevelPopup.alpha') == pytest.approx(.5)
+    lua.execute('WoWStatusLevelPopup.OnUpdate(WoWStatusLevelPopup, 6)')
+    assert lua.eval('WoWStatusLevelPopup:IsShown()') is False
+    assert lua.eval('#WoWStatusDB.popups.activity') == 0
+    assert lua.eval('#character().events') == 0
+
+
+
+def test_combat_queue_keeps_general_updates_separate_from_coalesced_levels(lua):
+    from wow_status.group_routing import group_key
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.execute('__combat=true')
+    channel = 'WStatus' + group_key('navsquad')
+    receive = lua.eval('WoWStatusPopups.receive')
+    assert receive('WSTATUS3 classic-era death 1793000000 death1 44696564', 'Eldrin-TestRealm', channel)
+    assert receive('WSTATUS2 classic-era LEVEL 2 1793000000 level1', 'Eldrin-TestRealm', channel)
+    assert lua.eval('#WoWStatusDB.popups.activity') == 2
+    lua.execute('__combat=false; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup.heading:GetText()') == 'A FRIEND HAS FALLEN'

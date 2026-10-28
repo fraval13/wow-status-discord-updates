@@ -10,7 +10,7 @@ from urllib.parse import urlparse
 import aiohttp
 
 from .savedvariables import MAX_BYTES, parse
-from .schema import string, validate
+from .schema import integer, string, validate
 
 
 def endpoint(url):
@@ -43,12 +43,28 @@ def exports(path):
     db = parse(raw.decode('utf-8-sig'))
     if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
         raise ValueError('Unsupported addon data')
+    batches = []
+    batch_id = hashlib.sha256(raw).hexdigest()
     for char in db['characters'].values():
         if not isinstance(char, dict):
             raise ValueError('Invalid character table')
-        if char.get('enrolled') is not True:
+        settings = char.get('settings', {})
+        # Addon 0.8.1–0.8.3 enabled sharing by default but only set the enrollment
+        # flag after a checkbox click. Recover those exports without enrolling
+        # disabled characters or overriding an explicit false enrollment flag.
+        enabled_without_flag = ('enrolled' not in char and isinstance(settings, dict)
+                                and settings.get('enabled') is True)
+        if char.get('enrolled') is not True and not enabled_without_flag:
+            continue
+        opted_in = settings.get('discord_enabled') is True
+        previously_enabled = (char.get('discord_enrolled') is True
+                              or ('discord_enabled' not in settings and char.get('enrolled') is True))
+        if not opted_in and not previously_enabled:
             continue
         payload = dict(char, version=1)
+        payload['settings'] = dict(settings, enabled=settings.get('enabled') is True and opted_in)
+        payload['settings']['discord_delivery'] = 'summary'
+        payload['upload_batch'] = batch_id
         snapshot = payload.get('snapshot', {})
         if isinstance(snapshot, dict) and isinstance(snapshot.get('professions'), dict):
             snapshot['professions'] = list(snapshot['professions'].values())
@@ -59,6 +75,10 @@ def exports(path):
         if not isinstance(events, dict):
             raise ValueError('Invalid addon events')
         records = list(events.values())
+        since = char.get('discord_since', 0)
+        if since:
+            since = integer(since, 'Discord sharing start', 1, char['exported_at'] + 300)
+            records = [event for event in records if event.get('at', 0) >= since]
         if 'tracking' in history:
             tracking = history['tracking']
             if not isinstance(tracking, dict):
@@ -66,7 +86,7 @@ def exports(path):
             points = tracking.get('points', {})
             if isinstance(points, dict):
                 points = list(points.values())
-            payload['tracking'] = dict(tracking, points=points)
+            payload['tracking'] = dict(tracking, points=[p for p in points if p.get('at', 0) >= since])
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
             batch = records[offset:offset + 100]
@@ -83,7 +103,23 @@ def exports(path):
                         raise ValueError('Invalid event group targets')
                     targets[event['id']] = list(ids) if ids is not None else None
                 result['_event_targets'] = targets
-            yield result
+            result['_discord_since'] = since
+            if not opted_in:
+                result['_discord_opt_out'] = True
+            batches.append(result)
+    # A complete batch is explicit: large histories must not produce one message per chunk.
+    active = [p for p in batches if p['settings']['enabled']]
+    grouped_batches = {}
+    for result in batches:
+        result['_group_parts'] = {}
+    for index, result in enumerate(active, 1):
+        result['upload_part'], result['upload_parts'] = index, len(active)
+        for target in result.get('_groups', {}):
+            grouped_batches.setdefault(target, []).append(result)
+    for target, selected in grouped_batches.items():
+        for part, result in enumerate(selected, 1):
+            result['_group_parts'][target] = (part, len(selected))
+    yield from batches
 
 
 async def link(url, code, credentials):

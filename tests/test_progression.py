@@ -45,7 +45,7 @@ def test_full_local_history_is_uploaded_in_small_batches(tmp_path):
             x={
                 enrolled=true,
                 identity={guid="p1",name="Thora",realm="Test",client="classic-era"},
-                settings={enabled=true,fields={level=true},collection={level=true},announcements={}},
+                settings={enabled=true,discord_enabled=true,fields={level=true},collection={level=true},announcements={}},
                 snapshot={level=10},exported_at=1793000000,events={},
                 history={events={%s},tracking={points={}}},
             },

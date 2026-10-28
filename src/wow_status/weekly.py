@@ -1,7 +1,8 @@
 """Monday 00:05 Oslo group highlights, using the same consented records as daily recaps."""
 import json
 from collections import Counter
-from datetime import date, datetime, time as day_time, timedelta
+from datetime import date, datetime, timedelta
+from datetime import time as day_time
 from zoneinfo import ZoneInfo
 
 from .archive import TIMEZONE, timestamp
@@ -63,7 +64,8 @@ class WeeklyRecaps:
             for char in self.store.characters():
                 first = self.store.db.execute('SELECT min(uploaded) FROM snapshots WHERE character=?',
                                                (char['id'],)).fetchone()[0]
-                if char['settings']['enabled'] and first is not None and first < end:
+                if (char['settings']['enabled'] and char['settings'].get('discord_delivery') != 'summary'
+                        and first is not None and first < end):
                     self.store.db.execute('INSERT OR IGNORE INTO weekly_parts(week,character,generated) '
                                           'VALUES(?,?,?)', (str(week), char['id'], generated))
         self.store.sync_archives()

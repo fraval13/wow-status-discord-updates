@@ -6,7 +6,7 @@ WoWStatusDB = {
             ["enrolled"] = true,
             ["identity"] = {guid="Player-123-0001", name="Thora", realm="Test Realm", client="classic-era"},
             ["settings"] = {
-                enabled=true, introduction_confirmed=true,
+                enabled=true, discord_enabled=true, introduction_confirmed=true,
                 fields={level=true, class=true, race=true, zone=false},
                 announcements={introduction=true, level=true},
                 loot_quality=4, level_interval=10,

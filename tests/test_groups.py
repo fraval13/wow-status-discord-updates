@@ -161,3 +161,23 @@ async def test_one_offline_group_does_not_stop_the_other_selected_group(tmp_path
     assert await uploader.upload(source) is False
     assert any(url.endswith('/v1/upload') and body.get('group_id') == second
                for url, body, headers in session.requests)
+
+
+async def test_discord_opt_out_withdraws_known_groups_without_enrolling_new_ones(tmp_path, payload, clone):
+    from wow_status.group_client import GroupUploader, identity_key
+    source, first, second = routed(payload, clone)
+    source['_discord_opt_out'] = True
+    source['settings']['enabled'] = False
+    config = {'mode': 'groups', 'url': 'https://example.com', 'groups': {
+        first: {'token': 'existing-token', 'url': 'https://example.com/groups/' + first}}}
+    cache = {'_memberships': {identity_key(source): {first: {'joined_at': source['exported_at']}}}}
+    session = RecordingSession()
+    uploader = GroupUploader(config, tmp_path / 'credentials.json', cache,
+                             tmp_path / 'state.json', session, lambda **values: None)
+    assert await uploader.upload(source)
+    assert len(session.requests) == 1
+    url, body, _ = session.requests[0]
+    assert url.endswith('/groups/' + first + '/v1/upload')
+    assert body['settings']['enabled'] is False
+    assert body['events'] == [] and body['snapshot'] == {}
+    assert second not in config['groups']

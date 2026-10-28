@@ -1,7 +1,8 @@
 """Daily recap windows use Oslo local midnight, including 23/25-hour DST days."""
 import json
 from collections import Counter
-from datetime import date, datetime, time as day_time, timedelta
+from datetime import date, datetime, timedelta
+from datetime import time as day_time
 from zoneinfo import ZoneInfo
 
 from .archive import TIMEZONE, event_document, fields_document, timestamp
@@ -135,7 +136,8 @@ class DailyRecaps:
             for char in self.store.characters():
                 first = self.store.db.execute('SELECT min(uploaded) FROM snapshots WHERE character=?',
                                                (char['id'],)).fetchone()[0]
-                if char['settings']['enabled'] and first is not None and first < end:
+                if (char['settings']['enabled'] and char['settings'].get('discord_delivery') != 'summary'
+                        and first is not None and first < end):
                     self.store.db.execute('INSERT INTO digest_parts(day,timezone,character) '
                                           'VALUES(?,?,?)', (str(day), TIMEZONE, char['id']))
         self.store.sync_archives()
@@ -203,8 +205,8 @@ class DailyRecaps:
 
 
 def render_group(store, reports, title):
-    from .people import character_role, person
     from .output import duration
+    from .people import character_role, person
     ordered = sorted(reports, key=lambda r: (person(store, r['owner'])['display_name'].casefold(),
                                              r['owner'], character_role(store, r['character_id']) != 'main',
                                              r['identity']['name'].casefold()))

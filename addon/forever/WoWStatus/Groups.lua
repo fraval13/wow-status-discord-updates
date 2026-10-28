@@ -94,7 +94,7 @@ local function update(text, playerName)
     database.player_name = playerName
     for _, saved in pairs(database.characters) do apply(saved, true) end
     if WoWStatusPopups then WoWStatusPopups.groupsChanged() end
-    return true, "Group list saved for all characters on this account. /reload exports it. Removed groups stop receiving new data."
+    return true, "Groups saved for all characters. In-game updates use these groups now. Discord is optional."
 end
 G.update = update
 function G.text(character, multiline)
@@ -222,8 +222,8 @@ function G.show(host)
         end
         panel.status = label("", -520)
         label("Add and Remove save immediately for all your characters.\n"
-            .. "Use /reload or log out to export changes, then run the companion.\n"
-            .. "New groups receive current status and future shared events.", -586)
+            .. "In-game updates need only this addon. Discord is a separate opt-in.\n"
+            .. "Friends must use the same group ID and be reachable in WoW.", -586)
         panel.close = button(panel, "Close", 454, -644, 120, function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do

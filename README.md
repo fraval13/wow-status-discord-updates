@@ -1,135 +1,122 @@
-# WoW character status and Discord updates
+# WoW Status — in-game groups, optional Discord summaries
 
-A configurable WoW addon, local companion uploader, authenticated service and Discord
-bot for friends sharing character progress across guilds.
+Friends install **only the WoW addon**, enter the same group ID, and receive each
+other's updates inside the game. No desktop app, account, Discord bot or web
+service is needed for in-game sharing.
 
-**Two addon editions written; in-game validation pending.** At the owner's
-request, no project dependencies were installed and no application or tests were
-run on the work computer. Start with the [home testing guide](docs/HOME_TESTING.md).
-Deployment uses isolated server services and GitHub checks; actual game validation remains a home task.
+Discord is a separate opt-in. Its optional companion uploads saved exports and
+the bot posts **one compact summary of new activity**, rather than an individual
+message for every event in the saved history.
 
-The default group flow is now **IDs entered directly in WoW**, one free-text ID
-at a time using **Add**, with **Remove** buttons in the selected list, with no Discord `/link` step. See [group setup and Discord mapping](docs/GROUPS.md).
-The older linking commands remain available for legacy single-service installations.
+## Start with the addon
 
-## Included
+1. Install `addon/vanilla/WoWStatus` into your Classic Era `Interface/AddOns`
+   directory. Use `addon/forever/WoWStatus` for Forever instead. Install just one
+   edition per client and restart WoW after installation.
+2. Open **Options → AddOns → WoW Status**, or type `/wstatus`.
+3. Open **Groups** (`/wstatus groups`). Enter a group ID and press **Add**. Give
+   friends the same ID. It can be a name such as `navsquad`; in-game groups do not
+   require registration on a server.
+4. Sharing, sending and receiving are enabled by default. Choose which events to
+   collect locally and which to share in WoW. Each character keeps its own choices.
+5. Open **Group activity** (`/wstatus activity`) to see received updates. Friends'
+   updates appear as animated on-screen toasts with a large icon, event colours,
+   a pulsing glow and text. They appear near the upper-middle of the screen for
+   six seconds. Level-ups include levels 2, 3, etc. **Preview toast** in settings
+   (`/wstatus popup test`) shows the style without sending a message.
 
-- Two complete addon folders: `addon/vanilla/WoWStatus` and `addon/forever/WoWStatus`,
-  with separate client adapters and metadata. See [edition setup](docs/ADDON_EDITIONS.md).
-- Experimental in-game friend level popups through an explicitly selected, visible
-  custom chat channel; off by default, trusted senders only, combat deferral.
-- Scrollable in-game event history, export preview, level-versus-time line graph
-  and per-level elapsed durations. Open with `/wstatus logs`, `graph`, or `times`.
-- Previewed, explicitly confirmed one-time introduction when a character first
-  joins the tracker, including existing characters installing the addon later.
-- Level milestones, self-loot rarity filtering, equipment changes, optional death,
-  last-known zone, addon-session updates and player-entered LFG messages.
-- Selected profile fields: level, class, race, faction, guild, equipped gear/item
-  links, last-known zone and requested playtime.
-- Data-only SavedVariables parser, cross-platform uploader, local restart recovery,
-  HTTPS enforcement and repeated-upload suppression.
-- One-use Discord linking codes, per-installation credentials, ownership checks,
-  SQLite state, privacy scrubbing and a persistent announcement outbox.
-- `/character`, `/characters`, `/roster`, `/activity`, `/link`, `/nickname`, `/main`,
-  `/settings` and `/privacy`, restricted to one
-  configured Discord community. Commands respond privately to the requesting user.
-- Discord names with optional nicknames, friend grouping, main/alt labels, combined
-  daily reports, weekly adventures, community posting filters and an optional desktop uploader.
-- One structured JSON file per character, grouped history and level-up times, explicit
-  `Europe/Oslo` timestamps, and a daily recap at **00:05 Oslo time**.
-- Linux/Windows checks and addon ZIP artifacts on GitHub, followed by isolated
-  deployments for `ronkalot` and `navsquad`. See [server/pipeline setup](deploy/SERVER.md).
+Groups and your optional name are account-wide. **Add** and **Remove** save
+immediately and affect all saved characters in that account. No `/reload` is
+needed to apply in-game group changes. Local history is saved by the game on
+reload/logout and remains available through `/wstatus logs`, `graph` and `times`.
 
-Addon settings are in **Options → AddOns → WoW Status**, with an account-wide
-**Groups** subpage. `/wstatus` and `/wstatus groups` open those pages directly.
-New characters start with sharing, profile fields, event collection and immediate
-announcement checkboxes **on**; existing character choices are preserved.
-The introduction still requires preview and confirmation. Groups and the optional
-player name are shared across this WoW account; other choices remain per character. Export follows `/reload`
-or logout. The companion uploads exported data; the service deduplicates and the
-bot posts to the configured chat. This is delayed, last-known telemetry, not live
-presence. The addon never sends HTTP or reads game memory.
+The in-game messages cover level-ups, consented introductions, selected loot,
+equipment changes, deaths, zones, session updates and player-entered LFG messages.
+They contain compact event details, not a full remote inventory or talent profile.
+Loot uses the selected rarity threshold; level-up notifications do not use
+Discord's old milestone interval.
 
-```mermaid
-flowchart LR
-    A[Vanilla or Forever addon] -->|reload or logout| B[SavedVariables]
-    B --> C[Local companion]
-    C -->|selected data over HTTPS| D[Service and SQLite]
-    D --> E[Discord announcements and slash commands]
-```
+## What to expect in WoW
 
-Group-ID users enter their name in the addon and manage group privacy in the
-companion. The Discord-name instructions below apply to optional linked installations.
-See [decisions and tomorrow’s checks](decisions_i_made.md) for the settings-menu update.
+The addon joins a custom channel derived from each group ID to discover its
+members, then sends **addon whispers** to those members. It does not attempt
+hidden addon messages over custom channels, which Classic restricts. A recipient
+needs the addon and matching group ID to display the update.
 
-See [friends, names and recaps](docs/FRIENDS_AND_RECAPS.md) for how your gang’s
-characters stay together and how names are selected. No real name is needed in the addon.
+Both players must be online and able to communicate within WoW's channel/whisper
+rules. Do not assume cross-faction, cross-realm or cross-edition delivery. There
+is no offline server mailbox or replay of missed in-game messages. The last 200
+received updates are kept locally; activity from removed groups is cleared.
+A shared ID is a membership choice, not verified identity or a password.
 
-See [in-game history and graph](docs/IN_GAME_HISTORY.md) for persistent logs,
-partial level durations, Norwegian time and the graph’s data format.
+`/wstatus popup status` shows channel membership, discovered peers and the last
+send attempt. A successful API call is not a delivery receipt. A local preview is
+available with `/wstatus popup test`; previews and synthetic level tests are not
+sent as real progress.
 
-See [live popup setup](docs/LIVE_POPUPS.md) for channel/trust commands and the
-unverified Classic communication limits.
+**Actual two-player validation is still required on the current client.** Tests
+simulate both clients, but cannot establish live channel discovery, restrictions
+or delivery. See [in-game testing](docs/LIVE_POPUPS.md).
 
-## Getting started at home
+## Optional Discord sharing
 
-Python 3.11+ is required for the companion and service. The addon needs no Python
-inside WoW. Each participating friend installs the addon and companion; only one
-host runs the service and bot.
+Leave it off if you only want in-game updates. Friends do not need Python or the
+companion for the main addon functionality.
 
-Follow [HOME_TESTING.md](docs/HOME_TESTING.md) for commands to install, validate the
-pipeline without keys, install into the correct Classic Era client and then connect
-Discord. The addon installer takes your client's actual interface version; the TOC
-in the repository is a template and does not establish current-client compatibility.
+To also share one character in Discord:
 
-No OpenAI key is required. All announcements use deterministic templates and no
-character data is sent to OpenAI. Discord delivery stays disabled unless the service
-is explicitly started with `--discord` and its environment variables are configured.
+1. Open **Options → AddOns → WoW Status → Discord (optional)**, or `/wstatus discord`.
+2. Check **Also share this character to Discord** and choose the event categories.
+   This is off by default, including when upgrading from the old workflow.
+3. Install the optional Python companion on that computer (`python -m pip install
+   -e .` from this repository) and run `wow-status desktop`.
+4. Save the shared service URL, select only this account's
+   `WTF/Account/.../SavedVariables/WoWStatus.lua`, and click **Start uploading**.
+5. Play normally. `/reload`, logout or relog writes the saved data. The running
+   companion uploads that export and the server posts one summary for its new
+   permitted activity. Re-uploading it creates no duplicate summary; an export
+   with no new announceable events is silent.
 
-## Scope and remaining validation
+Example: **Franktest: 3 level-ups (latest level 5), 2 loot finds, 1 death.**
+Large histories upload in chunks, but the bot waits for the complete account
+export and combines the chunks and characters into one message. Summaries use
+counts rather than dumping every item/event. Older unsent activity is folded into
+the next completed summary. Ambiguous Discord sends are held for operator review
+rather than automatically repeated. Automatic daily/weekly reports remain a
+legacy mode; summary-mode characters do not additionally receive those reports.
 
-Vanilla and Forever implementations are available in separate folders. The Forever
-adapter is based on the available client API documentation. Both still need actual
-in-game validation; see [compatibility status](docs/FOREVER_COMPATIBILITY.md).
+Opting in starts a new sharing window; earlier private local events are not
+backfilled. Turning Discord off does not stop in-game sharing. Export and upload
+the opt-out to pause previously uploaded data, or use the companion's group
+privacy controls for an immediate remote pause. Old Discord posts remain.
 
-Automatic dungeon/boss/completion attribution, group-run merging, quest chains,
-attunements, talents, automatic profession skill tracking, mount/pet discovery, reputation, PvP,
-recipe tracking, item allowlists, first-acquisition detection and digests remain
-future milestones. They are not silently inferred from instance entry or inventory
-baselines. See the [full plan](character-logs-plan.md) and
-[implementation status](docs/IMPLEMENTATION_STATUS.md).
+The deployed address is `https://wow.frankvalde.com`, with configured Discord
+destinations `ronkalot` and `navsquad`. Other names work for in-game sharing but
+need an operator mapping if you also want a Discord destination.
 
-## Privacy and operations
+## Development and operations
 
-Name, realm, client identifier and character GUID are required enrollment metadata;
-other profile fields and event categories are independently selected. Loot events
-can share an item even when the equipment profile is hidden. Historical Discord
-posts are not removed automatically by changing settings or deleting service data.
-
-Addon changes reach the server only after export and upload. For immediate server-side
-pause/revocation, use `/privacy action:pause`. An already in-flight message may finish.
-Deleting service data also revokes uploader credentials. Linking again requires consent;
-it can introduce the character again after deletion.
-
-Consented snapshot and event history is retained until deletion, with privacy
-changes scrubbing related historical fields. Each character has its own structured
-JSON archive; see [the JSON format](docs/JSON_FORMAT.md). Collection and immediate
-announcement settings are separate, so non-milestone level-ups can be retained
-without producing extra chat messages. Data is self-reported, not verified
-Battle.net account ownership. Hosting, backups and operator access belong to your
-private community. See [deployment and operator instructions](deploy/README.md).
-
-## Development checks (run at home only)
+Python 3.11+ is needed only for the optional uploader/service and development.
+Both addon editions ship as self-contained folders. Shared Lua changes are copied
+into both with `python scripts/sync_addons.py`.
 
 ```sh
 python -m pip install -e ".[dev]"
-python -m pytest
+python -m pytest -q
 ```
 
-The suite includes a mocked Lua environment through Lupa. It cannot replace actual
-WoW API checks. GitHub Actions runs checks remotely and produces both addon ZIPs. No tests run on the work computer.
+GitHub checks build Vanilla and Forever addon ZIPs and deploy the isolated service
+instances. Server deployment never updates the addon folder on a friend's PC.
 
-Discord integration follows the [discord.py application-command example](https://github.com/Rapptz/discord.py/blob/master/examples/app_commands/basic.py)
-and [interaction API documentation](https://discordpy.readthedocs.io/en/stable/interactions/api.html).
+- [Decisions, validation and handoff](decisions_i_made.md)
+- [Group IDs and optional Discord routing](docs/GROUPS.md)
+- [Standalone addon editions](docs/ADDON_EDITIONS.md)
+- [Local logs, graph and level times](docs/IN_GAME_HISTORY.md)
+- [Optional server and pipeline](deploy/SERVER.md)
+- [Optional JSON exports and archives](docs/JSON_FORMAT.md)
+- [Remaining feature scope](docs/IMPLEMENTATION_STATUS.md)
 
-The Forever implementation is written; in-game compatibility is unverified. See [compatibility status and references](docs/FOREVER_COMPATIBILITY.md).
+No OpenAI key is needed. Character data is not sent to OpenAI. Telemetry is
+player-reported, not Battle.net ownership verification. Dungeon completion,
+quests, talents, automatic profession collection, mounts/pets, reputation and PvP
+remain separate unimplemented collectors; they are not inferred from zone entry.

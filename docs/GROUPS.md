@@ -1,5 +1,17 @@
 # Add and remove account groups directly in WoW
 
+**Version 0.9.0:** in-game sharing is the default. The addon alone joins your group
+and shares updates through addon whispers to its channel members. No companion,
+HTTP service or Discord destination is required. Any matching group ID can be used
+in-game; the server mapping described below is needed only for optional Discord.
+
+Discord is off by default per character under **Discord (optional)**. Its uploader
+combines new activity from each reload/logout export into one summary. The
+remaining server/privacy sections describe this optional path; they are not
+requirements for in-game updates. See [the primary setup](../README.md) and
+[in-game acceptance test](LIVE_POPUPS.md).
+
+
 No invitation link or Discord `/link` code is required for the group-ID flow.
 Open **Options → AddOns → WoW Status → Groups**, use **Groups** in `/wstatus`, or type:
 

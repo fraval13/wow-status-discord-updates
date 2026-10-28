@@ -8,7 +8,8 @@ from discord import app_commands
 
 from .daily import DailyRecaps
 from .formatting import announcement, profile, roster_pages, safe
-from .output import message as announcement_message, emoji
+from .output import emoji, upload_summary
+from .output import message as announcement_message
 from .people import decorate, nickname, remember, set_role
 from .weekly import WeeklyRecaps
 
@@ -230,30 +231,35 @@ class StatusBot(discord.Client):
                 await asyncio.sleep(2)
                 continue
             delivery_id = item['delivery_id']
+            items = self.store.summary_items(item)
             try:
                 channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
                 if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
-                    self.store.delivery(delivery_id, 'failed')
+                    self.store.deliver_many(items, 'failed')
                     log.error('Announcement channel does not belong to configured server')
                     continue
                 # Re-read after network await so privacy changes cancel pending messages.
                 current = self.store.pending(ready_only=True)
                 if current is None or current['delivery_id'] != delivery_id:
                     continue
-                self.store.delivery(delivery_id, 'sending')
-                message = await channel.send(**announcement_message(self.store, current, self.custom_emojis()),
-                                             allowed_mentions=discord.AllowedMentions.none())
-                self.store.delivery(delivery_id, 'sent', message_id=str(message.id))
+                items = self.store.summary_items(current)
+                if not items:
+                    continue
+                self.store.deliver_many(items, 'sending')
+                content = (upload_summary(items) if current['settings'].get('discord_delivery') == 'summary'
+                           else announcement_message(self.store, current, self.custom_emojis()))
+                message = await channel.send(**content, allowed_mentions=discord.AllowedMentions.none())
+                self.store.deliver_many(items, 'sent', message_id=str(message.id))
             except discord.Forbidden:
-                self.store.delivery(delivery_id, 'failed')
+                self.store.deliver_many(items, 'failed')
                 log.error('Discord denied channel access; fix permissions then resolve the delivery')
             except discord.HTTPException as exc:
                 if exc.status == 429:
-                    self.store.delivery(delivery_id, 'pending', delay=60)
+                    self.store.deliver_many(items, 'pending', delay=60)
                 else:
-                    self.store.delivery(delivery_id, 'uncertain' if exc.status >= 500 else 'failed')
+                    self.store.deliver_many(items, 'uncertain' if exc.status >= 500 else 'failed')
             except (OSError, asyncio.TimeoutError):
-                self.store.delivery(delivery_id, 'uncertain')
+                self.store.deliver_many(items, 'uncertain')
             await asyncio.sleep(1)
 
     async def deliver_recap(self, recaps=None):

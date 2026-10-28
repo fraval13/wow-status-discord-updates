@@ -3,7 +3,7 @@ local A = WoWStatusAdapter
 local H = WoWStatusHistory
 local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
-local current, panel
+local current, panel, discordPanel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions"}
 local kinds = {"introduction", "level", "loot", "equipment", "death", "zone", "session", "lfg"}
 local equipmentBaseline = {}
@@ -17,7 +17,7 @@ end
 
 local function defaults()
     return {
-        enabled = true, introduction_confirmed = false, character_role = "alt",
+        enabled = true, discord_enabled = false, discord_delivery = "summary", introduction_confirmed = false, character_role = "alt",
         fields = {level = true, class = true, race = true, faction = true, guild = true,
                   gear = true, zone = true, playtime = true, professions = true},
         collection = {introduction = true, level = true, loot = true, equipment = true,
@@ -31,6 +31,7 @@ end
 local function snapshot()
     if not current then return end
     current.exported_at = time()
+    if current.settings.enabled then current.enrolled = true end
     current.player_name = WoWStatusDB.player_name or ""
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
     local tracking = current.history and current.history.tracking
@@ -69,6 +70,7 @@ local function queue(kind, data, fixed)
     table.insert(current.events, event)
     H.record(current, event)
     snapshot()
+    WoWStatusPopups.broadcast(current, event)
     return event
 end
 
@@ -134,7 +136,7 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, 1050)
+        panel:SetSize(600, 1180)
         panel:SetPoint("CENTER")
         panel:SetFrameStrata("DIALOG")
         panel:EnableMouse(true)
@@ -145,10 +147,10 @@ local function showPanel(host)
         local bg = panel:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints()
         bg:SetColorTexture(0.04, 0.04, 0.07, 0.98)
-        label(panel, "WoW Status — character sharing", 24, -20)
-        label(panel, "Export on /reload or logout; run the companion to upload.\n"
-            .. "Required: character name, realm, client and GUID.\n"
-            .. "Review the sharing choices and introduction preview below.", 24, -55, 550)
+        label(panel, "WoW Status — in-game sharing", 24, -20)
+        label(panel, "Install the addon and add the same group IDs as your friends.\n"
+            .. "Group updates happen inside WoW; no companion is needed.\n"
+            .. "Discord is a separate opt-in under the Discord settings page.", 24, -55, 550)
         panel.checks = {}
         local function checkbox(key, title, x, y, group)
             local check = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
@@ -156,7 +158,7 @@ local function showPanel(host)
             check:SetSize(32, 32)
             label(check, title, 38, -6, 230)
             check:SetScript("OnClick", function(self)
-                local target = group and current.settings[group] or current.settings
+                local target = group == "popups" and WoWStatusDB.popups or (group and current.settings[group] or current.settings)
                 target[key] = self:GetChecked() and true or false
                 if key == "enabled" and target[key] then current.enrolled = true end
                 if key == "enabled" and not target[key] then
@@ -166,6 +168,7 @@ local function showPanel(host)
                     A.requestPlaytime()
                 end
                 scrub()
+                if group == "popups" then WoWStatusPopups.tick() end
                 refresh()
             end)
             table.insert(panel.checks, {widget = check, key = key, group = group})
@@ -179,24 +182,26 @@ local function showPanel(host)
             current.settings.character_role = "main"
             snapshot()
             refresh()
-            say("Main selected locally. Export and upload; Discord /main takes priority if set.")
+            say("Main character selected for this account.")
         end)
-        label(panel, "Profile fields", 24, -196, 550)
+        checkbox("receive", "Receive group updates", 24, -196, "popups")
+        checkbox("broadcast", "Send my updates", 300, -196, "popups")
+        label(panel, "Local profile fields", 24, -256, 550)
         for i, key in ipairs(fields) do
             local x = (i - 1) % 2 == 0 and 24 or 300
-            checkbox(key, key, x, -226 - math.floor((i - 1) / 2) * 38, "fields")
+            checkbox(key, key, x, -286 - math.floor((i - 1) / 2) * 38, "fields")
         end
-        label(panel, "Event", 24, -432, 190)
-        label(panel, "Daily recap", 238, -432, 150)
-        label(panel, "Discord messages", 408, -432, 170)
+        label(panel, "Event", 24, -492, 190)
+        label(panel, "Store locally", 238, -492, 150)
+        label(panel, "Share in WoW", 408, -492, 170)
         for i, key in ipairs(kinds) do
-            local y = -466 - (i - 1) * 38
+            local y = -526 - (i - 1) * 38
             label(panel, key, 24, y - 6, 190)
             checkbox(key, "", 270, y, "collection")
-            checkbox(key, "", 460, y, "announcements")
+            checkbox(key, "", 460, y, "in_game")
         end
-        panel.preview = label(panel, "", 24, -792, 550)
-        button(panel, "Confirm introduction", 24, -860, 190, function()
+        panel.preview = label(panel, "", 24, -852, 550)
+        button(panel, "Introduce character", 24, -940, 190, function()
             if not current.settings.enabled then say("Enable sharing first."); return end
             if not current.settings.collection.introduction then
                 say("Enable introduction storage first."); return
@@ -204,25 +209,25 @@ local function showPanel(host)
             current.settings.introduction_confirmed = true
             queue("introduction", {}, "introduction:" .. current.identity.guid)
             refresh()
-            say("Introduction queued. Use /reload, then run the companion.")
+            say("Introduction queued for your WoW groups. Discord receives it only if opted in and uploaded.")
         end)
-        button(panel, "Pause sharing", 230, -860, 160, function()
+        button(panel, "Pause sharing", 230, -940, 160, function()
             current.settings.enabled = false
             current.settings.introduction_confirmed = false
             scrub()
             refresh()
-            say("Paused locally. /reload and upload to apply remotely, or use /privacy in Discord now.")
+            say("In-game sending paused. For opted-in Discord data, export and upload the pause or use companion privacy controls.")
         end)
-        button(panel, "History / graph", 24, -1000, 160, function()
+        button(panel, "History / graph", 24, -1080, 160, function()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
-        button(panel, "Popup help", 194, -1000, 120, function() WoWStatusPopups.command("") end)
-        button(panel, "Groups", 324, -1000, 90, function() openSettings(true) end)
-        panel.close = button(panel, "Close", 424, -1000, 110, function() panel:Hide() end)
-        label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
-            .. "Test: /wstatus test    LFG: /wstatus lfg <message>\n"
-            .. "Pause or removal applies on upload; posted messages remain.\n"
-            .. "Posting filters do not limit stored events.", 24, -910, 550)
+        button(panel, "Group activity", 194, -1080, 120, function() WoWStatusPopups.showActivity() end)
+        button(panel, "Groups", 324, -1080, 90, function() openSettings(true) end)
+        panel.close = button(panel, "Close", 424, -1080, 110, function() panel:Hide() end)
+        button(panel, "Preview toast", 24, -1120, 160, function() WoWStatusPopups.command("test") end)
+        label(panel, "In-game level updates include every level, not only milestones.\n"
+            .. "Loot follows /wstatus quality. Groups must be reachable in WoW.\n"
+            .. "Local history and graphs work without Discord.", 24, -994, 550)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
@@ -243,8 +248,63 @@ local function showPanel(host)
     panel:Show()
 end
 
+local function showDiscord(host)
+    if not discordPanel then
+        discordPanel = CreateFrame("Frame", "WoWStatusDiscordSettings", UIParent)
+        discordPanel:SetSize(600, 680)
+        discordPanel:EnableMouse(true)
+        local bg = discordPanel:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints(); bg:SetColorTexture(.04, .04, .07, .98)
+        label(discordPanel, "Optional Discord sharing", 24, -20, 550)
+        label(discordPanel, "Off by default. In-game sharing works without this.\n"
+            .. "If enabled, run the companion to upload after /reload or logout.\n"
+            .. "Discord receives one compact summary of new activity per export.", 24, -60, 550)
+        discordPanel.checks = {}
+        local function check(key, text, y, group)
+            local widget = CreateFrame("CheckButton", nil, discordPanel, "UICheckButtonTemplate")
+            widget:SetPoint("TOPLEFT", 24, y); widget:SetSize(32, 32)
+            label(widget, text, 38, -6, 460)
+            widget:SetScript("OnClick", function(self)
+                local target = group and current.settings[group] or current.settings
+                target[key] = self:GetChecked() and true or false
+                if key == "discord_enabled" and target[key] then
+                    current.discord_enrolled, current.discord_since = true, time()
+                end
+                current.settings.discord_delivery = "summary"
+                snapshot()
+            end)
+            table.insert(discordPanel.checks, {widget=widget, key=key, group=group})
+        end
+        check("discord_enabled", "Also share this character to Discord", -150)
+        label(discordPanel, "Include in Discord summaries", 24, -204, 550)
+        for i, kind in ipairs(kinds) do check(kind, kind, -238 - (i - 1) * 38, "announcements") end
+        label(discordPanel, "Repeat uploads do not repeat old activity. Already posted messages\n"
+            .. "remain in Discord. Turn off, then export and upload to apply a pause\n"
+            .. "remotely; companion group privacy controls can pause immediately.", 24, -580, 550)
+    end
+        discordPanel.close = discordPanel.close or button(discordPanel, "Close", 424, -640, 110,
+            function() discordPanel:Hide() end)
+    for i = #UISpecialFrames, 1, -1 do
+        if UISpecialFrames[i] == "WoWStatusDiscordSettings" then table.remove(UISpecialFrames, i) end
+    end
+    if not host then table.insert(UISpecialFrames, "WoWStatusDiscordSettings") end
+    discordPanel.close:SetShown(not host)
+    if not host then
+        if panel then panel:Hide() end
+        if WoWStatusGroupWindow then WoWStatusGroupWindow:Hide() end
+    end
+    discordPanel:SetParent(host or UIParent); discordPanel:ClearAllPoints()
+    discordPanel:SetPoint(host and "TOPLEFT" or "CENTER")
+    if host then discordPanel:SetFrameStrata(host:GetFrameStrata()); discordPanel:SetFrameLevel(host:GetFrameLevel()+1) end
+    for _, entry in ipairs(discordPanel.checks) do
+        local target = entry.group and current.settings[entry.group] or current.settings
+        entry.widget:SetChecked(target[entry.key])
+    end
+    discordPanel:Show()
+end
+
 -- Both pages live inside the game's AddOns settings, with scrollable content.
-local settingsCategory, groupsCategory
+local settingsCategory, groupsCategory, discordCategory
 local function settingsPage(name, width, show)
     local page = CreateFrame("Frame")
     page:Hide()
@@ -265,7 +325,7 @@ local function settingsPage(name, width, show)
     end
     local function display()
         show(scroll)
-        content = name == "Groups" and WoWStatusGroupWindow or WoWStatusSetup
+        content = name == "Groups" and WoWStatusGroupWindow or (name == "Discord" and WoWStatusDiscordSettings or WoWStatusSetup)
         scroll:SetScrollChild(content)
         resize()
     end
@@ -289,6 +349,9 @@ registerSettings = function()
         local groups = settingsPage("Groups", 620, WoWStatusGroups.show)
         groupsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, groups, "Groups")
         Settings.RegisterAddOnCategory(groupsCategory)
+        local discord = settingsPage("Discord", 600, showDiscord)
+        discordCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, discord, "Discord (optional)")
+        Settings.RegisterAddOnCategory(discordCategory)
     elseif InterfaceOptions_AddCategory then
         local page = settingsPage("WoW Status", 600, showPanel)
         InterfaceOptions_AddCategory(page)
@@ -297,15 +360,20 @@ registerSettings = function()
         groups.parent = page.name
         InterfaceOptions_AddCategory(groups)
         groupsCategory = groups
+        local discord = settingsPage("Discord", 600, showDiscord)
+        discord.parent = page.name
+        InterfaceOptions_AddCategory(discord)
+        discordCategory = discord
     end
 end
 openSettings = function(groups)
     registerSettings()
-    local category = groups and groupsCategory or settingsCategory
+    local category = groups == "discord" and discordCategory or (groups and groupsCategory or settingsCategory)
     if category and category.GetID and Settings and Settings.OpenToCategory then
         Settings.OpenToCategory(category:GetID())
     elseif category and InterfaceOptionsFrame_OpenToCategory then
         InterfaceOptionsFrame_OpenToCategory(category)
+    elseif groups == "discord" then showDiscord()
     elseif groups then WoWStatusGroups.show()
     else showPanel() end
 end
@@ -347,6 +415,15 @@ local function initialize()
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity
+    if current.settings.discord_enabled == nil then
+        current.discord_enrolled = current.enrolled == true
+        current.settings.discord_enabled = false
+    end
+    current.settings.discord_delivery = "summary"
+    current.settings.in_game = current.settings.in_game or {}
+    for _, kind in ipairs(kinds) do
+        if current.settings.in_game[kind] == nil then current.settings.in_game[kind] = true end
+    end
     WoWStatusGroups.init(WoWStatusDB, function() return current end, say)
     WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
     H.init(current)
@@ -400,7 +477,6 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if level and level >= 1 and level <= A.max_level and current.settings.fields.level then
             local maxLevel = A.max_level
             local event = queue("level", {level = level, maximum = level == maxLevel})
-            WoWStatusPopups.broadcast(current, event)
             if event and current.settings.fields.playtime then
                 pendingPlayedLevel = event
                 A.requestPlaytime()
@@ -478,6 +554,8 @@ SlashCmdList.WOWSTATUS = function(message)
             WoWStatusPopups.groupsChanged()
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
         else openSettings(true) end
+    elseif command == "discord" then openSettings("discord")
+    elseif command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
     elseif command == "popup" then
         WoWStatusPopups.command(rest)
     elseif command == "logs" or command == "graph" or command == "times" then
@@ -488,7 +566,7 @@ SlashCmdList.WOWSTATUS = function(message)
         current.settings.introduction_confirmed = false
         scrub()
         refresh()
-        say("Paused. /reload and upload to apply remotely, or use Discord /privacy immediately.")
+        say("In-game sharing paused. Opted-in Discord pauses apply after export/upload or through companion privacy controls.")
     elseif command == "test" then
         queue("level", {level = 10, synthetic = true})
         say("Synthetic level 10 event requested; requires sharing, level field and level storage.")

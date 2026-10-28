@@ -97,3 +97,54 @@ def test_forever_is_accepted_and_other_unknown_clients_are_rejected(payload):
     payload['identity']['client'] = 'retail'
     with pytest.raises(ValidationError):
         validate(payload)
+
+
+
+@pytest.mark.parametrize('flag,enabled,expected', [
+    ('', True, 1),
+    ('', False, 0),
+    ('["enrolled"] = false,', True, 0),
+    ('["enrolled"] = false,', False, 0),
+])
+def test_exports_recover_enabled_characters_missing_enrollment(tmp_path, flag, enabled, expected):
+    from pathlib import Path
+    fixture = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text()
+    fixture = fixture.replace('["enrolled"] = true,', flag)
+    if not enabled:
+        fixture = fixture.replace('enabled=true,', 'enabled=false,', 1)
+    path = tmp_path / 'WoWStatus.lua'
+    path.write_text(fixture)
+    values = list(exports(path))
+    assert len(values) == expected
+    if expected:
+        assert values[0]['settings']['enabled'] is True
+        assert values[0]['identity']['name'] == 'Thora'
+
+
+def test_discord_opt_out_skips_new_characters_and_emits_only_pause_for_prior_opt_in(tmp_path):
+    from pathlib import Path
+    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text()
+    source = source.replace('discord_enabled=true', 'discord_enabled=false')
+    path = tmp_path / 'WoWStatus.lua'
+    path.write_text(source)
+    assert list(exports(path)) == []
+    source = source.replace('["enrolled"] = true,', '["enrolled"] = true, discord_enrolled=true,')
+    path.write_text(source)
+    paused = list(exports(path))
+    assert len(paused) == 1
+    assert paused[0]['settings']['enabled'] is False
+    assert paused[0]['snapshot'] == {} and paused[0]['events'] == []
+    assert paused[0]['_discord_opt_out'] is True
+
+
+def test_discord_opt_in_does_not_backfill_earlier_local_history(tmp_path):
+    from pathlib import Path
+    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text()
+    source = source.replace('["enrolled"] = true,', '["enrolled"] = true, discord_since=1793000001,')
+    source = source.replace('["exported_at"] = 1793000000', '["exported_at"] = 1793000002')
+    path = tmp_path / 'WoWStatus.lua'
+    path.write_text(source)
+    batch = list(exports(path))[0]
+    assert batch['events'] == []
+    assert batch['settings']['discord_delivery'] == 'summary'
+    assert batch['upload_part'] == batch['upload_parts'] == 1

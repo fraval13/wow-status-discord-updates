@@ -6,8 +6,8 @@ import sqlite3
 import time
 from pathlib import Path
 
-from .schema import ValidationError, should_announce, validate
 from . import limits
+from .schema import ValidationError, should_announce, validate
 
 
 class Conflict(ValidationError):
@@ -63,6 +63,14 @@ class Store:
             status TEXT NOT NULL DEFAULT 'pending', attempts INTEGER NOT NULL DEFAULT 0,
             next_try REAL NOT NULL DEFAULT 0, message_id TEXT,
             UNIQUE(character,event_id));
+        CREATE TABLE IF NOT EXISTS upload_receipts(
+            owner TEXT NOT NULL, batch TEXT NOT NULL, part INTEGER NOT NULL,
+            total INTEGER NOT NULL, received INTEGER NOT NULL,
+            PRIMARY KEY(owner,batch,part));
+        CREATE TABLE IF NOT EXISTS outbox_batches(
+            delivery INTEGER PRIMARY KEY REFERENCES outbox(id) ON DELETE CASCADE,
+            owner TEXT NOT NULL, batch TEXT NOT NULL);
+        CREATE INDEX IF NOT EXISTS outbox_batch_lookup ON outbox_batches(owner,batch);
         CREATE TABLE IF NOT EXISTS snapshots(
             id TEXT PRIMARY KEY, character TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
             exported INTEGER NOT NULL, uploaded INTEGER NOT NULL,
@@ -238,6 +246,21 @@ class Store:
                         self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=? AND id=?",
                                         (cid, row['id']))
             accepted, new_bytes = 0, 0
+            batch = None
+            if p['settings'].get('discord_delivery') == 'summary' and p['settings']['enabled']:
+                batch = p.get('upload_batch') or self.digest(json.dumps([cid, p['exported_at']]))
+                total, part = p.get('upload_parts', 1), p.get('upload_part', 1)
+                previous = self.db.execute('SELECT total FROM upload_receipts WHERE owner=? AND batch=? LIMIT 1',
+                                           (owner, batch)).fetchone()
+                if previous and previous['total'] != total:
+                    raise Conflict('Upload batch changed; export current data again')
+                receipt_added = self.db.execute('INSERT OR IGNORE INTO upload_receipts VALUES(?,?,?,?,?)',
+                                               (owner, batch, part, total, now)).rowcount
+                new_bytes += 160 * receipt_added
+                self.db.execute('''DELETE FROM upload_receipts WHERE received<? AND NOT EXISTS
+                    (SELECT 1 FROM outbox_batches b JOIN outbox o ON o.id=b.delivery
+                     WHERE b.owner=upload_receipts.owner AND b.batch=upload_receipts.batch AND o.status='pending')''',
+                    (now - 604800,))
             for event in p['events']:
                 eid = 'introduction' if event['kind'] == 'introduction' else event['id']
                 claim = self.level_claim(event['data']) if event['kind'] == 'level' else None
@@ -251,8 +274,18 @@ class Store:
                     if claim:
                         self.db.execute('INSERT INTO level_claims VALUES(?,?)', (cid, claim))
                 if inserted and self.should_announce(p['settings'], event):
-                    self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)', (cid, eid))
+                    cursor = self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)', (cid, eid))
+                    if batch:
+                        self.db.execute('INSERT INTO outbox_batches VALUES(?,?,?)',
+                                        (cursor.lastrowid, owner, batch))
                 accepted += inserted
+            if batch:
+                # A newer complete export also absorbs any older unsent backlog for
+                # this character, including legacy per-event and incomplete batches.
+                self.db.execute("""INSERT OR REPLACE INTO outbox_batches(delivery,owner,batch)
+                    SELECT id,?,? FROM outbox WHERE character=? AND status='pending'""", (owner, batch, cid))
+                self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? AND status='pending'", (cid,))
+                self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? AND status='pending'", (cid,))
             # A retry costs no storage budget. Disabled-sharing uploads can always scrub
             # retained data even after the owner's daily growth budget has been exhausted.
             if p['settings']['enabled']:
@@ -322,6 +355,7 @@ class Store:
             self.db.execute('DELETE FROM characters WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM installations WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM links WHERE owner=?', (owner,))
+            self.db.execute('DELETE FROM upload_receipts WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
         for cid in ids:
@@ -345,7 +379,10 @@ class Store:
         row = self.db.execute('''SELECT o.id AS delivery_id,e.id AS event_id,e.kind,e.at,e.data,c.*
             FROM outbox o JOIN characters c ON c.id=o.character
             JOIN events e ON e.character=o.character AND e.id=o.event_id
-            WHERE o.status='pending' AND e.suppressed=0 AND o.next_try<=? ''' + readiness +
+            WHERE o.status='pending' AND e.suppressed=0 AND o.next_try<=?
+            AND NOT EXISTS (SELECT 1 FROM outbox_batches b WHERE b.delivery=o.id AND
+                (SELECT COUNT(*) FROM upload_receipts r WHERE r.owner=b.owner AND r.batch=b.batch)
+                 < (SELECT MAX(total) FROM upload_receipts r WHERE r.owner=b.owner AND r.batch=b.batch)) ''' + readiness +
             'ORDER BY ' + ordering + 'o.id LIMIT 1', (time.time(), time.time()) if ready_only else (time.time(),)).fetchone()
         if not row:
             return None
@@ -353,6 +390,41 @@ class Store:
         item['data'] = json.loads(item['data'])
         from .people import decorate
         return decorate(self, item)
+
+    def summary_items(self, item):
+        """All still-permitted rows in this completed account export; never split it into messages."""
+        if item['settings'].get('discord_delivery') != 'summary':
+            return [item]
+        batch = self.db.execute('SELECT owner,batch FROM outbox_batches WHERE delivery=?',
+                                (item['delivery_id'],)).fetchone()
+        if batch is None:
+            return [item]
+        rows = self.db.execute("""SELECT o.id AS delivery_id,e.id AS event_id,e.kind,e.at,e.data,c.*
+            FROM outbox_batches b JOIN outbox o ON o.id=b.delivery
+            JOIN characters c ON c.id=o.character JOIN events e ON e.character=c.id AND e.id=o.event_id
+            WHERE b.owner=? AND b.batch=? AND o.status='pending' AND e.suppressed=0
+            ORDER BY c.id,e.at,o.id""", (batch['owner'], batch['batch'])).fetchall()
+        from .people import decorate
+        values = []
+        for row in rows:
+            value = self.decode(row)
+            value['data'] = json.loads(value['data'])
+            if self.should_announce(value['settings'], value):
+                values.append(decorate(self, value))
+        return values
+
+    def deliver_many(self, items, status, delay=0, message_id=None):
+        # One transaction makes uncertain sends apply to the whole summary on restart.
+        with self.db:
+            if status == 'sending':
+                for cid in {item['id'] for item in items}:
+                    self.reserve_post(cid)
+            for item in items:
+                self.db.execute("""UPDATE outbox SET status=?,next_try=?,message_id=?,attempts=attempts+?
+                    WHERE id=?""", (status, time.time()+delay, message_id, int(status == 'sending'),
+                                    item['delivery_id']))
+        for cid in {item['id'] for item in items}:
+            self.sync_archive(cid)
 
     def delivery(self, delivery_id, status, delay=0, message_id=None):
         if status == 'sending':
@@ -373,11 +445,14 @@ class Store:
         mode = self.community_setting('immediate_mode', 'celebrations')
         if mode == 'daily_only':
             return False
-        if mode == 'celebrations' and event['kind'] not in ('introduction', 'level', 'loot'):
+        if (settings.get('discord_delivery') != 'summary' and mode == 'celebrations'
+                and event['kind'] not in ('introduction', 'level', 'loot')):
             return False
         if not should_announce(settings, event):
             return False
         if event['kind'] == 'level':
+            if settings.get('discord_delivery') == 'summary':
+                return True
             interval = int(self.community_setting('level_interval', '10'))
             return event['data']['level'] % interval == 0 or event['data'].get('maximum') is True
         if event['kind'] == 'loot':

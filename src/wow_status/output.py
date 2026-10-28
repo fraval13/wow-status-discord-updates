@@ -101,3 +101,37 @@ def message(store, item, custom=None):
             colour=0xFFD700 if maximum else 0x1EFF00)
         result['embed'] = embed
     return result
+
+
+
+def upload_summary(items):
+    """One bounded message per exported account batch; summarize volume, never dump events."""
+    from collections import Counter
+    characters = {}
+    for item in items:
+        characters.setdefault(item['id'], []).append(item)
+    lines = ['📜 **Progress since the last upload**']
+    for index, records in enumerate(characters.values()):
+        if index >= 12:
+            lines.append(f'…and {len(characters) - index} more characters. Full history is retained.')
+            break
+        real = [item for item in records if not item['data'].get('synthetic')]
+        counts = Counter(item['kind'] for item in real)
+        levels = sorted({r['data']['level'] for r in real if r['kind'] == 'level'})
+        parts = []
+        if len(real) != len(records):
+            parts.append(f'{len(records) - len(real)} test event(s), not real progress')
+        if counts['introduction']:
+            parts.append('joined the tracker')
+        if levels:
+            parts.append(f"level {levels[0]}" if len(levels) == 1 else f"{len(levels)} level-ups (latest level {levels[-1]})")
+        labels = {'loot': 'loot finds', 'equipment': 'gear changes', 'death': 'deaths',
+                  'zone': 'zone changes', 'session': 'session updates', 'lfg': 'LFG updates'}
+        parts.extend(f'{counts[kind]} {label}' for kind, label in labels.items() if counts[kind])
+        name = safe(records[0]['identity']['name'])
+        line = f"**{name}**: " + ', '.join(parts)
+        if sum(len(x) + 1 for x in lines) + len(line) > 1800:
+            lines.append('Additional activity is retained in the character history.')
+            break
+        lines.append(line)
+    return {'content': '\n'.join(lines)}

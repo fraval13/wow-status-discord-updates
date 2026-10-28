@@ -40,6 +40,14 @@ def validate(payload):
     clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
                                       ('guid', 'name', 'realm', 'client')},
              'settings': {}, 'snapshot': {}, 'events': []}
+    if 'upload_batch' in payload:
+        batch = payload['upload_batch']
+        if not isinstance(batch, str) or not re.fullmatch('[a-f0-9]{64}', batch):
+            raise ValidationError('Invalid upload batch')
+        clean['upload_batch'] = batch
+        clean['upload_parts'] = integer(payload.get('upload_parts', 1), 'upload parts', 1, 10000)
+        clean['upload_part'] = integer(payload.get('upload_part', 1), 'upload part', 1,
+                                       clean['upload_parts'])
     if 'group_id' in payload:
         target = payload['group_id']
         if not isinstance(target, str) or not re.fullmatch('[a-f0-9]{22}', target):
@@ -60,6 +68,10 @@ def validate(payload):
         if not isinstance(values, dict):
             raise ValidationError(f'Invalid {key}')
         clean['settings'][key] = {k: values.get(k) is True for k in sorted(allowed)}
+    delivery = settings.get('discord_delivery', 'events')
+    if delivery not in ('events', 'summary'):
+        raise ValidationError('Invalid Discord delivery mode')
+    clean['settings']['discord_delivery'] = delivery
     role = settings.get('character_role', 'alt')
     if role not in ('main', 'alt'):
         raise ValidationError('Invalid character role')
@@ -182,6 +194,8 @@ def should_announce(settings, event):
     if not settings['enabled'] or not settings['announcements'].get(event['kind']):
         return False
     if event['kind'] == 'level':
+        if settings.get('discord_delivery') == 'summary':
+            return True
         return (event['data']['level'] % settings['level_interval'] == 0
                 or event['data'].get('maximum') is True)
     if event['kind'] == 'loot':

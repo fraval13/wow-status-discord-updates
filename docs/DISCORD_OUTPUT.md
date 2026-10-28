@@ -1,3 +1,23 @@
+# Optional Discord export summaries (0.9.0)
+
+Discord sharing is off by default and independent of in-game sharing. Opt in per
+character with `/wstatus discord`. After `/reload`, logout or relog, the optional
+running companion uploads the newly shared activity. The bot waits for every
+chunk of an account export and sends one bounded summary, combining characters
+and counting events instead of sending a stream of individual messages.
+
+Retries do not repeat events or completed summaries. Empty exports are silent.
+An incomplete upload waits for its remaining chunks; a later complete export can
+absorb an older unsent backlog. Uncertain sends are held for review. Privacy is
+rechecked after channel lookup and before sending. In summary mode every selected
+level-up is counted, including level 2; old individual-message milestone filters
+do not suppress summary counts. Loot still follows the chosen rarity filters.
+Synthetic tests are explicitly labeled and excluded from real progress counts.
+
+Automatic daily/weekly recaps remain available to legacy event-mode installations;
+summary-mode characters are excluded so they do not receive duplicate scheduled
+reports. The historical individual-event output documentation follows.
+
 # Discord progress updates
 
 Automatic posts use the destination server's unrestricted custom emojis named

@@ -1,5 +1,55 @@
 # Decisions I made — 27 October 2026
 
+## Latest decision — in-game sharing first, optional Discord summaries (0.9.0)
+
+This supersedes the earlier companion-first setup below.
+
+- Friends install only the addon and enter the same account-wide group ID.
+  Sending and receiving in-game updates are enabled on this workflow's first
+  upgrade; subsequent preferences persist. Paused characters stay paused.
+- Shared channels discover members; supported addon whispers carry the event
+  messages. Hidden addon messages are not sent over custom channels. The sender
+  uses the actual channel roster and recipient identities supplied by WoW.
+- Level-ups, introductions, qualifying loot, equipment changes, deaths, zone and
+  session updates, and player-entered LFG messages can be shared in WoW. Local
+  history and the received activity feed do not require a companion or server.
+- Updates appear in an animated upper-middle toast: a large event icon, coloured
+  accent, pulsing glow, slide/fade-in and six-second display. Sound is optional.
+  **Preview toast** is available in settings; previews never count as real progress.
+  The activity window retains up to 200 received updates and clears removed groups.
+- Discord has its own visible settings subpage and defaults **off** for both new
+  and upgraded characters. Opting in starts a new sharing window. In-game sharing
+  and local collection continue when Discord is off. The enrollment bug from
+  0.8.1–0.8.3 is fixed without treating local tracking as Discord consent.
+- The optional uploader runs on the computer whose Discord-opted-in data is being
+  shared. It uploads after the game saves on reload/logout/relog. No uploader is
+  needed for the primary in-game feature.
+- The bot posts one compact summary per account export, not one message per stored
+  event. The server records an explicit chunk manifest and waits for the complete
+  batch; retries are deduplicated. Characters and older unsent backlog are combined.
+  A snapshot-only export is silent. Summary-mode characters do not also receive
+  automatic daily/weekly reports. Synthetic tests are clearly marked separately.
+- All enabled level-up events count in Discord summaries, including level 2;
+  milestone intervals apply only to the legacy individual-event mode. The selected
+  loot rarity filter still applies. Uncertain Discord sends are held for review.
+- Native channel discovery and delivery still need a real two-player test on your
+  current Vanilla client. Tests use two independent simulated clients and verify
+  no companion or Discord opt-in is required. Realm/faction chat limits still apply.
+
+Validation for 0.9.0: 147 tests passed, including two independent simulated game
+clients, Discord opt-in/opt-out isolation, full export chunk manifests, summary
+batch deduplication, privacy changes during delivery, and toast fade/icon behavior.
+The 50 addon tests also passed using Lua 5.1. The installed Vanilla folder and both
+ZIP packages were updated with backups; the previously opened companion was
+stopped, and inspection of the current export confirmed zero enabled Discord
+batches. No test messages were sent to Discord or through the live game client.
+
+Testing checklist: install version 0.9.0 on both clients, restart WoW, add the same
+group ID, inspect `/wstatus popup status`, preview the toast, and trigger a real
+level-up or selected event. Check `/wstatus activity` on the other client. For
+optional Discord, enable the separate checkbox, start the companion, export a
+few events together, and verify exactly one summary and no duplicate on retry.
+
 ## Follow-up — 28 October 2026, addon 0.8.3
 
 The group editor now has a single-line **Group ID** input and **Add** button.

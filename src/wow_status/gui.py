@@ -33,7 +33,7 @@ def launch():
         except (OSError, ValueError):
             pass
     root = tk.Tk()
-    root.title('WoW Status companion')
+    root.title('WoW Status — optional Discord uploader')
     root.geometry('760x540')
     box = ttk.Frame(root, padding=20)
     box.pack(fill='both', expand=True)
@@ -43,11 +43,11 @@ def launch():
     path = tk.StringVar(value=saved.get('path', ''))
     selected_group = tk.StringVar()
     group_lookup = {}
-    connection = tk.StringVar(value='Select your groups in WoW using /wstatus groups. No /link code needed.')
+    connection = tk.StringVar(value='Uploader stopped. Run /reload in WoW, then click Start uploading.')
     last_export = tk.StringVar(value='No export observed in this session')
     last_upload = tk.StringVar(value='No upload confirmed in this session')
-    ttk.Label(box, text='WoW Status — your groups, your characters', font=('', 15, 'bold')).pack(anchor='w')
-    ttk.Label(box, text='Enter your shared service address once. Group IDs and your name come from the addon.',
+    ttk.Label(box, text='Optional Discord sharing', font=('', 15, 'bold')).pack(anchor='w')
+    ttk.Label(box, text='In-game sharing needs only the addon. To use Discord, opt in for each character in WoW Status → Discord, then configure this uploader.',
               wraplength=710).pack(anchor='w', pady=(8, 16))
     ttk.Label(box, text='Shared service URL (HTTPS; localhost allowed for home tests)').pack(anchor='w')
     ttk.Entry(box, textvariable=url).pack(fill='x')

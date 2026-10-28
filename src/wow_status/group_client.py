@@ -95,7 +95,7 @@ class GroupUploader:
     async def upload(self, payload):
         key = identity_key(payload)
         known = self.cache.setdefault('_memberships', {}).setdefault(key, {})
-        selected = payload.get('_groups', {})
+        selected = {} if payload.get('_discord_opt_out') else payload.get('_groups', {})
         # Withdraw from removed groups, even though they are no longer selected.
         for target in list(known):
             if target in selected:
@@ -121,11 +121,16 @@ class GroupUploader:
                     continue
                 known[target] = {'joined_at': selected[target]['joined_at']}
                 atomic_json(self.state, self.cache)
-                minimum = route.get('min_joined_at', 0)
+                minimum = max(route.get('min_joined_at', 0), payload.get('_discord_since', 0))
                 if payload['exported_at'] < minimum:
                     self.status(connection='Run /reload to export current data after resuming this group.')
                     continue
                 scoped = for_group(payload, target, minimum)
+                if payload.get('upload_batch') and scoped['settings']['enabled']:
+                    import hashlib
+                    scoped['upload_batch'] = hashlib.sha256(
+                        (target + payload['upload_batch']).encode()).hexdigest()
+                    scoped['upload_part'], scoped['upload_parts'] = payload['_group_parts'][target]
                 first = scoped['events'][0]['id'] if scoped['events'] else ':snapshot'
                 cache_key = 'group:' + target + ':' + route['token'] + ':' + key + ':' + first
                 # Hash keys so upload-state files never contain bearer credentials.
