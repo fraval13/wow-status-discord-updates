@@ -17,8 +17,9 @@ message for every event in the saved history.
 3. Open **Groups** (`/wstatus groups`). Enter a group ID and press **Add**. Give
    friends the same ID. It can be a name such as `navsquad`; in-game groups do not
    require registration on a server.
-4. Sharing, sending and receiving are enabled by default. Choose which events to
-   collect locally and which to share in WoW. Each character keeps its own choices.
+4. Joining a group automatically enables sending and receiving; there are no
+   additional send/receive switches. Choose which events to collect locally and
+   share in WoW. Each character keeps its own event and character privacy choices.
 5. Open **Group activity** (`/wstatus activity`) to see received updates. Friends'
    updates appear as animated on-screen toasts with a large icon, event colours,
    a pulsing glow and text. They appear near the upper-middle of the screen for

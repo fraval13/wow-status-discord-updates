@@ -26,8 +26,16 @@ end
 local function combat()
     return InCombatLockdown and InCombatLockdown()
 end
+local function groupMode(character)
+    character = character or (getCharacter and getCharacter())
+    return character and next(WoWStatusGroups.selected(character)) ~= nil
+end
+local function receiving()
+    return prefs and (groupMode() or prefs.receive)
+end
 local function canShare(character, event)
-    if not (prefs and prefs.broadcast and character and character.settings.enabled) then return false end
+    if not (prefs and character and character.settings.enabled
+        and (groupMode(character) or prefs.broadcast)) then return false end
     if not event then return true end
     if not character.settings.collection[event.kind] then return false end
     if character.settings.in_game and character.settings.in_game[event.kind] == false then return false end
@@ -182,7 +190,7 @@ end
 
 function P.receive(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)
-    if not prefs or not prefs.receive or type(text) ~= "string" or #text > 220
+    if not receiving() or type(text) ~= "string" or #text > 220
         or type(channel) ~= "string" then return false end
     local group = channels()[channel:lower()]
     if not group then return false end
@@ -326,7 +334,7 @@ local function tick()
     if not prefs then return end
     local now = time()
     syncGroups()
-    if not prefs.receive then
+    if not receiving() then
         incoming, active = {}, nil
         if toast then toast:Hide() end
     end
@@ -344,7 +352,7 @@ local function tick()
         return
     end
     if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
-    if prefs.receive and not active and #incoming > 0 and now - lastDisplay >= 7 then
+    if receiving() and not active and #incoming > 0 and now - lastDisplay >= 7 then
         local item = table.remove(incoming, 1)
         if now - item.received_at <= 600 and (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
             or prefs.trusted[item.key]) then show(item, now) end
@@ -473,7 +481,8 @@ refreshActivity = function()
         or "No group updates received yet.\n\nChoose the same group ID as your friends. You must be online and able to communicate in WoW. No companion or Discord account is needed.")
     activityPanel.child:SetHeight(math.max(340, activityPanel.text:GetStringHeight() + 30))
     local state = prefs.last_send and prefs.last_send.state or "No update sent yet"
-    activityPanel.status:SetText("Receive: " .. tostring(prefs.receive) .. " · Send: " .. tostring(prefs.broadcast)
+    activityPanel.status:SetText((groupMode() and "Group updates: automatic"
+        or ("Legacy receive: " .. tostring(prefs.receive) .. " · Send: " .. tostring(prefs.broadcast)))
         .. " · " .. state .. "\nGroups: " .. WoWStatusGroups.text(getCharacter()))
 end
 function P.showActivity()
@@ -508,6 +517,10 @@ end
 function P.command(text)
     if not prefs then return end
     local command, rest = text:match("^(%S*)%s*(.-)$")
+    if groupMode() and (command == "on" or command == "off" or command == "send") then
+        notify("Group membership automatically enables updates. Remove a group in /wstatus groups to leave it.")
+        return
+    end
     if command == "on" then prefs.receive = true; notify("Popup reception enabled for your selected group IDs. Use /wstatus groups to choose them.")
     elseif command == "off" then
         prefs.receive, prefs.broadcast = false, false
@@ -542,14 +555,14 @@ function P.command(text)
         notify("Trust preference updated for " .. sender .. ".")
         P.tick()
     elseif command == "test" then
-        if not prefs.receive then notify("Enable reception with /wstatus popup on first."); return end
+        if not receiving() then notify("Join a group first, or use /wstatus popup on for a local preview."); return end
         if #incoming < 20 then
             table.insert(incoming, {sender = "Preview", key = "local-preview", level = 25,
                 received_at = time(), preview = true})
             P.tick()
         end
     elseif command == "status" then
-        notify("Popups: receive=" .. tostring(prefs.receive) .. ", broadcast=" .. tostring(prefs.broadcast)
+        notify((groupMode() and "Group updates: automatic" or ("Legacy popups: receive=" .. tostring(prefs.receive) .. ", broadcast=" .. tostring(prefs.broadcast)))
             .. ", sound=" .. tostring(prefs.sound) .. ", channel=" .. prefs.channel
             .. ", groups=" .. WoWStatusGroups.text(getCharacter()) .. ".")
         for id in pairs(WoWStatusGroups.selected(getCharacter())) do

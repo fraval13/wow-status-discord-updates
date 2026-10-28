@@ -809,3 +809,40 @@ def test_combat_queue_keeps_general_updates_separate_from_coalesced_levels(lua):
     assert lua.eval('#WoWStatusDB.popups.activity') == 2
     lua.execute('__combat=false; WoWStatusPopups.tick()')
     assert lua.eval('WoWStatusLevelPopup.heading:GetText()') == 'A FRIEND HAS FALLEN'
+
+
+
+def test_group_membership_ignores_stale_send_receive_flags_and_old_off_commands():
+    sender = make_lua()
+    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    for client in [sender, receiver]:
+        client.eval('WoWStatusGroups.update')('navsquad', '')
+        client.execute('''
+            WoWStatusDB.popups.receive=false
+            WoWStatusDB.popups.broadcast=false
+            SlashCmdList.WOWSTATUS("popup off")
+            SlashCmdList.WOWSTATUS("popup send off")
+        ''')
+    sender.eval('fire')('PLAYER_LEVEL_UP', 2)
+    packet = sender.eval('__sent[1].text')
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert receiver.eval('WoWStatusLevelPopup.message:GetText()') == 'Thora reached level 2!'
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 1
+    receiver.eval('SlashCmdList.WOWSTATUS')('activity')
+    assert 'automatic' in receiver.eval('WoWStatusActivity.status:GetText()')
+    receiver.eval('WoWStatusGroups.update')('', '')
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert receiver.eval('#WoWStatusDB.popups.activity') == 0
+
+
+def test_settings_refresh_has_no_account_popup_checkboxes(lua):
+    lua.execute('''
+        WoWStatusDB.popups.receive=false
+        WoWStatusDB.popups.broadcast=false
+        SlashCmdList.WOWSTATUS("")
+        for _, entry in ipairs(WoWStatusSetup.checks) do
+            assert(entry.key ~= "receive" and entry.key ~= "broadcast")
+            local target = entry.group and character().settings[entry.group] or character().settings
+            assert(entry.widget:GetChecked() == target[entry.key])
+        end
+    ''')

@@ -5,14 +5,15 @@ same group ID. Discord and the companion are optional.
 
 ## Two-player acceptance test
 
-Install version 0.9.0 on both clients and restart them. Use two characters that can
+Install version 0.9.1 on both clients and restart them. Use two characters that can
 communicate through the same custom channel (normally the same realm and faction).
 Do not run a companion for this test.
 
 1. Both players open `/wstatus groups`, enter `navsquad`, and press **Add**.
-2. In `/wstatus`, verify **Share this character**, **Receive group updates**,
-   **Send my updates**, and the desired event's **Store locally / Share in WoW**
-   checkboxes. Defaults are on. Discord remains off.
+2. Joining the group automatically enables sending and receiving. In `/wstatus`,
+   check the character's sharing and the desired event's **Store locally / Share
+   in WoW** options. These are separate from the removed send/receive switches.
+   Discord remains independently opt-in.
 3. Both players run `/wstatus popup status`. Check that the group channel is joined
    and that its discovered peer count includes the other character. The count can
    include people without the addon; only matching addon clients display updates.
@@ -22,8 +23,9 @@ Do not run a companion for this test.
    full inventories and talent profiles are not transmitted.
 6. Remove the group, try another event, and verify no further updates are accepted
    for that group. Previously received activity for it should disappear.
-7. Turn off **Send my updates** and verify outbound updates stop while reception
-   can remain enabled. Pausing the character also cancels queued outbound updates.
+7. Verify saved `receive=false` / `broadcast=false` values from older versions do
+   not block updates after joining a group. Remove the group to leave it. Character
+   pause and event privacy settings still cancel corresponding outbound updates.
 8. Test combat deferral and reconnects. A blocked/unavailable API must show a
    diagnostic state rather than claim confirmed delivery.
 
@@ -51,9 +53,11 @@ or offline replay. Send attempts are paced and expire after two minutes. Queued
 notifications defer during combat and expire after ten minutes. Up to 200 received
 updates are retained in the local activity feed.
 
-On the first upgrade to the in-game-primary workflow, send/receive preferences
-are enabled once. Existing per-character sharing/privacy choices are retained;
-subsequent send/receive changes persist. Discord is independently off by default.
+Since 0.9.1, group membership alone controls group sending and reception. Old
+popup send/receive flags and legacy on/off commands do not disable selected groups.
+Remove a group to stop its updates. Character and per-event privacy choices are
+retained. Legacy flags still apply only to explicitly chosen legacy channels.
+Discord remains independently off by default.
 
 Explicit legacy `/wstatus popup channel WStatusNAME` and per-character trust
 commands remain available for testing old visible-channel installations. Normal

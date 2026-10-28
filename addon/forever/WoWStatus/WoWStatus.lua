@@ -158,7 +158,7 @@ local function showPanel(host)
             check:SetSize(32, 32)
             label(check, title, 38, -6, 230)
             check:SetScript("OnClick", function(self)
-                local target = group == "popups" and WoWStatusDB.popups or (group and current.settings[group] or current.settings)
+                local target = group and current.settings[group] or current.settings
                 target[key] = self:GetChecked() and true or false
                 if key == "enabled" and target[key] then current.enrolled = true end
                 if key == "enabled" and not target[key] then
@@ -168,7 +168,6 @@ local function showPanel(host)
                     A.requestPlaytime()
                 end
                 scrub()
-                if group == "popups" then WoWStatusPopups.tick() end
                 refresh()
             end)
             table.insert(panel.checks, {widget = check, key = key, group = group})
@@ -184,8 +183,8 @@ local function showPanel(host)
             refresh()
             say("Main character selected for this account.")
         end)
-        checkbox("receive", "Receive group updates", 24, -196, "popups")
-        checkbox("broadcast", "Send my updates", 300, -196, "popups")
+        label(panel, "Joining a group automatically enables sending and receiving.\n"
+            .. "Manage your groups with the Groups button or /wstatus groups.", 24, -196, 550)
         label(panel, "Local profile fields", 24, -256, 550)
         for i, key in ipairs(fields) do
             local x = (i - 1) % 2 == 0 and 24 or 300

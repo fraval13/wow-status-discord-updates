@@ -1,5 +1,23 @@
 # Decisions I made — 27 October 2026
 
+## Latest fix — automatic group updates (0.9.1)
+
+Removed **Receive group updates** and **Send my updates** from the settings page.
+Their refresh code looked for account-wide flags in the per-character settings
+and could throw a Lua error, leaving the controls unchecked and preventing the
+rest of the page from refreshing correctly.
+
+Group membership now automatically enables sending and reception. Old false
+values and legacy popup on/off commands cannot disable updates for a selected
+group. Remove the group to leave it. Existing per-character sharing and event
+privacy choices still apply to outgoing events; Discord remains separately opt-in.
+Legacy channel users retain their old toggles outside the normal group flow.
+
+Validation: 149 tests passed, including two simulated clients with both old flags
+false and checks that the settings page refreshes every remaining checkbox. The
+updated Vanilla addon and both ZIPs are installed/prepared locally. This change
+needs no server update; the optional Discord summary service remains on 0.9.0.
+
 ## Latest decision — in-game sharing first, optional Discord summaries (0.9.0)
 
 This supersedes the earlier companion-first setup below.
