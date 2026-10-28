@@ -32,6 +32,19 @@
 - This release adds Lua files. Restart WoW fully and restart the optional companion
   so both use the new collectors and schema. No extra app is needed for in-game use.
 
+### Delivery status
+
+- Code committed as `f6ae906` and deployed directly to the server. Both group
+  services passed health checks on that revision; SQLite backups were saved first.
+- Vanilla 0.10.0 is installed on this computer with the previous addon backed up.
+  SavedVariables were preserved. Vanilla, Forever and emoji ZIPs are in `dist/`.
+- GitHub push was attempted but rejected (`Permission denied (publickey)`).
+  These local commits still need pushing from a computer with GitHub access.
+- Final handoff action: send the explicitly requested fictional warlock card to
+  navsquad using `scripts/send_status_preview.py --send --group navsquad` on the
+  server. This bypasses tracker storage and is labelled TEST STATUS. The final
+  response contains the Discord message link if delivery succeeds.
+
 ## Latest fix — automatic group updates (0.9.1)
 
 Removed **Receive group updates** and **Send my updates** from the settings page.
