@@ -33,7 +33,7 @@ function P.statusCard()
         icon:SetTexture("Interface\\Icons\\Spell_Shadow_CurseOfTongues")
         text(card,"PREVIEW — example character",96,-24,470)
         text(card,"Previewlock · level 33 Warlock",96,-50,470)
-        card.body=text(card,"Player: Alex (example)\nFaction: Alliance\nLevel: 33\nXP progress: 37.5% (15,000 / 40,000)\nTotal deaths: 15\nCompleted quests: 236\nLocation: Stranglethorn Vale\nTailoring: 185 / 225\nEnchanting: 150 / 225\n\nExample values only. Death totals are tracked from installation;\nolder deaths are unavailable on Classic Era.",24,-104,550)
+        card.body=text(card,"Player: Alex (example)\nRace: Human · Male\nFaction: Alliance\nLevel: 33\nXP progress: 37.5% (15,000 / 40,000)\nTotal deaths: 15\nCompleted quests: 236\nLocation: Stranglethorn Vale\nTailoring: 185 / 225\nEnchanting: 150 / 225\n\nExample values only. Death totals are tracked from installation;\nolder deaths are unavailable on Classic Era.",24,-104,550)
         button(card,"Close",424,-462,140,function() card:Hide() end)
         table.insert(UISpecialFrames,"WoWStatusStatusPreview")
     end

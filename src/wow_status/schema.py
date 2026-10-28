@@ -9,6 +9,7 @@ KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session
 STATUS_FIELDS = {
     'level': ('level','level'), 'xp_current': ('level','level'), 'xp_max': ('level','level'),
     'class': ('class','introduction'), 'class_id': ('class','introduction'),
+    'race': ('race','introduction'), 'sex': ('race','introduction'),
     'faction': ('faction','introduction'), 'zone': ('zone','zone'),
     'professions': ('professions','profession'), 'deaths': ('deaths','death'),
     'quests_completed': ('quests','quest'),
@@ -127,6 +128,8 @@ def validate(payload):
                     string(val, key, 200)
                 clean['snapshot'][key] = val
     if clean['settings']['enabled']:
+        if clean['settings']['fields']['race'] and snapshot.get('sex') in ('Male', 'Female'):
+            clean['snapshot']['sex'] = snapshot['sex']
         if clean['settings']['fields']['class'] and snapshot.get('class_id') in {
                 'WARRIOR','PALADIN','HUNTER','ROGUE','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}:
             clean['snapshot']['class_id'] = snapshot['class_id']

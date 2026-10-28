@@ -83,7 +83,9 @@
         "max_skill": 225,
         "source": "game_api"
       }
-    ]
+    ],
+    "race": "Human",
+    "sex": "Male"
   },
   "kind": "status",
   "data": {},

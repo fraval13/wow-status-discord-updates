@@ -914,3 +914,14 @@ def test_every_notification_preview_is_local_and_has_icon(lua):
     assert lua.eval('#__sent') == 0
     assert lua.eval('#character().events') == 0
     assert lua.eval('#WoWStatusDB.popups.activity') == 0
+
+
+def test_race_and_sex_are_collected_together_and_unknown_sex_is_omitted(lua):
+    lua.execute('function UnitSex() return 3 end')
+    assert lua.eval('WoWStatusAdapter.snapshot({race=true}).sex') == 'Female'
+    assert lua.eval('WoWStatusAdapter.snapshot({race=true}).race') == 'Dwarf'
+    assert lua.eval('WoWStatusAdapter.snapshot({race=false}).sex') is None
+    lua.execute('function UnitSex() return 2 end')
+    assert lua.eval('WoWStatusAdapter.snapshot({race=true}).sex') == 'Male'
+    lua.execute('function UnitSex() return 1 end')
+    assert lua.eval('WoWStatusAdapter.snapshot({race=true}).sex') is None

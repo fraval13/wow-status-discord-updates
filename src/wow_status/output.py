@@ -124,8 +124,10 @@ def status_card(item, custom=None, preview=False):
     card = discord.Embed(title=f"{class_icon} {safe(identity['name'])}",
                          colour=CLASS_COLOURS.get(token, 0x5865F2))
     card.description = ('**EXAMPLE — not a real character update**\n' if preview else '')
-    if snap.get('class'):
-        card.description += safe(snap['class']) + ' · '
+    details = [snap[key] for key in ('sex', 'race', 'class') if snap.get(key)]
+    card.description += ' '.join(safe(value) for value in details)
+    if details:
+        card.description += ' · '
     card.description += safe(identity['realm'])
     if token in CLASS_COLOURS:
         card.set_thumbnail(url=f'https://wow.zamimg.com/images/wow/icons/large/classicon_{token.lower()}.jpg')

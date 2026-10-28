@@ -121,6 +121,7 @@ def test_status_card_is_cumulative_tidy_and_uses_custom_faction_and_class_emojis
     assert 'TEST STATUS' in result['content']
     card = result['embeds'][0]
     assert '<:wow_warlock:123>' in card.title
+    assert 'Male Human Warlock · Firemaw' in card.description
     fields = {field.name:field.value for field in card.fields}
     assert fields['💀 Total deaths'] == '15'
     assert fields['⬆️ Level'] == '33'
@@ -140,8 +141,8 @@ def test_status_metrics_and_skill_ranks_are_filtered_with_profile_privacy():
     import json
     from pathlib import Path
     item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
-    item['settings']['fields'].update(deaths=False, quests=False, level=False, professions=False, **{'class':False})
+    item['settings']['fields'].update(deaths=False, quests=False, level=False, professions=False, race=False, **{'class':False})
     result = validate(item)['snapshot']
     for key in ['deaths','deaths_since','quests_completed','quests_source','quests_since',
-                'level','xp_current','xp_max','xp_percent','professions','class','class_id']:
+                'level','xp_current','xp_max','xp_percent','professions','class','class_id','race','sex']:
         assert key not in result

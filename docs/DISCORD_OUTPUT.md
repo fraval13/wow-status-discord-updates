@@ -166,3 +166,7 @@ oldest sender is evicted when that bound is reached. Popups are transient notifi
 not a durable progress archive; saturation/expiry can still omit a notification, while
 own-character upload history remains retained. A modified receiving addon can bypass
 its own local popup protections.
+
+Status-card descriptions include race and male/female as plain text, e.g.
+`Male Human Warlock · Firemaw`. Both follow the race-sharing preference; unknown
+values are omitted. These labels use no custom emoji slots.

@@ -190,7 +190,7 @@ local function showPanel(host)
         label(panel, "Local profile fields", 24, -256, 550)
         for i, key in ipairs(fields) do
             local x = (i - 1) % 2 == 0 and 24 or 300
-            checkbox(key, key, x, -286 - math.floor((i - 1) / 2) * 38, "fields")
+            checkbox(key, key == "race" and "race / male or female" or key, x, -286 - math.floor((i - 1) / 2) * 38, "fields")
         end
         label(panel, "Event", 24, -530, 190)
         label(panel, "Store locally", 238, -530, 150)

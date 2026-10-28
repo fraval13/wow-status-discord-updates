@@ -1,5 +1,14 @@
 # Decisions I made — 27 October 2026
 
+## Race and male/female text — 0.10.1, 29 October
+
+Status descriptions now include text such as `Male Human Warlock · Firemaw`.
+Both adapters read UnitSex (2 = Male, 3 = Female); unknown values are omitted.
+Race and sex share the existing race privacy checkbox, now labelled accordingly.
+No new emojis or Discord slots are needed. Updated the local card preview and
+example fixture. Validation: 159 tests passed, including privacy and API values.
+Restart WoW and the optional companion to collect/upload the added observation.
+
 ## Level emoji correction — 29 October
 
 Replaced the level-30 achievement badge with a generated gold upward arrow,

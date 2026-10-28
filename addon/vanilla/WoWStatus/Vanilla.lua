@@ -34,7 +34,12 @@ function A.snapshot(fields)
         local name, token = S.call(UnitClass, "player")
         result.class, result.class_id = S.string(name), S.string(token)
     end
-    if fields.race then result.race = S.stringCall(UnitRace, "player") end
+    if fields.race then
+        result.race = S.stringCall(UnitRace, "player")
+        local sex = S.number(S.call(UnitSex, "player"))
+        if sex == 2 then result.sex = "Male"
+        elseif sex == 3 then result.sex = "Female" end
+    end
     if fields.faction then result.faction = S.stringCall(UnitFactionGroup, "player") end
     if fields.guild then result.guild = S.stringCall(GetGuildInfo, "player") end
     if fields.zone then result.zone = A.zone() end
