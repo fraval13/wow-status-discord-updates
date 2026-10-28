@@ -123,7 +123,7 @@ def status_card(item, custom=None, preview=False):
     class_icon = icon(token.lower(), CLASS_SYMBOLS.get(token, '👤'))
     card = discord.Embed(title=f"{class_icon} {safe(identity['name'])}",
                          colour=CLASS_COLOURS.get(token, 0x5865F2))
-    card.description = ('**EXAMPLE — not a real character update**\n' if preview else '')
+    card.description = ''
     details = [snap[key] for key in ('sex', 'race', 'class') if snap.get(key)]
     card.description += ' '.join(safe(value) for value in details)
     if details:
@@ -189,7 +189,7 @@ def upload_summary(items, custom=None, preview=False):
             break
         cards.append(card)
         length += len(card)
-    content = '🧪 **TEST STATUS — example data only**' if preview else '📜 **WoW Progress**'
+    content = '📜 **WoW Progress**'
     if len(cards) < len(characters):
         content += f" · {len(characters) - len(cards)} more changed characters retained in history"
     if any(item['data'].get('synthetic') for item in items):

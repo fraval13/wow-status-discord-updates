@@ -1,5 +1,12 @@
 # Decisions I made — 27 October 2026
 
+## Cleaner preview cards — 29 October
+
+Removed TEST STATUS, EXAMPLE and the player-name example suffix from preview
+Discord cards at the user's request. Preview character names still identify them.
+The send script now supports Warlock, Warrior and Paladin with --class-name.
+These previews still bypass tracker storage. Existing messages are left untouched.
+
 ## Race and male/female text — 0.10.1, 29 October
 
 Status descriptions now include text such as `Male Human Warlock · Firemaw`.

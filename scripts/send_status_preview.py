@@ -11,11 +11,14 @@ from wow_status.output import upload_summary
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--send', action='store_true', help='Post one clearly labelled example to Discord')
+    parser.add_argument('--send', action='store_true', help='Post one preview character status to Discord')
     parser.add_argument('--group', default='navsquad')
+    parser.add_argument('--class-name', choices=['Warlock', 'Warrior', 'Paladin'], default='Warlock')
     parser.add_argument('--config', default='/etc/wow-character-status/config.json')
     args = parser.parse_args()
     item = json.loads((Path(__file__).resolve().parents[1] / 'tests/fixtures/status_preview.json').read_text())
+    item['identity']['name'] = 'Preview' + args.class_name.lower()
+    item['snapshot'].update({'class': args.class_name, 'class_id': args.class_name.upper()})
     custom = {}
     config = json.loads(Path(args.config).read_text())[args.group] if args.send else None
     api = 'https://discord.com/api/v10'
@@ -33,13 +36,13 @@ def main():
     if not args.send:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
-    payload.update(nonce=hashlib.sha256(('0.10.0:' + args.group).encode()).hexdigest()[:24], enforce_nonce=True)
+    payload.update(nonce=hashlib.sha256(('preview-v2:' + args.group + ':' + args.class_name).encode()).hexdigest()[:24], enforce_nonce=True)
     headers['Content-Type'] = 'application/json'
     request = urllib.request.Request(api + '/channels/' + str(config['channel_id']) + '/messages',
         data=json.dumps(payload).encode(), headers=headers, method='POST')
     with urllib.request.urlopen(request, timeout=30) as response:
         message = json.load(response)
-    print('Sent labelled example: https://discord.com/channels/' + str(config['guild_id']) + '/' + str(config['channel_id']) + '/' + message['id'])
+    print('Sent preview: https://discord.com/channels/' + str(config['guild_id']) + '/' + str(config['channel_id']) + '/' + message['id'])
 
 
 if __name__ == '__main__':

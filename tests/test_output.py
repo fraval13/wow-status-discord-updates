@@ -118,7 +118,8 @@ def test_status_card_is_cumulative_tidy_and_uses_custom_faction_and_class_emojis
     from wow_status.output import upload_summary
     item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
     result = upload_summary([item], {'wow_warlock':'<:wow_warlock:123>','wow_alliance':'<:wow_alliance:456>'},preview=True)
-    assert 'TEST STATUS' in result['content']
+    assert result['content'] == '📜 **WoW Progress**'
+    assert 'EXAMPLE' not in result['embeds'][0].description
     card = result['embeds'][0]
     assert '<:wow_warlock:123>' in card.title
     assert 'Male Human Warlock · Firemaw' in card.description
