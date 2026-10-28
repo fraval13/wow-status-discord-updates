@@ -474,7 +474,12 @@ frame:RegisterEvent("PLAYER_DEAD")
 frame:RegisterEvent("TIME_PLAYED_MSG")
 frame:RegisterEvent("PLAYER_XP_UPDATE")
 frame:RegisterEvent("QUEST_TURNED_IN")
-frame:RegisterEvent("QUEST_QUERY_COMPLETE")
+-- Some clients no longer expose this legacy query event. RegisterEvent throws
+-- on unknown names, which would abort this file before OnEvent/slash setup.
+if not C_EventUtils or not C_EventUtils.IsEventValid
+    or S.call(C_EventUtils.IsEventValid, "QUEST_QUERY_COMPLETE") then
+    pcall(frame.RegisterEvent, frame, "QUEST_QUERY_COMPLETE")
+end
 frame:RegisterEvent("SKILL_LINES_CHANGED")
 frame:RegisterEvent("PLAYER_ALIVE")
 frame:RegisterEvent("PLAYER_UNGHOST")

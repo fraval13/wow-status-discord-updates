@@ -1,5 +1,18 @@
 # Decisions I made — 27 October 2026
 
+## Missing Options entry startup fix — 0.10.2, 29 October
+
+Found an unguarded legacy `QUEST_QUERY_COMPLETE` registration in the new progress
+collector. Clients that reject the removed event abort the main Lua file before
+the event handler and slash commands are installed, so the Options page never
+registers. Check C_EventUtils.IsEventValid where available, and protect the legacy
+registration with pcall on older clients. Other event registrations stay strict.
+Regression tests simulate rejecting clients with and without the validator and
+verify initialization, settings registration and /wstatus remain functional.
+This reproduces a possible cause; the running client's error has not been captured.
+Installed the corrected Vanilla files and rebuilt both addon ZIPs. SavedVariables
+are preserved. This addon-only fix needs no server deployment.
+
 ## Cleaner preview cards — 29 October
 
 Removed TEST STATUS, EXAMPLE and the player-name example suffix from preview
