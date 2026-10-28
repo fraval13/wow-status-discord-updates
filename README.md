@@ -9,7 +9,7 @@ run on the work computer. Start with the [home testing guide](docs/HOME_TESTING.
 Deployment uses isolated server services and GitHub checks; actual game validation remains a home task.
 
 The default group flow is now **IDs entered directly in WoW**, one free-text ID
-per line, with no Discord `/link` step. See [group setup and Discord mapping](docs/GROUPS.md).
+at a time using **Add**, with **Remove** buttons in the selected list, with no Discord `/link` step. See [group setup and Discord mapping](docs/GROUPS.md).
 The older linking commands remain available for legacy single-service installations.
 
 ## Included

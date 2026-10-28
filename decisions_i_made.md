@@ -1,5 +1,37 @@
 # Decisions I made — 27 October 2026
 
+## Follow-up — 28 October 2026, addon 0.8.3
+
+The group editor now has a single-line **Group ID** input and **Add** button.
+Pressing Enter also adds the ID. Each selected group has its own **Remove** button.
+Add and Remove save immediately for the entire account; there is no separate list
+Save step to forget. The optional player name has its own **Save name** button.
+The editor rejects blank/control-character IDs, duplicates and a ninth group, and
+keeps the existing shared-ID matching and per-character history boundaries.
+Long IDs show their complete text in a tooltip. Existing saved groups are retained.
+Validation: 127 tests passed, including the Add/Remove editor, duplicate and limit
+checks. The addon suite also passed under Lua 5.1. Version 0.8.3 is installed on
+this computer, with a backup of the previous addon files.
+
+Discord debugging found the navsquad bot connected and its service active, but
+its database contained zero uploader enrollments, characters and events. This
+computer had no companion configuration, and its on-disk export was still the old
+level-1 character with no selected group. The new in-game state needs a `/reload`
+or logout, followed by a companion upload. No character data or test messages were
+sent during diagnosis.
+
+I then configured this computer's companion with `https://wow.frankvalde.com`,
+selected the account's addon SavedVariables file, and opened its desktop window.
+It waits for **Start uploading**; no automatic upload was started. Run `/reload`
+in WoW to export the new state and click **Start uploading** in that window to
+continue the end-to-end check.
+
+A second independent reason for no level-2 message is milestone filtering: both
+the character and community defaults announce every 10 levels. To test every
+level, set `/wstatus interval 1` in WoW and use Discord `/settings` with
+`level_interval:1` (requires Manage Server). These live posting preferences were
+not changed during the read-only server investigation.
+
 ## Follow-up — 28 October 2026, addon 0.8.2
 
 You confirmed that the original 0.8.1 commit was pushed. The delivery notes below

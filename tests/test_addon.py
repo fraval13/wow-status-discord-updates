@@ -64,6 +64,8 @@ function methods:GetWidth() return self.width or 700 end
 function methods:SetWidth(width) self.width=width end
 function methods:SetSize(width, height) self.width=width; self.height=height end
 function methods:SetFontObject(font) self.font=font end
+function methods:SetFocus() self.focused=true end
+function methods:SetMultiLine(value) self.multiline=value end
 function methods:GetVerticalScroll() return self.scroll or 0 end
 function methods:SetShown(value) self.visible=value end
 function methods:SetScript(name, fn) self[name]=fn end
@@ -84,7 +86,7 @@ function methods:CreateFontString(_, _, font) return setmetatable({font=font}, {
 for _, name in ipairs({"SetPoint","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters","SetMultiLine"}) do methods[name]=function() end end
+    "SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
 function CreateFrame(kind, name, parent, template)
     local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
     table.insert(__frames,f)
@@ -500,23 +502,71 @@ def test_account_groups_migrate_and_new_characters_inherit_them(lua):
     ''')
 
 
-def test_group_window_hides_sharing_and_uses_a_real_multiline_editor(lua):
+def test_group_editor_adds_and_removes_account_groups_immediately(lua):
     command = lua.eval('SlashCmdList.WOWSTATUS')
     command('groups')
     assert lua.eval('WoWStatusSetup:IsShown()') is False
     assert lua.eval('WoWStatusGroupWindow:IsShown()') is True
-    assert lua.eval('WoWStatusGroupWindow.ids.template') is None
+    assert lua.eval('WoWStatusGroupWindow.input.template') == 'InputBoxTemplate'
+    assert lua.eval('WoWStatusGroupWindow.input.multiline') is False
     lua.execute('''
-        local editor = WoWStatusGroupWindow.ids
-        editor:SetText("First")
-        editor.OnEnterPressed(editor)
-        editor:Insert("Second")
-        editor.OnTextChanged(editor)
+        local p = WoWStatusGroupWindow
+        p.name:SetText("Frank")
+        p.input:SetText("  navsquad  ")
+        p.input.OnEnterPressed(p.input)
+        assert(WoWStatusGroups.text(character(), true) == "navsquad")
+        assert(p.input:GetText() == "")
+        assert(p.input.focused)
+        assert(p.rows[1].label:GetText() == "navsquad")
+        assert(p.rows[1]:IsShown())
+        assert(not p.rows[2]:IsShown())
+        assert(not p.empty:IsShown())
+        p.input:SetText("ronkalot")
+        p.add.OnClick()
+        assert(WoWStatusDB.player_name == "Frank")
+        assert(p.rows[2].label:GetText() == "ronkalot")
+        p.rows[2].remove.OnClick()
+        assert(WoWStatusGroups.text(character(), true) == "navsquad")
+        p.rows[1].remove.OnClick()
+        assert(next(WoWStatusDB.account_groups) == nil)
+        assert(next(character().group_ids) == nil)
+        assert(p.empty:IsShown())
+        p.name:SetText("New name")
+        p.saveName.OnClick()
+        assert(WoWStatusDB.player_name == "New name")
     ''')
-    assert lua.eval('WoWStatusGroupWindow.ids:GetText()') == 'First\nSecond'
     command('')
     assert lua.eval('WoWStatusSetup:IsShown()') is True
     assert lua.eval('WoWStatusGroupWindow:IsShown()') is False
+
+
+def test_group_editor_rejects_invalid_duplicate_and_ninth_group(lua):
+    lua.eval('SlashCmdList.WOWSTATUS')('groups')
+    lua.execute('''
+        local p = WoWStatusGroupWindow
+        p.input:SetText(" ")
+        p.add.OnClick()
+        assert(next(WoWStatusDB.account_groups) == nil)
+        p.input:SetText("one\\ntwo")
+        p.add.OnClick()
+        assert(next(WoWStatusDB.account_groups) == nil)
+        for i=1,8 do
+            p.input:SetText("Group " .. i)
+            p.add.OnClick()
+        end
+        assert(p.count:GetText() == "Groups (8 / 8)")
+        p.input:SetText("GROUP 1")
+        p.add.OnClick()
+        assert(p.status:GetText():find("already"))
+        p.input:SetText("Group 9")
+        p.add.OnClick()
+        assert(p.status:GetText():find("up to 8"))
+        p.rows[4].remove.OnClick()
+        p.add.OnClick()
+        assert(p.count:GetText() == "Groups (8 / 8)")
+        assert(not WoWStatusGroups.contains(character(), WoWStatusGroups.key("Group 4")))
+        assert(WoWStatusGroups.contains(character(), WoWStatusGroups.key("Group 9")))
+    ''')
 
 
 def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
@@ -547,10 +597,10 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
         -- Sidebar first-open path: Blizzard can call OnRefresh without OnShow.
         -- The content must already exist and be populated before either callback.
         assert(not __categories.Groups.page:IsShown())
-        assert(WoWStatusGroupWindow.ids:GetText() == "ronkalot")
+        assert(WoWStatusGroupWindow.rows[1].label:GetText() == "ronkalot")
         assert(WoWStatusGroupWindow.name:GetText() == "Frank")
         __categories.Groups.page.OnRefresh()
-        assert(WoWStatusGroupWindow.ids:GetText() == "ronkalot")
+        assert(WoWStatusGroupWindow.rows[1].label:GetText() == "ronkalot")
         assert(WoWStatusGroupWindow:GetParent().child == WoWStatusGroupWindow)
         assert(WoWStatusGroupWindow.scale == 1)
         SlashCmdList.WOWSTATUS("")
@@ -571,10 +621,10 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
         assert(__categories.Groups.parent == __categories["WoW Status"])
         assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
         assert(not WoWStatusGroupWindow.close:IsShown())
-        WoWStatusGroupWindow.ids:SetText("Unsaved edits")
+        WoWStatusGroupWindow.input:SetText("Unsaved edits")
         __categories.Groups.page.OnSizeChanged()
         __categories.Groups.page.OnRefresh()
-        assert(WoWStatusGroupWindow.ids:GetText() == "Unsaved edits")
+        assert(WoWStatusGroupWindow.input:GetText() == "Unsaved edits")
         SlashCmdList.WOWSTATUS("")
         assert(__categories["WoW Status"].registrations == 1)
         assert(__categories.Groups.registrations == 1)

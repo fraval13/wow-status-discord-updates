@@ -1,4 +1,4 @@
-# One group ID or several, entered directly in WoW
+# Add and remove account groups directly in WoW
 
 No invitation link or Discord `/link` code is required for the group-ID flow.
 Open **Options → AddOns → WoW Status → Groups**, use **Groups** in `/wstatus`, or type:
@@ -7,18 +7,23 @@ Open **Options → AddOns → WoW Status → Groups**, use **Groups** in `/wstat
 /wstatus groups
 ```
 
-Enter your name once (optional), and put each group ID on its own line:
+Enter your name once (optional) and click **Save name**. Type one group ID into
+the **Group ID** input and click **Add** (or press Enter). Repeat to add another.
+Each selected group appears in a list with its own **Remove** button. Add and
+Remove save immediately for every character on this account. For example, add
+these two IDs separately:
 
 ```text
 Weekend Crew
 Old friends #2
 ```
 
-The field accepts ordinary printable text, spaces, punctuation and Unicode, up to
+The input accepts ordinary printable text, spaces, punctuation and Unicode, up to
 80 characters per ID and eight groups per character. Leading/trailing whitespace
 is trimmed. IDs ignore capitalization: `Weekend Crew` and `weekend crew` are the same.
-A shared Unicode case-fold table keeps the game and service consistent. Blank list means no group destination. Commas are
-ordinary characters inside a name; use newlines to separate groups.
+A shared Unicode case-fold table keeps the game and service consistent. An empty
+list means no group destination. Commas are ordinary characters inside a name;
+add each group separately. Duplicate names are rejected without adding a second row.
 
 Your two IDs send your selected character to both destinations; another friend
 can enter only one. Group IDs and your name are saved once per WoW account and apply to all its

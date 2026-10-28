@@ -103,72 +103,128 @@ function G.text(character, multiline)
     table.sort(ids)
     return table.concat(ids, multiline and "\n" or ", ")
 end
+local function groupList()
+    local groups = {}
+    for id, text in pairs(database.account_groups or {}) do
+        table.insert(groups, {id = id, label = text})
+    end
+    table.sort(groups, function(a, b) return a.label < b.label end)
+    return groups
+end
+local function renderGroups()
+    local groups = groupList()
+    panel.count:SetText("Groups (" .. #groups .. " / " .. MAX_GROUPS .. ")")
+    panel.empty:SetShown(#groups == 0)
+    for i, row in ipairs(panel.rows) do
+        local group = groups[i]
+        row.id = group and group.id
+        row.fullLabel = group and group.label
+        row:SetShown(group ~= nil)
+        if group then row.label:SetText((group.label:gsub("|", "||"))) end
+    end
+end
+local function saveList(groups)
+    local labels = {}
+    for _, group in ipairs(groups) do table.insert(labels, group.label) end
+    local ok, message = update(table.concat(labels, "\n"), panel.name:GetText())
+    panel.status:SetText(message)
+    report(message)
+    if ok then renderGroups() end
+    return ok
+end
 function G.show(host)
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusGroupWindow", UIParent)
-        panel:SetSize(620, 430)
+        panel:SetSize(620, 690)
         panel:SetPoint("CENTER")
         panel:SetFrameStrata("DIALOG")
         panel:EnableMouse(true)
         local bg = panel:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints(); bg:SetColorTexture(.04, .04, .07, .98)
-        local function label(text, y)
-            local f = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-            f:SetPoint("TOPLEFT", 24, y); f:SetWidth(570); f:SetJustifyH("LEFT"); f:SetText(text)
+        local function label(text, y, width)
+            local f = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+            f:SetPoint("TOPLEFT", 24, y); f:SetWidth(width or 570)
+            f:SetJustifyH("LEFT"); f:SetText(text)
             return f
         end
+        local function button(parent, text, x, y, width, action)
+            local widget = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+            widget:SetPoint("TOPLEFT", x, y); widget:SetSize(width, 28)
+            widget:SetText(text); widget:SetScript("OnClick", action)
+            return widget
+        end
+        local function input(y, limit)
+            local edit = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
+            edit:SetPoint("TOPLEFT", 28, y); edit:SetSize(400, 30)
+            edit:SetFontObject("ChatFontNormal")
+            edit:SetAutoFocus(false); edit:SetMultiLine(false); edit:SetMaxLetters(limit)
+            edit:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+            return edit
+        end
         label("Your groups — all characters on this account", -20)
-        label("Your name (shared with the selected groups; optional)", -55)
-        panel.name = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
-        panel.name:SetPoint("TOPLEFT", 28, -80); panel.name:SetSize(550, 28)
-        panel.name:SetAutoFocus(false); panel.name:SetMaxLetters(40)
-        label("Group IDs: one per line. Spaces, punctuation and Unicode names are supported.", -126)
-        panel.idScroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
-        panel.idScroll:SetPoint("TOPLEFT", 28, -150); panel.idScroll:SetSize(530, 96)
-        local inputBackground = panel.idScroll:CreateTexture(nil, "BACKGROUND")
-        inputBackground:SetAllPoints()
-        inputBackground:SetColorTexture(.10, .10, .13, 1)
-        panel.ids = CreateFrame("EditBox", nil, panel.idScroll)
-        panel.ids:SetFontObject("ChatFontNormal")
-        panel.ids:SetTextInsets(8, 8, 8, 8)
-        panel.ids:SetSize(530, 96)
-        panel.idScroll:SetScrollChild(panel.ids)
-        panel.ids:SetMultiLine(true)
-        panel.ids:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-        panel.ids:SetScript("OnCursorChanged", function(self, x, y, width, height)
-            local scroll = panel.idScroll:GetVerticalScroll()
-            local top = math.max(0, -y)
-            if top < scroll then panel.idScroll:SetVerticalScroll(top)
-            elseif top + height > scroll + 96 then
-                panel.idScroll:SetVerticalScroll(top + height - 96)
+        label("Your name (optional)", -55)
+        panel.name = input(-80, 40)
+        local function saveName() saveList(groupList()) end
+        panel.saveName = button(panel, "Save name", 454, -80, 120, saveName)
+        panel.name:SetScript("OnEnterPressed", saveName)
+        label("Group ID", -126)
+        panel.input = input(-150, 80)
+        local function add()
+            local id, cleaned = G.key(panel.input:GetText())
+            if not id then
+                panel.status:SetText("Enter one group ID of up to 80 characters.")
+                return
             end
-        end)
-        panel.ids:SetAutoFocus(false); panel.ids:SetMaxLetters(650)
-        panel.ids:SetScript("OnEnterPressed", function(self) self:Insert("\n") end)
-        panel.ids:SetScript("OnTextChanged", function(self)
-            local lines = 1
-            for line in (self:GetText() .. "\n"):gmatch("(.-)\n") do
-                lines = lines + math.max(1, math.ceil(#line / 30))
+            if database.account_groups[id] then
+                panel.status:SetText("That group is already in your list.")
+                return
             end
-            self:SetHeight(math.max(96, lines * 18 + 12))
-        end)
-        label("Selected groups apply to every character on this account. New groups get current\n"
-            .. "status and future events, not your earlier log. Knowing an ID permits joining.\n"
-            .. "The companion needs the shared service address once; no Discord /link code.\n"
-            .. "Popup channels use the same IDs; chat delivery still needs home validation.", -264)
-        panel.status = label("", -340)
-        local save = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-        save:SetPoint("TOPLEFT", 24, -380); save:SetSize(160, 26); save:SetText("Save group list")
-        save:SetScript("OnClick", function()
-            local ok, message = update(panel.ids:GetText(), panel.name:GetText())
-            panel.status:SetText(message)
-            report(message)
-            if ok and panel:GetParent() == UIParent then panel:Hide() end
-        end)
-        local close = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
-        close:SetPoint("TOPLEFT", 456, -380); close:SetSize(120, 26); close:SetText("Close")
-        close:SetScript("OnClick", function() panel:Hide() end)
-        panel.close = close
+            local groups = groupList()
+            if #groups >= MAX_GROUPS then
+                panel.status:SetText("You can add up to 8 groups. Remove one before adding another.")
+                return
+            end
+            table.insert(groups, {id = id, label = cleaned})
+            if saveList(groups) then
+                panel.input:SetText("")
+                panel.input:SetFocus()
+            end
+        end
+        panel.add = button(panel, "Add", 454, -150, 120, add)
+        panel.input:SetScript("OnEnterPressed", add)
+        panel.count = label("", -194)
+        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -230)
+        panel.rows = {}
+        for i = 1, MAX_GROUPS do
+            local row = CreateFrame("Frame", nil, panel)
+            row:SetPoint("TOPLEFT", 24, -222 - (i - 1) * 36)
+            row:SetSize(550, 32)
+            row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+            row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(410)
+            row.label:SetJustifyH("LEFT"); row.label:SetWordWrap(false)
+            row:EnableMouse(true)
+            row:SetScript("OnEnter", function(self)
+                if GameTooltip and self.fullLabel then
+                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+                    GameTooltip:SetText((self.fullLabel:gsub("|", "||")))
+                    GameTooltip:Show()
+                end
+            end)
+            row:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+            row.remove = button(row, "Remove", 430, 0, 120, function()
+                local retained = {}
+                for _, group in ipairs(groupList()) do
+                    if group.id ~= row.id then table.insert(retained, group) end
+                end
+                saveList(retained)
+            end)
+            table.insert(panel.rows, row)
+        end
+        panel.status = label("", -520)
+        label("Add and Remove save immediately for all your characters.\n"
+            .. "Use /reload or log out to export changes, then run the companion.\n"
+            .. "New groups receive current status and future shared events.", -586)
+        panel.close = button(panel, "Close", 454, -644, 120, function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusGroupWindow" then table.remove(UISpecialFrames, i) end
@@ -188,8 +244,8 @@ function G.show(host)
     else panel:SetScript("OnDragStart", panel.StartMoving) end
     panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
     panel.status:SetText("")
-    panel.idScroll:SetVerticalScroll(0)
     panel.name:SetText(database.player_name or "")
-    panel.ids:SetText(G.text(getCharacter(), true))
+    panel.input:SetText("")
+    renderGroups()
     panel:Show()
 end
