@@ -4,15 +4,18 @@ Written on October 27, 2026. All runtime validation is pending, because the owne
 requested that no testing occur on the work computer. No project dependencies have
 been installed there. No service has been deployed and no Discord messages sent.
 
-## Current status: 0.9.0
+## Current status: 0.10.0
 
 In-game group sharing is the primary path. The optional Discord uploader requires
 an independent per-character opt-in and produces complete-export summaries.
-The full local suite passes 147 tests; the 50 addon tests also pass under Lua 5.1.
+The full local suite passes 158 tests; the 56 addon tests also pass under Lua 5.1.
 Menu rendering has had user testing, while the new two-player whisper transport
 and animated toasts still need live client acceptance. Mocked clients do not
 establish delivery on an actual realm. See [the current setup](../README.md) and
 [in-game test checklist](LIVE_POPUPS.md).
+
+Current cumulative deaths, completed quest counts, XP percentages and profession
+ranks are implemented with unavailable/historical values explicitly labelled.
 
 The implementation table below describes the earlier companion/server baseline.
 Its original outstanding-validation labels are historical; the updated setup and
@@ -37,7 +40,7 @@ acceptance step. The TOC interface number must be taken from the installed game.
 ## Intentionally deferred client-dependent features
 
 Dungeon completion and boss attribution, reliable multi-friend run grouping,
-quest/attunement tracking, talent profiles, professions/recipes, mounts/pets,
+quest chains/attunements, talent profiles, profession recipes, mounts/pets,
 reputation and PvP need explicit per-client evidence and in-game validation.
 They are not currently collected. Inventory items are not inferred as fresh loot
 on startup. First acquisition, watchlists, digests, optional role mentions and quiet

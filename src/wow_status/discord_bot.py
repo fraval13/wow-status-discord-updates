@@ -246,7 +246,7 @@ class StatusBot(discord.Client):
                 if not items:
                     continue
                 self.store.deliver_many(items, 'sending')
-                content = (upload_summary(items) if current['settings'].get('discord_delivery') == 'summary'
+                content = (upload_summary(items, self.custom_emojis()) if current['settings'].get('discord_delivery') == 'summary'
                            else announcement_message(self.store, current, self.custom_emojis()))
                 message = await channel.send(**content, allowed_mentions=discord.AllowedMentions.none())
                 self.store.deliver_many(items, 'sent', message_id=str(message.id))

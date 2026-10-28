@@ -199,7 +199,7 @@ function P.receive(text, sender, channel)
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
     if client then
-        local allowed = {introduction=true, loot=true, equipment=true, death=true, zone=true, session=true, lfg=true}
+        local allowed = {introduction=true, loot=true, equipment=true, death=true, zone=true, quest=true, profession=true, lfg=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > 96
             or #encoded % 2 ~= 0 or at < now - 120 or at > now + 300 then return false end
@@ -306,6 +306,8 @@ local function show(item, now)
         death={"Ability_Rogue_FeignDeath",.95,.18,.2,"A FRIEND HAS FALLEN"},
         zone={"INV_Misc_Map_01",.25,.9,.6,"ON THE MOVE"},
         session={"Spell_Arcane_TeleportStormWind",.4,.7,1,"FRIEND UPDATE"},
+        quest={"INV_Misc_Book_09",1,.8,.2,"QUEST COMPLETED"},
+        profession={"Trade_Tailoring",.35,.85,1,"PROFESSION SKILL-UP"},
         lfg={"INV_Misc_Head_Human_01",.2,.85,1,"LOOKING FOR GROUP"},
         introduction={"INV_Misc_Head_Human_01",.9,.75,.4,"WELCOME, ADVENTURER!"},
     }
@@ -330,13 +332,32 @@ local function show(item, now)
     end
 end
 
+function P.preview(kind)
+    if not prefs then return end
+    local samples = {
+        introduction="Joined the group tracker", loot="Looted Robes of the Lich",
+        equipment="Equipped Robes of the Lich", death="Died — total tracked deaths: 15",
+        zone="Entered Stranglethorn Vale", quest="Completed The Green Hills of Stranglethorn",
+        profession="Tailoring reached 185 / 225", lfg="Looking for a Scarlet Monastery group",
+    }
+    if kind ~= "level" and not samples[kind] then return end
+    if active and not active.preview and #incoming < 128 then table.insert(incoming,1,active) end
+    show({sender="Previewlock",key="local-preview",kind=kind,text=samples[kind],
+        level=kind=="level" and 33 or nil,received_at=time(),preview=true},time())
+end
+
 local function tick()
     if not prefs then return end
     local now = time()
     syncGroups()
     if not receiving() then
-        incoming, active = {}, nil
-        if toast then toast:Hide() end
+        local previews = {}
+        for _, item in ipairs(incoming) do if item.preview then table.insert(previews,item) end end
+        incoming = previews
+        if active and not active.preview then
+            active = nil
+            if toast then toast:Hide() end
+        end
     end
     if active and not active.preview and not (active.group_id
         and WoWStatusGroups.contains(getCharacter(), active.group_id)) and not prefs.trusted[active.key] then
@@ -352,7 +373,7 @@ local function tick()
         return
     end
     if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
-    if receiving() and not active and #incoming > 0 and now - lastDisplay >= 7 then
+    if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
         local item = table.remove(incoming, 1)
         if now - item.received_at <= 600 and (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
             or prefs.trusted[item.key]) then show(item, now) end
@@ -408,7 +429,9 @@ end
 local function eventText(event)
     local data = event.data or {}
     if event.kind == "introduction" then return "Joined the tracker" end
-    if event.kind == "death" then return "Died" end
+    if event.kind == "quest" then return "Completed a quest" end
+    if event.kind == "profession" then return (data.name or "Profession") .. ": " .. (data.skill or "?") .. " / " .. (data.max_skill or "?") end
+    if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end
     if event.kind == "lfg" then return "LFG: " .. (data.text or "") end
@@ -418,7 +441,7 @@ local function eventText(event)
     end
 end
 function P.broadcast(character, event)
-    if not event or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
+    if not event or event.kind == "session" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
     local nonce = character.epoch .. "-" .. character.sequence
     local text
     if event.kind == "level" then

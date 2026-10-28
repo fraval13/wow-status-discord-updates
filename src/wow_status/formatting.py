@@ -52,6 +52,9 @@ def announcement(item):
         'equipment': f"**{name}** equipped {safe(data.get('item', '?'))}.",
         'death': f"**{name}** has fallen.",
         'zone': f"**{name}** was last seen in {safe(data.get('zone', '?'))}.",
+        'quest': f"**{name}** completed a quest.",
+        'profession': f"**{name}** improved {safe(data.get('name', 'a profession'))}.",
+        'status': f"**{name}** shared updated character progress.",
         'session': f"**{name}** shared a session update: {safe(data.get('state', '?'))}.",
         'lfg': f"**{name}** is looking for a group: {safe(data.get('text', '?'))}",
     }

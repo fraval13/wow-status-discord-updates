@@ -3,7 +3,7 @@ import copy
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from wow_status.daily import report, render_group, window
+from wow_status.daily import render_group, report, window
 from wow_status.output import message
 from wow_status.schema import validate
 
@@ -109,3 +109,39 @@ def test_unobserved_playtime_is_omitted_from_daily_output(store, payload):
     recap = report(store, store.characters()[0]['id'], day)
     assert recap['activity_summary']['played_seconds_lower_bound'] is None
     assert 'played (' not in render_group(store, [recap], 'Daily recap')
+
+
+def test_status_card_is_cumulative_tidy_and_uses_custom_faction_and_class_emojis():
+    import json
+    from pathlib import Path
+
+    from wow_status.output import upload_summary
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
+    result = upload_summary([item], {'wow_warlock':'<:wow_warlock:123>','wow_alliance':'<:wow_alliance:456>'},preview=True)
+    assert 'TEST STATUS' in result['content']
+    card = result['embeds'][0]
+    assert '<:wow_warlock:123>' in card.title
+    fields = {field.name:field.value for field in card.fields}
+    assert fields['💀 Total deaths'] == '15'
+    assert fields['⬆️ Level'] == '33'
+    assert fields['<:wow_alliance:456> Faction'] == 'Alliance'
+    assert '37.5%' in fields['📈 XP progress']
+    assert fields['📜 Completed quests'] == '236'
+    assert '185 / 225' in fields['Professions']
+    assert '150 / 225' in fields['Professions']
+    assert not any('since last' in field.value for field in card.fields)
+    assert len(card) < 2000
+    item['friend']['name_source'] = 'unavailable'
+    hidden = upload_summary([item])['embeds'][0]
+    assert not any('Player' in field.name for field in hidden.fields)
+
+
+def test_status_metrics_and_skill_ranks_are_filtered_with_profile_privacy():
+    import json
+    from pathlib import Path
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
+    item['settings']['fields'].update(deaths=False, quests=False, level=False, professions=False, **{'class':False})
+    result = validate(item)['snapshot']
+    for key in ['deaths','deaths_since','quests_completed','quests_source','quests_since',
+                'level','xp_current','xp_max','xp_percent','professions','class','class_id']:
+        assert key not in result

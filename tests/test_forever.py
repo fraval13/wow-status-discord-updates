@@ -24,8 +24,8 @@ def forever_lua():
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
-    for name in ('Safe.lua', 'CaseFold.lua', 'Forever.lua', 'History.lua', 'HistoryUI.lua',
-                 'Groups.lua', 'Popups.lua', 'WoWStatus.lua'):
+    for name in ('Safe.lua', 'CaseFold.lua', 'Forever.lua', 'Progress.lua', 'History.lua', 'HistoryUI.lua',
+                 'Groups.lua', 'Popups.lua', 'Previews.lua', 'WoWStatus.lua'):
         runtime.execute((root / name).read_text(encoding='utf-8'))
     return runtime
 

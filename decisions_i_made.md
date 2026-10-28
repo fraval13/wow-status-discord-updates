@@ -1,5 +1,37 @@
 # Decisions I made — 27 October 2026
 
+## Latest changes — quiet progress cards and previews (0.10.0, 29 October)
+
+- Removed generated login/logout session notifications and duplicate zone notices
+  on reload. The server now checks selected progress observations as well as real
+  new events; timestamps and playtime increments alone cannot create a post.
+- Replaced "since last upload" event counters with tidy Discord character cards:
+  name/class, level, faction, optional supplied player name, XP progress, cumulative
+  recorded deaths, completed quests, location and current/max profession ranks.
+  Event preferences and field privacy still govern triggering and displayed data.
+- Classic death totals are recorded observations, seeded from retained local death
+  history, and labelled with their tracking start. They cannot reconstruct earlier
+  deaths. Quest totals use game-reported completions where available, otherwise
+  unique observed turn-ins with an explicit tracked-since label. Profession ranks
+  are read from public skill APIs and never guessed from manual names.
+- Added **Notification previews** as its own addon settings subpage, also available
+  through `/wstatus previews`. It has one local-only button per toast type plus a
+  full sample status-card window. Previews change no progress and send nothing.
+- Downloaded 29 original WoW icons into `assets/discord-emojis/`. Their manifest
+  records image URLs and sizes. The Alliance and Horde images were visually checked.
+  Upload the JPEGs with their exact `wow_...` names; the bot uses them automatically
+  and falls back to Unicode before upload. The ZIP is in `dist/`.
+- The final requested example is a clearly labelled level-33 Alliance warlock with
+  15 total recorded deaths, 37.5% XP, 236 completed quests, Stranglethorn Vale,
+  an optional example player name, Tailoring 185/225 and Enchanting 150/225.
+  It is rendered directly, not inserted into any tracker database. Sending the
+  example is the final manual action after deployment and checks.
+- Tests: 158 passed; 56 addon tests also passed with Lua 5.1. Checks cover unchanged
+  reloads, XP-only changes, cumulative counters, skill ranks, privacy, emoji lookup
+  and every preview. Live API observations still need your in-game check.
+- This release adds Lua files. Restart WoW fully and restart the optional companion
+  so both use the new collectors and schema. No extra app is needed for in-game use.
+
 ## Latest fix — automatic group updates (0.9.1)
 
 Removed **Receive group updates** and **Send my updates** from the settings page.

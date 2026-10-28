@@ -1,3 +1,46 @@
+# Character status cards (0.10.0)
+
+Discord remains opt-in. Reload/login/logout events do not generate notifications.
+The server compares meaningful selected profile observations (level, XP, faction,
+location, profession ranks, death and quest totals) and new permitted events. It
+ignores export timestamps and playtime clock increments when deciding to post.
+An unchanged reload or retry stays silent. The first shared profile can produce
+one initial card.
+
+Cards use class colours, a class thumbnail, faction/class/status/profession emoji
+and labelled fields. The optional player name appears only if actually supplied;
+clearing it also removes it from future cards. Death and quest counters are totals,
+never counts "since last time". Cards from an account export are combined into one
+Discord message, with complete-chunk and retry safeguards retained.
+
+- **Total deaths:** cumulative observations recorded by the addon. Existing retained
+  death history seeds the counter. Classic has no reliable lifetime death total
+  available here, so the footer states the tracking start; older/unobserved deaths
+  are not invented.
+- **Completed quests:** completed quest IDs reported by the game where available.
+  These can include hidden/alternate quest flags. Without that API, the counter
+  records unique turn-ins observed since tracking began and says so in the footer.
+- **XP:** current XP, maximum XP and a recomputed percentage. The level cap shows
+  "Maximum level" rather than a fabricated percentage.
+- **Professions:** readable skill names and current/max ranks from the game, with
+  stable profession keys for emoji lookup. Unavailable ranks are marked unknown;
+  no ranks are inferred from manually entered profession names. In Classic, collapsed
+  skill headers can delay observations; expanding Skills/Profession headers allows
+  the client to expose the lines.
+
+Use [the emoji pack](../assets/discord-emojis/README.md) and keep its filenames as
+emoji names when uploading. The bot discovers available guild emojis automatically.
+The notification preview settings page exercises all local toasts and the status
+layout without posting to Discord or recording fictional progress.
+
+The sample fixture `tests/fixtures/status_preview.json` contains a fictional level
+33 Alliance warlock, 15 recorded deaths, 37.5% XP, 236 completed quests, location,
+optional player name and two ranked professions. `scripts/send_status_preview.py`
+prints its Discord JSON by default; only explicit `--send` posts a labelled example.
+It never writes that fictional character into the tracker database.
+
+The following sections document earlier output modes and are retained for context.
+
 # Optional Discord export summaries (0.9.0)
 
 Discord sharing is off by default and independent of in-game sharing. Opt in per

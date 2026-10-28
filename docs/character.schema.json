@@ -324,6 +324,15 @@
         },
         "looking_for_group": {
           "$ref": "#/$defs/events"
+        },
+        "quests_completed": {
+          "$ref": "#/$defs/events"
+        },
+        "profession_changes": {
+          "$ref": "#/$defs/events"
+        },
+        "status_updates": {
+          "$ref": "#/$defs/events"
         }
       }
     },

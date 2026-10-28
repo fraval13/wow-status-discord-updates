@@ -38,7 +38,10 @@ function A.requestPlaytime() S.call(RequestTimePlayed) end
 function A.snapshot(fields)
     local result = {}
     if fields.level then result.level = A.level() end
-    if fields.class then result.class = S.stringCall(UnitClass, "player") end
+    if fields.class then
+        local name, token = S.call(UnitClass, "player")
+        result.class, result.class_id = S.string(name), S.string(token)
+    end
     if fields.race then result.race = S.stringCall(UnitRace, "player") end
     if fields.faction then result.faction = S.stringCall(UnitFactionGroup, "player") end
     if fields.guild then result.guild = S.stringCall(GetGuildInfo, "player") end

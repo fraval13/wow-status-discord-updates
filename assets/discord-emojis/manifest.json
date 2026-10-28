@@ -1,0 +1,176 @@
+[
+  {
+    "name": "wow_alliance",
+    "file": "wow_alliance.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_bannerpvp_02.jpg",
+    "bytes": 2407
+  },
+  {
+    "name": "wow_horde",
+    "file": "wow_horde.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_bannerpvp_01.jpg",
+    "bytes": 2073
+  },
+  {
+    "name": "wow_level",
+    "file": "wow_level.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/achievement_level_30.jpg",
+    "bytes": 1597
+  },
+  {
+    "name": "wow_xp",
+    "file": "wow_xp.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_misc_book_11.jpg",
+    "bytes": 1923
+  },
+  {
+    "name": "wow_deaths",
+    "file": "wow_deaths.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/ability_rogue_feigndeath.jpg",
+    "bytes": 2035
+  },
+  {
+    "name": "wow_quests",
+    "file": "wow_quests.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_misc_book_09.jpg",
+    "bytes": 1807
+  },
+  {
+    "name": "wow_location",
+    "file": "wow_location.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_misc_map_01.jpg",
+    "bytes": 1511
+  },
+  {
+    "name": "wow_player",
+    "file": "wow_player.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_misc_head_human_01.jpg",
+    "bytes": 1973
+  },
+  {
+    "name": "wow_alchemy",
+    "file": "wow_alchemy.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_alchemy.jpg",
+    "bytes": 1616
+  },
+  {
+    "name": "wow_blacksmithing",
+    "file": "wow_blacksmithing.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_blacksmithing.jpg",
+    "bytes": 1773
+  },
+  {
+    "name": "wow_enchanting",
+    "file": "wow_enchanting.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_engraving.jpg",
+    "bytes": 1944
+  },
+  {
+    "name": "wow_engineering",
+    "file": "wow_engineering.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_engineering.jpg",
+    "bytes": 1794
+  },
+  {
+    "name": "wow_herbalism",
+    "file": "wow_herbalism.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_herbalism.jpg",
+    "bytes": 1647
+  },
+  {
+    "name": "wow_leatherworking",
+    "file": "wow_leatherworking.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_leatherworking.jpg",
+    "bytes": 1506
+  },
+  {
+    "name": "wow_mining",
+    "file": "wow_mining.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_mining.jpg",
+    "bytes": 1514
+  },
+  {
+    "name": "wow_skinning",
+    "file": "wow_skinning.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_misc_pelt_wolf_01.jpg",
+    "bytes": 1621
+  },
+  {
+    "name": "wow_tailoring",
+    "file": "wow_tailoring.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_tailoring.jpg",
+    "bytes": 1752
+  },
+  {
+    "name": "wow_cooking",
+    "file": "wow_cooking.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/inv_misc_food_15.jpg",
+    "bytes": 1655
+  },
+  {
+    "name": "wow_first_aid",
+    "file": "wow_first_aid.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/spell_holy_sealofsacrifice.jpg",
+    "bytes": 2119
+  },
+  {
+    "name": "wow_fishing",
+    "file": "wow_fishing.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/trade_fishing.jpg",
+    "bytes": 1486
+  },
+  {
+    "name": "wow_warrior",
+    "file": "wow_warrior.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_warrior.jpg",
+    "bytes": 1668
+  },
+  {
+    "name": "wow_paladin",
+    "file": "wow_paladin.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_paladin.jpg",
+    "bytes": 2137
+  },
+  {
+    "name": "wow_hunter",
+    "file": "wow_hunter.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_hunter.jpg",
+    "bytes": 1732
+  },
+  {
+    "name": "wow_rogue",
+    "file": "wow_rogue.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_rogue.jpg",
+    "bytes": 1946
+  },
+  {
+    "name": "wow_priest",
+    "file": "wow_priest.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_priest.jpg",
+    "bytes": 1895
+  },
+  {
+    "name": "wow_shaman",
+    "file": "wow_shaman.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_shaman.jpg",
+    "bytes": 2316
+  },
+  {
+    "name": "wow_mage",
+    "file": "wow_mage.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_mage.jpg",
+    "bytes": 1964
+  },
+  {
+    "name": "wow_warlock",
+    "file": "wow_warlock.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_warlock.jpg",
+    "bytes": 2106
+  },
+  {
+    "name": "wow_druid",
+    "file": "wow_druid.jpg",
+    "source": "https://wow.zamimg.com/images/wow/icons/large/classicon_druid.jpg",
+    "bytes": 1819
+  }
+]

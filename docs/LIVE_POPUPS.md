@@ -5,7 +5,7 @@ same group ID. Discord and the companion are optional.
 
 ## Two-player acceptance test
 
-Install version 0.9.1 on both clients and restart them. Use two characters that can
+Install version 0.10.0 on both clients and restart them. Use two characters that can
 communicate through the same custom channel (normally the same realm and faction).
 Do not run a companion for this test.
 
@@ -19,7 +19,7 @@ Do not run a companion for this test.
    include people without the addon; only matching addon clients display updates.
 4. One player reaches level 2 or another real level. The other should receive an
    animated toast with a large icon, coloured accent and pulsing glow, plus an entry in `/wstatus activity` without `/reload`.
-5. Try a selected death, zone or qualifying loot event. Events are compact text;
+5. Try a selected death, quest completion, profession skill-up, zone or qualifying loot event. Events are compact text;
    full inventories and talent profiles are not transmitted.
 6. Remove the group, try another event, and verify no further updates are accepted
    for that group. Previously received activity for it should disappear.
@@ -29,7 +29,10 @@ Do not run a companion for this test.
 8. Test combat deferral and reconnects. A blocked/unavailable API must show a
    diagnostic state rather than claim confirmed delivery.
 
-`/wstatus popup test` (or **Preview toast** in settings) previews the toast locally.
+`/wstatus previews` opens the **Notification previews** settings page, with separate
+buttons for level-up, introduction, loot, equipment, death, zone, quest, profession
+and LFG toasts, plus a structured status-card example. Every preview is local only.
+`/wstatus popup test` remains a shortcut for the original local level-up preview.
 Toasts fade/slide in near the upper-middle of the screen, stay for six seconds and
 fade out. They do not print normal event updates to chat. Sound is off by default;
 `/wstatus popup sound on` enables it. `/wstatus test` records a
@@ -62,3 +65,7 @@ Discord remains independently off by default.
 Explicit legacy `/wstatus popup channel WStatusNAME` and per-character trust
 commands remain available for testing old visible-channel installations. Normal
 group sharing uses addon whispers and does not need this legacy setup.
+
+Reloads/logins/logout and unchanged zone-loading events do not generate updates.
+Real progress events and newly observed XP/counters/ranks still update the selected
+status. Death counters are cumulative recorded totals rather than per-session deltas.

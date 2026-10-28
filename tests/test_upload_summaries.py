@@ -24,8 +24,8 @@ async def test_complete_export_produces_one_summary_and_retries_are_deduplicated
     assert store.pending() is None
     store.ingest('owner', batches[2])
     items = store.summary_items(store.pending())
-    assert len(items) == 3
-    assert '3 level-ups' in upload_summary(items)['content']
+    assert sum(item['kind'] == 'level' for item in items) == 3
+    assert upload_summary(items)['embeds'][0].fields[0].value == '10'
     bot = StatusBot(store, 123, 456)
     channel = SimpleNamespace(guild=SimpleNamespace(id=123),
                               send=AsyncMock(return_value=SimpleNamespace(id=789)))
@@ -35,9 +35,9 @@ async def test_complete_export_produces_one_summary_and_retries_are_deduplicated
     try:
         await asyncio.sleep(0.05)
         channel.send.assert_awaited_once()
-        assert '3 level-ups' in channel.send.call_args.kwargs['content']
+        assert channel.send.call_args.kwargs['embeds'][0].fields[0].value == '10'
         assert store.pending() is None
-        assert store.db.execute("SELECT count(*) FROM outbox WHERE status='sent'").fetchone()[0] == 3
+        assert store.db.execute("SELECT count(*) FROM outbox WHERE status='sent'").fetchone()[0] == 4
         for p in batches:
             store.ingest('owner', p)
         assert store.pending() is None
@@ -57,7 +57,7 @@ def test_multiple_characters_share_one_account_summary_and_snapshot_only_is_sile
     store.ingest('owner', first)
     store.ingest('owner', second)
     items = store.summary_items(store.pending())
-    text = upload_summary(items)['content']
+    text = str([card.to_dict() for card in upload_summary(items)['embeds']])
     assert 'Thora' in text and 'Other' in text
     store.deliver_many(items, 'sent')
     newer = clone(first)
@@ -100,7 +100,7 @@ def test_new_export_absorbs_old_incomplete_batch(store, payload, clone):
     new['events'][0]['id'] = 'level-later'
     new['events'][0]['data']['level'] = 5
     store.ingest('owner', new)
-    assert len(store.summary_items(store.pending())) == 2
+    assert sum(item['kind'] == 'level' for item in store.summary_items(store.pending())) == 2
 
 
 def test_summary_marks_whole_batch_uncertain_together(store, payload, clone):
@@ -109,4 +109,49 @@ def test_summary_marks_whole_batch_uncertain_together(store, payload, clone):
     store.deliver_many(items, 'sending')
     store.deliver_many(items, 'uncertain')
     assert store.pending() is None
-    assert store.db.execute("SELECT count(*) FROM outbox WHERE status='uncertain'").fetchone()[0] == 1
+    assert store.db.execute("SELECT count(*) FROM outbox WHERE status='uncertain'").fetchone()[0] == 2
+
+
+def test_reload_clock_and_session_events_are_silent_without_real_changes(store, payload, clone):
+    p = summary(payload, clone, 1, 1)
+    p['events'] = []
+    store.ingest('owner', p)
+    store.deliver_many(store.summary_items(store.pending()), 'sent')
+    p['upload_batch'] = 'b' * 64
+    p['exported_at'] += 1
+    p['settings']['fields']['playtime'] = True
+    p['settings'].setdefault('collection', {})['session'] = True
+    p['settings']['announcements']['session'] = True
+    p['snapshot'].update(playtime=12345,playtime_recorded_at=p['exported_at'])
+    p['events'] = [{'id':'reload-session','kind':'session','at':p['exported_at'],
+                    'data':{'state':'addon_loaded'}}]
+    store.ingest('owner', p)
+    assert store.pending() is None
+
+
+def test_xp_only_progress_updates_status_without_requiring_an_event(store, payload, clone):
+    p = summary(payload, clone, 1, 1)
+    p['events'] = []
+    p['snapshot'].update(xp_current=30,xp_max=100)
+    store.ingest('owner', p)
+    store.deliver_many(store.summary_items(store.pending()), 'sent')
+    p['snapshot']['xp_current'] = 40
+    p['upload_batch'] = 'b' * 64
+    store.ingest('owner', p)
+    items = store.summary_items(store.pending())
+    result = upload_summary(items)
+    fields = result['embeds'][0].fields
+    assert any('40%' in field.value for field in fields)
+    assert len(items) == 1 and items[0]['kind'] == 'status'
+
+
+def test_status_change_honors_event_preferences(store, payload, clone):
+    p = summary(payload, clone, 1, 1)
+    p['events'] = []
+    store.ingest('owner', p)
+    store.deliver_many(store.summary_items(store.pending()), 'sent')
+    p['upload_batch'] = 'b' * 64
+    p['snapshot']['level'] = 11
+    p['settings']['announcements']['level'] = False
+    store.ingest('owner', p)
+    assert store.pending() is None

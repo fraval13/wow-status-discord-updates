@@ -5,15 +5,15 @@ import ipaddress
 import logging
 import os
 import secrets
-import time
 
 from aiohttp import web
 
-from .group_routing import group_id as validate_group_id, group_key, group_label, canonical_group
+from . import limits
+from .group_routing import canonical_group, group_key, group_label
+from .group_routing import group_id as validate_group_id
 from .people import remember
 from .schema import ValidationError, string
 from .store import Conflict
-from . import limits
 
 log = logging.getLogger(__name__)
 
@@ -111,7 +111,7 @@ def create_app(store, group=None, name=None, trust_proxy=False):
         string(player, 'player name', 40)
         store.request_budget('enroll:group', limits.ENROLLMENTS_PER_GROUP_DAY, 86400)
         token = store.redeem(store.create_link(owner))
-        remember(store, owner, player, source='addon')
+        remember(store, owner, player, source='addon' if body.get('player_name') else 'unavailable')
         return web.json_response({'token': token, 'owner': owner},
                                  headers={'Cache-Control': 'no-store'})
 
@@ -163,8 +163,12 @@ def create_app(store, group=None, name=None, trust_proxy=False):
                 raise web.HTTPForbidden()
             if store.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (owner,)).fetchone():
                 raise web.HTTPForbidden()
-            if payload.get('player_name'):
-                remember(store, owner, string(payload['player_name'], 'player name', 40), source='addon')
+            if 'player_name' in payload:
+                player = payload['player_name']
+                if not isinstance(player, str):
+                    raise ValidationError('Invalid player name')
+                remember(store, owner, string(player, 'player name', 40) if player else ('Friend ' + owner[-6:]),
+                         source='addon' if player else 'unavailable')
         return web.json_response(store.ingest(owner, payload))
 
     app.router.add_get('/health', health)

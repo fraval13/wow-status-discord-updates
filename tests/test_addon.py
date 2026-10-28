@@ -138,10 +138,12 @@ def make_lua(stubs=STUBS):
     runtime.execute((root / 'Safe.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'CaseFold.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Vanilla.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Progress.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'History.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'HistoryUI.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
     return runtime
@@ -750,7 +752,7 @@ def test_generic_events_share_only_with_selected_groups_and_honor_privacy():
     assert 'WSTATUS3 classic-era death' in packet
     assert len(packet.encode()) <= 243
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
-    assert 'Died' in receiver.eval('WoWStatusLevelPopup.message:GetText()')
+    assert 'Total deaths: 1' in receiver.eval('WoWStatusLevelPopup.message:GetText()')
     assert receiver.eval('#WoWStatusDB.popups.activity') == 1
     receiver.eval('fire')('CHAT_MSG_ADDON', 'OtherAddon', packet, 'WHISPER', 'Thora-TestRealm')
     assert receiver.eval('#WoWStatusDB.popups.activity') == 1
@@ -846,3 +848,69 @@ def test_settings_refresh_has_no_account_popup_checkboxes(lua):
             assert(entry.widget:GetChecked() == target[entry.key])
         end
     ''')
+
+
+def test_reload_and_unchanged_zone_do_not_generate_notifications(lua):
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('fire')('PLAYER_ENTERING_WORLD')
+    lua.eval('fire')('ZONE_CHANGED_NEW_AREA')
+    lua.eval('fire')('PLAYER_LOGOUT')
+    assert lua.eval('#character().events') == 0
+    assert lua.eval('#__sent') == 0
+
+
+def test_cumulative_deaths_xp_quests_and_profession_ranks(lua):
+    lua.execute('''
+        function UnitXP() return 375 end
+        function UnitXPMax() return 1000 end
+        __skill=75
+        function GetNumSkillLines() return 2 end
+        function GetSkillLineInfo(index)
+            if index==1 then return "Professions",true,true,0,0,0,0 end
+            return "Alchemy",nil,nil,__skill,0,0,150
+        end
+        fire("SKILL_LINES_CHANGED")
+        fire("PLAYER_XP_UPDATE","player")
+        assert(character().snapshot.xp_percent==37.5)
+        assert(character().snapshot.professions[1].skill==75)
+        assert(character().snapshot.professions[1].max_skill==150)
+        assert(character().snapshot.professions[1].source=="game_api")
+        fire("PLAYER_DEAD")
+        fire("PLAYER_DEAD")
+        assert(character().snapshot.deaths==1)
+        fire("PLAYER_ALIVE")
+        fire("PLAYER_DEAD")
+        assert(character().snapshot.deaths==2)
+        fire("QUEST_TURNED_IN",100)
+        fire("QUEST_TURNED_IN",100)
+        fire("QUEST_TURNED_IN",101)
+        assert(character().snapshot.quests_completed==2)
+        assert(character().snapshot.quests_source=="tracked_since")
+        __skill=76
+        fire("SKILL_LINES_CHANGED")
+        assert(character().snapshot.professions[1].skill==76)
+        assert(character().events[#character().events].kind=="profession")
+    ''')
+
+
+def test_game_reported_completed_quests_replaces_tracked_subset(lua):
+    lua.execute('''
+        function GetQuestsCompleted() return {[10]=true,[20]=true,[30]=true} end
+        fire("QUEST_QUERY_COMPLETE")
+        assert(character().snapshot.quests_completed==3)
+        assert(character().snapshot.quests_source=="game_api")
+    ''')
+
+
+def test_every_notification_preview_is_local_and_has_icon(lua):
+    lua.eval('SlashCmdList.WOWSTATUS')('previews')
+    assert lua.eval('WoWStatusNotificationPreviews:IsShown()') is True
+    for kind in ['level','introduction','loot','equipment','death','zone','quest','profession','lfg']:
+        lua.execute(f'WoWStatusNotificationPreviews.buttons.{kind}.OnClick()')
+        assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
+        assert lua.eval('WoWStatusLevelPopup.icon.texture').startswith('Interface\\Icons\\')
+    lua.eval('WoWStatusPreviews.statusCard')()
+    assert 'Total deaths: 15' in lua.eval('WoWStatusStatusPreview.body:GetText()')
+    assert lua.eval('#__sent') == 0
+    assert lua.eval('#character().events') == 0
+    assert lua.eval('#WoWStatusDB.popups.activity') == 0

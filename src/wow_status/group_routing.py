@@ -1,7 +1,7 @@
 """Explicit addon group selection; destinations never learn other selected IDs."""
 import copy
-import re
 import json
+import re
 from functools import lru_cache
 from importlib.resources import files
 

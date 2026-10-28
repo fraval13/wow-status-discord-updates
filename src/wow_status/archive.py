@@ -18,6 +18,9 @@ GROUPS = {
     'zone': ('activity', 'zones'),
     'session': ('activity', 'addon_sessions'),
     'lfg': ('activity', 'looking_for_group'),
+    'quest': ('activity', 'quests_completed'),
+    'profession': ('activity', 'profession_changes'),
+    'status': ('activity', 'status_updates'),
 }
 
 
@@ -75,7 +78,8 @@ def character_document(store, cid):
         'enrollment': {'introductions': []},
         'progression': {'level_history': []},
         'items': {'loot': [], 'equipment_changes': []},
-        'activity': {'deaths': [], 'zones': [], 'addon_sessions': [], 'looking_for_group': []},
+        'activity': {'deaths': [], 'zones': [], 'addon_sessions': [], 'looking_for_group': [],
+                         'quests_completed': [], 'profession_changes': [], 'status_updates': []},
         'daily_recaps': [], 'weekly_recaps': [],
     }
     for snap in store.db.execute('SELECT * FROM snapshots WHERE character=? ORDER BY exported,id',

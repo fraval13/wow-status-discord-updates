@@ -7,7 +7,7 @@ import time
 from pathlib import Path
 
 from . import limits
-from .schema import ValidationError, should_announce, validate
+from .schema import STATUS_FIELDS, ValidationError, should_announce, validate
 
 
 class Conflict(ValidationError):
@@ -210,9 +210,7 @@ class Store:
             if old and json.loads(old['settings']) != p['settings']:
                 for row in self.db.execute('SELECT * FROM snapshots WHERE character=?', (cid,)).fetchall():
                     old_snapshot = json.loads(row['snapshot'])
-                    kept = {k: v for k, v in old_snapshot.items()
-                            if p['settings']['enabled'] and p['settings']['fields'].get(
-                                'playtime' if k == 'playtime_recorded_at' else k)}
+                    kept = validate(dict(p, snapshot=old_snapshot, events=[]))['snapshot']
                     self.db.execute('UPDATE snapshots SET snapshot=? WHERE id=?',
                                     (json.dumps(kept), row['id']))
             if not p['settings']['enabled']:
@@ -279,6 +277,20 @@ class Store:
                         self.db.execute('INSERT INTO outbox_batches VALUES(?,?,?)',
                                         (cursor.lastrowid, owner, batch))
                 accepted += inserted
+            if batch:
+                before = json.loads(old['snapshot']) if old else {}
+                changed = [key for key in STATUS_FIELDS if key in p['snapshot']
+                           and p['snapshot'][key] != before.get(key)]
+                status_event = {'kind': 'status', 'data': {'changed': changed}}
+                if changed and self.should_announce(p['settings'], status_event):
+                    eid = 'status:' + self.digest(json.dumps([cid, batch]))
+                    added = self.db.execute('INSERT OR IGNORE INTO events(character,id,kind,at,received,data) VALUES(?,?,?,?,?,?)',
+                        (cid,eid,'status',p['exported_at'],now,json.dumps(status_event['data']))).rowcount
+                    if added:
+                        accepted += 1
+                        new_bytes += 160
+                        cursor = self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)',(cid,eid))
+                        self.db.execute('INSERT INTO outbox_batches VALUES(?,?,?)',(cursor.lastrowid,owner,batch))
             if batch:
                 # A newer complete export also absorbs any older unsent backlog for
                 # this character, including legacy per-event and incomplete batches.

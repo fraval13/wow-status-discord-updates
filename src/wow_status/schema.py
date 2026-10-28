@@ -3,9 +3,17 @@ import json
 import re
 import time
 
-FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions'}
+FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions', 'deaths', 'quests'}
 LEVEL_CAPS = {'classic-era': 60, 'forever': 60}
-KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg'}
+KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status'}
+STATUS_FIELDS = {
+    'level': ('level','level'), 'xp_current': ('level','level'), 'xp_max': ('level','level'),
+    'class': ('class','introduction'), 'class_id': ('class','introduction'),
+    'faction': ('faction','introduction'), 'zone': ('zone','zone'),
+    'professions': ('professions','profession'), 'deaths': ('deaths','death'),
+    'quests_completed': ('quests','quest'),
+}
+
 
 
 class ValidationError(ValueError):
@@ -55,8 +63,8 @@ def validate(payload):
         clean['group_id'] = target
     if payload.get('group_name'):
         clean['group_name'] = string(payload['group_name'], 'group name', 80)
-    if payload.get('player_name'):
-        clean['player_name'] = string(payload['player_name'], 'player name', 40)
+    if 'player_name' in payload:
+        clean['player_name'] = '' if payload['player_name'] == '' else string(payload['player_name'], 'player name', 40)
     if 'build' in identity:
         clean['identity']['build'] = string(identity['build'], 'client build', 40)
     if 'interface' in identity:
@@ -89,14 +97,26 @@ def validate(payload):
         for key in FIELDS:
             if clean['settings']['fields'][key] and key in snapshot:
                 val = snapshot[key]
-                if key in ('level', 'playtime'):
-                    integer(val, key, 0 if key == 'playtime' else 1,
-                            2_000_000_000 if key == 'playtime' else cap)
+                if key in ('level', 'playtime', 'deaths', 'quests'):
+                    integer(val, key, 0 if key != 'level' else 1,
+                            cap if key == 'level' else 2_000_000_000)
                 elif key == 'professions':
                     if not isinstance(val, list) or len(val) > 6:
                         raise ValidationError('Invalid professions')
-                    val = [{'name': string(p.get('name'), 'profession name', 50),
-                            'source': 'player_entered'} for p in val if isinstance(p, dict)]
+                    professions = []
+                    for profession in val:
+                        if not isinstance(profession, dict):
+                            raise ValidationError('Invalid profession')
+                        entry = {'name': string(profession.get('name'), 'profession name', 50),
+                                 'source': 'game_api' if profession.get('source') == 'game_api' else 'player_entered'}
+                        if 'skill' in profession:
+                            entry['max_skill'] = integer(profession.get('max_skill'), 'profession maximum', 1, 2000)
+                            entry['skill'] = integer(profession['skill'], 'profession skill', 0, entry['max_skill'])
+                        if profession.get('key') in {'alchemy','blacksmithing','enchanting','engineering',
+                                'herbalism','leatherworking','mining','skinning','tailoring','cooking','first_aid','fishing'}:
+                            entry['key'] = profession['key']
+                        professions.append(entry)
+                    val = professions
                 elif key == 'gear':
                     if not isinstance(val, dict) or len(val) > 20:
                         raise ValidationError('Invalid gear')
@@ -106,6 +126,23 @@ def validate(payload):
                 else:
                     string(val, key, 200)
                 clean['snapshot'][key] = val
+    if clean['settings']['enabled']:
+        if clean['settings']['fields']['class'] and snapshot.get('class_id') in {
+                'WARRIOR','PALADIN','HUNTER','ROGUE','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}:
+            clean['snapshot']['class_id'] = snapshot['class_id']
+        if clean['settings']['fields']['level'] and 'xp_current' in snapshot:
+            maximum = integer(snapshot.get('xp_max'), 'XP maximum', 1, 2_000_000_000)
+            xp = integer(snapshot['xp_current'], 'XP', 0, maximum)
+            clean['snapshot'].update(xp_current=xp, xp_max=maximum, xp_percent=round(xp/maximum*100,1))
+        if clean['settings']['fields']['deaths'] and 'deaths' in snapshot:
+            clean['snapshot']['deaths'] = integer(snapshot['deaths'], 'total deaths', 0, 2_000_000_000)
+            clean['snapshot']['deaths_since'] = integer(snapshot.get('deaths_since'), 'death tracking start', 1, clean['exported_at']+300)
+        if clean['settings']['fields']['quests'] and 'quests_completed' in snapshot:
+            clean['snapshot']['quests_completed'] = integer(snapshot['quests_completed'], 'completed quests', 0, 2_000_000_000)
+            if snapshot.get('quests_source') not in ('game_api', 'tracked_since'):
+                raise ValidationError('Invalid quest count source')
+            clean['snapshot']['quests_source'] = snapshot['quests_source']
+            clean['snapshot']['quests_since'] = integer(snapshot.get('quests_since'), 'quest tracking start', 1, clean['exported_at']+300)
     if (clean['settings']['enabled'] and clean['settings']['fields']['playtime']
             and 'playtime' in clean['snapshot'] and snapshot.get('playtime_recorded_at') is not None):
         clean['snapshot']['playtime_recorded_at'] = integer(snapshot['playtime_recorded_at'],
@@ -121,7 +158,7 @@ def validate(payload):
             raise ValidationError('Unsupported event kind')
         eid = string(event.get('id'), 'event ID', 180)
         at = integer(event.get('at'), 'event timestamp', 1, clean['exported_at'] + 300)
-        if not clean['settings']['enabled'] or not clean['settings']['collection'][kind]:
+        if not clean['settings']['enabled'] or (kind != 'status' and not clean['settings']['collection'][kind]):
             continue
         if kind == 'introduction' and not clean['settings']['introduction_confirmed']:
             continue
@@ -146,6 +183,28 @@ def validate(payload):
             filtered = {'item': string(data.get('item'), 'item', 500)}
             if data.get('quality') is not None:
                 filtered['quality'] = integer(data['quality'], 'quality', 0, 5)
+        elif kind == 'death' and clean['settings']['fields']['deaths'] and 'total_deaths' in data:
+            filtered = {'total_deaths': integer(data['total_deaths'], 'total deaths', 0, 2_000_000_000)}
+        elif kind == 'quest':
+            filtered = {'quest_id': integer(data.get('quest_id'), 'quest ID', 1, 2_000_000_000)}
+        elif kind == 'profession':
+            maximum = integer(data.get('max_skill'), 'profession maximum', 1, 2000)
+            filtered = {'name': string(data.get('name'), 'profession name', 50),
+                        'skill': integer(data.get('skill'), 'profession skill', 0, maximum), 'max_skill': maximum}
+        elif kind == 'status':
+            changes = data.get('changed', [])
+            if not isinstance(changes, list) or len(changes) > len(STATUS_FIELDS):
+                raise ValidationError('Invalid status changes')
+            permitted = []
+            for key in changes:
+                if not isinstance(key, str) or key not in STATUS_FIELDS:
+                    raise ValidationError('Invalid status field')
+                field, category = STATUS_FIELDS[key]
+                if clean['settings']['fields'][field] and clean['settings']['announcements'][category]:
+                    permitted.append(key)
+            if not permitted:
+                continue
+            filtered = {'changed': permitted}
         elif kind == 'zone':
             if not clean['settings']['fields']['zone']:
                 continue
@@ -191,6 +250,14 @@ def validate(payload):
 
 
 def should_announce(settings, event):
+    if settings.get('discord_delivery') == 'summary':
+        if event['kind'] == 'session':
+            return False
+        if event['kind'] == 'status':
+            return settings['enabled'] and any(
+                key in STATUS_FIELDS and settings['fields'][STATUS_FIELDS[key][0]]
+                and settings['announcements'][STATUS_FIELDS[key][1]]
+                for key in event['data'].get('changed', []))
     if not settings['enabled'] or not settings['announcements'].get(event['kind']):
         return False
     if event['kind'] == 'level':

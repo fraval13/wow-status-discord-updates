@@ -4,9 +4,9 @@ Friends install **only the WoW addon**, enter the same group ID, and receive eac
 other's updates inside the game. No desktop app, account, Discord bot or web
 service is needed for in-game sharing.
 
-Discord is a separate opt-in. Its optional companion uploads saved exports and
-the bot posts **one compact summary of new activity**, rather than an individual
-message for every event in the saved history.
+Discord is a separate opt-in. Its optional companion uploads saved exports, and
+the bot posts **one tidy character status card when meaningful progress changes**.
+A reload by itself creates no notification.
 
 ## Start with the addon
 
@@ -32,7 +32,8 @@ needed to apply in-game group changes. Local history is saved by the game on
 reload/logout and remains available through `/wstatus logs`, `graph` and `times`.
 
 The in-game messages cover level-ups, consented introductions, selected loot,
-equipment changes, deaths, zones, session updates and player-entered LFG messages.
+equipment changes, deaths, quest completions, profession skill-ups, zones and
+player-entered LFG messages. Login/logout session notices are not generated.
 They contain compact event details, not a full remote inventory or talent profile.
 Loot uses the selected rarity threshold; level-up notifications do not use
 Discord's old milestone interval.
@@ -74,11 +75,19 @@ To also share one character in Discord:
 4. Save the shared service URL, select only this account's
    `WTF/Account/.../SavedVariables/WoWStatus.lua`, and click **Start uploading**.
 5. Play normally. `/reload`, logout or relog writes the saved data. The running
-   companion uploads that export and the server posts one summary for its new
-   permitted activity. Re-uploading it creates no duplicate summary; an export
+   companion uploads that export and the server posts an updated card if there is new permitted progress. Re-uploading it creates no duplicate summary; an export
    with no new announceable events is silent.
 
-Example: **Franktest: 3 level-ups (latest level 5), 2 loot finds, 1 death.**
+The card shows character name, class, level, faction, optional player name, XP
+percentage, cumulative recorded deaths, completed quests, location and profession
+ranks. Counts are totals, not "since last upload" deltas. Class/faction/profession
+emojis are used when uploaded; the [emoji pack](assets/discord-emojis/README.md)
+contains 29 matching files.
+
+Open **Options → AddOns → WoW Status → Notification previews**, or
+`/wstatus previews`, to try every notification and a local example status card.
+Previews never send data or modify your character. Version 0.10.0 adds Lua files:
+restart WoW completely and restart the optional companion after updating.
 Large histories upload in chunks, but the bot waits for the complete account
 export and combines the chunks and characters into one message. Summaries use
 counts rather than dumping every item/event. Older unsent activity is folded into
@@ -119,5 +128,5 @@ instances. Server deployment never updates the addon folder on a friend's PC.
 
 No OpenAI key is needed. Character data is not sent to OpenAI. Telemetry is
 player-reported, not Battle.net ownership verification. Dungeon completion,
-quests, talents, automatic profession collection, mounts/pets, reputation and PvP
+quest chains, talents, profession recipe collection, mounts/pets, reputation and PvP
 remain separate unimplemented collectors; they are not inferred from zone entry.

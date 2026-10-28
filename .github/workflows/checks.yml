@@ -27,6 +27,7 @@ jobs:
           Path('dist').mkdir(exist_ok=True)
           for client in ('vanilla', 'forever'):
               shutil.make_archive(f'dist/WoWStatus-{client}', 'zip', f'addon/{client}', 'WoWStatus')
+          shutil.make_archive('dist/WoWStatus-discord-emojis', 'zip', 'assets/discord-emojis')
       - uses: actions/upload-artifact@v4
         with:
           name: WoWStatus-addons-${{ matrix.os }}

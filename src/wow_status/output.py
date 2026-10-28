@@ -104,34 +104,92 @@ def message(store, item, custom=None):
 
 
 
-def upload_summary(items):
-    """One bounded message per exported account batch; summarize volume, never dump events."""
-    from collections import Counter
+CLASS_COLOURS = {'WARRIOR':0xC79C6E,'PALADIN':0xF58CBA,'HUNTER':0xABD473,
+                 'ROGUE':0xFFF569,'PRIEST':0xFFFFFF,'SHAMAN':0x0070DE,
+                 'MAGE':0x69CCF0,'WARLOCK':0x9482C9,'DRUID':0xFF7D0A}
+CLASS_SYMBOLS = {'WARRIOR':'⚔️','PALADIN':'🛡️','HUNTER':'🏹','ROGUE':'🗡️',
+                 'PRIEST':'✨','SHAMAN':'⚡','MAGE':'🔮','WARLOCK':'😈','DRUID':'🐾'}
+
+
+def status_card(item, custom=None, preview=False):
+    """Current, selected character observations; cumulative values, never session deltas."""
+    custom = custom or {}
+    snap, identity = item['snapshot'], item['identity']
+    token = snap.get('class_id', str(snap.get('class', '')).upper())
+
+    def icon(name, fallback):
+        return custom.get('wow_' + name, fallback)
+
+    class_icon = icon(token.lower(), CLASS_SYMBOLS.get(token, '👤'))
+    card = discord.Embed(title=f"{class_icon} {safe(identity['name'])}",
+                         colour=CLASS_COLOURS.get(token, 0x5865F2))
+    card.description = ('**EXAMPLE — not a real character update**\n' if preview else '')
+    if snap.get('class'):
+        card.description += safe(snap['class']) + ' · '
+    card.description += safe(identity['realm'])
+    if token in CLASS_COLOURS:
+        card.set_thumbnail(url=f'https://wow.zamimg.com/images/wow/icons/large/classicon_{token.lower()}.jpg')
+    friend = item.get('friend', {})
+    if friend.get('name_source') in ('addon', 'nickname'):
+        card.add_field(name=icon('player','👤') + ' Player', value=safe(friend['display_name']), inline=True)
+    if 'level' in snap:
+        card.add_field(name=icon('level','⬆️') + ' Level', value=str(snap['level']), inline=True)
+    if 'faction' in snap:
+        faction = snap['faction']
+        symbol = icon(faction.lower(), '🔵' if faction == 'Alliance' else '🔴')
+        card.add_field(name=symbol + ' Faction', value=safe(faction), inline=True)
+    if 'xp_percent' in snap:
+        percent = snap['xp_percent']
+        filled = min(10, max(0, int(percent/10 + .5)))
+        progress = '▰' * filled + '▱' * (10 - filled)
+        card.add_field(name=icon('xp','📈') + ' XP progress',
+                       value=f"`{progress}` **{percent:g}%** · {snap['xp_current']:,} / {snap['xp_max']:,}", inline=False)
+    elif item.get('settings', {}).get('fields', {}).get('level'):
+        value = 'Maximum level' if snap.get('level') == 60 else 'Not observed yet'
+        card.add_field(name=icon('xp','📈') + ' XP progress', value=value, inline=False)
+    if 'deaths' in snap:
+        card.add_field(name=icon('deaths','💀') + ' Total deaths', value=str(snap['deaths']), inline=True)
+    if 'quests_completed' in snap:
+        card.add_field(name=icon('quests','📜') + ' Completed quests', value=str(snap['quests_completed']), inline=True)
+    if 'zone' in snap:
+        card.add_field(name=icon('location','📍') + ' Location', value=safe(snap['zone']), inline=False)
+    if 'professions' in snap:
+        professions = []
+        for profession in snap['professions']:
+            name = safe(profession['name'])
+            symbol = icon(profession.get('key', ''), '⚒️')
+            rank = f" **{profession['skill']} / {profession['max_skill']}**" if 'skill' in profession else ' · rank unavailable'
+            professions.append(symbol + ' ' + name + rank)
+        card.add_field(name='Professions', value='\n'.join(professions) or 'None learned', inline=False)
+    elif item.get('settings', {}).get('fields', {}).get('professions'):
+        card.add_field(name='Professions', value='Ranks not observed yet', inline=False)
+    notes = [identity['client']]
+    if snap.get('deaths_since'):
+        date = datetime.fromtimestamp(snap['deaths_since'], ZoneInfo('Europe/Oslo')).strftime('%d %b %Y')
+        notes.append('Deaths tracked since ' + date)
+    if snap.get('quests_source') == 'tracked_since':
+        notes.append('Quests tracked since installation')
+    elif snap.get('quests_source') == 'game_api':
+        notes.append('Quests: game-reported completions')
+    card.set_footer(text=' · '.join(notes))
+    return card
+
+
+def upload_summary(items, custom=None, preview=False):
+    """One message with tidy character cards, bounded by Discord's combined embed limit."""
     characters = {}
     for item in items:
-        characters.setdefault(item['id'], []).append(item)
-    lines = ['📜 **Progress since the last upload**']
-    for index, records in enumerate(characters.values()):
-        if index >= 12:
-            lines.append(f'…and {len(characters) - index} more characters. Full history is retained.')
+        characters.setdefault(item['id'], item)
+    cards, length = [], 0
+    for item in characters.values():
+        card = status_card(item, custom, preview)
+        if len(cards) == 10 or length + len(card) > 5500:
             break
-        real = [item for item in records if not item['data'].get('synthetic')]
-        counts = Counter(item['kind'] for item in real)
-        levels = sorted({r['data']['level'] for r in real if r['kind'] == 'level'})
-        parts = []
-        if len(real) != len(records):
-            parts.append(f'{len(records) - len(real)} test event(s), not real progress')
-        if counts['introduction']:
-            parts.append('joined the tracker')
-        if levels:
-            parts.append(f"level {levels[0]}" if len(levels) == 1 else f"{len(levels)} level-ups (latest level {levels[-1]})")
-        labels = {'loot': 'loot finds', 'equipment': 'gear changes', 'death': 'deaths',
-                  'zone': 'zone changes', 'session': 'session updates', 'lfg': 'LFG updates'}
-        parts.extend(f'{counts[kind]} {label}' for kind, label in labels.items() if counts[kind])
-        name = safe(records[0]['identity']['name'])
-        line = f"**{name}**: " + ', '.join(parts)
-        if sum(len(x) + 1 for x in lines) + len(line) > 1800:
-            lines.append('Additional activity is retained in the character history.')
-            break
-        lines.append(line)
-    return {'content': '\n'.join(lines)}
+        cards.append(card)
+        length += len(card)
+    content = '🧪 **TEST STATUS — example data only**' if preview else '📜 **WoW Progress**'
+    if len(cards) < len(characters):
+        content += f" · {len(characters) - len(cards)} more changed characters retained in history"
+    if any(item['data'].get('synthetic') for item in items):
+        content += ' · TEST event, not real progress'
+    return {'content': content, 'embeds': cards}

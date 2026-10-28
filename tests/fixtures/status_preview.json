@@ -1,0 +1,93 @@
+{
+  "version": 1,
+  "id": "example-warlock",
+  "owner": "example-owner",
+  "identity": {
+    "name": "Previewlock",
+    "guid": "Example-Warlock-33",
+    "realm": "Firemaw",
+    "client": "classic-era"
+  },
+  "friend": {
+    "display_name": "Alex (example)",
+    "name_source": "addon"
+  },
+  "settings": {
+    "enabled": true,
+    "discord_delivery": "summary",
+    "introduction_confirmed": true,
+    "fields": {
+      "level": true,
+      "class": true,
+      "race": true,
+      "faction": true,
+      "guild": true,
+      "gear": true,
+      "zone": true,
+      "playtime": true,
+      "professions": true,
+      "deaths": true,
+      "quests": true
+    },
+    "collection": {
+      "introduction": true,
+      "level": true,
+      "loot": true,
+      "equipment": true,
+      "death": true,
+      "zone": true,
+      "quest": true,
+      "profession": true,
+      "lfg": true
+    },
+    "announcements": {
+      "introduction": true,
+      "level": true,
+      "loot": true,
+      "equipment": true,
+      "death": true,
+      "zone": true,
+      "quest": true,
+      "profession": true,
+      "lfg": true
+    },
+    "loot_quality": 4,
+    "level_interval": 10
+  },
+  "snapshot": {
+    "level": 33,
+    "class": "Warlock",
+    "class_id": "WARLOCK",
+    "faction": "Alliance",
+    "xp_current": 15000,
+    "xp_max": 40000,
+    "xp_percent": 37.5,
+    "deaths": 15,
+    "deaths_since": 1792526400,
+    "quests_completed": 236,
+    "quests_source": "game_api",
+    "quests_since": 1792526400,
+    "zone": "Stranglethorn Vale",
+    "professions": [
+      {
+        "name": "Tailoring",
+        "key": "tailoring",
+        "skill": 185,
+        "max_skill": 225,
+        "source": "game_api"
+      },
+      {
+        "name": "Enchanting",
+        "key": "enchanting",
+        "skill": 150,
+        "max_skill": 225,
+        "source": "game_api"
+      }
+    ]
+  },
+  "kind": "status",
+  "data": {},
+  "events": [],
+  "exported_at": 1793217600,
+  "at": 1793217600
+}

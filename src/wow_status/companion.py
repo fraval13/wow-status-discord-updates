@@ -74,7 +74,7 @@ def exports(path):
         events = history.get('events', payload.get('events', {}))
         if not isinstance(events, dict):
             raise ValueError('Invalid addon events')
-        records = list(events.values())
+        records = [event for event in events.values() if event.get('kind') != 'session']
         since = char.get('discord_since', 0)
         if since:
             since = integer(since, 'Discord sharing start', 1, char['exported_at'] + 300)
