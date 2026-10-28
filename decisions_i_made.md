@@ -44,6 +44,14 @@ ZIP packages were updated with backups; the previously opened companion was
 stopped, and inspection of the current export confirmed zero enabled Discord
 batches. No test messages were sent to Discord or through the live game client.
 
+Delivery: implementation commit `7dd016b` was deployed through the existing project
+receiver after consistent SQLite backups of both group databases. Both ronkalot
+and navsquad report that revision healthy, and their summary-batch schema is present.
+No unrelated services or gateway configuration were changed. GitHub push still
+fails with `Permission denied (publickey)`, so the repository commits remain local
+until GitHub SSH access is unlocked and `git push origin main` succeeds. The local
+Vanilla install and both ZIPs in `dist/` contain the updated addon.
+
 Testing checklist: install version 0.9.0 on both clients, restart WoW, add the same
 group ID, inspect `/wstatus popup status`, preview the toast, and trigger a real
 level-up or selected event. Check `/wstatus activity` on the other client. For
