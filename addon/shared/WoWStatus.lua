@@ -120,7 +120,7 @@ local function button(parent, text, x, y, width, fn)
 end
 
 local function label(parent, text, x, y, width)
-    local t = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    local t = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     t:SetPoint("TOPLEFT", x, y)
     t:SetWidth(width or 560)
     t:SetJustifyH("LEFT")
@@ -134,7 +134,7 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(900, 650)
+        panel:SetSize(600, 1050)
         panel:SetPoint("CENTER")
         panel:SetFrameStrata("DIALOG")
         panel:EnableMouse(true)
@@ -146,15 +146,15 @@ local function showPanel(host)
         bg:SetAllPoints()
         bg:SetColorTexture(0.04, 0.04, 0.07, 0.98)
         label(panel, "WoW Status — character sharing", 24, -20)
-        label(panel, "Export happens on /reload or logout. Run the companion to upload.\n"
-            .. "Name, realm, client and character GUID are required when enrolled.\n"
-            .. "Existing characters are introduced as joining the tracker.\n"
-            .. "Chat messages already delivered remain after data deletion.", 24, -48)
+        label(panel, "Export on /reload or logout; run the companion to upload.\n"
+            .. "Required: character name, realm, client and GUID.\n"
+            .. "Review the sharing choices and introduction preview below.", 24, -55, 550)
         panel.checks = {}
         local function checkbox(key, title, x, y, group)
             local check = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
             check:SetPoint("TOPLEFT", x, y)
-            label(check, title, 34, -8, 230)
+            check:SetSize(32, 32)
+            label(check, title, 38, -6, 230)
             check:SetScript("OnClick", function(self)
                 local target = group and current.settings[group] or current.settings
                 target[key] = self:GetChecked() and true or false
@@ -170,8 +170,8 @@ local function showPanel(host)
             end)
             table.insert(panel.checks, {widget = check, key = key, group = group})
         end
-        checkbox("enabled", "Share this character", 24, -128)
-        button(panel, "Mark as my main", 600, -128, 180, function()
+        checkbox("enabled", "Share this character", 24, -144)
+        button(panel, "Mark as my main", 350, -144, 180, function()
             for _, character in pairs(WoWStatusDB.characters) do
                 character.settings.character_role = "alt"
                 character.exported_at = time()
@@ -181,16 +181,22 @@ local function showPanel(host)
             refresh()
             say("Main selected locally. Export and upload; Discord /main takes priority if set.")
         end)
-        label(panel, "Profile fields", 24, -172, 250)
-        label(panel, "Store events / daily recap", 300, -172, 280)
-        label(panel, "Immediate announcements", 600, -172, 280)
-        for i, key in ipairs(fields) do checkbox(key, key, 24, -190 - (i - 1) * 30, "fields") end
-        for i, key in ipairs(kinds) do
-            checkbox(key, key, 300, -190 - (i - 1) * 30, "collection")
-            checkbox(key, key, 600, -190 - (i - 1) * 30, "announcements")
+        label(panel, "Profile fields", 24, -196, 550)
+        for i, key in ipairs(fields) do
+            local x = (i - 1) % 2 == 0 and 24 or 300
+            checkbox(key, key, x, -226 - math.floor((i - 1) / 2) * 38, "fields")
         end
-        panel.preview = label(panel, "", 24, -470, 850)
-        button(panel, "Confirm introduction", 24, -514, 180, function()
+        label(panel, "Event", 24, -432, 190)
+        label(panel, "Daily recap", 238, -432, 150)
+        label(panel, "Discord messages", 408, -432, 170)
+        for i, key in ipairs(kinds) do
+            local y = -466 - (i - 1) * 38
+            label(panel, key, 24, y - 6, 190)
+            checkbox(key, "", 270, y, "collection")
+            checkbox(key, "", 460, y, "announcements")
+        end
+        panel.preview = label(panel, "", 24, -792, 550)
+        button(panel, "Confirm introduction", 24, -860, 190, function()
             if not current.settings.enabled then say("Enable sharing first."); return end
             if not current.settings.collection.introduction then
                 say("Enable introduction storage first."); return
@@ -200,23 +206,23 @@ local function showPanel(host)
             refresh()
             say("Introduction queued. Use /reload, then run the companion.")
         end)
-        button(panel, "Pause sharing", 220, -514, 160, function()
+        button(panel, "Pause sharing", 230, -860, 160, function()
             current.settings.enabled = false
             current.settings.introduction_confirmed = false
             scrub()
             refresh()
             say("Paused locally. /reload and upload to apply remotely, or use /privacy in Discord now.")
         end)
-        button(panel, "History / graph", 24, -600, 180, function()
+        button(panel, "History / graph", 24, -1000, 160, function()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
-        button(panel, "Popup help", 224, -600, 140, function() WoWStatusPopups.command("") end)
-        button(panel, "Groups", 384, -600, 90, function() openSettings(true) end)
-        panel.close = button(panel, "Close", 480, -600, 110, function() panel:Hide() end)
+        button(panel, "Popup help", 194, -1000, 120, function() WoWStatusPopups.command("") end)
+        button(panel, "Groups", 324, -1000, 90, function() openSettings(true) end)
+        panel.close = button(panel, "Close", 424, -1000, 110, function() panel:Hide() end)
         label(panel, "Filters: /wstatus interval 10   /wstatus quality 4\n"
-            .. "Test: /wstatus test    LFG: /wstatus lfg <your message>\n"
-            .. "Server data removal: /privacy in Discord. Pausing takes effect on upload.\n"
-            .. "Enabled data is retained until deletion. Posting filters do not limit stored events.", 24, -550)
+            .. "Test: /wstatus test    LFG: /wstatus lfg <message>\n"
+            .. "Pause or removal applies on upload; posted messages remain.\n"
+            .. "Posting filters do not limit stored events.", 24, -910, 550)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
@@ -241,6 +247,7 @@ end
 local settingsCategory, groupsCategory
 local function settingsPage(name, width, show)
     local page = CreateFrame("Frame")
+    page:Hide()
     page.name = name
     local scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     scroll:SetPoint("TOPLEFT", 0, -8)
@@ -248,33 +255,42 @@ local function settingsPage(name, width, show)
     local content
     local function resize()
         if content then
+            -- Reflowed controls use native font and checkbox sizes. Never shrink them.
+            content:SetScale(1)
+            content:SetFrameStrata(scroll:GetFrameStrata())
+            content:SetFrameLevel(scroll:GetFrameLevel() + 1)
             local available = scroll:GetWidth()
-            if available and available > 0 then
-                content:SetScale(math.min(1, available / width))
-            end
+            content:SetWidth(math.max(width, available or width))
         end
     end
-    page:SetScript("OnShow", function()
+    local function display()
         show(scroll)
         content = name == "Groups" and WoWStatusGroupWindow or WoWStatusSetup
         scroll:SetScrollChild(content)
         resize()
-    end)
+    end
+    page:SetScript("OnShow", display)
     page:SetScript("OnSizeChanged", resize)
+    -- Canvas frames start shown in WoW. Build while explicitly hidden so the first
+    -- sidebar selection works even when the Settings API skips an OnShow transition.
+    display()
+    page.OnRefresh = resize
+    page.refresh = resize -- Legacy InterfaceOptions refresh callback.
     return page
 end
+
 registerSettings = function()
     if settingsCategory then return end
     if Settings and Settings.RegisterCanvasLayoutCategory and Settings.RegisterCanvasLayoutSubcategory
         and Settings.RegisterAddOnCategory then
-        local page = settingsPage("WoW Status", 900, showPanel)
+        local page = settingsPage("WoW Status", 600, showPanel)
         settingsCategory = Settings.RegisterCanvasLayoutCategory(page, "WoW Status")
         Settings.RegisterAddOnCategory(settingsCategory)
         local groups = settingsPage("Groups", 620, WoWStatusGroups.show)
         groupsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, groups, "Groups")
         Settings.RegisterAddOnCategory(groupsCategory)
     elseif InterfaceOptions_AddCategory then
-        local page = settingsPage("WoW Status", 900, showPanel)
+        local page = settingsPage("WoW Status", 600, showPanel)
         InterfaceOptions_AddCategory(page)
         settingsCategory = page
         local groups = settingsPage("Groups", 620, WoWStatusGroups.show)

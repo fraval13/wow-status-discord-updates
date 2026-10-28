@@ -61,6 +61,9 @@ function methods:SetParent(parent) self.parent=parent end
 function methods:GetParent() return self.parent end
 function methods:SetScale(value) self.scale=value end
 function methods:GetWidth() return self.width or 700 end
+function methods:SetWidth(width) self.width=width end
+function methods:SetSize(width, height) self.width=width; self.height=height end
+function methods:SetFontObject(font) self.font=font end
 function methods:GetVerticalScroll() return self.scroll or 0 end
 function methods:SetShown(value) self.visible=value end
 function methods:SetScript(name, fn) self[name]=fn end
@@ -77,11 +80,11 @@ function methods:SetScrollChild(child) self.child=child end
 function methods:SetVerticalScroll(value) self.scroll=value end
 function methods:CreateLine() return setmetatable({}, {__index=methods}) end
 function methods:CreateTexture() return setmetatable({}, {__index=methods}) end
-function methods:CreateFontString() return setmetatable({}, {__index=methods}) end
-for _, name in ipairs({"SetPoint","SetSize","SetWidth","SetJustifyH","SetFrameStrata",
+function methods:CreateFontString(_, _, font) return setmetatable({font=font}, {__index=methods}) end
+for _, name in ipairs({"SetPoint","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetFrameLevel","SetFontObject","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters","SetMultiLine"}) do methods[name]=function() end end
+    "SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters","SetMultiLine"}) do methods[name]=function() end end
 function CreateFrame(kind, name, parent, template)
     local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
     table.insert(__frames,f)
@@ -538,12 +541,31 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
                 __categories[id].page.OnShow()
             end,
         }
+        WoWStatusGroups.update("ronkalot", "Frank")
         fire("ADDON_LOADED", "Blizzard_Settings")
         assert(__categories["WoW Status"] ~= nil)
+        -- Sidebar first-open path: Blizzard can call OnRefresh without OnShow.
+        -- The content must already exist and be populated before either callback.
+        assert(not __categories.Groups.page:IsShown())
+        assert(WoWStatusGroupWindow.ids:GetText() == "ronkalot")
+        assert(WoWStatusGroupWindow.name:GetText() == "Frank")
+        __categories.Groups.page.OnRefresh()
+        assert(WoWStatusGroupWindow.ids:GetText() == "ronkalot")
+        assert(WoWStatusGroupWindow:GetParent().child == WoWStatusGroupWindow)
+        assert(WoWStatusGroupWindow.scale == 1)
         SlashCmdList.WOWSTATUS("")
         assert(__opened == "WoW Status")
         assert(WoWStatusSetup:GetParent() ~= UIParent)
         assert(not WoWStatusSetup.close:IsShown())
+        assert(WoWStatusSetup.width >= 600)
+        assert(WoWStatusSetup.scale == 1)
+        assert(WoWStatusSetup.checks[1].widget.width == 32)
+        local sharingScroll = WoWStatusSetup:GetParent()
+        sharingScroll.width = 600
+        __categories["WoW Status"].page.OnSizeChanged()
+        assert(WoWStatusSetup.scale == 1)
+        assert(WoWStatusSetup.width == 600)
+        assert(WoWStatusSetup.preview.font == "GameFontHighlightLarge")
         SlashCmdList.WOWSTATUS("groups")
         assert(__opened == "Groups")
         assert(__categories.Groups.parent == __categories["WoW Status"])
@@ -551,6 +573,7 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
         assert(not WoWStatusGroupWindow.close:IsShown())
         WoWStatusGroupWindow.ids:SetText("Unsaved edits")
         __categories.Groups.page.OnSizeChanged()
+        __categories.Groups.page.OnRefresh()
         assert(WoWStatusGroupWindow.ids:GetText() == "Unsaved edits")
         SlashCmdList.WOWSTATUS("")
         assert(__categories["WoW Status"].registrations == 1)

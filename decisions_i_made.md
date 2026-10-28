@@ -1,5 +1,27 @@
 # Decisions I made — 27 October 2026
 
+## Follow-up — 28 October 2026, addon 0.8.2
+
+You confirmed that the original 0.8.1 commit was pushed. The delivery notes below
+describe the original work session; this follow-up fixes the two in-game issues
+you subsequently reported.
+
+- Replaced the 900-pixel, scaled-down sharing panel with a 600-pixel layout that
+  scrolls vertically. Profile fields use two columns; event collection and Discord
+  announcements use rows. Text uses a larger font and checkboxes stay 32 pixels.
+  Settings pages no longer shrink controls when the settings container resizes.
+- Build both settings pages while explicitly hidden, before category registration.
+  Previously they relied on `OnShow` to create their content, although newly created
+  WoW frames start shown. A first sidebar selection could therefore leave the page
+  empty until it was hidden and shown again.
+- Support the native canvas `OnRefresh` callback as well as the legacy `refresh`
+  callback to update dimensions and frame drawing layers after WoW reparents the
+  page. Resizing and refreshing preserve unsaved group edits.
+- Expanded the regression test to simulate first opening Groups from the sidebar
+  without an `OnShow` callback, and to check populated fields and unscaled controls.
+- Full suite: 126 tests passed. The addon tests also pass under Lua 5.1. Real client
+  rendering still needs your check after installing version 0.8.2 and reloading.
+
 ## Delivery status
 
 The addon changes are implemented, tested and committed locally. **Pushing to
