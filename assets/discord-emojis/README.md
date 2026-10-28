@@ -17,8 +17,11 @@ Unicode icons for missing names. No emoji IDs or credentials need to be pasted
 into the repository. Its guild emoji cache updates when server emojis change.
 
 `manifest.json` records the exact image sources and file sizes. Artwork is Blizzard
-Entertainment game artwork, downloaded from Wowhead's static icon CDN. The pack
-uses the original images without resizing or AI alterations. The matching blue
+Entertainment game artwork, downloaded from Wowhead's static icon CDN. The 28 downloaded icons
+use the original images without resizing or AI alterations. `wow_level` is a
+project-generated gold upward arrow, made with the built-in imagegen tool and
+exported at 128×128. It contains no level number. Replace the existing Discord
+`wow_level` emoji with this file, retaining the same name. The matching blue
 Alliance and red Horde banner icons have been visually checked.
 
 To refresh the files, run `python scripts/download_discord_emojis.py` from this repo.

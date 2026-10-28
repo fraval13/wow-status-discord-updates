@@ -1,5 +1,13 @@
 # Decisions I made — 27 October 2026
 
+## Level emoji correction — 29 October
+
+Replaced the level-30 achievement badge with a generated gold upward arrow,
+without numbers. Kept `wow_level` as the filename and Discord emoji name. Updated
+its provenance in the manifest and prevented the download script from restoring
+the old badge. Rebuilt the emoji ZIP. Existing Discord servers need to replace
+their uploaded `wow_level` emoji; no bot redeployment is needed.
+
 ## Latest changes — quiet progress cards and previews (0.10.0, 29 October)
 
 - Removed generated login/logout session notifications and duplicate zone notices

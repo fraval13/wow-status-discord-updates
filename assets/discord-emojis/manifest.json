@@ -14,8 +14,9 @@
   {
     "name": "wow_level",
     "file": "wow_level.jpg",
-    "source": "https://wow.zamimg.com/images/wow/icons/large/achievement_level_30.jpg",
-    "bytes": 1597
+    "source": "Project-generated fantasy gold upward arrow (built-in imagegen)",
+    "bytes": 10463,
+    "prompt": "Single bold gold beveled upward arrow, classic fantasy inventory icon style, dark navy background and bronze border; readable at 32px; no text or numbers."
   },
   {
     "name": "wow_xp",
