@@ -4,9 +4,9 @@ local P = WoWStatusPreviews
 local panel, card
 local examples = {
     {"level", "Level up"}, {"introduction", "Character introduction"},
-    {"loot", "Loot found"}, {"equipment", "Equipment changed"},
+    {"loot", "Loot found"},
     {"death", "Death"}, {"zone", "New location"},
-    {"quest", "Quest completed"}, {"profession", "Profession skill-up"},
+    {"quest", "100 quests achievement"}, {"profession", "Profession title promotion"},
     {"lfg", "Looking for group"},
 }
 local function text(parent, value, x, y, width)

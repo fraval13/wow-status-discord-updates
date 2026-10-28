@@ -1,5 +1,29 @@
 # Decisions I made — 27 October 2026
 
+## Clearer, queued in-game notifications — 0.11.0, 29 October
+
+- Gold upward arrow for levels (bundled TGA converted from the generated Discord
+  asset); friendly adventurer portrait for introductions. No Discord slots used.
+- Equipment notifications and preview removed, old toggles disabled. Equipment
+  observations can still update the private/shared profile as selected.
+- Quest notifications are achievements at each hundred completed quests, not each
+  turn-in. Totals remain current. A login or switch to a game-reported total sets
+  a silent baseline; it does not replay old achievements.
+- Profession notifications are title promotions based on increased rank caps
+  (75/150/225/300), not individual points. Initial observations stay silent.
+- All previews use the normal FIFO display queue. Each card keeps six seconds of
+  reading time; distinct rapid level-ups no longer merge. Waiting accepted cards
+  do not expire. Combat deferral and network deduplication remain. Queue bound is
+  128 pending cards; a full preview queue reports that it needs time to drain.
+- Optional Discord upload cards still summarize current totals/ranks, independent
+  of in-game notification frequency. Server validation accepts new milestone
+  payloads. Preview buttons reflect the new notifications.
+- Validation: 165 tests passed; 62 addon tests also passed with Lua 5.1. Includes
+  rapid preview clicks, distinct queued friend levels, quest boundaries/duplicates,
+  silent equipment changes, profession promotions and milestone privacy.
+- Install the whole updated addon folder and restart WoW to load the bundled
+  arrow texture; restart the optional companion for its updated validator.
+
 ## Missing Options entry startup fix — 0.10.2, 29 October
 
 Found an unguarded legacy `QUEST_QUERY_COMPLETE` registration in the new progress

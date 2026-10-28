@@ -41,7 +41,9 @@ local function canShare(character, event)
     if character.settings.in_game and character.settings.in_game[event.kind] == false then return false end
     if event.kind == "level" and not character.settings.fields.level then return false end
     if event.kind == "zone" and not character.settings.fields.zone then return false end
-    if event.kind == "equipment" and not character.settings.fields.gear then return false end
+    if event.kind == "equipment" then return false end
+    if event.kind == "quest" and not character.settings.fields.quests then return false end
+    if event.kind == "profession" and not character.settings.fields.professions then return false end
     return true
 end
 local function channels()
@@ -199,12 +201,15 @@ function P.receive(text, sender, channel)
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
     if client then
-        local allowed = {introduction=true, loot=true, equipment=true, death=true, zone=true, quest=true, profession=true, lfg=true}
+        local allowed = {introduction=true, loot=true, death=true, zone=true, quest=true, profession=true, lfg=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > 96
             or #encoded % 2 ~= 0 or at < now - 120 or at > now + 300 then return false end
         local detail = encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find("[%c]") then return false end
+        -- Ignore older addon versions' per-quest and per-skill spam.
+        if kind == "quest" and not detail:match("^Completed %d+ quests!$") then return false end
+        if kind == "profession" and detail:match(": %d+ / %d+") then return false end
         pruneSeen(now)
         local duplicate = key .. ":" .. nonce
         if prefs.seen[duplicate] or #incoming >= 128 then return false end
@@ -229,12 +234,7 @@ function P.receive(text, sender, channel)
     local duplicateKey = key .. ":" .. level
     local claims = prefs.level_claims[key]
     if prefs.seen[duplicateKey] or (claims and claims.levels[level]) then return false end
-    local waiting
-    for _, item in ipairs(incoming) do
-        if item.level and item.key == key and item.group_id == (group ~= "legacy" and group or nil) then waiting = item; break end
-    end
-    -- Distinct rapid levels are queued/coalesced, not rejected as implausibly fast.
-    if not waiting and #incoming >= 128 then return false end
+    if #incoming >= 128 then return false end
     if not claims then
         local count, oldest, oldestAt = 0, nil, math.huge
         for senderKey, value in pairs(prefs.level_claims) do
@@ -247,14 +247,8 @@ function P.receive(text, sender, channel)
     end
     claims.levels[level], claims.at = true, now
     prefs.seen[duplicateKey] = now
-    if waiting then
-        waiting.level = math.max(waiting.level, level)
-        waiting.count = (waiting.count or 1) + 1
-        waiting.received_at = now
-    else
-        table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
-            count = 1, group_id = group ~= "legacy" and group or nil})
-    end
+    table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
+        count = 1, group_id = group ~= "legacy" and group or nil})
     remember({sender=sender, level=level, group_id=group ~= "legacy" and group or nil})
     P.tick()
     return true
@@ -300,19 +294,29 @@ local function show(item, now)
     if type(alias) == "string" and alias ~= "" then name = alias .. "’s " .. name end
     name = name:gsub("|", "||")
     local themes = {
-        level={"Spell_Holy_BlessingOfStrength",1,.82,.2,"LEVEL UP!"},
+        level={"level-arrow",1,.82,.2,"LEVEL UP!"},
         loot={"INV_Misc_Bag_10",.72,.35,1,"LOOT FOUND"},
-        equipment={"INV_Chest_Plate04",.3,.7,1,"GEAR CHANGED"},
         death={"Ability_Rogue_FeignDeath",.95,.18,.2,"A FRIEND HAS FALLEN"},
         zone={"INV_Misc_Map_01",.25,.9,.6,"ON THE MOVE"},
         session={"Spell_Arcane_TeleportStormWind",.4,.7,1,"FRIEND UPDATE"},
-        quest={"INV_Misc_Book_09",1,.8,.2,"QUEST COMPLETED"},
-        profession={"Trade_Tailoring",.35,.85,1,"PROFESSION SKILL-UP"},
-        lfg={"INV_Misc_Head_Human_01",.2,.85,1,"LOOKING FOR GROUP"},
-        introduction={"INV_Misc_Head_Human_01",.9,.75,.4,"WELCOME, ADVENTURER!"},
+        quest={"Achievement_Quests_Completed_08",1,.8,.2,"QUEST ACHIEVEMENT!"},
+        profession={"Trade_Tailoring",.35,.85,1,"PROFESSION PROMOTION!"},
+        lfg={"INV_Misc_GroupLooking",.2,.85,1,"LOOKING FOR GROUP"},
+        introduction={"Achievement_Character_Human_Male",.9,.75,.4,"WELCOME, ADVENTURER!"},
     }
     local theme = themes[item.level and "level" or item.kind] or themes.session
-    toast.icon:SetTexture("Interface\\Icons\\" .. theme[1])
+    local icon = theme[1]
+    if item.kind == "profession" then
+        local professionIcons = {Alchemy="Trade_Alchemy", Blacksmithing="Trade_BlackSmithing",
+            Enchanting="Trade_Engraving", Engineering="Trade_Engineering", Herbalism="Trade_Herbalism",
+            Leatherworking="Trade_LeatherWorking", Mining="Trade_Mining", Skinning="INV_Misc_Pelt_Wolf_01",
+            Tailoring="Trade_Tailoring", Cooking="INV_Misc_Food_15", ["First Aid"]="Spell_Holy_SealOfSacrifice",
+            Fishing="Trade_Fishing"}
+        local profession = (item.text or ""):match("^(.-):")
+        icon = professionIcons[profession] or "Trade_BlackSmithing"
+    end
+    toast.icon:SetTexture(item.level and "Interface\\AddOns\\WoWStatus\\Textures\\LevelUp"
+        or ("Interface\\Icons\\" .. icon))
     toast.glow:SetVertexColor(theme[2], theme[3], theme[4])
     toast.accent:SetColorTexture(theme[2], theme[3], theme[4], 1)
     toast.heading:SetTextColor(theme[2], theme[3], theme[4]); toast.heading:SetText(theme[5])
@@ -336,14 +340,15 @@ function P.preview(kind)
     if not prefs then return end
     local samples = {
         introduction="Joined the group tracker", loot="Looted Robes of the Lich",
-        equipment="Equipped Robes of the Lich", death="Died — total tracked deaths: 15",
-        zone="Entered Stranglethorn Vale", quest="Completed The Green Hills of Stranglethorn",
-        profession="Tailoring reached 185 / 225", lfg="Looking for a Scarlet Monastery group",
+        death="Died — total tracked deaths: 15",
+        zone="Entered Stranglethorn Vale", quest="Completed 100 quests!",
+        profession="Tailoring: Expert (225 max)", lfg="Looking for a Scarlet Monastery group",
     }
     if kind ~= "level" and not samples[kind] then return end
-    if active and not active.preview and #incoming < 128 then table.insert(incoming,1,active) end
-    show({sender="Previewlock",key="local-preview",kind=kind,text=samples[kind],
-        level=kind=="level" and 33 or nil,received_at=time(),preview=true},time())
+    if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
+    table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind,text=samples[kind],
+        level=kind=="level" and 33 or nil,received_at=time(),preview=true})
+    P.tick()
 end
 
 local function tick()
@@ -375,7 +380,7 @@ local function tick()
     if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
     if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
         local item = table.remove(incoming, 1)
-        if now - item.received_at <= 600 and (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
+        if (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
             or prefs.trusted[item.key]) then show(item, now) end
     end
     if #outgoing == 0 or now - lastAttempt < 1 then return end
@@ -429,8 +434,10 @@ end
 local function eventText(event)
     local data = event.data or {}
     if event.kind == "introduction" then return "Joined the tracker" end
-    if event.kind == "quest" then return "Completed a quest" end
-    if event.kind == "profession" then return (data.name or "Profession") .. ": " .. (data.skill or "?") .. " / " .. (data.max_skill or "?") end
+    if event.kind == "quest" then
+        return data.completed and ("Completed " .. data.completed .. " quests!") or nil
+    end
+    if event.kind == "profession" then return (data.name or "Profession") .. ": " .. (data.title or WoWStatusProgress.professionTitle(data.max_skill)) .. " (" .. (data.max_skill or "?") .. " max)" end
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end
@@ -441,7 +448,7 @@ local function eventText(event)
     end
 end
 function P.broadcast(character, event)
-    if not event or event.kind == "session" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
+    if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
     local nonce = character.epoch .. "-" .. character.sequence
     local text
     if event.kind == "level" then

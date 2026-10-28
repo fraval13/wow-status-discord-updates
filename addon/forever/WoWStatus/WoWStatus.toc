@@ -2,7 +2,7 @@
 ## Title: WoW Status — Forever
 ## Notes: Forever adapter authored from client API docs. In-game validation pending.
 ## Author: fraval13
-## Version: 0.10.2
+## Version: 0.11.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Forever/Camelot only; verify installed build metadata
 Safe.lua

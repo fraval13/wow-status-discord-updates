@@ -189,11 +189,23 @@ def validate(payload):
         elif kind == 'death' and clean['settings']['fields']['deaths'] and 'total_deaths' in data:
             filtered = {'total_deaths': integer(data['total_deaths'], 'total deaths', 0, 2_000_000_000)}
         elif kind == 'quest':
-            filtered = {'quest_id': integer(data.get('quest_id'), 'quest ID', 1, 2_000_000_000)}
+            if 'completed' in data:
+                if not clean['settings']['fields']['quests']:
+                    continue
+                completed = integer(data['completed'], 'quest milestone', 100, 2_000_000_000)
+                if completed % 100:
+                    raise ValidationError('Invalid quest milestone')
+                filtered = {'completed': completed}
+                if data.get('source') in ('game_api', 'tracked_since'):
+                    filtered['source'] = data['source']
+            else:
+                filtered = {'quest_id': integer(data.get('quest_id'), 'quest ID', 1, 2_000_000_000)}
         elif kind == 'profession':
             maximum = integer(data.get('max_skill'), 'profession maximum', 1, 2000)
             filtered = {'name': string(data.get('name'), 'profession name', 50),
                         'skill': integer(data.get('skill'), 'profession skill', 0, maximum), 'max_skill': maximum}
+            if data.get('title') in ('Apprentice', 'Journeyman', 'Expert', 'Artisan'):
+                filtered['title'] = data['title']
         elif kind == 'status':
             changes = data.get('changed', [])
             if not isinstance(changes, list) or len(changes) > len(STATUS_FIELDS):

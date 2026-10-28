@@ -5,8 +5,7 @@ local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests"}
-local kinds = {"introduction", "level", "loot", "equipment", "death", "zone", "quest", "profession", "lfg"}
-local equipmentBaseline = {}
+local kinds = {"introduction", "level", "loot", "death", "zone", "quest", "profession", "lfg"}
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
@@ -20,10 +19,10 @@ local function defaults()
         enabled = true, discord_enabled = false, discord_delivery = "summary", introduction_confirmed = false, character_role = "alt",
         fields = {level = true, class = true, race = true, faction = true, guild = true,
                   gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true},
-        collection = {introduction = true, level = true, loot = true, equipment = true,
+        collection = {introduction = true, level = true, loot = true, equipment = false,
                       death = true, zone = true, quest = true, profession = true, lfg = true},
         announcements = {introduction = true, level = true, loot = true,
-                         equipment = true, death = true, zone = true, quest = true, profession = true, lfg = true},
+                         equipment = false, death = true, zone = true, quest = true, profession = true, lfg = true},
         loot_quality = 4, level_interval = 10,
     }
 end
@@ -74,6 +73,13 @@ local function queue(kind, data, fixed)
     snapshot()
     WoWStatusPopups.broadcast(current, event)
     return event
+end
+
+local function questMilestone()
+    local milestone = WoWStatusProgress.questMilestone(current, current.snapshot.quests_completed, current.snapshot.quests_source)
+    if milestone and current.settings.fields.quests then
+        queue("quest", {completed=milestone, source=current.snapshot.quests_source})
+    end
 end
 
 local function introductionText()
@@ -197,7 +203,7 @@ local function showPanel(host)
         label(panel, "Share in WoW", 408, -530, 170)
         for i, key in ipairs(kinds) do
             local y = -564 - (i - 1) * 38
-            label(panel, key, 24, y - 6, 190)
+            label(panel, key == "quest" and "100 quests milestone" or key == "profession" and "Profession title" or key, 24, y - 6, 190)
             checkbox(key, "", 270, y, "collection")
             checkbox(key, "", 460, y, "in_game")
         end
@@ -272,6 +278,10 @@ local function showDiscord(host)
                     current.discord_enrolled, current.discord_since = true, time()
                 end
                 current.settings.discord_delivery = "summary"
+    current.settings.collection.equipment = false
+    current.settings.announcements.equipment = false
+    current.settings.in_game = current.settings.in_game or {}
+    current.settings.in_game.equipment = false
                 snapshot()
             end)
             table.insert(discordPanel.checks, {widget=widget, key=key, group=group})
@@ -429,6 +439,10 @@ local function initialize()
         current.settings.discord_enabled = false
     end
     current.settings.discord_delivery = "summary"
+    current.settings.collection.equipment = false
+    current.settings.announcements.equipment = false
+    current.settings.in_game = current.settings.in_game or {}
+    current.settings.in_game.equipment = false
     for _, field in ipairs({"deaths", "quests"}) do
         if current.settings.fields[field] == nil then current.settings.fields[field] = true end
     end
@@ -450,7 +464,8 @@ local function initialize()
     current.last_zone = A.zone()
     local dead = S.call(UnitIsDeadOrGhost, "player")
     if dead ~= nil then current.death_latched = dead == true or dead == 1 end
-    for slot = 1, 19 do equipmentBaseline[slot] = A.equipment(slot) end
+    WoWStatusProgress.questMilestone(current, current.snapshot.quests_completed, current.snapshot.quests_source, true)
+    if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
     registerSettings()
     if current.settings.enabled then
         if current.settings.fields.playtime then A.requestPlaytime() end
@@ -474,6 +489,7 @@ frame:RegisterEvent("PLAYER_DEAD")
 frame:RegisterEvent("TIME_PLAYED_MSG")
 frame:RegisterEvent("PLAYER_XP_UPDATE")
 frame:RegisterEvent("QUEST_TURNED_IN")
+frame:RegisterEvent("QUEST_LOG_UPDATE")
 -- Some clients no longer expose this legacy query event. RegisterEvent throws
 -- on unknown names, which would abort this file before OnEvent/slash setup.
 if not C_EventUtils or not C_EventUtils.IsEventValid
@@ -529,15 +545,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
             end
         end
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
-        local slot = S.number(...)
-        if not slot or slot < 1 or slot > 19 then return end
-        local link = A.equipment(slot)
-        if current.settings.fields.gear and link and equipmentBaseline[slot] ~= link then
-            local _, quality = A.item(link)
-            queue("equipment", {item = link, quality = quality})
-        end
-        equipmentBaseline[slot] = link
-        snapshot()
+        snapshot() -- Keep the profile current without an equipment notification.
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         local zone = A.zone()
         if zone and current.last_zone and zone ~= current.last_zone and current.settings.fields.zone then
@@ -551,16 +559,19 @@ frame:SetScript("OnEvent", function(_, event, ...)
         end
     elseif event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then current.death_latched = false
     elseif event == "PLAYER_XP_UPDATE" then snapshot()
-    elseif event == "QUEST_QUERY_COMPLETE" then WoWStatusProgress.queryComplete(); snapshot()
+    elseif event == "QUEST_QUERY_COMPLETE" or event == "QUEST_LOG_UPDATE" then
+        WoWStatusProgress.queryComplete(); snapshot(); questMilestone()
     elseif event == "QUEST_TURNED_IN" then
         local id = S.number(...)
-        if current.settings.enabled and current.settings.collection.quest and WoWStatusProgress.quest(current, id) then
-            queue("quest", {quest_id=id})
+        if current.settings.enabled and current.settings.fields.quests then
+            WoWStatusProgress.quest(current, id)
+            snapshot()
+            questMilestone()
         end
     elseif event == "SKILL_LINES_CHANGED" then
         if current.settings.enabled and current.settings.fields.professions then
             for _, profession in ipairs(WoWStatusProgress.professionChanges(current)) do
-                queue("profession", {name=profession.name, skill=profession.skill, max_skill=profession.max_skill})
+                queue("profession", {name=profession.name, skill=profession.skill, max_skill=profession.max_skill, title=profession.title})
             end
         end
         snapshot()

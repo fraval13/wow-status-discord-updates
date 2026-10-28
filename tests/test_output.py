@@ -147,3 +147,19 @@ def test_status_metrics_and_skill_ranks_are_filtered_with_profile_privacy():
     for key in ['deaths','deaths_since','quests_completed','quests_source','quests_since',
                 'level','xp_current','xp_max','xp_percent','professions','class','class_id','race','sex']:
         assert key not in result
+
+
+def test_milestone_event_payloads_survive_validation_and_respect_quest_privacy():
+    import json
+    from pathlib import Path
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
+    item['events'] = [
+        {'id':'quest100', 'kind':'quest', 'at':item['exported_at'], 'data':{'completed':100,'source':'game_api'}},
+        {'id':'expert', 'kind':'profession', 'at':item['exported_at'],
+         'data':{'name':'Tailoring','skill':150,'max_skill':225,'title':'Expert'}},
+    ]
+    clean = validate(item)
+    assert clean['events'][0]['data']['completed'] == 100
+    assert clean['events'][1]['data']['title'] == 'Expert'
+    item['settings']['fields']['quests'] = False
+    assert all(event['kind'] != 'quest' for event in validate(item)['events'])

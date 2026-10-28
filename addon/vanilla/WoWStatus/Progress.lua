@@ -129,15 +129,38 @@ function P.quest(character, id)
     questAt = nil
     return true
 end
-function P.professionChanges(character)
+function P.professionChanges(character, baseline)
     local value, changed = stats(character), {}
     local observed = P.professions(true)
     if not observed then return changed end
-    local previous = {}
-    for _, p in ipairs(value.professions or {}) do previous[p.name] = p.skill end
-    for _, p in ipairs(observed) do
-        if previous[p.name] and p.skill > previous[p.name] then table.insert(changed,p) end
+    local previous = value.profession_titles or {}
+    if not value.profession_titles then
+        for _, p in ipairs(value.professions or {}) do previous[p.name] = p.max_skill end
     end
-    value.professions = observed
+    local titles = {}
+    for _, p in ipairs(observed) do
+        titles[p.name] = p.max_skill
+        if not baseline and previous[p.name] and p.max_skill > previous[p.name] then
+            p.title = P.professionTitle(p.max_skill)
+            table.insert(changed,p)
+        end
+    end
+    value.professions, value.profession_titles = observed, titles
     return changed
+end
+
+function P.professionTitle(maximum)
+    local titles = {[75]="Apprentice", [150]="Journeyman", [225]="Expert", [300]="Artisan"}
+    return titles[maximum] or "New profession rank"
+end
+-- Establish a baseline silently. Never announce old achievements on login or
+-- when switching from locally tracked counts to the game's complete history.
+function P.questMilestone(character, total, source, baseline)
+    local value = stats(character)
+    local previous = value.quest_milestone_count
+    local changedSource = value.quest_milestone_source ~= source
+    value.quest_milestone_source = source
+    value.quest_milestone_count = math.max(changedSource and 0 or (previous or 0), total or 0)
+    if baseline or changedSource or not previous or not total then return nil end
+    if math.floor(total / 100) > math.floor(previous / 100) then return math.floor(total / 100) * 100 end
 end

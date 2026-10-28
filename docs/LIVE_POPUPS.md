@@ -5,7 +5,7 @@ same group ID. Discord and the companion are optional.
 
 ## Two-player acceptance test
 
-Install version 0.10.0 on both clients and restart them. Use two characters that can
+Install version 0.11.0 on both clients and restart them. Use two characters that can
 communicate through the same custom channel (normally the same realm and faction).
 Do not run a companion for this test.
 
@@ -30,8 +30,8 @@ Do not run a companion for this test.
    diagnostic state rather than claim confirmed delivery.
 
 `/wstatus previews` opens the **Notification previews** settings page, with separate
-buttons for level-up, introduction, loot, equipment, death, zone, quest, profession
-and LFG toasts, plus a structured status-card example. Every preview is local only.
+buttons for level-up, introduction, loot, death, zone, 100-quest achievements,
+profession title promotions and LFG toasts, plus a structured status-card example. Every preview is local only.
 `/wstatus popup test` remains a shortcut for the original local level-up preview.
 Toasts fade/slide in near the upper-middle of the screen, stay for six seconds and
 fade out. They do not print normal event updates to chat. Sound is off by default;
@@ -69,3 +69,25 @@ group sharing uses addon whispers and does not need this legacy setup.
 Reloads/logins/logout and unchanged zone-loading events do not generate updates.
 Real progress events and newly observed XP/counters/ranks still update the selected
 status. Death counters are cumulative recorded totals rather than per-session deltas.
+
+## Notification rules (0.11.0)
+
+- Level-ups use the bundled gold upward arrow. Introductions use a friendly
+  adventurer portrait instead of the severed-head item icon. Quest milestones use
+  a quest achievement icon; professions use the matching trade icon when known.
+- Equipment changes update the profile silently and have no notification setting
+  or preview. Existing saved equipment notification preferences are disabled.
+- Quests still count individually, but in-game notifications appear at 100, 200,
+  300, etc. Counts reported by WoW take precedence; otherwise locally tracked
+  completions are used. Login and changes in count source establish silent
+  baselines, so historical achievements are not replayed.
+- Profession points still update the profile. In-game notifications require an
+  increased profession rank cap: Apprentice 75, Journeyman 150, Expert 225,
+  Artisan 300. Ordinary skill points and initial observations are silent.
+- Real notifications and previews share a FIFO queue. Each card displays for six
+  seconds with a short gap. Distinct level-ups are not merged. Combat defers
+  display. Accepted queued cards do not expire while waiting; up to 128 can wait.
+  Duplicate network messages are still ignored. Previews never enter the activity
+  feed or tracker data. Group removal cancels that group's pending messages.
+- Discord remains a progress-card summary on upload; it can include updated
+  quest totals and profession points. These milestone rules govern in-game toasts.

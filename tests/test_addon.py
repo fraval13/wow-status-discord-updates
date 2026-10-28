@@ -473,7 +473,7 @@ def test_all_new_character_sharing_checkboxes_default_on(lua):
     assert lua.eval('character().enrolled') is True
     for section in ['fields', 'collection', 'announcements']:
         assert lua.eval(f"function() for _, enabled in pairs(character().settings.{section}) "
-                        "do if not enabled then return false end end return true end")()
+                        "do if not enabled and _ ~= 'equipment' then return false end end return true end")()
     assert lua.eval('character().settings.introduction_confirmed') is False
 
 
@@ -788,7 +788,7 @@ def test_synchronous_roster_events_do_not_duplicate_outgoing_updates(lua):
 
 def test_toast_has_event_icon_and_fades_without_recording_preview(lua):
     lua.eval('SlashCmdList.WOWSTATUS')('popup test')
-    assert lua.eval('WoWStatusLevelPopup.icon.texture').endswith('Spell_Holy_BlessingOfStrength')
+    assert lua.eval('WoWStatusLevelPopup.icon.texture').endswith('Textures\\LevelUp')
     assert lua.eval('WoWStatusLevelPopup.heading:GetText()') == 'LEVEL UP!'
     assert lua.eval('WoWStatusLevelPopup.alpha') == 0
     lua.execute('WoWStatusLevelPopup.OnUpdate(WoWStatusLevelPopup, .11)')
@@ -886,10 +886,11 @@ def test_cumulative_deaths_xp_quests_and_profession_ranks(lua):
         fire("QUEST_TURNED_IN",101)
         assert(character().snapshot.quests_completed==2)
         assert(character().snapshot.quests_source=="tracked_since")
+        local before = #character().events
         __skill=76
         fire("SKILL_LINES_CHANGED")
         assert(character().snapshot.professions[1].skill==76)
-        assert(character().events[#character().events].kind=="profession")
+        assert(#character().events==before)
     ''')
 
 
@@ -905,10 +906,13 @@ def test_game_reported_completed_quests_replaces_tracked_subset(lua):
 def test_every_notification_preview_is_local_and_has_icon(lua):
     lua.eval('SlashCmdList.WOWSTATUS')('previews')
     assert lua.eval('WoWStatusNotificationPreviews:IsShown()') is True
-    for kind in ['level','introduction','loot','equipment','death','zone','quest','profession','lfg']:
+    for index, kind in enumerate(['level','introduction','loot','death','zone','quest','profession','lfg']):
+        lua.execute(f'function time() return {1793000000 + index * 7} end')
         lua.execute(f'WoWStatusNotificationPreviews.buttons.{kind}.OnClick()')
         assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
-        assert lua.eval('WoWStatusLevelPopup.icon.texture').startswith('Interface\\Icons\\')
+        lua.eval('WoWStatusPopups.tick')()
+        texture = lua.eval('WoWStatusLevelPopup.icon.texture')
+        assert texture.startswith('Interface\\Icons\\') or texture.endswith('Textures\\LevelUp')
     lua.eval('WoWStatusPreviews.statusCard')()
     assert 'Total deaths: 15' in lua.eval('WoWStatusStatusPreview.body:GetText()')
     assert lua.eval('#__sent') == 0
@@ -945,4 +949,81 @@ def test_removed_legacy_quest_event_does_not_abort_addon_startup(has_event_valid
         fire("ADDON_LOADED", "Blizzard_Settings")
         assert(__optionPages[1] == "WoW Status")
         SlashCmdList.WOWSTATUS("")
+    ''')
+
+
+def test_previews_wait_their_turn_in_fifo_order(lua):
+    lua.execute('''
+        WoWStatusPopups.preview("level")
+        WoWStatusPopups.preview("introduction")
+        WoWStatusPopups.preview("quest")
+        assert(WoWStatusLevelPopup.heading:GetText()=="LEVEL UP!")
+        function time() return 1793000003 end
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.heading:GetText()=="LEVEL UP!")
+        function time() return 1793000007 end
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.heading:GetText()=="WELCOME, ADVENTURER!")
+        assert(WoWStatusLevelPopup.icon.texture:find("Achievement_Character_Human_Male",1,true))
+        function time() return 1793000014 end
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.heading:GetText()=="QUEST ACHIEVEMENT!")
+        assert(WoWStatusLevelPopup.message:GetText():find("100 quests",1,true))
+        assert(#character().events==0)
+    ''')
+
+
+def test_equipment_silent_quest_hundreds_and_profession_promotions(lua):
+    lua.execute('''
+        __slot="|Hitem:1|h[Test sword]|h"
+        fire("PLAYER_EQUIPMENT_CHANGED",1)
+        assert(#character().events==0)
+        for id=1,99 do fire("QUEST_TURNED_IN",id) end
+        assert(#character().events==0)
+        fire("QUEST_TURNED_IN",100)
+        assert(#character().events==1)
+        assert(character().events[1].kind=="quest" and character().events[1].data.completed==100)
+        fire("QUEST_TURNED_IN",100)
+        fire("QUEST_LOG_UPDATE")
+        assert(#character().events==1)
+        for id=101,200 do fire("QUEST_TURNED_IN",id) end
+        assert(#character().events==2 and character().events[2].data.completed==200)
+        __maximum=150; __rank=100
+        function GetNumSkillLines() return 1 end
+        function GetSkillLineInfo() return "Alchemy",nil,nil,__rank,0,0,__maximum end
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+        __rank=101
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+        __maximum=225
+        -- A snapshot can see the new cap before the skill event. Do not lose it.
+        WoWStatusProgress.professions(true)
+        fire("PLAYER_XP_UPDATE","player")
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==3)
+        assert(character().events[3].data.title=="Expert")
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==3)
+        WoWStatusProgress.questMilestone(character(),1000,"game_api")
+        assert(WoWStatusProgress.questMilestone(character(),1000,"game_api")==nil)
+    ''')
+
+
+def test_rapid_friend_levelups_each_get_their_own_queued_notification(lua):
+    lua.execute('''
+        SlashCmdList.WOWSTATUS("popup channel WStatusFriends")
+        SlashCmdList.WOWSTATUS("popup on")
+        SlashCmdList.WOWSTATUS("popup trust Eldrin-TestRealm")
+        for level=2,4 do
+            assert(WoWStatusPopups.receive("WSTATUS2 classic-era LEVEL "..level.." 1793000000 n"..level,
+                "Eldrin-TestRealm","WStatusFriends"))
+        end
+        assert(WoWStatusLevelPopup.message:GetText():find("level 2!",1,true))
+        function time() return 1793000007 end
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.message:GetText():find("level 3!",1,true))
+        function time() return 1793000014 end
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.message:GetText():find("level 4!",1,true))
     ''')
