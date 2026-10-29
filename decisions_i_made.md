@@ -2,6 +2,20 @@
 
 ## Account history, automatic website packages and Forever audit — 0.14.6
 
+Delivery/validation: 244 tests passed from a clean checkout of release ea1733f;
+138 addon tests passed under Lua 5.1. Ruff/whitespace checks passed. Verified the
+private pipeline archive contains the matching public manifest and both ZIPs,
+using empty test configuration and no credentials. Installed the updated fixed
+root receiver after matching its previous hash; its backup is
+/opt/wow-character-status/receiver-backups/receiver-20261029T212037Z.py.
+Published site/downloads at 0.14.6 and verified both public checksums, TOCs, updated
+Lua files, requested copy removal and both existing group health routes. The
+active static release is /srv/wow-status-homepage/releases/20261029T212054231953Z.
+Updated the local Vanilla files with backup and retained SavedVariables. Full
+hosted GitHub Actions execution still awaits a successful push; its runtime was
+not represented as tested. Neither companion application was restarted here.
+
+
 - Fixed the character-switch sync cutoff. Group names were account-wide, while
   sync used each character's fresh joined_at. Added account_group_joined_at and
   use it consistently for history requests, offers and relays. Older saves seed
