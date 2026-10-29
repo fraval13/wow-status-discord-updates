@@ -43,6 +43,11 @@ local function peer(group,sender)
     return false
 end
 local function permitted(entry)
+    if entry.kind=="questprogress" then return false end
+    if entry.kind=="quest" then
+        local total=tonumber((entry.text or ""):match("^Completed (%d+) quests!$"))
+        if not total or total<100 or total%100~=0 then return false end
+    end
     if (entry.kind=="loot" or entry.kind=="equipment") and not WoWStatusLoot.allowed(current and current.settings,entry) then return false end
     if not entry.owner then return true end
     local owner
@@ -146,6 +151,7 @@ function J.recordLocal(event,backfill)
         quality=loot and loot.quality,class_id=loot and loot.class_id,equip_loc=loot and loot.equip_loc,item_id=loot and loot.item_id,groups=groups,origin="mine"})
 end
 function J.observe(kind,text,info)
+    if kind=="questprogress" then return end
     if kind=="equipment" and not WoWStatusLoot.allowed(current and current.settings,info) then return end
     if not db or not current.settings.enabled or not fields[kind] or not current.settings.fields[fields[kind]] then return end
     local category=({questprogress="quest",professionprogress="profession"})[kind] or kind

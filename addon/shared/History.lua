@@ -38,6 +38,7 @@ function H.duration(seconds)
 end
 
 local function allowed(character, event)
+    if event.kind=="quest" and not event.data.completed then return false end
     if event.kind == "discovery" or event.kind == "lfg" then return false end
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     if event.kind=="loot" and not WoWStatusLoot.allowed(character.settings,WoWStatusLoot.eventInfo(event.data)) then return false end

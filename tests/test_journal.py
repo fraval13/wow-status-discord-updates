@@ -101,7 +101,7 @@ def test_private_actions_log_locally_but_never_sync_and_previews_do_not_log():
         __skill=76;fire("SKILL_LINES_CHANGED")
         WoWStatusPopups.preview("level")
     ''')
-    assert own.eval('#WoWStatusJournal.entries()') == 3
+    assert own.eval('#WoWStatusJournal.entries()') == 2
     assert own.eval('function() for _,e in ipairs(WoWStatusJournal.entries()) do if next(e.groups) then return false end end return true end')()
     friend.eval('WoWStatusJournal.sync')()
     mesh({'Thora': own, 'Mira': friend})
@@ -149,7 +149,7 @@ def test_log_ui_reuses_popup_art_and_virtualizes_rows_and_preserves_ids():
     assert lua.eval('#WoWStatusActivityLog.rows') == 6
     lua.execute('''
         WoWStatusJournal.init(WoWStatusDB,character())
-        for i=1,50 do WoWStatusJournal.observe("questprogress","Completed quest "..i) end
+        for i=1,50 do WoWStatusJournal.observe("professionprogress","Alchemy: "..i) end
         WoWStatusActivityLog.scroll.scroll=112*10
         WoWStatusActivityLog.scroll.OnVerticalScroll()
     ''')
@@ -202,13 +202,13 @@ def test_private_log_cap_does_not_evict_shared_announcement_and_scroll_anchor_st
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     shared = lua.eval('WoWStatusJournal.entries()[1].id')
     lua.execute('''
-        for i=1,1010 do WoWStatusJournal.observe("questprogress","Completed quest "..i) end
+        for i=1,1010 do WoWStatusJournal.observe("professionprogress","Alchemy: "..i) end
         WoWStatusJournal.show()
         WoWStatusActivityLog.scroll.scroll=112*10
         WoWStatusActivityLog.scroll.OnVerticalScroll()
         __anchor=WoWStatusActivityLog.rows[1].event_id
         __now=1793000011
-        WoWStatusJournal.observe("questprogress","Another quest")
+        WoWStatusJournal.observe("professionprogress","Alchemy: 1011")
         assert(WoWStatusActivityLog.rows[1].event_id==__anchor)
     ''')
     assert lua.eval('#WoWStatusJournal.entries()') == 1001

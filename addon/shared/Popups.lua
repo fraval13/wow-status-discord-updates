@@ -9,7 +9,9 @@ local joinedByAddon, syncPending = {}, false
 local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
-local rosterRequested = {}
+local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
+local rosterBusy=false
+P.runtimeVersion="0.14.2"
 
 local function realm()
     local value = A.realmName()
@@ -66,36 +68,87 @@ local function joined(group)
     if type(id) ~= "number" or id < 1 or type(actual) ~= "string" or actual:lower() ~= name:lower() then return nil end
     return id
 end
--- channelIndex here is the display index, not the numbered /chat shortcut.
-function P.peers(group)
-    local peers, seen = {}, {}
-    if not GetNumDisplayChannels or not GetChannelDisplayInfo then return peers end
-    local count = S.number(S.call(GetNumDisplayChannels))
-    local getter = C_ChatInfo and C_ChatInfo.GetChannelRosterInfo or GetChannelRosterInfo
-    if not count or not getter then return peers end
-    local expected = WoWStatusGroups.channel(group):lower()
-    for index = 1, math.min(count, 128) do
-        local ok, name, header, _, _, members = pcall(GetChannelDisplayInfo, index)
-        name, members = S.string(name), S.number(members)
-        if ok and name and name:lower() == expected and S.value(header) == false then
-            if SetSelectedDisplayChannel and (not rosterRequested[group] or time() - rosterRequested[group] >= 30) then
-                rosterRequested[group] = time()
-                local previous = S.number(S.call(GetSelectedDisplayChannel))
-                pcall(SetSelectedDisplayChannel, index)
-                if previous and previous ~= index then pcall(SetSelectedDisplayChannel, previous) end
-            end
-            for member = 1, math.min(members or 0, 64) do
-                local target = S.string(S.call(getter, index, member))
-                local key = target and P.senderKey(target)
-                local own = P.senderKey((A.playerName() or "") .. "-" .. realm())
-                if key and key ~= own and not seen[key] then
-                    seen[key] = true; table.insert(peers, target)
-                end
-            end
-            break
+-- The roster arrives asynchronously after selection. Restoring the old UI
+-- selection immediately can leave an empty roster forever on one client.
+local function displayInfo(index)
+    local ok,name,header,_,_,count=pcall(GetChannelDisplayInfo,index)
+    if not ok or S.value(header)~=false then return nil end
+    return S.string(name),S.number(count) or 0
+end
+local function readRoster(index,count)
+    local getter=C_ChatInfo and C_ChatInfo.GetChannelRosterInfo or GetChannelRosterInfo
+    local result,seen,read={}, {},0
+    local own=P.senderKey((A.playerName() or "").."-"..realm())
+    for i=1,math.min(count,64) do
+        local target=S.string(S.call(getter,index,i));local key=target and P.senderKey(target)
+        if key then
+            read=read+1
+            if key~=own and not seen[key] then seen[key]=true;result[#result+1]=target end
         end
     end
-    return peers
+    return result,count>0 and read>=math.min(count,64)
+end
+local function releaseRoster()
+    local request=pendingRoster;pendingRoster=nil
+    if request and request.previous and request.previous~=request.index
+        and S.number(S.call(GetSelectedDisplayChannel))==request.index then S.call(SetSelectedDisplayChannel,request.previous) end
+end
+local function advanceRoster()
+    if not pendingRoster then return end
+    local request=pendingRoster
+    local name,count=displayInfo(request.index)
+    if not name or name:lower()~=WoWStatusGroups.channel(request.group):lower() then releaseRoster();return end
+    local peers,complete=readRoster(request.index,count)
+    if complete then rosterCache[request.group]={peers=peers,count=count,at=time()};releaseRoster()
+    elseif time()-request.at>=5 then releaseRoster() end
+end
+function P.notePeer(group,target)
+    if not group or not WoWStatusGroups.contains(getCharacter(),group) then return end
+    local key=P.senderKey(target)
+    local own=P.senderKey((A.playerName() or "").."-"..realm())
+    if not key or key==own then return end
+    knownPeers[group]=knownPeers[group] or {}
+    local count,oldest,oldestAt=0,nil,math.huge
+    for k,item in pairs(knownPeers[group]) do
+        count=count+1;if item.at<oldestAt then oldest,oldestAt=k,item.at end
+    end
+    if count>=64 and not knownPeers[group][key] and oldest then knownPeers[group][oldest]=nil end
+    knownPeers[group][key]={name=target,at=time()}
+end
+local function withKnown(group,roster)
+    local result,seen={},{}
+    for _,name in ipairs(roster or {}) do local key=P.senderKey(name);if key then seen[key]=true;result[#result+1]=name end end
+    for key,item in pairs(knownPeers[group] or {}) do
+        if time()-item.at>300 then knownPeers[group][key]=nil
+        elseif not seen[key] and #result<64 then seen[key]=true;result[#result+1]=item.name end
+    end
+    return result
+end
+function P.peers(group)
+    if not GetNumDisplayChannels or not GetChannelDisplayInfo then return withKnown(group,{}) end
+    if rosterBusy then return withKnown(group,rosterCache[group] and rosterCache[group].peers) end
+    rosterBusy=true;advanceRoster()
+    local count=S.number(S.call(GetNumDisplayChannels)) or 0
+    for index=1,math.min(count,128) do
+        local name,members=displayInfo(index)
+        if name and name:lower()==WoWStatusGroups.channel(group):lower() then
+            local cached=rosterCache[group]
+            if cached and cached.count==members and time()-cached.at<30 then rosterBusy=false;return withKnown(group,cached.peers) end
+            if not SetSelectedDisplayChannel then
+                local peers,complete=readRoster(index,members)
+                if complete then rosterCache[group]={peers=peers,count=members,at=time()} end
+                rosterBusy=false;return withKnown(group,peers)
+            end
+            if not pendingRoster and (not rosterRequested[group] or time()-rosterRequested[group]>=5) then
+                rosterRequested[group]=time()
+                pendingRoster={group=group,index=index,at=time(),previous=S.number(S.call(GetSelectedDisplayChannel))}
+                S.call(SetSelectedDisplayChannel,index);advanceRoster()
+            end
+            cached=rosterCache[group];rosterBusy=false
+            return withKnown(group,cached and cached.count==members and cached.peers or {})
+        end
+    end
+    rosterBusy=false;return withKnown(group,{})
 end
 local function remember(item)
     if item.preview then return end
@@ -108,6 +161,8 @@ end
 function P.groupsChanged()
     if not prefs then return end
     prefs.legacy_channel = false
+    releaseRoster();rosterCache,rosterRequested={},{}
+    for group in pairs(knownPeers) do if not WoWStatusGroups.contains(getCharacter(),group) then knownPeers[group]=nil end end
     local allowed = channels()
     for name in pairs(joinedByAddon) do
         if not allowed[name] then
@@ -175,6 +230,7 @@ function P.init(database, getter, reporter)
         trusted = {}, seen = {},
     }
     prefs, getCharacter, notify = database.popups, getter, reporter
+    rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil;rosterBusy=false
     prefs.trusted, prefs.seen = prefs.trusted or {}, prefs.seen or {}
     prefs.level_claims = prefs.level_claims or {}
     prefs.channel = prefs.channel or "WStatusFriends"
@@ -254,7 +310,8 @@ function P.receive(text, sender, channel)
             local duplicateItem={sender=sender,kind=kind,text=detail,at=at,nonce=nonce,group_id=group~="legacy" and group or nil}
             if lootInfo then for k,v in pairs(lootInfo) do duplicateItem[k]=v end end
             WoWStatusJournal.received(duplicateItem)
-            prefs.seen[duplicate]=now;return false
+            prefs.seen[duplicate]=now
+            prefs.last_receive={state="already_in_log",sender=sender,kind=kind,at=now};return false
         end
         if prefs.seen[duplicate] or #incoming >= 128 then return false end
         prefs.seen[duplicate] = now
@@ -262,6 +319,7 @@ function P.receive(text, sender, channel)
             group_id=group ~= "legacy" and group or nil}
         if lootInfo then for k,v in pairs(lootInfo) do item[k]=v end end
         remember(item)
+        prefs.last_receive={state="queued",sender=sender,kind=kind,at=now}
         table.insert(incoming, item)
         P.tick()
         return true
@@ -281,7 +339,8 @@ function P.receive(text, sender, channel)
     if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(sender,nonce)) then
         WoWStatusJournal.received({sender=sender,kind="level",level=level,at=at,nonce=nonce,
             group_id=group~="legacy" and group or nil})
-        prefs.seen[duplicateKey]=now;return false
+        prefs.seen[duplicateKey]=now
+        prefs.last_receive={state="already_in_log",sender=sender,kind="level",at=now};return false
     end
     if prefs.seen[duplicateKey] or (claims and claims.levels[level]) then return false end
     if #incoming >= 128 then return false end
@@ -299,6 +358,7 @@ function P.receive(text, sender, channel)
     prefs.seen[duplicateKey] = now
     table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
         count = 1, group_id = group ~= "legacy" and group or nil})
+    prefs.last_receive={state="queued",sender=sender,kind="level",at=now}
     remember({sender=sender, level=level, at=at, nonce=nonce, group_id=group ~= "legacy" and group or nil})
     P.tick()
     return true
@@ -365,6 +425,7 @@ local function show(item, now)
     toast:Show()
     item.hide_at = now + 6
     active, lastDisplay = item, now
+    if not item.preview then prefs.last_receive={state="displayed",sender=item.sender,kind=item.kind or "level",at=now} end
     if prefs.sound and PlaySound and SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPEN then
         PlaySound(SOUNDKIT.IG_MAINMENU_OPEN)
     end
@@ -455,6 +516,7 @@ local function tick()
         accepted = ok and Enum and Enum.SendAddonMessageResult and result == Enum.SendAddonMessageResult.Success
     end
     status(accepted and "attempted_no_receipt" or "blocked_or_uncertain", item.event)
+    prefs.last_send.target=args[4]
     if not accepted then notify("In-game update blocked/uncertain; see /wstatus popup status.") end
 end
 
@@ -594,14 +656,22 @@ function P.command(text)
             P.tick()
         end
     elseif command == "status" then
+        notify("Runtime "..P.runtimeVersion.." · "..A.display_name.." · "..(A.realmName() or "unknown realm")
+            .." · "..(S.stringCall(UnitFactionGroup,"player") or "unknown faction"))
         notify((groupMode() and "Group updates: automatic" or ("Legacy popups: receive=" .. tostring(prefs.receive) .. ", broadcast=" .. tostring(prefs.broadcast)))
             .. ", sound=" .. tostring(prefs.sound) .. ", channel=" .. prefs.channel
             .. ", groups=" .. WoWStatusGroups.text(getCharacter()) .. ".")
         for id in pairs(WoWStatusGroups.selected(getCharacter())) do
-            notify("Group " .. id .. ": joined=" .. tostring(joined(id) ~= nil) .. ", discovered peers=" .. #P.peers(id))
+            local peers=P.peers(id)
+            notify("Group "..id..": joined="..tostring(joined(id)~=nil)..", discovered peers="..#peers
+                ..(pendingRoster and pendingRoster.group==id and " (roster loading)" or ""))
+            if #peers>0 then notify("Peer names: "..table.concat(peers,", ")) end
         end
         notify("Last broadcast: " .. (prefs.last_send and prefs.last_send.state or "none")
-            .. ". Delivery is not acknowledged. Character privacy gates outgoing levels.")
+            ..(prefs.last_send and prefs.last_send.target and (" to "..prefs.last_send.target) or ""))
+        local received=prefs.last_receive
+        notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state) or "none")
+            .."; popup queue="..#incoming.."; in combat="..tostring(combat() and true or false))
     else
         notify("Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME")
         notify("Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status.")
@@ -625,7 +695,11 @@ frame:SetScript("OnEvent", function(_, event, ...)
         end
     elseif event == "CHAT_MSG_CHANNEL" then
         local text, sender, _, _, _, _, _, _, channel = ...
+        channel,sender=S.string(channel),S.string(sender)
+        local group=channel and channels()[channel:lower()]
+        if group then P.notePeer(group,sender) end
         P.receive(text, sender, channel)
+        P.tick()
     else P.tick() end
 end)
 local accumulated = 0

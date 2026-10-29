@@ -8,7 +8,7 @@ The window recycles six row frames, so a long log does not create thousands of U
 objects. Catch-up entries keep their original timestamp and show the relay name.
 
 Your own tracked announcements appear even if nobody is online to receive them.
-Individual quest turn-ins, profession points and eligible armor equipment changes are recorded
+Profession points and eligible armor equipment changes are recorded
 privately, respecting character collection/profile choices. They do not create
 friend notifications or enter peer sync. Previews and synthetic tests are excluded.
 This records supported addon activity, not every action, chat message or keypress.

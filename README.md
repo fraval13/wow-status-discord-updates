@@ -33,8 +33,8 @@ clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
 ## Activity log and login sync
 
 The scrollable log uses the same icons and colours as popups, with **All**, **Mine**
-and **Friends** filters. Detailed personal quest, equipment and profession activity
-stays private; only eligible announcements are exchanged with group members.
+and **Friends** filters. Individual quest turn-ins are omitted; only hundred-quest
+achievements appear. Detailed personal equipment and profession activity stays private; only eligible announcements are exchanged with group members.
 
 At login, the addon greets available group members and both sides automatically
 exchange missing announcement IDs. An already-online friend also recovers saved

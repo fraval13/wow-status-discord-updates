@@ -549,10 +549,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
     elseif event == "QUEST_TURNED_IN" then
         local id = S.number(...)
         if current.settings.enabled and current.settings.fields.quests then
-            if WoWStatusProgress.quest(current, id) then
-                local title=S.stringCall(C_QuestLog and C_QuestLog.GetTitleForQuestID,id)
-                WoWStatusJournal.observe("questprogress","Completed "..(title or ("quest #"..id)))
-            end
+            WoWStatusProgress.quest(current,id)
             snapshot()
             questMilestone()
         end

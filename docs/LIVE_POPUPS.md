@@ -36,9 +36,9 @@ class/slot/rarity metadata are ignored. Known valid saved armor can be upgraded
 from retained local item links; other unclassified old loot is dropped.
 
 Equipment-change observations remain private and use the same armor filter.
-They do not create equipment-change announcements. Quest turn-ins and skill
-points can be recorded privately; friends still get only hundred-quest
-achievements and profession title promotions.
+They do not create equipment-change announcements. Individual quest turn-ins are omitted from the log; quest totals still update
+and hundred-quest achievements remain. Skill points can be recorded privately;
+friends get profession title promotions.
 
 ## Automatic login exchange
 
@@ -79,3 +79,11 @@ silently at login. No unavailable data or completion is guessed.
 
 Left- or right-click a popup to dismiss it. Its log entry remains, and the next
 queued popup can appear on the next display tick.
+
+If delivery is one-way, run `/wstatus popup status` on both clients after a real
+qualifying update. Joined=true with zero discovered peers means no outgoing
+recipient was found. Version 0.14.2 handles asynchronous roster loads and can
+learn a peer from their normal chat in the shared custom channel. It does not
+log that chat text. Paste the runtime, peers and last sent/received diagnostics
+when reporting failures. A received addon whisper alone does not authorize
+historical sync to its sender.

@@ -1,5 +1,45 @@
 # Decisions I made — 27 October 2026
 
+## Quest log cleanup — 0.14.2
+
+Removed individual quest-turn-in cards from the activity log and filtered existing
+questprogress entries during loading/display. Quest completion totals, unique
+turn-in tracking and each hundred-quest announcement remain unchanged. This is
+included with the pending discovery fix in the same addon release.
+
+## One-way discovery diagnostics — 0.14.2
+
+The user's screenshot showed joined=true but discovered peers=0 and
+waiting_for_group_peers. Local saved settings had sharing and level collection
+on. This means the sending client had no destination, even though receiving a
+friend's announcements worked. A settings reset alone does not establish why
+the roster is empty.
+
+- Hold the requested display-channel selection while asynchronous roster data
+  loads, cache a complete list, then restore the earlier UI selection. Bound the
+  wait and guard synchronous roster callback reentrancy.
+- Learn peers from actual server-delivered normal chat in the selected group's
+  custom channel as a five-minute fallback. This does not log arbitrary chat or
+  turn it into announcements. An addon whisper claiming a group is deliberately
+  insufficient for authorizing historical sync; existing roster/group scope is
+  preserved. Group removal clears learned identities.
+- Advanced /wstatus popup status now includes runtime version, realm/faction,
+  discovered names, roster-loading state, target, last received/displayed event,
+  queue length and combat state. Nothing is added to the normal log UI.
+- Tests reproduce delayed roster data and the screenshot's empty-roster/working-
+  chat case. Real two-client confirmation is still required after updating.
+- User was given full-reset instructions: exit WoW, back up/rename account-wide
+  SavedVariables/WoWStatus.lua and WoWStatus.lua.bak, restart and re-add groups.
+  No saved data was deleted or reset by the agent.
+
+Validation/delivery for 0.14.2: 224 tests passed; 121 addon tests also passed with
+Lua 5.1. Ruff and whitespace checks passed. Tests cover asynchronous selection,
+actual group-chat discovery without roster data, unrelated-channel isolation,
+observed-peer expiry, and removal of both current and legacy single-quest cards.
+Both client ZIPs include the changes; Vanilla is installed locally with previous
+addon files backed up. SavedVariables were not reset. Backend is unchanged.
+GitHub push remains dependent on SSH authentication.
+
 ## Click to dismiss — 0.14.1
 
 Left- or right-click anywhere on a toast to dismiss it immediately. The next

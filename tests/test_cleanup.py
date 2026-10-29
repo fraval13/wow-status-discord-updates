@@ -221,3 +221,24 @@ def test_discord_suspension_stops_exports_and_can_restore_saved_opt_ins(tmp_path
     restored = make_lua(STUBS + saved(disabled), discord_feature=True)
     assert restored.eval('function() for _,c in pairs(WoWStatusDB.characters) do if c.identity.guid=="Player-123-0001" then return c.settings.discord_enabled end end end')() is True
     assert restored.eval('WoWStatusDB.characters.other.settings.discord_enabled') is False
+
+
+def test_quest_turnins_only_update_totals_and_hundred_milestones():
+    lua = make_lua()
+    lua.execute('''
+        for id=1,99 do fire("QUEST_TURNED_IN",id) end
+        assert(character().snapshot.quests_completed==99)
+        assert(#WoWStatusJournal.entries()==0)
+        fire("QUEST_TURNED_IN",100)
+        assert(character().snapshot.quests_completed==100)
+        assert(#WoWStatusJournal.entries()==1)
+        assert(WoWStatusJournal.entries()[1].kind=="quest")
+        assert(WoWStatusJournal.entries()[1].text=="Completed 100 quests!")
+        table.insert(WoWStatusDB.journal.entries,{id="old-quest",client="classic-era",sender="Thora-TestRealm",
+            owner=character().identity.guid,kind="questprogress",at=time(),text="Completed a quest",groups={}})
+        table.insert(WoWStatusDB.journal.entries,{id="legacy-single-quest",client="classic-era",sender="Eldrin-TestRealm",
+            kind="quest",at=time(),text="Completed a quest",groups={}})
+        WoWStatusJournal.init(WoWStatusDB,character())
+        assert(#WoWStatusJournal.entries()==1)
+        assert(WoWStatusJournal.entries()[1].kind=="quest")
+    ''')
