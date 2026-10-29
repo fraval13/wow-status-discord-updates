@@ -134,19 +134,14 @@ end
 function P.professionChanges(character, baseline)
     local value, changed = stats(character), {}
     if baseline then value.profession_ready = false end
-    local observed, complete = P.professions(true)
+    local observed = P.professions(true)
     if not observed then return changed end
     local previous = value.profession_titles or {}
     if not value.profession_titles then
         for _, p in ipairs(value.professions or {}) do previous[p.name] = p.max_skill end
     end
-    -- Clear missing trades only from a complete list. A collapsed skill header
-    -- is not evidence of unlearning; a confirmed removal allows relearning.
-    local titles, present = {}, {}
-    for _, p in ipairs(observed) do present[p.name] = true end
-    for name, cap in pairs(previous) do
-        if present[name] or not complete then titles[name] = cap end
-    end
+    -- Remember professions across unlearning and collapsed skill headers.
+    local titles = previous
     for _, p in ipairs(observed) do
         local old = previous[p.name]
         if not baseline and value.profession_ready and (not old or p.max_skill > old) then

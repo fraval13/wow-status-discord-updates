@@ -20,13 +20,17 @@ quests, new professions and profession title promotions, first dungeon clears, f
 reputation ranks, major class unlocks and PvP ranks. **Preview toasts** opens local
 samples. Notifications queue one at a time for six seconds each.
 
-**Announce armor loot** has separate **Rare equipment**, **Epic equipment** and
+**Announce first armor equips** has separate **Rare equipment**, **Epic equipment** and
 **Legendary equipment** choices, all enabled by default. Only equippable items in
 WoW's Armor class qualify, including armor, cloaks, shields and jewelry. Weapons,
 bags, trade materials, recipes, common/uncommon and unclassified items are excluded.
-The same rarity choices filter the log, incoming loot and recovered entries.
+The first recorded equip of each item ID announces once per character; looting,
+re-equipping and moving the same item do not. Already-worn equipment is seeded
+silently when first enabling tracking. The rarity choices also filter incoming
+and recovered equipment announcements.
 
-There are no free-text announcements, introductions or manual dungeon reports.
+Joining a group automatically announces once per character per group and appears
+in the log. There are no free-text announcements or manual dungeon reports.
 Dungeon completion requires a supported game completion signal; unsupported
 clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
 

@@ -47,7 +47,6 @@ local function allowed(character, event)
     if event.kind == "level" and not settings.fields.level then return false end
     if event.kind == "equipment" and not settings.fields.gear then return false end
     if event.kind == "zone" and not settings.fields.zone then return false end
-    if event.kind == "introduction" and not settings.introduction_confirmed then return false end
     return true
 end
 

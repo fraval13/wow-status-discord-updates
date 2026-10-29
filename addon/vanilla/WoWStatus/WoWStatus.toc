@@ -2,7 +2,7 @@
 ## Title: WoW Status — Vanilla Classic
 ## Notes: Friend progress, armor loot, activity log and automatic login sync.
 ## Author: fraval13
-## Version: 0.14.4
+## Version: 0.14.5
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Vanilla Classic / Classic Era only
 Safe.lua

@@ -92,6 +92,7 @@ def test_private_actions_log_locally_but_never_sync_and_previews_do_not_log():
         fire("QUEST_TURNED_IN",100)
         fire("QUEST_TURNED_IN",100)
         __slot="|Hitem:1|h[Test sword]|h"
+        function GetItemInfo(link) return "Sword",link,4,1,1,"Weapon","Sword",1,"INVTYPE_WEAPON",1,1,2 end
         fire("PLAYER_EQUIPMENT_CHANGED",1)
         fire("PLAYER_EQUIPMENT_CHANGED",1)
         __skill=75
@@ -101,7 +102,7 @@ def test_private_actions_log_locally_but_never_sync_and_previews_do_not_log():
         __skill=76;fire("SKILL_LINES_CHANGED")
         WoWStatusPopups.preview("level")
     ''')
-    assert own.eval('#WoWStatusJournal.entries()') == 2
+    assert own.eval('#WoWStatusJournal.entries()') == 1
     assert own.eval('function() for _,e in ipairs(WoWStatusJournal.entries()) do if next(e.groups) then return false end end return true end')()
     friend.eval('WoWStatusJournal.sync')()
     mesh({'Thora': own, 'Mira': friend})

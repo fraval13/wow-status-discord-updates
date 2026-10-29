@@ -49,13 +49,12 @@ local function snapshot()
     end
 end
 
-local function queue(kind, data, fixed)
+local function queue(kind, data, fixed, targetGroups)
     if not current or not current.settings.enabled or not current.settings.collection[kind] then
         return
     end
     if kind == "discovery" or kind == "lfg" then return end
     if kind == "dungeon" and data.source ~= "game_api" then return end
-    if kind == "introduction" then return end
     if kind == "loot" and not WoWStatusLoot.allowed(current.settings,WoWStatusLoot.eventInfo(data)) then return end
     current.sequence = (current.sequence or 0) + 1
     local id = fixed or (current.identity.guid .. ":" .. current.epoch .. ":" .. current.sequence)
@@ -70,7 +69,7 @@ local function queue(kind, data, fixed)
     data = H.copy(data or {})
     if current.settings.fields.zone then data.zone = A.zone() end
     local event = {id = id, kind = kind, at = time(), data = data,
-        group_ids = H.copy(current.group_ids or {})}
+        group_ids = H.copy(targetGroups or current.group_ids or {})}
     table.insert(current.events, event)
     H.record(current, event)
     WoWStatusJournal.recordLocal(event)
@@ -95,9 +94,6 @@ local function scrub()
         if event.kind == "zone" and not current.settings.fields.zone then allowed = false end
         if event.kind == "equipment" and not current.settings.fields.gear then allowed = false end
         if event.kind == "loot" and not WoWStatusLoot.allowed(current.settings,WoWStatusLoot.eventInfo(event.data)) then allowed=false end
-        if event.kind == "introduction" and not current.settings.introduction_confirmed then
-            allowed = false
-        end
         if allowed then
             H.scrubEvent(current, event)
             table.insert(retained, event)
@@ -175,8 +171,8 @@ local function showPanel(host)
         for i,key in ipairs(kinds) do
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end
-        section("Loot",-508)
-        checkbox("loot","Announce armor loot",24,-544,"in_game")
+        section("First-time equipment",-508)
+        checkbox("loot","Announce first armor equips",24,-544,"in_game")
         checkbox("rare","Rare equipment",54,-586,"loot_rarities")
         checkbox("epic","Epic equipment",54,-628,"loot_rarities")
         checkbox("legendary","Legendary equipment",54,-670,"loot_rarities")
@@ -411,9 +407,9 @@ local function initialize()
     current.settings.announcements.equipment = false
     current.settings.in_game = current.settings.in_game or {}
     current.settings.in_game.equipment = false
-    current.settings.in_game.introduction=false
-    current.settings.collection.introduction=false
-    current.settings.announcements.introduction=false
+    current.settings.in_game.introduction=true
+    current.settings.collection.introduction=true
+    current.settings.announcements.introduction=true
     for _, removed in ipairs({"discovery", "lfg"}) do
         current.settings.collection[removed]=false
         current.settings.announcements[removed]=false
@@ -440,6 +436,25 @@ local function initialize()
     H.scrub(current)
     WoWStatusMinimap.init(WoWStatusDB)
     WoWStatusJournal.init(WoWStatusDB,current)
+    WoWStatusGroups.announce = function()
+        current.introduced_groups=current.introduced_groups or {}
+        for id,member in pairs(current.group_ids or {}) do
+            if not current.introduced_groups[id] then
+                local event=queue("introduction",{group=member.label},nil,{[id]=H.copy(member)})
+                if event then current.introduced_groups[id]=true end
+            end
+        end
+    end
+    WoWStatusGroups.announce()
+    -- Existing equipped items establish a silent baseline on first installation.
+    if not current.equipped_items then
+        current.equipped_items={}
+        for slot=1,19 do
+            local link=A.equipment(slot)
+            local id=type(link)=="string" and tonumber(link:match("item:(%d+)"))
+            if id then current.equipped_items[tostring(id)]=true end
+        end
+    end
     local level = A.level()
     if level then H.sync(current, level, time()) end
     WoWStatusProgress.initZones(current,A.zone())
@@ -467,7 +482,6 @@ frame:RegisterEvent("PLAYER_REGEN_ENABLED")
 frame:RegisterEvent("PLAYER_LOGOUT")
 frame:RegisterEvent("PLAYER_LEVEL_UP")
 frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-frame:RegisterEvent("CHAT_MSG_LOOT")
 frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 frame:RegisterEvent("PLAYER_DEAD")
 frame:RegisterEvent("TIME_PLAYED_MSG")
@@ -510,27 +524,23 @@ frame:SetScript("OnEvent", function(_, event, ...)
                 A.requestPlaytime()
             end
         end
-    elseif event == "CHAT_MSG_LOOT" then
-        -- Match only localized self-loot formats, never another party member's loot.
-        local message = S.string(...)
-        if not message then return end
-        local function matches(format)
-            format = S.string(format)
-            if not format then return false end
-            local pattern = format:gsub("([%(%)%.%%%+%-%*%?%[%]%^%$])", "%%%1")
-            pattern = pattern:gsub("%%%%s", ".+"):gsub("%%%%d", "%%d+")
-            return message:match("^" .. pattern .. "$") ~= nil
-        end
-        if matches(LOOT_ITEM_SELF) or matches(LOOT_ITEM_SELF_MULTIPLE) then
-            local link = message:match("(|Hitem:.-|h.-|h)")
-            if link then WoWStatusLoot.capture(link,function(info)
-                if WoWStatusLoot.allowed(current.settings,info) then queue("loot",info) end
-            end) end
-        end
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         local slot=S.number(...)
         local item=slot and A.equipment(slot)
-        WoWStatusJournal.equipment(slot,item)
+        if slot and slot>=1 and slot<=19 and item then
+            WoWStatusLoot.capture(item,function(info)
+                if A.equipment(slot)~=item then return end
+                current.equipped_items=current.equipped_items or {}
+                local key=tostring(info.item_id)
+                if not current.equipped_items[key] then
+                    current.equipped_items[key]=true
+                    if WoWStatusLoot.allowed(current.settings,info) then
+                        info.first_equip=true
+                        queue("loot",info)
+                    end
+                end
+            end)
+        end
         snapshot() -- Keep the profile current without an equipment notification.
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         local zone = A.zone()

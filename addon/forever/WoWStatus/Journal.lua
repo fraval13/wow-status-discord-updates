@@ -11,7 +11,7 @@ local pumpJobs
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
-local sharedKinds={level=true,loot=true,death=true,zone=true,quest=true,profession=true,
+local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
     dungeon=true,mount=true,reputation=true,unlock=true,pvp=true}
 local fields={level="level",zone="zone",quest="quests",questprogress="quests",profession="professions",
     professionprogress="professions",equipment="gear"}
@@ -56,10 +56,10 @@ local function permitted(entry)
     local kind=({questprogress="quest",professionprogress="profession"})[entry.kind] or entry.kind
     if entry.kind~="equipment" and not owner.settings.collection[kind] then return false end
     if fields[entry.kind] and not owner.settings.fields[fields[entry.kind]] then return false end
-    if kind=="introduction" and not owner.settings.introduction_confirmed then return false end
     return true
 end
 local function relayable(entry,group)
+    if entry.kind=="loot" and not (entry.text or ""):match("^Equipped ") then return false end
     if entry.legacy or entry.client~=WoWStatusAdapter.client_id or not sharedKinds[entry.kind] or not entry.groups or not entry.groups[group] or not permitted(entry) then return false end
     local member=groupMember(group)
     if not member or entry.at<(member.joined_at or time()) or entry.at<time()-AGE then return false end
@@ -247,7 +247,7 @@ local function unpackEntry(text)
     elseif level~="" then return nil else level=nil end
     local e={id=id,client=client,sender=sender,at=at,kind=kind,level=level,text=detail,groups={},origin="catchup",
         quality=tonumber(values[8]),class_id=tonumber(values[9]),equip_loc=values[10],item_id=tonumber(values[11])}
-    if kind=="loot" and (not e.item_id or not WoWStatusLoot.allowed(current.settings,e)) then return nil end
+    if kind=="loot" and (not detail:match("^Equipped ") or not e.item_id or not WoWStatusLoot.allowed(current.settings,e)) then return nil end
     if kind~="loot" and (values[8]~="" or values[9]~="" or values[10]~="" or values[11]~="") then return nil end
     return e
 end

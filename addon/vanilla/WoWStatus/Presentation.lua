@@ -3,7 +3,7 @@ WoWStatusPresentation = {}
 function WoWStatusPresentation.theme(item)
     local themes = {
         level={"level-arrow",1,.82,.2,"LEVEL UP!"},
-        loot={"INV_Chest_Plate04",.72,.35,1,"LOOT FOUND"},
+        loot={"INV_Chest_Plate04",.72,.35,1,"FIRST EQUIP!"},
         death={"Ability_Rogue_FeignDeath",.95,.18,.2,"A FRIEND HAS FALLEN"},
         zone={"INV_Misc_Map_01",.25,.9,.6,"ON THE MOVE"},
         session={"Spell_Arcane_TeleportStormWind",.4,.7,1,"FRIEND UPDATE"},
@@ -19,7 +19,7 @@ function WoWStatusPresentation.theme(item)
     themes.questprogress={"INV_Misc_Book_09",1,.8,.2,"QUEST COMPLETED"}
     themes.equipment={"INV_Chest_Plate04",.3,.7,1,"EQUIPMENT"}
     if item.kind=="loot" then
-        local rarities={[3]={0,.44,.87,"RARE ARMOR"},[4]={.64,.21,.93,"EPIC ARMOR"},[5]={1,.5,0,"LEGENDARY ARMOR"}}
+        local rarities={[3]={0,.44,.87,"RARE ARMOR EQUIPPED!"},[4]={.64,.21,.93,"EPIC ARMOR EQUIPPED!"},[5]={1,.5,0,"LEGENDARY ARMOR EQUIPPED!"}}
         local rarity=rarities[item.quality]
         if rarity then themes.loot={"INV_Chest_Plate04",rarity[1],rarity[2],rarity[3],rarity[4]} end
     end

@@ -78,7 +78,7 @@ def test_modern_item_api_is_used_without_legacy_global(forever_lua):
     lua = forever_lua
     lua.eval('fire')('PLAYER_LOGIN')
     lua.eval('clickSharing')()
-    lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:123|h[Sword]|h.')
+    lua.execute('__slot="|Hitem:123|h[Sword]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     assert lua.eval('character().history.events[1].kind') == 'loot'
     lua.execute('C_Item.GetItemInfo=function() return __secret,__secret,__secret end')
     item, quality = lua.eval('WoWStatusAdapter.item')('|Hitem:123|h[Sword]|h')
@@ -90,6 +90,7 @@ def test_forever_popups_reject_vanilla_packets_and_use_namespaced_chat(forever_l
     lua = forever_lua
     lua.eval('fire')('PLAYER_LOGIN')
     lua.eval('clickSharing')()
+    lua.execute('WoWStatusGroups.announce=nil')
     lua.eval('WoWStatusGroups.update')('Weekend Crew', 'Frank')
     command = lua.eval('SlashCmdList.WOWSTATUS')
     command('popup on')

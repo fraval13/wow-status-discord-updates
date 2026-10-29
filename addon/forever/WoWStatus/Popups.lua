@@ -11,7 +11,7 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
-P.runtimeVersion="0.14.4"
+P.runtimeVersion="0.14.5"
 
 local function realm()
     local value = A.realmName()
@@ -37,7 +37,7 @@ local function canShare(character, event)
     if not (prefs and character and character.settings.enabled
         and (groupMode(character) or prefs.broadcast)) then return false end
     if not event then return true end
-    if event.kind == "introduction" or event.kind == "discovery" or event.kind == "lfg" then return false end
+    if event.kind == "discovery" or event.kind == "lfg" then return false end
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     if not character.settings.collection[event.kind] then return false end
     if character.settings.in_game and character.settings.in_game[event.kind] == false then return false end
@@ -236,7 +236,7 @@ function P.init(database, getter, reporter)
     prefs.channel = prefs.channel or "WStatusFriends"
     local activity={}
     for _, item in ipairs(prefs.activity or {}) do
-        if item.kind~="discovery" and item.kind~="lfg" and item.kind~="introduction" and (item.kind~="dungeon" or item.automatic)
+        if item.kind~="discovery" and item.kind~="lfg" and (item.kind~="dungeon" or item.automatic)
             and (item.kind~="loot" or WoWStatusLoot.allowed(getter().settings,item)) then
             table.insert(activity,item)
         end
@@ -274,11 +274,11 @@ function P.receive(text, sender, channel)
         raw,automatic = client~=nil,client~=nil
     end
     if not client then
-        client,kind,atText,nonce,encoded=text:match("^WSTATUS6 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
+        client,kind,atText,nonce,encoded=text:match("^WSTATUS7 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
         raw,armor=client~=nil,client~=nil
     end
     if client then
-        local allowed = {loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
+        local allowed = {introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
@@ -291,7 +291,7 @@ function P.receive(text, sender, channel)
             local quality,class,slot,id,name=detail:match("^(%d) (%d+) ([A-Z_]+) (%d+) (.+)$")
             lootInfo={quality=tonumber(quality),class_id=tonumber(class),equip_loc=slot,item_id=tonumber(id)}
             if not lootInfo.item_id or not name or not WoWStatusLoot.allowed(getCharacter().settings,lootInfo) then return false end
-            detail="Looted "..name
+            detail="Equipped "..name
         end
         if automatic and kind~="dungeon" then return false end
         if kind=="dungeon" then
@@ -435,7 +435,7 @@ end
 function P.preview(kind)
     if not prefs then return end
     local samples = {
-        introduction="Joined the group tracker", loot="Looted Robe of the Archmage",
+        introduction="Joined the group", loot="Equipped Robe of the Archmage",
         death="Died — total tracked deaths: 15",
         zone="Entered Stranglethorn Vale", quest="Completed 100 quests!",
         profession="Tailoring: Expert (225 max)",
@@ -535,7 +535,7 @@ local function eventText(event)
     local data = event.data or {}
     if event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
         or event.kind == "unlock" or event.kind == "pvp" then return data.text end
-    if event.kind == "introduction" then return "Joined the tracker" end
+    if event.kind == "introduction" then return "Joined the group" end
     if event.kind == "quest" then
         return data.completed and ("Completed " .. data.completed .. " quests!") or nil
     end
@@ -546,7 +546,7 @@ local function eventText(event)
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end
     if event.kind == "loot" or event.kind == "equipment" then
         local item = data.item and data.item:match("%[([^%]]+)%]") or "an item"
-        return (event.kind == "loot" and "Looted " or "Equipped ") .. item
+        return (event.kind=="loot" and not data.first_equip and "Looted " or "Equipped ") .. item
     end
 end
 P.canShare = canShare
@@ -561,7 +561,7 @@ function P.broadcast(character, event)
         local name=info.name or (info.item or ""):match("%[([^%]]+)%]") or "Armor"
         name=name:gsub("[%c|]"," ")
         if #name>72 then name=name:sub(1,69):gsub("[\194-\244][\128-\191]*$","").."..." end
-        text="WSTATUS6 "..A.client_id.." loot "..event.at.." "..nonce.." "..info.quality.." "..info.class_id.." "..info.equip_loc.." "..info.item_id.." "..name
+        text="WSTATUS7 "..A.client_id.." loot "..event.at.." "..nonce.." "..info.quality.." "..info.class_id.." "..info.equip_loc.." "..info.item_id.." "..name
     elseif event.kind == "dungeon" then
         local id,name=event.data.instance_id,event.data.name
         if type(id)~="number" or id<1 or id>1000000000 or type(name)~="string" or #name>80 or name:find("[%c|]") then return end
@@ -574,7 +574,7 @@ function P.broadcast(character, event)
         local detail = eventText(event)
         if not detail then return end
         detail = detail:gsub("[%c]", " ")
-        local modern = event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
+        local modern = event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48
         if #detail > limit then

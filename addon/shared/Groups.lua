@@ -94,6 +94,7 @@ local function update(text, playerName)
     database.player_name = playerName
     for _, saved in pairs(database.characters) do apply(saved, true) end
     if WoWStatusPopups then WoWStatusPopups.groupsChanged() end
+    if G.announce then G.announce() end
     return true, "Groups saved for all characters."
 end
 G.update = update

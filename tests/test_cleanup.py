@@ -21,7 +21,7 @@ def item_api(lua, quality, item_class=4, slot='INVTYPE_CHEST'):
 def test_only_selected_rare_epic_legendary_armor_enters_log(quality, item_class, slot, expected):
     lua = make_lua()
     item_api(lua, quality, item_class, slot)
-    lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:123|h[Test armor]|h.')
+    lua.execute('__slot="|Hitem:123|h[Test armor]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     assert lua.eval('#character().events') == int(expected)
     assert lua.eval('#WoWStatusJournal.entries()') == int(expected)
     if expected:
@@ -31,7 +31,7 @@ def test_only_selected_rare_epic_legendary_armor_enters_log(quality, item_class,
 def test_uncached_item_waits_for_classification():
     lua = make_lua()
     lua.execute('function GetItemInfo() return nil end')
-    lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:123|h[Test armor]|h.')
+    lua.execute('__slot="|Hitem:123|h[Test armor]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     assert lua.eval('#WoWStatusJournal.entries()') == 0
     item_api(lua, 3)
     lua.eval('fire')('GET_ITEM_INFO_RECEIVED', 123, True)
@@ -46,7 +46,7 @@ def test_rarity_preferences_default_on_and_remove_disabled_rarity_from_log():
     for rarity in ('rare','epic','legendary'):
         assert lua.eval(f'character().settings.loot_rarities.{rarity}') is True
     item_api(lua, 3)
-    lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:123|h[Test armor]|h.')
+    lua.execute('__slot="|Hitem:123|h[Test armor]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     lua.execute('''
         for _, check in ipairs(WoWStatusSetup.checks) do
             if check.group=="loot_rarities" and check.key=="rare" then
@@ -55,10 +55,10 @@ def test_rarity_preferences_default_on_and_remove_disabled_rarity_from_log():
         end
     ''')
     assert lua.eval('#WoWStatusJournal.entries()') == 0
-    lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:123|h[Test armor]|h.')
+    lua.execute('__slot="|Hitem:123|h[Test armor]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     assert lua.eval('#WoWStatusJournal.entries()') == 0
     item_api(lua, 4)
-    lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:124|h[Test armor]|h.')
+    lua.execute('__slot="|Hitem:124|h[Test armor]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     assert lua.eval('#WoWStatusJournal.entries()') == 1
 
 
@@ -66,11 +66,12 @@ def test_received_loot_requires_armor_metadata_and_respects_rarity():
     lua = actor('Mira')
     channel = lua.eval('function() for id in pairs(character().group_ids) do return WoWStatusGroups.channel(id) end end')()
     receive = lua.eval('WoWStatusPopups.receive')
+    assert not receive('WSTATUS6 classic-era loot 1793000000 oldarmor 3 4 INVTYPE_CHEST 123 Robe', 'Eldrin-TestRealm', channel)
     assert not receive('WSTATUS4 classic-era loot 1793000000 old Looted arbitrary junk', 'Eldrin-TestRealm', channel)
-    assert not receive('WSTATUS6 classic-era loot 1793000000 weapon 4 2 INVTYPE_WEAPON 1 Sword', 'Eldrin-TestRealm', channel)
-    assert receive('WSTATUS6 classic-era loot 1793000000 armor 3 4 INVTYPE_CHEST 123 Robe', 'Eldrin-TestRealm', channel)
+    assert not receive('WSTATUS7 classic-era loot 1793000000 weapon 4 2 INVTYPE_WEAPON 1 Sword', 'Eldrin-TestRealm', channel)
+    assert receive('WSTATUS7 classic-era loot 1793000000 armor 3 4 INVTYPE_CHEST 123 Robe', 'Eldrin-TestRealm', channel)
     lua.execute('character().settings.loot_rarities.epic=false')
-    assert not receive('WSTATUS6 classic-era loot 1793000000 epic 4 4 INVTYPE_CHEST 124 Robe', 'Eldrin-TestRealm', channel)
+    assert not receive('WSTATUS7 classic-era loot 1793000000 epic 4 4 INVTYPE_CHEST 124 Robe', 'Eldrin-TestRealm', channel)
     assert lua.eval('#WoWStatusJournal.entries()') == 1
 
 
@@ -182,7 +183,7 @@ def test_login_sync_transfers_only_requested_armor_rarities():
     clock(own, 10)
     for quality in (3,4,5):
         item_api(own, quality)
-        own.eval('fire')('CHAT_MSG_LOOT', f'You receive loot: |Hitem:{120+quality}|h[Test armor]|h.')
+        own.execute(f'__slot="|Hitem:{120+quality}|h[Test armor]|h"; fire("PLAYER_EQUIPMENT_CHANGED",1)')
     friend.execute('character().settings.loot_rarities.rare=false')
     mesh({'Thora':own,'Mira':friend},start=11,duration=45)
     assert friend.eval('#WoWStatusJournal.entries()') == 2

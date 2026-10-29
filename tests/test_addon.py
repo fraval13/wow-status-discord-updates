@@ -129,7 +129,7 @@ end
 '''
 
 
-def make_lua(stubs=STUBS, *, discord_feature=None):
+def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
@@ -154,6 +154,9 @@ def make_lua(stubs=STUBS, *, discord_feature=None):
     runtime.execute((root / 'Milestones.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
+    # Most tests isolate other events from the automatic group-join announcement.
+    if not join_announcements:
+        runtime.execute('WoWStatusGroups.announce=nil')
     return runtime
 
 
@@ -187,8 +190,7 @@ def test_party_loot_does_not_announce_as_self(lua):
     lua.eval('fire')('CHAT_MSG_LOOT', 'Other receives loot: |Hitem:123|h[Sword]|h.')
     assert lua.eval('#character().events') == 0
     lua.eval('fire')('CHAT_MSG_LOOT', 'You receive loot: |Hitem:123|h[Sword]|h.')
-    assert lua.eval('#character().events') == 1
-    assert lua.eval('character().events[1].kind') == 'loot'
+    assert lua.eval('#character().events') == 0
 
 
 def test_no_level_event_when_level_profile_is_private(lua):
@@ -981,7 +983,7 @@ def test_previews_wait_their_turn_in_fifo_order(lua):
 
 def test_equipment_silent_quest_hundreds_and_profession_promotions(lua):
     lua.execute('''
-        __slot="|Hitem:1|h[Test sword]|h"
+        __slot=nil
         fire("PLAYER_EQUIPMENT_CHANGED",1)
         assert(#character().events==0)
         for id=1,99 do fire("QUEST_TURNED_IN",id) end
@@ -1082,16 +1084,16 @@ def test_learning_profession_announces_once_then_title_promotions():
         assert(not character().events[2].data.learned)
         __skills=0; fire("SKILL_LINES_CHANGED")
         __skills=1; __cap=75; fire("SKILL_LINES_CHANGED")
-        assert(#character().events==3)
-        assert(character().events[3].data.learned)
+        assert(#character().events==2)
+        assert(not character().events[2].data.learned)
         local found=0
         for _,entry in ipairs(WoWStatusJournal.entries()) do
             if entry.text=="Learned Blacksmithing (Apprentice)" then found=found+1 end
         end
-        assert(found==2)
+        assert(found==1)
         WoWStatusProgress.professionChanges(character(),true)
         fire("SKILL_LINES_CHANGED")
-        assert(#character().events==3)
+        assert(#character().events==2)
     ''')
 
 
@@ -1134,3 +1136,72 @@ def test_collapsed_skill_header_does_not_fabricate_profession_learning():
         end
         assert(found)
     ''')
+
+
+def test_join_is_logged_shared_and_never_replayed_for_same_group():
+    own = make_lua(join_announcements=True)
+    friend = make_lua(STUBS.replace('return "Thora" end','return "Eldrin" end'), join_announcements=True)
+    for client in (own, friend):
+        client.eval('WoWStatusGroups.update')('navsquad','')
+    assert own.eval('#character().events') == 1
+    assert own.eval('character().events[1].kind') == 'introduction'
+    assert own.eval('#WoWStatusJournal.entries()') == 1
+    packet = own.eval('__sent[1].text')
+    friend.eval('fire')('CHAT_MSG_ADDON','WoWStatus',packet,'WHISPER','Thora-TestRealm')
+    assert 'Joined the group' in friend.eval('WoWStatusLevelPopup.message:GetText()')
+    assert friend.eval('#WoWStatusJournal.entries()') == 2
+    own.execute('''
+        WoWStatusGroups.update("navsquad","")
+        WoWStatusGroups.update("","")
+        WoWStatusGroups.update("navsquad","")
+        WoWStatusGroups.announce()
+        fire("PLAYER_LOGOUT")
+        assert(#character().events==1)
+        assert(#WoWStatusJournal.entries()==1)
+    ''')
+
+
+def test_first_equips_deduplicate_item_ids_and_ignore_looting():
+    runtime = make_lua()
+    runtime.execute('''
+        fire("CHAT_MSG_LOOT","You receive loot: |Hitem:123|h[Armor]|h.")
+        assert(#character().events==0)
+        __slot="|Hitem:123|h[Armor]|h"
+        fire("PLAYER_EQUIPMENT_CHANGED",1)
+        assert(#character().events==1 and character().events[1].data.first_equip)
+        assert(WoWStatusJournal.entries()[1].text=="Equipped Armor")
+        fire("PLAYER_EQUIPMENT_CHANGED",1)
+        __slot=nil;fire("PLAYER_EQUIPMENT_CHANGED",1)
+        __slot="|Hitem:123:99|h[Armor]|h";fire("PLAYER_EQUIPMENT_CHANGED",2)
+        assert(#character().events==1)
+        __slot="|Hitem:124|h[Other armor]|h";fire("PLAYER_EQUIPMENT_CHANGED",1)
+        assert(#character().events==2)
+        assert(character().equipped_items["123"] and character().equipped_items["124"])
+    ''')
+
+
+def test_equipped_baseline_and_delayed_item_unequipped_before_resolution():
+    runtime = make_lua(STUBS + '__slot="|Hitem:123|h[Armor]|h"')
+    runtime.execute('''
+        fire("PLAYER_EQUIPMENT_CHANGED",1)
+        assert(#character().events==0)
+        __slot="|Hitem:124|h[Armor]|h"
+        __getter=GetItemInfo;GetItemInfo=function() return nil end
+        fire("PLAYER_EQUIPMENT_CHANGED",1)
+        __slot=nil
+        GetItemInfo=__getter;fire("GET_ITEM_INFO_RECEIVED",124,true)
+        assert(#character().events==0)
+    ''')
+
+
+def test_first_equip_roundtrip_shows_equipped_text_not_looted():
+    own = make_lua()
+    friend = make_lua(STUBS.replace('return "Thora" end','return "Eldrin" end'))
+    for client in (own,friend):
+        client.eval('WoWStatusGroups.update')('navsquad','')
+    own.execute('__slot="|Hitem:123|h[Armor]|h";fire("PLAYER_EQUIPMENT_CHANGED",1)')
+    packet=own.eval('__sent[1].text')
+    assert 'WSTATUS7' in packet
+    friend.eval('fire')('CHAT_MSG_ADDON','WoWStatus',packet,'WHISPER','Thora-TestRealm')
+    assert 'Equipped' in friend.eval('WoWStatusLevelPopup.message:GetText()')
+    assert friend.eval('WoWStatusJournal.entries()[1].text') == 'Equipped Rare armor'

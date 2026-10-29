@@ -8,7 +8,7 @@ needed. Install the whole client folder and fully restart WoW for the new module
 1. Open Options → AddOns → WoW Status. Confirm native settings backgrounds and
    readable controls, a short group-ID instruction, and Groups / Activity log /
    Preview toasts buttons. No separate Milestones or integration page is shown.
-2. Confirm Announce armor loot and Rare / Epic / Legendary equipment are checked
+2. Confirm Announce first armor equips and Rare / Epic / Legendary equipment are checked
    on new settings. All milestones are on the main page. Turning off a category
    stops your corresponding announcements; collection/profile choices still apply.
 3. Groups shows account-wide IDs, with save/remove instructions below Group ID.
@@ -19,11 +19,12 @@ needed. Install the whole client folder and fully restart WoW for the new module
    Close below. No technical subtitle or Catch up button is shown. Scroll back
    while new activity arrives and check that the viewed entry stays anchored.
 6. Notification previews contains only toast choices and Close; there is no
-   character introduction or bottom character-card demonstration.
+   manual character introduction or bottom character-card demonstration. A Joined
+   a group preview is available.
 
-## Armor-only loot
+## First armor equips
 
-Use real game loot with public metadata. Gray/white/green armor, weapons of every
+Looting alone must create no event. Equip real items with public metadata. Gray/white/green armor, weapons of every
 rarity, bags, recipes and trade materials must not appear as loot in either the
 log or toast queue. Blue/purple/orange equippable Armor-class items qualify,
 including shields, cloaks and jewelry. Uncached items wait briefly for item data;
@@ -31,12 +32,14 @@ unknown classifications never become assumed armor.
 
 Check all three rarity choices individually, including clearing an existing rare
 entry by unchecking Rare equipment. A friend's incoming armor and recovered
-history must obey your selected rarities too. Older loot packets without item
-class/slot/rarity metadata are ignored. Known valid saved armor can be upgraded
+history must obey your selected rarities too. Older loot packets are ignored; first-equip packets use WSTATUS7 and include
+class/slot/rarity metadata. Known valid saved armor can be upgraded
 from retained local item links; other unclassified old loot is dropped.
 
-Equipment-change observations remain private and use the same armor filter.
-They do not create equipment-change announcements. Individual quest turn-ins are omitted from the log; quest totals still update
+Each qualifying item ID announces only its first recorded equip per character.
+Unequip/re-equip, slot changes and reloads must stay silent. Equipment already
+worn before tracking is seeded silently. Test uncached items removed before
+metadata arrives: they must not announce. Individual quest turn-ins are omitted from the log; quest totals still update
 and hundred-quest achievements remain. Skill points can be recorded privately;
 friends get new professions and profession title promotions.
 

@@ -1,5 +1,31 @@
 # Decisions I made — 27 October 2026
 
+## Automatic joins and first armor equips — 0.14.5
+
+- Restored automatic Joined the group announcements. Removing the old manual
+  introduction controls had also disabled the event entirely. Log and announce
+  once per character per group, scoped to that group. Existing groups announce
+  once after updating; saving again, rejoining the same group and reloads do not
+  repeat it. No introduction confirmation or free-text controls are restored.
+- Reverted profession relearning announcements at your request. Profession title
+  history persists across removal so only the first observed learning and new
+  highest title promotions announce, while login remains silent.
+- Loot chat no longer creates events. Rare/epic/legendary Armor-class items now
+  announce the first recorded equip of each item ID per character. Re-equipping,
+  slot changes, enchant variants and duplicate copies stay silent. Existing worn
+  equipment establishes a silent baseline; earlier unworn equipment history is
+  unknown. Deferred metadata must still match the currently equipped item.
+- Retained the internal loot category/settings for compatibility, but changed the
+  UI, previews and presentation to first equips. New live packets use WSTATUS7;
+  old loot packets are ignored and old Looted log entries are not relayed during
+  catch-up. Existing local history stays available. All friends should update.
+- Added tests for automatic joins and repeat suppression, first equips and item
+  deduplication, delayed metadata, login baseline, live delivery and catch-up
+  rarity filtering. 232 tests pass with one unrelated minimap icon test excluded
+  due to the separate uncommitted branding edits. Those edits are preserved.
+- Updated the local Vanilla addon files with a backup and rebuilt both packages.
+  SavedVariables are preserved; no live Discord message or server update needed.
+
 ## Profession relearning correction — 29 October 2026
 
 - Supersedes the 0.14.4 decision to suppress relearning. A complete skill-list
