@@ -1,5 +1,9 @@
 # WoW Status
 
+**Homepage and addon downloads: [wow.frankvalde.com](https://wow.frankvalde.com/).**
+The homepage source, build instructions and deployment notes are in
+[website/README.md](website/README.md).
+
 Share progress with friends inside WoW. Use the same group ID to receive queued
 on-screen announcements and browse a persistent activity log.
 

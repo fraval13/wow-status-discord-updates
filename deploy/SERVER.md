@@ -75,6 +75,13 @@ The deployed gateway configuration is tracked in `Caddyfile.production`:
 | ronkalot | `/groups/19e32befc180a1cfdea5c3/` | `127.0.0.1:18081` |
 | navsquad | `/groups/466f79683c7465bc3a5ba0/` | `127.0.0.1:18082` |
 
+The root address now hosts the addon homepage and both standalone ZIP downloads.
+Static releases live in `/srv/wow-status-homepage/releases/`, with an atomic
+`current` symlink. They are independent from the Python application releases.
+See [homepage deployment](../website/README.md) for building and publishing the
+site without restarting either application. `deploy/publish_homepage.py` validates
+Caddy and retains the prior configuration/release for rollback.
+
 Unknown groups return 404. Friends configure only the shared base address; the
 companion derives routing keys from the names selected in WoW. At home:
 

@@ -1,5 +1,41 @@
 # Decisions I made — 27 October 2026
 
+## Addon homepage — 29 October 2026
+
+- Published https://wow.frankvalde.com/ on the existing server, as requested.
+  Took the visual direction from the supplied archived 2007 WoW community page:
+  three columns, dark metal frames, gold details, parchment articles and a red
+  primary download button. Built a responsive, original layout rather than
+  copying the archived site's image assets.
+- Used the existing journal logo and created original fantasy landscape artwork
+  with the built-in image-generation tool. The final asset and exact prompt are
+  documented in website/ARTWORK.md. Fonts, scripts and imagery are self-hosted;
+  the page has no analytics, player data, sign-in or external runtime dependency.
+- Explained actual addon features, first armor equips, profession milestones,
+  automatic group welcomes, shared history, installation and group IDs. The
+  notification illustration has working buttons; it is identified as a preview.
+  Documented same-realm/faction constraints for Vanilla Classic and separate
+  client builds without promising unsupported cross-realm or offline delivery.
+- Both downloads are full addon ZIPs, version 0.14.5 from committed addon revision
+  ae294746375421870db32f27000dce34c63ba171. Each has a top-level WoWStatus folder.
+  scripts/build_homepage.py validates their TOCs and contents, fills the page's
+  version/file sizes and publishes SHA-256 checksums in downloads/release.json.
+  Downloads exclude unfinished local addon branding edits, which stay untouched.
+- Static deployment is independent from both companion services. The active
+  release is /srv/wow-status-homepage/releases/20261029T204422117100Z, selected by
+  an atomic current symlink. The prior Caddyfile is retained on the server for
+  rollback. deploy/publish_homepage.py uploads a release, detects intervening
+  Caddy changes, validates the configuration and gracefully reloads Caddy.
+- Verified the live page in Chromium at widths 1440, 820, 390 and 320: all images
+  and fonts load, no horizontal overflow or browser errors, preview selection,
+  click-to-advance, FAQ and navigation work. Downloaded both live ZIPs, verified
+  their checksums, ZIP integrity and TOC versions. Homepage/assets/downloads return
+  200, nonexistent pages/groups return 404, and both existing group health routes
+  still return 200. No application restart or database changes were performed.
+- Sources and maintenance instructions are in website/README.md and deploy/SERVER.md.
+  The live publication does not depend on a successful GitHub push; repository SSH
+  authentication remains a separate issue.
+
 ## Automatic joins and first armor equips — 0.14.5
 
 - Restored automatic Joined the group announcements. Removing the old manual
