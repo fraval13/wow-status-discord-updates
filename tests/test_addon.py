@@ -1082,10 +1082,16 @@ def test_learning_profession_announces_once_then_title_promotions():
         assert(not character().events[2].data.learned)
         __skills=0; fire("SKILL_LINES_CHANGED")
         __skills=1; __cap=75; fire("SKILL_LINES_CHANGED")
-        assert(#character().events==2)
+        assert(#character().events==3)
+        assert(character().events[3].data.learned)
+        local found=0
+        for _,entry in ipairs(WoWStatusJournal.entries()) do
+            if entry.text=="Learned Blacksmithing (Apprentice)" then found=found+1 end
+        end
+        assert(found==2)
         WoWStatusProgress.professionChanges(character(),true)
         fire("SKILL_LINES_CHANGED")
-        assert(#character().events==2)
+        assert(#character().events==3)
     ''')
 
 
@@ -1097,4 +1103,34 @@ def test_existing_profession_is_silent_at_login():
     runtime.execute('''
         fire("SKILL_LINES_CHANGED")
         assert(#character().events==0)
+    ''')
+
+
+
+def test_collapsed_skill_header_does_not_fabricate_profession_learning():
+    runtime = make_lua(STUBS + '''
+        __collapsed=false
+        function GetNumSkillLines() return 1 end
+        function GetSkillLineInfo()
+            if __collapsed then return "Professions",true,false end
+            return "Blacksmithing",nil,nil,1,0,0,75
+        end
+    ''')
+    runtime.execute('''
+        __collapsed=true; fire("SKILL_LINES_CHANGED")
+        __collapsed=false; fire("SKILL_LINES_CHANGED")
+        assert(#character().events==0)
+        SlashCmdList.WOWSTATUS("popup channel WStatusFriends")
+        SlashCmdList.WOWSTATUS("popup on")
+        SlashCmdList.WOWSTATUS("popup trust Eldrin-TestRealm")
+        local text="Learned Blacksmithing (Apprentice)"
+        local encoded=text:gsub(".",function(c) return string.format("%02x",c:byte()) end)
+        assert(WoWStatusPopups.receive("WSTATUS3 classic-era profession 1793000000 learned-bs "..encoded,
+            "Eldrin-TestRealm","WStatusFriends"))
+        assert(WoWStatusLevelPopup.message:GetText():find(text,1,true))
+        local found=false
+        for _,entry in ipairs(WoWStatusJournal.entries()) do
+            if entry.text==text then found=true end
+        end
+        assert(found)
     ''')

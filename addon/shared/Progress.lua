@@ -2,7 +2,7 @@
 WoWStatusProgress = {}
 local P, S = WoWStatusProgress, WoWStatusSafe
 local questReady, questRequested = false, false
-local professionAt, professionCache, questAt
+local professionAt, professionCache, professionComplete, questAt
 local knownProfessions = {
     alchemy={2259,171,"Alchemy"}, blacksmithing={2018,164,"Blacksmithing"},
     enchanting={7411,333,"Enchanting"}, engineering={4036,202,"Engineering"},
@@ -25,7 +25,7 @@ local function stats(character)
     return value
 end
 local function readProfessions()
-    local result, names, ids = {}, {}, {}
+    local result, names, ids, complete = {}, {}, {}, true
     for key, definition in pairs(knownProfessions) do
         local name = S.stringCall(GetSpellInfo, definition[1])
         if not name and C_Spell and C_Spell.GetSpellInfo then
@@ -55,7 +55,8 @@ local function readProfessions()
             local ok, name, header, expanded, rank, _, _, maximum = pcall(GetSkillLineInfo, index)
             name, rank, maximum = S.string(name), S.number(rank), S.number(maximum)
             header, expanded = S.value(header), S.value(expanded)
-            if ok and header and not expanded then collapsed = true end
+            if not ok then complete = false end
+            if ok and header and not expanded then collapsed = true; complete = false end
             if ok and name and not header and names[name] and rank and maximum and maximum > 1 then
                 table.insert(result, {name=name, skill=rank, max_skill=maximum, key=names[name], source="game_api"})
             end
@@ -63,12 +64,13 @@ local function readProfessions()
         if #result == 0 and collapsed then return nil end
     else return nil end
     table.sort(result, function(a,b) return a.name < b.name end)
-    return result
+    return result, complete
 end
 function P.professions(force)
-    if not force and professionAt and time() - professionAt < 5 then return professionCache end
-    professionCache, professionAt = readProfessions(), time()
-    return professionCache
+    if not force and professionAt and time() - professionAt < 5 then return professionCache, professionComplete end
+    professionCache, professionComplete = readProfessions()
+    professionAt = time()
+    return professionCache, professionComplete
 end
 function P.queryComplete() questReady, questAt = true, nil end
 function P.observe(character, fields)
@@ -132,15 +134,19 @@ end
 function P.professionChanges(character, baseline)
     local value, changed = stats(character), {}
     if baseline then value.profession_ready = false end
-    local observed = P.professions(true)
+    local observed, complete = P.professions(true)
     if not observed then return changed end
     local previous = value.profession_titles or {}
     if not value.profession_titles then
         for _, p in ipairs(value.professions or {}) do previous[p.name] = p.max_skill end
     end
-    -- Keep high-water marks even when a skill header is collapsed or a trade
-    -- is unlearned. Reopening a header/relearning must not look like a new trade.
-    local titles = previous
+    -- Clear missing trades only from a complete list. A collapsed skill header
+    -- is not evidence of unlearning; a confirmed removal allows relearning.
+    local titles, present = {}, {}
+    for _, p in ipairs(observed) do present[p.name] = true end
+    for name, cap in pairs(previous) do
+        if present[name] or not complete then titles[name] = cap end
+    end
     for _, p in ipairs(observed) do
         local old = previous[p.name]
         if not baseline and value.profession_ready and (not old or p.max_skill > old) then

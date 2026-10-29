@@ -1,5 +1,20 @@
 # Decisions I made — 27 October 2026
 
+## Profession relearning correction — 29 October 2026
+
+- Supersedes the 0.14.4 decision to suppress relearning. A complete skill-list
+  observation confirming removal now clears that profession's tracked title;
+  learning it again creates another learned event. Login remains silent.
+- Incomplete/collapsed skill lists retain missing professions so opening a header
+  cannot create a false learned announcement. Skill snapshots retain the same
+  completeness metadata when cached.
+- Tested learning/relearning in the activity log and a friend's received popup
+  and log. Own events use the existing log-only presentation; live toasts are
+  friend updates. Install the fix and reload before unlearning/relearning.
+- Full suite: 228 passed; one unrelated existing minimap test fails because its
+  expected book icon differs from the uncommitted logo changes. Those edits are
+  preserved and excluded from this commit. Ruff passed.
+
 ## Learning professions — 0.14.4
 
 - First learning a profession now announces, for example, Learned Blacksmithing
