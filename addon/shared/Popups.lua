@@ -11,7 +11,7 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
-P.runtimeVersion="0.14.2"
+P.runtimeVersion="0.14.3"
 
 local function realm()
     local value = A.realmName()
@@ -419,7 +419,8 @@ local function show(item, now)
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
     toast.message:SetText(name .. (item.level and " " or " — ") .. detail)
-    toast.detail:SetText(item.preview and "Local preview · Click to dismiss" or "Click to dismiss")
+    toast.detail:SetText(item.preview and "Local preview" or "")
+    toast.detail:SetShown(item.preview and true or false)
     toast.age = 0
     toast:SetAlpha(0)
     toast:Show()

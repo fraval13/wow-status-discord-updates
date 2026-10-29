@@ -169,7 +169,7 @@ local function showPanel(host)
         button(panel,"Preview toasts",384,-116,170,function() openSettings("previews") end)
         checkbox("enabled","Share my progress",24,-174)
         section("Announcements",-234)
-        local titles={level="Level up",death="Deaths",zone="New location",quest="Every 100 quests",
+        local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
             profession="Profession title",dungeon="First dungeon clear",mount="First mount",
             reputation="Reputation rank",unlock="Class ability unlock",pvp="PvP rank"}
         for i,key in ipairs(kinds) do
@@ -442,6 +442,7 @@ local function initialize()
     WoWStatusJournal.init(WoWStatusDB,current)
     local level = A.level()
     if level then H.sync(current, level, time()) end
+    WoWStatusProgress.initZones(current,A.zone())
     snapshot()
     current.last_zone = A.zone()
     local dead = S.call(UnitIsDeadOrGhost, "player")
@@ -533,9 +534,8 @@ frame:SetScript("OnEvent", function(_, event, ...)
         snapshot() -- Keep the profile current without an equipment notification.
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         local zone = A.zone()
-        if zone and current.last_zone and zone ~= current.last_zone and current.settings.fields.zone then
-            queue("zone", {zone = zone})
-        end
+        local first=WoWStatusProgress.visitZone(current,zone)
+        if first and current.last_zone and zone~=current.last_zone then queue("zone",{zone=zone}) end
         if zone then current.last_zone = zone end
         snapshot()
     elseif event == "PLAYER_DEAD" then

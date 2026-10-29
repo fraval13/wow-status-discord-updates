@@ -164,3 +164,27 @@ function P.questMilestone(character, total, source, baseline)
     if baseline or changedSource or not previous or not total then return nil end
     if math.floor(total / 100) > math.floor(previous / 100) then return math.floor(total / 100) * 100 end
 end
+
+-- Per-character first recorded visits. Seed older observations to avoid upgrade
+-- spam, and silently baseline the login zone rather than announcing a reload.
+function P.initZones(character,zone)
+    if not character.visited_zones then
+        character.visited_zones={}
+        for _,event in ipairs(character.history and character.history.events or {}) do
+            local known=event.kind=="zone" and S.string(event.data and event.data.zone)
+            if known then character.visited_zones[known]=true end
+        end
+        local previous=S.string(character.snapshot and character.snapshot.zone)
+        if previous then character.visited_zones[previous]=true end
+    end
+    if zone and character.settings.fields.zone and character.settings.collection.zone then character.visited_zones[zone]=true end
+end
+function P.visitZone(character,zone)
+    zone=S.string(zone)
+    if not zone or not character.settings.enabled or not character.settings.fields.zone
+        or not character.settings.collection.zone then return false end
+    if not character.visited_zones then P.initZones(character,nil) end
+    if character.visited_zones[zone] then return false end
+    character.visited_zones[zone]=true
+    return true
+end

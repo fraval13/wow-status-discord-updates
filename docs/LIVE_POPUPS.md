@@ -87,3 +87,16 @@ learn a peer from their normal chat in the shared custom channel. It does not
 log that chat text. Paste the runtime, peers and last sent/received diagnostics
 when reporting failures. A received addon whisper alone does not authorize
 historical sync to its sender.
+
+## Zone and Rogue changes (0.14.3)
+
+Zone notifications now require a character's first recorded visit. Previous zone
+history, the saved snapshot and the login zone seed a persistent visit set, so
+upgrading/reloading or revisiting known zones stays quiet. Zone snapshots still
+update normally. Visits predating addon tracking or made with location collection
+off cannot be reconstructed. Update every sender to stop older clients' repeat
+zone announcements.
+
+Rogues track learning Poisons (spell 2842), replacing Pick Lock. Already-known
+Poisons and relearning remain silent. Clicking a toast still dismisses it, but
+the Click to dismiss footer is no longer shown.

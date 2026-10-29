@@ -1,6 +1,6 @@
 # Implementation and validation status
 
-Current addon release: **0.14.0**. The current UI is in-game only, with armor-only
+Current addon release: **0.14.3**. The current UI is in-game only, with armor-only
 loot, native options, a minimap log button and one-shot two-way login sync.
 The retained Discord integration is disabled behind `Features.lua`; older
 integration notes below describe preserved code rather than visible features.

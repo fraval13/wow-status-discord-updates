@@ -5,7 +5,7 @@ local character, emit, report, panel
 local unlocks = {
     DRUID={5487,768,783,1066,24858}, WARLOCK={688,697,712,691},
     SHAMAN={2645}, HUNTER={1515}, PRIEST={15473}, PALADIN={7328},
-    WARRIOR={71,2458}, ROGUE={1804}, MAGE={3561,3562,3563,3565,3566,3567,10059,11416,11417,11418,11419,11420},
+    WARRIOR={71,2458}, ROGUE={2842}, MAGE={3561,3562,3563,3565,3566,3567,10059,11416,11417,11418,11419,11420},
 }
 local function state()
     character.milestones = character.milestones or {}

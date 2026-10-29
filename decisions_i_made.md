@@ -1,5 +1,24 @@
 # Decisions I made — 27 October 2026
 
+## First zone visits and Rogue Poisons — 0.14.3
+
+- Persist a per-character visited_zones set. Seed older zone-history observations,
+  the saved snapshot and current login zone silently. Only first recorded new
+  visits generate a zone event; revisits and reloads do not. Location snapshots
+  still update. No lifetime visit history is invented for time before tracking
+  or while location collection was off. All senders should update.
+- Removed the Click to dismiss footer; mouse dismissal and queue advancement are
+  unchanged. Local previews retain only a Local preview label.
+- Replaced Rogue Pick Lock (1804) with Poisons (2842). The spell name/ID was checked
+  against the Classic spell data at https://www.wowhead.com/classic/spell=2842/poisons.
+  It is a one-time first-rank unlock; no announcement for already-known abilities,
+  relearning or new poison ranks/recipes. Other class unlocks are unchanged.
+
+Validation/delivery for 0.14.3: 226 tests passed; 123 addon tests passed with Lua
+5.1. Ruff/whitespace checks passed. Both addon ZIPs are rebuilt and Vanilla is
+installed locally with previous files backed up. SavedVariables were not directly
+edited. No server update is needed. GitHub push still requires SSH authentication.
+
 ## Quest log cleanup — 0.14.2
 
 Removed individual quest-turn-in cards from the activity log and filtered existing

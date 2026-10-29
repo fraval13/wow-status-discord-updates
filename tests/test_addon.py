@@ -1043,7 +1043,7 @@ def test_click_dismisses_only_current_popup_and_keeps_log_and_queue(lua):
     for level in [2,3]:
         assert receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 click-{level}', 'Eldrin-TestRealm',channel)
     assert 'level 2!' in lua.eval('WoWStatusLevelPopup.message:GetText()')
-    assert lua.eval('WoWStatusLevelPopup.detail:GetText()') == 'Click to dismiss'
+    assert lua.eval('WoWStatusLevelPopup.detail:GetText()') == ''
     lua.execute('WoWStatusLevelPopup.OnMouseUp(WoWStatusLevelPopup,"LeftButton")')
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is False
     lua.eval('WoWStatusPopups.tick')()

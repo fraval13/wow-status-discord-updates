@@ -242,3 +242,28 @@ def test_quest_turnins_only_update_totals_and_hundred_milestones():
         assert(#WoWStatusJournal.entries()==1)
         assert(WoWStatusJournal.entries()[1].kind=="quest")
     ''')
+
+
+def test_zone_first_visits_persist_and_seed_old_history_without_reload_spam():
+    lua = make_lua()
+    lua.execute('''
+        __zone="Dun Morogh"
+        function GetRealZoneText() return __zone end
+        fire("ZONE_CHANGED_NEW_AREA")
+        assert(#character().events==0)
+        __zone="Loch Modan";fire("ZONE_CHANGED_NEW_AREA")
+        assert(#character().events==1 and character().events[1].data.zone=="Loch Modan")
+        __zone="Dun Morogh";fire("ZONE_CHANGED_NEW_AREA")
+        __zone="Loch Modan";fire("ZONE_CHANGED_NEW_AREA")
+        assert(#character().events==1)
+        WoWStatusProgress.initZones(character(),__zone)
+        fire("PLAYER_ENTERING_WORLD");fire("ZONE_CHANGED_NEW_AREA")
+        assert(#character().events==1)
+        __zone="Wetlands";fire("ZONE_CHANGED_NEW_AREA")
+        assert(#character().events==2 and character().events[2].data.zone=="Wetlands")
+        -- Migration from an older addon without the visit set.
+        character().visited_zones=nil
+        WoWStatusProgress.initZones(character(),__zone)
+        assert(not WoWStatusProgress.visitZone(character(),"Loch Modan"))
+        assert(not WoWStatusProgress.visitZone(character(),"Wetlands"))
+    ''')

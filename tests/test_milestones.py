@@ -267,3 +267,25 @@ def test_removed_manual_events_cannot_enter_discord_outbox(store, payload, kind)
     assert not should_announce(payload['settings'], event)
     store.ingest('owner', payload)
     assert store.pending() is None
+
+
+def test_rogue_announces_poisons_once_and_ignores_pick_lock():
+    lua = make_lua(STUBS + '''
+        __poisons=false
+        function UnitClass() return "Rogue","ROGUE" end
+        function IsSpellKnown(id) return id==1804 or (id==2842 and __poisons) end
+        function GetSpellInfo(id) if id==2842 then return "Poisons" elseif id==1804 then return "Pick Lock" end end
+    ''')
+    lua.execute('''
+        fire("SPELLS_CHANGED")
+        assert(#character().events==0)
+        __poisons=true;fire("SPELLS_CHANGED")
+        assert(#character().events==1)
+        assert(character().events[1].kind=="unlock")
+        assert(character().events[1].data.text=="Unlocked Poisons")
+        assert(character().events[1].data.spell_id==2842)
+        fire("SPELLS_CHANGED")
+        __poisons=false;fire("SPELLS_CHANGED")
+        __poisons=true;fire("SPELLS_CHANGED")
+        assert(#character().events==1)
+    ''')
