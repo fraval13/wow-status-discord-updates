@@ -76,3 +76,6 @@ ride with that wording on clients without the journal. Reputation announces new
 Honored/Revered/Exalted highs. Class unlocks cover a conservative first-rank spell
 list; PvP uses available classic rank APIs. Existing observations are baselined
 silently at login. No unavailable data or completion is guessed.
+
+Left- or right-click a popup to dismiss it. Its log entry remains, and the next
+queued popup can appear on the next display tick.

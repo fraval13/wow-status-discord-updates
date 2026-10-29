@@ -310,6 +310,13 @@ local function show(item, now)
         toast:SetSize(560, 108)
         toast:SetPoint("TOP", 0, -170)
         toast:SetFrameStrata("DIALOG")
+        toast:EnableMouse(true)
+        toast:SetScript("OnMouseUp",function(self,button)
+            if button=="LeftButton" or button=="RightButton" then
+                self:Hide();active=nil
+                lastDisplay=time()-7 -- Advance on the next tick, without dropping queued entries.
+            end
+        end)
         local bg = toast:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints(); bg:SetColorTexture(.025, .035, .065, .96)
         toast.accent = toast:CreateTexture(nil, "OVERLAY")
@@ -352,8 +359,7 @@ local function show(item, now)
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
     toast.message:SetText(name .. (item.level and " " or " — ") .. detail)
-    toast.detail:SetText(item.preview and "Local preview — not sent or saved as progress"
-        or ("Reported in " .. (item.group_id and ("group " .. ((WoWStatusGroups.selected(getCharacter())[item.group_id] or {}).label or item.group_id)) or "your legacy channel") .. " · player-reported"))
+    toast.detail:SetText(item.preview and "Local preview · Click to dismiss" or "Click to dismiss")
     toast.age = 0
     toast:SetAlpha(0)
     toast:Show()

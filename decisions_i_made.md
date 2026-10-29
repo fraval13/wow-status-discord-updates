@@ -1,5 +1,12 @@
 # Decisions I made — 27 October 2026
 
+## Click to dismiss — 0.14.1
+
+Left- or right-click anywhere on a toast to dismiss it immediately. The next
+queued notification becomes eligible on the next display tick. Dismissal never
+removes activity-log entries or clears the rest of the queue. Toasts now show a
+short Click to dismiss hint. No transport or roster changes are included.
+
 ## Armor-only loot and cleaner in-game UI — 0.14.0, 29 October
 
 - Loot now requires rarity 3/4/5, item class Armor (4), a real item ID and an

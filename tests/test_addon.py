@@ -1033,3 +1033,22 @@ def test_rapid_friend_levelups_each_get_their_own_queued_notification(lua):
         WoWStatusPopups.tick()
         assert(WoWStatusLevelPopup.message:GetText():find("level 4!",1,true))
     ''')
+
+
+def test_click_dismisses_only_current_popup_and_keeps_log_and_queue(lua):
+    from wow_status.group_routing import group_key
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    receive=lua.eval('WoWStatusPopups.receive')
+    channel='WStatus'+group_key('navsquad')
+    for level in [2,3]:
+        assert receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 click-{level}', 'Eldrin-TestRealm',channel)
+    assert 'level 2!' in lua.eval('WoWStatusLevelPopup.message:GetText()')
+    assert lua.eval('WoWStatusLevelPopup.detail:GetText()') == 'Click to dismiss'
+    lua.execute('WoWStatusLevelPopup.OnMouseUp(WoWStatusLevelPopup,"LeftButton")')
+    assert lua.eval('WoWStatusLevelPopup:IsShown()') is False
+    lua.eval('WoWStatusPopups.tick')()
+    assert 'level 3!' in lua.eval('WoWStatusLevelPopup.message:GetText()')
+    lua.execute('WoWStatusLevelPopup.OnMouseUp(WoWStatusLevelPopup,"RightButton")')
+    lua.eval('WoWStatusPopups.tick')()
+    assert lua.eval('WoWStatusLevelPopup:IsShown()') is False
+    assert lua.eval('#WoWStatusJournal.entries()') == 2
