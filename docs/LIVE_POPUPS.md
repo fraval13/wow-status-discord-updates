@@ -38,7 +38,7 @@ from retained local item links; other unclassified old loot is dropped.
 Equipment-change observations remain private and use the same armor filter.
 They do not create equipment-change announcements. Individual quest turn-ins are omitted from the log; quest totals still update
 and hundred-quest achievements remain. Skill points can be recorded privately;
-friends get profession title promotions.
+friends get new professions and profession title promotions.
 
 ## Automatic login exchange
 

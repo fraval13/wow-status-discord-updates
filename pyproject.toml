@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "wow-status-discord-updates"
-version = "0.14.3"
+version = "0.14.4"
 description = "Opt-in WoW character milestones and Discord status"
 requires-python = ">=3.11"
 dependencies = ["aiohttp>=3.12,<4", "discord.py>=2.6,<3", "tzdata>=2025.1"]

@@ -1,5 +1,21 @@
 # Decisions I made — 27 October 2026
 
+## Learning professions — 0.14.4
+
+- First learning a profession now announces, for example, Learned Blacksmithing
+  (Apprentice), with its trade icon and a PROFESSION LEARNED heading. Added a
+  separate local notification preview. Title promotions still announce; individual
+  skill points remain silent.
+- Establish known professions silently at login. Retain highest observed title
+  caps when a profession disappears, so reopening skill headers or relearning
+  does not repeatedly announce it. An unavailable skill API establishes its first
+  successful observation silently. Already learned Blacksmithing is not replayed;
+  use the new preview to inspect the notification.
+- Validation: 228 tests passed, including first learning, ordinary skill points,
+  promotion, relearning and login baselines. Both addon packages rebuilt and the
+  local Vanilla installation updated; SavedVariables preserved.
+- Changes committed locally. GitHub delivery still depends on SSH authentication.
+
 ## First zone visits and Rogue Poisons — 0.14.3
 
 - Persist a per-character visited_zones set. Seed older zone-history observations,

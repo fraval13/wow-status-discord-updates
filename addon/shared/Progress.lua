@@ -131,20 +131,26 @@ function P.quest(character, id)
 end
 function P.professionChanges(character, baseline)
     local value, changed = stats(character), {}
+    if baseline then value.profession_ready = false end
     local observed = P.professions(true)
     if not observed then return changed end
     local previous = value.profession_titles or {}
     if not value.profession_titles then
         for _, p in ipairs(value.professions or {}) do previous[p.name] = p.max_skill end
     end
-    local titles = {}
+    -- Keep high-water marks even when a skill header is collapsed or a trade
+    -- is unlearned. Reopening a header/relearning must not look like a new trade.
+    local titles = previous
     for _, p in ipairs(observed) do
-        titles[p.name] = p.max_skill
-        if not baseline and previous[p.name] and p.max_skill > previous[p.name] then
+        local old = previous[p.name]
+        if not baseline and value.profession_ready and (not old or p.max_skill > old) then
             p.title = P.professionTitle(p.max_skill)
+            p.learned = not old or nil
             table.insert(changed,p)
         end
+        titles[p.name] = math.max(old or 0, p.max_skill)
     end
+    value.profession_ready = true
     value.professions, value.profession_titles = observed, titles
     return changed
 end

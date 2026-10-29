@@ -11,7 +11,7 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
-P.runtimeVersion="0.14.3"
+P.runtimeVersion="0.14.4"
 
 local function realm()
     local value = A.realmName()
@@ -439,12 +439,13 @@ function P.preview(kind)
         death="Died — total tracked deaths: 15",
         zone="Entered Stranglethorn Vale", quest="Completed 100 quests!",
         profession="Tailoring: Expert (225 max)",
+        profession_learned="Learned Blacksmithing (Apprentice)",
         dungeon="First clear: The Deadmines", mount="First mount: Brown Horse",
         reputation="Exalted with Ironforge", unlock="Unlocked Bear Form", pvp="Promoted to Sergeant",
     }
     if kind ~= "level" and not samples[kind] then return end
     if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
-    table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind,text=samples[kind],
+    table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind=="profession_learned" and "profession" or kind,text=samples[kind],
         level=kind=="level" and 33 or nil,quality=kind=="loot" and 4 or nil,received_at=time(),preview=true})
     P.tick()
 end
@@ -538,6 +539,7 @@ local function eventText(event)
     if event.kind == "quest" then
         return data.completed and ("Completed " .. data.completed .. " quests!") or nil
     end
+    if event.kind == "profession" and data.learned then return "Learned " .. (data.name or "Profession") .. " (" .. (data.title or WoWStatusProgress.professionTitle(data.max_skill)) .. ")" end
     if event.kind == "profession" then return (data.name or "Profession") .. ": " .. (data.title or WoWStatusProgress.professionTitle(data.max_skill)) .. " (" .. (data.max_skill or "?") .. " max)" end
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end

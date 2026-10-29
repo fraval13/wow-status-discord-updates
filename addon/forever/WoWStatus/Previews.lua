@@ -6,7 +6,7 @@ local examples = {
     {"level", "Level up"},
     {"loot", "Armor loot"},
     {"death", "Death"}, {"zone", "New location"},
-    {"quest", "100 quests achievement"}, {"profession", "Profession title promotion"},
+    {"quest", "100 quests achievement"}, {"profession_learned", "Learn a profession"}, {"profession", "Profession title promotion"},
     {"dungeon", "First dungeon clear"}, {"mount", "First mount"},
     {"reputation", "Reputation promotion"}, {"unlock", "Major class unlock"},
     {"pvp", "PvP rank promotion"},

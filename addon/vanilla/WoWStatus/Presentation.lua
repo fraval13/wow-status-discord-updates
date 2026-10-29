@@ -32,7 +32,8 @@ function WoWStatusPresentation.theme(item)
             Leatherworking="Trade_LeatherWorking", Mining="Trade_Mining", Skinning="INV_Misc_Pelt_Wolf_01",
             Tailoring="Trade_Tailoring", Cooking="INV_Misc_Food_15", ["First Aid"]="Spell_Holy_SealOfSacrifice",
             Fishing="Trade_Fishing"}
-        local profession = (item.text or ""):match("^(.-):")
+        local profession = (item.text or ""):match("^Learned (.-) %(") or (item.text or ""):match("^(.-):")
+        if (item.text or ""):match("^Learned ") then theme[5] = "PROFESSION LEARNED!" end
         icon = professionIcons[profession] or "Trade_BlackSmithing"
     end
     local texture = item.level and "Interface\\AddOns\\WoWStatus\\Textures\\LevelUp"

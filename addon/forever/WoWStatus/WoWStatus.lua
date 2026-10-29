@@ -170,7 +170,7 @@ local function showPanel(host)
         checkbox("enabled","Share my progress",24,-174)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
-            profession="Profession title",dungeon="First dungeon clear",mount="First mount",
+            profession="Profession milestones",dungeon="First dungeon clear",mount="First mount",
             reputation="Reputation rank",unlock="Class ability unlock",pvp="PvP rank"}
         for i,key in ipairs(kinds) do
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
@@ -556,7 +556,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
     elseif event == "SKILL_LINES_CHANGED" then
         if current.settings.enabled and current.settings.fields.professions then
             for _, profession in ipairs(WoWStatusProgress.professionChanges(current)) do
-                queue("profession", {name=profession.name, skill=profession.skill, max_skill=profession.max_skill, title=profession.title})
+                queue("profession", {name=profession.name, skill=profession.skill, max_skill=profession.max_skill, title=profession.title, learned=profession.learned})
             end
             WoWStatusJournal.professions(current.progress.professions)
         end

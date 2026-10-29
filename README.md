@@ -16,7 +16,7 @@ on-screen announcements and browse a persistent activity log.
 ## Announcements
 
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed
-quests, profession title promotions, first dungeon clears, first mount,
+quests, new professions and profession title promotions, first dungeon clears, first mount,
 reputation ranks, major class unlocks and PvP ranks. **Preview toasts** opens local
 samples. Notifications queue one at a time for six seconds each.
 

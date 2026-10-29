@@ -1052,3 +1052,49 @@ def test_click_dismisses_only_current_popup_and_keeps_log_and_queue(lua):
     lua.eval('WoWStatusPopups.tick')()
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is False
     assert lua.eval('#WoWStatusJournal.entries()') == 2
+
+
+def test_learning_profession_announces_once_then_title_promotions():
+    runtime = make_lua(STUBS + '''
+        __skills=0; __cap=75; __rank=1
+        function GetNumSkillLines() return __skills end
+        function GetSkillLineInfo() return "Blacksmithing",nil,nil,__rank,0,0,__cap end
+    ''')
+    runtime.execute('''
+        __skills=1
+        -- A snapshot may observe the new profession before its skill event.
+        WoWStatusProgress.professions(true)
+        fire("PLAYER_XP_UPDATE","player")
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==1)
+        local event=character().events[1]
+        assert(event.kind=="profession" and event.data.learned==true)
+        assert(event.data.name=="Blacksmithing" and event.data.title=="Apprentice")
+        local text=WoWStatusPopups.eventText(event)
+        assert(text=="Learned Blacksmithing (Apprentice)")
+        local texture,_,_,_,heading=WoWStatusPresentation.theme({kind="profession",text=text})
+        assert(texture:find("Trade_BlackSmithing",1,true) and heading=="PROFESSION LEARNED!")
+        __rank=2; fire("SKILL_LINES_CHANGED")
+        assert(#character().events==1)
+        __cap=150; fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+        assert(character().events[2].data.title=="Journeyman")
+        assert(not character().events[2].data.learned)
+        __skills=0; fire("SKILL_LINES_CHANGED")
+        __skills=1; __cap=75; fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+        WoWStatusProgress.professionChanges(character(),true)
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+    ''')
+
+
+def test_existing_profession_is_silent_at_login():
+    runtime = make_lua(STUBS + '''
+        function GetNumSkillLines() return 1 end
+        function GetSkillLineInfo() return "Blacksmithing",nil,nil,1,0,0,75 end
+    ''')
+    runtime.execute('''
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==0)
+    ''')
