@@ -7,10 +7,9 @@ local examples = {
     {"loot", "Loot found"},
     {"death", "Death"}, {"zone", "New location"},
     {"quest", "100 quests achievement"}, {"profession", "Profession title promotion"},
-    {"lfg", "Looking for group"},
     {"dungeon", "First dungeon clear"}, {"mount", "First mount"},
     {"reputation", "Reputation promotion"}, {"unlock", "Major class unlock"},
-    {"pvp", "PvP rank promotion"}, {"discovery", "Discovery (spoiler hidden)"},
+    {"pvp", "PvP rank promotion"},
 }
 local function text(parent, value, x, y, width)
     local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")

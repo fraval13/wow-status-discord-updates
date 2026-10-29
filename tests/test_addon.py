@@ -474,7 +474,7 @@ def test_all_new_character_sharing_checkboxes_default_on(lua):
     assert lua.eval('character().enrolled') is True
     for section in ['fields', 'collection', 'announcements']:
         assert lua.eval(f"function() for _, enabled in pairs(character().settings.{section}) "
-                        "do if not enabled and _ ~= 'equipment' then return false end end return true end")()
+                        "do if not enabled and _ ~= 'equipment' and _ ~= 'lfg' and _ ~= 'discovery' then return false end end return true end")()
     assert lua.eval('character().settings.introduction_confirmed') is False
 
 
@@ -907,7 +907,7 @@ def test_game_reported_completed_quests_replaces_tracked_subset(lua):
 def test_every_notification_preview_is_local_and_has_icon(lua):
     lua.eval('SlashCmdList.WOWSTATUS')('previews')
     assert lua.eval('WoWStatusNotificationPreviews:IsShown()') is True
-    for index, kind in enumerate(['level','introduction','loot','death','zone','quest','profession','lfg']):
+    for index, kind in enumerate(['level','introduction','loot','death','zone','quest','profession']):
         lua.execute(f'function time() return {1793000000 + index * 7} end')
         lua.execute(f'WoWStatusNotificationPreviews.buttons.{kind}.OnClick()')
         assert lua.eval('WoWStatusLevelPopup:IsShown()') is True

@@ -77,6 +77,9 @@ def validate(payload):
         if not isinstance(values, dict):
             raise ValidationError(f'Invalid {key}')
         clean['settings'][key] = {k: values.get(k) is True for k in sorted(allowed)}
+    for section in ('collection', 'announcements'):
+        for removed in ('discovery', 'lfg'):
+            clean['settings'][section][removed] = False
     delivery = settings.get('discord_delivery', 'events')
     if delivery not in ('events', 'summary'):
         raise ValidationError('Invalid Discord delivery mode')
@@ -168,6 +171,8 @@ def validate(payload):
         data = event.get('data', {})
         if not isinstance(data, dict):
             raise ValidationError('Invalid event data')
+        if kind == 'dungeon' and data.get('source') != 'game_api':
+            continue
         filtered = {}
         if kind == 'introduction' and data.get('source') == 'group_enrollment':
             filtered = {'source': 'group_enrollment'}
@@ -210,6 +215,10 @@ def validate(payload):
             filtered = {'text': string(data.get('text'), 'milestone text', 160)}
             if data.get('source') in ('game_api', 'player_entered', 'collection', 'observed_ride'):
                 filtered['source'] = data['source']
+            if kind == 'dungeon' and 'instance_id' in data:
+                filtered['instance_id'] = integer(data['instance_id'], 'dungeon instance', 1, 1_000_000_000)
+                filtered['name'] = string(data.get('name'), 'dungeon name', 80)
+                filtered['text'] = 'First clear: ' + filtered['name']
             if kind == 'unlock' and 'spell_id' in data:
                 filtered['spell_id'] = integer(data['spell_id'], 'unlock spell', 1, 2_000_000_000)
             if kind == 'reputation' and 'standing' in data:
@@ -275,6 +284,10 @@ def validate(payload):
 
 
 def should_announce(settings, event):
+    if event['kind'] in ('discovery', 'lfg'):
+        return False
+    if event['kind'] == 'dungeon' and event['data'].get('source') != 'game_api':
+        return False
     if settings.get('discord_delivery') == 'summary':
         if event['kind'] == 'session':
             return False

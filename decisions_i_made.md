@@ -1,5 +1,29 @@
 # Decisions I made — 27 October 2026
 
+## Automatic announcements only — 0.12.1, 29 October
+
+Removed discovery sharing, manual dungeon reports and the older free-text LFG
+announcement path to keep friends' notifications focused on game progress.
+Their fields, buttons, toggles and previews are gone; the old slash commands
+explain that manual announcements were removed and queue nothing. Name/group
+setup fields remain because they configure identity and destinations.
+
+Dungeon announcements now come only from completion detection and include a game
+instance ID/name in a WSTATUS5 packet. Older dungeon packets cannot distinguish
+manual reports, so they are ignored along with all discovery/LFG packets. The
+new per-character dungeon cache seeds from existing game-detected history,
+excluding manual records. Clients without reliable completion APIs skip clears.
+
+Removed types are also blocked by server validation and announcement eligibility,
+including pending legacy deliveries. Existing received free-text activity cache
+entries are cleared during initialization; old Discord messages are untouched.
+This controls the standard addon paths, not cryptographic verification of peers.
+
+Validation: 185 tests passed, including auto dungeon delivery, rejected old
+packets, disabled commands/no milestone EditBoxes, and server rejection of old
+manual reports. Updated Vanilla/Forever ZIPs and local installation are prepared;
+GitHub push remains blocked by the previously observed SSH authentication issue.
+
 ## Friend milestones — 0.12.0, 29 October
 
 Added first dungeon clears, first mount, major reputation promotions, selected

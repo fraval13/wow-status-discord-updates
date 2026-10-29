@@ -5,7 +5,7 @@ local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests"}
-local kinds = {"introduction", "level", "loot", "death", "zone", "quest", "profession", "lfg", "dungeon", "mount", "reputation", "unlock", "pvp", "discovery"}
+local kinds = {"introduction", "level", "loot", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
@@ -20,9 +20,9 @@ local function defaults()
         fields = {level = true, class = true, race = true, faction = true, guild = true,
                   gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true},
         collection = {introduction = true, level = true, loot = true, equipment = false,
-                      death = true, zone = true, quest = true, profession = true, lfg = true},
+                      death = true, zone = true, quest = true, profession = true, lfg = false},
         announcements = {introduction = true, level = true, loot = true,
-                         equipment = false, death = true, zone = true, quest = true, profession = true, lfg = true},
+                         equipment = false, death = true, zone = true, quest = true, profession = true, lfg = false},
         loot_quality = 4, level_interval = 10,
     }
 end
@@ -53,6 +53,8 @@ local function queue(kind, data, fixed)
     if not current or not current.settings.enabled or not current.settings.collection[kind] then
         return
     end
+    if kind == "discovery" or kind == "lfg" then return end
+    if kind == "dungeon" and data.source ~= "game_api" then return end
     if kind == "introduction" and not current.settings.introduction_confirmed then return end
     current.sequence = (current.sequence or 0) + 1
     local id = fixed or (current.identity.guid .. ":" .. current.epoch .. ":" .. current.sequence)
@@ -232,7 +234,7 @@ local function showPanel(host)
         button(panel, "Groups", 324, -1396, 90, function() openSettings(true) end)
         panel.close = button(panel, "Close", 424, -1396, 110, function() panel:Hide() end)
         button(panel, "Preview toast", 24, -1436, 160, function() openSettings("previews") end)
-        button(panel, "Milestones / discovery", 210, -1436, 230, function() openSettings("milestones") end)
+        button(panel, "Milestones", 210, -1436, 230, function() openSettings("milestones") end)
         label(panel, "In-game level updates include every level, not only milestones.\n"
             .. "Loot follows /wstatus quality. Groups must be reachable in WoW.\n"
             .. "Local history and graphs work without Discord.", 24, -1310, 550)
@@ -450,10 +452,15 @@ local function initialize()
     current.settings.announcements.equipment = false
     current.settings.in_game = current.settings.in_game or {}
     current.settings.in_game.equipment = false
+    for _, removed in ipairs({"discovery", "lfg"}) do
+        current.settings.collection[removed]=false
+        current.settings.announcements[removed]=false
+        current.settings.in_game[removed]=false
+    end
     for _, field in ipairs({"deaths", "quests"}) do
         if current.settings.fields[field] == nil then current.settings.fields[field] = true end
     end
-    for _, kind in ipairs({"quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp", "discovery"}) do
+    for _, kind in ipairs({"quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}) do
         if current.settings.collection[kind] == nil then current.settings.collection[kind] = true end
         if current.settings.announcements[kind] == nil then current.settings.announcements[kind] = true end
     end
@@ -623,14 +630,8 @@ SlashCmdList.WOWSTATUS = function(message)
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
         else openSettings(true) end
     elseif command == "milestones" then openSettings("milestones")
-    elseif command == "discover" then
-        if not current.settings.enabled or not current.settings.collection.discovery then say("Enable discovery sharing first.");return end
-        if WoWStatusMilestones.discover(rest) then say("Discovery queued; details are hidden until friends reveal them in Group activity.")
-        else say("Use /wstatus discover <text> (up to 120 bytes; no chat links).") end
-    elseif command == "dungeon" then
-        if not current.settings.enabled or not current.settings.collection.dungeon then say("Enable dungeon sharing first.");return end
-        if WoWStatusMilestones.dungeon(rest,"player_entered") then say("First clear recorded and queued.")
-        else say("Use /wstatus dungeon <dungeon name>; duplicate clears are ignored.") end
+    elseif command == "discover" or command == "dungeon" or command == "lfg" then
+        say("Manual announcements have been removed. Milestones are detected automatically.")
     elseif command == "previews" then openSettings("previews")
     elseif command == "discord" then openSettings("discord")
     elseif command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
@@ -672,9 +673,6 @@ SlashCmdList.WOWSTATUS = function(message)
         current.professions = names
         snapshot()
         say("Shared profession labels updated. /reload to export.")
-    elseif command == "lfg" and #rest > 0 and #rest <= 200 then
-        queue("lfg", {text = rest})
-        say("LFG update requested; requires sharing and LFG storage.")
     else openSettings() end
 end
 

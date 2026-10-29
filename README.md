@@ -33,7 +33,7 @@ reload/logout and remains available through `/wstatus logs`, `graph` and `times`
 
 The in-game messages cover level-ups, consented introductions, selected loot,
 equipment changes, deaths, quest completions, profession skill-ups, zones and
-player-entered LFG messages. Login/logout session notices are not generated.
+automatic milestone notifications. Login/logout session notices are not generated.
 They contain compact event details, not a full remote inventory or talent profile.
 Loot uses the selected rarity threshold; level-up notifications do not use
 Discord's old milestone interval.
@@ -131,7 +131,7 @@ player-reported, not Battle.net ownership verification. Dungeon completion,
 quest chains, talents, profession recipe collection, mounts/pets, reputation and PvP
 remain separate unimplemented collectors; they are not inferred from zone entry.
 
-Milestones and voluntary discoveries are available under **WoW Status → Milestones**
+Automatic milestones are available under **WoW Status → Milestones**
 (`/wstatus milestones`). All notification types can be tried under **Notification
 previews**. See [in-game sharing](docs/LIVE_POPUPS.md) for detection and fallback
 behavior. Dungeon invitations are not included.

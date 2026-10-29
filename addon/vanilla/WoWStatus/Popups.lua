@@ -12,7 +12,6 @@ local ADDON_PREFIX = "WoWStatus"
 local rosterRequested = {}
 local activityPanel
 local refreshActivity
-local revealDiscoveries = false
 
 local function realm()
     local value = A.realmName()
@@ -38,6 +37,8 @@ local function canShare(character, event)
     if not (prefs and character and character.settings.enabled
         and (groupMode(character) or prefs.broadcast)) then return false end
     if not event then return true end
+    if event.kind == "discovery" or event.kind == "lfg" then return false end
+    if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     if not character.settings.collection[event.kind] then return false end
     if character.settings.in_game and character.settings.in_game[event.kind] == false then return false end
     if event.kind == "level" and not character.settings.fields.level then return false end
@@ -101,7 +102,7 @@ local function remember(item)
     if item.preview then return end
     prefs.activity = prefs.activity or {}
     table.insert(prefs.activity, 1, {sender = item.sender, level = item.level,
-        kind = item.kind or "level", text = item.text, at = time(), group_id = item.group_id})
+        kind = item.kind or "level", text = item.text, automatic = item.automatic, at = time(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
     if refreshActivity then refreshActivity() end
 end
@@ -178,7 +179,13 @@ function P.init(database, getter, reporter)
     prefs.trusted, prefs.seen = prefs.trusted or {}, prefs.seen or {}
     prefs.level_claims = prefs.level_claims or {}
     prefs.channel = prefs.channel or "WStatusFriends"
-    prefs.activity = prefs.activity or {}
+    local activity={}
+    for _, item in ipairs(prefs.activity or {}) do
+        if item.kind~="discovery" and item.kind~="lfg" and (item.kind~="dungeon" or item.automatic) then
+            table.insert(activity,item)
+        end
+    end
+    prefs.activity = activity
     if not database.in_game_primary then
         prefs.receive, prefs.broadcast = true, true
         database.in_game_primary = true
@@ -201,18 +208,30 @@ function P.receive(text, sender, channel)
     local selfKey = P.senderKey((A.playerName() or "") .. "-" .. realm())
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
-    local raw = false
+    local raw, automatic = false, false
     if not client then
         client,kind,atText,nonce,encoded = text:match("^WSTATUS4 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
         raw = client ~= nil
     end
+    if not client then
+        client,kind,atText,nonce,encoded = text:match("^WSTATUS5 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
+        raw,automatic = client~=nil,client~=nil
+    end
     if client then
-        local allowed = {introduction=true, loot=true, death=true, zone=true, quest=true, profession=true, lfg=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true, discovery=true}
+        local allowed = {introduction=true, loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find("[%c|]") then return false end
+        if automatic and kind~="dungeon" then return false end
+        if kind=="dungeon" then
+            if not automatic then return false end -- Old manual reports used WSTATUS4.
+            local id,name=detail:match("^(%d+) (.+)$")
+            id=tonumber(id)
+            if not id or id<1 or id>1000000000 or #name>80 then return false end
+            detail="First clear: " .. name
+        end
         -- Ignore older addon versions' per-quest and per-skill spam.
         if kind == "quest" and not detail:match("^Completed %d+ quests!$") then return false end
         if kind == "profession" and detail:match(": %d+ / %d+") then return false end
@@ -220,7 +239,7 @@ function P.receive(text, sender, channel)
         local duplicate = key .. ":" .. nonce
         if prefs.seen[duplicate] or #incoming >= 128 then return false end
         prefs.seen[duplicate] = now
-        local item = {sender=sender, key=key, kind=kind, text=detail, received_at=now,
+        local item = {sender=sender, key=key, kind=kind, text=detail, automatic=automatic, received_at=now,
             group_id=group ~= "legacy" and group or nil}
         remember(item)
         table.insert(incoming, item)
@@ -307,14 +326,12 @@ local function show(item, now)
         session={"Spell_Arcane_TeleportStormWind",.4,.7,1,"FRIEND UPDATE"},
         quest={"Achievement_Quests_Completed_08",1,.8,.2,"QUEST ACHIEVEMENT!"},
         profession={"Trade_Tailoring",.35,.85,1,"PROFESSION PROMOTION!"},
-        lfg={"INV_Misc_GroupLooking",.2,.85,1,"LOOKING FOR GROUP"},
         introduction={"Achievement_Character_Human_Male",.9,.75,.4,"WELCOME, ADVENTURER!"},
         dungeon={"Achievement_Dungeon_Deadmines",1,.75,.2,"FIRST DUNGEON CLEAR!"},
         mount={"Ability_Mount_RidingHorse",1,.8,.3,"A NEW ADVENTURE!"},
         reputation={"Achievement_Reputation_01",.3,.8,1,"REPUTATION MILESTONE!"},
         unlock={"INV_Misc_Book_07",.6,.4,1,"CLASS ABILITY UNLOCKED!"},
         pvp={"Achievement_PVP_A_01",1,.35,.2,"PVP PROMOTION!"},
-        discovery={"INV_Misc_Map_01",.3,1,.8,"A FRIEND FOUND SOMETHING!"},
     }
     local theme = themes[item.level and "level" or item.kind] or themes.session
     local icon = theme[1]
@@ -334,7 +351,7 @@ local function show(item, now)
     toast.heading:SetTextColor(theme[2], theme[3], theme[4]); toast.heading:SetText(theme[5])
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
-        or (item.kind == "discovery" and "Shared a discovery — reveal it in Group activity" or ((item.text or "Shared an update"):gsub("|", "||")))
+        or ((item.text or "Shared an update"):gsub("|", "||"))
     toast.message:SetText(name .. (item.level and " " or " — ") .. detail)
     toast.detail:SetText(item.preview and "Local preview — not sent or saved as progress"
         or ("Reported in " .. (item.group_id and ("group " .. ((WoWStatusGroups.selected(getCharacter())[item.group_id] or {}).label or item.group_id)) or "your legacy channel") .. " · player-reported"))
@@ -354,10 +371,9 @@ function P.preview(kind)
         introduction="Joined the group tracker", loot="Looted Robes of the Lich",
         death="Died — total tracked deaths: 15",
         zone="Entered Stranglethorn Vale", quest="Completed 100 quests!",
-        profession="Tailoring: Expert (225 max)", lfg="Looking for a Scarlet Monastery group",
+        profession="Tailoring: Expert (225 max)",
         dungeon="First clear: The Deadmines", mount="First mount: Brown Horse",
         reputation="Exalted with Ironforge", unlock="Unlocked Bear Form", pvp="Promoted to Sergeant",
-        discovery="A hidden cave with a mysterious chest",
     }
     if kind ~= "level" and not samples[kind] then return end
     if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
@@ -449,7 +465,7 @@ end
 local function eventText(event)
     local data = event.data or {}
     if event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
-        or event.kind == "unlock" or event.kind == "pvp" or event.kind == "discovery" then return data.text end
+        or event.kind == "unlock" or event.kind == "pvp" then return data.text end
     if event.kind == "introduction" then return "Joined the tracker" end
     if event.kind == "quest" then
         return data.completed and ("Completed " .. data.completed .. " quests!") or nil
@@ -458,7 +474,6 @@ local function eventText(event)
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end
-    if event.kind == "lfg" then return "LFG: " .. (data.text or "") end
     if event.kind == "loot" or event.kind == "equipment" then
         local item = data.item and data.item:match("%[([^%]]+)%]") or "an item"
         return (event.kind == "loot" and "Looted " or "Equipped ") .. item
@@ -468,7 +483,11 @@ function P.broadcast(character, event)
     if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
     local nonce = character.epoch .. "-" .. character.sequence
     local text
-    if event.kind == "level" then
+    if event.kind == "dungeon" then
+        local id,name=event.data.instance_id,event.data.name
+        if type(id)~="number" or id<1 or id>1000000000 or type(name)~="string" or #name>80 or name:find("[%c|]") then return end
+        text="WSTATUS5 " .. A.client_id .. " dungeon " .. event.at .. " " .. nonce .. " " .. id .. " " .. name
+    elseif event.kind == "level" then
         if event.data.level < 2 or event.data.level > A.max_level then return end
         text = "WSTATUS2 " .. A.client_id .. " LEVEL " .. event.data.level .. " " .. event.at .. " " .. nonce
     else
@@ -477,7 +496,7 @@ function P.broadcast(character, event)
         if not detail then return end
         detail = detail:gsub("[%c]", " ")
         local modern = event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
-            or event.kind == "unlock" or event.kind == "pvp" or event.kind == "discovery"
+            or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48
         if #detail > limit then
             detail = detail:sub(1, limit-3):gsub("[\194-\244][\128-\191]*$", "") .. "..."
@@ -522,7 +541,6 @@ refreshActivity = function()
         local group = item.group_id and WoWStatusGroups.selected(getCharacter())[item.group_id]
         if group or not item.group_id then
             local detail = item.level and ("reached level " .. item.level) or item.text or "shared an update"
-            if item.kind == "discovery" and not revealDiscoveries then detail="Discovery shared (spoiler hidden)" end
             local text = WoWStatusHistory.oslo(item.at) .. " · " .. item.sender .. " — " .. detail
                 .. (group and (" [" .. group.label .. "]") or "")
             table.insert(lines, (text:gsub("|", "||")))
@@ -556,14 +574,14 @@ function P.showActivity()
         activityPanel.text = activityLabel(activityPanel.child, "", 0, 0, 620)
         for i, entry in ipairs({{"Refresh", function() refreshActivity() end},
             {"Diagnostics", function() P.command("status") end},
-            {"Reveal discoveries", function() revealDiscoveries=not revealDiscoveries;refreshActivity() end}, {"Close", function() activityPanel:Hide() end}}) do
+            {"Close", function() activityPanel:Hide() end}}) do
             local button = CreateFrame("Button", nil, activityPanel, "UIPanelButtonTemplate")
             button:SetPoint("TOPLEFT", 24 + (i - 1) * 160, -515); button:SetSize(140, 28)
             button:SetText(entry[1]); button:SetScript("OnClick", entry[2])
         end
         table.insert(UISpecialFrames, "WoWStatusActivity")
     end
-    revealDiscoveries=false;refreshActivity(); activityPanel:Show()
+    refreshActivity(); activityPanel:Show()
 end
 
 function P.command(text)

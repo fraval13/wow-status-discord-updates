@@ -10,7 +10,7 @@ local unlocks = {
 local function state()
     character.milestones = character.milestones or {}
     local value = character.milestones
-    value.dungeons, value.reputation, value.unlocks = value.dungeons or {}, value.reputation or {}, value.unlocks or {}
+    value.automatic_dungeons, value.reputation, value.unlocks = value.automatic_dungeons or {}, value.reputation or {}, value.unlocks or {}
     return value
 end
 local function clean(text, maximum)
@@ -124,20 +124,21 @@ local function instance()
     local ok, name, kind, _, _, _, _, _, id = pcall(GetInstanceInfo)
     if ok and S.string(kind)=="party" then return S.string(name), S.number(id) end
 end
-function M.dungeon(name, source)
+local function recordDungeon(name, id)
     name=clean(name,80)
-    if not name then return false end
+    id=S.number(id)
+    if not name or not id or id<1 or id>1000000000 then return false end
     local value=state()
     local key=name:lower()
-    if value.dungeons[key] then return false end
-    value.dungeons[key]=true
-    emit("dungeon", {text="First clear: " .. name, source=source or "player_entered"})
+    if value.automatic_dungeons[key] then return false end
+    value.automatic_dungeons[key]=true
+    emit("dungeon", {text="First clear: " .. name, name=name, instance_id=id, source="game_api"})
     return true
 end
 function M.checkDungeon(event, ...)
-    local name=instance()
-    if not name then return end
-    if event=="LFG_COMPLETION_REWARD" then M.dungeon(name,"game_api"); return end
+    local name,id=instance()
+    if not name or not id then return end
+    if event=="LFG_COMPLETION_REWARD" then recordDungeon(name,id); return end
     if event=="ENCOUNTER_END" then
         local _, _, _, _, success = ...
         if S.number(success)~=1 then return end
@@ -150,16 +151,17 @@ function M.checkDungeon(event, ...)
         local _, _, killed = S.call(GetInstanceLockTimeRemainingEncounter,index)
         if killed~=true then return end
     end
-    M.dungeon(name,"game_api")
-end
-function M.discover(text)
-    text=clean(text,120)
-    if not text then return false end
-    emit("discovery", {text=text, source="player_entered"})
-    return true
+    recordDungeon(name,id)
 end
 function M.init(current, callback, reporter)
     character,emit,report=current,callback,reporter
+    local value=state()
+    for _, event in ipairs(current.history and current.history.events or {}) do
+        if event.kind=="dungeon" and event.data.source=="game_api" then
+            local name=event.data.name or (event.data.text or ""):match("^First clear: (.+)$")
+            if name then value.automatic_dungeons[name:lower()]=true end
+        end
+    end
     M.scanUnlocks(true); M.scanReputation(true); M.scanPvp(true); M.scanMount(true)
 end
 function M.event(event,...)
@@ -193,42 +195,20 @@ end
 function M.show(host)
     if not panel then
         panel=CreateFrame("Frame","WoWStatusMilestoneSettings",UIParent)
-        panel:SetSize(600,750)
+        panel:SetSize(600,460)
         local bg=panel:CreateTexture(nil,"BACKGROUND");bg:SetAllPoints();bg:SetColorTexture(.025,.035,.065,.98)
-        label(panel,"Milestones and discoveries",24,-20)
+        label(panel,"Automatic milestones",24,-20)
         label(panel,"First dungeon clears, first mount, reputation promotions,\nmajor class unlocks and PvP promotions join the notification queue.\nExisting progress is baselined silently on login.\nAutomatic detection depends on your client's available APIs.",24,-64)
-        label(panel,"Share a discovery (details hidden on the toast)",24,-180)
-        panel.discovery=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
-        panel.discovery:SetPoint("TOPLEFT",30,-218);panel.discovery:SetSize(530,32)
-        panel.discovery:SetAutoFocus(false);panel.discovery:SetMaxLetters(120)
-        button(panel,"Share discovery",24,-264,200,function()
-            if not character.settings.enabled or not character.settings.collection.discovery then report("Enable discovery sharing first.");return end
-            if M.discover(panel.discovery:GetText()) then panel.discovery:SetText("");report("Discovery queued. Friends can read details in Group activity.")
-            else report("Enter discovery text without chat links or control characters (up to 120 bytes).") end
-        end)
-        label(panel,"Record a first dungeon clear",24,-328)
-        label(panel,"Use this after a clear when the client has no completion API.\nEnter the dungeon name; each dungeon is recorded once.\nYour completion report is shared with your groups.",24,-364)
-        panel.dungeon=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
-        panel.dungeon:SetPoint("TOPLEFT",30,-444);panel.dungeon:SetSize(530,32)
-        panel.dungeon:SetAutoFocus(false);panel.dungeon:SetMaxLetters(80)
-        button(panel,"Record first clear",24,-490,200,function()
-            if not character.settings.enabled or not character.settings.collection.dungeon then report("Enable dungeon sharing first.");return end
-            if M.dungeon(panel.dungeon:GetText(),"player_entered") then report("First clear queued.")
-            else report("Enter a new dungeon name; already recorded clears are not repeated.") end
-        end)
-        label(panel,"Loot rarity filter (also available with /wstatus quality)",24,-554)
-        button(panel,"Rare + epic loot",24,-594,210,function() character.settings.loot_quality=3;report("Rare and epic loot notifications enabled.") end)
-        button(panel,"Epic loot only",260,-594,210,function() character.settings.loot_quality=4;report("Epic loot notifications enabled.") end)
-        label(panel,"Preview every notification in Notification previews.\nDiscoveries are voluntary; avoid sharing story spoilers unprompted.",24,-650)
-        panel.close=button(panel,"Close",424,-704,140,function() panel:Hide() end)
+        label(panel,"Announcements are generated from game events.\nDungeon clears require a completion signal; unsupported clients\nskip them. There are no manual announcement fields.",24,-180)
+        label(panel,"Loot rarity filter (also available with /wstatus quality)",24,-286)
+        button(panel,"Rare + epic loot",24,-326,210,function() character.settings.loot_quality=3;report("Rare and epic loot notifications enabled.") end)
+        button(panel,"Epic loot only",260,-326,210,function() character.settings.loot_quality=4;report("Epic loot notifications enabled.") end)
+        label(panel,"Preview notifications locally in Notification previews.",24,-380)
+        panel.close=button(panel,"Close",424,-416,140,function() panel:Hide() end)
     end
     panel:SetParent(host or UIParent);panel:ClearAllPoints();panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel:SetFrameStrata(host and host:GetFrameStrata() or "FULLSCREEN_DIALOG")
     if host then panel:SetFrameLevel(host:GetFrameLevel()+1) end
-    if panel.dungeon:GetText()=="" then
-        local name=instance()
-        if name then panel.dungeon:SetText(name) end
-    end
     panel:Show()
 end

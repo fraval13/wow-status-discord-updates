@@ -38,6 +38,8 @@ function H.duration(seconds)
 end
 
 local function allowed(character, event)
+    if event.kind == "discovery" or event.kind == "lfg" then return false end
+    if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     local settings = character.settings
     if not settings.enabled or not settings.collection[event.kind] then return false end
     if event.kind == "level" and not settings.fields.level then return false end
