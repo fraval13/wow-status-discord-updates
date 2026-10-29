@@ -35,3 +35,22 @@ After publication check `/`, both ZIP downloads and their contents, the release
 manifest, both existing group `/health` endpoints, and an unknown group URL.
 When publishing a future release, update the displayed release notes in
 `index.html`, rebuild with its addon revision, then republish.
+
+## Automatic releases
+
+The **Checks and addon packages** workflow builds this site on both test platforms.
+CI addon artifacts use the very same ZIPs as the site. The deployment job rebuilds
+for its exact commit and includes the public output in its private deployment tar.
+`deploy/make_release.py` refuses a stale homepage revision.
+
+The root-owned receiver verifies the public manifest, checksums, ZIPs and displayed
+version against the incoming addon TOCs before activation. Once both application
+health checks pass, it switches the public symlink to the sealed release's
+`public-homepage/` directory. A failed build/health check leaves the old site and
+downloads in place; the receiver also retains the old symlink for rollback.
+The constant Caddy document-root path needs no reload for these later releases.
+
+Version text and sizes are filled automatically from the addon release metadata.
+When changing the addon, bump the TOC/project version as usual; do not edit version
+labels by hand on the website. The pipeline runs on pushed `main` commits or manual
+workflow dispatches. Local commits alone cannot trigger GitHub Actions.

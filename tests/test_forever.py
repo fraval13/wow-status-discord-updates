@@ -123,3 +123,76 @@ def test_each_client_is_a_complete_folder_with_identical_shared_files():
         assert (folder / adapter).exists()
         for source in shared:
             assert (folder / source.name).read_bytes() == source.read_bytes()
+
+
+def test_forever_professions_use_namespaced_skill_api_without_classic_globals(forever_lua):
+    lua = forever_lua
+    lua.execute('''
+        GetProfessions=nil;GetProfessionInfo=nil
+        GetNumSkillLines=nil;GetSkillLineInfo=nil;GetSpellInfo=nil
+        __learned=false;__maximum=75
+        C_SkillInfo={GetSkillLineInfoByID=function(id)
+            if id==164 and __learned then
+                return {skillID=164,name="Blacksmithing",rank=1,maxRank=__maximum,isHeader=false}
+            end
+        end}
+        fire("PLAYER_LOGIN")
+        __learned=true;fire("SKILL_LINES_CHANGED")
+        assert(#character().events==1)
+        assert(character().events[1].data.learned)
+        assert(character().snapshot.professions[1].name=="Blacksmithing")
+        __maximum=150;fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2 and character().events[2].data.title=="Journeyman")
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+        C_SkillInfo.GetSkillLineInfoByID=function() return __secret end
+        fire("SKILL_LINES_CHANGED")
+        assert(#character().events==2)
+    ''')
+
+
+def test_forever_respects_realm_addon_message_restrictions(forever_lua):
+    lua=forever_lua
+    lua.execute('''
+        C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return true end
+        assert(WoWStatusAdapter.chatRestricted())
+        C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return __secret end
+        assert(WoWStatusAdapter.chatRestricted())
+        C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return false end
+        assert(not WoWStatusAdapter.chatRestricted())
+        __restricted=true
+        assert(WoWStatusAdapter.chatRestricted())
+    ''')
+
+
+def test_forever_pvp_uses_client_rank_points_and_season_baselines(forever_lua):
+    lua=forever_lua
+    lua.execute('''
+        UnitPVPRank=nil;GetPVPRankInfo=nil
+        __rank=0;__season=1
+        C_MajorFactions={GetMajorFactionProgressionInfo=function(id)
+            assert(id==2800)
+            return {renownLevel=__rank}
+        end}
+        Enum={PvPRanks={Rank_1=5}}
+        function GetCurrentArenaSeason() return __season end
+        function UnitSex() return 2 end
+        function GetText(key,sex)
+            assert(sex==2)
+            return ({PVP_RANK_5_1="Private",PVP_RANK_6_1="Corporal"})[key]
+        end
+        fire("PLAYER_LOGIN")
+        assert(#character().events==0)
+        __rank=1;fire("MAJOR_FACTION_RENOWN_LEVEL_CHANGED",2800,1)
+        assert(#character().events==1 and character().events[1].data.text=="Promoted to Private")
+        fire("UPDATE_FACTION")
+        assert(#character().events==1)
+        __rank=2;fire("UPDATE_FACTION")
+        assert(#character().events==2 and character().events[2].data.text=="Promoted to Corporal")
+        __season=2;__rank=0;fire("UPDATE_FACTION")
+        assert(#character().events==2)
+        __rank=1;fire("UPDATE_FACTION")
+        assert(#character().events==3)
+        __rank=__secret;fire("UPDATE_FACTION")
+        assert(#character().events==3)
+    ''')

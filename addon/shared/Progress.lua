@@ -34,7 +34,23 @@ local function readProfessions()
         end
         names[name or definition[3]], ids[definition[2]] = key, key
     end
-    if GetProfessions and GetProfessionInfo then
+    if C_SkillInfo and C_SkillInfo.GetSkillLineInfoByID then
+        -- Forever's modern API returns structures rather than Classic tuples.
+        -- Query known skill IDs directly so collapsed UI headers do not hide them.
+        local available = false
+        for key, definition in pairs(knownProfessions) do
+            local ok, info = pcall(C_SkillInfo.GetSkillLineInfoByID, definition[2])
+            info = S.value(info)
+            if ok then available = true end
+            if ok and type(info)=="table" then
+                local name, rank, maximum = S.string(info.name),S.number(info.rank),S.number(info.maxRank)
+                if name and rank and rank>0 and maximum and maximum>1 and S.value(info.isHeader)==false then
+                    table.insert(result,{name=name,skill=rank,max_skill=maximum,key=key,source="game_api"})
+                end
+            end
+        end
+        if not available then return nil end
+    elseif GetProfessions and GetProfessionInfo then
         local ok, a,b,c,d,e,f = pcall(GetProfessions)
         if not ok then return nil end
         for _, rawIndex in pairs({a,b,c,d,e,f}) do

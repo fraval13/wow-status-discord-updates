@@ -73,12 +73,21 @@ function M.scanReputation(baseline)
     end
 end
 function M.scanPvp(baseline)
-    local raw = S.number(S.call(UnitPVPRank,"player"))
-    if not raw then return end
-    local name, rank = S.call(GetPVPRankInfo,raw,"player")
+    local name, rank, season
+    if WoWStatusAdapter.pvpRank then name,rank,season=WoWStatusAdapter.pvpRank()
+    else
+        local raw = S.number(S.call(UnitPVPRank,"player"))
+        if not raw then return end
+        if raw==0 then rank=0 else name,rank=S.call(GetPVPRankInfo,raw,"player") end
+    end
     name, rank = S.string(name), S.number(rank)
     local value = state()
-    if raw==0 or rank==0 then
+    if not rank then return end
+    if season and value.pvp_season~=season then
+        value.pvp_season,value.pvp_rank=season,rank
+        return -- A new season starts from a quiet, current baseline.
+    end
+    if rank==0 then
         value.pvp_rank=value.pvp_rank or 0
         return
     end
@@ -167,14 +176,15 @@ end
 function M.event(event,...)
     if not character then return end
     local baseline=not character.settings.enabled
-    if event=="UPDATE_FACTION" then M.scanReputation(baseline)
+    if event=="UPDATE_FACTION" then M.scanReputation(baseline);if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
+    elseif event=="MAJOR_FACTION_RENOWN_LEVEL_CHANGED" then if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
     elseif event=="PLAYER_PVP_RANK_CHANGED" or event=="HONOR_XP_UPDATE" then M.scanPvp(baseline)
     elseif event=="SPELLS_CHANGED" or event=="LEARNED_SPELL_IN_TAB" then M.scanUnlocks(baseline)
     elseif event=="NEW_MOUNT_ADDED" or event=="COMPANION_LEARNED" or event=="PLAYER_MOUNT_DISPLAY_CHANGED" then M.scanMount(baseline,event)
     elseif not baseline and (event=="LFG_COMPLETION_REWARD" or event=="ENCOUNTER_END" or event=="BOSS_KILL") then M.checkDungeon(event,...) end
 end
 local frame=CreateFrame("Frame")
-for _, event in ipairs({"UPDATE_FACTION","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPDATE","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB",
+for _, event in ipairs({"UPDATE_FACTION","MAJOR_FACTION_RENOWN_LEVEL_CHANGED","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPDATE","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB",
     "NEW_MOUNT_ADDED","COMPANION_LEARNED","PLAYER_MOUNT_DISPLAY_CHANGED","LFG_COMPLETION_REWARD","ENCOUNTER_END","BOSS_KILL"}) do
     if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event) then
         pcall(frame.RegisterEvent,frame,event)

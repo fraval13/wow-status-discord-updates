@@ -1,41 +1,52 @@
-# Forever version: implemented, in-game validation pending
+# Forever compatibility audit — 29 October 2026
 
-There are now two standalone addons:
+Forever uses the modern/Mainline API family. It is not a Classic Era client with
+an updated version label, nor does that make it interchangeable with Retail.
+Our separate Forever addon targets interface 16001 and the Camelot project ID.
 
-- `addon/vanilla/WoWStatus` for Vanilla Classic / Classic Era.
-- `addon/forever/WoWStatus` for Forever / Camelot.
+The [guide supplied by the user](https://classicwowforever.com/guides/wow-forever-addons-api-compatibility/)
+was the starting point. Code/signatures were checked against Blizzard's client UI
+and generated API documentation mirrored at Gethe/wow-ui-source, pinned to
+`ca8368f2f2380cbe696854f7f2646387c278a61b` on the `forever` branch. The older
+[captured client API](https://github.com/Thunderz96/forever-addon-kit/blob/main/data/forever_api.json)
+was used only as an additional early-beta comparison; it cannot establish current
+availability or in-game behavior.
 
-See [edition structure and installation](ADDON_EDITIONS.md). The shared companion
-and service accept `classic-era` and `forever` uploads as separate character
-identities. The Forever package includes its own adapter and TOC; it is more than
-a metadata change to the Vanilla version. No addon was run on the work computer.
+| Area | Evidence and WoW Status behavior |
+| --- | --- |
+| Client detection | The client's [Camelot constants](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_ProjectConstants/Camelot/ProjectConstants.lua) define project ID 18. Our existing adapter handles that, requires the 160xx interface family, and retains the earlier Mainline-project fallback. Retail and Classic Era remain separate. |
+| Items and first equips | Uses `C_Item.GetItemInfo` / `GetItemInfoInstant`, with public-value checks and deferred item-data resolution. Signatures checked against [ItemDocumentation](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_APIDocumentationGenerated/ItemDocumentation.lua). |
+| Professions | Added `C_SkillInfo.GetSkillLineInfoByID`, reading its structure fields `name`, `rank`, `maxRank`, `isHeader`. Queries known profession skill IDs independently of collapsed headers. The previous path relied on globals; some early snapshots still exported profession globals, so their presence cannot be assumed either way. [SkillInfoDocumentation](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_APIDocumentationGenerated/SkillInfoDocumentation.lua) is the signature source. |
+| PvP ranks | Added Forever's rank-points faction 2800 through `C_MajorFactions.GetMajorFactionProgressionInfo`. Its `renownLevel` and localized rank text follow the client's own [PVPRankFrame](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_UIPanels_Game/Camelot/PVPRankFrame.lua). Season changes establish a quiet baseline. The old Classic rank globals are retained for the Vanilla adapter only. |
+| Group messages and catch-up | Uses `C_ChatInfo` addon whispers and its channel roster. Added the explicit realm-wide outgoing-message restriction check alongside messaging lockdown. [ChatInfoDocumentation](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_APIDocumentationGenerated/ChatInfoDocumentation.lua) describes both controls. Existing throttling and secret-value handling remain. |
+| Quest totals | Existing `C_QuestLog.GetAllCompletedQuestIDs` matches [QuestLogDocumentation](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_APIDocumentationGenerated/QuestLogDocumentation.lua). Individual observations and hundred-quest milestones remain separate. |
+| Major spell unlocks | Existing `C_Spell` and `C_SpellBook.IsSpellKnown` fallbacks match the modern [SpellBook documentation](https://github.com/Gethe/wow-ui-source/blob/ca8368f2f2380cbe696854f7f2646387c278a61b/Interface/AddOns/Blizzard_APIDocumentationGenerated/SpellBookDocumentation.lua). The curated gameplay spell IDs still require live Forever checks. |
+| UI and restricted values | Uses the modern Settings categories when available. Secret/unreadable identity and values are omitted or deferred; they are not converted into strings or fabricated replacement values. Unknown optional events are guarded. |
 
-The Forever adapter is authored against:
+## What this establishes
 
-- [Blizzard's mirrored Forever API documentation](https://github.com/Gethe/wow-ui-source/tree/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated)
-- [Camelot project constants](https://raw.githubusercontent.com/Gethe/wow-ui-source/forever/Interface/AddOns/Blizzard_ProjectConstants/Camelot/ProjectConstants.lua)
-- [Unit API and level events](https://raw.githubusercontent.com/Gethe/wow-ui-source/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated/UnitDocumentation.lua)
-- [Modern item API](https://raw.githubusercontent.com/Gethe/wow-ui-source/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated/ItemDocumentation.lua)
-- [Chat API and restrictions](https://raw.githubusercontent.com/Gethe/wow-ui-source/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated/ChatInfoDocumentation.lua)
-- [Line drawing API](https://raw.githubusercontent.com/Gethe/wow-ui-source/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated/SimpleLineAPIDocumentation.lua)
+The basic design fits Forever: friends' progress, an activity log, notifications
+and ordinary out-of-restriction addon messaging. The mock tests exercise client
+detection, restricted identity, modern item calls, modern-only skill calls, PvP
+rank changes/season resets and realm/chat restrictions. The character-switch
+history fix applies to both addon editions.
 
-It detects the Forever client, uses modern item/chat calls, skips secret values,
-waits for public player identity, and keeps edition identity in exports and popup
-packets. The common UI, group routing, persisted history and level graph ship in
-both folders. Documentation presence does not certify actual client behavior.
+This is an API/source audit and mocked testing, not live Forever acceptance. A
+function's existence is not proof that its return value is available in every
+situation. Communication must obey the client's realm/faction/instance/security
+rules. A group ID cannot override them. Dungeon completion still requires a
+supported authoritative completion signal. Vanilla and Forever intentionally do
+not share messages with each other.
 
-Still required at home:
+## Live check before calling Forever verified
 
-1. Verify the installed Forever interface number and correct addon loading.
-2. Prove SavedVariables survives reload, logout and a full client restart.
-3. Confirm the player's GUID remains stable across sessions and is readable when
-   collection starts. Do not bypass obfuscation/restrictions if it is unavailable.
-4. Test real levels, loot metadata, equipment and optional profile fields.
-5. Test scroll/edit/line UI behavior and group ID casing in the actual client.
-6. Confirm channel joining and messaging, especially combat/instance restrictions
-   and realm/faction reachability. A successful API call is not a delivery receipt.
-7. Compare JSON histories for Vanilla and Forever and verify no identity mixing.
-
-Mocked API tests, Python/server tests and deployment checks cannot prove these
-in-game results. The implementation is available for testing, not advertised as
-verified Forever compatibility. TBC support has not been added.
+1. Install the Forever ZIP in the correct client and verify it loads at login.
+2. With two subscribed players, set the same group ID; test a level and first
+   eligible armor equip out in the world. Confirm the remote popup and log.
+3. Learn a profession, then a higher title; confirm its skill snapshot and events.
+4. Test a PvP rank change; existing ranks should stay quiet on login.
+5. Log out normally, restart and verify groups, settings and history persisted.
+6. Switch one player to a new character. Confirm retained shared history and
+   missing entries catch up, without replaying old notifications.
+7. Compare allowed world/instance/combat behavior and `/wstatus popup status`.
+   A blocked restriction state is not an invitation to bypass it.

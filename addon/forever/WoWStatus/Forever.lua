@@ -65,9 +65,26 @@ end
 function A.chatRestricted()
     -- Missing/secret restriction state is treated as unavailable, never a bypass opportunity.
     if not C_ChatInfo or not C_ChatInfo.InChatMessagingLockdown then return true end
+    if C_ChatInfo.AreOutgoingAddonChatMessagesRestricted
+        and S.call(C_ChatInfo.AreOutgoingAddonChatMessagesRestricted) ~= false then return true end
     return S.call(C_ChatInfo.InChatMessagingLockdown) ~= false
 end
 function A.chatSender()
     -- Do not depend on the deprecated SendChatMessage global/shim on the modern client.
     return C_ChatInfo and C_ChatInfo.SendChatMessage
+end
+function A.pvpRank()
+    -- Mirrors the Forever client UI's rank-points faction, not Classic's removed globals.
+    local info = S.value(S.call(C_MajorFactions and C_MajorFactions.GetMajorFactionProgressionInfo,2800))
+    if type(info)~="table" then return nil end
+    local rank = S.number(info.renownLevel)
+    local season = S.number(S.call(GetCurrentArenaSeason))
+    if not rank or rank<0 or rank>100 or rank~=math.floor(rank) then return nil end
+    if rank==0 then return nil,0,season end
+    local first = S.number(Enum and Enum.PvPRanks and Enum.PvPRanks.Rank_1)
+    local faction = S.stringCall(UnitFactionGroup,"player")
+    local sex = S.number(S.call(UnitSex,"player"))
+    if not first or (faction~="Alliance" and faction~="Horde") or not sex then return nil end
+    local key = "PVP_RANK_"..(first+rank-1).."_"..(faction=="Alliance" and 1 or 0)
+    return S.stringCall(GetText,key,sex),rank,season
 end

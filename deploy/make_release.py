@@ -8,6 +8,10 @@ import tarfile
 from pathlib import Path
 
 revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+homepage = Path('dist/homepage')
+manifest = json.loads((homepage / 'downloads/release.json').read_text())
+if manifest.get('addon_revision') != revision:
+    raise ValueError('Rebuild the homepage for the exact revision being deployed')
 archive = subprocess.check_output(['git', 'archive', '--format=tar', revision])
 config = {group: {key: os.environ.get(f'{group.upper()}_DISCORD_{suffix}', '')
                   for key, suffix in [('bot_token', 'BOT_TOKEN'), ('guild_id', 'GUILD_ID'),
@@ -22,3 +26,8 @@ with tarfile.open(path, 'a') as output:
         info = tarfile.TarInfo(name)
         info.size, info.mode = len(content), 0o600
         output.addfile(info, io.BytesIO(content))
+    for source in sorted(homepage.rglob('*')):
+        if source.is_symlink():
+            raise ValueError('Homepage may not contain symlinks')
+        if source.is_file():
+            output.add(source, arcname='.deploy/HOMEPAGE/' + source.relative_to(homepage).as_posix(), recursive=False)

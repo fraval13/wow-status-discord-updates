@@ -940,14 +940,15 @@ def test_race_and_sex_are_collected_together_and_unknown_sex_is_omitted(lua):
 
 
 @pytest.mark.parametrize("has_event_validator", [False, True])
-def test_removed_legacy_quest_event_does_not_abort_addon_startup(has_event_validator):
+@pytest.mark.parametrize("missing_event", ["QUEST_QUERY_COMPLETE", "PLAYER_UNGHOST"])
+def test_removed_legacy_quest_event_does_not_abort_addon_startup(has_event_validator, missing_event):
     stubs = STUBS.replace(
         'function methods:RegisterEvent(name)',
         'function methods:RegisterEvent(name)\n'
-        '    if name == "QUEST_QUERY_COMPLETE" then error("Unknown event") end',
+        f'    if name == "{missing_event}" then error("Unknown event") end',
     )
     if has_event_validator:
-        stubs += '\nC_EventUtils = {IsEventValid=function(name) return name ~= "QUEST_QUERY_COMPLETE" end}'
+        stubs += f'\nC_EventUtils = {{IsEventValid=function(name) return name ~= "{missing_event}" end}}'
     runtime = make_lua(stubs)
     assert runtime.eval('character().identity.name') == 'Thora'
     assert runtime.eval('type(SlashCmdList.WOWSTATUS)') == 'function'

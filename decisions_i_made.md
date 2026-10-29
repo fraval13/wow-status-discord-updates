@@ -1,5 +1,43 @@
 # Decisions I made — 27 October 2026
 
+## Account history, automatic website packages and Forever audit — 0.14.6
+
+- Fixed the character-switch sync cutoff. Group names were account-wide, while
+  sync used each character's fresh joined_at. Added account_group_joined_at and
+  use it consistently for history requests, offers and relays. Older saves seed
+  it from the earliest retained character membership. Character-specific export
+  join times remain unchanged. Removing/rejoining a group resets its account
+  boundary; unrelated groups and pre-membership records remain excluded.
+- Added fresh-runtime relog tests preserving SavedVariables: a new alt can fetch
+  missed older events and relay the account's retained entries. Catch-up remains
+  quiet. Private actions, selected rarities, seven-day/retention limits and which
+  peers have copies still mean users' entire logs need not be identical.
+- Removed the requested non-shared-events sentence from the homepage FAQ and
+  removed the similar profession/reequip asides from the feature descriptions.
+- The checks workflow now builds the homepage and its exact addon ZIPs. Those
+  ZIPs are also CI artifacts. The deploy job embeds the public site in the private
+  release archive. The root receiver validates revision, checksums, ZIPs, TOCs and
+  displayed version before publishing the complete site with an atomic symlink
+  after both services pass health checks. Failed releases leave old downloads
+  available. Website version/file sizes come automatically from addon metadata.
+- The receiver's fixed permissions are extended to this project's public symlink;
+  key/sudo restrictions remain unchanged. The privileged script is upgraded by
+  root maintenance, never by executing an incoming root script. Existing server
+  config and prior releases remain for rollback. GitHub Actions still requires
+  pushing the local commits; a local commit cannot start the hosted workflow.
+- Researched the supplied Forever guide and audited Blizzard's mirrored Forever
+  client API/UI source at ca8368f2f2380cbe696854f7f2646387c278a61b. It uses the
+  modern/Mainline API family. Existing separate adapter/client detection, modern
+  item/chat calls and secret-value checks fit that architecture.
+- Added modern C_SkillInfo profession reads and Forever's actual PvP progression
+  path (rank-points faction 2800), including localized title and season baselines.
+  Added the explicit realm-wide addon-message restriction check. Tests remove
+  the Classic globals and exercise modern-only APIs, restrictions and secrets.
+  Full evidence and remaining live checks are in docs/FOREVER_COMPATIBILITY.md.
+- API availability and mock tests do not establish full live Forever support.
+  Client restrictions, gameplay spell IDs and authoritative dungeon signals still
+  need real-client acceptance. No restriction bypass or replacement ID is used.
+
 ## Addon homepage — 29 October 2026
 
 - Published https://wow.frankvalde.com/ on the existing server, as requested.

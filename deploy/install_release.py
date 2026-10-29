@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 """Root-owned deployment receiver. Its authority is limited to this project's fixed paths."""
-import io
 import fcntl
+import hashlib
+import io
 import json
 import os
 import pwd
@@ -13,11 +14,13 @@ import tarfile
 import tempfile
 import time
 import urllib.request
+import zipfile
 from pathlib import Path, PurePosixPath
 
 BASE = Path('/opt/wow-character-status')
 CONFIG = Path('/etc/wow-character-status')
 GROUPS = {'ronkalot': 18081, 'navsquad': 18082}
+HOMEPAGE = Path('/srv/wow-status-homepage')
 LIMIT = 64 * 1024 * 1024
 
 
@@ -55,6 +58,47 @@ def healthy(port, revision):
         return False
 
 
+def prepare_homepage(stage, revision):
+    """Check the public payload before making it part of a sealed release."""
+    public = stage / '.deploy/HOMEPAGE'
+    manifest = json.loads((public / 'downloads/release.json').read_text())
+    if manifest.get('addon_revision') != revision:
+        raise ValueError('Homepage revision does not match application release')
+    html = (public / 'index.html').read_text()
+    for edition in ('vanilla', 'forever'):
+        item = manifest['editions'][edition]
+        filename = f'WoWStatus-{edition}.zip'
+        if item['file'] != filename:
+            raise ValueError('Unexpected public download path')
+        archive = public / 'downloads' / filename
+        if (archive.stat().st_size != item['bytes'] or
+                hashlib.sha256(archive.read_bytes()).hexdigest() != item['sha256']):
+            raise ValueError('Public addon checksum mismatch')
+        toc_path = 'WoWStatus/WoWStatus.toc'
+        expected = (stage / 'addon' / edition / toc_path).read_bytes()
+        with zipfile.ZipFile(archive) as package:
+            if (sum(info.file_size for info in package.infolist()) > LIMIT or
+                    any(not name.startswith('WoWStatus/') or '..' in PurePosixPath(name).parts
+                        for name in package.namelist()) or package.testzip() is not None or
+                    package.read(toc_path) != expected):
+                raise ValueError('Invalid public addon ZIP')
+        version = re.search(r'^## Version: ([\w.\-]+)$', expected.decode(), re.MULTILINE).group(1)
+        if item['version'] != version or f'VERSION {version}' not in html:
+            raise ValueError('Homepage version does not match addon')
+    target = stage / 'public-homepage'
+    public.rename(target)
+    return target
+
+
+def switch_homepage(target):
+    HOMEPAGE.mkdir(mode=0o755, parents=True, exist_ok=True)
+    HOMEPAGE.chmod(0o755)  # The receiver's private umask must not hide public files.
+    swap = HOMEPAGE / '.next'
+    swap.unlink(missing_ok=True)
+    swap.symlink_to(target)
+    swap.replace(HOMEPAGE / 'current')
+
+
 def main():
     if os.geteuid() != 0:
         raise SystemExit('Receiver requires the dedicated sudo rule')
@@ -67,9 +111,11 @@ def main():
     releases = BASE / 'releases'
     stage = Path(tempfile.mkdtemp(prefix='.incoming-', dir=releases))
     old_target = (BASE / 'current').resolve() if (BASE / 'current').exists() else None
+    old_homepage = (HOMEPAGE / 'current').resolve() if (HOMEPAGE / 'current').exists() else None
     old_config = {name: (CONFIG / name).read_bytes() if (CONFIG / name).exists() else None
                   for name in ['config.json', 'ronkalot.env', 'navsquad.env']}
     activated = False
+    homepage_activated = False
     candidate = None
     try:
         with tarfile.open(fileobj=io.BytesIO(raw), mode='r:') as archive:
@@ -107,6 +153,7 @@ def main():
                     if not re.fullmatch(pattern, value):
                         raise ValueError('Invalid Discord credential format')
                     values[key] = value
+        prepare_homepage(stage, revision)
         shutil.rmtree(stage / '.deploy')  # credentials never become part of the installed release
         builder = pwd.getpwnam('wow-character-build')
         for parent, dirs, files in os.walk(stage):
@@ -145,11 +192,18 @@ def main():
             if all(healthy(port, revision) for port in GROUPS.values()):
                 for group in GROUPS:
                     run('systemctl', 'enable', f'wow-character-status@{group}.service')
-                print('Activated', revision, 'for ronkalot and navsquad; both local health endpoints passed.')
+                switch_homepage(candidate / 'public-homepage')
+                homepage_activated = True
+                print('Activated', revision, 'for ronkalot, navsquad and the homepage; both local health endpoints passed.')
                 return
             time.sleep(1)
         raise RuntimeError('New release did not become healthy')
     except Exception:
+        if homepage_activated:
+            if old_homepage:
+                switch_homepage(old_homepage)
+            else:
+                (HOMEPAGE / 'current').unlink(missing_ok=True)
         if activated and old_target:
             rollback = BASE / 'rollback'
             rollback.unlink(missing_ok=True)

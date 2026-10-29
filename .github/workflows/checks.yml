@@ -19,6 +19,8 @@ jobs:
           python-version: '3.13'
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
+      - name: Build homepage and verified addon downloads
+        run: python scripts/build_homepage.py --addon-ref HEAD
       - name: Package both standalone addons
         shell: python
         run: |
@@ -26,12 +28,16 @@ jobs:
           from pathlib import Path
           Path('dist').mkdir(exist_ok=True)
           for client in ('vanilla', 'forever'):
-              shutil.make_archive(f'dist/WoWStatus-{client}', 'zip', f'addon/{client}', 'WoWStatus')
+              shutil.copyfile(f'dist/homepage/downloads/WoWStatus-{client}.zip', f'dist/WoWStatus-{client}.zip')
           shutil.make_archive('dist/WoWStatus-discord-emojis', 'zip', 'assets/discord-emojis')
       - uses: actions/upload-artifact@v4
         with:
           name: WoWStatus-addons-${{ matrix.os }}
           path: dist/*.zip
+      - uses: actions/upload-artifact@v4
+        with:
+          name: WoWStatus-homepage-${{ matrix.os }}
+          path: dist/homepage/
   deploy:
     needs: validate
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
@@ -44,6 +50,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.13'
+      - name: Build homepage for this release
+        run: python scripts/build_homepage.py --addon-ref HEAD
       - name: Prepare private deployment archive
         env:
           RONKALOT_DISCORD_BOT_TOKEN: ${{ secrets.RONKALOT_DISCORD_BOT_TOKEN }}

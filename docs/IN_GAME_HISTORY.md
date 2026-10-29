@@ -37,7 +37,9 @@ is quiet: it adds log cards and never replays old popup queues. A later live cop
 of a recovered ID also does not replay its toast.
 
 Sync covers the last seven days, bounded by the retained log and your group's
-join time. It only exchanges records saved for that same group, with a peer
+account-wide join time. Switching characters keeps this boundary and the account
+log. Older saves migrate from the earliest retained character membership; leaving
+and rejoining a group starts a new boundary. It only exchanges records saved for that same group, with a peer
 currently present in its channel roster. It does not route entries between
 unrelated groups. Removing a group cancels its transfers and clears received
 entries; disabling own fields/collection cancels pending publication of those

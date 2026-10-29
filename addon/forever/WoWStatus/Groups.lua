@@ -28,6 +28,11 @@ end
 function G.contains(character, id)
     return character and character.group_ids and character.group_ids[id] ~= nil
 end
+-- Shared history follows account membership, not the current character's age.
+-- Character joined_at remains available for character-specific exports.
+function G.historySince(id)
+    return database and database.account_group_joined_at and database.account_group_joined_at[id]
+end
 local function apply(character, force)
     if character.legacy_upload and not force then return end
     local previous, selected = character.group_ids or {}, {}
@@ -71,6 +76,21 @@ function G.init(db, getter, reporter)
             end
         end
     end
+    local joined = {}
+    for id in pairs(database.account_groups) do
+        local at = database.account_group_joined_at and database.account_group_joined_at[id]
+        if not at then
+            -- Upgrade old saves from the earliest membership still retained.
+            for _, character in pairs(database.characters) do
+                local member = character.group_ids and character.group_ids[id]
+                if member and type(member.joined_at)=="number" then
+                    at = math.min(at or time(), member.joined_at)
+                end
+            end
+        end
+        joined[id] = at or time()
+    end
+    database.account_group_joined_at = joined
     for _, character in pairs(database.characters) do apply(character) end
 end
 local function update(text, playerName)
@@ -89,6 +109,11 @@ local function update(text, playerName)
     end
     playerName = playerName:match("^%s*(.-)%s*$")
     if #playerName > 40 or playerName:find("[%c|]") then return false, "Use a name of up to 40 characters." end
+    local joined = {}
+    for id in pairs(selected) do
+        joined[id] = database.account_group_joined_at[id] or time()
+    end
+    database.account_group_joined_at = joined
     database.account_groups = {}
     for id, member in pairs(selected) do database.account_groups[id] = member.label end
     database.player_name = playerName

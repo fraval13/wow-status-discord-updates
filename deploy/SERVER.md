@@ -89,6 +89,19 @@ companion derives routing keys from the names selected in WoW. At home:
 wow-status configure --url https://wow.frankvalde.com
 ```
 
+Homepage packaging now belongs to the same checks/deployment workflow. The runner
+builds `dist/homepage` for its exact commit and includes it under `.deploy/HOMEPAGE`
+in the private tar. The receiver validates manifest revision, both ZIP checksums,
+TOC contents and displayed version, then moves the public files out before
+deleting `.deploy` credentials. After service health checks pass, the public
+symlink points to that release's sealed `public-homepage` directory. No Caddy
+configuration update or reload is needed on ordinary pipeline releases.
+
+The extended root-owned receiver is installed separately from application code;
+application archives cannot replace privileged scripts. Its fixed authority now
+also covers `/srv/wow-status-homepage/current`, while its key/sudo restrictions
+are unchanged. Earlier manual static releases remain available for rollback.
+
 Caddy was installed separately through Debian's package manager. App deployments
 do not modify its configuration or restart it. To change the gateway, copy the
 tracked production file to `/etc/caddy/Caddyfile`, validate it with

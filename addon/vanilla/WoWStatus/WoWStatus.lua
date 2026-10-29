@@ -475,28 +475,16 @@ local function initialize()
     end
 end
 
-frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("PLAYER_LOGIN")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("PLAYER_REGEN_ENABLED")
-frame:RegisterEvent("PLAYER_LOGOUT")
-frame:RegisterEvent("PLAYER_LEVEL_UP")
-frame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
-frame:RegisterEvent("ZONE_CHANGED_NEW_AREA")
-frame:RegisterEvent("PLAYER_DEAD")
-frame:RegisterEvent("TIME_PLAYED_MSG")
-frame:RegisterEvent("PLAYER_XP_UPDATE")
-frame:RegisterEvent("QUEST_TURNED_IN")
-frame:RegisterEvent("QUEST_LOG_UPDATE")
--- Some clients no longer expose this legacy query event. RegisterEvent throws
--- on unknown names, which would abort this file before OnEvent/slash setup.
-if not C_EventUtils or not C_EventUtils.IsEventValid
-    or S.call(C_EventUtils.IsEventValid, "QUEST_QUERY_COMPLETE") then
-    pcall(frame.RegisterEvent, frame, "QUEST_QUERY_COMPLETE")
+-- Client builds differ in event availability; one absent event must not abort
+-- registration of the remaining observers, options and slash commands.
+for _,event in ipairs({"ADDON_LOADED","PLAYER_LOGIN","PLAYER_ENTERING_WORLD","PLAYER_REGEN_ENABLED",
+    "PLAYER_LOGOUT","PLAYER_LEVEL_UP","PLAYER_EQUIPMENT_CHANGED","ZONE_CHANGED_NEW_AREA",
+    "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE",
+    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST"}) do
+    if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event)==true then
+        pcall(frame.RegisterEvent,frame,event)
+    end
 end
-frame:RegisterEvent("SKILL_LINES_CHANGED")
-frame:RegisterEvent("PLAYER_ALIVE")
-frame:RegisterEvent("PLAYER_UNGHOST")
 frame:SetScript("OnEvent", function(_, event, ...)
     if event == "ADDON_LOADED" then
         if current then registerSettings();WoWStatusMinimap.init(WoWStatusDB) end

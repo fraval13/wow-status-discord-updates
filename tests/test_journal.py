@@ -244,3 +244,81 @@ def test_same_id_live_in_two_groups_preserves_scope_without_duplicate_toasts():
     assert friend.eval('function() local n=0 for _ in pairs(WoWStatusJournal.entries()[1].groups) do n=n+1 end return n end')() == 2
     friend.eval('WoWStatusGroups.update')('other-group', '')
     assert friend.eval('#WoWStatusJournal.entries()') == 1
+
+
+def restart_on_character(lua, name, at):
+    """A real fresh Lua runtime, preserving only the account's SavedVariables."""
+    lua.eval('fire')('PLAYER_LOGOUT')
+    saved = lua.eval('''function()
+        local function literal(value)
+            if type(value)=="table" then
+                local entries={}
+                for key,item in pairs(value) do
+                    entries[#entries+1]="["..literal(key).."]="..literal(item)
+                end
+                return "{"..table.concat(entries,",").."}"
+            elseif type(value)=="string" then return string.format("%q",value)
+            else return tostring(value) end
+        end
+        return "WoWStatusDB="..literal(WoWStatusDB)
+    end''')()
+    stubs = STUBS.replace('return "Thora" end', f'return "{name}" end').replace(
+        'return "Player-123-0001" end', f'return "Player-123-{name}" end')
+    stubs += f'''
+        __now=1793000000+{at};__mono={at}
+        function time() return math.floor(__now) end
+        function GetTime() return __mono end
+        function character()
+            for _,c in pairs(WoWStatusDB.characters) do
+                if c.identity.guid==UnitGUID("player") then return c end
+            end
+        end
+    '''
+    return make_lua(stubs + saved)
+
+
+def test_new_alt_recovers_events_from_before_its_creation():
+    own, friend = actor('Thora'), actor('Mira')
+    clock(own,10)
+    own.eval('fire')('PLAYER_LEVEL_UP',2)
+    missing_id = own.eval('WoWStatusJournal.entries()[1].id')
+    alt = restart_on_character(friend,'Miraalt',20)
+    mesh({'Thora':own,'Miraalt':alt},start=21,duration=60)
+    assert alt.eval('WoWStatusJournal.contains')(missing_id)
+    assert alt.eval('WoWStatusLevelPopup') is None
+    assert alt.eval('function() for _,m in pairs(character().group_ids) do return m.joined_at end end')() == 1793000020
+    assert alt.eval('function() for id in pairs(character().group_ids) do return WoWStatusGroups.historySince(id) end end')() == 1793000000
+
+
+def test_alt_can_relay_earlier_history_and_keeps_account_log():
+    author, relay, late = actor('Thora'), actor('Mira'), actor('Eldrin')
+    clock(author,10)
+    clock(relay,10)
+    author.eval('fire')('PLAYER_LEVEL_UP',2)
+    deliver_popup(author,relay)
+    event_id = relay.eval('WoWStatusJournal.entries()[1].id')
+    alt = restart_on_character(relay,'Miraalt',20)
+    assert alt.eval('WoWStatusJournal.contains')(event_id)
+    mesh({'Miraalt':alt,'Eldrin':late},start=21,duration=60)
+    assert late.eval('WoWStatusJournal.contains')(event_id)
+    assert late.eval('WoWStatusLevelPopup') is None
+
+
+def test_legacy_account_membership_migrates_earliest_character_boundary():
+    lua = actor('Thora')
+    lua.execute('''
+        local c=character()
+        local group=next(c.group_ids)
+        local alt=WoWStatusHistory.copy(c)
+        alt.identity.guid="Player-old-alt"
+        alt.group_ids[group].joined_at=time()+50
+        WoWStatusDB.characters.alt=alt
+        WoWStatusDB.account_group_joined_at=nil
+        WoWStatusGroups.init(WoWStatusDB,function() return alt end,function() end)
+        assert(WoWStatusGroups.historySince(group)==time())
+        WoWStatusGroups.update("","")
+        assert(WoWStatusGroups.historySince(group)==nil)
+        __now=__now+100
+        WoWStatusGroups.update("navsquad","")
+        assert(WoWStatusGroups.historySince(group)==time())
+    ''')

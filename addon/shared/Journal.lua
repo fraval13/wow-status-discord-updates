@@ -37,6 +37,10 @@ end
 local function groupMember(group)
     return current and WoWStatusGroups.selected(current)[group]
 end
+local function groupSince(group)
+    local member=groupMember(group)
+    return member and (WoWStatusGroups.historySince(group) or member.joined_at) or time()
+end
 local function peer(group,sender)
     local key=P.senderKey(sender)
     for _, name in ipairs(P.peers(group)) do if P.senderKey(name)==key then return true end end
@@ -62,7 +66,7 @@ local function relayable(entry,group)
     if entry.kind=="loot" and not (entry.text or ""):match("^Equipped ") then return false end
     if entry.legacy or entry.client~=WoWStatusAdapter.client_id or not sharedKinds[entry.kind] or not entry.groups or not entry.groups[group] or not permitted(entry) then return false end
     local member=groupMember(group)
-    if not member or entry.at<(member.joined_at or time()) or entry.at<time()-AGE then return false end
+    if not member or entry.at<groupSince(group) or entry.at<time()-AGE then return false end
     if entry.owner then
         local owner
         for _, c in pairs(db.characters) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
@@ -268,7 +272,7 @@ local function requestPage(group,target,offset,pages,retries)
     local t=token()
     local member=groupMember(group)
     if not member then return end
-    local cutoff=math.max(member.joined_at or time(),time()-AGE)
+    local cutoff=math.max(groupSince(group),time()-AGE)
     requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
@@ -344,7 +348,7 @@ function J.receive(message,sender,distribution)
             if session.group==group and session.key==key then sessions[sessionKey]=nil end
         end
         local n=0;for _ in pairs(sessions) do n=n+1 end;if n>=32 then return false end
-        cutoff=math.max(cutoff,time()-AGE,groupMember(group).joined_at or time())
+        cutoff=math.max(cutoff,time()-AGE,groupSince(group))
         local eligible={}
         for _,e in ipairs(db.journal.entries) do
             local weight=({[3]=1,[4]=2,[5]=4})[e.quality]
