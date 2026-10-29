@@ -120,7 +120,7 @@ def test_join_boundary_and_unrelated_group_prevent_history_leaks():
     assert late.eval('#WoWStatusJournal.entries()') == 0
     outsider = actor('Eldrin', 'unrelated')
     group = own.eval('function() for id in pairs(character().group_ids) do return id end end')()
-    assert not outsider.eval('WoWStatusJournal.receive')('J1 '+group+' Q test 0 1793000000', 'Thora-TestRealm', 'WHISPER')
+    assert not outsider.eval('WoWStatusJournal.receive')('J2 '+group+' Q test 0 1793000000', 'Thora-TestRealm', 'WHISPER')
     assert outsider.eval('#WoWStatusJournal.entries()') == 0
 
 
@@ -163,11 +163,11 @@ def test_unsolicited_malformed_and_non_member_sync_packets_are_ignored():
     lua = actor('Thora')
     group = lua.eval('function() for id in pairs(character().group_ids) do return id end end')()
     receive = lua.eval('WoWStatusJournal.receive')
-    assert not receive('J1 '+group+' D unknown abc 1/1 abcd', 'Eldrin-TestRealm', 'WHISPER')
-    assert not receive('J1 '+group+' Q request 0 1793000000', 'Stranger-TestRealm', 'WHISPER')
-    assert not receive('J1 '+group+' Q request 999999 1793000000', 'Eldrin-TestRealm', 'WHISPER')
-    assert not receive('J1 '+group+' Q request 0 1793000000', 'Eldrin-TestRealm', 'CHANNEL')
-    assert not receive('J1 '+group+' Q request 0 1793000000'+'x'*300, 'Eldrin-TestRealm', 'WHISPER')
+    assert not receive('J2 '+group+' D unknown abc 1/1 abcd', 'Eldrin-TestRealm', 'WHISPER')
+    assert not receive('J2 '+group+' Q request 0 1793000000', 'Stranger-TestRealm', 'WHISPER')
+    assert not receive('J2 '+group+' Q request 999999 1793000000', 'Eldrin-TestRealm', 'WHISPER')
+    assert not receive('J2 '+group+' Q request 0 1793000000', 'Eldrin-TestRealm', 'CHANNEL')
+    assert not receive('J2 '+group+' Q request 0 1793000000'+'x'*300, 'Eldrin-TestRealm', 'WHISPER')
     assert lua.eval('#WoWStatusJournal.entries()') == 0
 
 

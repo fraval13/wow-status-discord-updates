@@ -1,5 +1,52 @@
 # Decisions I made — 27 October 2026
 
+## Armor-only loot and cleaner in-game UI — 0.14.0, 29 October
+
+- Loot now requires rarity 3/4/5, item class Armor (4), a real item ID and an
+  equippable armor slot. This includes jewelry/cloaks/shields; weapons, bags,
+  recipes/materials and all lower rarities are excluded. Unknown item data waits
+  briefly rather than guessing. The source event, raw/local log, incoming packet
+  and peer-sync paths all apply the filter. Saved own loot is reclassified from
+  retained item links where possible; unverifiable old loot is dropped.
+- Interpreted the checkbox request as one Announce armor loot switch and three
+  independent rarity choices, all initially on. These filter your received/logged
+  loot too; sync requests include a rarity mask to avoid stalled unwanted offers.
+  Equipment-change observations stay private and also require qualifying armor.
+- Removed the activity subtitle and Catch up button. Login discovery greets every
+  currently visible peer once; receiving a hello also queues a pull from the
+  arriving member, so synchronization works both ways. No minute-by-minute sweep
+  remains. Discovery allows time for channel rosters to populate; transfers are
+  throttled, paginated through retained entries and get one bounded timeout retry.
+  Group setup changes can also initiate discovery. Recovery stays quiet.
+- Added a native minimap book button: left-click log, right-click Options, drag to
+  position. It uses the game's book icon and tracking border, no downloaded asset
+  or emoji slot. Its angle is saved account-wide.
+- Main options now starts with only the shared-group-ID instruction. Milestones
+  are on this page with simple announcement controls. Removed introduction
+  controls/text and renamed Preview toast to Preview toasts. Groups instructions
+  sit below Group ID. Native settings pages use the game's background instead of
+  opaque custom panels. The standalone log/toasts retain their shared styling.
+- Removed the bottom character-card demonstration from Notification previews.
+- Discord is suspended behind `WoWStatusFeatures.discord = false` in Features.lua.
+  Its code, server and companion remain. The page/commands are hidden and exports
+  disabled for every saved character. Explicit opt-ins/enrollment are shadowed
+  for restoration; changing the flag back restores them with a fresh sharing
+  boundary. No service or historical Discord message was deleted. Current user
+  documentation focuses on in-game sharing; legacy integration docs are retained.
+- J2 sync records carry armor metadata; old loot-only text packets cannot bypass
+  the new filter. All friends should update. Full WoW restart is required for the
+  added Features/Loot/Minimap modules. Backend changes are not required.
+
+Validation/delivery: 218 tests passed; 115 addon tests also passed under Lua 5.1.
+Coverage includes item class/slot/rarity combinations, uncached data, old-loot
+cleanup, selected-rarity catch-up, no visible integration text, minimap dragging,
+all-peer login greetings, reverse pulls on already-online clients, no idle sweeps,
+and an actual SavedVariables/companion export round trip proving suspension and
+opt-in restoration. Ruff/whitespace checks passed. Both ZIPs are rebuilt and the
+Vanilla installation on this computer is updated with its previous files backed
+up. SavedVariables were not directly edited. No backend deployment is needed;
+GitHub push still depends on working SSH authentication.
+
 ## Graphical log and decentralized catch-up — 0.13.0, 29 October
 
 Added a persistent account activity log with the same visual theme function used

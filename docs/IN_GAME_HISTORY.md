@@ -1,6 +1,6 @@
 # Activity log and local history
 
-Open **Activity log** in addon settings, `/wstatus activity`, or `/wstatus journal`.
+Open **Activity log** with the minimap book, in addon settings, `/wstatus activity`, or `/wstatus journal`.
 It shows scrollable cards with the same icons, accent colours and headings as live
 popups. **All**, **Mine** and **Friends** filter the view. Hover a card for its full
 text and stable event ID. New entries preserve your position when scrolling back.
@@ -8,14 +8,16 @@ The window recycles six row frames, so a long log does not create thousands of U
 objects. Catch-up entries keep their original timestamp and show the relay name.
 
 Your own tracked announcements appear even if nobody is online to receive them.
-Individual quest turn-ins, profession points and equipment changes are recorded
+Individual quest turn-ins, profession points and eligible armor equipment changes are recorded
 privately, respecting character collection/profile choices. They do not create
 friend notifications or enter peer sync. Previews and synthetic tests are excluded.
 This records supported addon activity, not every action, chat message or keypress.
 
 SavedVariables preserve the log on reload/logout. Up to 2,000 entries are kept,
 with a separate 1,000-entry ceiling for private activity so it cannot consume the
-entire shared-announcement cache. New installations import up to 500 recent own
+entire shared-announcement cache. Rare/epic/legendary armor filters also apply to saved and synced loot; unknown
+old loot is excluded unless its item metadata can be recovered. New installations
+import up to 500 recent own
 history events and the retained received-activity cache for local browsing. These
 older entries are not newly advertised to peers.
 
@@ -28,8 +30,9 @@ transfer hints; full IDs are used for deduplication after validation.
 
 Online group members exchange small inventories, request missing entries and
 reassemble bounded addon-whisper fragments. Peers can forward retained copies,
-so the original author need not be online. **Catch up** or `/wstatus sync` starts
-a round; automatic rounds also run periodically. Known IDs are skipped. Recovery
+so the original author need not be online. At login, the arriving client greets every available group member and both sides
+request missing entries automatically. An already-online peer also pulls from
+the arriving client. There is no manual button or periodic polling. Known IDs are skipped. Recovery
 is quiet: it adds log cards and never replays old popup queues. A later live copy
 of a recovered ID also does not replay its toast.
 
@@ -72,7 +75,7 @@ history in pages of 75 records. The All/levels button filters the view. Refresh
 updates the view explicitly so incoming events do not move the scroll position
 while you are reading. Synthetic events show `[TEST]`.
 
-The **Export preview** tab shows identity, current sharing settings and the latest
+The **Character details** tab shows identity, current sharing settings and the latest
 selected snapshot. These are the addon's source records. The companion filters
 again, splits history into small requests, and the service applies group posting
 rules. A collected event is not necessarily an immediate Discord announcement.

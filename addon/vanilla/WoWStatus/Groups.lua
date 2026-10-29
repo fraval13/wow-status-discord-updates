@@ -94,7 +94,7 @@ local function update(text, playerName)
     database.player_name = playerName
     for _, saved in pairs(database.characters) do apply(saved, true) end
     if WoWStatusPopups then WoWStatusPopups.groupsChanged() end
-    return true, "Groups saved for all characters. In-game updates use these groups now. Discord is optional."
+    return true, "Groups saved for all characters."
 end
 G.update = update
 function G.text(character, multiline)
@@ -135,12 +135,12 @@ end
 function G.show(host)
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusGroupWindow", UIParent)
-        panel:SetSize(620, 690)
+        panel:SetSize(620, 726)
         panel:SetPoint("CENTER")
         panel:SetFrameStrata("DIALOG")
         panel:EnableMouse(true)
         local bg = panel:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints(); bg:SetColorTexture(.04, .04, .07, .98)
+        bg:SetAllPoints(); bg:SetColorTexture(.025,.035,.055,.96);panel.background=bg
         local function label(text, y, width)
             local f = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
             f:SetPoint("TOPLEFT", 24, y); f:SetWidth(width or 570)
@@ -162,13 +162,14 @@ function G.show(host)
             return edit
         end
         label("Your groups — all characters on this account", -20)
-        label("Your name (optional)", -55)
-        panel.name = input(-80, 40)
+        label("Your name (optional)", -62)
+        panel.name = input(-92, 40)
         local function saveName() saveList(groupList()) end
-        panel.saveName = button(panel, "Save name", 454, -80, 120, saveName)
+        panel.saveName = button(panel, "Save name", 454, -92, 120, saveName)
         panel.name:SetScript("OnEnterPressed", saveName)
-        label("Group ID", -126)
-        panel.input = input(-150, 80)
+        label("Group ID", -146)
+        label("Use the same ID as your friends.\nAdding or removing a group saves for all your characters.", -182)
+        panel.input = input(-234, 80)
         local function add()
             local id, cleaned = G.key(panel.input:GetText())
             if not id then
@@ -190,14 +191,14 @@ function G.show(host)
                 panel.input:SetFocus()
             end
         end
-        panel.add = button(panel, "Add", 454, -150, 120, add)
+        panel.add = button(panel, "Add", 454, -234, 120, add)
         panel.input:SetScript("OnEnterPressed", add)
-        panel.count = label("", -194)
-        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -230)
+        panel.count = label("", -280)
+        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -318)
         panel.rows = {}
         for i = 1, MAX_GROUPS do
             local row = CreateFrame("Frame", nil, panel)
-            row:SetPoint("TOPLEFT", 24, -222 - (i - 1) * 36)
+            row:SetPoint("TOPLEFT", 24, -312 - (i - 1) * 36)
             row:SetSize(550, 32)
             row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
             row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(410)
@@ -220,17 +221,15 @@ function G.show(host)
             end)
             table.insert(panel.rows, row)
         end
-        panel.status = label("", -520)
-        label("Add and Remove save immediately for all your characters.\n"
-            .. "In-game updates need only this addon. Discord is a separate opt-in.\n"
-            .. "Friends must use the same group ID and be reachable in WoW.", -586)
-        panel.close = button(panel, "Close", 454, -644, 120, function() panel:Hide() end)
+        panel.status = label("", -618)
+        panel.close = button(panel, "Close", 454, -670, 120, function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusGroupWindow" then table.remove(UISpecialFrames, i) end
     end
     if not host then table.insert(UISpecialFrames, "WoWStatusGroupWindow") end
     panel.close:SetShown(not host)
+    panel.background:SetShown(not host)
     panel:SetScale(1)
     panel:SetParent(host or UIParent)
     panel:ClearAllPoints()

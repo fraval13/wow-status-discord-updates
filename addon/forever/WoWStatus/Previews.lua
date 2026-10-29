@@ -3,8 +3,8 @@ WoWStatusPreviews = {}
 local P = WoWStatusPreviews
 local panel, card
 local examples = {
-    {"level", "Level up"}, {"introduction", "Character introduction"},
-    {"loot", "Loot found"},
+    {"level", "Level up"},
+    {"loot", "Armor loot"},
     {"death", "Death"}, {"zone", "New location"},
     {"quest", "100 quests achievement"}, {"profession", "Profession title promotion"},
     {"dungeon", "First dungeon clear"}, {"mount", "First mount"},
@@ -23,7 +23,8 @@ local function button(parent, value, x, y, width, fn)
 end
 local function background(frame)
     local texture=frame:CreateTexture(nil,"BACKGROUND")
-    texture:SetAllPoints(); texture:SetColorTexture(.025,.035,.065,.98)
+    texture:SetAllPoints(); texture:SetColorTexture(.025,.035,.055,.96)
+    return texture
 end
 function P.statusCard()
     if not card then
@@ -45,20 +46,19 @@ function P.show(host)
     if not panel then
         panel=CreateFrame("Frame","WoWStatusNotificationPreviews",UIParent)
         local footer = 170 + #examples * 42
-        panel:SetSize(600,footer+150); panel:EnableMouse(true); background(panel)
+        panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
-        text(panel,"Try every icon, colour and message locally.\nPreviews do not send messages or change character progress.\nReloading by itself does not create a progress notification.",24,-60)
+        text(panel,"Choose a notification to preview it.",24,-60)
         panel.buttons={}
         for i, entry in ipairs(examples) do
             local kind=entry[1]
             panel.buttons[kind]=button(panel,entry[2],24,-148-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
         end
-        button(panel,"Preview character status card",24,-footer,360,P.statusCard)
-        text(panel,"Discord uses the same status fields in a tidy card.\nCustom class, faction and profession emojis are optional.",24,-footer-50)
-        panel.close=button(panel,"Close",424,-footer-100,140,function() panel:Hide() end)
+        panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
+    panel.background:SetShown(not host)
     panel:SetFrameStrata(host and host:GetFrameStrata() or "FULLSCREEN_DIALOG")
     if host then panel:SetFrameLevel(host:GetFrameLevel()+1) end
     panel:Show()

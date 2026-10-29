@@ -35,13 +35,14 @@ local function canShare(character, event)
     if not (prefs and character and character.settings.enabled
         and (groupMode(character) or prefs.broadcast)) then return false end
     if not event then return true end
-    if event.kind == "discovery" or event.kind == "lfg" then return false end
+    if event.kind == "introduction" or event.kind == "discovery" or event.kind == "lfg" then return false end
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     if not character.settings.collection[event.kind] then return false end
     if character.settings.in_game and character.settings.in_game[event.kind] == false then return false end
     if event.kind == "level" and not character.settings.fields.level then return false end
     if event.kind == "zone" and not character.settings.fields.zone then return false end
     if event.kind == "equipment" then return false end
+    if event.kind == "loot" and not WoWStatusLoot.allowed(character.settings,WoWStatusLoot.eventInfo(event.data)) then return false end
     if event.kind == "quest" and not character.settings.fields.quests then return false end
     if event.kind == "profession" and not character.settings.fields.professions then return false end
     return true
@@ -101,7 +102,7 @@ local function remember(item)
     if WoWStatusJournal then WoWStatusJournal.received(item) end
     prefs.activity = prefs.activity or {}
     table.insert(prefs.activity, 1, {sender = item.sender, level = item.level,
-        kind = item.kind or "level", text = item.text, automatic = item.automatic, nonce = item.nonce, original_at = item.at, at = time(), group_id = item.group_id})
+        kind = item.kind or "level", text = item.text, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
 end
 function P.groupsChanged()
@@ -179,7 +180,8 @@ function P.init(database, getter, reporter)
     prefs.channel = prefs.channel or "WStatusFriends"
     local activity={}
     for _, item in ipairs(prefs.activity or {}) do
-        if item.kind~="discovery" and item.kind~="lfg" and (item.kind~="dungeon" or item.automatic) then
+        if item.kind~="discovery" and item.kind~="lfg" and item.kind~="introduction" and (item.kind~="dungeon" or item.automatic)
+            and (item.kind~="loot" or WoWStatusLoot.allowed(getter().settings,item)) then
             table.insert(activity,item)
         end
     end
@@ -206,7 +208,7 @@ function P.receive(text, sender, channel)
     local selfKey = P.senderKey((A.playerName() or "") .. "-" .. realm())
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
-    local raw, automatic = false, false
+    local raw, automatic, armor = false, false, false
     if not client then
         client,kind,atText,nonce,encoded = text:match("^WSTATUS4 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
         raw = client ~= nil
@@ -215,13 +217,26 @@ function P.receive(text, sender, channel)
         client,kind,atText,nonce,encoded = text:match("^WSTATUS5 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
         raw,automatic = client~=nil,client~=nil
     end
+    if not client then
+        client,kind,atText,nonce,encoded=text:match("^WSTATUS6 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
+        raw,armor=client~=nil,client~=nil
+    end
     if client then
-        local allowed = {introduction=true, loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
+        local allowed = {loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find("[%c|]") then return false end
+        local lootInfo
+        if armor and kind~="loot" then return false end
+        if kind=="loot" then
+            if not armor then return false end
+            local quality,class,slot,id,name=detail:match("^(%d) (%d+) ([A-Z_]+) (%d+) (.+)$")
+            lootInfo={quality=tonumber(quality),class_id=tonumber(class),equip_loc=slot,item_id=tonumber(id)}
+            if not lootInfo.item_id or not name or not WoWStatusLoot.allowed(getCharacter().settings,lootInfo) then return false end
+            detail="Looted "..name
+        end
         if automatic and kind~="dungeon" then return false end
         if kind=="dungeon" then
             if not automatic then return false end -- Old manual reports used WSTATUS4.
@@ -236,14 +251,16 @@ function P.receive(text, sender, channel)
         pruneSeen(now)
         local duplicate = key .. ":" .. nonce
         if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(sender,nonce)) then
-            WoWStatusJournal.received({sender=sender,kind=kind,text=detail,at=at,nonce=nonce,
-                group_id=group~="legacy" and group or nil})
+            local duplicateItem={sender=sender,kind=kind,text=detail,at=at,nonce=nonce,group_id=group~="legacy" and group or nil}
+            if lootInfo then for k,v in pairs(lootInfo) do duplicateItem[k]=v end end
+            WoWStatusJournal.received(duplicateItem)
             prefs.seen[duplicate]=now;return false
         end
         if prefs.seen[duplicate] or #incoming >= 128 then return false end
         prefs.seen[duplicate] = now
         local item = {sender=sender, key=key, kind=kind, text=detail, automatic=automatic, received_at=now, at=at, nonce=nonce,
             group_id=group ~= "legacy" and group or nil}
+        if lootInfo then for k,v in pairs(lootInfo) do item[k]=v end end
         remember(item)
         table.insert(incoming, item)
         P.tick()
@@ -350,7 +367,7 @@ end
 function P.preview(kind)
     if not prefs then return end
     local samples = {
-        introduction="Joined the group tracker", loot="Looted Robes of the Lich",
+        introduction="Joined the group tracker", loot="Looted Robe of the Archmage",
         death="Died — total tracked deaths: 15",
         zone="Entered Stranglethorn Vale", quest="Completed 100 quests!",
         profession="Tailoring: Expert (225 max)",
@@ -360,7 +377,7 @@ function P.preview(kind)
     if kind ~= "level" and not samples[kind] then return end
     if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
     table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind,text=samples[kind],
-        level=kind=="level" and 33 or nil,received_at=time(),preview=true})
+        level=kind=="level" and 33 or nil,quality=kind=="loot" and 4 or nil,received_at=time(),preview=true})
     P.tick()
 end
 
@@ -467,7 +484,14 @@ function P.broadcast(character, event)
     if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
     local nonce = character.epoch .. "-" .. character.sequence
     local text
-    if event.kind == "dungeon" then
+    if event.kind=="loot" then
+        local info=WoWStatusLoot.eventInfo(event.data)
+        if not WoWStatusLoot.allowed(character.settings,info) then return end
+        local name=info.name or (info.item or ""):match("%[([^%]]+)%]") or "Armor"
+        name=name:gsub("[%c|]"," ")
+        if #name>72 then name=name:sub(1,69):gsub("[\194-\244][\128-\191]*$","").."..." end
+        text="WSTATUS6 "..A.client_id.." loot "..event.at.." "..nonce.." "..info.quality.." "..info.class_id.." "..info.equip_loc.." "..info.item_id.." "..name
+    elseif event.kind == "dungeon" then
         local id,name=event.data.instance_id,event.data.name
         if type(id)~="number" or id<1 or id>1000000000 or type(name)~="string" or #name>80 or name:find("[%c|]") then return end
         text="WSTATUS5 " .. A.client_id .. " dungeon " .. event.at .. " " .. nonce .. " " .. id .. " " .. name

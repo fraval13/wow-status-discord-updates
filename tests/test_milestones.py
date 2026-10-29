@@ -157,10 +157,10 @@ def test_no_dungeon_api_never_guesses_and_manual_commands_do_nothing():
         SlashCmdList.WOWSTATUS("lfg Any free text")
         assert(#character().events==0)
         SlashCmdList.WOWSTATUS("milestones")
-        assert(WoWStatusMilestoneSettings:IsShown())
-        assert(WoWStatusMilestoneSettings.discovery==nil and WoWStatusMilestoneSettings.dungeon==nil)
+        assert(WoWStatusSetup:IsShown())
+        assert(WoWStatusMilestoneSettings==nil)
         for _, frame in ipairs(__frames) do
-            if frame.parent==WoWStatusMilestoneSettings then assert(frame.kind~="EditBox") end
+            if frame.parent==WoWStatusSetup then assert(frame.kind~="EditBox") end
         end
     ''')
 
@@ -235,7 +235,7 @@ def test_no_optional_event_can_abort_startup():
     lua = make_lua(stubs)
     assert lua.eval('type(SlashCmdList.WOWSTATUS)') == 'function'
     lua.eval('SlashCmdList.WOWSTATUS')('milestones')
-    assert lua.eval('WoWStatusMilestoneSettings:IsShown()') is True
+    assert lua.eval('WoWStatusSetup:IsShown()') is True
 
 
 def test_existing_class_and_pvp_progress_is_silent_and_first_pvp_rank_works():

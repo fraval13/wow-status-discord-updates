@@ -5,7 +5,7 @@ local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests"}
-local kinds = {"introduction", "level", "loot", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}
+local kinds = {"level", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
@@ -23,7 +23,7 @@ local function defaults()
                       death = true, zone = true, quest = true, profession = true, lfg = false},
         announcements = {introduction = true, level = true, loot = true,
                          equipment = false, death = true, zone = true, quest = true, profession = true, lfg = false},
-        loot_quality = 4, level_interval = 10,
+        loot_quality = 3, loot_rarities={rare=true,epic=true,legendary=true}, level_interval = 10,
     }
 end
 
@@ -55,14 +55,15 @@ local function queue(kind, data, fixed)
     end
     if kind == "discovery" or kind == "lfg" then return end
     if kind == "dungeon" and data.source ~= "game_api" then return end
-    if kind == "introduction" and not current.settings.introduction_confirmed then return end
+    if kind == "introduction" then return end
+    if kind == "loot" and not WoWStatusLoot.allowed(current.settings,WoWStatusLoot.eventInfo(data)) then return end
     current.sequence = (current.sequence or 0) + 1
     local id = fixed or (current.identity.guid .. ":" .. current.epoch .. ":" .. current.sequence)
     for _, event in ipairs(current.events) do if event.id == id then return end end
     if #current.events >= 500 then
         table.remove(current.events, 1)
         if not current.warned then
-            say("Recent buffer is full; older events remain in History and will still be uploaded.")
+            say("Recent buffer is full; older events remain in History.")
             current.warned = true
         end
     end
@@ -85,15 +86,6 @@ local function questMilestone()
     end
 end
 
-local function introductionText()
-    local s = current.settings.enabled and A.snapshot(current.settings.fields) or {}
-    local text = "A new adventurer joins the tracker: " .. current.identity.name
-    if s.level then text = text .. " — level " .. s.level end
-    if s.race then text = text .. " " .. s.race end
-    if s.class then text = text .. " " .. s.class end
-    return text .. " on " .. current.identity.realm .. "!"
-end
-
 local function scrub()
     -- Remove data immediately when privacy choices change, before any disk export.
     local retained = {}
@@ -102,6 +94,7 @@ local function scrub()
         if event.kind == "level" and not current.settings.fields.level then allowed = false end
         if event.kind == "zone" and not current.settings.fields.zone then allowed = false end
         if event.kind == "equipment" and not current.settings.fields.gear then allowed = false end
+        if event.kind == "loot" and not WoWStatusLoot.allowed(current.settings,WoWStatusLoot.eventInfo(event.data)) then allowed=false end
         if event.kind == "introduction" and not current.settings.introduction_confirmed then
             allowed = false
         end
@@ -148,104 +141,60 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, 1496)
-        panel:SetPoint("CENTER")
-        panel:SetFrameStrata("DIALOG")
-        panel:EnableMouse(true)
-        panel:SetMovable(true)
-        panel:RegisterForDrag("LeftButton")
-        panel:SetScript("OnDragStart", panel.StartMoving)
-        panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
-        local bg = panel:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints()
-        bg:SetColorTexture(0.04, 0.04, 0.07, 0.98)
-        label(panel, "WoW Status — in-game sharing", 24, -20)
-        label(panel, "Install the addon and add the same group IDs as your friends.\n"
-            .. "Group updates happen inside WoW; no companion is needed.\n"
-            .. "Discord is a separate opt-in under the Discord settings page.", 24, -55, 550)
-        panel.checks = {}
-        local function checkbox(key, title, x, y, group)
-            local check = CreateFrame("CheckButton", nil, panel, "UICheckButtonTemplate")
-            check:SetPoint("TOPLEFT", x, y)
-            check:SetSize(32, 32)
-            label(check, title, 38, -6, 230)
-            check:SetScript("OnClick", function(self)
-                local target = group and current.settings[group] or current.settings
-                target[key] = self:GetChecked() and true or false
-                if key == "enabled" and target[key] then current.enrolled = true end
-                if key == "enabled" and not target[key] then
-                    current.settings.introduction_confirmed = false
-                end
-                if key == "playtime" and target[key] and current.settings.enabled then
-                    A.requestPlaytime()
-                end
-                scrub()
-                refresh()
+        panel:SetSize(600, 1130)
+        panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
+        panel.background=panel:CreateTexture(nil,"BACKGROUND")
+        panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
+        label(panel,"WoW Status",24,-20)
+        label(panel,"Set the same group ID as your friends to start sharing.",24,-64,550)
+        panel.checks={}
+        local function section(text,y)
+            local title=label(panel,text,24,y,550);title:SetTextColor(1,.82,.25)
+        end
+        local function checkbox(key,title,x,y,group)
+            local check=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate")
+            check:SetPoint("TOPLEFT",x,y);check:SetSize(32,32)
+            label(check,title,38,-6,group=="loot_rarities" and 460 or 230)
+            check:SetScript("OnClick",function(self)
+                local target=group and current.settings[group] or current.settings
+                target[key]=self:GetChecked() and true or false
+                if key=="enabled" and target[key] then current.enrolled=true end
+                if group=="in_game" and target[key] then current.settings.collection[key]=true end
+                scrub();refresh()
             end)
-            table.insert(panel.checks, {widget = check, key = key, group = group})
+            panel.checks[#panel.checks+1]={widget=check,key=key,group=group}
         end
-        checkbox("enabled", "Share this character", 24, -144)
-        button(panel, "Mark as my main", 350, -144, 180, function()
-            for _, character in pairs(WoWStatusDB.characters) do
-                character.settings.character_role = "alt"
-                character.exported_at = time()
-            end
-            current.settings.character_role = "main"
-            snapshot()
-            refresh()
-            say("Main character selected for this account.")
-        end)
-        label(panel, "Joining a group automatically enables sending and receiving.\n"
-            .. "Manage your groups with the Groups button or /wstatus groups.", 24, -196, 550)
-        label(panel, "Local profile fields", 24, -256, 550)
-        for i, key in ipairs(fields) do
-            local x = (i - 1) % 2 == 0 and 24 or 300
-            checkbox(key, key == "race" and "race / male or female" or key, x, -286 - math.floor((i - 1) / 2) * 38, "fields")
+        button(panel,"Groups",24,-116,160,function() openSettings(true) end)
+        button(panel,"Activity log",204,-116,160,function() WoWStatusJournal.show() end)
+        button(panel,"Preview toasts",384,-116,170,function() openSettings("previews") end)
+        checkbox("enabled","Share my progress",24,-174)
+        section("Announcements",-234)
+        local titles={level="Level up",death="Deaths",zone="New location",quest="Every 100 quests",
+            profession="Profession title",dungeon="First dungeon clear",mount="First mount",
+            reputation="Reputation rank",unlock="Class ability unlock",pvp="PvP rank"}
+        for i,key in ipairs(kinds) do
+            checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end
-        label(panel, "Event", 24, -530, 190)
-        label(panel, "Store locally", 238, -530, 150)
-        label(panel, "Share in WoW", 408, -530, 170)
-        for i, key in ipairs(kinds) do
-            local y = -564 - (i - 1) * 38
-            label(panel, key == "quest" and "100 quests milestone" or key == "profession" and "Profession title" or key == "unlock" and "Class ability unlock" or key == "pvp" and "PvP rank" or key == "dungeon" and "First dungeon clear" or key, 24, y - 6, 190)
-            checkbox(key, "", 270, y, "collection")
-            checkbox(key, "", 460, y, "in_game")
+        section("Loot",-508)
+        checkbox("loot","Announce armor loot",24,-544,"in_game")
+        checkbox("rare","Rare equipment",54,-586,"loot_rarities")
+        checkbox("epic","Epic equipment",54,-628,"loot_rarities")
+        checkbox("legendary","Legendary equipment",54,-670,"loot_rarities")
+        section("Character details",-742)
+        local names={level="Level and XP",class="Class",race="Race and male/female",faction="Faction",
+            guild="Guild",gear="Equipment",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests"}
+        for i,key in ipairs(fields) do
+            checkbox(key,names[key] or key,(i-1)%2==0 and 24 or 310,-780-math.floor((i-1)/2)*42,"fields")
         end
-        panel.preview = label(panel, "", 24, -1168, 550)
-        button(panel, "Introduce character", 24, -1256, 190, function()
-            if not current.settings.enabled then say("Enable sharing first."); return end
-            if not current.settings.collection.introduction then
-                say("Enable introduction storage first."); return
-            end
-            current.settings.introduction_confirmed = true
-            queue("introduction", {}, "introduction:" .. current.identity.guid)
-            refresh()
-            say("Introduction queued for your WoW groups. Discord receives it only if opted in and uploaded.")
-        end)
-        button(panel, "Pause sharing", 230, -1256, 160, function()
-            current.settings.enabled = false
-            current.settings.introduction_confirmed = false
-            scrub()
-            refresh()
-            say("In-game sending paused. For opted-in Discord data, export and upload the pause or use companion privacy controls.")
-        end)
-        button(panel, "History / graph", 24, -1396, 160, function()
-            WoWStatusHistoryUI.show(function() return current end, "logs")
-        end)
-        button(panel, "Activity log", 194, -1396, 120, function() WoWStatusPopups.showActivity() end)
-        button(panel, "Groups", 324, -1396, 90, function() openSettings(true) end)
-        panel.close = button(panel, "Close", 424, -1396, 110, function() panel:Hide() end)
-        button(panel, "Preview toast", 24, -1436, 160, function() openSettings("previews") end)
-        button(panel, "Milestones", 210, -1436, 230, function() openSettings("milestones") end)
-        label(panel, "In-game level updates include every level, not only milestones.\n"
-            .. "Loot follows /wstatus quality. Groups must be reachable in WoW.\n"
-            .. "Local history and graphs work without Discord.", 24, -1310, 550)
+        button(panel,"History / graph",24,-1072,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
+        panel.close=button(panel,"Close",424,-1072,130,function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
     end
     if not host then table.insert(UISpecialFrames, "WoWStatusSetup") end
     panel.close:SetShown(not host)
+    panel.background:SetShown(not host)
     panel:SetScale(1)
     panel:SetParent(host or UIParent)
     panel:ClearAllPoints()
@@ -363,15 +312,15 @@ registerSettings = function()
         local groups = settingsPage("Groups", 620, WoWStatusGroups.show)
         groupsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, groups, "Groups")
         Settings.RegisterAddOnCategory(groupsCategory)
-        local discord = settingsPage("Discord", 600, showDiscord)
-        discordCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, discord, "Discord (optional)")
-        Settings.RegisterAddOnCategory(discordCategory)
+        -- Dormant integration: re-enable in Features.lua to restore this page.
+        if WoWStatusFeatures.discord then
+            local discord=settingsPage("Discord",600,showDiscord)
+            discordCategory=Settings.RegisterCanvasLayoutSubcategory(settingsCategory,discord,"Discord (optional)")
+            Settings.RegisterAddOnCategory(discordCategory)
+        end
         local previews = settingsPage("Notification previews", 600, WoWStatusPreviews.show)
         previewsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, previews, "Notification previews")
         Settings.RegisterAddOnCategory(previewsCategory)
-        local milestones = settingsPage("Milestones", 600, WoWStatusMilestones.show)
-        milestonesCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, milestones, "Milestones")
-        Settings.RegisterAddOnCategory(milestonesCategory)
     elseif InterfaceOptions_AddCategory then
         local page = settingsPage("WoW Status", 600, showPanel)
         InterfaceOptions_AddCategory(page)
@@ -380,28 +329,25 @@ registerSettings = function()
         groups.parent = page.name
         InterfaceOptions_AddCategory(groups)
         groupsCategory = groups
-        local discord = settingsPage("Discord", 600, showDiscord)
-        discord.parent = page.name
-        InterfaceOptions_AddCategory(discord)
-        discordCategory = discord
+        if WoWStatusFeatures.discord then
+            local discord=settingsPage("Discord",600,showDiscord)
+            discord.parent=page.name;InterfaceOptions_AddCategory(discord);discordCategory=discord
+        end
         local previews = settingsPage("Notification previews", 600, WoWStatusPreviews.show)
         previews.parent = page.name
         InterfaceOptions_AddCategory(previews)
         previewsCategory = previews
-        local milestones = settingsPage("Milestones", 600, WoWStatusMilestones.show)
-        milestones.parent = page.name
-        InterfaceOptions_AddCategory(milestones)
-        milestonesCategory = milestones
     end
 end
 openSettings = function(groups)
+    if groups=="milestones" then groups=nil end
+    if groups=="discord" and not WoWStatusFeatures.discord then groups=nil end
     registerSettings()
     local category = groups == "milestones" and milestonesCategory or groups == "previews" and previewsCategory or groups == "discord" and discordCategory or (groups and groupsCategory or settingsCategory)
     if category and category.GetID and Settings and Settings.OpenToCategory then
         Settings.OpenToCategory(category:GetID())
     elseif category and InterfaceOptionsFrame_OpenToCategory then
         InterfaceOptionsFrame_OpenToCategory(category)
-    elseif groups == "milestones" then WoWStatusMilestones.show()
     elseif groups == "previews" then WoWStatusPreviews.show()
     elseif groups == "discord" then showDiscord()
     elseif groups then WoWStatusGroups.show()
@@ -414,8 +360,6 @@ refresh = function()
         local target = entry.group and current.settings[entry.group] or current.settings
         entry.widget:SetChecked(target[entry.key])
     end
-    panel.preview:SetText("Character role: " .. (current.settings.character_role or "alt") .. " | Introduction: " .. introductionText()
-        .. (current.settings.introduction_confirmed and "\nConfirmed." or "\nNot confirmed."))
 end
 
 local function initialize()
@@ -445,6 +389,19 @@ local function initialize()
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity
+    WoWStatusLoot.defaults(current.settings)
+    for _, character in pairs(WoWStatusDB.characters) do
+        if not WoWStatusFeatures.discord then
+            if character.discord_hidden_opt_in==nil then character.discord_hidden_opt_in=character.settings.discord_enabled==true end
+            if character.discord_hidden_enrolled==nil then character.discord_hidden_enrolled=character.discord_enrolled==true end
+            character.settings.discord_enabled=false;character.discord_enrolled=false
+        elseif character.discord_hidden_opt_in~=nil then
+            character.settings.discord_enabled=character.discord_hidden_opt_in
+            character.discord_enrolled=character.discord_hidden_enrolled or false;character.discord_hidden_enrolled=nil
+            if character.discord_hidden_opt_in then character.discord_since=time();character.discord_enrolled=true end
+            character.discord_hidden_opt_in=nil
+        end
+    end
     if current.settings.discord_enabled == nil then
         current.discord_enrolled = current.enrolled == true
         current.settings.discord_enabled = false
@@ -454,6 +411,9 @@ local function initialize()
     current.settings.announcements.equipment = false
     current.settings.in_game = current.settings.in_game or {}
     current.settings.in_game.equipment = false
+    current.settings.in_game.introduction=false
+    current.settings.collection.introduction=false
+    current.settings.announcements.introduction=false
     for _, removed in ipairs({"discovery", "lfg"}) do
         current.settings.collection[removed]=false
         current.settings.announcements[removed]=false
@@ -467,13 +427,18 @@ local function initialize()
         if current.settings.announcements[kind] == nil then current.settings.announcements[kind] = true end
     end
     current.settings.in_game = current.settings.in_game or {}
-    for _, kind in ipairs(kinds) do
-        if current.settings.in_game[kind] == nil then current.settings.in_game[kind] = true end
+    if current.settings.in_game.loot==nil then current.settings.in_game.loot=true end
+    if current.settings.collection.loot==false then current.settings.in_game.loot=false end
+    for _,kind in ipairs(kinds) do
+        if current.settings.in_game[kind]==nil then current.settings.in_game[kind]=true end
+        if current.settings.collection[kind]==false then current.settings.in_game[kind]=false end
     end
     WoWStatusGroups.init(WoWStatusDB, function() return current end, say)
     WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
     H.init(current)
+    WoWStatusJournal.prepare(WoWStatusDB)
     H.scrub(current)
+    WoWStatusMinimap.init(WoWStatusDB)
     WoWStatusJournal.init(WoWStatusDB,current)
     local level = A.level()
     if level then H.sync(current, level, time()) end
@@ -489,7 +454,7 @@ local function initialize()
         if current.settings.fields.playtime then A.requestPlaytime() end
     end
     if first then
-        say("Sharing defaults are ON. Review character options and account groups in Options > AddOns > WoW Status.")
+        say("Set the same group ID as your friends in Options > AddOns > WoW Status.")
         openSettings()
     end
 end
@@ -519,7 +484,7 @@ frame:RegisterEvent("PLAYER_ALIVE")
 frame:RegisterEvent("PLAYER_UNGHOST")
 frame:SetScript("OnEvent", function(_, event, ...)
     if event == "ADDON_LOADED" then
-        if current then registerSettings() end
+        if current then registerSettings();WoWStatusMinimap.init(WoWStatusDB) end
         return
     end
     if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_REGEN_ENABLED" then
@@ -557,10 +522,9 @@ frame:SetScript("OnEvent", function(_, event, ...)
         end
         if matches(LOOT_ITEM_SELF) or matches(LOOT_ITEM_SELF_MULTIPLE) then
             local link = message:match("(|Hitem:.-|h.-|h)")
-            local item, quality = A.item(link)
-            if item and quality then
-                queue("loot", {item = item, quality = quality})
-            end
+            if link then WoWStatusLoot.capture(link,function(info)
+                if WoWStatusLoot.allowed(current.settings,info) then queue("loot",info) end
+            end) end
         end
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
         local slot=S.number(...)
@@ -643,8 +607,8 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "discover" or command == "dungeon" or command == "lfg" then
         say("Manual announcements have been removed. Milestones are detected automatically.")
     elseif command == "previews" then openSettings("previews")
-    elseif command == "discord" then openSettings("discord")
-    elseif command == "sync" then WoWStatusJournal.sync()
+    elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
+    elseif command == "sync" then say("Activity syncs automatically when group members log in.")
     elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
     elseif command == "popup" then
         WoWStatusPopups.command(rest)
@@ -656,7 +620,7 @@ SlashCmdList.WOWSTATUS = function(message)
         current.settings.introduction_confirmed = false
         scrub()
         refresh()
-        say("In-game sharing paused. Opted-in Discord pauses apply after export/upload or through companion privacy controls.")
+        say("Sharing paused.")
     elseif command == "test" then
         queue("level", {level = 10, synthetic = true})
         say("Synthetic level 10 event requested; requires sharing, level field and level storage.")
@@ -666,6 +630,9 @@ SlashCmdList.WOWSTATUS = function(message)
         local lower = command == "interval" and 1 or 0
         if number and number == math.floor(number) and number >= lower and number <= upper then
             current.settings[command == "interval" and "level_interval" or "loot_quality"] = number
+            if command=="quality" then
+                current.settings.loot_rarities={rare=number<=3,epic=number<=4,legendary=number<=5}
+            end
             scrub()
             say("Filter updated.")
         else say("Invalid filter value.") end

@@ -1,13 +1,15 @@
 ## Interface: 11509
 ## Title: WoW Status — Vanilla Classic
-## Notes: In-game group updates, local history and graphs. Discord sharing is optional.
+## Notes: Friend progress, armor loot, activity log and automatic login sync.
 ## Author: fraval13
-## Version: 0.13.0
+## Version: 0.14.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Vanilla Classic / Classic Era only
 Safe.lua
+Features.lua
 CaseFold.lua
 Vanilla.lua
+Loot.lua
 Progress.lua
 History.lua
 HistoryUI.lua
@@ -15,6 +17,7 @@ Groups.lua
 Presentation.lua
 Popups.lua
 Journal.lua
+Minimap.lua
 Previews.lua
 Milestones.lua
 WoWStatus.lua

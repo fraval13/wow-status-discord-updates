@@ -60,7 +60,7 @@ function GetRealZoneText() return "Dun Morogh" end
 function GetInventoryItemLink() return __slot end
 function GetMaxPlayerLevel() return 60 end
 function RequestTimePlayed() end
-function GetItemInfo(link) return "Sword", link, 4 end
+function GetItemInfo(link) return "Rare armor",link,4,1,1,"Armor","Cloth",1,"INVTYPE_CHEST",1,1,4 end
 function time() return 1793000000 end
 LOOT_ITEM_SELF = "You receive loot: %s."
 LOOT_ITEM_SELF_MULTIPLE = "You receive loot: %sx%d."
@@ -129,15 +129,19 @@ end
 '''
 
 
-def make_lua(stubs=STUBS):
+def make_lua(stubs=STUBS, *, discord_feature=None):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
     runtime.execute((root / 'Safe.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Features.lua').read_text(encoding='utf-8'))
+    if discord_feature is not None:
+        runtime.globals().WoWStatusFeatures['discord'] = discord_feature
     runtime.execute((root / 'CaseFold.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Vanilla.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Loot.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Progress.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'History.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'HistoryUI.lua').read_text(encoding='utf-8'))
@@ -145,6 +149,7 @@ def make_lua(stubs=STUBS):
     runtime.execute((root / 'Presentation.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Journal.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Minimap.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Milestones.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
@@ -157,17 +162,13 @@ def lua():
     return make_lua()
 
 
-def test_first_run_sharing_defaults_on_and_introduction_requires_confirmation(lua):
+def test_first_run_sharing_defaults_on_without_introduction_button(lua):
     assert lua.eval('character().settings.enabled') is True
     assert lua.eval('#character().events') == 0
     assert lua.eval('character().settings.introduction_confirmed') is False
-    lua.eval('clickSharing')()
-    assert lua.eval('character().enrolled') is True
-    assert lua.eval('#character().events') == 0
-    lua.eval('confirmIntro')()
-    lua.eval('confirmIntro')()
-    assert lua.eval('#character().events') == 1
-    assert lua.eval('character().events[1].kind') == 'introduction'
+    lua.execute('''
+        for _,frame in ipairs(__frames) do assert(frame.text~="Introduce character") end
+    ''')
 
 
 def test_real_level_and_pause_scrubs(lua):
@@ -476,7 +477,7 @@ def test_all_new_character_sharing_checkboxes_default_on(lua):
     assert lua.eval('character().enrolled') is True
     for section in ['fields', 'collection', 'announcements']:
         assert lua.eval(f"function() for _, enabled in pairs(character().settings.{section}) "
-                        "do if not enabled and _ ~= 'equipment' and _ ~= 'lfg' and _ ~= 'discovery' then return false end end return true end")()
+                        "do if not enabled and _ ~= 'equipment' and _ ~= 'lfg' and _ ~= 'discovery' and _ ~= 'introduction' then return false end end return true end")()
     assert lua.eval('character().settings.introduction_confirmed') is False
 
 
@@ -642,7 +643,7 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
         __categories["WoW Status"].page.OnSizeChanged()
         assert(WoWStatusSetup.scale == 1)
         assert(WoWStatusSetup.width == 600)
-        assert(WoWStatusSetup.preview.font == "GameFontHighlightLarge")
+        assert(WoWStatusSetup.preview==nil)
         SlashCmdList.WOWSTATUS("groups")
         assert(__opened == "Groups")
         assert(__categories.Groups.parent == __categories["WoW Status"])
@@ -707,6 +708,9 @@ def test_ingame_default_does_not_enable_discord(lua):
     assert lua.eval('WoWStatusDB.popups.receive') is True
     assert lua.eval('WoWStatusDB.popups.broadcast') is True
     assert lua.eval('character().settings.discord_enabled') is False
+    lua.eval('SlashCmdList.WOWSTATUS')('discord')
+    assert lua.eval('WoWStatusDiscordSettings') is None
+    lua.execute('WoWStatusFeatures.discord=true')
     lua.eval('SlashCmdList.WOWSTATUS')('discord')
     assert lua.eval('WoWStatusDiscordSettings.checks[1].widget:GetChecked()') is False
     lua.execute('''
@@ -834,7 +838,7 @@ def test_group_membership_ignores_stale_send_receive_flags_and_old_off_commands(
     assert receiver.eval('WoWStatusLevelPopup.message:GetText()') == 'Thora reached level 2!'
     assert receiver.eval('#WoWStatusDB.popups.activity') == 1
     receiver.eval('SlashCmdList.WOWSTATUS')('activity')
-    assert 'automatic' in receiver.eval('WoWStatusActivityLog.status:GetText()')
+    assert receiver.eval('WoWStatusActivityLog.status') is None
     receiver.eval('WoWStatusGroups.update')('', '')
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert receiver.eval('#WoWStatusDB.popups.activity') == 0
@@ -909,15 +913,14 @@ def test_game_reported_completed_quests_replaces_tracked_subset(lua):
 def test_every_notification_preview_is_local_and_has_icon(lua):
     lua.eval('SlashCmdList.WOWSTATUS')('previews')
     assert lua.eval('WoWStatusNotificationPreviews:IsShown()') is True
-    for index, kind in enumerate(['level','introduction','loot','death','zone','quest','profession']):
+    for index, kind in enumerate(['level','loot','death','zone','quest','profession']):
         lua.execute(f'function time() return {1793000000 + index * 7} end')
         lua.execute(f'WoWStatusNotificationPreviews.buttons.{kind}.OnClick()')
         assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
         lua.eval('WoWStatusPopups.tick')()
         texture = lua.eval('WoWStatusLevelPopup.icon.texture')
         assert texture.startswith('Interface\\Icons\\') or texture.endswith('Textures\\LevelUp')
-    lua.eval('WoWStatusPreviews.statusCard')()
-    assert 'Total deaths: 15' in lua.eval('WoWStatusStatusPreview.body:GetText()')
+    assert lua.eval('WoWStatusStatusPreview') is None
     assert lua.eval('#__sent') == 0
     assert lua.eval('#character().events') == 0
     assert lua.eval('#WoWStatusDB.popups.activity') == 0

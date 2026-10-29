@@ -144,7 +144,7 @@ function UI.refresh()
                 table.insert(rows, H.oslo(event.at) .. " · " .. event.kind
                     .. (event.data.synthetic and " [TEST]" or "") .. "\n"
                     .. "Event ID: " .. event.id .. "\nSelected groups: " .. H.serialize(event.group_ids or {}) .. "\nData: " .. H.serialize(event.data)
-                    .. "\nStatus: collected locally; upload/delivery not confirmed in game.\n")
+                    .. "\n")
             end
         end
     elseif mode == "timing" then
@@ -154,13 +154,17 @@ function UI.refresh()
                 .. "\n" .. H.oslo(item.started_at) .. " → " .. H.oslo(item.finished_at) .. "\n")
         end
     else
+        local settings=H.copy(character.settings)
+        if not WoWStatusFeatures.discord then
+            settings.discord_enabled=nil;settings.discord_delivery=nil
+            settings.announcements=nil;settings.character_role=nil
+        end
         rows = {"Identity: " .. H.serialize(character.identity),
             "Selected group IDs: " .. H.serialize(character.group_ids or {}),
-            "Sharing settings: " .. H.serialize(character.settings),
+            "Sharing settings: " .. H.serialize(settings),
             "Current selected snapshot: " .. H.serialize(character.snapshot),
             "Snapshot observed at: " .. H.oslo(character.exported_at),
-            "The companion reapplies privacy filters and uploads history in small batches.\n"
-                .. "This is the addon's source data, not a receipt of HTTP or Discord delivery."}
+            "Recorded activity is saved with your character."}
     end
     local pages = math.max(1, math.ceil(#rows / PAGE_SIZE))
     page = math.max(1, math.min(page, pages))
@@ -197,7 +201,7 @@ function UI.show(getter, selectedMode)
         tab("Event logs", "logs", 24)
         tab("Level graph", "graph", 169)
         tab("Level times", "timing", 314)
-        tab("Export preview", "payload", 459)
+        tab("Character details", "payload", 459)
         button(panel, "All / levels", 604, -55, 125, function()
             category = category == "all" and "level" or "all"
             mode, page = "logs", 1

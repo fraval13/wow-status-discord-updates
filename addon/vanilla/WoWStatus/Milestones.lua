@@ -181,34 +181,3 @@ for _, event in ipairs({"UPDATE_FACTION","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPD
     end
 end
 frame:SetScript("OnEvent",function(_,event,...) M.event(event,...) end)
-
-local function label(parent,text,x,y,width)
-    local widget=parent:CreateFontString(nil,"OVERLAY","GameFontHighlightLarge")
-    widget:SetPoint("TOPLEFT",x,y);widget:SetWidth(width or 550);widget:SetJustifyH("LEFT");widget:SetText(text)
-    return widget
-end
-local function button(parent,text,x,y,width,callback)
-    local widget=CreateFrame("Button",nil,parent,"UIPanelButtonTemplate")
-    widget:SetPoint("TOPLEFT",x,y);widget:SetSize(width,30);widget:SetText(text);widget:SetScript("OnClick",callback)
-    return widget
-end
-function M.show(host)
-    if not panel then
-        panel=CreateFrame("Frame","WoWStatusMilestoneSettings",UIParent)
-        panel:SetSize(600,460)
-        local bg=panel:CreateTexture(nil,"BACKGROUND");bg:SetAllPoints();bg:SetColorTexture(.025,.035,.065,.98)
-        label(panel,"Automatic milestones",24,-20)
-        label(panel,"First dungeon clears, first mount, reputation promotions,\nmajor class unlocks and PvP promotions join the notification queue.\nExisting progress is baselined silently on login.\nAutomatic detection depends on your client's available APIs.",24,-64)
-        label(panel,"Announcements are generated from game events.\nDungeon clears require a completion signal; unsupported clients\nskip them. There are no manual announcement fields.",24,-180)
-        label(panel,"Loot rarity filter (also available with /wstatus quality)",24,-286)
-        button(panel,"Rare + epic loot",24,-326,210,function() character.settings.loot_quality=3;report("Rare and epic loot notifications enabled.") end)
-        button(panel,"Epic loot only",260,-326,210,function() character.settings.loot_quality=4;report("Epic loot notifications enabled.") end)
-        label(panel,"Preview notifications locally in Notification previews.",24,-380)
-        panel.close=button(panel,"Close",424,-416,140,function() panel:Hide() end)
-    end
-    panel:SetParent(host or UIParent);panel:ClearAllPoints();panel:SetPoint(host and "TOPLEFT" or "CENTER")
-    panel.close:SetShown(not host)
-    panel:SetFrameStrata(host and host:GetFrameStrata() or "FULLSCREEN_DIALOG")
-    if host then panel:SetFrameLevel(host:GetFrameLevel()+1) end
-    panel:Show()
-end

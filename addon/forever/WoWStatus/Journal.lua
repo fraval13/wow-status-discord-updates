@@ -3,13 +3,15 @@
 WoWStatusJournal = {}
 local J, S, P = WoWStatusJournal, WoWStatusSafe, WoWStatusPopups
 local db, current, index, digests = nil,nil,{},{}
-local requests, sessions, sendQueue, cursors, rotations, rates = {},{},{},{},{},{}
-local serial, lastSend, nextSync = 0,0,0
+local requests, sessions, sendQueue, cursors, rates = {},{},{},{},{}
+local serial,lastSend=0,0
+local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
+local loginUntil,loginNonce=0,nil
+local pumpJobs
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
-local syncStatus="Waiting for group members"
-local sharedKinds={level=true,introduction=true,loot=true,death=true,zone=true,quest=true,profession=true,
+local sharedKinds={level=true,loot=true,death=true,zone=true,quest=true,profession=true,
     dungeon=true,mount=true,reputation=true,unlock=true,pvp=true}
 local fields={level="level",zone="zone",quest="quests",questprogress="quests",profession="professions",
     professionprogress="professions",equipment="gear"}
@@ -41,6 +43,7 @@ local function peer(group,sender)
     return false
 end
 local function permitted(entry)
+    if (entry.kind=="loot" or entry.kind=="equipment") and not WoWStatusLoot.allowed(current and current.settings,entry) then return false end
     if not entry.owner then return true end
     local owner
     for _, c in pairs(db.characters or {}) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
@@ -59,7 +62,7 @@ local function relayable(entry,group)
         local owner
         for _, c in pairs(db.characters) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
         if not owner or not owner.settings.in_game or owner.settings.in_game[entry.kind]==false then return false end
-        if entry.kind=="loot" and (entry.quality or 0)<owner.settings.loot_quality then return false end
+        if entry.kind=="loot" and not WoWStatusLoot.allowed(owner.settings,entry) then return false end
     end
     return true
 end
@@ -67,10 +70,13 @@ local function rebuild()
     index,digests={},{}
     table.sort(db.journal.entries,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
     local private=0
-    local kept={}
+    local kept,seen={},{}
     for _, e in ipairs(db.journal.entries) do
-        if e.owner and not next(e.groups or {}) then private=private+1 end
-        if not (e.owner and not next(e.groups or {}) and private>1000) then kept[#kept+1]=e end
+        if not seen[e.id] then
+            seen[e.id]=true
+            if e.owner and not next(e.groups or {}) then private=private+1 end
+            if not (e.owner and not next(e.groups or {}) and private>1000) then kept[#kept+1]=e end
+        end
     end
     db.journal.entries=kept
     while #db.journal.entries>CAP do table.remove(db.journal.entries) end
@@ -98,8 +104,32 @@ local function add(entry)
     if refresh then refresh() end
     return true
 end
+function J.prepare(database)
+    local wanted={}
+    for _,entry in ipairs(database.journal and database.journal.entries or {}) do
+        if entry.owner and entry.kind=="loot" and entry.quality and entry.quality>=3 and not entry.class_id then wanted[entry.id]=entry end
+    end
+    for _,c in pairs(database.characters or {}) do
+        for _,event in ipairs(c.history and c.history.events or {}) do
+            if event.kind=="loot" then
+                local epoch,sequence=event.id:match(":(%d+%-%d+):(%d+)$")
+                local name=c.identity.name.."-"..c.identity.realm:gsub("%s","")
+                local id=epoch and c.identity.client..":"..P.senderKey(name)..":"..epoch.."-"..sequence
+                local entry=id and wanted[id]
+                if entry and event.data.item then
+                    WoWStatusLoot.capture(event.data.item,function(info)
+                        entry.quality,entry.class_id,entry.equip_loc,entry.item_id=info.quality,info.class_id,info.equip_loc,info.item_id
+                        if db==database and WoWStatusLoot.allowed(current.settings,entry) then add(entry) end
+                    end)
+                end
+            end
+        end
+    end
+end
 function J.recordLocal(event,backfill)
     if not db or not event or (event.data and event.data.synthetic) or not sharedKinds[event.kind] then return end
+    local loot=event.kind=="loot" and WoWStatusLoot.eventInfo(event.data)
+    if event.kind=="loot" and not WoWStatusLoot.allowed(current.settings,loot) then return end
     local nonce=current.epoch.."-"..current.sequence
     if backfill then
         local epoch,seq=event.id:match(":(%d+%-%d+):(%d+)$")
@@ -107,28 +137,31 @@ function J.recordLocal(event,backfill)
     end
     local id=nonce and J.eventID(ownName(),nonce) or ("archive:"..current.identity.client..":"..event.id)
     local groups={}
-    if not backfill and P.canShare(current,event) and (event.kind~="loot" or (event.data.quality or 0)>=current.settings.loot_quality) then
+    if not backfill and P.canShare(current,event) and (event.kind~="loot" or WoWStatusLoot.allowed(current.settings,loot)) then
         for group in pairs(event.group_ids or {}) do if groupMember(group) then groups[group]=true end end
     end
     add({id=id,client=current.identity.client,sender=ownName(),owner=current.identity.guid,kind=event.kind,
         level=event.kind=="level" and event.data.level or nil,at=event.at,
         text=trim(event.kind=="level" and ("Reached level "..event.data.level.."!") or P.eventText(event) or event.kind,160),
-        quality=event.data.quality,groups=groups,origin="mine"})
+        quality=loot and loot.quality,class_id=loot and loot.class_id,equip_loc=loot and loot.equip_loc,item_id=loot and loot.item_id,groups=groups,origin="mine"})
 end
-function J.observe(kind,text)
+function J.observe(kind,text,info)
+    if kind=="equipment" and not WoWStatusLoot.allowed(current and current.settings,info) then return end
     if not db or not current.settings.enabled or not fields[kind] or not current.settings.fields[fields[kind]] then return end
     local category=({questprogress="quest",professionprogress="profession"})[kind] or kind
     if kind~="equipment" and not current.settings.collection[category] then return end
     current.journal_sequence=(current.journal_sequence or 0)+1
     add({id="local:"..current.identity.client..":"..current.identity.guid..":"..current.epoch..":"..current.journal_sequence,
         client=current.identity.client,sender=ownName(),owner=current.identity.guid,kind=kind,at=time(),
-        text=trim(text,160),groups={},origin="mine"})
+        text=trim(text,160),quality=info and info.quality,class_id=info and info.class_id,equip_loc=info and info.equip_loc,item_id=info and info.item_id,groups={},origin="mine"})
 end
 function J.equipment(slot,item)
     if not slot or slot<1 or slot>19 then return end
     if item~=equipment[slot] then
-        if item then J.observe("equipment","Equipped "..(item:match("%[([^%]]+)%]") or "an item"))
-        elseif equipment[slot] then J.observe("equipment","Removed an equipped item") end
+        local info=WoWStatusLoot.info(item or equipment[slot])
+        if info and WoWStatusLoot.allowed(current.settings,info) then
+            J.observe("equipment",(item and "Equipped " or "Removed ")..info.name,info)
+        end
         equipment[slot]=item
     end
 end
@@ -149,6 +182,7 @@ function J.received(item)
     if item.group_id then groups[item.group_id]=true end
     add({id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
         text=trim(item.level and ("Reached level "..item.level.."!") or item.text or "",160),
+        quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,
         at=item.at or item.received_at or time(),groups=groups,origin="live"})
 end
 function J.entries() return db and db.journal.entries or {} end
@@ -161,7 +195,8 @@ function J.groupsChanged()
         for group in pairs(e.groups or {}) do if not groupMember(group) then e.groups[group]=nil end end
         if e.owner or next(e.groups or {}) then table.insert(kept,e) end
     end
-    db.journal.entries=kept;rebuild();nextSync=time()+5
+    db.journal.entries=kept;rebuild()
+    jobs,queuedJobs,contacted,hellos={},{},{},{};loginUntil=time()+60
     if refresh then refresh() end
 end
 function J.privacyChanged()
@@ -175,11 +210,11 @@ function J.privacyChanged()
     end
     db.journal.entries=kept;rebuild()
     -- Cancel queued payloads/session snapshots before they can disclose revoked data.
-    requests,sessions,sendQueue={},{},{}
+    requests,sessions,sendQueue,jobs,queuedJobs={},{},{},{},{}
     if refresh then refresh() end
 end
 local function pack(e)
-    local values={e.id,e.client,e.sender,tostring(e.at),e.kind,e.level and tostring(e.level) or "",e.text}
+    local values={e.id,e.client,e.sender,tostring(e.at),e.kind,e.level and tostring(e.level) or "",e.text,e.quality and tostring(e.quality) or "",e.class_id and tostring(e.class_id) or "",e.equip_loc or "",e.item_id and tostring(e.item_id) or ""}
     local parts={}
     for _, value in ipairs(values) do parts[#parts+1]=#value..":"..value end
     return table.concat(parts)
@@ -187,7 +222,7 @@ end
 local function unpackEntry(text)
     if #text>1024 then return nil end
     local values,pos={},1
-    for _=1,7 do
+    for _=1,11 do
         local first,last,number=text:find("^(%d+):",pos)
         if not first or #number>4 then return nil end
         local count=tonumber(number)
@@ -204,10 +239,14 @@ local function unpackEntry(text)
         level=tonumber(level)
         if not level or level~=math.floor(level) or level<2 or level>WoWStatusAdapter.max_level then return nil end
     elseif level~="" then return nil else level=nil end
-    return {id=id,client=client,sender=sender,at=at,kind=kind,level=level,text=detail,groups={},origin="catchup"}
+    local e={id=id,client=client,sender=sender,at=at,kind=kind,level=level,text=detail,groups={},origin="catchup",
+        quality=tonumber(values[8]),class_id=tonumber(values[9]),equip_loc=values[10],item_id=tonumber(values[11])}
+    if kind=="loot" and (not e.item_id or not WoWStatusLoot.allowed(current.settings,e)) then return nil end
+    if kind~="loot" and (values[8]~="" or values[9]~="" or values[10]~="" or values[11]~="") then return nil end
+    return e
 end
 local function queue(group,target,body,id)
-    local text="J1 "..group.." "..body
+    local text="J2 "..group.." "..body
     if #text>243 or #sendQueue>=512 then return false end
     sendQueue[#sendQueue+1]={group=group,target=target,text=text,id=id,query=body:match("^Q ([%w%-]+)")}
     return true
@@ -215,13 +254,17 @@ end
 local function token()
     serial=serial+1;db.journal.request_serial=serial;return time().."-"..serial
 end
-local function requestPage(group,target,offset,pages)
+local function lootMask()
+    local rarities=current.settings.loot_rarities or {rare=true,epic=true,legendary=true}
+    return (rarities.rare and 1 or 0)+(rarities.epic and 2 or 0)+(rarities.legendary and 4 or 0)
+end
+local function requestPage(group,target,offset,pages,retries)
     local t=token()
     local member=groupMember(group)
     if not member then return end
     local cutoff=math.max(member.joined_at or time(),time()-AGE)
-    requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={}}
-    queue(group,target,"Q "..t.." "..offset.." "..cutoff)
+    requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},retries=retries or 0}
+    queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
 local function advance(t)
     local r=requests[t]
@@ -229,51 +272,83 @@ local function advance(t)
     requests[t]=nil
     local key=r.group..":"..r.key
     cursors[key]=r.more and r.nextOffset or 0
-    if r.more and r.pages<19 then requestPage(r.group,r.target,r.nextOffset,r.pages+1)
-    else syncStatus="Caught up with "..r.target;if refresh then refresh() end end
+    if r.more and r.pages<math.ceil(CAP/PAGE) then requestPage(r.group,r.target,r.nextOffset,r.pages+1,r.retries)
+    elseif pumpJobs then pumpJobs() end
 end
+local function enqueueJob(group,target,retries)
+    local key=group..":"..P.senderKey(target)
+    if queuedJobs[key] or #jobs>=512 then return end
+    for _,r in pairs(requests) do if r.group==group and r.key==P.senderKey(target) then return end end
+    jobs[#jobs+1]={group=group,target=target,retries=retries or 0};queuedJobs[key]=true
+end
+pumpJobs=function()
+    local active=0;for _ in pairs(requests) do active=active+1 end
+    while active<2 and #jobs>0 do
+        local job=table.remove(jobs,1)
+        local key=job.group..":"..P.senderKey(job.target);queuedJobs[key]=nil
+        if groupMember(job.group) and peer(job.group,job.target) then
+            requestPage(job.group,job.target,cursors[key] or 0,0,job.retries);active=active+1
+        end
+    end
+end
+-- Discovery is bounded to login/group-setup time. A login hello also makes an
+-- already-online peer pull from the arriving client's saved copy, in reverse.
 function J.sync()
     if not db then return end
-    local active={}
-    for _, r in pairs(requests) do active[r.group]=true end
-    local count=0;for _ in pairs(active) do count=count+1 end
-    local groups={};for g in pairs(WoWStatusGroups.selected(current)) do groups[#groups+1]=g end;table.sort(groups)
-    for _, group in ipairs(groups) do
-        if count>=2 then break end
-        if not active[group] then
+    if time()<=loginUntil then
+        local groups={};for g in pairs(WoWStatusGroups.selected(current)) do groups[#groups+1]=g end;table.sort(groups)
+        for _,group in ipairs(groups) do
             local peers=P.peers(group);table.sort(peers)
-            if #peers>0 then
-                rotations[group]=(rotations[group] or 0)%#peers+1
-                local target=peers[rotations[group]]
-                requestPage(group,target,cursors[group..":"..P.senderKey(target)] or 0,0);count=count+1
-                syncStatus="Catching up with "..target
+            for _,target in ipairs(peers) do
+                local key=group..":"..P.senderKey(target)
+                if not contacted[key] and #hellos<512 then
+                    contacted[key]=true;hellos[#hellos+1]={group=group,target=target}
+                end
             end
         end
     end
-    if count==0 then syncStatus="Catch-up needs another group member online" end
-    if refresh then refresh() end
-    nextSync=time()+60
+    if #hellos>0 and #sendQueue<32 then
+        local hello=table.remove(hellos,1)
+        if groupMember(hello.group) and peer(hello.group,hello.target) then
+            queue(hello.group,hello.target,"H "..loginNonce.." "..WoWStatusAdapter.client_id)
+            enqueueJob(hello.group,hello.target)
+        end
+    end
+    pumpJobs()
 end
 function J.receive(message,sender,distribution)
     if not db or distribution~="WHISPER" or type(message)~="string" or #message>243 then return false end
-    local group,op,t,body=message:match("^J1 ([a-f0-9]+) (%u) ([%w%-]+) (.*)$")
+    local group,op,t,body=message:match("^J2 ([a-f0-9]+) (%u) ([%w%-]+) (.*)$")
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
+    if op=="H" then
+        if body~=WoWStatusAdapter.client_id then return false end
+        local helloKey=group..":"..key
+        if seenHello[helloKey]==t then return true end
+        seenHello[helloKey]=t;enqueueJob(group,sender);return true
+    end
     if op=="Q" then
-        local offset,cutoff=body:match("^(%d+) (%d+)$")
-        offset,cutoff=tonumber(offset),tonumber(cutoff)
+        local offset,cutoff,mask=body:match("^(%d+) (%d+) ([0-7])$")
+        offset,cutoff,mask=tonumber(offset),tonumber(cutoff),tonumber(mask)
         if not offset or offset>CAP or not cutoff or cutoff>time()+300 then return false end
         local rateKey=group..":"..key
         if rates[rateKey] and time()-rates[rateKey]<2 then return false end
         rates[rateKey]=time()
+        for sessionKey,session in pairs(sessions) do
+            if session.group==group and session.key==key then sessions[sessionKey]=nil end
+        end
         local n=0;for _ in pairs(sessions) do n=n+1 end;if n>=32 then return false end
         cutoff=math.max(cutoff,time()-AGE,groupMember(group).joined_at or time())
         local eligible={}
-        for _, e in ipairs(db.journal.entries) do if e.at>=cutoff and relayable(e,group) then eligible[#eligible+1]=e end end
+        for _,e in ipairs(db.journal.entries) do
+            local weight=({[3]=1,[4]=2,[5]=4})[e.quality]
+            local wanted=e.kind~="loot" or (weight and math.floor(mask/weight)%2==1)
+            if wanted and e.at>=cutoff and relayable(e,group) then eligible[#eligible+1]=e end
+        end
         local offer,list={},{}
         for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digest(eligible[i].id);offer[d]=eligible[i].id;list[#list+1]=d end
         local cursor=math.min(offset+PAGE,#eligible)
-        sessions[group..":"..key..":"..t]={at=time(),offer=offer,used=false}
+        sessions[group..":"..key..":"..t]={at=time(),offer=offer,used=false,group=group,key=key}
         queue(group,sender,"I "..t.." "..cursor.." "..(cursor<#eligible and "1" or "0").." "..(#list>0 and table.concat(list,",") or "-"))
         return true
     end
@@ -336,10 +411,15 @@ end
 function J.tick()
     if not db then return end
     local now=time()
-    for t,r in pairs(requests) do if now-r.at>(r.sent and 120 or 300) then requests[t]=nil end end
+    for t,r in pairs(requests) do
+        if now-r.at>(r.sent and 120 or 300) then
+            requests[t]=nil
+            if r.retries<1 then enqueueJob(r.group,r.target,r.retries+1) end
+        end
+    end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
     for k,at in pairs(rates) do if now-at>120 then rates[k]=nil end end
-    if now>=nextSync then J.sync() end
+    J.sync()
     if InCombatLockdown and InCombatLockdown() then return end
     local clock=GetTime and GetTime() or now
     if clock-lastSend<.5 or #sendQueue==0 or WoWStatusAdapter.chatRestricted() then return end
@@ -367,10 +447,11 @@ function J.init(database,character)
     equipment,professionRanks,lastQuery={},{},{}
     for slot=1,19 do equipment[slot]=WoWStatusAdapter.equipment(slot) end
     for _, p in ipairs(character.progress and character.progress.professions or {}) do professionRanks[p.name]=p.skill end
-    lastSend=0;nextSync=time()+20
+    lastSend=0;loginNonce=token()
+    jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
     local kept={}
     for _,e in ipairs(db.journal.entries) do if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e) then e.groups=e.groups or {};kept[#kept+1]=e end end
-    db.journal.entries=kept;rebuild();J.groupsChanged();nextSync=time()+20
+    db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=time()+60
     db.journal.migrated=db.journal.migrated or {}
     local migrationKey=character.identity.client..":"..character.identity.guid
     if not db.journal.migrated[migrationKey] then
@@ -404,6 +485,7 @@ end
 local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
+    panel.empty:SetShown(#list==0)
     panel.child:SetHeight(math.max(360,#list*112))
     local first=math.floor(panel.scroll:GetVerticalScroll()/112)+1
     for slot,row in ipairs(panel.rows) do
@@ -419,7 +501,7 @@ local function render()
             row.event_id=e.id;row.entry=e;row:Show()
         else row.event_id=nil;row:Hide() end
     end
-    panel.status:SetText(#list.." entries · Group sync: automatic\nShared announcements only; private activity stays on this computer.\n"..syncStatus)
+
 end
 refresh=function()
     if not panel then return end
@@ -440,10 +522,11 @@ function J.show()
         panel:SetScript("OnDragStart",panel.StartMoving);panel:SetScript("OnDragStop",panel.StopMovingOrSizing)
         local bg=panel:CreateTexture(nil,"BACKGROUND");bg:SetAllPoints();bg:SetColorTexture(.025,.035,.065,.98)
         label(panel,"GameFontNormalLarge",24,-20,720):SetText("WoW Status — activity log")
-        panel.status=label(panel,"GameFontHighlight",24,-56,720)
         panel.scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate")
-        panel.scroll:SetPoint("TOPLEFT",24,-112);panel.scroll:SetSize(710,420)
+        panel.scroll:SetPoint("TOPLEFT",24,-66);panel.scroll:SetSize(710,480)
         panel.child=CreateFrame("Frame",nil,panel.scroll);panel.child:SetSize(686,420);panel.scroll:SetScrollChild(panel.child)
+        panel.empty=label(panel.child,"GameFontHighlightLarge",24,-180,620)
+        panel.empty:SetJustifyH("CENTER");panel.empty:SetText("No activity yet")
         panel.rows={};panel.filter="all"
         for i=1,6 do
             local row=CreateFrame("Frame",nil,panel.child);row:SetSize(680,104)
@@ -467,9 +550,9 @@ function J.show()
         if panel.scroll.HookScript then panel.scroll:HookScript("OnVerticalScroll",render)
         else panel.scroll:SetScript("OnVerticalScroll",render) end
         local buttons={{"All",function() panel.filter="all" end},{"Mine",function() panel.filter="mine" end},
-            {"Friends",function() panel.filter="friends" end},{"Catch up",J.sync},{"Close",function() panel:Hide() end}}
+            {"Friends",function() panel.filter="friends" end},{"Close",function() panel:Hide() end}}
         for i,b in ipairs(buttons) do
-            local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*146,-556);widget:SetSize(136,30);widget:SetText(b[1])
+            local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-556);widget:SetSize(160,30);widget:SetText(b[1])
             widget:SetScript("OnClick",function() b[2]();panel.scroll:SetVerticalScroll(0);render() end)
         end
         table.insert(UISpecialFrames,"WoWStatusActivityLog")
