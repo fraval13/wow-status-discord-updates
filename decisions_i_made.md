@@ -1,5 +1,53 @@
 # Decisions I made — 27 October 2026
 
+## Graphical log and decentralized catch-up — 0.13.0, 29 October
+
+Added a persistent account activity log with the same visual theme function used
+by live toasts. Six recycled scroll rows show icons, coloured headings, original
+times and source information; All/Mine/Friends filters and hover details include
+event IDs. Scroll position stays anchored while new entries arrive. Activity log
+in settings and /wstatus activity or /wstatus journal open it; raw logs/graphs
+remain available separately.
+
+- Log own collected announcements plus private quest turn-ins, equipment changes
+  and profession points. These detailed personal entries never notify or sync to
+  friends. Existing character privacy/collection settings apply. Preview/synthetic
+  samples remain excluded. This is tracked addon activity, not a full game audit.
+- Stable announcement IDs combine client, normalized character/realm, saved epoch
+  and sequence. Relays preserve full IDs and original timestamps. A matching live
+  copy after recovery is also suppressed. Fingerprints only reduce transfer cost;
+  validated full IDs determine duplicates.
+- Online members exchange paginated inventories and request only missing entries.
+  A third party can retain and relay announcements while the author is offline.
+  Recovery goes quietly into the log, with the relay identified, not into popups.
+- Synchronization is scoped to a saved group, after the receiver's join boundary,
+  with current channel-roster peers. No cross-group forwarding or private-action
+  transfer. Group removal clears received data/cancels queued work. Own privacy
+  changes invalidate sessions and cancel pending payloads. Relayed authorship is
+  player-reported, not cryptographic identity, and old distributed copies cannot
+  be recalled from other computers.
+- Keep 2,000 log entries, with private entries capped at 1,000. Sync at most seven
+  days of retained announcements. Six IDs per inventory page, up to 20 pages per
+  round, resumable offsets, two active groups and a 512-packet queue bound traffic.
+  Send at most two log packets per second; defer combat. Missing/expired copies
+  cannot be recovered, and a group member with a copy must come online.
+- Import up to 500 recent own historical events plus retained received messages
+  for local browsing only, avoiding publication of old/private backlog. Added
+  Presentation.lua and Journal.lua to both complete addon folders. Corrected
+  texture path escaping while extracting the shared presentation helper.
+- No server or optional companion changes are needed for this in-game-only
+  feature. Full WoW restart is required to load the new Lua files. Actual client
+  API/channel behavior still needs a live multi-player check.
+
+Validation/delivery: 196 tests passed; 93 addon/milestone/journal tests also passed
+with Lua 5.1. Coverage includes offline-author relay, replay suppression, multiple
+inventory pages, out-of-order/duplicate fragments, privacy cancellation, unrelated
+groups/join boundaries, UI row reuse/scroll anchoring and bounded private storage.
+Ruff and whitespace checks passed. Vanilla is installed locally with a backup;
+both ZIPs include the new Lua modules. No backend deployment is required.
+GitHub SSH authentication remains unavailable; commits need pushing from an
+authenticated computer.
+
 ## Automatic announcements only — 0.12.1, 29 October
 
 Removed discovery sharing, manual dungeon reports and the older free-text LFG

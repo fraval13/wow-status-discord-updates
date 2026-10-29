@@ -72,6 +72,7 @@ local function queue(kind, data, fixed)
         group_ids = H.copy(current.group_ids or {})}
     table.insert(current.events, event)
     H.record(current, event)
+    WoWStatusJournal.recordLocal(event)
     snapshot()
     WoWStatusPopups.broadcast(current, event)
     return event
@@ -114,6 +115,7 @@ local function scrub()
     local level = A.level()
     if level then H.sync(current, level, time()) end
     WoWStatusPopups.privacyChanged()
+    WoWStatusJournal.privacyChanged()
     if not current.settings.enabled or not current.settings.fields.playtime then
         playtime, playtimeRecordedAt, pendingPlayedLevel = nil, nil, nil
         current.played_boundary = nil
@@ -230,7 +232,7 @@ local function showPanel(host)
         button(panel, "History / graph", 24, -1396, 160, function()
             WoWStatusHistoryUI.show(function() return current end, "logs")
         end)
-        button(panel, "Group activity", 194, -1396, 120, function() WoWStatusPopups.showActivity() end)
+        button(panel, "Activity log", 194, -1396, 120, function() WoWStatusPopups.showActivity() end)
         button(panel, "Groups", 324, -1396, 90, function() openSettings(true) end)
         panel.close = button(panel, "Close", 424, -1396, 110, function() panel:Hide() end)
         button(panel, "Preview toast", 24, -1436, 160, function() openSettings("previews") end)
@@ -472,6 +474,7 @@ local function initialize()
     WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
     H.init(current)
     H.scrub(current)
+    WoWStatusJournal.init(WoWStatusDB,current)
     local level = A.level()
     if level then H.sync(current, level, time()) end
     snapshot()
@@ -560,6 +563,9 @@ frame:SetScript("OnEvent", function(_, event, ...)
             end
         end
     elseif event == "PLAYER_EQUIPMENT_CHANGED" then
+        local slot=S.number(...)
+        local item=slot and A.equipment(slot)
+        WoWStatusJournal.equipment(slot,item)
         snapshot() -- Keep the profile current without an equipment notification.
     elseif event == "ZONE_CHANGED_NEW_AREA" then
         local zone = A.zone()
@@ -579,7 +585,10 @@ frame:SetScript("OnEvent", function(_, event, ...)
     elseif event == "QUEST_TURNED_IN" then
         local id = S.number(...)
         if current.settings.enabled and current.settings.fields.quests then
-            WoWStatusProgress.quest(current, id)
+            if WoWStatusProgress.quest(current, id) then
+                local title=S.stringCall(C_QuestLog and C_QuestLog.GetTitleForQuestID,id)
+                WoWStatusJournal.observe("questprogress","Completed "..(title or ("quest #"..id)))
+            end
             snapshot()
             questMilestone()
         end
@@ -588,6 +597,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
             for _, profession in ipairs(WoWStatusProgress.professionChanges(current)) do
                 queue("profession", {name=profession.name, skill=profession.skill, max_skill=profession.max_skill, title=profession.title})
             end
+            WoWStatusJournal.professions(current.progress.professions)
         end
         snapshot()
     elseif event == "TIME_PLAYED_MSG" then
@@ -634,7 +644,8 @@ SlashCmdList.WOWSTATUS = function(message)
         say("Manual announcements have been removed. Milestones are detected automatically.")
     elseif command == "previews" then openSettings("previews")
     elseif command == "discord" then openSettings("discord")
-    elseif command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
+    elseif command == "sync" then WoWStatusJournal.sync()
+    elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
     elseif command == "popup" then
         WoWStatusPopups.command(rest)
     elseif command == "logs" or command == "graph" or command == "times" then

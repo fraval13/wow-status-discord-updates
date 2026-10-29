@@ -1,4 +1,55 @@
-# In-game event history and level line graph
+# Activity log and local history
+
+Open **Activity log** in addon settings, `/wstatus activity`, or `/wstatus journal`.
+It shows scrollable cards with the same icons, accent colours and headings as live
+popups. **All**, **Mine** and **Friends** filter the view. Hover a card for its full
+text and stable event ID. New entries preserve your position when scrolling back.
+The window recycles six row frames, so a long log does not create thousands of UI
+objects. Catch-up entries keep their original timestamp and show the relay name.
+
+Your own tracked announcements appear even if nobody is online to receive them.
+Individual quest turn-ins, profession points and equipment changes are recorded
+privately, respecting character collection/profile choices. They do not create
+friend notifications or enter peer sync. Previews and synthetic tests are excluded.
+This records supported addon activity, not every action, chat message or keypress.
+
+SavedVariables preserve the log on reload/logout. Up to 2,000 entries are kept,
+with a separate 1,000-entry ceiling for private activity so it cannot consume the
+entire shared-announcement cache. New installations import up to 500 recent own
+history events and the retained received-activity cache for local browsing. These
+older entries are not newly advertised to peers.
+
+## Catching up without a server
+
+Every new announcement has a stable ID derived from client edition, normalized
+character/realm identity, the saved character epoch and its event sequence. Relay
+copies preserve that ID and the original time. Inventory fingerprints are only
+transfer hints; full IDs are used for deduplication after validation.
+
+Online group members exchange small inventories, request missing entries and
+reassemble bounded addon-whisper fragments. Peers can forward retained copies,
+so the original author need not be online. **Catch up** or `/wstatus sync` starts
+a round; automatic rounds also run periodically. Known IDs are skipped. Recovery
+is quiet: it adds log cards and never replays old popup queues. A later live copy
+of a recovered ID also does not replay its toast.
+
+Sync covers the last seven days, bounded by the retained log and your group's
+join time. It only exchanges records saved for that same group, with a peer
+currently present in its channel roster. It does not route entries between
+unrelated groups. Removing a group cancels its transfers and clears received
+entries; disabling own fields/collection cancels pending publication of those
+observations. Private personal activity is never offered.
+
+This is an eventual catch-up cache, not a guaranteed archive or authenticated
+ledger. Another updated group member with a saved copy must come online. Missing
+copies, evictions and older events cannot be reconstructed. Relayed authorship is
+a claim from the relay, labelled as such in the log. Already distributed copies
+cannot be recalled from other computers. Whisper/realm/faction restrictions still
+apply. Update friends' addons to enable the log-sync prefix.
+
+## Raw history, graphs and timings
+
+ and level line graph
 
 Open the new window using the **History / graph** button in `/wstatus`, or:
 

@@ -20,7 +20,8 @@ A reload by itself creates no notification.
 4. Joining a group automatically enables sending and receiving; there are no
    additional send/receive switches. Choose which events to collect locally and
    share in WoW. Each character keeps its own event and character privacy choices.
-5. Open **Group activity** (`/wstatus activity`) to see received updates. Friends'
+5. Open **Activity log** (`/wstatus activity` or `/wstatus journal`) to browse your
+   tracked activity and friends’ announcements with popup-style cards. Friends'
    updates appear as animated on-screen toasts with a large icon, event colours,
    a pulsing glow and text. They appear near the upper-middle of the screen for
    six seconds. Level-ups include levels 2, 3, etc. **Preview toast** in settings
@@ -32,8 +33,9 @@ needed to apply in-game group changes. Local history is saved by the game on
 reload/logout and remains available through `/wstatus logs`, `graph` and `times`.
 
 The in-game messages cover level-ups, consented introductions, selected loot,
-equipment changes, deaths, quest completions, profession skill-ups, zones and
-automatic milestone notifications. Login/logout session notices are not generated.
+deaths, 100-quest achievements, profession title promotions, zones and automatic
+milestones. Individual quest turn-ins, skill points and equipment changes can
+appear privately in your activity log without notifying friends. Login/logout session notices are not generated.
 They contain compact event details, not a full remote inventory or talent profile.
 Loot uses the selected rarity threshold; level-up notifications do not use
 Discord's old milestone interval.
@@ -45,10 +47,15 @@ members, then sends **addon whispers** to those members. It does not attempt
 hidden addon messages over custom channels, which Classic restricts. A recipient
 needs the addon and matching group ID to display the update.
 
-Both players must be online and able to communicate within WoW's channel/whisper
-rules. Do not assume cross-faction, cross-realm or cross-edition delivery. There
-is no offline server mailbox or replay of missed in-game messages. The last 200
-received updates are kept locally; activity from removed groups is cleared.
+Live delivery requires players to be online and able to communicate within WoW's
+channel/whisper rules. Recent missed announcements can be recovered quietly from
+an online group member's saved copy, even if the original author is offline.
+Unique IDs deduplicate live and recovered copies. Use **Catch up** in the log or
+`/wstatus sync`; automatic reconciliation also runs periodically. There is no
+server mailbox: somebody with a copy must come online. The log retains up to
+2,000 entries (up to 1,000 private activity entries); sync covers the last seven
+days after your group join time. Removed groups' received entries are cleared.
+Do not assume cross-faction, cross-realm or cross-edition delivery.
 A shared ID is a membership choice, not verified identity or a password.
 
 `/wstatus popup status` shows channel membership, discovered peers and the last

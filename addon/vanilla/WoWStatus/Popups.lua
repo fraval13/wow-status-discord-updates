@@ -10,8 +10,6 @@ local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local rosterRequested = {}
-local activityPanel
-local refreshActivity
 
 local function realm()
     local value = A.realmName()
@@ -100,11 +98,11 @@ function P.peers(group)
 end
 local function remember(item)
     if item.preview then return end
+    if WoWStatusJournal then WoWStatusJournal.received(item) end
     prefs.activity = prefs.activity or {}
     table.insert(prefs.activity, 1, {sender = item.sender, level = item.level,
-        kind = item.kind or "level", text = item.text, automatic = item.automatic, at = time(), group_id = item.group_id})
+        kind = item.kind or "level", text = item.text, automatic = item.automatic, nonce = item.nonce, original_at = item.at, at = time(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
-    if refreshActivity then refreshActivity() end
 end
 function P.groupsChanged()
     if not prefs then return end
@@ -137,7 +135,7 @@ function P.groupsChanged()
         if item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id) then table.insert(history, item) end
     end
     prefs.activity = history
-    if refreshActivity then refreshActivity() end
+    if WoWStatusJournal then WoWStatusJournal.groupsChanged() end
 end
 local function syncGroups()
     if not syncPending or combat() then return end
@@ -237,9 +235,14 @@ function P.receive(text, sender, channel)
         if kind == "profession" and detail:match(": %d+ / %d+") then return false end
         pruneSeen(now)
         local duplicate = key .. ":" .. nonce
+        if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(sender,nonce)) then
+            WoWStatusJournal.received({sender=sender,kind=kind,text=detail,at=at,nonce=nonce,
+                group_id=group~="legacy" and group or nil})
+            prefs.seen[duplicate]=now;return false
+        end
         if prefs.seen[duplicate] or #incoming >= 128 then return false end
         prefs.seen[duplicate] = now
-        local item = {sender=sender, key=key, kind=kind, text=detail, automatic=automatic, received_at=now,
+        local item = {sender=sender, key=key, kind=kind, text=detail, automatic=automatic, received_at=now, at=at, nonce=nonce,
             group_id=group ~= "legacy" and group or nil}
         remember(item)
         table.insert(incoming, item)
@@ -258,6 +261,11 @@ function P.receive(text, sender, channel)
     pruneSeen(now)
     local duplicateKey = key .. ":" .. level
     local claims = prefs.level_claims[key]
+    if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(sender,nonce)) then
+        WoWStatusJournal.received({sender=sender,kind="level",level=level,at=at,nonce=nonce,
+            group_id=group~="legacy" and group or nil})
+        prefs.seen[duplicateKey]=now;return false
+    end
     if prefs.seen[duplicateKey] or (claims and claims.levels[level]) then return false end
     if #incoming >= 128 then return false end
     if not claims then
@@ -274,7 +282,7 @@ function P.receive(text, sender, channel)
     prefs.seen[duplicateKey] = now
     table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
         count = 1, group_id = group ~= "legacy" and group or nil})
-    remember({sender=sender, level=level, group_id=group ~= "legacy" and group or nil})
+    remember({sender=sender, level=level, at=at, nonce=nonce, group_id=group ~= "legacy" and group or nil})
     P.tick()
     return true
 end
@@ -318,37 +326,11 @@ local function show(item, now)
     local name = item.sender:match("^[^-]+") or item.sender
     if type(alias) == "string" and alias ~= "" then name = alias .. "’s " .. name end
     name = name:gsub("|", "||")
-    local themes = {
-        level={"level-arrow",1,.82,.2,"LEVEL UP!"},
-        loot={"INV_Misc_Bag_10",.72,.35,1,"LOOT FOUND"},
-        death={"Ability_Rogue_FeignDeath",.95,.18,.2,"A FRIEND HAS FALLEN"},
-        zone={"INV_Misc_Map_01",.25,.9,.6,"ON THE MOVE"},
-        session={"Spell_Arcane_TeleportStormWind",.4,.7,1,"FRIEND UPDATE"},
-        quest={"Achievement_Quests_Completed_08",1,.8,.2,"QUEST ACHIEVEMENT!"},
-        profession={"Trade_Tailoring",.35,.85,1,"PROFESSION PROMOTION!"},
-        introduction={"Achievement_Character_Human_Male",.9,.75,.4,"WELCOME, ADVENTURER!"},
-        dungeon={"Achievement_Dungeon_Deadmines",1,.75,.2,"FIRST DUNGEON CLEAR!"},
-        mount={"Ability_Mount_RidingHorse",1,.8,.3,"A NEW ADVENTURE!"},
-        reputation={"Achievement_Reputation_01",.3,.8,1,"REPUTATION MILESTONE!"},
-        unlock={"INV_Misc_Book_07",.6,.4,1,"CLASS ABILITY UNLOCKED!"},
-        pvp={"Achievement_PVP_A_01",1,.35,.2,"PVP PROMOTION!"},
-    }
-    local theme = themes[item.level and "level" or item.kind] or themes.session
-    local icon = theme[1]
-    if item.kind == "profession" then
-        local professionIcons = {Alchemy="Trade_Alchemy", Blacksmithing="Trade_BlackSmithing",
-            Enchanting="Trade_Engraving", Engineering="Trade_Engineering", Herbalism="Trade_Herbalism",
-            Leatherworking="Trade_LeatherWorking", Mining="Trade_Mining", Skinning="INV_Misc_Pelt_Wolf_01",
-            Tailoring="Trade_Tailoring", Cooking="INV_Misc_Food_15", ["First Aid"]="Spell_Holy_SealOfSacrifice",
-            Fishing="Trade_Fishing"}
-        local profession = (item.text or ""):match("^(.-):")
-        icon = professionIcons[profession] or "Trade_BlackSmithing"
-    end
-    toast.icon:SetTexture(item.level and "Interface\\AddOns\\WoWStatus\\Textures\\LevelUp"
-        or ("Interface\\Icons\\" .. icon))
-    toast.glow:SetVertexColor(theme[2], theme[3], theme[4])
-    toast.accent:SetColorTexture(theme[2], theme[3], theme[4], 1)
-    toast.heading:SetTextColor(theme[2], theme[3], theme[4]); toast.heading:SetText(theme[5])
+    local texture, r, g, b, heading = WoWStatusPresentation.theme(item)
+    toast.icon:SetTexture(texture)
+    toast.glow:SetVertexColor(r,g,b)
+    toast.accent:SetColorTexture(r,g,b,1)
+    toast.heading:SetTextColor(r,g,b); toast.heading:SetText(heading)
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
@@ -479,6 +461,8 @@ local function eventText(event)
         return (event.kind == "loot" and "Looted " or "Equipped ") .. item
     end
 end
+P.canShare = canShare
+P.eventText = eventText
 function P.broadcast(character, event)
     if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
     local nonce = character.epoch .. "-" .. character.sequence
@@ -528,60 +512,8 @@ function P.privacyChanged()
     if not canShare(getCharacter()) and prefs.last_send then status("disabled_by_character_privacy") end
 end
 
-local function activityLabel(parent, text, x, y, width)
-    local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-    label:SetPoint("TOPLEFT", x, y); label:SetWidth(width); label:SetJustifyH("LEFT"); label:SetText(text)
-    return label
-end
-refreshActivity = function()
-    if not activityPanel then return end
-    local lines = {}
-    for i, item in ipairs(prefs.activity or {}) do
-        if i > 75 then break end
-        local group = item.group_id and WoWStatusGroups.selected(getCharacter())[item.group_id]
-        if group or not item.group_id then
-            local detail = item.level and ("reached level " .. item.level) or item.text or "shared an update"
-            local text = WoWStatusHistory.oslo(item.at) .. " · " .. item.sender .. " — " .. detail
-                .. (group and (" [" .. group.label .. "]") or "")
-            table.insert(lines, (text:gsub("|", "||")))
-        end
-    end
-    activityPanel.text:SetText(#lines > 0 and table.concat(lines, "\n\n")
-        or "No group updates received yet.\n\nChoose the same group ID as your friends. You must be online and able to communicate in WoW. No companion or Discord account is needed.")
-    activityPanel.child:SetHeight(math.max(340, activityPanel.text:GetStringHeight() + 30))
-    local state = prefs.last_send and prefs.last_send.state or "No update sent yet"
-    activityPanel.status:SetText((groupMode() and "Group updates: automatic"
-        or ("Legacy receive: " .. tostring(prefs.receive) .. " · Send: " .. tostring(prefs.broadcast)))
-        .. " · " .. state .. "\nGroups: " .. WoWStatusGroups.text(getCharacter()))
-end
 function P.showActivity()
-    if not prefs then return end
-    if not activityPanel then
-        activityPanel = CreateFrame("Frame", "WoWStatusActivity", UIParent)
-        activityPanel:SetSize(720, 560); activityPanel:SetPoint("CENTER")
-        activityPanel:SetFrameStrata("FULLSCREEN_DIALOG"); activityPanel:EnableMouse(true)
-        activityPanel:SetMovable(true); activityPanel:RegisterForDrag("LeftButton")
-        activityPanel:SetScript("OnDragStart", activityPanel.StartMoving)
-        activityPanel:SetScript("OnDragStop", activityPanel.StopMovingOrSizing)
-        local bg = activityPanel:CreateTexture(nil, "BACKGROUND")
-        bg:SetAllPoints(); bg:SetColorTexture(.04, .04, .07, .98)
-        activityLabel(activityPanel, "WoW Status — group activity", 24, -20, 670)
-        activityPanel.status = activityLabel(activityPanel, "", 24, -55, 670)
-        activityPanel.scroll = CreateFrame("ScrollFrame", nil, activityPanel, "UIPanelScrollFrameTemplate")
-        activityPanel.scroll:SetPoint("TOPLEFT", 24, -120); activityPanel.scroll:SetSize(650, 370)
-        activityPanel.child = CreateFrame("Frame", nil, activityPanel.scroll)
-        activityPanel.child:SetSize(620, 350); activityPanel.scroll:SetScrollChild(activityPanel.child)
-        activityPanel.text = activityLabel(activityPanel.child, "", 0, 0, 620)
-        for i, entry in ipairs({{"Refresh", function() refreshActivity() end},
-            {"Diagnostics", function() P.command("status") end},
-            {"Close", function() activityPanel:Hide() end}}) do
-            local button = CreateFrame("Button", nil, activityPanel, "UIPanelButtonTemplate")
-            button:SetPoint("TOPLEFT", 24 + (i - 1) * 160, -515); button:SetSize(140, 28)
-            button:SetText(entry[1]); button:SetScript("OnClick", entry[2])
-        end
-        table.insert(UISpecialFrames, "WoWStatusActivity")
-    end
-    refreshActivity(); activityPanel:Show()
+    if WoWStatusJournal then WoWStatusJournal.show() end
 end
 
 function P.command(text)

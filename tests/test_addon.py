@@ -142,7 +142,9 @@ def make_lua(stubs=STUBS):
     runtime.execute((root / 'History.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'HistoryUI.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Presentation.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Journal.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Milestones.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
@@ -737,10 +739,10 @@ def test_two_clients_share_level_updates_without_companion_or_discord():
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert receiver.eval('#WoWStatusDB.popups.activity') == 1
     receiver.eval('SlashCmdList.WOWSTATUS')('activity')
-    assert 'Thora' in receiver.eval('WoWStatusActivity.text:GetText()')
+    assert 'Thora' in receiver.eval('WoWStatusActivityLog.rows[1].message:GetText()')
     receiver.eval('WoWStatusGroups.update')('', 'Friend')
     assert receiver.eval('#WoWStatusDB.popups.activity') == 0
-    assert 'Thora' not in receiver.eval('WoWStatusActivity.text:GetText()')
+    assert receiver.eval('WoWStatusActivityLog.rows[1]:IsShown()') is False
 
 
 def test_generic_events_share_only_with_selected_groups_and_honor_privacy():
@@ -832,7 +834,7 @@ def test_group_membership_ignores_stale_send_receive_flags_and_old_off_commands(
     assert receiver.eval('WoWStatusLevelPopup.message:GetText()') == 'Thora reached level 2!'
     assert receiver.eval('#WoWStatusDB.popups.activity') == 1
     receiver.eval('SlashCmdList.WOWSTATUS')('activity')
-    assert 'automatic' in receiver.eval('WoWStatusActivity.status:GetText()')
+    assert 'automatic' in receiver.eval('WoWStatusActivityLog.status:GetText()')
     receiver.eval('WoWStatusGroups.update')('', '')
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert receiver.eval('#WoWStatusDB.popups.activity') == 0

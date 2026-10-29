@@ -2,7 +2,7 @@
 ## Title: WoW Status — Vanilla Classic
 ## Notes: In-game group updates, local history and graphs. Discord sharing is optional.
 ## Author: fraval13
-## Version: 0.12.1
+## Version: 0.13.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Vanilla Classic / Classic Era only
 Safe.lua
@@ -12,7 +12,9 @@ Progress.lua
 History.lua
 HistoryUI.lua
 Groups.lua
+Presentation.lua
 Popups.lua
+Journal.lua
 Previews.lua
 Milestones.lua
 WoWStatus.lua

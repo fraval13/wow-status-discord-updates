@@ -132,3 +132,28 @@ These checks constrain the normal addon's announcement paths; addon messages
 remain player-reported data, as with the rest of the protocol. No extra Discord
 emoji slots are required. Restart/reload WoW and restart an optional companion
 for the updated event handling. Live Forever API behavior still needs checking.
+
+## Persistent graphical log and peer catch-up (0.13.0)
+
+`/wstatus activity` now opens the graphical **Activity log**; `/wstatus journal`
+is an alias. Local announcements and received updates share stable IDs across
+log copies. Private quest, equipment and skill-point observations are logged
+without broadcasting. Previews remain local samples and are not logged.
+
+The `WoWStatusLog` prefix carries group-scoped paginated inventories, missing-ID
+requests and bounded fragments. Requests require current membership and a roster
+peer, valid request tokens, bounded counts and freshness/join-time checks. Full
+records are length-prefixed data and hex fragments; no remote Lua is evaluated.
+A request offers six IDs per page, at most 20 pages per round, and resumes later.
+At most two groups actively request at once. Outbound traffic is limited to two
+packets per second and deferred in combat; requests, fragments and queues expire
+or have fixed bounds. Catch-up is log-only and does not trigger popup display.
+
+For acceptance testing, have A announce a level to B while C is absent. Log A out,
+bring C online (already a member of the group), and press **Catch up** on C. It
+should recover A's entry from B once, with its original time/ID, without a popup.
+Repeat sync and check duplicates, another group's isolation, group removal,
+privacy changes and scrolling while new activity arrives. Also check a client
+with no peers: its own log must keep working.
+
+See [Activity log and history](IN_GAME_HISTORY.md) for retention and limitations.
