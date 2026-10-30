@@ -443,6 +443,11 @@ function P.preview(kind)
         dungeon="First clear: The Deadmines", mount="First mount: Brown Horse",
         reputation="Exalted with Ironforge", unlock="Unlocked Bear Form", pvp="Promoted to Sergeant",
     }
+    if A.classicProfessionTitles==false then
+        samples.profession="Learned Inscription"
+        samples.profession_learned="Learned Inscription"
+    end
+    if A.pvpText then samples.pvp=A.pvpText("",101) end
     if kind ~= "level" and not samples[kind] then return end
     if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
     table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind=="profession_learned" and "profession" or kind,text=samples[kind],

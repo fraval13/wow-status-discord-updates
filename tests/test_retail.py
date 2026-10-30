@@ -157,3 +157,20 @@ def test_retail_installer_selects_retail_folder(tmp_path):
     subprocess.run([*command,'120105'],check=True,capture_output=True)
     assert (addons/'WoWStatus/Retail.lua').is_file()
     assert '## Interface: 120105' in (addons/'WoWStatus/WoWStatus.toc').read_text(encoding='utf-8')
+
+
+def test_retail_previews_match_profession_and_honor_behavior():
+    lua=retail_runtime()
+    lua.execute('''
+        WoWStatusPreviews.show()
+        assert(WoWStatusNotificationPreviews.buttons.profession==nil)
+        assert(WoWStatusNotificationPreviews.buttons.pvp:GetText()=="Honor level")
+        WoWStatusPopups.preview("profession_learned")
+        assert(WoWStatusLevelPopup.message:GetText():find("Learned Inscription",1,true))
+        assert(not WoWStatusLevelPopup.message:GetText():find("Apprentice",1,true))
+        WoWStatusPopups.preview("pvp")
+        function time() return 1793000007 end
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.message:GetText():find("Reached honor level 101",1,true))
+        assert(#character().events==0 and #__sent==0)
+    ''')

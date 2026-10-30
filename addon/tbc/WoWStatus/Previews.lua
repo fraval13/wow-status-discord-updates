@@ -1,6 +1,6 @@
 -- Local-only samples. Previewing never queues progress or sends a chat message.
 WoWStatusPreviews = {}
-local P = WoWStatusPreviews
+local P,A = WoWStatusPreviews,WoWStatusAdapter
 local panel, card
 local examples = {
     {"level", "Level up"},
@@ -45,14 +45,18 @@ end
 function P.show(host)
     if not panel then
         panel=CreateFrame("Frame","WoWStatusNotificationPreviews",UIParent)
-        local footer = 170 + #examples * 42
+        local visible={}
+        for _,entry in ipairs(examples) do
+            if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
+        end
+        local footer = 170 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
         panel.buttons={}
-        for i, entry in ipairs(examples) do
+        for i, entry in ipairs(visible) do
             local kind=entry[1]
-            panel.buttons[kind]=button(panel,entry[2],24,-148-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
+            panel.buttons[kind]=button(panel,kind=="pvp" and A.pvpLabel or entry[2],24,-148-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
         end
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
