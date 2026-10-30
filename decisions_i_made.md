@@ -1,5 +1,16 @@
 # Decisions I made — 27 October 2026
 
+## Notification flavour copy — 30 October 2026
+
+- Wrote docs/notification-flavour-text.md: 100 original numbered lines for each
+  of the 13 existing preview types (1,300 total), including both profession
+  learning and title promotions. No exact duplicate lines across the catalogue.
+- Death copy has 22 general roasts and six for each of 13 classes. Labels are
+  selection restrictions: never use a Paladin bubble joke for another class.
+  Class-specific lines should be excluded when sender class is unknown.
+- This is copy for review, as requested. Runtime caption selection, addon
+  packets, logs, website and downloaded packages are not changed in this pass.
+
 ## Animation removed — 30 October 2026
 
 Published static release 20261030T141238440869Z. Eight homepage tests passed;
