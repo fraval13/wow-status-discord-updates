@@ -2,6 +2,18 @@
 
 ## Random notification flavour implemented — 30 October 2026
 
+Validation/delivery: 270 tests passed from a clean release checkout, including
+161 tests under Lua 5.1. Ruff and whitespace checks passed. Browser checks at
+1440/820/390/320 widths passed without overflow, missing assets or script errors.
+Random caption checks passed locally and live for all four webpage demo types.
+Published all four 0.14.9 ZIPs from commit
+8921b7e42bf10f712eb2b38b8b0cbac2bb4f8e86; the public verifier checked their
+revision, hashes, contents, download links and displayed versions. Static release:
+/srv/wow-status-homepage/releases/20261030T151554096730Z. GitHub push is still
+blocked by SSH public-key authentication; the website/downloads are live through
+the existing authorized server deployment. Real in-game rendering awaits your
+check. No Discord messages were sent and SavedVariables were not modified.
+
 - Added all 1,300 captions to Vanilla, Forever, TBC and Retail in release 0.14.9.
   Popups and activity cards show the appropriate category under the facts.
 - Event identity selects a varied caption without reseeding the game RNG. The
