@@ -152,10 +152,11 @@ function P.peers(group)
 end
 local function remember(item)
     if item.preview then return end
+    item.flavour=WoWStatusFlavour.text(item)
     if WoWStatusJournal then WoWStatusJournal.received(item) end
     prefs.activity = prefs.activity or {}
     table.insert(prefs.activity, 1, {sender = item.sender, level = item.level,
-        kind = item.kind or "level", text = item.text, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
+        kind = item.kind or "level", text = item.text, flavour=item.flavour, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
 end
 function P.groupsChanged()
@@ -357,7 +358,7 @@ function P.receive(text, sender, channel)
     claims.levels[level], claims.at = true, now
     prefs.seen[duplicateKey] = now
     table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
-        count = 1, group_id = group ~= "legacy" and group or nil})
+        count = 1, at=at, nonce=nonce, group_id = group ~= "legacy" and group or nil})
     prefs.last_receive={state="queued",sender=sender,kind="level",at=now}
     remember({sender=sender, level=level, at=at, nonce=nonce, group_id=group ~= "legacy" and group or nil})
     P.tick()
@@ -367,7 +368,7 @@ end
 local function show(item, now)
     if not toast then
         toast = CreateFrame("Frame", "WoWStatusLevelPopup", UIParent)
-        toast:SetSize(560, 108)
+        toast:SetSize(560, 124)
         toast:SetPoint("TOP", 0, -170)
         toast:SetFrameStrata("DIALOG")
         toast:EnableMouse(true)
@@ -415,12 +416,14 @@ local function show(item, now)
     toast.glow:SetVertexColor(r,g,b)
     toast.accent:SetColorTexture(r,g,b,1)
     toast.heading:SetTextColor(r,g,b); toast.heading:SetText(heading)
+    toast.message:SetHeight(42)
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
     toast.message:SetText(name .. (item.level and " " or " — ") .. detail)
-    toast.detail:SetText(item.preview and "Local preview" or "")
-    toast.detail:SetShown(item.preview and true or false)
+    local flavour=WoWStatusFlavour.text(item)
+    toast.detail:SetText(flavour)
+    toast.detail:SetShown(flavour~="")
     toast.age = 0
     toast:SetAlpha(0)
     toast:Show()

@@ -146,6 +146,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
     runtime.execute((root / 'History.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'HistoryUI.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Flavour.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Presentation.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Journal.lua').read_text(encoding='utf-8'))
@@ -1046,7 +1047,8 @@ def test_click_dismisses_only_current_popup_and_keeps_log_and_queue(lua):
     for level in [2,3]:
         assert receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 click-{level}', 'Eldrin-TestRealm',channel)
     assert 'level 2!' in lua.eval('WoWStatusLevelPopup.message:GetText()')
-    assert lua.eval('WoWStatusLevelPopup.detail:GetText()') == ''
+    assert lua.eval('WoWStatusLevelPopup.detail:GetText()') != ''
+    assert 'dismiss' not in lua.eval('WoWStatusLevelPopup.detail:GetText()').lower()
     lua.execute('WoWStatusLevelPopup.OnMouseUp(WoWStatusLevelPopup,"LeftButton")')
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is False
     lua.eval('WoWStatusPopups.tick')()

@@ -151,7 +151,7 @@ def test_log_ui_reuses_popup_art_and_virtualizes_rows_and_preserves_ids():
     lua.execute('''
         WoWStatusJournal.init(WoWStatusDB,character())
         for i=1,50 do WoWStatusJournal.observe("professionprogress","Alchemy: "..i) end
-        WoWStatusActivityLog.scroll.scroll=112*10
+        WoWStatusActivityLog.scroll.scroll=132*10
         WoWStatusActivityLog.scroll.OnVerticalScroll()
     ''')
     assert lua.eval('#WoWStatusActivityLog.rows') == 6
@@ -205,7 +205,7 @@ def test_private_log_cap_does_not_evict_shared_announcement_and_scroll_anchor_st
     lua.execute('''
         for i=1,1010 do WoWStatusJournal.observe("professionprogress","Alchemy: "..i) end
         WoWStatusJournal.show()
-        WoWStatusActivityLog.scroll.scroll=112*10
+        WoWStatusActivityLog.scroll.scroll=132*10
         WoWStatusActivityLog.scroll.OnVerticalScroll()
         __anchor=WoWStatusActivityLog.rows[1].event_id
         __now=1793000011

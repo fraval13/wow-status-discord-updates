@@ -1,5 +1,22 @@
 # Decisions I made — 27 October 2026
 
+## Random notification flavour implemented — 30 October 2026
+
+- Added all 1,300 captions to Vanilla, Forever, TBC and Retail in release 0.14.9.
+  Popups and activity cards show the appropriate category under the facts.
+- Event identity selects a varied caption without reseeding the game RNG. The
+  chosen line is saved on the local log entry, so reopening it does not reroll.
+  Local notification previews and the webpage demo draw randomly on each click
+  and avoid immediately repeating the same line.
+- Death jokes match a class only when public unit information identifies the
+  sender (player, group, target, focus or mouseover). Otherwise only the 22
+  general roasts are eligible. Armor class_id is never treated as player class.
+  No new identity data, flavour text or free-text field is sent over the network;
+  peers may choose different class-aware captions depending on available data.
+- Retained factual messages, event IDs, filters, queue order, click dismissal
+  and log sync. Made cards slightly taller for the extra line.
+- Preserved the separate uncommitted addon branding changes.
+
 ## Notification flavour copy — 30 October 2026
 
 - Wrote docs/notification-flavour-text.md: 100 original numbered lines for each

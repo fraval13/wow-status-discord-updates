@@ -1,7 +1,7 @@
 # WoW Status — notification flavour text
 
-1,300 proposed lines: 100 for each of the 13 notification previews.
-These are copy for review; no random captions have been enabled in the addon.
+1,300 implemented lines: 100 for each of the 13 notification previews.
+The addon uses these banks for random flavour captions on notifications and activity-log cards.
 Keep the factual notification above the flavour line. Choose only a line for the correct event.
 Death tags restrict class-specific jokes; use [ANY] when the sender class is unknown.
 Class jokes are playful suggestions, not claims that a spell was learned or off cooldown.

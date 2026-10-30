@@ -5,7 +5,10 @@ The homepage source, build instructions and deployment notes are in
 [website/README.md](website/README.md).
 
 Share progress with friends inside WoW. Use the same group ID to receive queued
-on-screen announcements and browse a persistent activity log.
+on-screen announcements and browse a persistent activity log. Notifications have
+random flavour captions from [13 banks of 100 lines](docs/notification-flavour-text.md).
+Each event keeps its caption in your log. Class-specific death jokes are used
+only when WoW can identify the sender’s class; otherwise a general roast is used.
 
 ## Start sharing
 

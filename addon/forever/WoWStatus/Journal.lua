@@ -109,6 +109,7 @@ local function add(entry)
         end
     end
     entry.groups=entry.groups or {}
+    WoWStatusFlavour.text(entry)
     table.insert(db.journal.entries,entry);rebuild()
     if refresh then refresh() end
     return true
@@ -192,7 +193,7 @@ function J.received(item)
     if item.group_id then groups[item.group_id]=true end
     add({id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
         text=trim(item.level and ("Reached level "..item.level.."!") or item.text or "",160),
-        quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,
+        quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,flavour=item.flavour,
         at=item.at or item.received_at or time(),groups=groups,origin="live"})
 end
 function J.entries() return db and db.journal.entries or {} end
@@ -496,17 +497,18 @@ local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
     panel.empty:SetShown(#list==0)
-    panel.child:SetHeight(math.max(360,#list*112))
-    local first=math.floor(panel.scroll:GetVerticalScroll()/112)+1
+    panel.child:SetHeight(math.max(360,#list*132))
+    local first=math.floor(panel.scroll:GetVerticalScroll()/132)+1
     for slot,row in ipairs(panel.rows) do
         local i=first+slot-1;local e=list[i]
         if e then
-            row:ClearAllPoints();row:SetPoint("TOPLEFT",0,-(i-1)*112)
+            row:ClearAllPoints();row:SetPoint("TOPLEFT",0,-(i-1)*132)
             local texture,r,g,b,heading=WoWStatusPresentation.theme(e)
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(heading)
             row.message:SetText(((e.sender:match("^[^-]+") or e.sender):gsub("|","||")).." — "..e.text:gsub("|","||"))
             local scope=e.owner and "Your activity" or (e.origin=="catchup" and "Caught up via "..(e.via or "a group member") or e.origin=="legacy" and "Saved group update" or "Live group update")
+            row.flavour:SetText(WoWStatusFlavour.text(e))
             row.detail:SetText(WoWStatusHistory.oslo(e.at).." · "..scope)
             row.event_id=e.id;row.entry=e;row:Show()
         else row.event_id=nil;row:Hide() end
@@ -516,10 +518,10 @@ end
 refresh=function()
     if not panel then return end
     local offset=panel.scroll:GetVerticalScroll()
-    local anchor=panel.entriesList and panel.entriesList[math.floor(offset/112)+1]
+    local anchor=panel.entriesList and panel.entriesList[math.floor(offset/132)+1]
     if offset>0 and anchor then
         for i,e in ipairs(visibleEntries()) do
-            if e.id==anchor.id then panel.scroll:SetVerticalScroll((i-1)*112+offset%112);break end
+            if e.id==anchor.id then panel.scroll:SetVerticalScroll((i-1)*132+offset%132);break end
         end
     end
     render()
@@ -539,7 +541,7 @@ function J.show()
         panel.empty:SetJustifyH("CENTER");panel.empty:SetText("No activity yet")
         panel.rows={};panel.filter="all"
         for i=1,6 do
-            local row=CreateFrame("Frame",nil,panel.child);row:SetSize(680,104)
+            local row=CreateFrame("Frame",nil,panel.child);row:SetSize(680,124)
             local background=row:CreateTexture(nil,"BACKGROUND");background:SetAllPoints();background:SetColorTexture(.04,.05,.08,.98)
             row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT");row.accent:SetSize(680,3)
             row.icon=row:CreateTexture(nil,"ARTWORK");row.icon:SetPoint("TOPLEFT",14,-22);row.icon:SetSize(56,56)
@@ -554,7 +556,8 @@ function J.show()
                 end
             end)
             row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
-            row.detail=label(row,"GameFontHighlightSmall",88,-80,570)
+            row.flavour=label(row,"GameFontHighlightSmall",88,-80,570)
+            row.detail=label(row,"GameFontHighlightSmall",88,-102,570)
             panel.rows[i]=row
         end
         if panel.scroll.HookScript then panel.scroll:HookScript("OnVerticalScroll",render)
