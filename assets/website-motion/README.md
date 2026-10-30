@@ -1,8 +1,12 @@
 # Animated masthead experiment
 
 Source artwork: `website/assets/adventure.webp`. The original still is unchanged.
-The built-in image_gen tool produced the two edited source plates below.
-WebP conversion used ffmpeg; SVG composition and Chromium rendering add motion.
+The current preview renders the original still with gentle glow changes at the
+two braziers, hanging lantern and blue staff. Characters, sky, trees and camera
+remain completely fixed. SVG composition and Chromium rendering add the light.
+
+The rejected walking experiment used the following image_gen source plates,
+retained only for provenance; neither is used in the current preview.
 
 - `background.webp`: background plate with the three travelers removed.
 - `travelers.webp`: transparent 4×2 sheet of eight walking poses.
@@ -10,9 +14,8 @@ WebP conversion used ffmpeg; SVG composition and Chromium rendering add motion.
   `website/assets/adventure-motion.mp4` (H.264), silent 12-second loops,
   1440×480 at 20 fps. These are video rather than a large GIF.
 
-The travelers walk in place rather than advancing through the scene. The camera
-stays fixed, sky drifts slightly, pine branches ripple and gate light flickers.
-This is a painted sprite animation experiment rather than full cinematic motion.
+Only the existing light sources gently brighten and dim, at independent phases.
+There is no walking, scenery movement, flashing or camera movement.
 
 ## Rebuild
 

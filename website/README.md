@@ -6,7 +6,8 @@ analytics, sign-in, external runtime dependencies, or player data.
 
 ## Optional animated artwork preview
 
-Open `/?motion=on` to try the silent looping masthead. Its **Still image** button
+Open `/?motion=on` to try the original painting with gently flickering lights.
+Characters and scenery stay fixed. Its **Still image** button
 immediately restores the original artwork; **Animated preview** switches back.
 `/?motion=off` starts with the still. The normal `/` URL stays static and does
 not create a video element or download either video. No preference is stored.

@@ -1,5 +1,17 @@
 # Decisions I made — 27 October 2026
 
+## Lights-only revision — 30 October 2026
+
+Published at /srv/wow-status-homepage/releases/20261030T140730760650Z.
+Eight homepage release tests passed; the public verifier confirmed all four
+unchanged 0.14.8 downloads. The WebM is now about 357 KB (MP4 about 204 KB).
+
+- Replaced the rejected walking experiment with the unchanged original artwork
+  and gentle independent flickering of its two braziers, lantern and blue staff.
+  The characters, sky, trees and camera remain still.
+- Kept the opt-in preview URL and instant Still image toggle. The ordinary
+  homepage remains static. Saved original experiment sources for provenance.
+
 ## Animated homepage experiment — 30 October 2026
 
 Validation/delivery: eight homepage release tests passed. Browser checks passed

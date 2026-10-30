@@ -1,50 +1,24 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>WoW Status motion rendering source</title>
+<html lang="en"><head><meta charset="utf-8"><title>WoW Status light rendering source</title>
 <style>html,body{margin:0;width:1440px;height:480px;overflow:hidden;background:#101827}svg{display:block;width:1440px;height:480px}</style></head><body>
-<!-- Offline rendering source. The public site uses the encoded silent video. -->
-<svg id="scene" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 2172 724">
+<!-- Original artwork stays fixed; only the existing lights brighten gently. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2172 724">
  <defs>
-  <filter id="soft"><feGaussianBlur stdDeviation="11"/></filter>
-  <filter id="shadow"><feGaussianBlur stdDeviation="4"/></filter>
-  <filter id="wind" x="-5%" y="-5%" width="110%" height="110%">
-   <feTurbulence type="fractalNoise" baseFrequency=".008 .025" numOctaves="1" seed="7" result="noise"/>
-   <feOffset id="wind-offset" in="noise" dx="0" dy="0" result="moving-noise"/>
-   <feDisplacementMap in="SourceGraphic" in2="moving-noise" scale="5" xChannelSelector="R" yChannelSelector="G"/>
-  </filter>
-  <mask id="sky-mask"><path fill="white" filter="url(#soft)" d="M220,-40 H1700 V0 L1565,55 L1420,100 L1320,167 L1170,160 L1075,123 L965,82 L870,37 L790,18 L720,-15 L640,15 L555,62 L457,82 L350,40 L260,25 Z"/></mask>
-  <mask id="trees-mask">
-   <path fill="white" filter="url(#soft)" d="M0,70 L90,0 L150,30 L187,180 L265,220 L335,505 L250,724 H0 Z"/>
-   <path fill="white" filter="url(#soft)" d="M1200,724 L1230,605 L1300,543 L1345,407 L1410,475 L1440,290 L1495,365 L1570,190 L1610,460 L1530,650 L1430,724 Z"/>
-  </mask>
-  <radialGradient id="fire"><stop offset="0" stop-color="#ffd890" stop-opacity=".62"/><stop offset="1" stop-color="#ed7519" stop-opacity="0"/></radialGradient>
+  <radialGradient id="warm"><stop offset="0" stop-color="#ffe6aa" stop-opacity=".45"/><stop offset=".35" stop-color="#ffc263" stop-opacity=".18"/><stop offset="1" stop-color="#f09634" stop-opacity="0"/></radialGradient>
+  <radialGradient id="blue"><stop offset="0" stop-color="#d7f3ff" stop-opacity=".4"/><stop offset=".35" stop-color="#72d9ff" stop-opacity=".15"/><stop offset="1" stop-color="#50baff" stop-opacity="0"/></radialGradient>
  </defs>
- <image href="/assets/website-motion/background.webp" width="2172" height="724"/>
- <g mask="url(#sky-mask)"><image id="sky" href="/assets/website-motion/background.webp" x="0" y="0" width="2172" height="724"/></g>
- <g mask="url(#trees-mask)"><image href="/assets/website-motion/background.webp" filter="url(#wind)" width="2172" height="724"/></g>
- <g id="flames"><ellipse fill="url(#fire)" cx="1760" cy="319" rx="54" ry="48"/><ellipse fill="url(#fire)" cx="2120" cy="290" rx="48" ry="42"/></g>
- <g id="travelers">
-  <g opacity=".28" filter="url(#shadow)" fill="#21150c"><ellipse cx="1722" cy="674" rx="28" ry="8"/><ellipse cx="1820" cy="676" rx="28" ry="8"/><ellipse cx="1925" cy="677" rx="25" ry="8"/></g>
-  <svg x="1650" y="374" width="330" height="330" viewBox="0 0 443.5 443.5" overflow="hidden">
-   <image id="walk-a" href="/assets/website-motion/travelers.webp" width="1774" height="887"/>
-   <image id="walk-b" href="/assets/website-motion/travelers.webp" width="1774" height="887" opacity="0"/>
-  </svg>
- </g>
+ <image href="/website/assets/adventure.webp" width="2172" height="724"/>
+ <ellipse class="light" fill="url(#warm)" cx="1760" cy="319" rx="48" ry="48"/>
+ <ellipse class="light" fill="url(#warm)" cx="2006" cy="298" rx="44" ry="44"/>
+ <ellipse class="light" fill="url(#warm)" cx="2052" cy="412" rx="25" ry="30"/>
+ <ellipse class="light" fill="url(#blue)" cx="1845" cy="422" rx="18" ry="22"/>
 </svg>
 <script>
 window.renderFrame = function(frame) {
  const phase = 2 * Math.PI * frame / 240;
- document.querySelector('#sky').setAttribute('transform',`translate(${9*Math.sin(phase)} ${1.8*Math.sin(phase*2)})`);
- document.querySelector('#wind-offset').setAttribute('dx',8*Math.sin(phase));
- document.querySelector('#wind-offset').setAttribute('dy',3*Math.cos(phase));
- document.querySelector('#flames').setAttribute('opacity',.65+.15*Math.sin(phase*5)+.08*Math.sin(phase*11));
- const walk=frame/3, first=Math.floor(walk)%8, second=(first+1)%8, blend=walk-Math.floor(walk);
- for(const [name,pose,opacity] of [['walk-a',first,1],['walk-b',second,blend]]) {
-  const image=document.getElementById(name);
-  image.setAttribute('x',-(pose%4)*443.5);
-  image.setAttribute('y',-Math.floor(pose/4)*443.5);
-  image.setAttribute('opacity',opacity);
- }
- document.querySelector('#travelers').setAttribute('transform',`translate(${2*Math.sin(phase)} ${-.8*Math.cos(phase)})`);
+ document.querySelectorAll('.light').forEach((light, i) => {
+  light.setAttribute('opacity', .42 + .18*Math.sin(phase*3+i*1.7) + .09*Math.sin(phase*7+i*.9));
+ });
 };
 window.renderFrame(0);
 </script></body></html>
