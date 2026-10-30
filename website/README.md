@@ -54,3 +54,8 @@ Version text and sizes are filled automatically from the addon release metadata.
 When changing the addon, bump the TOC/project version as usual; do not edit version
 labels by hand on the website. The pipeline runs on pushed `main` commits or manual
 workflow dispatches. Local commits alone cannot trigger GitHub Actions.
+
+After deployment, the workflow fetches the live homepage, release manifest and
+all three ZIP downloads using `scripts/verify_homepage.py`. It checks the exact
+commit revision, visible download links, public hashes, ZIP contents and version
+labels. A stale or missing public download fails the release verification step.

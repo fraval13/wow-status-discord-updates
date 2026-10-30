@@ -6,10 +6,18 @@ import subprocess
 import sys
 import zipfile
 from pathlib import Path
+from urllib.parse import urlparse
 
 import pytest
 
 ROOT = Path(__file__).parents[1]
+
+
+def public_verifier():
+    spec = importlib.util.spec_from_file_location('homepage_verify', ROOT/'scripts/verify_homepage.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.verify
 
 
 def receiver():
@@ -82,3 +90,30 @@ def test_valid_release_switches_all_public_downloads_together(staged,monkeypatch
     # Receiver rollback returns the complete previous site, including downloads.
     module.switch_homepage(old)
     assert (site/'current').resolve()==old
+
+
+def test_published_site_verification_checks_every_download(built_site):
+    manifest=json.loads((built_site/'downloads/release.json').read_text())
+    def fetch(url):
+        path=urlparse(url).path.lstrip('/') or 'index.html'
+        return (built_site/path).read_bytes()
+    assert public_verifier()('https://example.com',manifest['addon_revision'],fetch)==manifest
+
+
+@pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version'])
+def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
+    manifest=json.loads((built_site/'downloads/release.json').read_text())
+    def fetch(url):
+        path=urlparse(url).path.lstrip('/') or 'index.html'
+        data=(built_site/path).read_bytes()
+        if path=='downloads/release.json' and fault=='stale_revision':
+            return json.dumps(dict(manifest,addon_revision='0'*40)).encode()
+        if path=='index.html' and fault=='missing_tbc_link':
+            return data.replace(b'/downloads/WoWStatus-tbc.zip',b'/missing.zip')
+        if path=='downloads/WoWStatus-tbc.zip' and fault=='corrupt_tbc_zip':
+            return data+b'corrupt'
+        if path=='index.html' and fault=='stale_version':
+            return data.replace(('VERSION '+manifest['editions']['tbc']['version']).encode(),b'VERSION 0.0.0')
+        return data
+    with pytest.raises(ValueError):
+        public_verifier()('https://example.com',manifest['addon_revision'],fetch)

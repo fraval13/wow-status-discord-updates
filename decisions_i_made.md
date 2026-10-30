@@ -1,5 +1,26 @@
 # Decisions I made — 27 October 2026
 
+## Website download pipeline verification — 30 October 2026
+
+- Rechecked the live homepage: Vanilla Classic, TBC Anniversary and Forever all
+  have visible download links and valid 0.14.7 packages. TBC was already published;
+  no second homepage or duplicate download entry was created.
+- Retained the shared build/deploy workflow: every passing main push builds all
+  three ZIPs, fills the site's version/file sizes, validates the incoming public
+  release and publishes its files atomically with the application release.
+- Added scripts/verify_homepage.py as the final deployment step. It downloads the
+  public manifest, HTML and all three ZIPs and verifies the exact Git revision,
+  visible links, file sizes/hashes, ZIP integrity, TOC versions and page version.
+  A stale or incomplete public release now fails the workflow's verification.
+- Eight focused release tests passed, including stale revision, missing TBC
+  link, corrupted TBC ZIP and incorrect website version cases. The verifier also
+  passed against the live 0.14.7 site at addon revision 6942b9c. Ruff and whitespace
+  checks passed. The uncommitted branding changes were preserved.
+- GitHub SSH authentication still rejects this computer, including the configured
+  default SSH identity. GitHub Actions cannot receive or run these local workflow
+  commits until they are pushed from an authenticated environment. The existing
+  public downloads remain available independently of that blocker.
+
 ## TBC Anniversary edition — 0.14.7
 
 Validation/delivery: 249 tests passed from a clean checkout of 6942b9c, including

@@ -78,3 +78,7 @@ jobs:
           ssh -T -o BatchMode=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes \
             -o UserKnownHostsFile="$host_file" -o IdentitiesOnly=yes -i "$key_file" \
             "wow-character-deploy@$DEPLOY_HOST" < "$RUNNER_TEMP/wow-character-release.tar"
+      - name: Verify live homepage and all addon downloads
+        env:
+          RELEASE_REVISION: ${{ github.sha }}
+        run: python scripts/verify_homepage.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION" --attempts 6
