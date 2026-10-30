@@ -13,3 +13,9 @@
 @media(max-width:740px){.download-body>.download-button{grid-column:1/-1}}
 
 .retail-button{background:linear-gradient(#40546d,#2a3b52 48%,#1d2b3d 50%,#30435a);box-shadow:0 0 0 2px #202938,inset 0 0 0 2px #55667c,inset 0 2px #a4b7d033,0 3px 6px #70532b33)}
+
+.hero-motion{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:65% center;z-index:-2;opacity:0;pointer-events:none}
+.hero-motion.is-playing{opacity:1}
+.hero-motion-toggle{position:absolute;top:13px;right:14px;z-index:4;padding:5px 11px;border:1px solid #ab8d58;background:#111924e8;color:#ecd09b;font:11px/1.5 Georgia,serif;cursor:pointer;box-shadow:0 1px 5px #0007}
+.hero-motion-toggle:hover{background:#29313c;color:#fff0c8}
+@media(max-width:740px){.hero-motion{object-position:62% center}.hero.motion-preview .hero-content{padding-top:58px}}

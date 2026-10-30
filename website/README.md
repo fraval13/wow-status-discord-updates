@@ -4,6 +4,21 @@ Buildless HTML/CSS/JS, published at **https://wow.frankvalde.com/** through the
 existing Caddy server. All fonts, images and scripts are served locally. No
 analytics, sign-in, external runtime dependencies, or player data.
 
+## Optional animated artwork preview
+
+Open `/?motion=on` to try the silent looping masthead. Its **Still image** button
+immediately restores the original artwork; **Animated preview** switches back.
+`/?motion=off` starts with the still. The normal `/` URL stays static and does
+not create a video element or download either video. No preference is stored.
+
+Reduced-motion users start with the still and can explicitly press play.
+Playback pauses when the artwork is offscreen or the tab is hidden.
+WebM has an MP4 fallback, both served locally under the CSP's media-src policy.
+See `assets/website-motion/README.md` in the repository root for generation
+prompts, composition sources and rebuild instructions. To abandon the preview,
+remove the motion block at the end of app.js and its CSS; the unchanged original
+image is always available. Server releases also retain the previous static site.
+
 Build from the repository root:
 
 ```sh

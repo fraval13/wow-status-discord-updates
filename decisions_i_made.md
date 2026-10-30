@@ -1,5 +1,30 @@
 # Decisions I made — 27 October 2026
 
+## Animated homepage experiment — 30 October 2026
+
+Validation/delivery: eight homepage release tests passed. Browser checks passed
+locally and on the public preview: static default without video downloads,
+playback, instant still-image toggle, offscreen pause/resume, mobile layout and
+reduced-motion opt-in. MP4 range requests return 206 with the correct video MIME
+type. Both existing group health endpoints remain healthy. Published static
+release /srv/wow-status-homepage/releases/20261030T135920184054Z; previous release
+/srv/wow-status-homepage/releases/20261030T120047325752Z remains available.
+
+- Kept the ordinary homepage static. The animation is an opt-in preview at
+  https://wow.frankvalde.com/?motion=on with a Still image / Animated preview
+  toggle. Returning to the normal URL restores the original with no stored
+  preference. No video is downloaded on the ordinary homepage.
+- Used a silent 12-second WebM loop with MP4 fallback instead of a bulky GIF.
+  It has a fixed camera, restrained sky/tree/light motion and a painted walking
+  cycle. Walking is in place: this is a visual experiment for review.
+- Reduced-motion users start with the original still. Playback pauses offscreen
+  and in hidden tabs. All assets are local; no new service or dependency runs
+  in visitors' browsers.
+- Preserved the original illustration and saved source plates, prompts and
+  reproducible render/encode scripts under assets/website-motion and scripts/motion.
+- This changes only the website. The published 0.14.8 addon ZIPs remain pinned
+  to release 060e5a4, excluding the separate uncommitted branding edits.
+
 ## Retail edition — 0.14.8
 
 Validation/delivery: 264 tests passed from a clean release checkout, including
