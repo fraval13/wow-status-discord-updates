@@ -4,7 +4,7 @@ import re
 import time
 
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions', 'deaths', 'quests'}
-LEVEL_CAPS = {'classic-era': 60, 'forever': 60}
+LEVEL_CAPS = {'classic-era': 60, 'forever': 60, 'tbc-anniversary': 70}
 KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status', 'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery'}
 STATUS_FIELDS = {
     'level': ('level','level'), 'xp_current': ('level','level'), 'xp_max': ('level','level'),
@@ -43,7 +43,7 @@ def validate(payload):
     settings = payload.get('settings', {})
     if not isinstance(identity, dict) or not isinstance(settings, dict):
         raise ValidationError('Invalid identity or settings')
-    if identity.get('client') not in ('classic-era', 'forever'):
+    if identity.get('client') not in LEVEL_CAPS:
         raise ValidationError('Unsupported client adapter')
     cap = LEVEL_CAPS[identity['client']]
     clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
@@ -117,7 +117,7 @@ def validate(payload):
                             entry['max_skill'] = integer(profession.get('max_skill'), 'profession maximum', 1, 2000)
                             entry['skill'] = integer(profession['skill'], 'profession skill', 0, entry['max_skill'])
                         if profession.get('key') in {'alchemy','blacksmithing','enchanting','engineering',
-                                'herbalism','leatherworking','mining','skinning','tailoring','cooking','first_aid','fishing'}:
+                                'herbalism','leatherworking','mining','skinning','tailoring','jewelcrafting','cooking','first_aid','fishing'}:
                             entry['key'] = profession['key']
                         professions.append(entry)
                     val = professions

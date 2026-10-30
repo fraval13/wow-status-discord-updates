@@ -28,7 +28,7 @@ function WoWStatusPresentation.theme(item)
     local icon = theme[1]
     if item.kind == "profession" or item.kind == "professionprogress" then
         local professionIcons = {Alchemy="Trade_Alchemy", Blacksmithing="Trade_BlackSmithing",
-            Enchanting="Trade_Engraving", Engineering="Trade_Engineering", Herbalism="Trade_Herbalism",
+            Enchanting="Trade_Engraving", Jewelcrafting="INV_Misc_Gem_01", Engineering="Trade_Engineering", Herbalism="Trade_Herbalism",
             Leatherworking="Trade_LeatherWorking", Mining="Trade_Mining", Skinning="INV_Misc_Pelt_Wolf_01",
             Tailoring="Trade_Tailoring", Cooking="INV_Misc_Food_15", ["First Aid"]="Spell_Holy_SealOfSacrifice",
             Fishing="Trade_Fishing"}

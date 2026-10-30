@@ -32,7 +32,7 @@ def build(root, output, addon_ref):
     downloads = output / 'downloads'
     downloads.mkdir(exist_ok=True)
     releases = {}
-    for edition in ('vanilla', 'forever'):
+    for edition in ('vanilla', 'forever', 'tbc'):
         prefix = f'addon/{edition}/'
         files = git(root, 'ls-tree', '-r', '--name-only', revision, '--', prefix + 'WoWStatus').decode().splitlines()
         if not files:
@@ -58,7 +58,7 @@ def build(root, output, addon_ref):
         releases[edition] = {'version': version, 'file': archive.name,
                              'bytes': archive.stat().st_size,
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
-    if releases['vanilla']['version'] != releases['forever']['version']:
+    if len({release['version'] for release in releases.values()}) != 1:
         raise ValueError('Addon versions must match before publishing')
     html = (output / 'index.html').read_text()
     html = html.replace('__VERSION__', releases['vanilla']['version'])

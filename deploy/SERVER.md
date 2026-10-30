@@ -75,7 +75,7 @@ The deployed gateway configuration is tracked in `Caddyfile.production`:
 | ronkalot | `/groups/19e32befc180a1cfdea5c3/` | `127.0.0.1:18081` |
 | navsquad | `/groups/466f79683c7465bc3a5ba0/` | `127.0.0.1:18082` |
 
-The root address now hosts the addon homepage and both standalone ZIP downloads.
+The root address now hosts the addon homepage and all standalone ZIP downloads.
 Static releases live in `/srv/wow-status-homepage/releases/`, with an atomic
 `current` symlink. They are independent from the Python application releases.
 See [homepage deployment](../website/README.md) for building and publishing the
@@ -91,7 +91,7 @@ wow-status configure --url https://wow.frankvalde.com
 
 Homepage packaging now belongs to the same checks/deployment workflow. The runner
 builds `dist/homepage` for its exact commit and includes it under `.deploy/HOMEPAGE`
-in the private tar. The receiver validates manifest revision, both ZIP checksums,
+in the private tar. The receiver validates manifest revision, all three ZIP checksums,
 TOC contents and displayed version, then moves the public files out before
 deleting `.deploy` credentials. After service health checks pass, the public
 symlink points to that release's sealed `public-homepage` directory. No Caddy

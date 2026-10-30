@@ -1,0 +1,193 @@
+-- Conservative milestones: unavailable APIs never become invented achievements.
+WoWStatusMilestones = {}
+local M, S = WoWStatusMilestones, WoWStatusSafe
+local character, emit, report, panel
+local unlocks = {
+    DRUID={5487,768,783,1066,24858}, WARLOCK={688,697,712,691},
+    SHAMAN={2645}, HUNTER={1515}, PRIEST={15473}, PALADIN={7328},
+    WARRIOR={71,2458}, ROGUE={2842}, MAGE={3561,3562,3563,3565,3566,3567,10059,11416,11417,11418,11419,11420},
+}
+local function state()
+    character.milestones = character.milestones or {}
+    local value = character.milestones
+    value.automatic_dungeons, value.reputation, value.unlocks = value.automatic_dungeons or {}, value.reputation or {}, value.unlocks or {}
+    return value
+end
+local function clean(text, maximum)
+    text = S.string(text)
+    if not text or #text > maximum or text:find("[%c|]") then return nil end
+    text = text:match("^%s*(.-)%s*$")
+    return text ~= "" and text or nil
+end
+local function spellName(id)
+    local name = S.stringCall(GetSpellInfo, id)
+    if not name and C_Spell and C_Spell.GetSpellInfo then
+        local info = S.value(S.call(C_Spell.GetSpellInfo, id))
+        if type(info) == "table" then name = S.string(info.name) end
+    end
+    return name
+end
+function M.scanUnlocks(baseline)
+    local _, class = S.call(UnitClass, "player")
+    class = S.string(class)
+    local known = IsSpellKnown or (C_SpellBook and C_SpellBook.IsSpellKnown)
+    if not known then return end
+    local value = state()
+    for _, id in ipairs(unlocks[class] or {}) do
+        if S.call(known, id) == true and not value.unlocks[tostring(id)] then
+            local name = spellName(id)
+            if name then
+                value.unlocks[tostring(id)] = true
+                if not baseline then emit("unlock", {text="Unlocked " .. name, spell_id=id}) end
+            end
+        end
+    end
+end
+function M.scanReputation(baseline)
+    local modern = C_Reputation and C_Reputation.GetFactionDataByIndex
+    local count = S.number(S.call(C_Reputation and C_Reputation.GetNumFactions or GetNumFactions))
+    if not count then return end
+    local value = state()
+    for index=1,math.min(count,512) do
+        local name, standing, id
+        if modern then
+            local data = S.value(S.call(modern,index))
+            if type(data)=="table" then
+                name,standing,id = S.string(data.name),S.number(data.reaction),S.number(data.factionID)
+            end
+        elseif GetFactionInfo then
+            local ok, rawName, _, rawStanding, _, _, _, _, _, header, _, _, _, _, rawID = pcall(GetFactionInfo,index)
+            if ok and not S.value(header) then
+                name,standing,id = S.string(rawName),S.number(rawStanding),S.number(rawID)
+            end
+        end
+        if name and standing and standing>=1 and standing<=8 then
+            local key = tostring(id or name)
+            local previous = value.reputation[key]
+            value.reputation[key] = math.max(previous or standing,standing)
+            if not baseline and previous and standing>previous and standing>=6 then
+                local titles = {[6]="Honored",[7]="Revered",[8]="Exalted"}
+                emit("reputation", {text=titles[standing] .. " with " .. name, standing=standing})
+            end
+        end
+    end
+end
+function M.scanPvp(baseline)
+    local name, rank, season
+    if WoWStatusAdapter.pvpRank then name,rank,season=WoWStatusAdapter.pvpRank()
+    else
+        local raw = S.number(S.call(UnitPVPRank,"player"))
+        if not raw then return end
+        if raw==0 then rank=0 else name,rank=S.call(GetPVPRankInfo,raw,"player") end
+    end
+    name, rank = S.string(name), S.number(rank)
+    local value = state()
+    if not rank then return end
+    if season and value.pvp_season~=season then
+        value.pvp_season,value.pvp_rank=season,rank
+        return -- A new season starts from a quiet, current baseline.
+    end
+    if rank==0 then
+        value.pvp_rank=value.pvp_rank or 0
+        return
+    end
+    if not name or not rank or rank<0 or rank>100 then return end
+    local previous = value.pvp_rank
+    value.pvp_rank = math.max(previous or rank,rank)
+    if not baseline and previous and rank>previous and rank>0 then
+        emit("pvp", {text="Promoted to " .. name, rank=rank})
+    end
+end
+function M.scanMount(baseline, event)
+    local value = state()
+    if value.mount_done then return end
+    if C_MountJournal and C_MountJournal.GetMountIDs and C_MountJournal.GetMountInfoByID then
+        local ids = S.value(S.call(C_MountJournal.GetMountIDs))
+        if type(ids)=="table" then
+            local count, name = 0,nil
+            for _, raw in ipairs(ids) do
+                local id = S.number(raw)
+                if id then
+                    local ok, rawName, _, _, _, _, _, _, _, _, _, collected = pcall(C_MountJournal.GetMountInfoByID,id)
+                    if ok and S.value(collected)==true then count=count+1; name=S.string(rawName) or name end
+                end
+            end
+            if count>0 then
+                value.mount_done=true
+                if not baseline and value.mount_count==0 and (event=="NEW_MOUNT_ADDED" or event=="COMPANION_LEARNED") then
+                    emit("mount", {text="First mount: " .. (name or "collected!"), source="collection"})
+                end
+            end
+            value.mount_count=count
+            return
+        end
+    end
+    -- Classic clients without a collection API can prove a ride, not acquisition.
+    if S.call(IsMounted)==true then
+        value.mount_done=true
+        if not baseline then emit("mount", {text="First mount ride recorded!", source="observed_ride"}) end
+    end
+end
+local function instance()
+    if not GetInstanceInfo then return nil end
+    local ok, name, kind, _, _, _, _, _, id = pcall(GetInstanceInfo)
+    if ok and S.string(kind)=="party" then return S.string(name), S.number(id) end
+end
+local function recordDungeon(name, id)
+    name=clean(name,80)
+    id=S.number(id)
+    if not name or not id or id<1 or id>1000000000 then return false end
+    local value=state()
+    local key=name:lower()
+    if value.automatic_dungeons[key] then return false end
+    value.automatic_dungeons[key]=true
+    emit("dungeon", {text="First clear: " .. name, name=name, instance_id=id, source="game_api"})
+    return true
+end
+function M.checkDungeon(event, ...)
+    local name,id=instance()
+    if not name or not id then return end
+    if event=="LFG_COMPLETION_REWARD" then recordDungeon(name,id); return end
+    if event=="ENCOUNTER_END" then
+        local _, _, _, _, success = ...
+        if S.number(success)~=1 then return end
+    end
+    -- An arbitrary boss kill is not a dungeon clear. Require a complete roster.
+    local _, count = S.call(GetInstanceLockTimeRemaining)
+    count=S.number(count)
+    if not count or count<1 or count>64 or not GetInstanceLockTimeRemainingEncounter then return end
+    for index=1,count do
+        local _, _, killed = S.call(GetInstanceLockTimeRemainingEncounter,index)
+        if killed~=true then return end
+    end
+    recordDungeon(name,id)
+end
+function M.init(current, callback, reporter)
+    character,emit,report=current,callback,reporter
+    local value=state()
+    for _, event in ipairs(current.history and current.history.events or {}) do
+        if event.kind=="dungeon" and event.data.source=="game_api" then
+            local name=event.data.name or (event.data.text or ""):match("^First clear: (.+)$")
+            if name then value.automatic_dungeons[name:lower()]=true end
+        end
+    end
+    M.scanUnlocks(true); M.scanReputation(true); M.scanPvp(true); M.scanMount(true)
+end
+function M.event(event,...)
+    if not character then return end
+    local baseline=not character.settings.enabled
+    if event=="UPDATE_FACTION" then M.scanReputation(baseline);if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
+    elseif event=="MAJOR_FACTION_RENOWN_LEVEL_CHANGED" then if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
+    elseif event=="PLAYER_PVP_RANK_CHANGED" or event=="HONOR_XP_UPDATE" then M.scanPvp(baseline)
+    elseif event=="SPELLS_CHANGED" or event=="LEARNED_SPELL_IN_TAB" then M.scanUnlocks(baseline)
+    elseif event=="NEW_MOUNT_ADDED" or event=="COMPANION_LEARNED" or event=="PLAYER_MOUNT_DISPLAY_CHANGED" then M.scanMount(baseline,event)
+    elseif not baseline and (event=="LFG_COMPLETION_REWARD" or event=="ENCOUNTER_END" or event=="BOSS_KILL") then M.checkDungeon(event,...) end
+end
+local frame=CreateFrame("Frame")
+for _, event in ipairs({"UPDATE_FACTION","MAJOR_FACTION_RENOWN_LEVEL_CHANGED","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPDATE","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB",
+    "NEW_MOUNT_ADDED","COMPANION_LEARNED","PLAYER_MOUNT_DISPLAY_CHANGED","LFG_COMPLETION_REWARD","ENCOUNTER_END","BOSS_KILL"}) do
+    if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event) then
+        pcall(frame.RegisterEvent,frame,event)
+    end
+end
+frame:SetScript("OnEvent",function(_,event,...) M.event(event,...) end)

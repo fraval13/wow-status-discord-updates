@@ -1,5 +1,30 @@
 # Decisions I made — 27 October 2026
 
+## TBC Anniversary edition — 0.14.7
+
+- Added a standalone addon/tbc/WoWStatus build for Burning Crusade Classic
+  Anniversary, using interface 20506, project constant 5 and level cap 70. Checked
+  Blizzard's mirrored classic_anniversary source at
+  68e0a2ec559d9761dfc4e7f864c3944f9d758a49 (2.5.6 build 70577).
+- The client identity is tbc-anniversary. Packets, journal IDs and backend
+  characters stay separate from Vanilla and Forever. Shared settings, queued
+  popups, first equips, account groups and automatic history catch-up are reused.
+- Added Jewelcrafting (spell 25229 / skill line 755), its icon, and the Master
+  profession title for skill cap 375. TBC does not emit Vanilla honor-rank
+  promotions, because its honor system differs. Discord remains hidden and the
+  existing two private server destinations are unchanged.
+- Added --client tbc to the installer, and included the TBC ZIP in homepage
+  packaging, CI artifacts and deployment verification. All three builds use the
+  same release version. The homepage has a separate TBC Anniversary download
+  and its installation instructions point to the selected client.
+- Added mocked TBC tests covering startup/client guards, level 70 and invalid
+  levels, cross-edition isolation, live packet/log delivery, Jewelcrafting/Master
+  titles, first equips and installer interface validation. Real two-player TBC
+  acceptance is still needed; source/API tests do not claim live certification.
+- Kept the separate uncommitted branding edits intact. Public packages use only
+  committed files; the new TBC package uses the committed minimap icon until
+  those branding changes are ready.
+
 ## Private Discord relay scope — 30 October 2026
 
 - Keep Discord completely hidden in the addon. Any future opt-in/configuration

@@ -116,7 +116,7 @@ def test_each_client_is_a_complete_folder_with_identical_shared_files():
     root = Path(__file__).parents[1] / 'addon'
     shared = list((root / 'shared').glob('*.lua'))
     assert shared
-    for client, adapter in [('vanilla', 'Vanilla.lua'), ('forever', 'Forever.lua')]:
+    for client, adapter in [('vanilla', 'Vanilla.lua'), ('forever', 'Forever.lua'), ('tbc','TBC.lua')]:
         folder = root / client / 'WoWStatus'
         toc = (folder / 'WoWStatus.toc').read_text(encoding='utf-8')
         assert adapter in toc and toc.index('Safe.lua') < toc.index(adapter)

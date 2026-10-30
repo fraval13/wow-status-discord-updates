@@ -11,7 +11,7 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
-P.runtimeVersion="0.14.6"
+P.runtimeVersion="0.14.7"
 
 local function realm()
     local value = A.realmName()

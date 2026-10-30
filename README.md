@@ -9,7 +9,8 @@ on-screen announcements and browse a persistent activity log.
 
 ## Start sharing
 
-1. Copy the appropriate `addon/vanilla/WoWStatus` or `addon/forever/WoWStatus`
+1. Copy the appropriate `addon/vanilla/WoWStatus`, `addon/tbc/WoWStatus` (TBC Anniversary),
+   or `addon/forever/WoWStatus`
    folder into that client's `Interface/AddOns` directory. Complete ZIPs are in
    `dist/` after packaging. Restart WoW after updating.
 2. Open **Options → AddOns → WoW Status → Groups** and add the same group ID as

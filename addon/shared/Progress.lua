@@ -8,6 +8,7 @@ local knownProfessions = {
     enchanting={7411,333,"Enchanting"}, engineering={4036,202,"Engineering"},
     herbalism={2366,182,"Herbalism"}, leatherworking={2108,165,"Leatherworking"},
     mining={2575,186,"Mining"}, skinning={8613,393,"Skinning"}, tailoring={3908,197,"Tailoring"},
+    jewelcrafting={25229,755,"Jewelcrafting"},
     cooking={2550,185,"Cooking"}, first_aid={3273,129,"First Aid"}, fishing={7620,356,"Fishing"},
 }
 local function stats(character)
@@ -173,7 +174,7 @@ function P.professionChanges(character, baseline)
 end
 
 function P.professionTitle(maximum)
-    local titles = {[75]="Apprentice", [150]="Journeyman", [225]="Expert", [300]="Artisan"}
+    local titles = {[75]="Apprentice", [150]="Journeyman", [225]="Expert", [300]="Artisan", [375]="Master"}
     return titles[maximum] or "New profession rank"
 end
 -- Establish a baseline silently. Never announce old achievements on login or

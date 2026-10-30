@@ -1,0 +1,23 @@
+## Interface: 20506
+## Title: WoW Status — TBC Anniversary
+## Notes: Friend progress, armor loot, activity log and automatic login sync.
+## Author: fraval13
+## Version: 0.14.7
+## SavedVariables: WoWStatusDB
+## X-Client-Support: Burning Crusade Classic Anniversary 2.5.x only
+Safe.lua
+Features.lua
+CaseFold.lua
+TBC.lua
+Loot.lua
+Progress.lua
+History.lua
+HistoryUI.lua
+Groups.lua
+Presentation.lua
+Popups.lua
+Journal.lua
+Minimap.lua
+Previews.lua
+Milestones.lua
+WoWStatus.lua
