@@ -26,6 +26,7 @@ local function stats(character)
     return value
 end
 local function readProfessions()
+    if WoWStatusAdapter.professions then return WoWStatusAdapter.professions() end
     local result, names, ids, complete = {}, {}, {}, true
     for key, definition in pairs(knownProfessions) do
         local name = S.stringCall(GetSpellInfo, definition[1])
@@ -161,8 +162,8 @@ function P.professionChanges(character, baseline)
     local titles = previous
     for _, p in ipairs(observed) do
         local old = previous[p.name]
-        if not baseline and value.profession_ready and (not old or p.max_skill > old) then
-            p.title = P.professionTitle(p.max_skill)
+        if not baseline and value.profession_ready and (not old or (WoWStatusAdapter.classicProfessionTitles~=false and p.max_skill > old)) then
+            p.title = WoWStatusAdapter.classicProfessionTitles~=false and P.professionTitle(p.max_skill) or nil
             p.learned = not old or nil
             table.insert(changed,p)
         end

@@ -23,12 +23,13 @@ function WoWStatusPresentation.theme(item)
         local rarity=rarities[item.quality]
         if rarity then themes.loot={"INV_Chest_Plate04",rarity[1],rarity[2],rarity[3],rarity[4]} end
     end
+    if item.kind=="pvp" and (item.text or ""):match("^Reached honor level ") then themes.pvp[5]="HONOR LEVEL UP!" end
     local kind = ({professionprogress="profession"})[item.kind] or item.kind
     local theme = themes[item.level and "level" or kind] or themes.session
     local icon = theme[1]
     if item.kind == "profession" or item.kind == "professionprogress" then
         local professionIcons = {Alchemy="Trade_Alchemy", Blacksmithing="Trade_BlackSmithing",
-            Enchanting="Trade_Engraving", Jewelcrafting="INV_Misc_Gem_01", Engineering="Trade_Engineering", Herbalism="Trade_Herbalism",
+            Inscription="INV_Inscription_Tradeskill01", Archaeology="Trade_Archaeology", Enchanting="Trade_Engraving", Jewelcrafting="INV_Misc_Gem_01", Engineering="Trade_Engineering", Herbalism="Trade_Herbalism",
             Leatherworking="Trade_LeatherWorking", Mining="Trade_Mining", Skinning="INV_Misc_Pelt_Wolf_01",
             Tailoring="Trade_Tailoring", Cooking="INV_Misc_Food_15", ["First Aid"]="Spell_Holy_SealOfSacrifice",
             Fishing="Trade_Fishing"}

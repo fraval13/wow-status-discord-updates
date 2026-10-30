@@ -27,7 +27,7 @@ jobs:
           import shutil
           from pathlib import Path
           Path('dist').mkdir(exist_ok=True)
-          for client in ('vanilla', 'forever', 'tbc'):
+          for client in ('vanilla', 'forever', 'tbc', 'retail'):
               shutil.copyfile(f'dist/homepage/downloads/WoWStatus-{client}.zip', f'dist/WoWStatus-{client}.zip')
           shutil.make_archive('dist/WoWStatus-discord-emojis', 'zip', 'assets/discord-emojis')
       - uses: actions/upload-artifact@v4

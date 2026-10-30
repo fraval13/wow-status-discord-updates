@@ -11,7 +11,7 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
-P.runtimeVersion="0.14.7"
+P.runtimeVersion="0.14.8"
 
 local function realm()
     local value = A.realmName()
@@ -539,7 +539,10 @@ local function eventText(event)
     if event.kind == "quest" then
         return data.completed and ("Completed " .. data.completed .. " quests!") or nil
     end
-    if event.kind == "profession" and data.learned then return "Learned " .. (data.name or "Profession") .. " (" .. (data.title or WoWStatusProgress.professionTitle(data.max_skill)) .. ")" end
+    if event.kind == "profession" and data.learned then
+        local title=data.title or (A.classicProfessionTitles~=false and WoWStatusProgress.professionTitle(data.max_skill))
+        return "Learned " .. (data.name or "Profession") .. (title and (" ("..title..")") or "")
+    end
     if event.kind == "profession" then return (data.name or "Profession") .. ": " .. (data.title or WoWStatusProgress.professionTitle(data.max_skill)) .. " (" .. (data.max_skill or "?") .. " max)" end
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end

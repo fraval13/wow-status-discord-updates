@@ -1,12 +1,13 @@
-# Three standalone game addons
+# Four standalone game addons
 
-The repository contains three folders that are ready to copy or package separately:
+The repository contains four folders that are ready to copy or package separately:
 
 ```text
 addon/
   vanilla/WoWStatus/     Vanilla Classic / Classic Era
   forever/WoWStatus/     Forever / Camelot
   tbc/WoWStatus/         Burning Crusade Classic Anniversary
+  retail/WoWStatus/      Retail / Midnight
   shared/               Maintainer source for common Lua features
 ```
 
@@ -16,7 +17,7 @@ addon name `WoWStatus`, the `/wstatus` commands and `WoWStatus.lua` SavedVariabl
 filename. There is no dependency on the repository's shared directory at runtime.
 Do not install different editions into the same AddOns directory or load one on the wrong client.
 
-The adapters are `Vanilla.lua`, `Forever.lua`, and `TBC.lua`. All include the
+The adapters are `Vanilla.lua`, `Forever.lua`, `TBC.lua`, and `Retail.lua`. All include the
 same account-wide group selector, logs, line graph, Norwegian dates, privacy controls and popup
 module. `Safe.lua` excludes secret/restricted values before comparisons or exports.
 Forever uses the documented Camelot client constant plus the 160xx interface band,
@@ -40,6 +41,7 @@ then use its actual number and path:
 python scripts/install_addon.py --client vanilla --addons-dir "/YOUR/VANILLA/Interface/AddOns" --interface YOUR_INTERFACE_NUMBER
 python scripts/install_addon.py --client forever --addons-dir "/YOUR/FOREVER/Interface/AddOns" --interface YOUR_INTERFACE_NUMBER
 python scripts/install_addon.py --client tbc --addons-dir "/YOUR/WOW/_anniversary_/Interface/AddOns" --interface 20506
+python scripts/install_addon.py --client retail --addons-dir "/YOUR/WOW/_retail_/Interface/AddOns" --interface 120105
 ```
 
 On Windows, pass the corresponding Windows game path in quotes. The installer
@@ -48,7 +50,7 @@ before removing the old addon folder for an upgrade. It also rejects interface
 numbers outside the chosen edition's band, rather than enabling the wrong client.
 The repository TOCs use source-snapshot defaults; the installed build is authoritative.
 
-The companion/service remain one Python project. Each upload carries `classic-era`, `forever`, or `tbc-anniversary`; all are accepted and contribute separate character
+The companion/service remain one Python project. Each upload carries `classic-era`, `forever`, `tbc-anniversary`, or `retail`; all are accepted and contribute separate character
 identities, even if realm and GUID/name happen to match. Select the SavedVariables
 file belonging to the game being tested, or repeat `--saved-variables` for multiple installations.
 
@@ -62,7 +64,7 @@ settings menu API, the standalone windows remain available.
 
 ## Maintaining shared features
 
-Edit `addon/shared/*.lua`, then synchronize the three installable folders with:
+Edit `addon/shared/*.lua`, then synchronize the four installable folders with:
 
 ```sh
 python scripts/sync_addons.py
@@ -70,7 +72,7 @@ python scripts/sync_addons.py
 
 This copies source only. Adapters and TOCs stay separate. The authored test suite
 checks that all packages contain the same shared files, and mocks each edition’s API paths.
-GitHub Actions produces separate Vanilla, Forever and TBC Anniversary ZIP artifacts after checks.
+GitHub Actions produces separate Vanilla, Forever, TBC Anniversary and Retail ZIP artifacts after checks.
 
 
 ## TBC client-source evidence
@@ -86,3 +88,28 @@ fourth `GetBuildInfo()` result if its interface changes.
 TBC keeps its group logs and messages separate from Vanilla and Forever even
 when players use the same group ID or character name. Discord remains hidden.
 API/mocked tests are not a substitute for a two-player test in the actual client.
+
+
+## Retail edition
+
+The Retail adapter targets Midnight 12.x (TOC 120105) and level 90. The source/API
+reference is Blizzard's mirrored `live` UI at revision
+`15881d522c44cd106d3d8660106ec9f9d2f44167` (12.1.5 build 70575).
+
+Its core features reuse group IDs, account-wide history, login catch-up, queued
+notifications, first equips, death/zone/quest milestones and the modern item/chat
+APIs. Retail packets and character histories use their own `retail` identity.
+The Classic client builds do not accept Retail messages.
+
+Profession snapshots use owned-profession indices as the current
+[Retail ProfessionsBook](https://github.com/Gethe/wow-ui-source/blob/15881d522c44cd106d3d8660106ec9f9d2f44167/Interface/AddOns/Blizzard_ProfessionsBook/Blizzard_ProfessionsBook.lua)
+does, including Inscription and Archaeology when learned. New professions are
+announced without Classic Apprentice/Journeyman titles; ordinary skill/cap changes
+remain silent in Retail. Modern honor levels replace Classic/Forever PvP ranks.
+Existing professions and honor levels are baselined silently at login. Modern
+values and communication restrictions are respected.
+
+This is a separate Retail build, not a claim of full gameplay parity across all
+editions. The curated class-unlock spell IDs and supported dungeon completion
+signals still require real-client testing. A Retail test helps exercise common
+modern APIs but does not certify Forever behavior. Discord stays hidden.

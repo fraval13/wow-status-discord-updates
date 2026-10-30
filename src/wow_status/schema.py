@@ -4,7 +4,7 @@ import re
 import time
 
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions', 'deaths', 'quests'}
-LEVEL_CAPS = {'classic-era': 60, 'forever': 60, 'tbc-anniversary': 70}
+LEVEL_CAPS = {'classic-era': 60, 'forever': 60, 'tbc-anniversary': 70, 'retail': 90}
 KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status', 'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery'}
 STATUS_FIELDS = {
     'level': ('level','level'), 'xp_current': ('level','level'), 'xp_max': ('level','level'),
@@ -117,7 +117,7 @@ def validate(payload):
                             entry['max_skill'] = integer(profession.get('max_skill'), 'profession maximum', 1, 2000)
                             entry['skill'] = integer(profession['skill'], 'profession skill', 0, entry['max_skill'])
                         if profession.get('key') in {'alchemy','blacksmithing','enchanting','engineering',
-                                'herbalism','leatherworking','mining','skinning','tailoring','jewelcrafting','cooking','first_aid','fishing'}:
+                                'herbalism','leatherworking','mining','skinning','tailoring','jewelcrafting','inscription','archaeology','cooking','first_aid','fishing'}:
                             entry['key'] = profession['key']
                         professions.append(entry)
                     val = professions
@@ -224,7 +224,7 @@ def validate(payload):
             if kind == 'reputation' and 'standing' in data:
                 filtered['standing'] = integer(data['standing'], 'reputation standing', 6, 8)
             if kind == 'pvp' and 'rank' in data:
-                filtered['rank'] = integer(data['rank'], 'PvP rank', 1, 100)
+                filtered['rank'] = integer(data['rank'], 'PvP rank', 1, 10000 if identity['client']=='retail' else 100)
         elif kind == 'status':
             changes = data.get('changed', [])
             if not isinstance(changes, list) or len(changes) > len(STATUS_FIELDS):

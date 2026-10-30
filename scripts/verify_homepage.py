@@ -10,7 +10,7 @@ import zipfile
 from html.parser import HTMLParser
 from urllib.parse import urlparse
 
-EDITIONS = ('vanilla', 'forever', 'tbc')
+EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 MAX_BYTES = 32 * 1024 * 1024
 
 

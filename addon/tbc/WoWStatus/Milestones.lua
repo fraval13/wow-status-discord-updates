@@ -91,11 +91,11 @@ function M.scanPvp(baseline)
         value.pvp_rank=value.pvp_rank or 0
         return
     end
-    if not name or not rank or rank<0 or rank>100 then return end
+    if not name or not rank or rank<0 or rank>(WoWStatusAdapter.max_pvp_rank or 100) then return end
     local previous = value.pvp_rank
     value.pvp_rank = math.max(previous or rank,rank)
     if not baseline and previous and rank>previous and rank>0 then
-        emit("pvp", {text="Promoted to " .. name, rank=rank})
+        emit("pvp", {text=WoWStatusAdapter.pvpText and WoWStatusAdapter.pvpText(name,rank) or ("Promoted to " .. name), rank=rank})
     end
 end
 function M.scanMount(baseline, event)
@@ -176,7 +176,8 @@ end
 function M.event(event,...)
     if not character then return end
     local baseline=not character.settings.enabled
-    if event=="UPDATE_FACTION" then M.scanReputation(baseline);if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
+    if event=="HONOR_LEVEL_UPDATE" then M.scanPvp(baseline)
+    elseif event=="UPDATE_FACTION" then M.scanReputation(baseline);if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
     elseif event=="MAJOR_FACTION_RENOWN_LEVEL_CHANGED" then if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
     elseif event=="PLAYER_PVP_RANK_CHANGED" or event=="HONOR_XP_UPDATE" then M.scanPvp(baseline)
     elseif event=="SPELLS_CHANGED" or event=="LEARNED_SPELL_IN_TAB" then M.scanUnlocks(baseline)
@@ -184,7 +185,7 @@ function M.event(event,...)
     elseif not baseline and (event=="LFG_COMPLETION_REWARD" or event=="ENCOUNTER_END" or event=="BOSS_KILL") then M.checkDungeon(event,...) end
 end
 local frame=CreateFrame("Frame")
-for _, event in ipairs({"UPDATE_FACTION","MAJOR_FACTION_RENOWN_LEVEL_CHANGED","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPDATE","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB",
+for _, event in ipairs({"UPDATE_FACTION","HONOR_LEVEL_UPDATE","MAJOR_FACTION_RENOWN_LEVEL_CHANGED","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPDATE","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB",
     "NEW_MOUNT_ADDED","COMPANION_LEARNED","PLAYER_MOUNT_DISPLAY_CHANGED","LFG_COMPLETION_REWARD","ENCOUNTER_END","BOSS_KILL"}) do
     if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event) then
         pcall(frame.RegisterEvent,frame,event)

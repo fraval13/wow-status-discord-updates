@@ -40,7 +40,7 @@ def built_site(tmp_path_factory):
 def staged(built_site,tmp_path):
     public=tmp_path/'.deploy/HOMEPAGE'
     shutil.copytree(built_site,public)
-    for edition in ('vanilla','forever','tbc'):
+    for edition in ('vanilla','forever','tbc','retail'):
         with zipfile.ZipFile(public/f'downloads/WoWStatus-{edition}.zip') as archive:
             toc=tmp_path/f'addon/{edition}/WoWStatus/WoWStatus.toc'
             toc.parent.mkdir(parents=True)
@@ -84,7 +84,7 @@ def test_valid_release_switches_all_public_downloads_together(staged,monkeypatch
     module.switch_homepage(public)
     assert (site/'current').resolve()==public
     manifest=json.loads((site/'current/downloads/release.json').read_text())
-    for edition in ('vanilla','forever','tbc'):
+    for edition in ('vanilla','forever','tbc','retail'):
         assert (site/f'current/downloads/WoWStatus-{edition}.zip').is_file()
         assert f'VERSION {manifest["editions"][edition]["version"]}' in (site/'current/index.html').read_text()
     # Receiver rollback returns the complete previous site, including downloads.

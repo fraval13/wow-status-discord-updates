@@ -12,22 +12,22 @@ from wow_status.server import create_app
 from wow_status.store import Store
 
 
-@pytest.mark.parametrize('client', ['classic-era', 'forever'])
-def test_cap_is_server_controlled_everywhere(payload, client):
+@pytest.mark.parametrize('client,cap', [('classic-era',60),('forever',60),('tbc-anniversary',70),('retail',90)])
+def test_cap_is_server_controlled_everywhere(payload, client, cap):
     payload['identity']['client'] = client
     payload['events'][1]['data'].update(level=10, maximum=True)
     assert validate(payload)['events'][1]['data']['maximum'] is False
-    payload['events'][1]['data'].update(level=60, maximum=False)
+    payload['events'][1]['data'].update(level=cap, maximum=False)
     assert validate(payload)['events'][1]['data']['maximum'] is True
-    payload['events'][1]['data']['level'] = 61
+    payload['events'][1]['data']['level'] = cap+1
     with pytest.raises(ValidationError):
         validate(payload)
     payload['events'] = []
-    payload['snapshot']['level'] = 61
+    payload['snapshot']['level'] = cap+1
     with pytest.raises(ValidationError):
         validate(payload)
-    payload['snapshot']['level'] = 60
-    payload['tracking'] = {'points': [{'kind': 'level', 'level': 61,
+    payload['snapshot']['level'] = cap
+    payload['tracking'] = {'points': [{'kind': 'level', 'level': cap+1,
         'at': payload['exported_at'], 'segment': 'a'}]}
     with pytest.raises(ValidationError):
         validate(payload)

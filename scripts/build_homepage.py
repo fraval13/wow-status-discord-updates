@@ -32,7 +32,7 @@ def build(root, output, addon_ref):
     downloads = output / 'downloads'
     downloads.mkdir(exist_ok=True)
     releases = {}
-    for edition in ('vanilla', 'forever', 'tbc'):
+    for edition in ('vanilla', 'forever', 'tbc', 'retail'):
         prefix = f'addon/{edition}/'
         files = git(root, 'ls-tree', '-r', '--name-only', revision, '--', prefix + 'WoWStatus').decode().splitlines()
         if not files:

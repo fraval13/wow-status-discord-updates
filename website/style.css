@@ -11,3 +11,5 @@
 
 .tbc-button{background:linear-gradient(#626331,#3e4225 48%,#292d1c 50%,#42452a);box-shadow:0 0 0 2px #302c1b,inset 0 0 0 2px #60623a,inset 0 2px #d2d29433,0 3px 6px #70532b33)}
 @media(max-width:740px){.download-body>.download-button{grid-column:1/-1}}
+
+.retail-button{background:linear-gradient(#40546d,#2a3b52 48%,#1d2b3d 50%,#30435a);box-shadow:0 0 0 2px #202938,inset 0 0 0 2px #55667c,inset 0 2px #a4b7d033,0 3px 6px #70532b33)}

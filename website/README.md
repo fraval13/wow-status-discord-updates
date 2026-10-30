@@ -11,7 +11,7 @@ python scripts/build_homepage.py --addon-ref HEAD
 python -m http.server 4173 --directory dist/homepage --bind 127.0.0.1
 ```
 
-The output is `dist/homepage/`. All three ZIPs contain the top-level `WoWStatus`
+The output is `dist/homepage/`. All four ZIPs contain the top-level `WoWStatus`
 folder expected by WoW; every TOC-listed file is checked. Addon files always come
 from the specified committed Git revision. Uncommitted addon edits are excluded.
 Version and file sizes on the page come from the packaged release. Checksums and
@@ -31,7 +31,7 @@ validates Caddy, switches the symlink and gracefully reloads Caddy. The previous
 configuration and release stay available for rollback. See the script for the
 exact maintenance steps; it never reads application secrets.
 
-After publication check `/`, all three ZIP downloads and their contents, the release
+After publication check `/`, all four ZIP downloads and their contents, the release
 manifest, both existing group `/health` endpoints, and an unknown group URL.
 When publishing a future release, update the displayed release notes in
 `index.html`, rebuild with its addon revision, then republish.
@@ -56,6 +56,6 @@ labels by hand on the website. The pipeline runs on pushed `main` commits or man
 workflow dispatches. Local commits alone cannot trigger GitHub Actions.
 
 After deployment, the workflow fetches the live homepage, release manifest and
-all three ZIP downloads using `scripts/verify_homepage.py`. It checks the exact
+all four ZIP downloads using `scripts/verify_homepage.py`. It checks the exact
 commit revision, visible download links, public hashes, ZIP contents and version
 labels. A stale or missing public download fails the release verification step.

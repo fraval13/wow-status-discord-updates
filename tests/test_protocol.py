@@ -94,7 +94,7 @@ def test_fixture_exports_only_selected_data():
 def test_forever_is_accepted_and_other_unknown_clients_are_rejected(payload):
     payload['identity']['client'] = 'forever'
     assert validate(payload)['identity']['client'] == 'forever'
-    payload['identity']['client'] = 'retail'
+    payload['identity']['client'] = 'unsupported'
     with pytest.raises(ValidationError):
         validate(payload)
 

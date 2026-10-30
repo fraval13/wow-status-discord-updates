@@ -167,7 +167,7 @@ local function showPanel(host)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
             profession="Profession milestones",dungeon="First dungeon clear",mount="First mount",
-            reputation="Reputation rank",unlock="Class ability unlock",pvp="PvP rank"}
+            reputation="Reputation rank",unlock="Class ability unlock",pvp=A.pvpLabel or "PvP rank"}
         for i,key in ipairs(kinds) do
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end

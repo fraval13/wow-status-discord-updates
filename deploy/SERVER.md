@@ -21,7 +21,7 @@ or privileged scripts; changing those requires an explicit root maintenance step
 ## Pipeline
 
 Pushes to `main` run Python/protocol/Lua-mock checks remotely on Linux and Windows,
-then create separate Vanilla, Forever and TBC Anniversary addon ZIP artifacts. Only passing checks
+then create separate Vanilla, Forever, TBC Anniversary and Retail addon ZIP artifacts. Only passing checks
 allow the deployment job. PRs run checks without deployment secrets.
 
 The deploy job transfers tracked source plus private configuration through pinned
@@ -91,7 +91,7 @@ wow-status configure --url https://wow.frankvalde.com
 
 Homepage packaging now belongs to the same checks/deployment workflow. The runner
 builds `dist/homepage` for its exact commit and includes it under `.deploy/HOMEPAGE`
-in the private tar. The receiver validates manifest revision, all three ZIP checksums,
+in the private tar. The receiver validates manifest revision, all four ZIP checksums,
 TOC contents and displayed version, then moves the public files out before
 deleting `.deploy` credentials. After service health checks pass, the public
 symlink points to that release's sealed `public-homepage` directory. No Caddy

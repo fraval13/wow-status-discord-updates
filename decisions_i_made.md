@@ -1,5 +1,34 @@
 # Decisions I made — 27 October 2026
 
+## Retail edition — 0.14.8
+
+- Added addon/retail/WoWStatus as a separate Retail/Midnight 12.x build, interface
+  120105, Mainline project identity and level cap 90. Checked Blizzard's mirrored
+  live client source 15881d522c44cd106d3d8660106ec9f9d2f44167 (12.1.5 build 70575)
+  and Blizzard's Midnight level-cap announcement. Retail rejects other game
+  project IDs and the earlier Forever interface band even when Mainline is used.
+- Reused account groups/logs, quiet login catch-up, queued notifications and
+  first armor equips, while retaining a separate retail identity in packets,
+  history and backend validation. Secret values and modern chat restrictions
+  are respected; no replacement identity or communication bypass is used.
+- Retail professions use GetProfessions/GetProfessionInfo exactly as the current
+  Blizzard ProfessionsBook does, querying owned professions rather than all
+  trade-skill definitions. Supports Inscription and Archaeology. First learning
+  announces; Classic title labels and ordinary skill/cap increases are omitted
+  for Retail. Other editions retain their existing title behavior.
+- Retail PvP notifications track UnitHonorLevel, including levels above 100,
+  rather than Vanilla honor ranks or Forever faction 2800. The settings label
+  is Honor level; existing values are baselined silently at login.
+- Added Retail to homepage downloads, installer, build/CI artifacts, fixed server
+  receiver validation and post-deployment public checks. All four packages share
+  release 0.14.8 and derive displayed metadata from their committed TOCs.
+- Added Retail tests for client guards, level 90 limits, protocol isolation,
+  item/log delivery, professions, honor progression, secret identity, chat
+  restrictions, backend identity/cap handling and installer selection. Real
+  Retail play remains a separate check; this does not certify Forever behavior.
+- Discord stays hidden. The navsquad/ronkalot routes and separate unfinished
+  branding edits remain intact. Public ZIPs use committed source only.
+
 ## Website download pipeline verification — 30 October 2026
 
 - Rechecked the live homepage: Vanilla Classic, TBC Anniversary and Forever all

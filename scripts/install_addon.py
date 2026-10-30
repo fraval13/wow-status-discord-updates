@@ -1,11 +1,11 @@
-"""Run at home: install the Vanilla Classic, Forever or TBC Anniversary addon folder."""
+"""Run at home: install the Vanilla Classic, Forever, TBC Anniversary or Retail addon folder."""
 import argparse
 import re
 import shutil
 from pathlib import Path
 
 parser = argparse.ArgumentParser(description=__doc__)
-parser.add_argument('--client', choices=['vanilla', 'forever', 'tbc'], required=True)
+parser.add_argument('--client', choices=['vanilla', 'forever', 'tbc', 'retail'], required=True)
 parser.add_argument('--addons-dir', type=Path, required=True,
                     help='Existing Interface/AddOns directory for the chosen game client')
 parser.add_argument('--interface', required=True,
@@ -14,7 +14,7 @@ args = parser.parse_args()
 if not re.fullmatch(r'\d{5,6}', args.interface):
     parser.error('Interface must be a 5- or 6-digit number')
 interface = int(args.interface)
-low, high = {'vanilla': (11000,12000), 'forever': (16000,17000), 'tbc': (20500,20600)}[args.client]
+low, high = {'vanilla': (11000,12000), 'forever': (16000,17000), 'tbc': (20500,20600), 'retail': (120000,130000)}[args.client]
 if not low <= interface < high:
     parser.error('Interface is outside this edition’s documented range; confirm client/build first')
 if not args.addons_dir.is_dir():
