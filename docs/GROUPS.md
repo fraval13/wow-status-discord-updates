@@ -44,7 +44,7 @@ characters, including new characters. Character sharing, profile fields, collect
 and announcement checkboxes remain independent for each character. New characters
 default to all those sharing checkboxes enabled; saved character choices are preserved.
 Account-wide means this client’s account SavedVariables file, not automatic syncing
-between computers or between Vanilla and Forever installations. The name labels your characters
+between computers or between different game-client installations. The name labels your characters
 in both selected groups and is not verified against a Discord account. Without a
 name, the service assigns a stable generic friend label for that installation.
 Use the addon’s **Mark as my main** button for main/alt labels in ID-joined groups.

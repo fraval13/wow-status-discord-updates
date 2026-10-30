@@ -2,6 +2,24 @@
 
 ## Retail edition — 0.14.8
 
+Validation/delivery: 264 tests passed from a clean release checkout, including
+151 addon tests under Lua 5.1. Ruff/whitespace checks passed. Retail notification
+previews use first-learned professions and Honor levels; the Classic promotion
+preview is omitted in that edition. Browser checks at widths 1440/820/390/320
+found no missing images, overflow or script errors, and existing interactions
+still passed. Published all four 0.14.8 ZIPs at addon revision
+060e5a4beba52c2fa73b4db6144c57c1dc1695d3; the public verifier checked their
+hashes, TOCs, links, exact revision and homepage version. The static release is
+/srv/wow-status-homepage/releases/20261030T120047325752Z. Installed Retail from
+that verified ZIP into the local _retail_/Interface/AddOns/WoWStatus directory;
+SavedVariables were not edited. Upgraded the fixed project receiver to validate
+four editions, with backup at
+/opt/wow-character-status/receiver-backups/receiver-20261030T120028Z.py.
+Both existing group health routes remained healthy. No Discord messages or
+companion application restarts were triggered. GitHub authentication remains a
+separate blocker to pushing/triggering the hosted workflow.
+
+
 - Added addon/retail/WoWStatus as a separate Retail/Midnight 12.x build, interface
   120105, Mainline project identity and level cap 90. Checked Blizzard's mirrored
   live client source 15881d522c44cd106d3d8660106ec9f9d2f44167 (12.1.5 build 70575)
