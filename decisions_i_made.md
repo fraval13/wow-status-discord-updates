@@ -1,5 +1,16 @@
 # Decisions I made — 27 October 2026
 
+## Animation removed — 30 October 2026
+
+Published static release 20261030T141238440869Z. Eight homepage tests passed;
+public checks confirmed the original JS, CSS and artwork byte-for-byte, both
+animation URLs return 404, and all four addon downloads still verify.
+
+Removed the animation preview, both video files, generated source plates and
+render scripts at your request. Restored the original still-only website,
+including its scripts, styles, documentation and CSP. Old preview URLs now show
+the still image as well. Addon downloads and unrelated branding edits are unchanged.
+
 ## Lights-only revision — 30 October 2026
 
 Published at /srv/wow-status-homepage/releases/20261030T140730760650Z.

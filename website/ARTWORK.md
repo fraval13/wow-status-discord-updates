@@ -1,10 +1,5 @@
 # Homepage artwork
 
-The optional `?motion=on` experiment uses `assets/adventure-motion.webm` with an
-MP4 fallback. Source plates, exact generation prompts and render instructions
-are documented in [the motion source README](../assets/website-motion/README.md).
-The original still remains the default.
-
 `assets/adventure.webp` is original artwork generated with the built-in
 `image_gen` tool, then converted to WebP for the homepage. The original image is
 retained in the session's generated-images directory. Final website asset:
