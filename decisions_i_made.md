@@ -1,5 +1,17 @@
 # Decisions I made — 27 October 2026
 
+## Private Discord relay scope — 30 October 2026
+
+- Keep Discord completely hidden in the addon. Any future opt-in/configuration
+  belongs only in the optional desktop companion. Do not restore per-character
+  Discord controls to implement group summaries.
+- Retain only the existing navsquad and ronkalot Discord destinations. Other
+  group IDs remain available for in-game sharing. The existing gateway already
+  routes only these two groups and rejects unknown group routes.
+- Recorded the relay, deduplication and summary requirements, including current
+  implementation limits, in docs/DISCORD_RELAY_PLAN.md. This records the requested
+  scope; it does not enable uploads, AI calls or Discord posts.
+
 ## Account history, automatic website packages and Forever audit — 0.14.6
 
 Delivery/validation: 244 tests passed from a clean checkout of release ea1733f;

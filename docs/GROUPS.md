@@ -5,10 +5,11 @@ and shares updates through addon whispers to its channel members. No companion,
 HTTP service or Discord destination is required. Any matching group ID can be used
 in-game; the server mapping described below is needed only for optional Discord.
 
-Discord is off by default per character under **Discord (optional)**. Its uploader
-combines new activity from each reload/logout export into one summary. The
-remaining server/privacy sections describe this optional path; they are not
-requirements for in-game updates. See [the primary setup](../README.md) and
+Discord is currently disabled and hidden in the addon. The proposed private relay
+will be configured only in the optional desktop companion, for `navsquad` and
+`ronkalot`. See [the relay requirements and current status](DISCORD_RELAY_PLAN.md).
+The remaining server/privacy sections describe the retained legacy integration;
+they are not requirements for in-game updates. See [the primary setup](../README.md) and
 [in-game acceptance test](LIVE_POPUPS.md).
 
 
