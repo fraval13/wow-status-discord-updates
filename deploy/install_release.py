@@ -64,7 +64,7 @@ def prepare_homepage(stage, revision):
     manifest = json.loads((public / 'downloads/release.json').read_text())
     if manifest.get('addon_revision') != revision:
         raise ValueError('Homepage revision does not match application release')
-    html = (public / 'index.html').read_text()
+    html = (public / 'index.html').read_text(encoding='utf-8')
     for edition in ('vanilla', 'forever', 'tbc', 'retail'):
         item = manifest['editions'][edition]
         filename = f'WoWStatus-{edition}.zip'

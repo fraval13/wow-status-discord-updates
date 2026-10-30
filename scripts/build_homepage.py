@@ -60,13 +60,13 @@ def build(root, output, addon_ref):
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
     if len({release['version'] for release in releases.values()}) != 1:
         raise ValueError('Addon versions must match before publishing')
-    html = (output / 'index.html').read_text()
+    html = (output / 'index.html').read_text(encoding='utf-8')
     html = html.replace('__VERSION__', releases['vanilla']['version'])
     for edition, release in releases.items():
         html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('Unresolved homepage placeholder')
-    (output / 'index.html').write_text(html)
+    (output / 'index.html').write_text(html, encoding='utf-8')
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n')
     print(f"Homepage built at {output}; addon {releases['vanilla']['version']} ({revision[:7]})")
 

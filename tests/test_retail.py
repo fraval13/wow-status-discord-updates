@@ -26,9 +26,9 @@ def retail_runtime(name='Thora',extra=''):
     '''+extra)
     lua.globals().date=lambda fmt,at: datetime.fromtimestamp(at,timezone.utc).strftime(fmt.lstrip('!'))
     folder=ROOT/'addon/retail/WoWStatus'
-    for line in (folder/'WoWStatus.toc').read_text().splitlines():
+    for line in (folder/'WoWStatus.toc').read_text(encoding='utf-8').splitlines():
         if line.strip() and not line.startswith('#'):
-            lua.execute((folder/line.strip()).read_text())
+            lua.execute((folder/line.strip()).read_text(encoding='utf-8'))
     lua.eval('fire')('PLAYER_LOGIN')
     lua.execute('WoWStatusGroups.announce=nil')
     return lua
@@ -156,4 +156,4 @@ def test_retail_installer_selects_retail_folder(tmp_path):
     assert subprocess.run([*command,'16001'],capture_output=True).returncode!=0
     subprocess.run([*command,'120105'],check=True,capture_output=True)
     assert (addons/'WoWStatus/Retail.lua').is_file()
-    assert '## Interface: 120105' in (addons/'WoWStatus/WoWStatus.toc').read_text()
+    assert '## Interface: 120105' in (addons/'WoWStatus/WoWStatus.toc').read_text(encoding='utf-8')
