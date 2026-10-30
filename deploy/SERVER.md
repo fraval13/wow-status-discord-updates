@@ -21,7 +21,7 @@ or privileged scripts; changing those requires an explicit root maintenance step
 ## Pipeline
 
 Pushes to `main` run Python/protocol/Lua-mock checks remotely on Linux and Windows,
-then create separate Vanilla and Forever addon ZIP artifacts. Only passing checks
+then create separate Vanilla, Forever and TBC Anniversary addon ZIP artifacts. Only passing checks
 allow the deployment job. PRs run checks without deployment secrets.
 
 The deploy job transfers tracked source plus private configuration through pinned
@@ -127,5 +127,5 @@ stop only these project services and copy their complete state directories, or u
 SQLite's consistent backup API. Stop the appropriate service before operator tools
 access its database. Secrets and data do not belong in Git.
 
-Game behavior remains unverified until the two actual addon clients are exercised
+Game behavior remains unverified until the actual game clients are exercised
 at home. Remote mocked tests and HTTP health checks establish narrower guarantees.

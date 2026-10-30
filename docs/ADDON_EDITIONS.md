@@ -50,7 +50,7 @@ The repository TOCs use source-snapshot defaults; the installed build is authori
 
 The companion/service remain one Python project. Each upload carries `classic-era`, `forever`, or `tbc-anniversary`; all are accepted and contribute separate character
 identities, even if realm and GUID/name happen to match. Select the SavedVariables
-file belonging to the game being tested, or repeat `--saved-variables` for both.
+file belonging to the game being tested, or repeat `--saved-variables` for multiple installations.
 
 Live popups use `WSTATUS2` with the client identity, and ignore the other edition's
 packets. The Vanilla version can read the previous experimental `WSTATUS1` format;
@@ -69,7 +69,7 @@ python scripts/sync_addons.py
 ```
 
 This copies source only. Adapters and TOCs stay separate. The authored test suite
-checks that both packages contain the same shared files, and mocks each edition’s API paths.
+checks that all packages contain the same shared files, and mocks each edition’s API paths.
 GitHub Actions produces separate Vanilla, Forever and TBC Anniversary ZIP artifacts after checks.
 
 

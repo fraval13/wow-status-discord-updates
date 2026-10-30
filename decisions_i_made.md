@@ -2,6 +2,21 @@
 
 ## TBC Anniversary edition — 0.14.7
 
+Validation/delivery: 249 tests passed from a clean checkout of 6942b9c, including
+143 addon tests under Lua 5.1. Ruff and whitespace checks passed. Browser checks
+at widths 1440/820/390/320 found no missing images, overflow or errors; preview,
+FAQ and navigation controls still work. Published the three 0.14.7 ZIPs and
+verified their public hashes/version metadata. The static release is
+/srv/wow-status-homepage/releases/20261030T103919513584Z. Installed TBC from its
+verified ZIP into the local _anniversary_/Interface/AddOns/WoWStatus directory;
+SavedVariables were not edited. Updated the fixed root deployment receiver to
+verify all three editions, with backup at
+/opt/wow-character-status/receiver-backups/receiver-20261030T103840Z.py.
+Both existing group services remain healthy and were not restarted. GitHub
+workflow execution still requires pushing the local commits; no successful
+hosted Actions run is claimed.
+
+
 - Added a standalone addon/tbc/WoWStatus build for Burning Crusade Classic
   Anniversary, using interface 20506, project constant 5 and level cap 70. Checked
   Blizzard's mirrored classic_anniversary source at
