@@ -1,5 +1,13 @@
 # Decisions I made — 27 October 2026
 
+## Persistent agent handoff — 1 November 2026
+
+Added root AGENTS.md so a replacement coding session can recover the product
+requirements, source layout, testing/release workflow, last verified deployment,
+GitHub authentication limitation and separate uncommitted branding work. README.md
+already existed; expanded it with a new-session starting point and current status.
+No addon, website, server or player data changed for this documentation task.
+
 ## Random notification flavour implemented — 30 October 2026
 
 Validation/delivery: 270 tests passed from a clean release checkout, including

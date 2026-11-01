@@ -10,6 +10,23 @@ random flavour captions from [13 banks of 100 lines](docs/notification-flavour-t
 Each event keeps its caption in your log. Class-specific death jokes are used
 only when WoW can identify the sender’s class; otherwise a general roast is used.
 
+## Continuing development in a new session
+
+Start with [AGENTS.md](AGENTS.md). It contains the repository map, product choices,
+release workflow, deployment pointers and pending-work caveats. The latest detailed
+handoff is in [decisions_i_made.md](decisions_i_made.md).
+
+As of **1 November 2026**, all four downloads are **0.14.9**, including the 1,300
+flavour captions. The last release passed 270 tests, with 161 addon tests also
+passing under Lua 5.1. Live in-game checking of the new caption layout is pending.
+The homepage uses its original still artwork; the animation experiments were removed.
+
+Website/download publication succeeded, but GitHub pushes were blocked by SSH
+public-key authentication. Local commits alone do not trigger the hosted pipeline.
+There are also separate uncommitted branding edits; inspect `git status` and
+preserve them before syncing or packaging. Some older status documents describe
+historical releases; the current source and newest handoff notes take precedence.
+
 ## Start sharing
 
 1. Copy the appropriate `addon/vanilla/WoWStatus`, `addon/tbc/WoWStatus` (TBC Anniversary),
