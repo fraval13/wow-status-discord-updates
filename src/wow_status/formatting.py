@@ -32,20 +32,25 @@ def safe(value, limit=500):
     text = re.sub(r'(?i)\b(www|discord|discordapp)\.', r'\1​.', text)
     text = re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text)
     cut = clip(text, limit)
-    if text[len(cut):len(cut) + 1] == '\u200b':
+    # The guards put U+200B after `@` and `scheme:`; `www` before its dot is harmless alone.
+    if text[len(cut):len(cut) + 1] == '\u200b' and cut.endswith(('@', ':')):
         cut = cut[:-1]
     return cut
 
 
 def fit_lines(lines, limit, separator='\n'):
-    """Join whole lines while they fit in `limit`, so a cut never splits Markdown spans."""
-    kept, size = [], 0
-    for line in lines:
-        size += len(line) + (len(separator) if kept else 0)
-        if size > limit:
-            break
-        kept.append(line)
-    return separator.join(kept)
+    """Join as many whole lines as fit in `limit` and say how many were left out.
+
+    Cutting on whole lines keeps `**bold**` and `||spoiler||` spans closed. If not even one
+    line fits, that line is cut with `clip()` rather than showing nothing.
+    """
+    for count in range(len(lines), 0, -1):
+        hidden = len(lines) - count
+        note = f'{separator}…and {hidden} more not shown.' if hidden else ''
+        text = separator.join(lines[:count]) + note
+        if len(text) <= limit:
+            return text
+    return clip(lines[0], limit) if lines else ''
 
 
 def norwegian(value):

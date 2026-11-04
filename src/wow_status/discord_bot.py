@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 
 from .daily import DailyRecaps
-from .formatting import announcement, clip, fit_lines, profile, roster_pages, safe
+from .formatting import announcement, fit_lines, profile, roster_pages, safe
 from .output import emoji, upload_summary
 from .output import message as announcement_message
 from .people import decorate, nickname, remember, set_role
@@ -211,7 +211,7 @@ class StatusBot(discord.Client):
                     'Historical Discord messages remain after deletion.')
                 # Cut whole character lines so the retention notice is never dropped.
                 text = (fit_lines(lines, 1900 - len(notice)) if lines else 'No uploaded characters.') + notice
-            await interaction.response.send_message(clip(text, 1900), ephemeral=True)
+            await interaction.response.send_message(text, ephemeral=True)
 
     async def deliver(self):
         await self.wait_until_ready()

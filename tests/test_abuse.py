@@ -254,5 +254,13 @@ def test_truncation_never_keeps_a_character_without_its_guard(value, limit):
 def test_fit_lines_keeps_whole_lines_so_spoilers_stay_closed():
     lines = ['**A** · shared a discovery: ||' + 'x' * 40 + '||', '**B** · ' + 'y' * 40]
     assert fit_lines(lines, 130, '\n\n') == '\n\n'.join(lines)
-    assert fit_lines(lines, 80, '\n\n') == lines[0]
-    assert fit_lines(lines, 10) == ''
+    assert fit_lines(lines, 110, '\n\n') == lines[0] + '\n\n…and 1 more not shown.'
+    assert fit_lines([], 10) == ''
+
+
+def test_fit_lines_cuts_a_single_oversized_line_instead_of_dropping_it():
+    assert fit_lines(['a' * 9 + '\\*', 'b'], 10) == 'a' * 9
+
+
+def test_guard_check_keeps_a_character_before_a_user_typed_zero_width_space():
+    assert safe('a\u200bb', 1) == 'a'
