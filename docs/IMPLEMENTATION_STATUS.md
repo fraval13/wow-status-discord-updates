@@ -24,8 +24,8 @@ Current cumulative deaths, completed quest counts, XP percentages and profession
 ranks are implemented with unavailable/historical values explicitly labelled.
 
 The implementation table below describes the earlier companion/server baseline.
-Its original outstanding-validation labels are historical; the updated setup and
-release decisions in [decisions_i_made.md](../decisions_i_made.md) take precedence.
+Its original outstanding-validation labels are historical; the current
+[README](../README.md) and [AGENTS.md](../AGENTS.md) take precedence.
 
 | Area | Implemented in source | Still required |
 | --- | --- | --- |

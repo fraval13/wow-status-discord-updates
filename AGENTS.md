@@ -1,7 +1,7 @@
 # WoW Status — instructions for coding agents
 
-These instructions apply to the whole repository. Read `README.md`, then the
-newest relevant entries in `decisions_i_made.md` before changing behavior.
+These instructions apply to the whole repository. Read `README.md` before changing
+behavior.
 This file preserves context from the previous session; dated state below must
 be checked against Git and the environment rather than assumed permanently true.
 
@@ -28,8 +28,8 @@ be checked against Git and the environment rather than assumed permanently true.
   lights-only animation experiments. Keep the original still illustration; do
   not restore videos, GIFs, animation assets or preview controls.
 - Make reasonable implementation decisions and finish authorized work without
-  repeatedly asking routine questions. Record consequential choices and delivery
-  limitations in `decisions_i_made.md`. Never claim a push/deployment succeeded
+  repeatedly asking routine questions. Explain consequential choices and delivery
+  limitations in the pull request description. Never claim a push/deployment succeeded
   unless verified. Do not send test Discord messages unless requested.
 
 ## Repository map
