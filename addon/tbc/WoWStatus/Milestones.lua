@@ -1,7 +1,7 @@
 -- Conservative milestones: unavailable APIs never become invented achievements.
 WoWStatusMilestones = {}
 local M, S = WoWStatusMilestones, WoWStatusSafe
-local character, emit, report, panel
+local character, emit
 local unlocks = {
     DRUID={5487,768,783,1066,24858}, WARLOCK={688,697,712,691},
     SHAMAN={2645}, HUNTER={1515}, PRIEST={15473}, PALADIN={7328},
@@ -163,8 +163,8 @@ function M.checkDungeon(event, ...)
     end
     recordDungeon(name,id)
 end
-function M.init(current, callback, reporter)
-    character,emit,report=current,callback,reporter
+function M.init(current, callback)
+    character,emit=current,callback
     local value=state()
     for _, event in ipairs(current.history and current.history.events or {}) do
         if event.kind=="dungeon" and event.data.source=="game_api" then
