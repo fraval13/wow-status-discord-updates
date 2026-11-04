@@ -179,15 +179,15 @@ end
 -- Channels this addon joined, kept in SavedVariables: /reload restarts module
 -- state while the game keeps the channels joined (issue #20). On load, keep only
 -- group channels the player is in right now; the game drops them at logout, so
--- entries from earlier sessions or characters cannot outlive their channel.
-local MAX_SAVED_CHANNELS = 32
+-- entries from earlier sessions or characters cannot outlive their channel. The
+-- client's channel limit bounds what survives.
 local function savedChannels(saved)
-    local result, count = {}, 0
+    local result = {}
     if type(saved) ~= "table" then return result end
     for name, flag in pairs(saved) do
-        if count >= MAX_SAVED_CHANNELS then break end
-        if flag == true and WoWStatusGroups.channelId(name) and name == name:lower() and inChannel(name) then
-            result[name], count = true, count + 1
+        local id = flag == true and WoWStatusGroups.channelId(name)
+        if id and name == WoWStatusGroups.channel(id):lower() and (not GetChannelName or inChannel(name)) then
+            result[name] = true
         end
     end
     return result
@@ -200,7 +200,7 @@ function P.groupsChanged()
     local allowed = channels()
     for name in pairs(joinedByAddon) do
         if not allowed[name] then
-            if LeaveChannelByName and inChannel(name) then pcall(LeaveChannelByName, name) end
+            if LeaveChannelByName then pcall(LeaveChannelByName, name) end
             joinedByAddon[name] = nil
         end
     end

@@ -58,7 +58,7 @@ local saved = {}
 for i = 1, 100 do
     local name = string.format("wstatus%022x", i)
     saved[name] = true
-    if i <= 40 then JoinTemporaryChannel(name) end
+    if i <= 5 then JoinTemporaryChannel(name) end
 end
 WoWStatusDB.popups.joined_channels = saved
 '''
@@ -157,9 +157,10 @@ def test_damaged_saved_channel_list_cannot_name_other_channels():
     assert lua.eval('savedChannelCount()') == 0
     lua.execute(OVERSIZED_SAVE)
     reload_popups(lua)
-    assert lua.eval('savedChannelCount()') == 32
+    assert lua.eval('savedChannelCount()') == 5   # only the channels joined right now
     lua.eval('WoWStatusGroups.update')('', '')
     assert joined(lua, 'General - Dun Morogh') and joined(lua, 'WStatusFriends')
+    assert sorted(left(lua)) == ['wstatus%022x' % i for i in range(1, 6)]
     assert lua.eval('savedChannelCount()') == 0
 
 
@@ -193,11 +194,24 @@ def test_relog_rejoins_and_records_current_groups_so_removal_still_leaves():
     assert not joined(lua, channel)
 
 
-def test_no_leave_call_for_a_saved_channel_the_player_is_not_in():
+def test_a_join_still_pending_when_its_group_is_removed_is_still_left():
+    lua = make_lua(CHANNEL_STUBS)
+    lua.execute('__pending = {}; JoinTemporaryChannel = function(name) table.insert(__pending, name) end')
+    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusPopups.tick')()
+    channel = group_channel(lua, 'navsquad-test')
+    assert not joined(lua, channel)   # the server has not confirmed the join yet
+    lua.eval('WoWStatusGroups.update')('', '')
+    assert left(lua) == [channel.lower()]
+    assert lua.eval('savedChannelCount()') == 0
+
+
+def test_without_get_channel_name_saved_channels_are_kept_and_left():
     lua = make_lua(CHANNEL_STUBS)
     lua.eval('WoWStatusGroups.update')('navsquad-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    lua.execute('__list = {}')   # the join was refused or the channel dropped
+    channel = group_channel(lua, 'navsquad-test')
+    lua.execute('GetChannelName = nil')
+    reload_popups(lua)
     lua.eval('WoWStatusGroups.update')('', '')
-    assert left(lua) == []
-    assert lua.eval('savedChannelCount()') == 0
+    assert not joined(lua, channel)

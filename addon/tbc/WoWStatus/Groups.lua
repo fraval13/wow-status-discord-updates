@@ -25,7 +25,7 @@ local CHANNEL_PREFIX = "WStatus"
 function G.channel(id) return CHANNEL_PREFIX .. id end
 -- The group ID in a group channel name (any case), or nil for other channels.
 function G.channelId(name)
-    if type(name) ~= "string" or #name <= #CHANNEL_PREFIX then return nil end
+    if type(name) ~= "string" then return nil end
     local lowered = name:lower()
     if lowered:sub(1, #CHANNEL_PREFIX) ~= CHANNEL_PREFIX:lower() then return nil end
     local id = lowered:sub(#CHANNEL_PREFIX + 1)
