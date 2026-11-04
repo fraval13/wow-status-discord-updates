@@ -4,13 +4,14 @@ import hashlib
 import json
 import os
 import time
+import traceback
 from pathlib import Path
 from urllib.parse import urlparse
 
 import aiohttp
 
-from .savedvariables import MAX_BYTES, parse
-from .schema import integer, string, validate
+from .savedvariables import MAX_BYTES, ParseError, parse
+from .schema import ValidationError, integer, string, validate
 
 
 def endpoint(url):
@@ -35,19 +36,26 @@ def atomic_json(path, data):
         path.chmod(0o600)
 
 
+def _after(item, since):
+    # An entry without an integer timestamp cannot be shown to postdate consent or be
+    # uploaded, so it is dropped rather than blocking every character in the file.
+    at = item.get('at', 0)
+    return type(at) is int and at >= since
+
+
 def exports(path):
     with Path(path).open('rb') as stream:
         raw = stream.read(MAX_BYTES + 1)
     if len(raw) > MAX_BYTES:
-        raise ValueError('SavedVariables file exceeds 32 MiB')
+        raise ValidationError('SavedVariables file exceeds 32 MiB')
     db = parse(raw.decode('utf-8-sig'))
     if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
-        raise ValueError('Unsupported addon data')
+        raise ValidationError('Unsupported addon data')
     batches = []
     batch_id = hashlib.sha256(raw).hexdigest()
     for char in db['characters'].values():
         if not isinstance(char, dict):
-            raise ValueError('Invalid character table')
+            raise ValidationError('Invalid character table')
         settings = char.get('settings', {})
         # Addon 0.8.1–0.8.3 enabled sharing by default but only set the enrollment
         # flag after a checkbox click. Recover those exports without enrolling
@@ -56,6 +64,8 @@ def exports(path):
                                 and settings.get('enabled') is True)
         if char.get('enrolled') is not True and not enabled_without_flag:
             continue
+        if not isinstance(settings, dict):
+            raise ValidationError('Invalid character settings')
         opted_in = settings.get('discord_enabled') is True
         previously_enabled = (char.get('discord_enrolled') is True
                               or ('discord_enabled' not in settings and char.get('enrolled') is True))
@@ -70,23 +80,29 @@ def exports(path):
             snapshot['professions'] = list(snapshot['professions'].values())
         history = char.get('history', {})
         if not isinstance(history, dict):
-            raise ValueError('Invalid addon history')
+            raise ValidationError('Invalid addon history')
         events = history.get('events', payload.get('events', {}))
         if not isinstance(events, dict):
-            raise ValueError('Invalid addon events')
-        records = [event for event in events.values() if event.get('kind') != 'session']
+            raise ValidationError('Invalid addon events')
+        if not all(isinstance(event, dict) for event in events.values()):
+            raise ValidationError('Invalid addon event')
         since = char.get('discord_since', 0)
-        if since:
+        if type(since) is not int or since:
+            if type(char.get('exported_at')) is not int:
+                raise ValidationError('Invalid export time')
             since = integer(since, 'Discord sharing start', 1, char['exported_at'] + 300)
-            records = [event for event in records if event.get('at', 0) >= since]
+        records = [event for event in events.values()
+                   if event.get('kind') != 'session' and _after(event, since)]
         if 'tracking' in history:
             tracking = history['tracking']
             if not isinstance(tracking, dict):
-                raise ValueError('Invalid level tracking')
+                raise ValidationError('Invalid level tracking')
             points = tracking.get('points', {})
             if isinstance(points, dict):
                 points = list(points.values())
-            payload['tracking'] = dict(tracking, points=[p for p in points if p.get('at', 0) >= since])
+            if not isinstance(points, list) or not all(isinstance(p, dict) for p in points):
+                raise ValidationError('Invalid level tracking')
+            payload['tracking'] = dict(tracking, points=[p for p in points if _after(p, since)])
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
             batch = records[offset:offset + 100]
@@ -100,7 +116,7 @@ def exports(path):
                 for event in batch:
                     ids = event.get('group_ids')
                     if ids is not None and not isinstance(ids, dict):
-                        raise ValueError('Invalid event group targets')
+                        raise ValidationError('Invalid event group targets')
                     targets[event['id']] = list(ids) if ids is not None else None
                 result['_event_targets'] = targets
             result['_discord_since'] = since
@@ -165,7 +181,22 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                 group_uploader.failed = False
             for path in paths:
                 try:
-                    for payload in exports(path):
+                    payloads = list(exports(path))
+                except Exception as exc:
+                    # One missing, unreadable or malformed file must never stop the upload loop.
+                    # Only our own fixed validation messages are logged, never file content.
+                    detail = f': {exc}' if isinstance(exc, (ValidationError, ParseError)) else ''
+                    print(f'Skipped unreadable SavedVariables ({type(exc).__name__}{detail}); will retry later.')
+                    if not isinstance(exc, (OSError, ValueError)):
+                        # Unexpected errors are likely bugs: show where, but not the message or values.
+                        print(''.join(traceback.format_tb(exc.__traceback__)), end='')
+                    failed = True
+                    status(connection='Waiting: check the SavedVariables file path; will retry.'
+                           if isinstance(exc, OSError) else
+                           'Waiting: SavedVariables could not be read; retrying until the addon saves a valid file.')
+                    continue
+                try:
+                    for payload in payloads:
                         status(last_export=payload['exported_at'])
                         encoded = json.dumps(payload, sort_keys=True)
                         key = hashlib.sha256((json.dumps(payload['identity'], sort_keys=True)
