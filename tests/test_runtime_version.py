@@ -59,7 +59,8 @@ def test_runtime_version_matches_toc_version_in_every_edition(edition):
     assert any(f'Runtime {version} ' in line for line in status_lines(lua))
 
 
-@pytest.mark.parametrize('edition', EDITIONS)
+# Retail 11+ has only C_AddOns; the Classic clients may still expose just the legacy global.
+@pytest.mark.parametrize('edition', ['vanilla', 'forever', 'tbc'])
 def test_runtime_version_uses_legacy_global_when_c_addons_is_missing(edition):
     lua = EDITIONS[edition](metadata_api(edition, legacy_only=True))
     assert lua.eval('WoWStatusPopups.runtimeVersion') == toc_metadata(edition)['Version']
@@ -70,7 +71,8 @@ def test_runtime_version_uses_legacy_global_when_c_addons_is_missing(edition):
     'C_AddOns={GetAddOnMetadata=function() error("unavailable") end}; GetAddOnMetadata=nil',
     'C_AddOns={GetAddOnMetadata=function() return "" end}; GetAddOnMetadata=nil',
     'C_AddOns={GetAddOnMetadata=function() return "1.0|cffff0000x" end}; GetAddOnMetadata=nil',
-    'C_AddOns={GetAddOnMetadata=function() return string.rep("9", 33) end}; GetAddOnMetadata=nil',
+    'C_AddOns={GetAddOnMetadata=function() return "  " end}; GetAddOnMetadata=nil',
+    'C_AddOns={GetAddOnMetadata=function() return string.rep("9", 65) end}; GetAddOnMetadata=nil',
     '__secret={}; function issecretvalue(v) return v==__secret end;'
     ' C_AddOns={GetAddOnMetadata=function() return __secret end}; GetAddOnMetadata=nil',
 ])
@@ -88,8 +90,35 @@ def test_runtime_version_tries_legacy_global_when_c_addons_returns_nothing():
     assert lua.eval('WoWStatusPopups.runtimeVersion') == '9.8.7'
 
 
+@pytest.mark.parametrize('extra', [
+    # C_AddOns exists for other calls but lacks the metadata lookup.
+    'C_AddOns={}; function GetAddOnMetadata(addon, field) return addon == "WoWStatus" and "9.8.7" end',
+    # Some clients alias the same function under both names.
+    'function GetAddOnMetadata(addon, field) return addon == "WoWStatus" and "9.8.7" end;'
+    ' C_AddOns={GetAddOnMetadata=GetAddOnMetadata}',
+])
+def test_runtime_version_handles_partial_or_aliased_metadata_apis(extra):
+    assert make_lua(STUBS + extra).eval('WoWStatusPopups.runtimeVersion') == '9.8.7'
+
+
+def test_runtime_version_keeps_long_release_tags_and_trims_whitespace():
+    tag = '0.15.0-beta.2+20261104.f78b05d16d'
+    lua = make_lua(STUBS + f'C_AddOns={{GetAddOnMetadata=function() return "  {tag} " end}}')
+    assert lua.eval('WoWStatusPopups.runtimeVersion') == tag
+
+
+def test_runtime_version_uses_folder_name_the_client_passes_to_the_file():
+    lua = make_lua(STUBS + '''
+        C_AddOns={GetAddOnMetadata=function(addon) return addon == "WoWStatus-dev" and "1.2.3" end}
+    ''')
+    source = (ROOT / 'addon/vanilla/WoWStatus/Popups.lua').read_text(encoding='utf-8')
+    lua.execute(source, 'WoWStatus-dev', lua.table())
+    assert lua.eval('WoWStatusPopups.runtimeVersion') == '1.2.3'
+
+
 def test_popups_source_has_no_hard_coded_runtime_version():
     for edition in ('shared', *EDITIONS):
         folder = ROOT / 'addon' / edition / ('' if edition == 'shared' else 'WoWStatus')
         source = (folder / 'Popups.lua').read_text(encoding='utf-8')
-        assert not re.search(r'runtimeVersion\s*=\s*"', source), edition
+        assert not re.search(r'\d+\.\d+\.\d+', source), edition
+        assert re.search(r'^P\.runtimeVersion=tocVersion\(\)$', source, re.MULTILINE), edition

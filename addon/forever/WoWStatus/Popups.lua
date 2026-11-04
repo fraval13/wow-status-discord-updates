@@ -9,18 +9,17 @@ local joinedByAddon, syncPending = {}, false
 local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
-local ADDON_NAME = "WoWStatus" -- folder/TOC name, distinct from the comm prefix
+local ADDON_NAME = (...) or "WoWStatus" -- client-supplied folder/TOC name, not the comm prefix
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function tocVersion()
-    local metadata = type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
-    local version = S.stringCall(metadata, ADDON_NAME, "Version")
-    if not version and metadata ~= GetAddOnMetadata then
-        version = S.stringCall(GetAddOnMetadata, ADDON_NAME, "Version")
-    end
-    return version and #version <= 32 and not version:find("[%c|]") and version or "unknown"
+    local version = S.stringCall(type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata, ADDON_NAME, "Version")
+        or S.stringCall(GetAddOnMetadata, ADDON_NAME, "Version")
+    version = version and version:match("^%s*(.-)%s*$")
+    if not version or version == "" or #version > 64 or version:find("[%c|]") then return "unknown" end
+    return version
 end
 P.runtimeVersion=tocVersion()
 
