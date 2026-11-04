@@ -162,6 +162,10 @@ async def test_ipv6_link_guesses_are_throttled_per_64(store, monkeypatch):
         # Another /64 and IPv4 clients keep their own budgets.
         assert await guess('2001:db8:1:3::1') == 400
         assert await guess('192.0.2.1') == 400
+        # 6to4 addresses from different /64s share their router's IPv4 budget.
+        sixtofour = ['2002:808:808::1', '2002:808:808:ffff::1', '2002:808:808:1::2']
+        assert [await guess(address) for address in sixtofour] == [400] * 3
+        assert [await guess('8.8.8.8') for _ in range(3)] == [400, 400, 429]
     finally:
         await client.close()
 
@@ -172,10 +176,16 @@ async def test_ipv6_link_guesses_are_throttled_per_64(store, monkeypatch):
     ('2001:db8:1:2:ffff:ffff:ffff:ffff', '2001:db8:1:2::/64'),
     ('2001:db8:1:3::1', '2001:db8:1:3::/64'),
     ('::ffff:192.0.2.1', '192.0.2.1'),
-    ('64:ff9b::192.0.2.1', '192.0.2.1'),
-    ('2002:c000:201::1', '192.0.2.1'),
-    ('2002:c000:201:ffff::1', '192.0.2.1'),
-    ('2001:0:4136:e378:8000:63bf:3fff:fdd2', '192.0.2.45'),
+    ('64:ff9b::808:808', '8.8.8.8'),
+    ('::ffff:0:808:808', '8.8.8.8'),
+    ('2002:808:808::1', '8.8.8.8'),
+    ('2002:808:808:ffff::1', '8.8.8.8'),
+    ('2001:0:4136:e378:8000:63bf:f7f7:f7f7', '8.8.8.8'),
+    # Non-global embedded IPv4 never becomes a loopback/private key.
+    ('64:ff9b::7f00:1', '64:ff9b::/64'),
+    ('2002:7f00:1::1', '2002:7f00:1::/64'),
+    ('2002:a00:1::1', '2002:a00:1::/64'),
+    ('2001:0:4136:e378:8000:63bf:ffff:fffe', '2001:0:4136:e378::/64'),
     ('fe80::1%eth0', 'fe80::/64'),
     ('unknown', 'unknown'),
 ])

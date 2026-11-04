@@ -11,8 +11,13 @@
   unrelated customers from shared pools, which would throttle real friends
   together. A second, looser /48 budget can be added if abuse appears.
 - IPv4 behaviour is unchanged. IPv4-mapped (`::ffff:a.b.c.d`), well-known NAT64
-  (`64:ff9b::/96`), 6to4 and Teredo addresses key on their embedded IPv4 client
-  address, so translated clients neither share one /64 nor get extra budgets.
+  (`64:ff9b::/96`), SIIT (`::ffff:0:a.b.c.d`) and Teredo addresses key on their
+  embedded IPv4 client address, so translated clients do not all share one /64.
+  6to4 addresses key on the site's 6to4 router IPv4, so every host behind one
+  6to4 router shares a budget with that router's native IPv4 traffic.
+- Embedded IPv4 values that are not global (loopback, private, reserved) are
+  ignored and the address is keyed on its /64, so a forwarded value cannot
+  share the loopback key used for the local proxy.
 - Existing in-flight budgets keyed on exact IPv6 addresses simply expire.
 
 ## Runtime version in popup status — 4 November 2026

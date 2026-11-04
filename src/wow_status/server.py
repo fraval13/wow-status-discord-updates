@@ -17,19 +17,32 @@ from .store import Conflict
 
 log = logging.getLogger(__name__)
 
-# One IPv6 host or home network normally controls at least a whole /64, so
-# throttling individual IPv6 addresses would give it effectively unlimited budgets.
+# One IPv6 host or home network controls at least a whole /64, so throttling
+# individual IPv6 addresses would give it effectively unlimited budgets.
 IPV6_THROTTLE_PREFIX = 64
-# RFC 6052 well-known NAT64 prefix: IPv4 clients translated onto IPv6.
-NAT64_WELL_KNOWN = ipaddress.ip_network('64:ff9b::/96')
+# Stateless translation prefixes carrying an IPv4 client in the low 32 bits:
+# RFC 6052 well-known NAT64 and RFC 2765 SIIT IPv4-translated addresses.
+IPV4_TRANSLATION_PREFIXES = (ipaddress.ip_network('64:ff9b::/96'),
+                             ipaddress.ip_network('::ffff:0:0:0/96'))
+
+
+def _embedded_ipv4(ip):
+    """IPv4 address carried by a translated or tunnelled IPv6 address, if any."""
+    if any(ip in prefix for prefix in IPV4_TRANSLATION_PREFIXES):
+        return ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+    if ip.sixtofour is not None:
+        return ip.sixtofour  # The site's 6to4 router, which owns 2002:V4::/48.
+    if ip.teredo is not None:
+        return ip.teredo[1]
+    return None
 
 
 def throttle_identity(address):
     """Return the per-source throttle identity for a client address.
 
-    IPv4 addresses are kept as-is, as is the IPv4 address embedded in mapped,
-    NAT64, 6to4 and Teredo IPv6 addresses. Other IPv6 addresses collapse to
-    their /64 network. Non-IP values pass through unchanged.
+    IPv4 and IPv4-mapped addresses key on the IPv4 address. NAT64, SIIT, 6to4
+    and Teredo addresses key on their embedded global IPv4 address. Other IPv6
+    addresses collapse to their /64 network. Non-IP values pass through.
     """
     try:
         ip = ipaddress.ip_address(address)
@@ -39,12 +52,11 @@ def throttle_identity(address):
         return str(ip)
     if ip.ipv4_mapped is not None:
         return str(ip.ipv4_mapped)
-    if ip in NAT64_WELL_KNOWN:
-        return str(ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF))
-    if ip.sixtofour is not None:
-        return str(ip.sixtofour)
-    if ip.teredo is not None:
-        return str(ip.teredo[1])
+    embedded = _embedded_ipv4(ip)
+    # Non-global embedded values (loopback, private, ...) must not collide with
+    # keys used for local traffic; key those on their /64 instead.
+    if embedded is not None and embedded.is_global:
+        return str(embedded)
     return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
 
 
