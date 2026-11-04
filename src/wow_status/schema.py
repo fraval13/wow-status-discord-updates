@@ -18,6 +18,7 @@ STATUS_FIELDS = {
     'professions': ('professions','profession'), 'deaths': ('deaths','death'),
     'quests_completed': ('quests','quest'),
 }
+CLAIM_SECRET = re.compile('[a-f0-9]{32}')
 
 
 
@@ -75,6 +76,13 @@ def validate(payload):
         clean['group_name'] = string(payload['group_name'], 'group name', 80)
     if 'player_name' in payload:
         clean['player_name'] = '' if payload['player_name'] == '' else string(payload['player_name'], 'player name', 40)
+    if 'claim_secret' in payload:
+        # Random per-character value from the addon's SavedVariables; it lets a later
+        # enrollment of the same player take over the character (#11).
+        secret = payload['claim_secret']
+        if not isinstance(secret, str) or not CLAIM_SECRET.fullmatch(secret):
+            raise ValidationError('Invalid character claim secret')
+        clean['claim_secret'] = secret
     if 'build' in identity:
         clean['identity']['build'] = string(identity['build'], 'client build', 40)
     if 'interface' in identity:

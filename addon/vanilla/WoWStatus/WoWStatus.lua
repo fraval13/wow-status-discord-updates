@@ -26,6 +26,21 @@ local function defaults()
     }
 end
 
+-- A random per-character secret that stays in SavedVariables. The companion includes it
+-- in uploads so a later enrollment of the same player can take the character back (#11).
+-- It is never sent in game. math.random is not cryptographic, so a timer is mixed in.
+local function claimSecret(character)
+    local secret = character.claim_secret
+    if type(secret) == "string" and #secret == 32 and not secret:find("[^0-9a-f]") then return end
+    local clock = debugprofilestop and math.floor(debugprofilestop() * 1000) or 0
+    local digits = {}
+    for i = 1, 32 do
+        digits[i] = string.format("%x", (math.random(0, 15) + clock) % 16)
+        clock = math.floor(clock / 16)
+    end
+    character.claim_secret = table.concat(digits)
+end
+
 local function snapshot()
     if not current then return end
     current.exported_at = time()
@@ -385,6 +400,7 @@ local function initialize()
     current.identity = identity
     WoWStatusLoot.defaults(current.settings)
     for _, character in pairs(WoWStatusDB.characters) do
+        claimSecret(character)
         if not WoWStatusFeatures.discord then
             if character.discord_hidden_opt_in==nil then character.discord_hidden_opt_in=character.settings.discord_enabled==true end
             if character.discord_hidden_enrolled==nil then character.discord_hidden_enrolled=character.discord_enrolled==true end
