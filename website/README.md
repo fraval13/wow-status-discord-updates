@@ -34,7 +34,7 @@ This requires ordinary authorized SSH access (for the current session, use
 validates Caddy, switches the symlink and gracefully reloads Caddy. The previous
 configuration and release stay available for rollback. See the script for the
 exact maintenance steps. It reads the server's private `groups.json` to render the
-group routes (never the Discord settings) and refuses to drop a live route.
+group routes (never the Discord settings) and refuses to change the live routes.
 `--dry-run` prints the Caddy change without uploading anything; that output holds
 the group route keys, so keep it private.
 
