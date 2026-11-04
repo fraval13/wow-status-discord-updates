@@ -24,6 +24,11 @@ jobs:
           # Windows), including in scripts the tests start as subprocesses.
           PYTHONWARNDEFAULTENCODING: '1'
           PYTHONWARNINGS: error::EncodingWarning
+      - name: Run the tests again under Lua 5.1, the version every WoW client runs
+        run: python -m pytest -q --lua=5.1
+        env:
+          PYTHONWARNDEFAULTENCODING: '1'
+          PYTHONWARNINGS: error::EncodingWarning
       - name: Build homepage and verified addon downloads
         run: python scripts/build_homepage.py --addon-ref HEAD
         env:

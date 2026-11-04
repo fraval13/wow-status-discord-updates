@@ -136,8 +136,11 @@ python -X utf8=0 -m pytest -q`.
 
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.
-For Lua 5.1 coverage, run relevant pytest modules in a Python process that imports
-`lupa.lua51` and sets `sys.modules['lupa'] = lua51` before importing pytest/tests.
+lupa's default runtime is a newer Lua (5.5 in lupa 2.8) but every WoW client runs
+Lua 5.1, so also run `python -m pytest -q --lua=5.1` (in the venv) after addon changes.
+The option (in `tests/conftest.py`) swaps `lupa` for `lupa.lua51` before tests import
+it, prints how many tests started a Lua 5.1 runtime, and fails if none did. CI runs it on
+Ubuntu and Windows after the default run.
 Do not modify player SavedVariables to install or test a release. Back up addon
 files before replacing a local game installation; keep account groups/logs intact.
 
