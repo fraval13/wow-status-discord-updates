@@ -86,7 +86,10 @@ be checked against Git and the environment rather than assumed permanently true.
 - GitHub pushes work again and every push to `main` runs the hosted
   "Checks and addon packages" workflow (Ubuntu and Windows `validate`, then
   `deploy`). Check that run's result on GitHub Actions before describing a
-  release as validated or deployed; do not hunt for credentials.
+  release as validated or deployed; do not hunt for credentials. Runs on `main`
+  are serialised, and `deploy` skips (with a "Deploy skipped" notice) when its
+  commit is no longer the tip of `main`, so a successful run is not proof that its
+  commit went live.
 - Uncommitted work predating this feature remains: shared/all-edition
   `Minimap.lua` edits, Vanilla/Forever TOC `IconTexture` lines, `Textures/Logo.tga`
   files, and `assets/branding/`. These belong to separate branding work. Preserve
