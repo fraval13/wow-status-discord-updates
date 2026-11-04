@@ -101,8 +101,11 @@ restricted API guards. Do not attempt to bypass WoW networking or secret values.
 Addon-only HTTPS/socket access is not available; in-game sharing uses the game's
 allowed channel discovery and addon whisper transport. Realm/faction rules apply.
 
-`python scripts/sync_addons.py` copies ALL shared Lua and textures into all four
-editions. Inspect pending changes first: it can also propagate unrelated branding
+`python scripts/sync_addons.py` mirrors ALL Git-tracked shared Lua and textures into
+all four editions, deleting tracked edition copies whose shared source is gone
+(`--check` only reports). Untracked files are neither copied nor deleted, so `git add`
+a new shared file first, and add a new edition-owned adapter file to `EDITIONS` in
+the script. Inspect pending changes first: it can also propagate unrelated branding
 work. With unrelated edits present, copy only task-owned files or use an isolated
 worktree. Add new Lua files to each edition's TOC before consumers and update any
 explicit test-harness load lists (`test_addon.py`, `test_forever.py`). Bump all four

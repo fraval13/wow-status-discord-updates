@@ -116,17 +116,14 @@ def test_forever_missing_modern_chat_does_not_fall_back_to_legacy(forever_lua):
     assert lua.eval('WoWStatusAdapter.chatSender')() is None
 
 
-def test_each_client_is_a_complete_folder_with_identical_shared_files():
+def test_each_client_has_its_adapter_after_safe_in_the_toc():
+    # Shared files are compared both ways in test_sync_addons.py.
     root = Path(__file__).parents[1] / 'addon'
-    shared = list((root / 'shared').glob('*.lua'))
-    assert shared
     for client, adapter in [('vanilla', 'Vanilla.lua'), ('forever', 'Forever.lua'), ('tbc','TBC.lua'), ('retail','Retail.lua')]:
         folder = root / client / 'WoWStatus'
         toc = (folder / 'WoWStatus.toc').read_text(encoding='utf-8')
         assert adapter in toc and toc.index('Safe.lua') < toc.index(adapter)
         assert (folder / adapter).exists()
-        for source in shared:
-            assert (folder / source.name).read_bytes() == source.read_bytes()
 
 
 def test_forever_professions_use_namespaced_skill_api_without_classic_globals(forever_lua):
