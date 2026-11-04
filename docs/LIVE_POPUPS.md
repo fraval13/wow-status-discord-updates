@@ -109,7 +109,8 @@ the Click to dismiss footer is no longer shown.
 A received update shows only when its sender is in the group's channel roster
 (or posted in the group channel recently), as log sync already required. While
 a roster whose member count changed reloads, members from the last complete
-roster read still count. A member who joined moments ago can be missing from
+roster read still count, for up to two minutes after that read; log sync uses
+the same membership. A member who joined moments ago can be missing from
 the cached roster, so their update waits up to 60 seconds, longer than the
 roster cache lasts; status shows `awaiting roster` and `verifying_sender`. After
 that it is dropped (`rejected_unknown_sender`). Legacy channels still use the

@@ -74,8 +74,6 @@ end
 local function relayable(entry,group)
     if entry.kind=="loot" and not (entry.text or ""):match("^Equipped ") then return false end
     if entry.legacy or entry.client~=WoWStatusAdapter.client_id or not sharedKinds[entry.kind] or not entry.groups or not entry.groups[group] or not permitted(entry) then return false end
-    -- Never offer a text that updated peers would reject and report as invalid.
-    if not J.validText(entry.kind,entry.text,entry.level) then return false end
     local member=groupMember(group)
     if not member or entry.at<groupSince(group) or entry.at<time()-AGE then return false end
     if entry.owner then
@@ -85,6 +83,11 @@ local function relayable(entry,group)
         if entry.kind=="loot" and not WoWStatusLoot.allowed(owner.settings,entry) then return false end
     end
     return true
+end
+-- Never offer a text that updated peers would reject and report as invalid.
+-- Privacy pruning keeps using relayable, so this never drops a group scope.
+local function offerable(entry,group)
+    return relayable(entry,group) and J.validText(entry.kind,entry.text,entry.level)
 end
 local function rebuild()
     index,digests={},{}
@@ -465,7 +468,7 @@ function J.receive(message,sender,distribution)
         for _,e in ipairs(db.journal.entries) do
             local weight=({[3]=1,[4]=2,[5]=4})[e.quality]
             local wanted=e.kind~="loot" or (weight and math.floor(mask/weight)%2==1)
-            if wanted and e.at>=cutoff and relayable(e,group) then eligible[#eligible+1]=e end
+            if wanted and e.at>=cutoff and offerable(e,group) then eligible[#eligible+1]=e end
         end
         local offer,list={},{}
         for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digest(eligible[i].id);offer[d]=eligible[i].id;list[#list+1]=d end
@@ -502,7 +505,7 @@ function J.receive(message,sender,distribution)
         session.used=true
         for _, d in ipairs(ids) do
             local e=index[session.offer[d]]
-            if e and relayable(e,group) then
+            if e and offerable(e,group) then
                 local encoded=pack(e):gsub(".",function(c) return string.format("%02x",c:byte()) end)
                 local total=math.ceil(#encoded/140)
                 for part=1,total do
@@ -555,7 +558,7 @@ function J.tick()
     table.remove(sendQueue,1)
     if item.expires and (now>item.expires or not current.settings.enabled) then return end
     if not groupMember(item.group) or not peer(item.group,item.target) then return end
-    if item.id and (not index[item.id] or not relayable(index[item.id],item.group)) then return end
+    if item.id and (not index[item.id] or not offerable(index[item.id],item.group)) then return end
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if send then
         lastSend=clock

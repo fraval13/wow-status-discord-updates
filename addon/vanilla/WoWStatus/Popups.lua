@@ -17,8 +17,11 @@ local rosterBusy=false
 -- The roster cache is keyed on member count and kept for 30 seconds, so a member
 -- who replaced another at the same size appears only once it expires; a refresh
 -- can then take a few more 5-second request and read windows.
-local unverified = {}
+local unverified, lastVerify = {}, nil
 local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 60, 32
+-- While a changed roster reloads, members from the last complete read still
+-- count, but only for this long after that read.
+local LAST_ROSTER_SECONDS = 120
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -284,7 +287,7 @@ local function status(state, event)
     prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil}
 end
 local function clear()
-    incoming, outgoing, unverified, active = {}, {}, {}, nil
+    incoming, outgoing, unverified, active, lastVerify = {}, {}, {}, nil, nil
     if toast then toast:Hide() end
 end
 local function pruneSeen(now)
@@ -336,17 +339,21 @@ local function invalidLogData(group,sender)
     if group~="legacy" and WoWStatusJournal then WoWStatusJournal.reportInvalid(group,sender) end
     return false
 end
-local function queuedFrom(key)
-    local count = 0
+local function queuedFrom(key, event)
+    local count, held = 0, {[event or false] = true}
     for _, item in ipairs(incoming) do
         if item.key == key and not item.preview and item.kind ~= "guard" then count = count + 1 end
     end
-    for _, item in ipairs(unverified) do if item.key == key then count = count + 1 end end
+    -- The same event can wait once per shared group; it counts once, and a
+    -- further copy of the given event adds nothing.
+    for _, item in ipairs(unverified) do
+        local event = item.level or item.nonce
+        if item.key == key and not held[event] then held[event] = true; count = count + 1 end
+    end
     return count
 end
-local function rejected(state, c, now)
+local function noteReceive(state, c, now)
     prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now}
-    return false
 end
 -- Store a validated update from a known peer (or a trusted legacy sender): log
 -- it, then queue its popup unless the log already had it.
@@ -359,11 +366,12 @@ local function commit(c, now)
     if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(c.sender,c.nonce)) then
         WoWStatusJournal.received(item)
         prefs.seen[duplicate]=now
-        return rejected("already_in_log", c, now)
+        noteReceive("already_in_log", c, now)
+        return false
     end
     local claims = c.level and prefs.level_claims[c.key]
     if prefs.seen[duplicate] or (claims and claims.levels[c.level]) or #incoming >= 128 then return false end
-    if queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then return rejected("sender_queue_full", c, now) end
+    if queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
     prefs.seen[duplicate] = now
     if c.level then
         if not claims then
@@ -379,57 +387,56 @@ local function commit(c, now)
         claims.levels[c.level], claims.at = true, now
     end
     remember(item)
-    prefs.last_receive={state="queued",sender=c.sender,kind=c.kind or "level",at=now}
+    noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
 end
--- Whether a sender is in the group's channel roster right now. Log sync uses it.
-function P.isPeer(group, key)
-    if not key then return false end
-    for _, name in ipairs(P.peers(group)) do if P.senderKey(name) == key then return true end end
-    return false
-end
--- Only members of the group's channel may show popups, as log sync requires.
+-- Members of the group's channel: only they may show popups or sync the log.
 -- When the member count changes, P.peers lists nobody until the new roster
--- loads, so members from the last complete read also count: one login or
+-- loads, so members from a recent complete read also count: one login or
 -- logout must not hold everybody's popups.
 local function memberKeys(group)
     local keys = {}
     local current = P.peers(group)
     local cached = rosterCache[group]
-    for _, list in ipairs({current, cached and cached.peers or {}}) do
+    local recent = cached and time() - cached.at < LAST_ROSTER_SECONDS and cached.peers or {}
+    for _, list in ipairs({current, recent}) do
         for _, name in ipairs(list) do local key = P.senderKey(name); if key then keys[key] = true end end
     end
     return keys
 end
+function P.isPeer(group, key)
+    return key ~= nil and memberKeys(group)[key] == true
+end
 -- Rosters load asynchronously, so a member who joined moments ago can be
 -- missing: their updates wait here, in arrival order, instead of being dropped.
-local function verifyPending(now)
+local function verifyPending(now, members)
     if #unverified == 0 then return end
-    local waiting, members = unverified, {}
-    unverified = {}
+    local waiting = unverified
+    members, unverified, lastVerify = members or {}, {}, now
     for _, c in ipairs(waiting) do
         if WoWStatusGroups.contains(getCharacter(), c.group) then
             members[c.group] = members[c.group] or memberKeys(c.group)
             if members[c.group][c.key] then commit(c, now)
             elseif now < c.expires then table.insert(unverified, c)
-            else rejected("rejected_unknown_sender", c, now) end
+            else noteReceive("rejected_unknown_sender", c, now) end
         end
     end
 end
 local function admit(c, now)
-    if c.group == "legacy" or memberKeys(c.group)[c.key] then
-        verifyPending(now) -- Earlier updates that waited for the roster go first.
+    local members = c.group ~= "legacy" and memberKeys(c.group)
+    if not members or members[c.key] then
+        verifyPending(now, members and {[c.group] = members}) -- Earlier updates that waited go first.
         local queued = commit(c, now)
         P.tick()
         return queued
     end
-    if #unverified >= MAX_UNVERIFIED or queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then
-        return rejected("rejected_unknown_sender", c, now)
-    end
+    if queuedFrom(c.key, c.level or c.nonce) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
+    if #unverified >= MAX_UNVERIFIED then noteReceive("rejected_unknown_sender", c, now); return false end
     c.expires = now + VERIFY_SECONDS
     table.insert(unverified, c)
-    return rejected("verifying_sender", c, now)
+    noteReceive("verifying_sender", c, now)
+    return false
 end
 function P.receive(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)
@@ -710,7 +717,7 @@ local function tick()
             if toast then toast:Hide() end
         end
     end
-    verifyPending(now)
+    if now ~= lastVerify then verifyPending(now) end -- At most once a second.
     if active and not active.preview and not (active.group_id
         and WoWStatusGroups.contains(getCharacter(), active.group_id)) and not prefs.trusted[active.key] then
         active = nil
