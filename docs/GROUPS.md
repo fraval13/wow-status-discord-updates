@@ -6,8 +6,9 @@ HTTP service or Discord destination is required. Any matching group ID can be us
 in-game; the server mapping described below is needed only for optional Discord.
 
 Discord is currently disabled and hidden in the addon. The proposed private relay
-will be configured only in the optional desktop companion, for `navsquad` and
-`ronkalot`. See [the relay requirements and current status](DISCORD_RELAY_PLAN.md).
+will be configured only in the optional desktop companion, for the owner's two
+existing groups, whose names are kept in the server's private configuration. See
+[the relay requirements and current status](DISCORD_RELAY_PLAN.md).
 The remaining server/privacy sections describe the retained legacy integration;
 they are not requirements for in-game updates. See [the primary setup](../README.md) and
 [in-game acceptance test](LIVE_POPUPS.md).
@@ -127,10 +128,32 @@ are intentionally copied to both only when their character selects both IDs.
 
 Anyone who knows an ID and service address can enroll an uploader in that group.
 This is the requested open-ID membership model, not verified Discord membership.
-Use distinctive names and keep them within the relevant friend group. Private
-installation tokens protect existing character ownership after enrollment; knowing
-a group name does not reveal another installation’s token or grant its privacy
-controls. Telemetry is still player-reported and not anti-cheat evidence.
+Private installation tokens protect existing character ownership after enrollment;
+knowing a group name does not reveal another installation’s token or grant its
+privacy controls. Telemetry is still player-reported and not anti-cheat evidence.
+
+## The group name is the password
+
+A group name is the only credential a group has. Anyone who knows the name, or
+just its route key, can join the in-game channel `WStatus<key>`, see every member's
+shared activity (character names, levels, deaths, zones, online presence) and send
+to the group. With the name they can also enroll a companion uploader. The key is a
+fast hash meant for routing, not a password hash. It shows up in channel names and
+URL paths, and a short or guessable name can be recovered from a seen key by trying
+candidates.
+
+- Choose a long, unguessable name, for example five or more random words or at
+  least 20 random characters. Avoid guild, realm and character names and common
+  phrases. If a group also uses the production companion service, stick to letters,
+  digits, spaces, `.`, `_` and `-` (see [the server setup](../deploy/SERVER.md#private-group-configuration)).
+- Share it with the group privately. Never put a real group name or its key in Git,
+  issues, pull requests, screenshots or logs. Operators keep production names only
+  in the server's private configuration.
+- If a name leaks, choose a new one. Deleting it from a file does not undo the leak.
+  In-game sharing moves as soon as members replace the name in `/wstatus groups`; the
+  companion service needs [the operator's rotation steps](../deploy/SERVER.md#rotating-a-group-name).
+- The optional Discord daily report shows the group name in its title, so post it
+  only to a channel that just the group's members can read.
 
 You can map a known ID to a specific bot/chat. An unknown random name does not
 create a Discord bot or automatically discover a destination. The operator must
@@ -211,6 +234,7 @@ and popup isolation. At home validate two independent Discord destinations, a
 member of both groups, group removal while offline, partial network failures,
 no-history-backfill, and the relevant in-game channel behavior before inviting friends.
 
-The configured groups for this server are `ronkalot` and `navsquad`. Case variants
-route to the same destination. Their Discord credentials/channel IDs can be supplied
+The groups configured on the production server are listed only in its private
+configuration (see [the server setup](../deploy/SERVER.md#private-group-configuration)).
+Case variants route to the same destination. Their Discord credentials/channel IDs can be supplied
 later; group services stay separate.

@@ -4,10 +4,11 @@ This project uses independent paths and users:
 
 - Code: `/opt/wow-character-status/releases/` and the `current` release symlink.
 - Configuration: `/etc/wow-character-status/`, root-readable only.
-- `ronkalot`: `wow-character-status@ronkalot.service`, user `wow-character-ronkalot`,
-  data `/var/lib/wow-character-ronkalot`, loopback port **18081**.
-- `navsquad`: `wow-character-status@navsquad.service`, user `wow-character-navsquad`,
-  data `/var/lib/wow-character-navsquad`, loopback port **18082**.
+- One service per group: `wow-character-status@<instance>.service`, user
+  `wow-character-<instance>`, data `/var/lib/wow-character-<instance>` and its own
+  loopback port (currently 18081 and 18082). Instance labels, group names and ports
+  are private: they live only in `/etc/wow-character-status/groups.json` (see
+  [private group configuration](#private-group-configuration)).
 - Build account: `wow-character-build`; builds/installations run without root.
 - Deployment SSH account: `wow-character-deploy`, with a dedicated forced-command
   key and a sudo rule for only this project's root-owned release receiver.
@@ -37,16 +38,60 @@ GitHub repository settings already have the dedicated `WOW_STATUS_SSH_KEY` and
 Discord or OpenAI credentials. The private SSH key only permits this project's
 release operation, with forwarding and interactive shell disabled.
 
+## Private group configuration
+
+A group name is a shared secret (see [the group name is the password](../docs/GROUPS.md#the-group-name-is-the-password)),
+and its route key is derived from it, so neither belongs in Git, in the workflow or
+in GitHub Actions logs. The server keeps them in `/etc/wow-character-status/groups.json`
+(owned by root, mode 0600):
+
+```json
+{
+  "group-a": {"name": "<exact group name>", "port": 18081},
+  "group-b": {"name": "<exact group name>", "port": 18082}
+}
+```
+
+- The key (`group-a`) is the instance label: the systemd instance, the account
+  `wow-character-<instance>`, the data directory, the `<instance>.env` file and the
+  key in the Discord secret below. Use lowercase letters, digits and `-`, start with
+  a letter, at most 18 characters. Do not use the group name as the label.
+- `name` is the exact text members enter in WoW. The server accepts letters, digits,
+  spaces, `.`, `_` and `-`, at most 80 characters, so it can go into a systemd
+  environment file unchanged.
+- `port` is the instance's loopback port. Names (ignoring case) and ports are unique.
+
+The receiver restarts and health-checks exactly the instances listed there and
+writes each `<instance>.env` from it on every deployment. Its output in the
+Actions log names no group or instance. When a receiver from this revision finds no
+`groups.json`, it creates one from the `<instance>.env` files the previous receiver
+wrote, so the existing services keep their names, ports and data. Install a new
+receiver as root from a checkout of the revision:
+`install -o root -g root -m 0755 deploy/install_release.py /usr/local/sbin/wow-character-status-deploy`.
+The gateway's group routes are rendered from the same file (see
+[network access](#network-access-and-home-testing)).
+
 ## Discord settings, when you have created the bot/chats
 
-For each group add the following repository settings:
+Add one repository secret, `WOW_STATUS_DISCORD_CONFIG`, holding JSON keyed by the
+instance labels in `groups.json`:
 
-| Group | Private secret | Repository variables |
-| --- | --- | --- |
-| ronkalot | `RONKALOT_DISCORD_BOT_TOKEN` | `RONKALOT_DISCORD_GUILD_ID`, `RONKALOT_DISCORD_CHANNEL_ID` |
-| navsquad | `NAVSQUAD_DISCORD_BOT_TOKEN` | `NAVSQUAD_DISCORD_GUILD_ID`, `NAVSQUAD_DISCORD_CHANNEL_ID` |
+```json
+{
+  "group-a": {"bot_token": "...", "guild_id": "...", "channel_id": "..."},
+  "group-b": {"bot_token": "...", "guild_id": "...", "channel_id": "..."}
+}
+```
 
-Use the same new bot token in both secrets if that bot is invited to two different
+One JSON secret keeps the labels out of the workflow file. Without it, a deployment
+sends no Discord settings and the server keeps the ones it already has (the deploy
+log shows a "Discord settings unchanged" warning). Empty or missing fields also keep
+the server's existing values, so a later deployment never deletes a credential by
+accident. Settings for an instance that is not in `groups.json` are ignored, and the
+log says how many were. The workflow no longer reads the older per-group
+`*_DISCORD_*` secrets and variables; delete them once their values are in the new secret.
+
+Use the same new bot token for both groups if that bot is invited to two different
 Discord servers. Guild IDs must differ when sharing a token. Alternatively use a
 separate bot per group. No OpenAI key is required.
 
@@ -61,9 +106,7 @@ all jobs** on the **Checks and addon packages** run for the current tip of `main
 once it has finished, to activate the bot. "Re-run failed jobs" fails `deploy`. A
 run whose commit is no longer the tip of `main` also skips `deploy` (see
 `scripts/deploy_gate.py`), so re-running an older run deploys nothing. Roll back by
-reverting on `main`. Nonempty GitHub settings
-update the server's private config; omitted settings preserve existing private
-values, avoiding accidental credential deletion on later deployments.
+reverting on `main`.
 
 ## Keeping production level with main
 
@@ -88,12 +131,10 @@ points to this server. Caddy terminates HTTPS on port 443, manages certificate
 renewal, and redirects HTTP on port 80 to HTTPS. The two application ports remain
 bound to localhost only. No request access log is enabled.
 
-The deployed gateway configuration is tracked in `Caddyfile.production`:
-
-| Group | URL prefix | Private upstream |
-| --- | --- | --- |
-| ronkalot | `/groups/19e32befc180a1cfdea5c3/` | `127.0.0.1:18081` |
-| navsquad | `/groups/466f79683c7465bc3a5ba0/` | `127.0.0.1:18082` |
+The deployed gateway configuration is rendered from `Caddyfile.production.template`
+and the private `groups.json`: one `handle_path /groups/<route key>/*` route per
+group to its loopback port, where the route key is
+`wow-status group-key "<group name>"`. The rendered file is never committed.
 
 The root address now hosts the addon homepage and all standalone ZIP downloads.
 Static releases live in `/srv/wow-status-homepage/releases/`, with an atomic
@@ -123,9 +164,21 @@ also covers `/srv/wow-status-homepage/current`, while its key/sudo restrictions
 are unchanged. Earlier manual static releases remain available for rollback.
 
 Caddy was installed separately through Debian's package manager. App deployments
-do not modify its configuration or restart it. To change the gateway, copy the
-tracked production file to `/etc/caddy/Caddyfile`, validate it with
-`caddy validate --config /etc/caddy/Caddyfile`, then `systemctl reload caddy`.
+do not modify its configuration or restart it. To change the gateway, as root on
+the server (`-B` keeps Python from writing into the sealed release):
+
+```sh
+cd /opt/wow-character-status/current
+.venv/bin/python -B deploy/render_caddyfile.py | diff -u /etc/caddy/Caddyfile -   # dry run
+.venv/bin/python -B deploy/render_caddyfile.py --output /etc/caddy/Caddyfile.next
+caddy validate --config /etc/caddy/Caddyfile.next --adapter caddyfile
+cp -p /etc/caddy/Caddyfile /etc/caddy/Caddyfile.before-$(date -u +%Y%m%dT%H%M%SZ)
+mv /etc/caddy/Caddyfile.next /etc/caddy/Caddyfile && systemctl reload caddy
+```
+
+`deploy/publish_homepage.py` renders the same routes from the server's `groups.json`
+(or a local `--groups-config`); `--dry-run` prints the Caddy diff and changes
+nothing. Its output contains route keys, so keep it private.
 Certificates live in Caddy's persistent state, outside app releases. The generic
 `Caddyfile.groups.example` remains available for other deployments.
 
@@ -136,8 +189,8 @@ No enrollment or character data was created by these read-only checks.
 Root administration examples:
 
 ```sh
-systemctl status wow-character-status@ronkalot wow-character-status@navsquad
-journalctl -u wow-character-status@ronkalot -n 30 --no-pager
+systemctl status 'wow-character-status@*'
+journalctl -u wow-character-status@INSTANCE -n 30 --no-pager
 curl --fail http://127.0.0.1:18081/health
 curl --fail http://127.0.0.1:18082/health
 ```
@@ -195,3 +248,32 @@ access its database. Secrets and data do not belong in Git.
 
 Game behavior remains unverified until the actual game clients are exercised
 at home. Remote mocked tests and HTTP health checks establish narrower guarantees.
+
+## Rotating a group name
+
+Removing a name from the repository does not make it secret again: earlier names and
+keys stay in Git history, issue text and old Actions logs. Choosing a new name is the
+fix. In-game sharing needs no server change: it moves as soon as members replace the
+name in `/wstatus groups`. For the companion service, as root:
+
+1. Choose a new name: long and unguessable, for example five or more random words
+   (see [GROUPS.md](../docs/GROUPS.md#the-group-name-is-the-password)). Share it with
+   the members privately, never in Git, issues, pull requests or logs.
+2. Pick a new instance label that is not the name, for example `group-c`, and a free
+   loopback port (the old service keeps its port until step 8). A service database
+   belongs to one group and refuses another name, so the renamed group starts with a
+   fresh database under the new label; the old data stays where it is.
+3. Create the account: `useradd --system --user-group --create-home --home-dir
+   /var/lib/wow-character-group-c --shell /usr/sbin/nologin wow-character-group-c`.
+4. In `/etc/wow-character-status/groups.json`, remove the old entry and add
+   `"group-c": {"name": "<new name>", "port": <free port>}`. The receiver from this
+   revision must be installed (see [private group configuration](#private-group-configuration)).
+5. If the group posts to Discord, move its entry in `WOW_STATUS_DISCORD_CONFIG` to
+   the new label.
+6. Deploy: push to `main`, or use **Re-run all jobs** on the run for the tip of
+   `main`. The receiver writes `group-c.env`, then starts and health-checks the new service.
+7. Render, check and install the Caddyfile (see [network access](#network-access-and-home-testing)).
+   The old route then returns 404.
+8. Stop the old service with `systemctl disable --now wow-character-status@OLD`, then
+   back up or delete `/var/lib/wow-character-OLD` and `/etc/wow-character-status/OLD.env`.
+9. Members replace the old group with the new name in `/wstatus groups`.

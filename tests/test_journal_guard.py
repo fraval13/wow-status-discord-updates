@@ -13,7 +13,7 @@ def member(name='Thora', edition='vanilla'):
             function time() return math.floor(__now) end
             function GetTime() return __mono end
         ''')
-        lua.execute('WoWStatusGroups.announce=nil;WoWStatusGroups.update("navsquad", "")')
+        lua.execute('WoWStatusGroups.announce=nil;WoWStatusGroups.update("dawnwatch", "")')
     lua.execute('''
         __peers={"Thora-TestRealm","Eldrin-TestRealm","Mira-TestRealm"}
         for id in pairs(character().group_ids) do __channelNames={WoWStatusGroups.channel(id)} end

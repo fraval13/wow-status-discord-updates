@@ -102,5 +102,5 @@ in-game validation has been performed. Forever compatibility remains planned onl
 The Vanilla and Forever packages now have separate complete folders and a shared
 Python service. Group IDs use the same Unicode case-fold map in Lua and Python,
 so capitalization does not create another group. GitHub checks run remotely, and
-the deployment pipeline targets dedicated server paths/users/ports for `ronkalot`
-and `navsquad`. No application or dependency installation runs on the work computer.
+the deployment pipeline targets dedicated server paths/users/ports for the owner's
+two groups, listed only in the server's private configuration. No application or dependency installation runs on the work computer.

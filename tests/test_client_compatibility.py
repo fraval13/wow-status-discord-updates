@@ -35,14 +35,14 @@ def client_runtime(edition, name='Thora', extra=''):
 def test_join_notification_names_wow_status_group_and_remains_once_only(edition):
     lua = client_runtime(edition)
     lua.execute('''
-        WoWStatusGroups.update("navsquad", "")
+        WoWStatusGroups.update("dawnwatch", "")
         assert(#character().events==1)
         assert(character().events[1].kind=="introduction")
         assert(WoWStatusJournal.entries()[1].text=="Joined the WoW Status group")
         assert(__sent[1].text:find("Joined the WoW Status group",1,true))
-        WoWStatusGroups.update("navsquad", "")
+        WoWStatusGroups.update("dawnwatch", "")
         WoWStatusGroups.update("", "")
-        WoWStatusGroups.update("navsquad", "")
+        WoWStatusGroups.update("dawnwatch", "")
         fire("PLAYER_LOGIN")
         assert(#character().events==1)
         WoWStatusPreviews.show()
@@ -92,7 +92,7 @@ def test_modern_restrictions_delay_delivery_and_login_sync_remains_two_way_and_q
     for lua in clients.values():
         lua.execute('''
             WoWStatusGroups.announce=nil
-            WoWStatusGroups.update("navsquad", "")
+            WoWStatusGroups.update("dawnwatch", "")
             for id in pairs(character().group_ids) do __channelNames={WoWStatusGroups.channel(id)} end
         ''')
     own, friend = clients.values()

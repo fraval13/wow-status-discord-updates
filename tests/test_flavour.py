@@ -126,7 +126,7 @@ def test_previews_randomize_locally_and_do_not_repeat_immediately():
 def test_live_popup_and_persistent_log_share_caption():
     lua = make_lua()
     lua.execute('''
-        WoWStatusGroups.update("navsquad","")
+        WoWStatusGroups.update("dawnwatch","")
         local group=next(character().group_ids)
         __channelNames={WoWStatusGroups.channel(group)}
         local packet="WSTATUS2 classic-era LEVEL 33 "..time().." 100-7"

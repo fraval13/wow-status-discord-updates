@@ -1,11 +1,17 @@
 #!/usr/bin/python3
-"""Root-owned deployment receiver. Its authority is limited to this project's fixed paths."""
-import fcntl
+"""Root-owned deployment receiver. Its authority is limited to this project's fixed paths.
+
+Group names are shared secrets (docs/GROUPS.md), so they are not in Git. The services
+this receiver may restart come from root-maintained /etc/wow-character-status/groups.json:
+
+    {"<instance>": {"name": "<exact group name>", "port": 18081}, ...}
+
+The instance is a short local label for the systemd unit, account and data directory.
+"""
 import hashlib
 import io
 import json
 import os
-import pwd
 import re
 import shutil
 import subprocess
@@ -19,9 +25,91 @@ from pathlib import Path, PurePosixPath
 
 BASE = Path('/opt/wow-character-status')
 CONFIG = Path('/etc/wow-character-status')
-GROUPS = {'ronkalot': 18081, 'navsquad': 18082}
 HOMEPAGE = Path('/srv/wow-status-homepage')
 LIMIT = 64 * 1024 * 1024
+# Becomes systemd instance wow-character-status@<instance>, account wow-character-<instance>
+# (at most 32 characters) and /var/lib/wow-character-<instance>.
+INSTANCE = re.compile(r'[a-z][a-z0-9-]{0,17}')
+# A subset of what the addon accepts: no quotes, backslashes or dollar signs, so the name
+# is written to a systemd environment file unchanged.
+GROUP_NAME = re.compile(r'[A-Za-z0-9._-](?:[A-Za-z0-9 ._-]{0,78}[A-Za-z0-9._-])?')
+DISCORD_KEYS = ('bot_token', 'guild_id', 'channel_id')
+
+
+def validate_groups(raw):
+    """Instance -> {'name', 'port'}; rejects anything unsafe for paths, units or env files."""
+    if not isinstance(raw, dict) or not 1 <= len(raw) <= 8:
+        raise ValueError('Group configuration needs 1 to 8 group instances')
+    groups, names, ports = {}, set(), set()
+    for instance, entry in raw.items():
+        if not isinstance(instance, str) or not INSTANCE.fullmatch(instance):
+            raise ValueError('Invalid group instance label')
+        if not isinstance(entry, dict) or set(entry) != {'name', 'port'}:
+            raise ValueError('Each group instance needs exactly a name and a port')
+        name, port = entry['name'], entry['port']
+        if not isinstance(name, str) or not GROUP_NAME.fullmatch(name):
+            raise ValueError('Invalid group name')
+        if type(port) is not int or not 1024 <= port <= 65535:
+            raise ValueError('Invalid group port')
+        if name.casefold() in names or port in ports:
+            raise ValueError('Group names and ports must be unique')
+        names.add(name.casefold())
+        ports.add(port)
+        groups[instance] = {'name': name, 'port': port}
+    return groups
+
+
+def legacy_groups(config):
+    """Groups from the <instance>.env files an earlier receiver wrote before groups.json."""
+    groups = {}
+    for path in sorted(config.glob('*.env')):
+        values = dict(re.findall(r'^([A-Z_]+)="([^"\n]*)"$', path.read_text(encoding='utf-8'), re.MULTILINE))
+        port = values.get('WOW_STATUS_PORT', '')
+        groups[path.stem] = {'name': values.get('DISCORD_GROUP_NAME'),
+                             'port': int(port) if port.isdigit() else None}
+    return groups
+
+
+def load_groups(config=CONFIG):
+    """The private group list, migrating once from the previous receiver's env files."""
+    path = config / 'groups.json'
+    if path.exists():
+        return validate_groups(json.loads(path.read_text(encoding='utf-8'))), False
+    return validate_groups(legacy_groups(config)), True
+
+
+def merge_discord(groups, merged, incoming):
+    """Apply nonempty incoming Discord settings for known instances; keep the rest.
+
+    Returns how many incoming instances are not configured on this server.
+    """
+    if not isinstance(incoming, dict) or not isinstance(merged, dict):
+        raise ValueError('Invalid Discord setting')
+    for instance in groups:
+        values = merged.setdefault(instance, {})
+        supplied = incoming.get(instance, {})
+        if not isinstance(supplied, dict) or not isinstance(values, dict):
+            raise ValueError('Invalid Discord setting')
+        for key in DISCORD_KEYS:
+            value = supplied.get(key, '')
+            if not isinstance(value, str):
+                raise ValueError('Invalid Discord setting')
+            if value:
+                pattern = r'[A-Za-z0-9._=-]+' if key == 'bot_token' else r'[0-9]{1,30}'
+                if not re.fullmatch(pattern, value):
+                    raise ValueError('Invalid Discord credential format')
+                values[key] = value
+    return len(set(incoming) - set(groups))
+
+
+def service_environment(instance, group, values, revision):
+    return environment({
+        'DISCORD_GROUP_NAME': group['name'], 'WOW_STATUS_PORT': str(group['port']),
+        'WOW_STATUS_REVISION': revision,
+        'WOW_STATUS_DATABASE': f'/var/lib/wow-character-{instance}/service.sqlite3',
+        'DISCORD_BOT_TOKEN': values.get('bot_token', ''),
+        'DISCORD_GUILD_ID': values.get('guild_id', ''),
+        'DISCORD_CHANNEL_ID': values.get('channel_id', '')})
 
 
 def run(*args):
@@ -100,11 +188,15 @@ def switch_homepage(target):
 
 
 def main():
+    # Linux-only modules, imported here so tests can load the helpers above anywhere.
+    import fcntl
+    import pwd
     if os.geteuid() != 0:
         raise SystemExit('Receiver requires the dedicated sudo rule')
     os.umask(0o077)
     deployment_lock = (BASE / 'deployment.lock').open('ab')
     fcntl.flock(deployment_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+    groups, migrated = load_groups()
     raw = sys.stdin.buffer.read(LIMIT + 1)
     if len(raw) > LIMIT:
         raise ValueError('Release archive is too large')
@@ -113,7 +205,7 @@ def main():
     old_target = (BASE / 'current').resolve() if (BASE / 'current').exists() else None
     old_homepage = (HOMEPAGE / 'current').resolve() if (HOMEPAGE / 'current').exists() else None
     old_config = {name: (CONFIG / name).read_bytes() if (CONFIG / name).exists() else None
-                  for name in ['config.json', 'ronkalot.env', 'navsquad.env']}
+                  for name in ['config.json', 'groups.json', *(f'{instance}.env' for instance in groups)]}
     activated = False
     homepage_activated = False
     candidate = None
@@ -142,17 +234,10 @@ def main():
             raise ValueError('Invalid revision')
         incoming = json.loads((stage / '.deploy/CONFIG.json').read_text(encoding='utf-8'))
         merged = json.loads(old_config['config.json']) if old_config['config.json'] else {}
-        for group in GROUPS:
-            values = merged.setdefault(group, {})
-            for key in ('bot_token', 'guild_id', 'channel_id'):
-                value = incoming.get(group, {}).get(key, '')
-                if not isinstance(value, str):
-                    raise ValueError('Invalid Discord setting')
-                if value:
-                    pattern = r'[A-Za-z0-9._=-]+' if key == 'bot_token' else r'[0-9]{1,30}'
-                    if not re.fullmatch(pattern, value):
-                        raise ValueError('Invalid Discord credential format')
-                    values[key] = value
+        unknown = merge_discord(groups, merged, incoming)
+        if unknown:
+            # Count only: instance labels may be old group names, and this log is public.
+            print(f'Ignored Discord settings for {unknown} instance(s) not in groups.json.', file=sys.stderr)
         prepare_homepage(stage, revision)
         shutil.rmtree(stage / '.deploy')  # credentials never become part of the installed release
         builder = pwd.getpwnam('wow-character-build')
@@ -168,33 +253,31 @@ def main():
         run('runuser', '-u', 'wow-character-build', '--', str(candidate / '.venv/bin/python'),
             '-m', 'pip', 'install', '--disable-pip-version-check', str(candidate))
         root_readonly_tree(candidate)
-        for group, port in GROUPS.items():
-            values = merged[group]
-            data = environment({
-                'DISCORD_GROUP_NAME': group, 'WOW_STATUS_PORT': str(port),
-                'WOW_STATUS_REVISION': revision,
-                'WOW_STATUS_DATABASE': f'/var/lib/wow-character-{group}/service.sqlite3',
-                'DISCORD_BOT_TOKEN': values.get('bot_token', ''),
-                'DISCORD_GUILD_ID': values.get('guild_id', ''),
-                'DISCORD_CHANNEL_ID': values.get('channel_id', '')})
-            (CONFIG / f'{group}.env').write_text(data, encoding='utf-8')
-            (CONFIG / f'{group}.env').chmod(0o600)
+        for instance, group in groups.items():
+            path = CONFIG / f'{instance}.env'
+            path.write_text(service_environment(instance, group, merged[instance], revision), encoding='utf-8')
+            path.chmod(0o600)
         (CONFIG / 'config.json').write_text(json.dumps(merged), encoding='utf-8')
         (CONFIG / 'config.json').chmod(0o600)
+        if migrated:
+            (CONFIG / 'groups.json').write_text(json.dumps(groups, indent=2) + '\n', encoding='utf-8')
+            (CONFIG / 'groups.json').chmod(0o600)
         swap = BASE / 'next'
         swap.unlink(missing_ok=True)
         swap.symlink_to(candidate)
         swap.replace(BASE / 'current')
         activated = True
-        for group in GROUPS:
-            run('systemctl', 'restart', f'wow-character-status@{group}.service')
+        for instance in groups:
+            run('systemctl', 'restart', f'wow-character-status@{instance}.service')
         for _ in range(20):
-            if all(healthy(port, revision) for port in GROUPS.values()):
-                for group in GROUPS:
-                    run('systemctl', 'enable', f'wow-character-status@{group}.service')
+            if all(healthy(group['port'], revision) for group in groups.values()):
+                for instance in groups:
+                    run('systemctl', 'enable', f'wow-character-status@{instance}.service')
                 switch_homepage(candidate / 'public-homepage')
                 homepage_activated = True
-                print('Activated', revision, 'for ronkalot, navsquad and the homepage; both local health endpoints passed.')
+                # No instance labels or group names: this output reaches the public Actions log.
+                print('Activated', revision, f'for {len(groups)} group services and the homepage;',
+                      'all local health endpoints passed.')
                 return
             time.sleep(1)
         raise RuntimeError('New release did not become healthy')
@@ -216,12 +299,12 @@ def main():
                 else:
                     path.write_bytes(value)
                     path.chmod(0o600)
-            for group in GROUPS:
-                subprocess.run(['systemctl', 'restart', f'wow-character-status@{group}.service'], check=False)
+            for instance in groups:
+                subprocess.run(['systemctl', 'restart', f'wow-character-status@{instance}.service'], check=False)
             print('Deployment failed; restored the preceding project release.', file=sys.stderr)
         elif activated:
-            for group in GROUPS:
-                subprocess.run(['systemctl', 'stop', f'wow-character-status@{group}.service'], check=False)
+            for instance in groups:
+                subprocess.run(['systemctl', 'stop', f'wow-character-status@{instance}.service'], check=False)
             print('Initial activation failed; project services stopped.', file=sys.stderr)
         raise
     finally:

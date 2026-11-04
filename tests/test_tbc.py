@@ -56,7 +56,7 @@ def test_tbc_supports_70_and_rejects_other_client_editions():
 def test_tbc_levels_roundtrip_and_reject_vanilla_forever_packets():
     own,friend=tbc_runtime(),tbc_runtime('Eldrin')
     for lua in (own,friend):
-        lua.eval('WoWStatusGroups.update')('navsquad','')
+        lua.eval('WoWStatusGroups.update')('dawnwatch','')
     own.eval('fire')('PLAYER_LEVEL_UP',70)
     packet=own.eval('__sent[1].text')
     assert 'WSTATUS2 tbc-anniversary LEVEL 70 ' in packet

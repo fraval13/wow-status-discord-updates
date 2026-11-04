@@ -142,7 +142,7 @@ def test_popup_from_nordic_sender_is_received(lua, name):
     ('Odd | pipe', 'Odd   pipe'),
 ])
 def test_outgoing_detail_strips_escapes_and_pipes_the_receiver_would_reject(lua, detail, sent):
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     text = lua.execute(f'''
         local ids = {{}}
         for id in pairs(character().group_ids) do ids[id] = true end
@@ -166,7 +166,7 @@ def test_strip_escapes_handles_named_colours_protected_text_and_literal_pipes(
 
 
 def test_detail_that_is_only_escapes_is_not_sent(lua):
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     sent = lua.execute('''
         local ids = {}
         for id in pairs(character().group_ids) do ids[id] = true end

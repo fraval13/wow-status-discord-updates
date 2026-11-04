@@ -1,16 +1,22 @@
 """Publish the built static homepage through the existing authorized SSH account.
 
-Preserves both companion routes. Keeps the previous static release and Caddy
-config for rollback. Does not restart either application or read its secrets.
+Renders the Caddyfile's group routes from the private groups.json (by default the
+server's own copy; group names never come from Git). Keeps the previous static
+release and Caddy config for rollback. Does not restart either application or read
+its Discord secrets. --dry-run prints the Caddy change and stops; its output holds
+the group route keys, so do not paste it anywhere public.
 """
 import argparse
+import difflib
 import hashlib
-import io
+import importlib.util
 import json
 import subprocess
 import tarfile
 import tempfile
 from pathlib import Path
+
+PRIVATE_GROUPS = '/etc/wow-character-status/groups.json'
 
 REMOTE = r'''
 import hashlib, json, os, pathlib, shutil, subprocess, tarfile, time
@@ -24,10 +30,13 @@ if hashlib.sha256(old_config).hexdigest() != EXPECTED:
     raise RuntimeError('Caddy changed since inspection; no configuration was changed')
 previous = os.readlink(current) if current.is_symlink() else None
 release.mkdir(parents=True, exist_ok=False)
+# Outside the served release directory and private: it holds the group route keys.
+candidate = base / ('.Caddyfile-' + RELEASE)
 try:
     with tarfile.open(archive) as package:
         package.extractall(release, filter='data')
-    candidate = release / '.Caddyfile'
+    with os.fdopen(os.open(candidate, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), 'w', encoding='utf-8') as handle:
+        handle.write(CADDYFILE)
     subprocess.run(['caddy','validate','--config',str(candidate),'--adapter','caddyfile'],check=True)
     backup = base / ('Caddyfile.before-' + RELEASE)
     backup.write_bytes(old_config)
@@ -55,23 +64,53 @@ try:
                       'previous':previous,'addon_revision':manifest['addon_revision']}))
 finally:
     archive.unlink(missing_ok=True)
+    candidate.unlink(missing_ok=True)
 '''
 
 
-def main():
+def _renderer():
+    spec = importlib.util.spec_from_file_location('caddyfile_renderer', Path(__file__).resolve().parent / 'render_caddyfile.py')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def private_groups(path, ssh):
+    """The private group list: a local file if given, otherwise the server's own."""
+    if path is not None:
+        return json.loads(path.read_text(encoding='utf-8'))
+    result = subprocess.run([*ssh, 'cat ' + PRIVATE_GROUPS], capture_output=True)
+    if result.returncode:
+        raise SystemExit(f'Could not read {PRIVATE_GROUPS} on the host. The current deployment receiver '
+                         'writes it on its first run; or create it (deploy/SERVER.md), or pass --groups-config.')
+    return json.loads(result.stdout.decode('utf-8'))
+
+
+def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--host', required=True)
     parser.add_argument('--directory', type=Path, default=Path('dist/homepage'))
-    args = parser.parse_args()
-    root = Path(__file__).resolve().parents[1]
+    parser.add_argument('--groups-config', type=Path,
+                        help=f'Local private groups.json instead of the host\'s {PRIVATE_GROUPS}')
+    parser.add_argument('--dry-run', action='store_true',
+                        help='Show how the live Caddyfile would change, then stop without uploading anything')
+    args = parser.parse_args(argv)
     directory = args.directory.resolve()
-    if not (directory / 'index.html').is_file() or not (directory / 'downloads/release.json').is_file():
+    if not args.dry_run and (not (directory / 'index.html').is_file()
+                             or not (directory / 'downloads/release.json').is_file()):
         parser.error('Build the homepage before publishing')
     ssh = ['ssh', '-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', args.host]
     old_config = subprocess.check_output([*ssh, 'cat /etc/caddy/Caddyfile'])
     # Refuse an unrelated host/config rather than replacing another site's setup.
-    if b'wow.frankvalde.com {' not in old_config or b'127.0.0.1:18081' not in old_config or b'127.0.0.1:18082' not in old_config:
+    if b'wow.frankvalde.com {' not in old_config or b'handle_path /groups/' not in old_config:
         parser.error('The target does not have the expected existing WoW gateway')
+    caddyfile = _renderer().render(private_groups(args.groups_config, ssh))
+    if args.dry_run:
+        diff = ''.join(difflib.unified_diff(old_config.decode('utf-8').splitlines(True), caddyfile.splitlines(True),
+                                            '/etc/caddy/Caddyfile (live)', 'rendered from private groups.json'))
+        print(diff or 'The rendered Caddyfile matches the live one.')
+        print('Dry run: nothing was uploaded or changed.')
+        return
     import datetime
     release = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     remote_path = f'/tmp/wow-homepage-{release}.tar.gz'
@@ -80,15 +119,13 @@ def main():
             for file in sorted(directory.rglob('*')):
                 if file.is_file():
                     package.add(file, arcname=file.relative_to(directory), recursive=False)
-            data = (root / 'deploy/Caddyfile.production').read_bytes()
-            info = tarfile.TarInfo('.Caddyfile')
-            info.size, info.mode = len(data), 0o644
-            package.addfile(info, io.BytesIO(data))
         temporary.flush()
         subprocess.run(['scp','-F','/dev/null','-o','BatchMode=yes','-o','StrictHostKeyChecking=yes',
                         temporary.name,f'{args.host}:{remote_path}'],check=True)
+    # The rendered Caddyfile travels on the SSH stdin, never through the world-readable /tmp upload.
     variables = '\n'.join([f'PAYLOAD={json.dumps(remote_path)}', f'RELEASE={json.dumps(release)}',
-                            f'EXPECTED={json.dumps(hashlib.sha256(old_config).hexdigest())}'])
+                            f'EXPECTED={json.dumps(hashlib.sha256(old_config).hexdigest())}',
+                            f'CADDYFILE={json.dumps(caddyfile)}'])
     subprocess.run([*ssh, 'python3 -'],input=(variables + '\n' + REMOTE).encode(),check=True)
 
 

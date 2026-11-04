@@ -123,11 +123,11 @@ async def test_upload_rate_limits_are_per_owner_and_retryable(store, payload, mo
 async def test_proxy_header_only_trusted_when_explicit_and_local(store, monkeypatch):
     from wow_status.group_routing import group_key
     monkeypatch.setattr(limits, 'ENROLLMENTS_PER_IP_HOUR', 1)
-    group = group_key('navsquad')
-    client = TestClient(TestServer(create_app(store, group, 'navsquad', trust_proxy=True)))
+    group = group_key('dawnwatch')
+    client = TestClient(TestServer(create_app(store, group, 'dawnwatch', trust_proxy=True)))
     await client.start_server()
     try:
-        body = {'group_id': group, 'group_name': 'navsquad'}
+        body = {'group_id': group, 'group_name': 'dawnwatch'}
         headers = {'X-WoW-Group': group, 'X-WoW-Client-IP': '192.0.2.1'}
         assert (await client.post('/v1/group-enroll', json=body, headers=headers)).status == 200
         assert (await client.post('/v1/group-enroll', json=body, headers=headers)).status == 429
@@ -135,7 +135,7 @@ async def test_proxy_header_only_trusted_when_explicit_and_local(store, monkeypa
         assert (await client.post('/v1/group-enroll', json=body, headers=headers)).status == 200
     finally:
         await client.close()
-    client = TestClient(TestServer(create_app(store, group, 'navsquad')))
+    client = TestClient(TestServer(create_app(store, group, 'dawnwatch')))
     await client.start_server()
     try:
         assert (await client.post('/v1/group-enroll', json=body, headers=headers)).status == 200

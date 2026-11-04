@@ -565,21 +565,21 @@ def test_group_editor_adds_and_removes_account_groups_immediately(lua):
     lua.execute('''
         local p = WoWStatusGroupWindow
         p.name:SetText("Frank")
-        p.input:SetText("  navsquad  ")
+        p.input:SetText("  dawnwatch  ")
         p.input.OnEnterPressed(p.input)
-        assert(WoWStatusGroups.text(character(), true) == "navsquad")
+        assert(WoWStatusGroups.text(character(), true) == "dawnwatch")
         assert(p.input:GetText() == "")
         assert(p.input.focused)
-        assert(p.rows[1].label:GetText() == "navsquad")
+        assert(p.rows[1].label:GetText() == "dawnwatch")
         assert(p.rows[1]:IsShown())
         assert(not p.rows[2]:IsShown())
         assert(not p.empty:IsShown())
-        p.input:SetText("ronkalot")
+        p.input:SetText("emberhold")
         p.add.OnClick()
         assert(WoWStatusDB.player_name == "Frank")
-        assert(p.rows[2].label:GetText() == "ronkalot")
+        assert(p.rows[2].label:GetText() == "emberhold")
         p.rows[2].remove.OnClick()
-        assert(WoWStatusGroups.text(character(), true) == "navsquad")
+        assert(WoWStatusGroups.text(character(), true) == "dawnwatch")
         p.rows[1].remove.OnClick()
         assert(next(WoWStatusDB.account_groups) == nil)
         assert(next(character().group_ids) == nil)
@@ -644,16 +644,16 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
                 __categories[id].page.OnShow()
             end,
         }
-        WoWStatusGroups.update("ronkalot", "Frank")
+        WoWStatusGroups.update("emberhold", "Frank")
         fire("ADDON_LOADED", "Blizzard_Settings")
         assert(__categories["WoW Status"] ~= nil)
         -- Sidebar first-open path: Blizzard can call OnRefresh without OnShow.
         -- The content must already exist and be populated before either callback.
         assert(not __categories.Groups.page:IsShown())
-        assert(WoWStatusGroupWindow.rows[1].label:GetText() == "ronkalot")
+        assert(WoWStatusGroupWindow.rows[1].label:GetText() == "emberhold")
         assert(WoWStatusGroupWindow.name:GetText() == "Frank")
         __categories.Groups.page.OnRefresh()
-        assert(WoWStatusGroupWindow.rows[1].label:GetText() == "ronkalot")
+        assert(WoWStatusGroupWindow.rows[1].label:GetText() == "emberhold")
         assert(WoWStatusGroupWindow:GetParent().child == WoWStatusGroupWindow)
         assert(WoWStatusGroupWindow.scale == 1)
         SlashCmdList.WOWSTATUS("")
@@ -771,7 +771,7 @@ def test_two_clients_share_level_updates_without_companion_or_discord():
     sender = make_lua()
     receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
     for client in [sender, receiver]:
-        client.eval('WoWStatusGroups.update')('navsquad', 'Friend')
+        client.eval('WoWStatusGroups.update')('dawnwatch', 'Friend')
     sender.eval('fire')('PLAYER_LEVEL_UP', 2)
     packet = sender.eval('__sent[1].text')
     assert sender.eval('__sent[1].kind') == 'WHISPER'
@@ -794,7 +794,7 @@ def test_generic_events_share_only_with_selected_groups_and_honor_privacy():
     sender = make_lua()
     receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
     for client in [sender, receiver]:
-        client.eval('WoWStatusGroups.update')('navsquad', '')
+        client.eval('WoWStatusGroups.update')('dawnwatch', '')
     sender.eval('fire')('PLAYER_DEAD')
     packet = sender.eval('__sent[1].text')
     assert 'WSTATUS3 classic-era death' in packet
@@ -813,7 +813,7 @@ def test_generic_events_share_only_with_selected_groups_and_honor_privacy():
 
 
 def test_discovery_waits_for_real_peers_and_never_sends_custom_channel_data(lua):
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.execute('__peers = {}')
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert lua.eval('#__sent') == 0
@@ -825,7 +825,7 @@ def test_discovery_waits_for_real_peers_and_never_sends_custom_channel_data(lua)
 
 
 def test_synchronous_roster_events_do_not_duplicate_outgoing_updates(lua):
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.execute('''
         function SetSelectedDisplayChannel(index) fire("CHANNEL_ROSTER_UPDATE",index,1) end
     ''')
@@ -850,9 +850,9 @@ def test_toast_has_event_icon_and_fades_without_recording_preview(lua):
 
 def test_combat_queue_keeps_general_updates_separate_from_coalesced_levels(lua):
     from wow_status.group_routing import group_key
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.execute('__combat=true')
-    channel = 'WStatus' + group_key('navsquad')
+    channel = 'WStatus' + group_key('dawnwatch')
     receive = lua.eval('WoWStatusPopups.receive')
     assert receive('WSTATUS3 classic-era death 1793000000 death1 44696564', 'Eldrin-TestRealm', channel)
     assert receive('WSTATUS2 classic-era LEVEL 2 1793000000 level1', 'Eldrin-TestRealm', channel)
@@ -866,7 +866,7 @@ def test_group_membership_ignores_stale_send_receive_flags_and_old_off_commands(
     sender = make_lua()
     receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
     for client in [sender, receiver]:
-        client.eval('WoWStatusGroups.update')('navsquad', '')
+        client.eval('WoWStatusGroups.update')('dawnwatch', '')
         client.execute('''
             WoWStatusDB.popups.receive=false
             WoWStatusDB.popups.broadcast=false
@@ -899,7 +899,7 @@ def test_settings_refresh_has_no_account_popup_checkboxes(lua):
 
 
 def test_reload_and_unchanged_zone_do_not_generate_notifications(lua):
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.eval('fire')('PLAYER_ENTERING_WORLD')
     lua.eval('fire')('ZONE_CHANGED_NEW_AREA')
     lua.eval('fire')('PLAYER_LOGOUT')
@@ -1079,9 +1079,9 @@ def test_rapid_friend_levelups_each_get_their_own_queued_notification(lua):
 
 def test_click_dismisses_only_current_popup_and_keeps_log_and_queue(lua):
     from wow_status.group_routing import group_key
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     receive=lua.eval('WoWStatusPopups.receive')
-    channel='WStatus'+group_key('navsquad')
+    channel='WStatus'+group_key('dawnwatch')
     for level in [2,3]:
         assert receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 click-{level}', 'Eldrin-TestRealm',channel)
     assert 'level 2!' in lua.eval('WoWStatusLevelPopup.message:GetText()')
@@ -1183,7 +1183,7 @@ def test_join_is_logged_shared_and_never_replayed_for_same_group():
     own = make_lua(join_announcements=True)
     friend = make_lua(STUBS.replace('return "Thora" end','return "Eldrin" end'), join_announcements=True)
     for client in (own, friend):
-        client.eval('WoWStatusGroups.update')('navsquad','')
+        client.eval('WoWStatusGroups.update')('dawnwatch','')
     assert own.eval('#character().events') == 1
     assert own.eval('character().events[1].kind') == 'introduction'
     assert own.eval('#WoWStatusJournal.entries()') == 1
@@ -1192,9 +1192,9 @@ def test_join_is_logged_shared_and_never_replayed_for_same_group():
     assert 'Joined the WoW Status group' in friend.eval('WoWStatusLevelPopup.message:GetText()')
     assert friend.eval('#WoWStatusJournal.entries()') == 2
     own.execute('''
-        WoWStatusGroups.update("navsquad","")
+        WoWStatusGroups.update("dawnwatch","")
         WoWStatusGroups.update("","")
-        WoWStatusGroups.update("navsquad","")
+        WoWStatusGroups.update("dawnwatch","")
         WoWStatusGroups.announce()
         fire("PLAYER_LOGOUT")
         assert(#character().events==1)
@@ -1239,7 +1239,7 @@ def test_first_equip_roundtrip_shows_equipped_text_not_looted():
     own = make_lua()
     friend = make_lua(STUBS.replace('return "Thora" end','return "Eldrin" end'))
     for client in (own,friend):
-        client.eval('WoWStatusGroups.update')('navsquad','')
+        client.eval('WoWStatusGroups.update')('dawnwatch','')
     own.execute('__slot="|Hitem:123|h[Armor]|h";fire("PLAYER_EQUIPMENT_CHANGED",1)')
     packet=own.eval('__sent[1].text')
     assert 'WSTATUS7' in packet

@@ -1,14 +1,21 @@
 #!/usr/bin/python3
-"""One-time root bootstrap. Run only on the target server with an explicit public key."""
+"""One-time root bootstrap. Run only on the target server with an explicit public key.
+
+--groups-config is the private groups.json described in deploy/SERVER.md. It is
+installed as /etc/wow-character-status/groups.json; keep it out of Git.
+"""
 import argparse
+import json
 import os
 import pwd
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--public-key', required=True, type=Path)
+parser.add_argument('--groups-config', required=True, type=Path)
 args = parser.parse_args()
 if os.geteuid() != 0:
     raise SystemExit('Run bootstrap as root on the target server')
@@ -16,10 +23,14 @@ public_key = args.public_key.read_text(encoding='utf-8').strip()
 if not public_key.startswith('ssh-ed25519 ') or '\n' in public_key:
     raise SystemExit('Expected a single dedicated Ed25519 public key')
 source = Path(__file__).resolve().parent
+sys.path.insert(0, str(source))
+from install_release import validate_groups  # noqa: E402  (the receiver owns the rules)
+
+groups = validate_groups(json.loads(args.groups_config.read_text(encoding='utf-8')))
 base, config = Path('/opt/wow-character-status'), Path('/etc/wow-character-status')
 if base.exists() or config.exists():
     raise SystemExit('Project paths already exist; inspect them rather than overwriting')
-for account in ('wow-character-build', 'wow-character-deploy', 'wow-character-ronkalot', 'wow-character-navsquad'):
+for account in ('wow-character-build', 'wow-character-deploy', *(f'wow-character-{instance}' for instance in groups)):
     try:
         pwd.getpwnam(account)
     except KeyError:
@@ -31,6 +42,8 @@ for account in ('wow-character-build', 'wow-character-deploy', 'wow-character-ro
 base.mkdir(mode=0o755)
 (base / 'releases').mkdir(mode=0o755)
 config.mkdir(mode=0o700)
+(config / 'groups.json').write_text(json.dumps(groups, indent=2) + '\n', encoding='utf-8')
+(config / 'groups.json').chmod(0o600)
 for name, source_name in [('wow-character-status-deploy', 'install_release.py'),
                            ('wow-character-status-receive', 'receive-release')]:
     target = Path('/usr/local/sbin') / name

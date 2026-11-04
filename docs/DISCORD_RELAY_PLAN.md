@@ -10,12 +10,9 @@ the old per-character Discord settings to enable the new relay.
 
 ## Destinations
 
-Retain the two existing private server destinations:
-
-| Group ID entered in WoW | Existing server route key |
-| --- | --- |
-| `navsquad` | `466f79683c7465bc3a5ba0` |
-| `ronkalot` | `19e32befc180a1cfdea5c3` |
+Retain the two existing private server destinations. Their group names and route
+keys are shared secrets, kept only in the server's private configuration (see
+[the server setup](../deploy/SERVER.md#private-group-configuration)), not in Git.
 
 The relay should select only these two groups, and only when the uploader belongs
 to the corresponding in-game group. Keep their uploads, summaries and Discord

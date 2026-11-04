@@ -1,6 +1,6 @@
 **EXAMPLE — fictional characters and numbers**
 
-📜 **Navsquad · Daily character status**
+📜 **Weekend Crew · Daily character status**
 Status at **4 November 2026, 00:00 · Europe/Oslo**
 Includes recorded progress before midnight, through **3 November**.
 

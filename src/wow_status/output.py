@@ -124,7 +124,7 @@ def daily_status_preview(custom=None):
 
     levels = sorted(people, key=lambda person: (-person['level'], person['name']))
     deaths = sorted(people, key=lambda person: (-person['deaths'], person['name']))
-    header = discord.Embed(title='📜 Navsquad · Daily character status',
+    header = discord.Embed(title='📜 Weekend Crew · Daily character status',
         description='**EXAMPLE — fictional characters and numbers**\n'
         'Status at **4 November 2026, 00:00 · Europe/Oslo**\n'
         'Includes recorded progress before midnight, through **3 November**.',

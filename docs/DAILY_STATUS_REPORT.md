@@ -55,10 +55,10 @@ A report is suppressed entirely unless a new observation whose own recorded time
 falls between the previous report's cutoff and the new one arrived after the new
 cutoff. Unchanged standings are never reposted, and no "nothing happened" message
 is sent. Do not enable the old addon Discord options to implement this flow.
-Retain separate navsquad/ronkalot routes and databases. No AI call is needed to
+Retain the separate per-group routes and databases. No AI call is needed to
 sort or count.
 
 `python scripts/send_status_preview.py --daily-status` renders the prepared
-example locally. Adding `--send --group navsquad` explicitly posts that labelled
-example using the existing private server configuration. It does not enroll
-fictional characters, alter tracker data, or enable scheduled reports.
+example locally. Adding `--send --group INSTANCE` explicitly posts that labelled
+example to one group, using the existing private server configuration; `INSTANCE`
+is that group's label there. It does not enroll fictional characters, alter tracker data, or enable scheduled reports.
