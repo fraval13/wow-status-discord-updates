@@ -74,6 +74,8 @@ end
 local function relayable(entry,group)
     if entry.kind=="loot" and not (entry.text or ""):match("^Equipped ") then return false end
     if entry.legacy or entry.client~=WoWStatusAdapter.client_id or not sharedKinds[entry.kind] or not entry.groups or not entry.groups[group] or not permitted(entry) then return false end
+    -- Never offer a text that updated peers would reject and report as invalid.
+    if not J.validText(entry.kind,entry.text,entry.level) then return false end
     local member=groupMember(group)
     if not member or entry.at<groupSince(group) or entry.at<time()-AGE then return false end
     if entry.owner then

@@ -107,11 +107,13 @@ the Click to dismiss footer is no longer shown.
 ## Popup senders and texts
 
 A received update shows only when its sender is in the group's channel roster
-(or posted in the group channel recently), as log sync already required. A
-member who joined moments ago can be missing from the cached roster, so their
-update waits up to 35 seconds, longer than the roster cache lasts; status shows
-`awaiting roster` and `verifying_sender`. After that it is dropped
-(`rejected_unknown_sender`). Legacy channels still use the trust list.
+(or posted in the group channel recently), as log sync already required. While
+a roster whose member count changed reloads, members from the last complete
+roster read still count. A member who joined moments ago can be missing from
+the cached roster, so their update waits up to 60 seconds, longer than the
+roster cache lasts; status shows `awaiting roster` and `verifying_sender`. After
+that it is dropped (`rejected_unknown_sender`). Legacy channels still use the
+trust list.
 
 Each kind must match the texts the addon itself produces: `Joined the WoW Status
 group`, `First mount: <name>` or `First mount ride recorded!`, `Honored/Revered/
@@ -124,6 +126,6 @@ cannot be checked on another client language.
 
 One sender can have at most four updates queued or waiting; more are dropped
 (`sender_queue_full`) until the queue drains. The log can still recover them
-quietly in the next login sync. To test: have a friend whose roster
-entry is visible send several milestones at once, and check that a fifth update
-while you are in combat is not queued.
+quietly in the next login sync. To test: have a friend whose roster entry is
+visible send several milestones at once, and check that a fifth update while you
+are in combat is not queued.

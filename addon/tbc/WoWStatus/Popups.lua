@@ -15,9 +15,10 @@ local rosterBusy=false
 -- Received updates from a sender not yet in the group's roster wait here while
 -- the roster loads. One sender may hold only a few queued or waiting updates.
 -- The roster cache is keyed on member count and kept for 30 seconds, so a member
--- who replaced another at the same size appears only once it expires: wait longer.
+-- who replaced another at the same size appears only once it expires; a refresh
+-- can then take a few more 5-second request and read windows.
 local unverified = {}
-local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 35, 32
+local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 60, 32
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -380,37 +381,55 @@ local function commit(c, now)
     remember(item)
     prefs.last_receive={state="queued",sender=c.sender,kind=c.kind or "level",at=now}
     table.insert(incoming, item)
-    P.tick()
     return true
 end
--- Only members of the group's channel may show popups, as the log sync already
--- requires. Rosters load asynchronously, so a member who joined moments ago can
--- be missing: hold their update for a while instead of dropping it.
+-- Whether a sender is in the group's channel roster right now. Log sync uses it.
 function P.isPeer(group, key)
     if not key then return false end
     for _, name in ipairs(P.peers(group)) do if P.senderKey(name) == key then return true end end
     return false
 end
+-- Only members of the group's channel may show popups, as log sync requires.
+-- When the member count changes, P.peers lists nobody until the new roster
+-- loads, so members from the last complete read also count: one login or
+-- logout must not hold everybody's popups.
+local function memberKeys(group)
+    local keys = {}
+    local current = P.peers(group)
+    local cached = rosterCache[group]
+    for _, list in ipairs({current, cached and cached.peers or {}}) do
+        for _, name in ipairs(list) do local key = P.senderKey(name); if key then keys[key] = true end end
+    end
+    return keys
+end
+-- Rosters load asynchronously, so a member who joined moments ago can be
+-- missing: their updates wait here, in arrival order, instead of being dropped.
+local function verifyPending(now)
+    if #unverified == 0 then return end
+    local waiting, members = unverified, {}
+    unverified = {}
+    for _, c in ipairs(waiting) do
+        if WoWStatusGroups.contains(getCharacter(), c.group) then
+            members[c.group] = members[c.group] or memberKeys(c.group)
+            if members[c.group][c.key] then commit(c, now)
+            elseif now < c.expires then table.insert(unverified, c)
+            else rejected("rejected_unknown_sender", c, now) end
+        end
+    end
+end
 local function admit(c, now)
-    if c.group == "legacy" or P.isPeer(c.group, c.key) then return commit(c, now) end
+    if c.group == "legacy" or memberKeys(c.group)[c.key] then
+        verifyPending(now) -- Earlier updates that waited for the roster go first.
+        local queued = commit(c, now)
+        P.tick()
+        return queued
+    end
     if #unverified >= MAX_UNVERIFIED or queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then
         return rejected("rejected_unknown_sender", c, now)
     end
     c.expires = now + VERIFY_SECONDS
     table.insert(unverified, c)
     return rejected("verifying_sender", c, now)
-end
-local function verifyPending(now)
-    if #unverified == 0 then return end
-    local waiting = unverified
-    unverified = {}
-    for _, c in ipairs(waiting) do
-        if WoWStatusGroups.contains(getCharacter(), c.group) then
-            if P.isPeer(c.group, c.key) then commit(c, now)
-            elseif now < c.expires then table.insert(unverified, c)
-            else rejected("rejected_unknown_sender", c, now) end
-        end
-    end
 end
 function P.receive(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)

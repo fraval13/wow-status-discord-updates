@@ -139,9 +139,9 @@ def test_sender_outside_the_roster_is_held_then_rejected():
     assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
     assert lua.eval('#WoWStatusDB.popups.activity') == 0
     assert lua.eval('#WoWStatusJournal.entries()') == 0
-    lua.execute('function time() return 1793000034 end; WoWStatusPopups.tick()')
+    lua.execute('function time() return 1793000059 end; WoWStatusPopups.tick()')
     assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
-    lua.execute('function time() return 1793000035 end; WoWStatusPopups.tick()')
+    lua.execute('function time() return 1793000060 end; WoWStatusPopups.tick()')
     assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'rejected_unknown_sender'
     assert lua.eval('WoWStatusLevelPopup') is None
     assert lua.eval('#WoWStatusDB.popups.activity') == 0
@@ -177,6 +177,44 @@ def test_member_who_replaced_another_waits_for_the_roster_cache_to_expire():
     assert lua.eval('WoWStatusLevelPopup') is None
     lua.execute('function time() return 1793000030 end; WoWStatusPopups.tick()')
     assert popup_text(lua) == 'Mira reached level 5!'
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'displayed'
+
+
+ASYNC_ROSTER = '''
+    __ready=true
+    function GetSelectedDisplayChannel() return 1 end
+    function SetSelectedDisplayChannel() end
+    C_ChatInfo.GetChannelRosterInfo=function(_, i) if __ready then return __peers[i] end end
+'''
+
+
+def test_known_member_is_not_held_while_a_changed_roster_reloads():
+    lua = joined(make_lua(STUBS + ASYNC_ROSTER))
+    group = group_key('navsquad')
+    assert list(lua.eval('WoWStatusPopups.peers')(group).values()) == ['Eldrin-TestRealm']
+    # Mira logs in: the member count changes and the new roster is still loading.
+    lua.execute('table.insert(__peers,"Mira-TestRealm"); __ready=false')
+    assert len(lua.eval('WoWStatusPopups.peers')(group)) == 0
+    receive = lua.eval('WoWStatusPopups.receive')
+    assert receive('WSTATUS2 classic-era LEVEL 5 1793000000 eldrin-5', 'Eldrin-TestRealm', CHANNEL)
+    assert popup_text(lua) == 'Eldrin reached level 5!'
+    assert not receive('WSTATUS2 classic-era LEVEL 7 1793000000 mira-7', 'Mira-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    lua.execute('__ready=true; function time() return 1793000007 end; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 7!'
+
+
+def test_updates_that_waited_for_the_roster_keep_their_order():
+    lua = joined(make_lua())
+    receive = lua.eval('WoWStatusPopups.receive')
+    lua.execute('__combat=true')
+    assert not receive('WSTATUS2 classic-era LEVEL 10 1793000000 mira-10', 'Mira-TestRealm', CHANNEL)
+    lua.execute('table.insert(__peers,"Mira-TestRealm")')
+    assert receive('WSTATUS2 classic-era LEVEL 11 1793000000 mira-11', 'Mira-TestRealm', CHANNEL)
+    lua.execute('__combat=false; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 10!'
+    lua.execute('function time() return 1793000007 end; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 11!'
 
 
 def test_one_sender_can_queue_only_four_updates():
@@ -261,3 +299,23 @@ def test_cut_russian_profession_rank_up_roundtrips():
     assert detail.endswith('...') and len(detail.encode()) <= 48
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert popup_text(receiver) == 'Thora — ' + detail
+
+
+def test_own_text_that_peers_would_reject_is_logged_but_never_offered():
+    from test_journal import mesh
+    own, friend = actor('Thora'), actor('Mira')
+    clock(own, 10)
+    own.execute('''
+        local ids = {}
+        for id in pairs(character().group_ids) do ids[id] = true end
+        for i, zone in ipairs({"Elwynn Forest", "|TInterface\\\\Icons\\\\X:0|t"}) do
+            WoWStatusJournal.recordLocal({id="zone-"..i, kind="zone", at=time()-i, group_ids=ids, data={zone=zone}})
+            character().sequence = (character().sequence or 0) + 1
+        end
+    ''')
+    assert own.eval('#WoWStatusJournal.entries()') == 2
+    friend.eval('WoWStatusJournal.sync')()
+    mesh({'Thora': own, 'Mira': friend})
+    assert friend.eval('#WoWStatusJournal.entries()') == 1
+    assert friend.eval('WoWStatusJournal.entries()[1].text') == 'Entered Elwynn Forest'
+    assert friend.eval('WoWStatusLevelPopup') is None  # No invalid-data warning about Thora.
