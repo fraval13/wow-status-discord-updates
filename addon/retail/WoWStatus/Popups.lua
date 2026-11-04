@@ -72,13 +72,18 @@ local function channels()
     if not next(result) and prefs.legacy_channel then result[prefs.channel:lower()] = "legacy" end
     return result
 end
-local function joined(group)
-    if not prefs or not GetChannelName then return nil end
-    local name = group and WoWStatusGroups.channel(group) or prefs.channel
-    if not channels()[name:lower()] then return nil end
+-- The client's channel number when the player is in the named channel right now.
+local function inChannel(name)
+    if not GetChannelName then return nil end
     local id, actual = S.call(GetChannelName, name)
     if type(id) ~= "number" or id < 1 or type(actual) ~= "string" or actual:lower() ~= name:lower() then return nil end
     return id
+end
+local function joined(group)
+    if not prefs then return nil end
+    local name = group and WoWStatusGroups.channel(group) or prefs.channel
+    if not channels()[name:lower()] then return nil end
+    return inChannel(name)
 end
 -- The roster arrives asynchronously after selection. Restoring the old UI
 -- selection immediately can leave an empty roster forever on one client.
@@ -171,6 +176,22 @@ local function remember(item)
         kind = item.kind or "level", text = item.text, flavour=item.flavour, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
 end
+-- Channels this addon joined, kept in SavedVariables: /reload restarts module
+-- state while the game keeps the channels joined (issue #20). On load, keep only
+-- group channels the player is in right now; the game drops them at logout, so
+-- entries from earlier sessions or characters cannot outlive their channel. The
+-- client's channel limit bounds what survives.
+local function savedChannels(saved)
+    local result = {}
+    if type(saved) ~= "table" then return result end
+    for name, flag in pairs(saved) do
+        local id = flag == true and WoWStatusGroups.channelId(name)
+        if id and name == WoWStatusGroups.channel(id):lower() and (not GetChannelName or inChannel(name)) then
+            result[name] = true
+        end
+    end
+    return result
+end
 function P.groupsChanged()
     if not prefs then return end
     prefs.legacy_channel = false
@@ -247,6 +268,8 @@ function P.init(database, getter, reporter)
     prefs.trusted, prefs.seen = prefs.trusted or {}, prefs.seen or {}
     prefs.level_claims = prefs.level_claims or {}
     prefs.channel = prefs.channel or "WStatusFriends"
+    joinedByAddon = savedChannels(prefs.joined_channels)
+    prefs.joined_channels = joinedByAddon
     local activity={}
     for _, item in ipairs(prefs.activity or {}) do
         if item.kind~="discovery" and item.kind~="lfg" and (item.kind~="dungeon" or item.automatic)
