@@ -9,6 +9,8 @@ import pytest
 
 from wow_status import companion
 from wow_status.companion import exports, upload
+from wow_status.group_routing import group_key
+from wow_status.savedvariables import parse
 from wow_status.schema import ValidationError, validate
 
 FIXTURE = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
@@ -242,3 +244,69 @@ def test_wrong_type_anywhere_only_raises_validation_error(replacement):
             pass
         except Exception as exc:  # pragma: no cover - the failure message names the path
             pytest.fail(f'{path} = {replacement!r} raised {type(exc).__name__}: {exc}')
+
+
+@pytest.mark.parametrize('value', [{}, '', False, 'soon', 1.5, True])
+def test_malformed_discord_since_is_rejected(tmp_path, value):
+    source = FIXTURE.replace('["enrolled"] = true,', '["enrolled"] = true, discord_since=VALUE,')
+    lua = {'{}': '{}', "''": '""', 'False': 'false', "'soon'": '"soon"', '1.5': '1.5', 'True': 'true'}
+    path = write(tmp_path, 'WoWStatus.lua', source.replace('VALUE', lua[repr(value)]))
+    with pytest.raises(ValidationError):
+        list(exports(path))
+
+
+def _rich_db():
+    db = parse(FIXTURE)
+    char = next(iter(db['characters'].values()))
+    key = group_key('navsquad')
+    db['player_name'] = 'Aron'
+    char.update(discord_since=1792999999, group_ids={key: {'label': 'navsquad', 'joined_at': 1792999999}},
+                history={'events': {1: {'id': 'level-10', 'kind': 'level', 'at': 1793000000,
+                                        'data': {'level': 10}, 'group_ids': {key: True}}},
+                         'tracking': {'points': {1: {'kind': 'level', 'level': 10, 'at': 1793000000,
+                                                     'segment': 's'}}}})
+    char['settings']['fields']['level'] = True
+    char['settings']['announcements']['level'] = True
+    return db
+
+
+def test_rich_db_exports_group_routing():
+    [batch] = _exports_of(_rich_db())
+    assert batch['_event_targets'] == {'level-10': [group_key('navsquad')]}
+    assert batch['_discord_since'] == 1792999999 and batch['tracking']['points']
+
+
+def _exports_of(db):
+    import wow_status.companion as module
+    original = module.parse
+    module.parse = lambda text: copy.deepcopy(db)
+    try:
+        return list(exports(Path(__file__).parent / 'fixtures/WoWStatus.lua'))
+    finally:
+        module.parse = original
+
+
+@pytest.mark.parametrize('replacement', [{}, [], 'x', None, 1.5, True, -1],
+                         ids=['table', 'list', 'text', 'nil', 'float', 'bool', 'negative'])
+def test_exports_wrong_type_anywhere_only_raises_validation_error(replacement):
+    base = _rich_db()
+    for path in [()] + list(_paths(base)):
+        mutated = copy.deepcopy(base)
+        if path:
+            target = mutated
+            for key in path[:-1]:
+                target = target[key]
+            target[path[-1]] = copy.deepcopy(replacement)
+        else:
+            mutated = copy.deepcopy(replacement)
+        try:
+            batches = _exports_of(mutated)
+        except ValidationError:
+            continue
+        except Exception as exc:  # pragma: no cover - the failure message names the path
+            pytest.fail(f'{path} = {replacement!r} raised {type(exc).__name__}: {exc}')
+        for batch in batches:
+            # Unvalidated routing fields must have safe shapes for the group uploader.
+            assert type(batch['_discord_since']) is int, path
+            for ids in batch.get('_event_targets', {}).values():
+                assert ids is None or isinstance(ids, list), path

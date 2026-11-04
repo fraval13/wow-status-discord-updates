@@ -38,22 +38,22 @@ def atomic_json(path, data):
 def _after(item, since):
     # An entry without a numeric timestamp cannot be shown to postdate consent.
     at = item.get('at', 0)
-    return isinstance(at, (int, float)) and at >= since
+    return type(at) is int and at >= since
 
 
 def exports(path):
     with Path(path).open('rb') as stream:
         raw = stream.read(MAX_BYTES + 1)
     if len(raw) > MAX_BYTES:
-        raise ValueError('SavedVariables file exceeds 32 MiB')
+        raise ValidationError('SavedVariables file exceeds 32 MiB')
     db = parse(raw.decode('utf-8-sig'))
-    if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
-        raise ValueError('Unsupported addon data')
+    if not isinstance(db, dict) or db.get('version') != 1 or not isinstance(db.get('characters'), dict):
+        raise ValidationError('Unsupported addon data')
     batches = []
     batch_id = hashlib.sha256(raw).hexdigest()
     for char in db['characters'].values():
         if not isinstance(char, dict):
-            raise ValueError('Invalid character table')
+            raise ValidationError('Invalid character table')
         settings = char.get('settings', {})
         # Addon 0.8.1–0.8.3 enabled sharing by default but only set the enrollment
         # flag after a checkbox click. Recover those exports without enrolling
@@ -63,7 +63,7 @@ def exports(path):
         if char.get('enrolled') is not True and not enabled_without_flag:
             continue
         if not isinstance(settings, dict):
-            raise ValueError('Invalid character settings')
+            raise ValidationError('Invalid character settings')
         opted_in = settings.get('discord_enabled') is True
         previously_enabled = (char.get('discord_enrolled') is True
                               or ('discord_enabled' not in settings and char.get('enrolled') is True))
@@ -78,29 +78,31 @@ def exports(path):
             snapshot['professions'] = list(snapshot['professions'].values())
         history = char.get('history', {})
         if not isinstance(history, dict):
-            raise ValueError('Invalid addon history')
+            raise ValidationError('Invalid addon history')
         events = history.get('events', payload.get('events', {}))
         if not isinstance(events, dict):
-            raise ValueError('Invalid addon events')
+            raise ValidationError('Invalid addon events')
         if not all(isinstance(event, dict) for event in events.values()):
-            raise ValueError('Invalid addon event')
+            raise ValidationError('Invalid addon event')
         records = [event for event in events.values() if event.get('kind') != 'session']
         since = char.get('discord_since', 0)
-        if since:
+        if type(since) is not int or since:
             if type(char.get('exported_at')) is not int:
-                raise ValueError('Invalid export time')
+                raise ValidationError('Invalid export time')
             since = integer(since, 'Discord sharing start', 1, char['exported_at'] + 300)
             records = [event for event in records if _after(event, since)]
         if 'tracking' in history:
             tracking = history['tracking']
             if not isinstance(tracking, dict):
-                raise ValueError('Invalid level tracking')
+                raise ValidationError('Invalid level tracking')
             points = tracking.get('points', {})
             if isinstance(points, dict):
                 points = list(points.values())
             if not isinstance(points, list) or not all(isinstance(p, dict) for p in points):
-                raise ValueError('Invalid level tracking')
-            payload['tracking'] = dict(tracking, points=[p for p in points if _after(p, since)])
+                raise ValidationError('Invalid level tracking')
+            if since:
+                points = [p for p in points if _after(p, since)]
+            payload['tracking'] = dict(tracking, points=points)
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
             batch = records[offset:offset + 100]
@@ -114,7 +116,7 @@ def exports(path):
                 for event in batch:
                     ids = event.get('group_ids')
                     if ids is not None and not isinstance(ids, dict):
-                        raise ValueError('Invalid event group targets')
+                        raise ValidationError('Invalid event group targets')
                     targets[event['id']] = list(ids) if ids is not None else None
                 result['_event_targets'] = targets
             result['_discord_since'] = since
@@ -188,7 +190,7 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                     failed = True
                     status(connection='Waiting: check the SavedVariables file path; will retry.'
                            if isinstance(exc, OSError) else
-                           'Waiting: SavedVariables could not be read; will retry after the next save.')
+                           'Waiting: SavedVariables could not be read; retrying until the addon saves a valid file.')
                     continue
                 try:
                     for payload in payloads:

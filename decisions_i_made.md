@@ -25,7 +25,10 @@
   exception type, plus the message only for our fixed `ValidationError` and
   `ParseError` texts, so no SavedVariables content is logged. Errors from
   sending or the service keep the existing narrow catch.
-- After `discord_since`, history events and level points without a numeric
+- `exports()` raises `ValidationError` (a `ValueError`) for every shape it
+  rejects, and `discord_since` is validated whenever it is not the integer 0,
+  so routing values handed to the group uploader are always well formed.
+- After `discord_since`, history events and level points without an integer
   timestamp are dropped rather than uploaded: they cannot be shown to postdate
   consent. A non-sharing character with broken settings is still skipped
   silently and does not block other characters in the file.
@@ -33,7 +36,12 @@
   class ID and profession key, so tables and lists raise `ValidationError` (or
   are dropped where the field is optional) instead of `TypeError`. A mutation
   test replaces every value of a full payload with a table, list, text, nil,
-  float, boolean and negative number and requires only `ValidationError`.
+  float, boolean and negative number and requires only `ValidationError`; a
+  second one does the same for a whole SavedVariables table through `exports()`.
+- Not done here: one broken enrolled character still skips the whole file,
+  including other characters' opt-out/withdrawal uploads, as `main` already did
+  for its shape checks. Isolating per character changes batch part counting and
+  should be its own change.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
