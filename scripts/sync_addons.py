@@ -51,6 +51,8 @@ class Plan:
     deletes: list[tuple[Path, PurePosixPath]] = field(default_factory=list)
     untracked_extras: list[Path] = field(default_factory=list)
     untracked_shared: list[Path] = field(default_factory=list)
+    # (old edition path, new edition path) for case-only renames
+    case_renames: list[tuple[Path, Path]] = field(default_factory=list)
 
     @property
     def in_sync(self) -> bool:
@@ -122,7 +124,7 @@ def plan_sync(repo: Path = ROOT) -> Plan:
 
         tracked_edition = _git_files(repo, destination)
         modified_edition = _git_files(repo, destination, '--modified')
-        deleted_folded = set()
+        deleted: dict[str, PurePosixPath] = {}
         for relative in sorted(_scoped_files(destination) - tracked_shared - owned):
             target = destination / relative
             if relative not in tracked_edition:
@@ -135,19 +137,23 @@ def plan_sync(repo: Path = ROOT) -> Plan:
                 raise SyncError(f'{target} would be deleted but has unstaged edits; '
                                 'commit or discard them first')
             plan.deletes.append((destination, relative))
-            deleted_folded.add(_folded(relative))
+            deleted[_folded(relative)] = relative
 
         for relative in sorted(tracked_shared):
             target = destination / relative
             for parent in reversed(relative.parents):
-                if (destination / parent).is_file():
+                # A stale file in the way is fine: deletes run before copies.
+                if (destination / parent).is_file() and parent not in deleted.values():
                     raise SyncError(f'{destination / parent} is a file; expected a folder')
             if target.exists() and not target.is_file():
                 raise SyncError(f'{target} is not a regular file')
             # On a case-insensitive filesystem a case-only rename makes the
             # deleted old name and this target the same file, so rewrite it after
             # the delete even when the bytes already match.
-            if (_folded(relative) in deleted_folded or not target.exists()
+            old = deleted.get(_folded(relative))
+            if old is not None and old != relative:
+                plan.case_renames.append((destination / old, target))
+            if (old is not None or not target.exists()
                     or target.read_bytes() != sources[relative]):
                 plan.copies.append((shared / relative, target))
     return plan
@@ -199,17 +205,11 @@ def main(argv: list[str] | None = None, repo: Path = ROOT) -> int:
             report('would delete', destination / path, None)
         for source, target in plan.copies:
             report('would copy', target, source)
-        return 0 if plan.in_sync else 1
-    apply(plan, report)
-    renamed = {
-        (destination / old, target)
-        for destination, old in plan.deletes for _, target in plan.copies
-        if target.parent == (destination / old).parent and target != destination / old
-        and target.name.casefold() == old.name.casefold()
-    }
-    for old, new in sorted(renamed):
+    else:
+        apply(plan, report)
+    for old, new in plan.case_renames:
         print(f'case-only rename: on Windows/macOS run git mv {relative(old)} {relative(new)}')
-    return 0
+    return 0 if plan.in_sync or not args.check else 1
 
 
 if __name__ == '__main__':

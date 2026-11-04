@@ -126,9 +126,26 @@ def test_case_only_rename_rewrites_the_file_after_deleting_the_old_name(repo):
 
 def test_case_only_rename_prints_a_git_mv_hint(repo, capsys):
     git(repo, 'mv', 'addon/shared/Textures/Logo.tga', 'addon/shared/Textures/LOGO.tga')
+    plan = sync.plan_sync(repo)
+    tbc = repo / 'addon/tbc/WoWStatus/Textures'
+    assert (tbc / 'Logo.tga', tbc / 'LOGO.tga') in plan.case_renames
+    assert sync.main(['--check'], repo=repo) == 1
     assert sync.main([], repo=repo) == 0
     assert ('case-only rename: on Windows/macOS run git mv addon/tbc/WoWStatus/Textures/Logo.tga '
             'addon/tbc/WoWStatus/Textures/LOGO.tga') in capsys.readouterr().out
+
+
+def test_stale_file_where_a_shared_folder_now_is_is_replaced(repo):
+    for folder in editions(repo):
+        (folder / 'Textures/Icons').write_bytes(b'old file')
+    git(repo, 'add', '-A')
+    nested = repo / 'addon/shared/Textures/Icons'
+    nested.mkdir()
+    (nested / 'Star.tga').write_bytes(b'star')
+    git(repo, 'add', '-A')
+    assert sync.main([], repo=repo) == 0
+    for folder in editions(repo):
+        assert (folder / 'Textures/Icons/Star.tga').read_bytes() == b'star'
 
 
 def test_apply_deletes_before_copying(tmp_path):
@@ -203,20 +220,12 @@ def test_repository_editions_mirror_shared_files_both_ways():
     plan = sync.plan_sync(ROOT)
     assert not plan.copies, [str(target) for _, target in plan.copies]
     assert not plan.deletes, [str(folder / path) for folder, path in plan.deletes]
-    tracked = subprocess.run(
-        ['git', '-C', str(ROOT), 'ls-files', '-z', '--', 'addon'],
-        check=True, capture_output=True, encoding='utf-8',
-    ).stdout.split('\0')
+    def mirrored(folder):
+        return {path for path in sync._git_files(ROOT, folder) if sync.in_scope(path)}
 
-    def mirrored(prefix):
-        return {
-            PurePosixPath(name[len(prefix):]) for name in tracked
-            if name.startswith(prefix) and sync.in_scope(PurePosixPath(name[len(prefix):]))
-        }
-
-    shared = mirrored('addon/shared/')
+    shared = mirrored(ROOT / 'addon/shared')
     assert shared
     for edition, owned in sync.EDITIONS.items():
-        files = mirrored(f'addon/{edition}/WoWStatus/')
+        files = mirrored(ROOT / 'addon' / edition / 'WoWStatus')
         assert {PurePosixPath(name) for name in owned} <= files, edition
         assert files - {PurePosixPath(name) for name in owned} == shared, edition
