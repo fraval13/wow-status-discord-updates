@@ -9,9 +9,21 @@ local joinedByAddon, syncPending = {}, false
 local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
+local ADDON_NAME = (...) or "WoWStatus" -- client-supplied folder/TOC name, not the comm prefix
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
-P.runtimeVersion="0.14.8"
+-- Read the running version from this addon's TOC so status never drifts from releases.
+-- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
+local function metadataVersion(lookup)
+    local version = S.stringCall(lookup, ADDON_NAME, "Version")
+    version = version and version:match("^%s*(.-)%s*$")
+    if version and version ~= "" and #version <= 64 and not version:find("[%c|]") then return version end
+end
+local function tocVersion()
+    return metadataVersion(type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata)
+        or metadataVersion(GetAddOnMetadata) or "unknown"
+end
+P.runtimeVersion=tocVersion()
 
 local function realm()
     local value = A.realmName()
