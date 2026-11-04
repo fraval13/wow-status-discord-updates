@@ -16,8 +16,8 @@ local rosterBusy=false
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
     local version = S.stringCall(lookup, ADDON_NAME, "Version")
-    version = version and version:match("^%s*(.-)%s*$")
-    if version and version ~= "" and #version <= 64 and not version:find("[%c|]") then return version end
+    version = version and S.trim(version)
+    if version and version ~= "" and #version <= 64 and not version:find(S.CONTROL_OR_PIPE) then return version end
 end
 local function tocVersion()
     return metadataVersion(type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata)
