@@ -28,15 +28,20 @@ def yesterday_payload(payload, day, level=10, deaths=None):
 
 
 def test_report_uses_values_observed_before_the_midnight_cutoff(store, payload):
-    day = datetime.now(ZONE).date() - timedelta(days=1)
+    # Anchored two days back, so the after-cutoff export stays in the past whatever
+    # the time of day: the schema rejects an exported_at later than now + 300, which
+    # made a "cutoff + an hour" export fail every run in the hour after midnight.
+    day = datetime.now(ZONE).date() - timedelta(days=2)
     cutoff = midnight(day + timedelta(days=1))
+    after_cutoff = cutoff + 3600
+    assert after_cutoff < datetime.now(ZONE).timestamp(), 'fixture must stay in the past'
     store.ingest('owner', yesterday_payload(payload, day, level=24, deaths=7))
-    # Today's progress must not leak into yesterday's standings.
-    today = dict(yesterday_payload(payload, day, level=31, deaths=9),
-                 exported_at=cutoff + 3600)
-    today['events'] = [{'id': 'level-31', 'kind': 'level', 'at': cutoff + 3600,
+    # Progress after the cutoff must not leak into that day's standings.
+    later = dict(yesterday_payload(payload, day, level=31, deaths=9),
+                 exported_at=after_cutoff)
+    later['events'] = [{'id': 'level-31', 'kind': 'level', 'at': after_cutoff,
                         'data': {'level': 31}}]
-    store.ingest('owner', today)
+    store.ingest('owner', later)
     observed = state(store, store.character_id(payload['identity']), cutoff)
     assert observed['level'] == 24
     assert observed['deaths'] == 7

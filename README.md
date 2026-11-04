@@ -15,23 +15,20 @@ only when WoW can identify the sender’s class; otherwise a general roast is us
 Start with [AGENTS.md](AGENTS.md). It contains the repository map, product choices,
 release workflow, deployment pointers and pending-work caveats.
 
-As of **1 November 2026**, all four downloads are **0.14.9**, including the 1,300
-flavour captions. The last release passed 270 tests, with 161 addon tests also
-passing under Lua 5.1. Live in-game checking of the new caption layout is pending.
-The homepage uses its original still artwork; the animation experiments were removed.
+As of **5 November 2026**, all four downloads are **0.14.12**. Every merge to
+`main` runs the tests and deploys the homepage, addon downloads and group
+services (see [deploy/SERVER.md](deploy/SERVER.md)). Live in-game checking of the
+caption layout is pending. The homepage uses its original still artwork.
 
-Website/download publication succeeded, but GitHub pushes were blocked by SSH
-public-key authentication. Local commits alone do not trigger the hosted pipeline.
-There are also separate uncommitted branding edits; inspect `git status` and
-preserve them before syncing or packaging. Some older status documents describe
+Some older status documents describe
 historical releases; the current source and newest handoff notes take precedence.
 
 ## Start sharing
 
-The current working source is **0.14.11**, with corrected Retail/Forever minimap
-button placement, the dungeon API fix, clearer group-join wording and group
-warnings for invalid log data.
-These changes have not yet been published; the release noted above is 0.14.9.
+The current release is **0.14.12**. It adds corrected Retail/Forever minimap
+button placement, the dungeon API fix, clearer group-join wording, group warnings
+for invalid log data, leaving removed group channels after `/reload`, and counting
+a death once when the player releases their spirit.
 
 1. Copy the appropriate `addon/vanilla/WoWStatus`, `addon/tbc/WoWStatus` (TBC Anniversary),
    `addon/retail/WoWStatus` (Retail), or `addon/forever/WoWStatus`
