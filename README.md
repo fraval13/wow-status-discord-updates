@@ -13,8 +13,7 @@ only when WoW can identify the sender’s class; otherwise a general roast is us
 ## Continuing development in a new session
 
 Start with [AGENTS.md](AGENTS.md). It contains the repository map, product choices,
-release workflow, deployment pointers and pending-work caveats. The latest detailed
-handoff is in [decisions_i_made.md](decisions_i_made.md).
+release workflow, deployment pointers and pending-work caveats.
 
 As of **1 November 2026**, all four downloads are **0.14.9**, including the 1,300
 flavour captions. The last release passed 270 tests, with 161 addon tests also
@@ -102,4 +101,3 @@ in-game rendering and API availability still require checking.
 - [In-game acceptance tests](docs/LIVE_POPUPS.md)
 - [Forever and Retail compatibility check](docs/CLIENT_COMPATIBILITY.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
-- [Decisions and handoff notes](decisions_i_made.md)
