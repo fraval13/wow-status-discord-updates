@@ -23,13 +23,17 @@
   `store.ingest` validated the rest, so a 400 or 409 still renamed the owner and
   rewrote their archives. The handler now only checks the name and passes it to
   `Store.ingest(..., name=(label, source))`, which writes it inside the ingest
-  transaction; any later rejection rolls it back. Other archives for that owner
-  are rewritten only when the label actually changed, after the commit.
+  transaction after the conflict checks; any later rejection rolls it back. An
+  upload that stores nothing (new character, sharing off) does not rename either.
+  After the commit each owner archive is rewritten once: all of them when the
+  label or addon role changed, otherwise only the uploaded character. A crash
+  between commit and rewrite is healed by the startup `sync_archives()`.
 - `people.store_name` is the non-committing write; `remember()` wraps it for the
   enrollment and Discord paths, which behave as before.
 - Tests in `tests/test_upload_names.py`: 400 and 409 keep the name and archive,
-  an accepted upload renames every archived character, a blank name falls back to
-  the Friend label, and a store-level Conflict rolls the label back.
+  an accepted upload renames every archived character, an empty upload keeps the
+  name, a rename plus role change writes each archive once, a blank name falls
+  back to the Friend label, and a store-level Conflict rolls the label back.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 

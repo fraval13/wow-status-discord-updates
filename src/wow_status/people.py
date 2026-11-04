@@ -19,8 +19,7 @@ def remember(store, owner, display_name, source='discord'):
     with store.db:
         changed = store_name(store.db, owner, display_name, source)
     if changed:
-        for char in store.characters(owner):
-            store.sync_archive(char['id'])
+        store.sync_owner_archives(owner)
 
 
 def nickname(store, owner, name=None):
@@ -31,8 +30,7 @@ def nickname(store, owner, name=None):
         store.db.execute('INSERT OR IGNORE INTO people(owner,display_name) VALUES(?,?)',
                          (owner, 'Linked friend'))
         store.db.execute('UPDATE people SET nickname=? WHERE owner=?', (name, owner))
-    for char in store.characters(owner):
-        store.sync_archive(char['id'])
+    store.sync_owner_archives(owner)
 
 
 def person(store, owner):
@@ -59,8 +57,7 @@ def set_role(store, owner, cid, role, source='discord'):
                              '(SELECT id FROM characters WHERE owner=?)', (owner,))
         store.db.execute('INSERT INTO character_labels VALUES(?,?,?) ON CONFLICT(character) '
                          'DO UPDATE SET role=excluded.role,source=excluded.source', (cid, role, source))
-    for char in store.characters(owner):
-        store.sync_archive(char['id'])
+    store.sync_owner_archives(owner)
 
 
 def decorate(store, char):

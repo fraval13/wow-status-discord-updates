@@ -112,3 +112,29 @@ def test_store_rolls_back_label_when_ingest_rejects(store, payload):
         store.ingest('group:intruder', other_owner, name=('Intruder', 'addon'))
     assert store.db.execute("SELECT 1 FROM people WHERE owner='group:intruder'").fetchone() is None
     assert display_name(store, 'group:owner') == ('Thora', 'addon')
+
+
+async def test_upload_that_stores_nothing_does_not_rename_owner(group, payload):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    empty = group_payload(payload, player_name='Impersonated')
+    empty['settings']['enabled'] = False
+    response = await client.post('/v1/upload', json=empty, headers=headers)
+    assert response.status == 200 and (await response.json())['accepted'] == 0
+    assert display_name(store, owner) == ('Thora', 'addon')
+
+
+async def test_rename_with_role_change_writes_each_archive_once(group, payload, monkeypatch):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    for guid in ('Player-123-0001', 'Player-123-0002'):
+        upload = group_payload(payload, guid=guid, player_name='Thora')
+        assert (await client.post('/v1/upload', json=upload, headers=headers)).status == 200
+    writes = []
+    original = store.sync_archive
+    monkeypatch.setattr(store, 'sync_archive', lambda cid: (writes.append(cid), original(cid)))
+    renamed = group_payload(payload, player_name='Brann')
+    renamed['settings']['character_role'] = 'main'
+    assert (await client.post('/v1/upload', json=renamed, headers=headers)).status == 200
+    assert sorted(writes) == sorted(char['id'] for char in store.characters(owner))
+    assert store.db.execute("SELECT COUNT(*) FROM character_labels WHERE role='main'").fetchone()[0] == 1
