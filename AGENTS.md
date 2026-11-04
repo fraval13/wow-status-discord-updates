@@ -172,6 +172,13 @@ must match. `downloads/release.json` records source revision and checksums; webs
 version and size labels are generated, not maintained manually. Update meaningful
 release notes in `website/index.html` for an addon release.
 
+To change the version, edit `project.version` in `pyproject.toml` only, then run
+`python scripts/sync_version.py` to write it into all four addon TOCs. Do not edit
+the TOC `## Version:` lines by hand. `scripts/sync_version.py --check` reports drift
+without changing files and runs in CI, so a half-finished bump fails the build before
+`build_homepage.py` refuses to package mismatched versions. The script never chooses
+a version number itself; releases stay deliberate.
+
 Server: `root@193.243.189.202`. The previous session used the already-authorized
 SSH agent at `/tmp/wow-forever-deploy-agent.sock`; this is ephemeral context, not a
 credential or a promise that access survives a new session. Check access normally.
