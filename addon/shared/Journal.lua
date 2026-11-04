@@ -18,7 +18,7 @@ local fields={level="level",zone="zone",quest="quests",questprogress="quests",pr
     professionprogress="professions",equipment="gear"}
 local function trim(text,limit)
     if type(text)~="string" then return "" end
-    text=text:gsub("[%c|]"," ")
+    text=text:gsub(S.CONTROL_OR_PIPE," ")
     if #text>limit then text=text:sub(1,limit-3):gsub("[\194-\244][\128-\191]*$","").."..." end
     return text
 end
@@ -246,7 +246,7 @@ local function unpackEntry(text)
     -- Version differences and stale history are ordinary drops, never accusations.
     if client~=WoWStatusAdapter.client_id or not sharedKinds[kind] then return nil end
     if #id>220 or #sender>120 or not P.senderKey(sender) or not at or at~=math.floor(at)
-        or #detail>160 or detail:find("[%c|]") then return nil,"invalid" end
+        or #detail>160 or detail:find(S.CONTROL_OR_PIPE) then return nil,"invalid" end
     if at<time()-AGE or at>time()+300 then return nil end
     local prefix=client..":"..P.senderKey(sender)..":"
     if id:sub(1,#prefix)~=prefix or not id:sub(#prefix+1):match("^[%w%-]+$") or #id-#prefix>64 then return nil,"invalid" end

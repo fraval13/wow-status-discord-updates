@@ -55,6 +55,19 @@
   only typing /reload, status shows the previous version until a full restart.
   TOC changes already need a restart, so this matches normal addon updates.
 
+## Locale-independent control-byte checks (issue #23) — 4 November 2026
+
+- Replaced every Lua `%c` in the addon with `WoWStatusSafe.CONTROL`
+  (`[%z\1-\31\127]`) or `CONTROL_OR_PIPE`. `%c` follows the C library's
+  locale; under macOS UTF-8 it matched the second byte of Æ, Ø and Å. `%z` keeps
+  the class valid in Lua 5.1 and still works in 5.4.
+- Added a guard test that fails on any `%c`/`%C` in addon Lua, an exhaustive
+  0-255 byte test of both classes, and Æ/Ø/Å sender, group and player-name tests.
+  Linux glibc never showed the bug, so the byte and guard tests carry the proof.
+- Not changed: `%s`, `%w` and `string.lower` are also locale-dependent in the C
+  library. Whether any game client runs Lua under a non-C locale is still the
+  open live check in #25.
+
 ## Windows CI catalogue encoding — 4 November 2026
 
 - Reproduced the exact failure by making implicit Path.read_text calls use
