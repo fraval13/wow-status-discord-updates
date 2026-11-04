@@ -119,7 +119,7 @@ def test_log_and_options_hide_discord_introduction_and_manual_sync_controls():
     ''')
 
 
-def test_minimap_book_opens_log_and_options_and_can_be_dragged():
+def test_minimap_logo_opens_log_and_options_and_can_be_dragged():
     lua = make_lua(STUBS + '''
         function methods:RegisterForClicks() end
         Minimap=CreateFrame("Frame","Minimap",UIParent)
@@ -130,7 +130,7 @@ def test_minimap_book_opens_log_and_options_and_can_be_dragged():
     lua.execute('''
         local button=WoWStatusMinimapButton
         assert(button and button:IsShown())
-        assert(button.icon.texture:find("INV_Misc_Book_09",1,true))
+        assert(button.icon.texture:find("Textures\\\\Logo",1,true))
         button.OnClick(button,"LeftButton")
         assert(WoWStatusActivityLog:IsShown())
         button.OnClick(button,"RightButton")
