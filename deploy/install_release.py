@@ -61,7 +61,7 @@ def healthy(port, revision):
 def prepare_homepage(stage, revision):
     """Check the public payload before making it part of a sealed release."""
     public = stage / '.deploy/HOMEPAGE'
-    manifest = json.loads((public / 'downloads/release.json').read_text())
+    manifest = json.loads((public / 'downloads/release.json').read_text(encoding='utf-8'))
     if manifest.get('addon_revision') != revision:
         raise ValueError('Homepage revision does not match application release')
     html = (public / 'index.html').read_text(encoding='utf-8')
@@ -103,7 +103,7 @@ def main():
     if os.geteuid() != 0:
         raise SystemExit('Receiver requires the dedicated sudo rule')
     os.umask(0o077)
-    deployment_lock = (BASE / 'deployment.lock').open('a')
+    deployment_lock = (BASE / 'deployment.lock').open('a', encoding='utf-8')
     fcntl.flock(deployment_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     raw = sys.stdin.buffer.read(LIMIT + 1)
     if len(raw) > LIMIT:
@@ -137,10 +137,10 @@ def main():
                 target.parent.mkdir(parents=True, exist_ok=True)
                 with archive.extractfile(member) as source, target.open('xb') as output:
                     shutil.copyfileobj(source, output)
-        revision = (stage / '.deploy/REVISION').read_text().strip()
+        revision = (stage / '.deploy/REVISION').read_text(encoding='utf-8').strip()
         if not re.fullmatch('[a-f0-9]{40}', revision):
             raise ValueError('Invalid revision')
-        incoming = json.loads((stage / '.deploy/CONFIG.json').read_text())
+        incoming = json.loads((stage / '.deploy/CONFIG.json').read_text(encoding='utf-8'))
         merged = json.loads(old_config['config.json']) if old_config['config.json'] else {}
         for group in GROUPS:
             values = merged.setdefault(group, {})
@@ -177,9 +177,9 @@ def main():
                 'DISCORD_BOT_TOKEN': values.get('bot_token', ''),
                 'DISCORD_GUILD_ID': values.get('guild_id', ''),
                 'DISCORD_CHANNEL_ID': values.get('channel_id', '')})
-            (CONFIG / f'{group}.env').write_text(data)
+            (CONFIG / f'{group}.env').write_text(data, encoding='utf-8')
             (CONFIG / f'{group}.env').chmod(0o600)
-        (CONFIG / 'config.json').write_text(json.dumps(merged))
+        (CONFIG / 'config.json').write_text(json.dumps(merged), encoding='utf-8')
         (CONFIG / 'config.json').chmod(0o600)
         swap = BASE / 'next'
         swap.unlink(missing_ok=True)

@@ -1,34 +1,33 @@
-"""Tests and tools must not depend on the platform's default text encoding (issue #6).
+"""Code must not depend on the platform's default text encoding (issue #6).
 
-Windows CI decodes text with the legacy ANSI code page (cp1252) unless an
-encoding is given, so a bare ``read_text()`` silently mangles UTF-8 captions.
-Ruff's PLW1514 is preview-only and cannot see ``Path.read_text`` on computed
-paths, so this guard walks the sources that run in CI or on players' machines.
+Windows decodes text with the legacy ANSI code page (cp1252) unless an encoding
+is given, so a bare ``read_text()`` silently mangles UTF-8 captions.
+
+Two layers enforce this. CI runs pytest with ``PYTHONWARNDEFAULTENCODING=1`` and
+pytest turns ``EncodingWarning`` into an error, which catches every text API on
+the paths the tests exercise. This static guard backs that up for code the tests
+never run (installers, deploy scripts), using a deliberately small, precise list
+of calls. Ruff's PLW1514 is preview-only and misses ``Path.read_text`` on
+computed paths, so it cannot do this job.
 """
 import ast
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
-# Python sources that run in CI or on players' Windows machines.
-SCANNED = ('src', 'scripts', 'tests')
+SCANNED = ('src', 'scripts', 'deploy', 'tests')
 
-# Callee -> (mode position, encoding position, default mode). Builtin ``open``,
-# ``io.open`` and ``os.fdopen`` share a signature; ``.open`` on anything else is
-# taken to be ``Path.open``.
+# Callee -> (mode position, encoding position or None if keyword-only, default mode).
 OPENERS = {
     'open': (1, 3, 'r'), 'io.open': (1, 3, 'r'), 'os.fdopen': (1, 3, 'r'),
-    'codecs.open': (1, 2, 'r'), '.open': (0, 2, 'r'),
-    'tempfile.NamedTemporaryFile': (0, 2, 'w+b'), 'tempfile.TemporaryFile': (0, 2, 'w+b'),
-    'tempfile.SpooledTemporaryFile': (1, 3, 'w+b'),
+    'codecs.open': (1, 2, 'r'), 'gzip.open': (1, 3, 'rb'), 'bz2.open': (1, 3, 'rb'),
+    'lzma.open': (1, None, 'rb'),
 }
-# Modules whose ``open`` is not a text-file opener (os.open takes flags).
-NOT_TEXT_OPEN = {'os', 'tarfile', 'zipfile', 'gzip', 'bz2', 'lzma', 'webbrowser', 'dbm', 'shelve'}
 SUBPROCESS_DECODING = {'run', 'check_output', 'Popen'}
 SUBPROCESS_ALWAYS_TEXT = {'getoutput', 'getstatusoutput'}
 
 
 def _callee(func):
-    """``open``, ``io.open``, ``.open`` (method on a value) or ``.read_text``."""
+    """``open``, ``io.open`` (module or variable name) or ``.read_text`` (any other receiver)."""
     if isinstance(func, ast.Name):
         return func.id
     if isinstance(func, ast.Attribute):
@@ -46,33 +45,36 @@ def _argument(call, name, position):
 
 
 def _given(node):
-    """True when an argument is present and not a literal ``None``/``False``."""
+    """True unless absent or a literal ``None``/``False``."""
     return node is not None and not (isinstance(node, ast.Constant) and node.value in (None, False))
+
+
+def _explicit_encoding(node):
+    """An encoding that does not defer to the locale (``None``/``'locale'`` do)."""
+    return _given(node) and not (isinstance(node, ast.Constant) and node.value == 'locale')
 
 
 def _problem(call):
     callee = _callee(call.func)
     if callee is None:
         return None
-    module, _, method = callee.rpartition('.')
-    if method in {'read_text', 'write_text'} and '.' in callee:
+    method = callee.rpartition('.')[2]
+    if method in {'read_text', 'write_text'} and callee != method:
         position = 0 if method == 'read_text' else 1
-        return None if _given(_argument(call, 'encoding', position)) else method
-    opener = OPENERS.get(callee) or (
-        OPENERS['.open'] if method == 'open' and '.' in callee and module not in NOT_TEXT_OPEN
-        and callee not in OPENERS else None)
-    if opener:
-        mode_position, encoding_position, default = opener
+        return None if _explicit_encoding(_argument(call, 'encoding', position)) else method
+    if callee in OPENERS:
+        mode_position, encoding_position, default = OPENERS[callee]
         mode = _argument(call, 'mode', mode_position)
-        mode = mode.value if isinstance(mode, ast.Constant) else default if mode is None else ''
-        if 'b' not in mode and not _given(_argument(call, 'encoding', encoding_position)):
-            return callee.lstrip('.')
+        mode = default if mode is None else mode.value if isinstance(mode, ast.Constant) else None
+        binary = isinstance(mode, str) and 'b' in mode
+        if not binary and not _explicit_encoding(_argument(call, 'encoding', encoding_position)):
+            return callee
         return None
-    if callee in {method, f'subprocess.{method}'} and (
-            method in SUBPROCESS_ALWAYS_TEXT or method in SUBPROCESS_DECODING and any(
-                _given(_argument(call, name, None)) for name in ('text', 'universal_newlines', 'errors'))):
-        if not _given(_argument(call, 'encoding', None)):
-            return f'subprocess.{method}'
+    decodes = method in SUBPROCESS_ALWAYS_TEXT or method in SUBPROCESS_DECODING and any(
+        _given(_argument(call, name, None)) for name in ('text', 'universal_newlines', 'errors'))
+    if callee in {method, f'subprocess.{method}'} and decodes and not _explicit_encoding(
+            _argument(call, 'encoding', None)):
+        return f'subprocess.{method}'
     return None
 
 
@@ -92,9 +94,10 @@ BAD = [
     "io.open('f', 'w')",
     "codecs.open('f')",
     "os.fdopen(fd, 'w')",
-    "path.open()",
-    "tmp_path.joinpath('x').open('w')",
-    "tempfile.NamedTemporaryFile('w')",
+    "p.read_text(encoding='locale')",
+    "gzip.open('f', 'rt')",
+    "open('f', mode)",
+    "open('f', 0)",
     "subprocess.run(cmd, text=True)",
     "subprocess.run(cmd, text=True, encoding=None)",
     "subprocess.run(cmd, errors='replace', capture_output=True)",
@@ -114,9 +117,10 @@ GOOD = [
     "os.fdopen(fd, 'w', encoding='utf-8')",
     "os.open(path, os.O_WRONLY)",
     "tarfile.open(archive)",
-    "path.open('a+b')",
-    "path.open('w', -1, 'utf-8')",
-    "tempfile.NamedTemporaryFile()",
+    "gzip.open('f')",
+    "gzip.open('f', 'rt', encoding='utf-8')",
+    "zipfile.ZipFile(p).open('WoWStatus/WoWStatus.toc')",
+    "opener.open(url)",
     "subprocess.run(cmd, text=True, encoding='utf-8')",
     "subprocess.run(cmd, capture_output=True)",
     "subprocess.run(cmd, text=False)",

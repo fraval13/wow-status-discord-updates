@@ -7,9 +7,9 @@ import sys
 import tarfile
 from pathlib import Path
 
-revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip()
+revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, encoding='utf-8').strip()
 homepage = Path('dist/homepage')
-manifest = json.loads((homepage / 'downloads/release.json').read_text())
+manifest = json.loads((homepage / 'downloads/release.json').read_text(encoding='utf-8'))
 if manifest.get('addon_revision') != revision:
     raise ValueError('Rebuild the homepage for the exact revision being deployed')
 archive = subprocess.check_output(['git', 'archive', '--format=tar', revision])
