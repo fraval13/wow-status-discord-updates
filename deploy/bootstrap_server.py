@@ -12,7 +12,7 @@ parser.add_argument('--public-key', required=True, type=Path)
 args = parser.parse_args()
 if os.geteuid() != 0:
     raise SystemExit('Run bootstrap as root on the target server')
-public_key = args.public_key.read_text().strip()
+public_key = args.public_key.read_text(encoding='utf-8').strip()
 if not public_key.startswith('ssh-ed25519 ') or '\n' in public_key:
     raise SystemExit('Expected a single dedicated Ed25519 public key')
 source = Path(__file__).resolve().parent
@@ -48,10 +48,10 @@ os.chown(home, 0, 0)
 home.chmod(0o755)
 ssh = home / '.ssh'
 ssh.mkdir(mode=0o755)
-(ssh / 'authorized_keys').write_text('restrict,command="/usr/local/sbin/wow-character-status-receive" ' + public_key + '\n')
+(ssh / 'authorized_keys').write_text('restrict,command="/usr/local/sbin/wow-character-status-receive" ' + public_key + '\n', encoding='utf-8')
 (ssh / 'authorized_keys').chmod(0o644)
 sudoers = Path('/etc/sudoers.d/wow-character-status-deploy')
-sudoers.write_text('wow-character-deploy ALL=(root) NOPASSWD: /usr/local/sbin/wow-character-status-deploy ""\n')
+sudoers.write_text('wow-character-deploy ALL=(root) NOPASSWD: /usr/local/sbin/wow-character-status-deploy ""\n', encoding='utf-8')
 sudoers.chmod(0o440)
 subprocess.run(['visudo', '-cf', str(sudoers)], check=True)
 subprocess.run(['systemctl', 'daemon-reload'], check=True)

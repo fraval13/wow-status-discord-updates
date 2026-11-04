@@ -57,10 +57,10 @@ def fetch(pair):
 # Keep the project-generated level arrow; CDN refreshes must not restore the old
 # achievement icon, which has the misleading number 30 painted on it.
 manifest_path = folder / "manifest.json"
-level = next(entry for entry in json.loads(manifest_path.read_text()) if entry["name"] == "wow_level")
+level = next(entry for entry in json.loads(manifest_path.read_text(encoding="utf-8")) if entry["name"] == "wow_level")
 results = list(ThreadPoolExecutor(max_workers=8).map(fetch, icons.items()))
 results.insert(2, level)
-(folder / "manifest.json").write_text(json.dumps(results, indent=2) + "\n")
+(folder / "manifest.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
 print("Downloaded:", sum("file" in r for r in results), "/", len(results))
 for r in results:
     if "error" in r:

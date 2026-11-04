@@ -21,9 +21,9 @@ def minimap_runtime(client):
         function GetCursorPosition() return 150,22.5 end
         WoWStatusDB={minimap_angle=0}
     ''')
-    lua.execute((ROOT / 'addon/shared/Safe.lua').read_text())
+    lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
     lua.globals().WoWStatusAdapter = lua.table_from({'client_id': client})
-    lua.execute((ROOT / 'addon/shared/Minimap.lua').read_text())
+    lua.execute((ROOT / 'addon/shared/Minimap.lua').read_text(encoding='utf-8'))
     lua.execute('WoWStatusMinimap.init(WoWStatusDB)')
     return lua
 

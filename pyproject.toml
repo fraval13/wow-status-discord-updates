@@ -21,6 +21,8 @@ where = ["src"]
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+# Only raised under PYTHONWARNDEFAULTENCODING=1 (set in CI); see tests/test_text_encoding.py.
+filterwarnings = ["error::EncodingWarning"]
 
 [tool.ruff]
 line-length = 100

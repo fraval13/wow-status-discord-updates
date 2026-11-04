@@ -19,8 +19,16 @@ jobs:
           python-version: '3.13'
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
+        env:
+          # Fail on any text I/O that falls back to the locale encoding (cp1252 on
+          # Windows), including in scripts the tests start as subprocesses.
+          PYTHONWARNDEFAULTENCODING: '1'
+          PYTHONWARNINGS: error::EncodingWarning
       - name: Build homepage and verified addon downloads
         run: python scripts/build_homepage.py --addon-ref HEAD
+        env:
+          PYTHONWARNDEFAULTENCODING: '1'
+          PYTHONWARNINGS: error::EncodingWarning
       - name: Package standalone addons
         shell: python
         run: |

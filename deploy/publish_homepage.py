@@ -50,7 +50,7 @@ try:
         subprocess.run(['systemctl','reload','caddy'],check=False)
         raise
     candidate.unlink()
-    manifest=json.loads((release/'downloads/release.json').read_text())
+    manifest=json.loads((release/'downloads/release.json').read_text(encoding='utf-8'))
     print(json.dumps({'url':'https://wow.frankvalde.com/','release':str(release),
                       'previous':previous,'addon_revision':manifest['addon_revision']}))
 finally:

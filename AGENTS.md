@@ -80,10 +80,10 @@ be checked against Git and the environment rather than assumed permanently true.
 - `docs/IMPLEMENTATION_STATUS.md` and older dated notes include historical
   versions/limitations. Use current source, README and newest decision entries
   when they disagree with old descriptions.
-- GitHub SSH pushes failed with `Permission denied (publickey)`. Local commits
-  exist and website releases were published directly through authorized SSH.
-  Check current Git/auth state before retrying; do not hunt for credentials or
-  claim that the hosted pipeline ran merely because local commits exist.
+- GitHub pushes work again and every push to `main` runs the hosted
+  "Checks and addon packages" workflow (Ubuntu and Windows `validate`, then
+  `deploy`). Check that run's result on GitHub Actions before describing a
+  release as validated or deployed; do not hunt for credentials.
 - Uncommitted work predating this feature remains: shared/all-edition
   `Minimap.lua` edits, Vanilla/Forever TOC `IconTexture` lines, `Textures/Logo.tga`
   files, and `assets/branding/`. These belong to separate branding work. Preserve
@@ -116,6 +116,17 @@ node --check website/app.js
 node --check website/flavour.js
 git diff --check
 ```
+
+Windows decodes text with cp1252 unless told otherwise, so always pass
+`encoding='utf-8'` to text I/O (`read_text`, `write_text`, `open` and friends, and
+`subprocess` calls that decode output). CI runs pytest and the homepage
+build with `PYTHONWARNDEFAULTENCODING=1` and `PYTHONWARNINGS=error::EncodingWarning`,
+so any such call on a tested path fails, including in scripts that tests start as
+subprocesses. `tests/test_text_encoding.py` also scans `src/`, `scripts/`, `deploy/`
+and `tests/` statically for the common forms; it cannot see code inside string
+literals such as the remote script in `deploy/publish_homepage.py`. Reproduce locally
+with `LC_ALL=C PYTHONWARNDEFAULTENCODING=1 PYTHONWARNINGS=error::EncodingWarning
+python -X utf8=0 -m pytest -q`.
 
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.
