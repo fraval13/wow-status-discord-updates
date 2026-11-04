@@ -385,7 +385,10 @@ local function initialize()
         end
         return
     end
-    WoWStatusDB = WoWStatusDB or {version = 1, characters = {}}
+    if not WoWStatusDB then
+        WoWStatusDB = {version = 1, characters = {}}
+        WoWStatusWhatsNew.fresh(WoWStatusDB)
+    end
     if WoWStatusDB.version ~= 1 then say("Unsupported saved data version."); return end
     local identity = A.identity()
     if not identity then
@@ -495,6 +498,7 @@ local function initialize()
         say("Set the same group ID as your friends in Options > AddOns > WoW Status.")
         openSettings()
     end
+    WoWStatusWhatsNew.check(WoWStatusDB)
 end
 
 -- Client builds differ in event availability; one absent event must not abort
@@ -637,6 +641,7 @@ SlashCmdList.WOWSTATUS = function(message)
         elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
     elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
     elseif command == "share" then WoWStatusShare.send(rest)
+    elseif command == "news" then WoWStatusWhatsNew.show()
     elseif command == "sync" then say("Activity syncs automatically when group members log in.")
     elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
     elseif command == "popup" then

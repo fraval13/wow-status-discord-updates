@@ -20,6 +20,8 @@ Flavour.lua
 Presentation.lua
 Popups.lua
 Journal.lua
+WhatsNewData.lua
+WhatsNew.lua
 Minimap.lua
 Previews.lua
 Screenshots.lua

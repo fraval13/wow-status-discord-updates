@@ -43,7 +43,7 @@ def addon_repo(tmp_path):
     """
     repo = tmp_path / 'repo'
     repo.mkdir()
-    archive = git(ROOT, 'archive', '--format=tar', 'HEAD', 'website', 'addon', 'pyproject.toml')
+    archive = git(ROOT, 'archive', '--format=tar', 'HEAD', 'website', 'addon', 'pyproject.toml', 'CHANGELOG.md')
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         for member in tar.getmembers():
             if member.isfile():

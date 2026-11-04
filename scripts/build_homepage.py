@@ -6,6 +6,7 @@ so an unfinished local addon change can never leak into a public download.
 """
 import argparse
 import hashlib
+import html as html_text
 import json
 import re
 import shutil
@@ -14,6 +15,9 @@ import sys
 import tomllib
 import zipfile
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from whats_new import parse as parse_changelog  # noqa: E402
 
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 # Files the game loads without a TOC line. Anything else committed beside the addon
@@ -58,6 +62,18 @@ def project_version(root, revision):
         raise ValueError(f'No pyproject.toml project version in {revision}') from error
 
 
+def release_notes(root, revision, version):
+    """The CHANGELOG.md notes for this release; the addon's What's New page shows the same."""
+    try:
+        text = git(root, 'show', f'{revision}:CHANGELOG.md').decode('utf-8')
+    except subprocess.CalledProcessError as error:
+        raise ValueError(f'No CHANGELOG.md in {revision}') from error
+    for section, notes in parse_changelog(text):
+        if section == version:
+            return notes
+    raise ValueError(f'CHANGELOG.md has no notes for {version}; the release pull request adds them')
+
+
 def build(root, output, addon_ref):
     revision = git(root, 'rev-parse', '--verify', f'{addon_ref}^{{commit}}').decode().strip()
     # Check every edition before writing anything, so a failed build leaves the output untouched.
@@ -90,6 +106,7 @@ def build(root, output, addon_ref):
     if any(version != expected for _, version in editions.values()):
         found = ', '.join(f'{edition} {version}' for edition, (_, version) in editions.items())
         raise ValueError(f'Addon TOC versions ({found}) must all equal pyproject.toml version {expected}')
+    notes = release_notes(root, revision, expected)
     output.mkdir(parents=True, exist_ok=True)
     for source in (root / 'website').iterdir():
         if source.name in {'README.md', 'ARTWORK.md'}:
@@ -120,6 +137,7 @@ def build(root, output, addon_ref):
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
     html = (output / 'index.html').read_text(encoding='utf-8')
     html = html.replace('__VERSION__', expected)
+    html = html.replace('__WHATS_NEW__', ''.join(f'<li>{html_text.escape(note)}</li>' for note in notes))
     for edition, release in releases.items():
         html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
     if re.search(r'__[A-Z_]+__', html):

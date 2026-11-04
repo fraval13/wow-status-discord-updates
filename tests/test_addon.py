@@ -151,6 +151,8 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
     runtime.execute((root / 'Presentation.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Journal.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'WhatsNewData.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'WhatsNew.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Minimap.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Screenshots.lua').read_text(encoding='utf-8'))
