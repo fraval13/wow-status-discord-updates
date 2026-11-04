@@ -538,7 +538,12 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if current.settings.enabled and current.settings.collection.death and WoWStatusProgress.death(current) then
             queue("death", current.settings.fields.deaths and {total_deaths=current.progress.deaths} or {})
         end
-    elseif event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then current.death_latched = false
+    elseif event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then
+        -- PLAYER_ALIVE also fires on spirit release, while the player is still a ghost.
+        -- Unlatching then would let a later PLAYER_DEAD recount the same death. An
+        -- unavailable API clears the latch so death counting can never get stuck.
+        local still_dead = S.call(UnitIsDeadOrGhost, "player")
+        if not (still_dead == true or still_dead == 1) then current.death_latched = false end
     elseif event == "PLAYER_XP_UPDATE" then snapshot()
     elseif event == "QUEST_QUERY_COMPLETE" or event == "QUEST_LOG_UPDATE" then
         WoWStatusProgress.queryComplete(); snapshot(); questMilestone()
