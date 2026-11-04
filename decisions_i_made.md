@@ -17,33 +17,6 @@
 - TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
   public verifier parse TOCs strictly. Retail per-line load conditions
   (`[AllowLoadGameType ...]`) are not supported by any stage yet.
-## Malformed SavedVariables no longer stop the companion — 4 November 2026
-
-- Issue #13. Reading and normalising one SavedVariables file now has its own
-  error boundary in `upload()`: any exception there skips that file for this
-  pass, marks the pass failed and retries on the next pass. The log names the
-  exception type, plus the message only for our fixed `ValidationError` and
-  `ParseError` texts, so no SavedVariables content is logged. Errors from
-  sending or the service keep the existing narrow catch.
-- `exports()` raises `ValidationError` (a `ValueError`) for every shape it
-  rejects, and `discord_since` is validated whenever it is not the integer 0,
-  so routing values handed to the group uploader are always well formed.
-- History events and level points without an integer timestamp at or after
-  `discord_since` (0 when unset) are dropped rather than uploaded: they cannot
-  be shown to postdate consent, and one bad entry should not block the file.
-  Unexpected (non-validation) errors also print a traceback of code locations,
-  without the exception message, so bugs stay diagnosable. A non-sharing character with broken settings is still skipped
-  silently and does not block other characters in the file.
-- `validate` uses a string-only membership check for the client, event kind,
-  class ID and profession key, so tables and lists raise `ValidationError` (or
-  are dropped where the field is optional) instead of `TypeError`. A mutation
-  test replaces every value of a full payload with a table, list, text, nil,
-  float, boolean and negative number and requires only `ValidationError`; a
-  second one does the same for a whole SavedVariables table through `exports()`.
-- Not done here: one broken enrolled character still skips the whole file,
-  including other characters' opt-out/withdrawal uploads, as `main` already did
-  for its shape checks. Isolating per character changes batch part counting and
-  should be its own change.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
