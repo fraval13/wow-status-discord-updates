@@ -9,8 +9,8 @@ from urllib.parse import urlparse
 
 import aiohttp
 
-from .savedvariables import MAX_BYTES, parse
-from .schema import integer, string, validate
+from .savedvariables import MAX_BYTES, ParseError, parse
+from .schema import ValidationError, integer, string, validate
 
 
 def endpoint(url):
@@ -35,10 +35,10 @@ def atomic_json(path, data):
         path.chmod(0o600)
 
 
-def _kept_since(item, since):
-    # Malformed timestamps are kept so validation rejects the file instead of hiding them.
+def _after(item, since):
+    # An entry without a numeric timestamp cannot be shown to postdate consent.
     at = item.get('at', 0)
-    return not isinstance(at, (int, float)) or at >= since
+    return isinstance(at, (int, float)) and at >= since
 
 
 def exports(path):
@@ -55,8 +55,6 @@ def exports(path):
         if not isinstance(char, dict):
             raise ValueError('Invalid character table')
         settings = char.get('settings', {})
-        if not isinstance(settings, dict):
-            raise ValueError('Invalid character settings')
         # Addon 0.8.1–0.8.3 enabled sharing by default but only set the enrollment
         # flag after a checkbox click. Recover those exports without enrolling
         # disabled characters or overriding an explicit false enrollment flag.
@@ -64,6 +62,8 @@ def exports(path):
                                 and settings.get('enabled') is True)
         if char.get('enrolled') is not True and not enabled_without_flag:
             continue
+        if not isinstance(settings, dict):
+            raise ValueError('Invalid character settings')
         opted_in = settings.get('discord_enabled') is True
         previously_enabled = (char.get('discord_enrolled') is True
                               or ('discord_enabled' not in settings and char.get('enrolled') is True))
@@ -87,9 +87,10 @@ def exports(path):
         records = [event for event in events.values() if event.get('kind') != 'session']
         since = char.get('discord_since', 0)
         if since:
-            exported_at = integer(char.get('exported_at'), 'exported_at', 1, int(time.time()) + 300)
-            since = integer(since, 'Discord sharing start', 1, exported_at + 300)
-            records = [event for event in records if _kept_since(event, since)]
+            if type(char.get('exported_at')) is not int:
+                raise ValueError('Invalid export time')
+            since = integer(since, 'Discord sharing start', 1, char['exported_at'] + 300)
+            records = [event for event in records if _after(event, since)]
         if 'tracking' in history:
             tracking = history['tracking']
             if not isinstance(tracking, dict):
@@ -99,7 +100,7 @@ def exports(path):
                 points = list(points.values())
             if not isinstance(points, list) or not all(isinstance(p, dict) for p in points):
                 raise ValueError('Invalid level tracking')
-            payload['tracking'] = dict(tracking, points=[p for p in points if _kept_since(p, since)])
+            payload['tracking'] = dict(tracking, points=[p for p in points if _after(p, since)])
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
             batch = records[offset:offset + 100]
@@ -179,16 +180,15 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
             for path in paths:
                 try:
                     payloads = list(exports(path))
-                except OSError as exc:
-                    print(f'Upload deferred ({type(exc).__name__}); will retry from SavedVariables.')
-                    failed = True
-                    status(connection='Waiting: check file path or service connection; will retry.')
-                    continue
                 except Exception as exc:
-                    # One unreadable or half-written file must never stop the upload loop.
-                    print(f'Skipped unreadable SavedVariables ({type(exc).__name__}); will retry later.')
+                    # One missing, unreadable or malformed file must never stop the upload loop.
+                    # Only our own fixed validation messages are logged, never file content.
+                    detail = f': {exc}' if isinstance(exc, (ValidationError, ParseError)) else ''
+                    print(f'Skipped unreadable SavedVariables ({type(exc).__name__}{detail}); will retry later.')
                     failed = True
-                    status(connection='Waiting: SavedVariables could not be read; will retry after the next save.')
+                    status(connection='Waiting: check the SavedVariables file path; will retry.'
+                           if isinstance(exc, OSError) else
+                           'Waiting: SavedVariables could not be read; will retry after the next save.')
                     continue
                 try:
                     for payload in payloads:

@@ -47,6 +47,41 @@ def test_malformed_file_does_not_block_other_files(tmp_path, capsys):
     assert '"name": "Thora"' in output
 
 
+def test_broken_settings_on_a_non_sharing_character_do_not_block_the_file(tmp_path):
+    source = FIXTURE.replace('    },\n}', '    },\n    ["Other"] = { enrolled = false, settings = "broken" },\n}')
+    assert '["Other"]' in source
+    values = list(exports(write(tmp_path, 'WoWStatus.lua', source)))
+    assert [value['identity']['name'] for value in values] == ['Thora']
+
+
+def test_entries_without_numeric_timestamps_are_not_shared_after_opt_in(tmp_path):
+    source = FIXTURE.replace('["enrolled"] = true,', '["enrolled"] = true, discord_since=1793000000,')
+    source = source.replace('{id="intro", kind="introduction", at=1793000000, data={}},',
+                            '{id="intro", kind="introduction", at="soon", data={}},')
+    source = source.replace('["exported_at"] = 1793000000,', '["exported_at"] = 1793000000, history = { tracking = '
+                            '{ points = { {kind="level", level=10, at="soon", segment="s"} } } },')
+    [batch] = exports(write(tmp_path, 'WoWStatus.lua', source))
+    assert [event['id'] for event in batch['events']] == ['level-10']
+    assert batch['tracking']['points'] == []
+
+
+def test_validation_messages_are_logged_but_file_content_is_not(tmp_path, capsys):
+    path = write(tmp_path, 'WoWStatus.lua', CLIENT_TABLE)
+    asyncio.run(upload([path], None, None, once=True, dry_run=True))
+    assert 'Skipped unreadable SavedVariables (ValidationError: Unsupported client adapter)' in capsys.readouterr().out
+    path.write_text('WoWStatusDB = { name = "Thora" ', encoding='utf-8')
+    asyncio.run(upload([path], None, None, once=True, dry_run=True))
+    output = capsys.readouterr().out
+    assert '(ParseError: Unexpected end of file)' in output and 'Thora' not in output
+
+
+def test_missing_file_points_at_the_path(tmp_path):
+    messages = []
+    asyncio.run(upload([tmp_path / 'missing.lua'], None, None, once=True, dry_run=True,
+                       status=lambda **values: messages.append(values.get('connection'))))
+    assert messages == ['Waiting: check the SavedVariables file path; will retry.']
+
+
 @pytest.mark.parametrize('error', [AttributeError, TypeError, KeyError, RecursionError])
 def test_any_parse_error_is_contained(tmp_path, monkeypatch, error):
     def broken(path):

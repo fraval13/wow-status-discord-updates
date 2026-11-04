@@ -6,6 +6,10 @@ import time
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions', 'deaths', 'quests'}
 LEVEL_CAPS = {'classic-era': 60, 'forever': 60, 'tbc-anniversary': 70, 'retail': 90}
 KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status', 'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery'}
+CLASS_IDS = frozenset({'WARRIOR', 'PALADIN', 'HUNTER', 'ROGUE', 'PRIEST', 'SHAMAN', 'MAGE', 'WARLOCK', 'DRUID'})
+PROFESSION_KEYS = frozenset({'alchemy', 'blacksmithing', 'enchanting', 'engineering', 'herbalism',
+                             'leatherworking', 'mining', 'skinning', 'tailoring', 'jewelcrafting',
+                             'inscription', 'archaeology', 'cooking', 'first_aid', 'fishing'})
 STATUS_FIELDS = {
     'level': ('level','level'), 'xp_current': ('level','level'), 'xp_max': ('level','level'),
     'class': ('class','introduction'), 'class_id': ('class','introduction'),
@@ -121,8 +125,7 @@ def validate(payload):
                         if 'skill' in profession:
                             entry['max_skill'] = integer(profession.get('max_skill'), 'profession maximum', 1, 2000)
                             entry['skill'] = integer(profession['skill'], 'profession skill', 0, entry['max_skill'])
-                        if choice(profession.get('key'), {'alchemy','blacksmithing','enchanting','engineering',
-                                'herbalism','leatherworking','mining','skinning','tailoring','jewelcrafting','inscription','archaeology','cooking','first_aid','fishing'}):
+                        if choice(profession.get('key'), PROFESSION_KEYS):
                             entry['key'] = profession['key']
                         professions.append(entry)
                     val = professions
@@ -138,8 +141,7 @@ def validate(payload):
     if clean['settings']['enabled']:
         if clean['settings']['fields']['race'] and snapshot.get('sex') in ('Male', 'Female'):
             clean['snapshot']['sex'] = snapshot['sex']
-        if clean['settings']['fields']['class'] and choice(snapshot.get('class_id'), {
-                'WARRIOR','PALADIN','HUNTER','ROGUE','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}):
+        if clean['settings']['fields']['class'] and choice(snapshot.get('class_id'), CLASS_IDS):
             clean['snapshot']['class_id'] = snapshot['class_id']
         if clean['settings']['fields']['level'] and 'xp_current' in snapshot:
             maximum = integer(snapshot.get('xp_max'), 'XP maximum', 1, 2_000_000_000)
@@ -236,7 +238,7 @@ def validate(payload):
                 raise ValidationError('Invalid status changes')
             permitted = []
             for key in changes:
-                if not isinstance(key, str) or key not in STATUS_FIELDS:
+                if not choice(key, STATUS_FIELDS):
                     raise ValidationError('Invalid status field')
                 field, category = STATUS_FIELDS[key]
                 if clean['settings']['fields'][field] and clean['settings']['announcements'][category]:

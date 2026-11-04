@@ -21,9 +21,14 @@
 
 - Issue #13. Reading and normalising one SavedVariables file now has its own
   error boundary in `upload()`: any exception there skips that file for this
-  pass, logs only the exception type, marks the pass failed and retries on the
-  next pass. Errors from sending or the service keep the existing narrow catch,
-  so programming errors on the network path are not hidden.
+  pass, marks the pass failed and retries on the next pass. The log names the
+  exception type, plus the message only for our fixed `ValidationError` and
+  `ParseError` texts, so no SavedVariables content is logged. Errors from
+  sending or the service keep the existing narrow catch.
+- After `discord_since`, history events and level points without a numeric
+  timestamp are dropped rather than uploaded: they cannot be shown to postdate
+  consent. A non-sharing character with broken settings is still skipped
+  silently and does not block other characters in the file.
 - `validate` uses a string-only membership check for the client, event kind,
   class ID and profession key, so tables and lists raise `ValidationError` (or
   are dropped where the field is optional) instead of `TypeError`. A mutation
