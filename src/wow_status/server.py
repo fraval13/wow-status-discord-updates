@@ -17,6 +17,52 @@ from .store import Conflict
 
 log = logging.getLogger(__name__)
 
+# One IPv6 host or home network controls at least a whole /64, so throttling
+# individual IPv6 addresses would give it effectively unlimited budgets.
+IPV6_THROTTLE_PREFIX = 64
+# Stateless translation prefixes carrying an IPv4 client in the low 32 bits:
+# RFC 6052 well-known NAT64 and RFC 2765 SIIT IPv4-translated addresses.
+IPV4_TRANSLATION_PREFIXES = (ipaddress.ip_network('64:ff9b::/96'),
+                             ipaddress.ip_network('::ffff:0:0:0/96'))
+
+
+def _embedded_ipv4(ip):
+    """IPv4 address carried by a translated or tunnelled IPv6 address, if any."""
+    if any(ip in prefix for prefix in IPV4_TRANSLATION_PREFIXES):
+        return ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+    if ip.sixtofour is not None:
+        return ip.sixtofour  # The site's 6to4 router, which owns 2002:V4::/48.
+    if ip.teredo is not None:
+        return ip.teredo[1]
+    return None
+
+
+def throttle_identity(address):
+    """Return the per-source throttle identity for a client address.
+
+    IPv4 and IPv4-mapped addresses key on the IPv4 address. NAT64, SIIT, 6to4
+    and Teredo addresses key on their embedded global IPv4 address, or on the
+    exact address when that IPv4 is not global. Loopback and unspecified IPv6
+    keep their exact address. Other IPv6 addresses collapse to their /64
+    network. Non-IP values pass through.
+    """
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return address
+    if ip.version == 4:
+        return str(ip)
+    if ip.ipv4_mapped is not None:
+        return str(ip.ipv4_mapped)
+    if ip.is_loopback or ip.is_unspecified:
+        return str(ip)
+    embedded = _embedded_ipv4(ip)
+    if embedded is not None:
+        # A translator or relay owns the surrounding /64, not the client, and
+        # non-global values must not become loopback/private IPv4 keys.
+        return str(embedded) if embedded.is_global else str(ip)
+    return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
+
 
 def create_app(store, group=None, name=None, trust_proxy=False):
     if group is not None:
@@ -71,7 +117,7 @@ def create_app(store, group=None, name=None, trust_proxy=False):
         return remote
 
     def throttle(request, operation, count, seconds):
-        key = store.digest(client_ip(request))
+        key = store.digest(throttle_identity(client_ip(request)))
         store.request_budget(operation + ':' + key, count, seconds)
 
     def authenticated_budget(owner, operation):

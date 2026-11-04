@@ -134,7 +134,7 @@ Resource budgets are deliberately generous and do not judge gameplay:
 | --- | --- |
 | Upload requests | 600 per minute per owner/installation identity |
 | Privacy requests | Separate 120 per minute per owner |
-| Enrollment attempts | 30 per source IP per hour |
+| Enrollment attempts | 30 per source IPv4 address or IPv6 /64 per hour (NAT64, SIIT, 6to4 and Teredo IPv6 count against their embedded IPv4) |
 | New enrollments | 1,000 per group per day |
 | New characters | 256 per owner and 2,000 per group per day |
 | New events | 100,000 per owner and 1,000,000 per group per day |

@@ -1,5 +1,28 @@
 # Decisions I made — 27 October 2026
 
+## IPv6 throttles grouped by /64 — 4 November 2026
+
+- Per-source throttles (link-code guesses, invalid auth, enrollment attempts)
+  now key IPv6 clients on their /64 network instead of the exact address, since
+  one host or home network controls at least a whole /64 (issue #12).
+- Kept a single /64 tier, as the issue asked. Residential delegations are often
+  /56 or /48, so a determined client can still hold up to 256 or 65,536 budgets.
+  Wider prefixes are not used because mobile carriers hand single /64s to
+  unrelated customers from shared pools, which would throttle real friends
+  together. A second, looser /48 budget can be added if abuse appears.
+- IPv4 behaviour is unchanged. IPv4-mapped (`::ffff:a.b.c.d`), well-known NAT64
+  (`64:ff9b::/96`), SIIT (`::ffff:0:a.b.c.d`) and Teredo addresses key on their
+  embedded IPv4 client address, so translated clients do not all share one /64.
+  6to4 addresses key on the site's 6to4 router IPv4, so every host behind one
+  6to4 router shares a budget with that router's native IPv4 traffic.
+- When an embedded IPv4 value is not global (loopback, private, reserved), the
+  exact IPv6 address is the key. That keeps forwarded values off the proxy's
+  loopback key, and it stops private clients behind one NAT64/SIIT translator
+  from sharing the translator's /64. IPv6 loopback and unspecified addresses
+  also keep their exact key. IPv4-mapped addresses always use their IPv4,
+  because a mapped peer is the same IPv4 host.
+- Existing in-flight budgets keyed on exact IPv6 addresses simply expire.
+
 ## Runtime version in popup status — 4 November 2026
 
 - `/wstatus popup status` printed a hard-coded `0.14.8` while the TOCs were
