@@ -21,7 +21,16 @@ function G.key(text)
     end
     return string.format("%08x%08x%06x", a, b, c % 16777216), text
 end
-function G.channel(id) return "WStatus" .. id end
+local CHANNEL_PREFIX = "WStatus"
+function G.channel(id) return CHANNEL_PREFIX .. id end
+-- The group ID in a group channel name (any case), or nil for other channels.
+function G.channelId(name)
+    if type(name) ~= "string" or #name <= #CHANNEL_PREFIX then return nil end
+    local lowered = name:lower()
+    if lowered:sub(1, #CHANNEL_PREFIX) ~= CHANNEL_PREFIX:lower() then return nil end
+    local id = lowered:sub(#CHANNEL_PREFIX + 1)
+    if G.valid(id) then return id end
+end
 function G.selected(character)
     return character and character.group_ids or {}
 end

@@ -72,13 +72,18 @@ local function channels()
     if not next(result) and prefs.legacy_channel then result[prefs.channel:lower()] = "legacy" end
     return result
 end
-local function joined(group)
-    if not prefs or not GetChannelName then return nil end
-    local name = group and WoWStatusGroups.channel(group) or prefs.channel
-    if not channels()[name:lower()] then return nil end
+-- The client's channel number when the player is in the named channel right now.
+local function inChannel(name)
+    if not GetChannelName then return nil end
     local id, actual = S.call(GetChannelName, name)
     if type(id) ~= "number" or id < 1 or type(actual) ~= "string" or actual:lower() ~= name:lower() then return nil end
     return id
+end
+local function joined(group)
+    if not prefs then return nil end
+    local name = group and WoWStatusGroups.channel(group) or prefs.channel
+    if not channels()[name:lower()] then return nil end
+    return inChannel(name)
 end
 -- The roster arrives asynchronously after selection. Restoring the old UI
 -- selection immediately can leave an empty roster forever on one client.
@@ -172,15 +177,16 @@ local function remember(item)
     while #prefs.activity > 200 do table.remove(prefs.activity) end
 end
 -- Channels this addon joined, kept in SavedVariables: /reload restarts module
--- state while the game keeps the channels joined (issue #20). Only group
--- channel names are kept, so damaged saved data cannot name other channels.
+-- state while the game keeps the channels joined (issue #20). On load, keep only
+-- group channels the player is in right now; the game drops them at logout, so
+-- entries from earlier sessions or characters cannot outlive their channel.
 local MAX_SAVED_CHANNELS = 32
 local function savedChannels(saved)
     local result, count = {}, 0
     if type(saved) ~= "table" then return result end
     for name, flag in pairs(saved) do
-        if flag == true and type(name) == "string" and name:sub(1, 7) == "wstatus"
-            and WoWStatusGroups.valid(name:sub(8)) and count < MAX_SAVED_CHANNELS then
+        if count >= MAX_SAVED_CHANNELS then break end
+        if flag == true and WoWStatusGroups.channelId(name) and name == name:lower() and inChannel(name) then
             result[name], count = true, count + 1
         end
     end
@@ -194,7 +200,7 @@ function P.groupsChanged()
     local allowed = channels()
     for name in pairs(joinedByAddon) do
         if not allowed[name] then
-            if LeaveChannelByName then pcall(LeaveChannelByName, name) end
+            if LeaveChannelByName and inChannel(name) then pcall(LeaveChannelByName, name) end
             joinedByAddon[name] = nil
         end
     end

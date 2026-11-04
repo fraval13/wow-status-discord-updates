@@ -55,7 +55,11 @@ WoWStatusDB.popups.joined_channels = {
 
 OVERSIZED_SAVE = '''
 local saved = {}
-for i = 1, 100 do saved[string.format("wstatus%022x", i)] = true end
+for i = 1, 100 do
+    local name = string.format("wstatus%022x", i)
+    saved[name] = true
+    if i <= 40 then JoinTemporaryChannel(name) end
+end
 WoWStatusDB.popups.joined_channels = saved
 '''
 
@@ -156,4 +160,44 @@ def test_damaged_saved_channel_list_cannot_name_other_channels():
     assert lua.eval('savedChannelCount()') == 32
     lua.eval('WoWStatusGroups.update')('', '')
     assert joined(lua, 'General - Dun Morogh') and joined(lua, 'WStatusFriends')
+    assert lua.eval('savedChannelCount()') == 0
+
+
+def relog(lua):
+    """Simulate logout and login: the game drops temporary channels, saved data stays."""
+    lua.execute('__list = {}')
+    reload_popups(lua)
+
+
+def test_entries_from_an_earlier_session_never_leave_a_channel_joined_by_hand():
+    lua = make_lua(CHANNEL_STUBS)
+    channel = group_channel(lua, 'navsquad-test')
+    lua.execute(f'WoWStatusDB.popups.joined_channels = {{["{channel.lower()}"] = true}}')
+    relog(lua)
+    assert lua.eval('savedChannelCount()') == 0
+    lua.eval('JoinTemporaryChannel')(channel)
+    lua.eval('WoWStatusGroups.update')('ronkalot-test', '')
+    assert joined(lua, channel)
+    assert left(lua) == []
+
+
+def test_relog_rejoins_and_records_current_groups_so_removal_still_leaves():
+    lua = make_lua(CHANNEL_STUBS)
+    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusPopups.tick')()
+    channel = group_channel(lua, 'navsquad-test')
+    relog(lua)
+    assert joined(lua, channel)   # the addon joined it again at login
+    reload_popups(lua)
+    lua.eval('WoWStatusGroups.update')('', '')
+    assert not joined(lua, channel)
+
+
+def test_no_leave_call_for_a_saved_channel_the_player_is_not_in():
+    lua = make_lua(CHANNEL_STUBS)
+    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusPopups.tick')()
+    lua.execute('__list = {}')   # the join was refused or the channel dropped
+    lua.eval('WoWStatusGroups.update')('', '')
+    assert left(lua) == []
     assert lua.eval('savedChannelCount()') == 0
