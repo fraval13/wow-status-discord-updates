@@ -14,12 +14,14 @@ local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
-local function tocVersion()
-    local version = S.stringCall(type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata, ADDON_NAME, "Version")
-        or S.stringCall(GetAddOnMetadata, ADDON_NAME, "Version")
+local function metadataVersion(lookup)
+    local version = S.stringCall(lookup, ADDON_NAME, "Version")
     version = version and version:match("^%s*(.-)%s*$")
-    if not version or version == "" or #version > 64 or version:find("[%c|]") then return "unknown" end
-    return version
+    if version and version ~= "" and #version <= 64 and not version:find("[%c|]") then return version end
+end
+local function tocVersion()
+    return metadataVersion(type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata)
+        or metadataVersion(GetAddOnMetadata) or "unknown"
 end
 P.runtimeVersion=tocVersion()
 

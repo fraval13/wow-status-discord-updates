@@ -82,9 +82,10 @@ def test_runtime_version_falls_back_to_unknown_without_usable_metadata(extra):
     assert any('Runtime unknown ' in line for line in status_lines(lua))
 
 
-def test_runtime_version_tries_legacy_global_when_c_addons_returns_nothing():
-    lua = make_lua(STUBS + '''
-        C_AddOns={GetAddOnMetadata=function() return nil end}
+@pytest.mark.parametrize('unusable', ['nil', '""', '"1.0|cffff0000x"', 'string.rep("9", 65)'])
+def test_runtime_version_tries_legacy_global_when_c_addons_value_is_unusable(unusable):
+    lua = make_lua(STUBS + f'''
+        C_AddOns={{GetAddOnMetadata=function() return {unusable} end}}
         function GetAddOnMetadata(addon, field) return addon == "WoWStatus" and field == "Version" and "9.8.7" end
     ''')
     assert lua.eval('WoWStatusPopups.runtimeVersion') == '9.8.7'
@@ -116,9 +117,14 @@ def test_runtime_version_uses_folder_name_the_client_passes_to_the_file():
     assert lua.eval('WoWStatusPopups.runtimeVersion') == '1.2.3'
 
 
-def test_popups_source_has_no_hard_coded_runtime_version():
+def test_popups_source_has_no_hard_coded_version_literal():
     for edition in ('shared', *EDITIONS):
         folder = ROOT / 'addon' / edition / ('' if edition == 'shared' else 'WoWStatus')
         source = (folder / 'Popups.lua').read_text(encoding='utf-8')
-        assert not re.search(r'\d+\.\d+\.\d+', source), edition
-        assert re.search(r'^P\.runtimeVersion=tocVersion\(\)$', source, re.MULTILINE), edition
+        assert not re.search(r'(["\']|\[=*\[)\s*\d+\.\d+\.\d+', source), edition
+
+
+def test_release_versions_agree_across_editions_and_python_package():
+    project = (ROOT / 'pyproject.toml').read_text(encoding='utf-8')
+    expected = re.search(r'^version = "([^"]+)"$', project, re.MULTILINE).group(1)
+    assert {edition: toc_metadata(edition)['Version'] for edition in EDITIONS} == dict.fromkeys(EDITIONS, expected)
