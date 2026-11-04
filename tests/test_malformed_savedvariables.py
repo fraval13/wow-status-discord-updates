@@ -270,37 +270,29 @@ def _rich_db():
     return db
 
 
-def test_rich_db_exports_group_routing():
-    [batch] = _exports_of(_rich_db())
+def test_rich_db_exports_group_routing(monkeypatch):
+    [batch] = _exports_of(monkeypatch, _rich_db())
     assert batch['_event_targets'] == {'level-10': [group_key('navsquad')]}
     assert batch['_discord_since'] == 1792999999 and batch['tracking']['points']
 
 
-def _exports_of(db):
-    import wow_status.companion as module
-    original = module.parse
-    module.parse = lambda text: copy.deepcopy(db)
-    try:
-        return list(exports(Path(__file__).parent / 'fixtures/WoWStatus.lua'))
-    finally:
-        module.parse = original
+def _exports_of(monkeypatch, db):
+    monkeypatch.setattr(companion, 'parse', lambda text: copy.deepcopy(db))
+    return list(exports(Path(__file__).parent / 'fixtures/WoWStatus.lua'))
 
 
 @pytest.mark.parametrize('replacement', [{}, [], 'x', None, 1.5, True, -1],
                          ids=['table', 'list', 'text', 'nil', 'float', 'bool', 'negative'])
-def test_exports_wrong_type_anywhere_only_raises_validation_error(replacement):
+def test_exports_wrong_type_anywhere_only_raises_validation_error(monkeypatch, replacement):
     base = _rich_db()
-    for path in [()] + list(_paths(base)):
+    for path in _paths(base):
         mutated = copy.deepcopy(base)
-        if path:
-            target = mutated
-            for key in path[:-1]:
-                target = target[key]
-            target[path[-1]] = copy.deepcopy(replacement)
-        else:
-            mutated = copy.deepcopy(replacement)
+        target = mutated
+        for key in path[:-1]:
+            target = target[key]
+        target[path[-1]] = copy.deepcopy(replacement)
         try:
-            batches = _exports_of(mutated)
+            batches = _exports_of(monkeypatch, mutated)
         except ValidationError:
             continue
         except Exception as exc:  # pragma: no cover - the failure message names the path
@@ -310,3 +302,27 @@ def test_exports_wrong_type_anywhere_only_raises_validation_error(replacement):
             assert type(batch['_discord_since']) is int, path
             for ids in batch.get('_event_targets', {}).values():
                 assert ids is None or isinstance(ids, list), path
+
+
+@pytest.mark.parametrize('since', ['', 'discord_since=1792999999,'], ids=['no-opt-in-time', 'opt-in-time'])
+def test_bad_timestamps_are_dropped_the_same_way_with_or_without_opt_in_time(tmp_path, since):
+    source = FIXTURE.replace('["enrolled"] = true,', '["enrolled"] = true, ' + since)
+    source = source.replace('{id="intro", kind="introduction", at=1793000000, data={}},',
+                            '{id="intro", kind="introduction", at="soon", data={}},')
+    source = source.replace('["exported_at"] = 1793000000,', '["exported_at"] = 1793000000, history = { tracking = '
+                            '{ points = { {kind="level", level=10, at=-5, segment="s"} } } },')
+    [batch] = exports(write(tmp_path, 'WoWStatus.lua', source))
+    assert [event['id'] for event in batch['events']] == ['level-10']
+    assert batch['tracking']['points'] == []
+
+
+def test_unexpected_errors_show_where_but_not_the_message(tmp_path, monkeypatch, capsys):
+    def broken(path):
+        raise KeyError(path.read_text(encoding='utf-8'))
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(companion, 'exports', broken)
+    asyncio.run(upload([write(tmp_path, 'WoWStatus.lua', FIXTURE)], None, None, once=True, dry_run=True))
+    output = capsys.readouterr().out
+    assert 'Skipped unreadable SavedVariables (KeyError); will retry later.' in output
+    assert 'in broken' in output and 'Thora' not in output

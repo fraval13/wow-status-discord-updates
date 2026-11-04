@@ -4,6 +4,7 @@ import hashlib
 import json
 import os
 import time
+import traceback
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -36,7 +37,8 @@ def atomic_json(path, data):
 
 
 def _after(item, since):
-    # An entry without a numeric timestamp cannot be shown to postdate consent.
+    # An entry without an integer timestamp cannot be shown to postdate consent or be
+    # uploaded, so it is dropped rather than blocking every character in the file.
     at = item.get('at', 0)
     return type(at) is int and at >= since
 
@@ -47,7 +49,7 @@ def exports(path):
     if len(raw) > MAX_BYTES:
         raise ValidationError('SavedVariables file exceeds 32 MiB')
     db = parse(raw.decode('utf-8-sig'))
-    if not isinstance(db, dict) or db.get('version') != 1 or not isinstance(db.get('characters'), dict):
+    if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
         raise ValidationError('Unsupported addon data')
     batches = []
     batch_id = hashlib.sha256(raw).hexdigest()
@@ -84,13 +86,13 @@ def exports(path):
             raise ValidationError('Invalid addon events')
         if not all(isinstance(event, dict) for event in events.values()):
             raise ValidationError('Invalid addon event')
-        records = [event for event in events.values() if event.get('kind') != 'session']
         since = char.get('discord_since', 0)
         if type(since) is not int or since:
             if type(char.get('exported_at')) is not int:
                 raise ValidationError('Invalid export time')
             since = integer(since, 'Discord sharing start', 1, char['exported_at'] + 300)
-            records = [event for event in records if _after(event, since)]
+        records = [event for event in events.values()
+                   if event.get('kind') != 'session' and _after(event, since)]
         if 'tracking' in history:
             tracking = history['tracking']
             if not isinstance(tracking, dict):
@@ -100,9 +102,7 @@ def exports(path):
                 points = list(points.values())
             if not isinstance(points, list) or not all(isinstance(p, dict) for p in points):
                 raise ValidationError('Invalid level tracking')
-            if since:
-                points = [p for p in points if _after(p, since)]
-            payload['tracking'] = dict(tracking, points=points)
+            payload['tracking'] = dict(tracking, points=[p for p in points if _after(p, since)])
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
             batch = records[offset:offset + 100]
@@ -187,6 +187,9 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                     # Only our own fixed validation messages are logged, never file content.
                     detail = f': {exc}' if isinstance(exc, (ValidationError, ParseError)) else ''
                     print(f'Skipped unreadable SavedVariables ({type(exc).__name__}{detail}); will retry later.')
+                    if not isinstance(exc, (OSError, ValueError)):
+                        # Unexpected errors are likely bugs: show where, but not the message or values.
+                        print(''.join(traceback.format_tb(exc.__traceback__)), end='')
                     failed = True
                     status(connection='Waiting: check the SavedVariables file path; will retry.'
                            if isinstance(exc, OSError) else

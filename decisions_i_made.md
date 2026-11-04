@@ -28,9 +28,11 @@
 - `exports()` raises `ValidationError` (a `ValueError`) for every shape it
   rejects, and `discord_since` is validated whenever it is not the integer 0,
   so routing values handed to the group uploader are always well formed.
-- After `discord_since`, history events and level points without an integer
-  timestamp are dropped rather than uploaded: they cannot be shown to postdate
-  consent. A non-sharing character with broken settings is still skipped
+- History events and level points without an integer timestamp at or after
+  `discord_since` (0 when unset) are dropped rather than uploaded: they cannot
+  be shown to postdate consent, and one bad entry should not block the file.
+  Unexpected (non-validation) errors also print a traceback of code locations,
+  without the exception message, so bugs stay diagnosable. A non-sharing character with broken settings is still skipped
   silently and does not block other characters in the file.
 - `validate` uses a string-only membership check for the client, event kind,
   class ID and profession key, so tables and lists raise `ValidationError` (or
