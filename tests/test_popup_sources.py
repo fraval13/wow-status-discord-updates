@@ -127,6 +127,7 @@ def test_sender_does_not_send_text_receivers_would_reject():
             data={text="Won a duel"}})
     ''')
     assert lua.eval('#__sent') == 0
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'invalid_text'
 
 
 def test_sender_outside_the_roster_is_held_then_rejected():
@@ -138,7 +139,9 @@ def test_sender_outside_the_roster_is_held_then_rejected():
     assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
     assert lua.eval('#WoWStatusDB.popups.activity') == 0
     assert lua.eval('#WoWStatusJournal.entries()') == 0
-    lua.execute('function time() return 1793000016 end; WoWStatusPopups.tick()')
+    lua.execute('function time() return 1793000034 end; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    lua.execute('function time() return 1793000035 end; WoWStatusPopups.tick()')
     assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'rejected_unknown_sender'
     assert lua.eval('WoWStatusLevelPopup') is None
     assert lua.eval('#WoWStatusDB.popups.activity') == 0
@@ -164,12 +167,15 @@ def test_member_who_just_joined_is_shown_once_the_roster_lists_them():
     assert lua.eval('#WoWStatusJournal.entries()') == 1
 
 
-def test_member_swap_with_same_roster_size_rereads_the_roster():
+def test_member_who_replaced_another_waits_for_the_roster_cache_to_expire():
     lua = joined(make_lua())
     assert list(lua.eval('WoWStatusPopups.peers')(group_key('navsquad')).values()) == ['Eldrin-TestRealm']
     lua.execute('__peers={"Mira-TestRealm"}')  # Eldrin left and Mira joined: same count, cache still fresh.
-    assert lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 5 1793000000 mira-5',
-                                               'Mira-TestRealm', CHANNEL)
+    assert not lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 5 1793000000 mira-5',
+                                                   'Mira-TestRealm', CHANNEL)
+    lua.execute('function time() return 1793000029 end; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup') is None
+    lua.execute('function time() return 1793000030 end; WoWStatusPopups.tick()')
     assert popup_text(lua) == 'Mira reached level 5!'
 
 
@@ -205,9 +211,11 @@ def test_updates_waiting_for_the_roster_count_toward_the_sender_cap():
 
 
 @pytest.mark.parametrize('kind, text', [
-    ('profession', 'Кузнечное дело: Journeyman (150 m...'),
-    ('profession', 'Инженерное дело: Journ...'),
-    ('profession', 'Инженерное дело: ...'),
+    # What the sender's 48-byte cut leaves of long Russian rank-ups.
+    ('profession', 'Кузнечное дело: Journeyman (150 ...'),
+    ('profession', 'Инженерное дело: Journeyman (15...'),
+    ('profession', 'Инженерное дело: New profession...'),
+    ('profession', 'Ремесло кожевника: Journeyman...'),
     ('profession', 'Tailoring: New profession rank (? max)'),
     ('zone', 'Entered Les Tarides du Nord, très loin d’ici...'),
     ('loot', 'Equipped Robe of the Archmage'),
@@ -226,6 +234,8 @@ def test_valid_texts_include_cut_and_localized_forms(kind, text):
     ('profession', 'Кузнечное дело: Journeyman (150 max) FREE GOLD'),
     ('profession', 'FREE GOLD whisper me for 10k gold now...'),
     ('profession', 'Tailoring: Grandmaster (450 max)'),
+    ('profession', 'Anything: ...'),
+    ('profession', 'Tailoring: Journ...'),
     ('loot', 'Equipped '),
     ('dungeon', 'First clear:'),
     ('quest', 'Completed many quests!'),

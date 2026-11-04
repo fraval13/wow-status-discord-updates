@@ -14,8 +14,10 @@ local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
 -- Received updates from a sender not yet in the group's roster wait here while
 -- the roster loads. One sender may hold only a few queued or waiting updates.
+-- The roster cache is keyed on member count and kept for 30 seconds, so a member
+-- who replaced another at the same size appears only once it expires: wait longer.
 local unverified = {}
-local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 15, 32
+local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 35, 32
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -247,7 +249,7 @@ function P.groupsChanged()
     incoming = kept
     kept = {}
     for _, item in ipairs(unverified) do
-        if WoWStatusGroups.contains(getCharacter(), item.group_id) then table.insert(kept, item) end
+        if WoWStatusGroups.contains(getCharacter(), item.group) then table.insert(kept, item) end
     end
     unverified = kept
     if active and not active.preview and not WoWStatusGroups.contains(getCharacter(), active.group_id) then
@@ -349,11 +351,12 @@ end
 -- it, then queue its popup unless the log already had it.
 local function commit(c, now)
     pruneSeen(now)
+    local item = {sender=c.sender, key=c.key, kind=c.kind, level=c.level, count=c.level and 1 or nil, text=c.text,
+        automatic=c.automatic, received_at=now, at=c.at, nonce=c.nonce, group_id=c.group~="legacy" and c.group or nil}
+    for k,v in pairs(c.loot or {}) do item[k]=v end
     local duplicate = c.key .. ":" .. (c.level or c.nonce)
     if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(c.sender,c.nonce)) then
-        local copy={sender=c.sender,kind=c.kind or "level",level=c.level,text=c.text,at=c.at,nonce=c.nonce,group_id=c.group_id}
-        for k,v in pairs(c.loot or {}) do copy[k]=v end
-        WoWStatusJournal.received(copy)
+        WoWStatusJournal.received(item)
         prefs.seen[duplicate]=now
         return rejected("already_in_log", c, now)
     end
@@ -361,7 +364,6 @@ local function commit(c, now)
     if prefs.seen[duplicate] or (claims and claims.levels[c.level]) or #incoming >= 128 then return false end
     if queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then return rejected("sender_queue_full", c, now) end
     prefs.seen[duplicate] = now
-    local item
     if c.level then
         if not claims then
             local count, oldest, oldestAt = 0, nil, math.huge
@@ -374,14 +376,8 @@ local function commit(c, now)
             prefs.level_claims[c.key] = claims
         end
         claims.levels[c.level], claims.at = true, now
-        item = {sender=c.sender, key=c.key, level=c.level, received_at=now, count=1, at=c.at, nonce=c.nonce, group_id=c.group_id}
-        remember({sender=c.sender, level=c.level, at=c.at, nonce=c.nonce, group_id=c.group_id})
-    else
-        item = {sender=c.sender, key=c.key, kind=c.kind, text=c.text, automatic=c.automatic, received_at=now, at=c.at,
-            nonce=c.nonce, group_id=c.group_id}
-        for k,v in pairs(c.loot or {}) do item[k]=v end
-        remember(item)
     end
+    remember(item)
     prefs.last_receive={state="queued",sender=c.sender,kind=c.kind or "level",at=now}
     table.insert(incoming, item)
     P.tick()
@@ -389,18 +385,14 @@ local function commit(c, now)
 end
 -- Only members of the group's channel may show popups, as the log sync already
 -- requires. Rosters load asynchronously, so a member who joined moments ago can
--- be missing: hold their update for a few seconds instead of dropping it.
-local function peerKeys(group)
-    local keys = {}
-    for _, name in ipairs(P.peers(group)) do local key=P.senderKey(name); if key then keys[key]=true end end
-    return keys
+-- be missing: hold their update for a while instead of dropping it.
+function P.isPeer(group, key)
+    if not key then return false end
+    for _, name in ipairs(P.peers(group)) do if P.senderKey(name) == key then return true end end
+    return false
 end
 local function admit(c, now)
-    if c.group == "legacy" or peerKeys(c.group)[c.key] then return commit(c, now) end
-    -- The cache is keyed on member count, so a swap of members can hide a new
-    -- one for up to 30 seconds. Read the roster again (P.peers rate-limits it).
-    if rosterCache[c.group] then rosterCache[c.group].at = -math.huge end
-    if peerKeys(c.group)[c.key] then return commit(c, now) end
+    if c.group == "legacy" or P.isPeer(c.group, c.key) then return commit(c, now) end
     if #unverified >= MAX_UNVERIFIED or queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then
         return rejected("rejected_unknown_sender", c, now)
     end
@@ -410,12 +402,11 @@ local function admit(c, now)
 end
 local function verifyPending(now)
     if #unverified == 0 then return end
-    local waiting, peers = unverified, {}
+    local waiting = unverified
     unverified = {}
     for _, c in ipairs(waiting) do
         if WoWStatusGroups.contains(getCharacter(), c.group) then
-            peers[c.group] = peers[c.group] or peerKeys(c.group)
-            if peers[c.group][c.key] then commit(c, now)
+            if P.isPeer(c.group, c.key) then commit(c, now)
             elseif now < c.expires then table.insert(unverified, c)
             else rejected("rejected_unknown_sender", c, now) end
         end
@@ -430,7 +421,6 @@ function P.receive(text, sender, channel)
     local key = P.senderKey(sender)
     local selfKey = P.senderKey((A.playerName() or "") .. "-" .. realm())
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
-    local scope = group ~= "legacy" and group or nil
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
     local raw, automatic, armor = false, false, false
     if not client then
@@ -474,7 +464,7 @@ function P.receive(text, sender, channel)
         if kind == "profession" and detail:match(": %d+ / %d+") then return false end
         -- Check the text as it will be shown, after the loot and dungeon conversions.
         if WoWStatusJournal and not WoWStatusJournal.validText(kind,detail) then return invalidLogData(group,sender) end
-        return admit({sender=sender, key=key, group=group, group_id=scope, kind=kind, text=detail,
+        return admit({sender=sender, key=key, group=group, kind=kind, text=detail,
             automatic=automatic, at=at, nonce=nonce, loot=lootInfo}, now)
     end
     local client, levelText, atText, nonce = text:match("^WSTATUS2 ([%w%-]+) LEVEL (%d+) (%d+) ([%w%-]+)$")
@@ -486,7 +476,7 @@ function P.receive(text, sender, channel)
     local level, at, now = tonumber(levelText), tonumber(atText), time()
     if not at or not nonce or #nonce > 64 or at < now - 120 or at > now + 300 then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
-    return admit({sender=sender, key=key, group=group, group_id=scope, level=level, at=at, nonce=nonce}, now)
+    return admit({sender=sender, key=key, group=group, level=level, at=at, nonce=nonce}, now)
 end
 
 -- Big banners (#61): max level and every 10th level get a larger toast.
@@ -826,7 +816,9 @@ function P.broadcast(character, event)
             detail = detail:sub(1, limit-3):gsub("[\194-\244][\128-\191]*$", "") .. "..."
         end
         -- Never send a text that updated receivers would reject and report as invalid.
-        if WoWStatusJournal and not WoWStatusJournal.validText(event.kind, detail) then return end
+        if WoWStatusJournal and not WoWStatusJournal.validText(event.kind, detail) then
+            status("invalid_text", event); return
+        end
         local encoded = modern and detail or detail:gsub(".", function(char) return string.format("%02x", char:byte()) end)
         text = (modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
     end

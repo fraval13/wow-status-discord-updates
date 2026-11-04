@@ -45,9 +45,7 @@ local function groupSince(group)
     return member and (WoWStatusGroups.historySince(group) or member.joined_at) or time()
 end
 local function peer(group,sender)
-    local key=P.senderKey(sender)
-    for _, name in ipairs(P.peers(group)) do if P.senderKey(name)==key then return true end end
-    return false
+    return P.isPeer(group,P.senderKey(sender))
 end
 local function permitted(entry)
     if entry.kind=="questprogress" then return false end
@@ -292,11 +290,13 @@ end
 local PROFESSION_RANKS={"Apprentice","Journeyman","Expert","Artisan","Master","New profession rank"}
 -- "<profession>: <rank> (<max> max)". A long localized profession name can push
 -- the suffix past the 48-byte packet limit; the sender then cuts it and appends
--- "...", so a cut text only has to be a prefix of a valid suffix.
+-- "...", so a cut text only has to be a prefix of a valid suffix. The cut keeps at
+-- least 41 bytes (48 minus "..." minus one 4-byte character), so a short text
+-- ending in "..." was never cut.
 local function rankUp(detail)
     local rest=detail:match("^"..S.NONSPACE..".-: (.+)$")
     if not rest then return false end
-    local cut=detail:sub(-3)=="..." and rest:sub(1,-4)
+    local cut=#detail>=44 and detail:sub(-3)=="..." and rest:sub(1,-4)
     for _,rank in ipairs(PROFESSION_RANKS) do
         local head=rank.." ("
         if rest:sub(1,#head)==head and rest:sub(#head+1):match("^[%d?]+ max%)$") then return true end
