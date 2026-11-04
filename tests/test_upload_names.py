@@ -1,0 +1,114 @@
+"""A group upload's player name is stored only when the whole upload is accepted (#10)."""
+import json
+
+import pytest
+from aiohttp.test_utils import TestClient, TestServer
+
+from wow_status.group_routing import group_key
+from wow_status.server import create_app
+from wow_status.store import Conflict, Store
+
+NAME = 'Weekend Crew'
+GROUP = group_key(NAME)
+
+
+def make_store(tmp_path):
+    return Store(tmp_path / 'group.sqlite3')
+
+
+async def started(store):
+    client = TestClient(TestServer(create_app(store, GROUP, NAME)))
+    await client.start_server()
+    return client
+
+
+async def enroll(client, player):
+    response = await client.post('/v1/group-enroll', headers={'X-WoW-Group': GROUP},
+                                 json={'group_id': GROUP, 'group_name': NAME, 'player_name': player})
+    assert response.status == 200
+    body = await response.json()
+    return body['owner'], {'X-WoW-Group': GROUP, 'Authorization': 'Bearer ' + body['token']}
+
+
+def group_payload(payload, guid='Player-123-0001', **changes):
+    value = json.loads(json.dumps(payload))
+    value['identity']['guid'] = guid
+    value.update(group_id=GROUP, group_name=NAME, **changes)
+    return value
+
+
+def display_name(store, owner):
+    row = store.db.execute('SELECT display_name,source FROM people WHERE owner=?', (owner,)).fetchone()
+    return row['display_name'], row['source']
+
+
+def archived_name(store, cid):
+    document = json.loads((store.archive_directory / f'{cid}.json').read_text(encoding='utf-8'))
+    return document['character']['friend']['display_name']
+
+
+@pytest.fixture
+async def group(tmp_path):
+    store = make_store(tmp_path)
+    client = await started(store)
+    try:
+        yield store, client
+    finally:
+        await client.close()
+        store.close()
+
+
+async def test_rejected_upload_does_not_persist_player_name(group, payload):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    invalid = group_payload(payload, version=2, player_name='Impersonated')
+    assert (await client.post('/v1/upload', json=invalid, headers=headers)).status == 400
+    assert display_name(store, owner) == ('Thora', 'addon')
+
+
+async def test_conflicting_upload_does_not_persist_player_name_or_rewrite_archives(group, payload):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    accepted = await client.post('/v1/upload', json=group_payload(payload, player_name='Thora'),
+                                 headers=headers)
+    assert accepted.status == 200
+    cid = (await accepted.json())['character_id']
+    archive = store.archive_directory / f'{cid}.json'
+    before = archive.read_bytes()
+    stale = group_payload(payload, player_name='Impersonated', exported_at=payload['exported_at'] - 60)
+    assert (await client.post('/v1/upload', json=stale, headers=headers)).status == 409
+    assert display_name(store, owner) == ('Thora', 'addon')
+    assert archive.read_bytes() == before
+
+
+async def test_accepted_upload_renames_owner_on_every_archived_character(group, payload):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    first = await client.post('/v1/upload', json=group_payload(payload, player_name='Thora'),
+                              headers=headers)
+    first_cid = (await first.json())['character_id']
+    renamed = group_payload(payload, guid='Player-123-0002', player_name='Brann')
+    second = await client.post('/v1/upload', json=renamed, headers=headers)
+    assert second.status == 200
+    second_cid = (await second.json())['character_id']
+    assert display_name(store, owner) == ('Brann', 'addon')
+    assert archived_name(store, first_cid) == 'Brann'
+    assert archived_name(store, second_cid) == 'Brann'
+
+
+async def test_blank_player_name_falls_back_to_friend_label(group, payload):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    response = await client.post('/v1/upload', json=group_payload(payload, player_name=''),
+                                 headers=headers)
+    assert response.status == 200
+    assert display_name(store, owner) == ('Friend ' + owner[-6:], 'unavailable')
+
+
+def test_store_rolls_back_label_when_ingest_rejects(store, payload):
+    store.ingest('group:owner', payload, name=('Thora', 'addon'))
+    other_owner = dict(payload, exported_at=payload['exported_at'] + 1)
+    with pytest.raises(Conflict):
+        store.ingest('group:intruder', other_owner, name=('Intruder', 'addon'))
+    assert store.db.execute("SELECT 1 FROM people WHERE owner='group:intruder'").fetchone() is None
+    assert display_name(store, 'group:owner') == ('Thora', 'addon')

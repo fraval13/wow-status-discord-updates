@@ -17,6 +17,19 @@
 - TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
   public verifier parse TOCs strictly. Retail per-line load conditions
   (`[AllowLoadGameType ...]`) are not supported by any stage yet.
+## Rejected uploads keep the display name (#10) — 4 November 2026
+
+- `/v1/upload` validated `player_name` and wrote it with `remember()` before
+  `store.ingest` validated the rest, so a 400 or 409 still renamed the owner and
+  rewrote their archives. The handler now only checks the name and passes it to
+  `Store.ingest(..., name=(label, source))`, which writes it inside the ingest
+  transaction; any later rejection rolls it back. Other archives for that owner
+  are rewritten only when the label actually changed, after the commit.
+- `people.store_name` is the non-committing write; `remember()` wraps it for the
+  enrollment and Discord paths, which behave as before.
+- Tests in `tests/test_upload_names.py`: 400 and 409 keep the name and archive,
+  an accepted upload renames every archived character, a blank name falls back to
+  the Friend label, and a store-level Conflict rolls the label back.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 

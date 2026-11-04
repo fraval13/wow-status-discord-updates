@@ -176,14 +176,28 @@ class Store:
                               (self.digest(token),)).fetchone()
         return row['owner'] if row else None
 
-    def ingest(self, owner, payload):
+    def ingest(self, owner, payload, name=None):
+        """Store one upload. ``name`` is an optional ``(display_name, source)`` label
+        written in the same transaction, so a rejected upload leaves it unchanged."""
+        result, renamed = self._ingest(owner, payload, name)
+        if renamed:
+            # The uploaded character's archive was already rewritten with the new label.
+            for char in self.characters(owner):
+                if char['id'] != result['character_id']:
+                    self.sync_archive(char['id'])
+        return result
+
+    def _ingest(self, owner, payload, name):
+        from .people import set_role, store_name
         p = validate(payload)
         cid = self.character_id(p['identity'])
         now = int(time.time())
         with self.db:
+            # Any later rejection inside this transaction rolls the label back too.
+            renamed = name is not None and store_name(self.db, owner, *name)
             old = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
             if not old and not p['settings']['enabled']:
-                return {'character_id': cid, 'accepted': 0}
+                return {'character_id': cid, 'accepted': 0}, renamed
             if old and old['owner'] != owner:
                 raise Conflict('Character already belongs to another linked user')
             if old and p['exported_at'] < old['exported']:
@@ -311,7 +325,6 @@ class Store:
                     ('bytes:' + owner, limits.NEW_BYTES_PER_OWNER_DAY, 86400, new_bytes),
                     ('bytes:group', limits.NEW_BYTES_PER_GROUP_DAY, 86400, new_bytes),
                 ], now)
-        from .people import set_role
         role = p['settings'].get('character_role')
         old_role = self.db.execute('SELECT source,role FROM character_labels WHERE character=?',
                                    (cid,)).fetchone()
@@ -322,7 +335,7 @@ class Store:
             if not old_role or old_role['role'] != role:
                 set_role(self, owner, cid, role, source='addon')
         self.sync_archive(cid)
-        return {'character_id': cid, 'accepted': accepted}
+        return {'character_id': cid, 'accepted': accepted}, renamed
 
     def characters(self, owner=None):
         rows = self.db.execute('SELECT * FROM characters' + (' WHERE owner=?' if owner else '')

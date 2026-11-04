@@ -202,6 +202,7 @@ def create_app(store, group=None, name=None, trust_proxy=False):
         payload = await request.json()
         if store.owner(token) != owner:
             raise web.HTTPUnauthorized()
+        label = None
         if group is not None:
             if not isinstance(payload, dict) or payload.get('group_id') != group:
                 raise ValidationError('Wrong group')
@@ -213,9 +214,10 @@ def create_app(store, group=None, name=None, trust_proxy=False):
                 player = payload['player_name']
                 if not isinstance(player, str):
                     raise ValidationError('Invalid player name')
-                remember(store, owner, string(player, 'player name', 40) if player else ('Friend ' + owner[-6:]),
-                         source='addon' if player else 'unavailable')
-        return web.json_response(store.ingest(owner, payload))
+                # Stored by ingest only once the whole upload is accepted (#10).
+                label = ((string(player, 'player name', 40), 'addon') if player
+                         else ('Friend ' + owner[-6:], 'unavailable'))
+        return web.json_response(store.ingest(owner, payload, name=label))
 
     app.router.add_get('/health', health)
     app.router.add_post('/v1/link', redeem)
