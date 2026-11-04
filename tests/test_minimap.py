@@ -8,7 +8,7 @@ ROOT = Path(__file__).parents[1]
 
 
 def minimap_runtime(client):
-    lua = lupa.LuaRuntime(encoding='utf-8', unpack_returned_tuples=True)
+    lua = lupa.LuaRuntime(encoding='utf-8', source_encoding='utf-8', unpack_returned_tuples=True)
     lua.execute(STUBS + '''
         function methods:RegisterForClicks() end
         function methods:GetHeight() return self.height end
