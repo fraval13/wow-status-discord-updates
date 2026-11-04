@@ -56,6 +56,8 @@ be checked against Git and the environment rather than assumed permanently true.
   equal the `pyproject.toml` version.
 - `.github/workflows/checks.yml`: Linux/Windows checks, packaging, deployment and
   public verification on `main` pushes; also supports manual dispatch.
+  `scripts/deploy_gate.py` lets a run deploy only while its commit is the tip of
+  `main`, so an older run never deploys over a newer one.
 - `deploy/SERVER.md`: current dedicated server deployment architecture.
   `deploy/README.md` also contains historical single-instance setup instructions.
 
@@ -86,10 +88,10 @@ be checked against Git and the environment rather than assumed permanently true.
 - GitHub pushes work again and every push to `main` runs the hosted
   "Checks and addon packages" workflow (Ubuntu and Windows `validate`, then
   `deploy`). Check that run's result on GitHub Actions before describing a
-  release as validated or deployed; do not hunt for credentials. Runs on `main`
-  are serialised, and `deploy` skips (with a "Deploy skipped" notice) when its
-  commit is no longer the tip of `main`, so a successful run is not proof that its
-  commit went live.
+  release as validated or deployed; do not hunt for credentials. `deploy-gate`
+  skips `deploy` (with a "Deploy skipped" notice) when the run's commit is no
+  longer the tip of `main`, so check that `deploy` ran, not just that the run is
+  green.
 - Uncommitted work predating this feature remains: shared/all-edition
   `Minimap.lua` edits, Vanilla/Forever TOC `IconTexture` lines, `Textures/Logo.tga`
   files, and `assets/branding/`. These belong to separate branding work. Preserve
