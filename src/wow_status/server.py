@@ -5,6 +5,7 @@ import ipaddress
 import logging
 import os
 import secrets
+import time
 
 from aiohttp import web
 
@@ -64,7 +65,62 @@ def throttle_identity(address):
     return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
 
 
-def create_app(store, group=None, name=None, trust_proxy=False):
+# A failed Discord session is retried after this many seconds, doubling up to the cap.
+# At most 144 session starts a day stays far below Discord's daily budget of 1,000,
+# which a 10-second restart loop would exhaust (Discord then resets the token).
+DISCORD_RETRY_FIRST = 30
+DISCORD_RETRY_MAX = 600
+
+
+def discord_state(status):
+    """Health view of the Discord bot: no credentials, messages or user data."""
+    if status is None:
+        return {'discord': 'disabled'}
+    probe = status.get('probe')
+    live = probe() if probe is not None else None
+    if live:
+        return live
+    report = {'discord': status.get('state', 'starting')}
+    if status.get('error'):
+        report['discord_error'] = status['error']
+    return report
+
+
+def failure_name(exc):
+    """Exception class plus Discord's HTTP status and error code, when it has them."""
+    if not type(exc).__module__.startswith('discord'):
+        return type(exc).__name__  # e.g. aiohttp's deprecated `code` alias of `status`
+    details = [str(value) for value in (getattr(exc, 'status', None), getattr(exc, 'code', None))
+               if isinstance(value, int)]
+    return ' '.join([type(exc).__name__] + details)
+
+
+async def run_discord(bot, status, first=DISCORD_RETRY_FIRST, cap=DISCORD_RETRY_MAX,
+                      sleep=asyncio.sleep, clock=time.monotonic):
+    """Run the bot until cancelled. Its failures never stop ingestion: they are logged,
+    shown on /health and retried with backoff, instead of exiting the whole service."""
+    delay = first
+    while True:
+        status.update(state='starting', probe=None)
+        status.pop('error', None)
+        started = clock()
+        failure = None
+        try:
+            await bot(status)
+        except Exception as exc:  # Any bot failure must leave ingestion running.
+            failure = exc
+        if clock() - started >= cap:
+            delay = first  # A long healthy session earns a quick reconnect.
+        error = failure_name(failure) if failure else 'Stopped'
+        status.update(state='retrying', probe=None, error=error)
+        # The traceback names discord.py frames and Discord's reply, never the token.
+        log.error('Discord bot stopped (%s); ingestion continues, retrying in %d s', error, delay,
+                  exc_info=failure)
+        await sleep(delay)
+        delay = min(delay * 2, cap)
+
+
+def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
     if group is not None:
         group = validate_group_id(group)
         previous = store.db.execute("SELECT value FROM meta WHERE key='active_group_id'").fetchone()
@@ -126,7 +182,8 @@ def create_app(store, group=None, name=None, trust_proxy=False):
 
     async def health(request):
         return web.json_response({'status': 'ok', 'protocol': 1, 'service': 'wow-character-status',
-                                  'revision': os.environ.get('WOW_STATUS_REVISION')})
+                                  'revision': os.environ.get('WOW_STATUS_REVISION'),
+                                  **discord_state(discord)})
 
     async def redeem(request):
         throttle(request, 'link', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
@@ -228,12 +285,15 @@ def create_app(store, group=None, name=None, trust_proxy=False):
 
 
 async def serve(store, host, port, bot=None, group=None, name=None, trust_proxy=False):
-    runner = web.AppRunner(create_app(store, group, name, trust_proxy), access_log=None)
+    """Serve ingestion; ``bot(status)``, if given, runs one Discord session per call."""
+    status = {} if bot else None
+    runner = web.AppRunner(create_app(store, group, name, trust_proxy, discord=status),
+                           access_log=None)
     await runner.setup()
     try:
         await web.TCPSite(runner, host, port).start()
         if bot:
-            await bot()
+            await run_discord(bot, status)
         else:
             await asyncio.Event().wait()
     finally:

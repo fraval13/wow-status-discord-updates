@@ -133,3 +133,10 @@ jobs:
           python scripts/verify_homepage.py --url https://wow.frankvalde.com
           --revision "$RELEASE_REVISION" --manifest dist/homepage/downloads/release.json
           --attempts 6
+      - name: Report Discord bot state
+        # Warns, never fails: ingestion stays up when Discord is down, so the deploy
+        # passes and a revoked token or removed bot shows here instead.
+        continue-on-error: true
+        env:
+          RELEASE_REVISION: ${{ github.sha }}
+        run: python scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"

@@ -12,6 +12,7 @@ from .group_status import GroupStatusReports
 from .output import daily_status_message, emoji, upload_summary
 from .output import message as announcement_message
 from .people import decorate, nickname, remember, set_role
+from .server import DISCORD_RETRY_FIRST, DISCORD_RETRY_MAX, failure_name
 from .weekly import WeeklyRecaps
 
 log = logging.getLogger(__name__)
@@ -45,6 +46,8 @@ class StatusBot(discord.Client):
         self.weekly = WeeklyRecaps(store)
         self.tree = CommunityTree(self)
         self.worker = None
+        self.delivery_error = None
+        self.online = False
         self.register_commands()
 
     def custom_emojis(self):
@@ -56,16 +59,65 @@ class StatusBot(discord.Client):
         guild = discord.Object(id=self.guild_id)
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
-        self.worker = asyncio.create_task(self.deliver())
+        self.worker = asyncio.create_task(self.keep_delivering())
+
+    async def keep_delivering(self, sleep=asyncio.sleep, clock=time.monotonic):
+        """Restart a crashed delivery loop with backoff. The session, and with it the
+        slash commands, stays up; /health shows the failure until delivery restarts."""
+        delay = DISCORD_RETRY_FIRST
+        while True:
+            started = clock()
+            try:
+                await self.deliver()
+                return  # The client closed.
+            except Exception as exc:
+                if clock() - started >= DISCORD_RETRY_MAX:
+                    delay = DISCORD_RETRY_FIRST
+                self.delivery_error = failure_name(exc)
+                log.exception('Discord delivery failed (%s); restarting it in %d s',
+                              self.delivery_error, delay)
+            self.recover_sends()
+            await sleep(delay)
+            delay = min(delay * 2, DISCORD_RETRY_MAX)
+            self.delivery_error = None
+
+    def recover_sends(self):
+        # Stopped mid-send: the message may or may not have posted.
+        if self.store.recover_interrupted_sends():
+            self.store.sync_archives()  # Archives show each delivery's status.
+
+    async def on_ready(self):
+        self.online = True
+
+    async def on_resumed(self):
+        self.online = True
+
+    async def on_disconnect(self):
+        self.online = False  # discord.py keeps is_ready() set while it reconnects.
+
+    def state(self):
+        """Health view of this session: None until logged in and the guild cache is ready."""
+        if not self.is_ready():
+            return None
+        if not self.online:
+            return {'discord': 'reconnecting'}
+        if self.delivery_error:
+            return {'discord': 'delivery_retrying', 'discord_error': self.delivery_error}
+        return {'discord': 'ready'}
 
     async def close(self):
-        if self.worker:
-            self.worker.cancel()
-            try:
-                await self.worker
-            except asyncio.CancelledError:
-                pass
-        await super().close()
+        try:
+            if self.worker:
+                self.worker.cancel()
+                try:
+                    await self.worker
+                except asyncio.CancelledError:
+                    pass
+                self.recover_sends()
+        finally:
+            # A session is retried in the same process, so its HTTP session and
+            # gateway must close even when the worker failed.
+            await super().close()
 
     def visible(self):
         return [c for c in self.store.characters() if c['settings']['enabled']]
@@ -339,3 +391,13 @@ class StatusBot(discord.Client):
                 self.standings.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
         except (OSError, asyncio.TimeoutError):
             self.standings.delivery(key, 'uncertain')
+
+def session(store, guild_id, channel_id, token):
+    """One Discord session per call, for ``server.run_discord`` to supervise."""
+    async def bot(status):
+        # A fresh client per session: a closed discord.py client can't restart.
+        client = StatusBot(store, guild_id, channel_id)
+        status['probe'] = client.state
+        async with client:
+            await client.start(token)
+    return bot
