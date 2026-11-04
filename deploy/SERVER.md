@@ -56,8 +56,12 @@ Application Commands. No Administrator permission or Message Content intent is
 required. Paste tokens into GitHub secrets, not repository files or ordinary chat.
 
 Until all three settings exist for a group, it runs ingestion only and does not
-connect to Discord. Configure settings and re-run **Checks and addon packages**
-on `main` (or push another change) to activate the bot. Nonempty GitHub settings
+connect to Discord. Configure settings, then push another change or use **Re-run
+all jobs** on the **Checks and addon packages** run for the current tip of `main`
+once it has finished, to activate the bot. "Re-run failed jobs" fails `deploy`. A
+run whose commit is no longer the tip of `main` also skips `deploy` (see
+`scripts/deploy_gate.py`), so re-running an older run deploys nothing. Roll back by
+reverting on `main`. Nonempty GitHub settings
 update the server's private config; omitted settings preserve existing private
 values, avoiding accidental credential deletion on later deployments.
 
