@@ -337,14 +337,14 @@ end
 openSettings = function(groups)
     if groups=="discord" and not WoWStatusFeatures.discord then groups=nil end
     registerSettings()
-    local category = groups == "previews" and previewsCategory or groups == "discord" and discordCategory or (groups and groupsCategory or settingsCategory)
+    local category = groups == "previews" and previewsCategory or groups == "discord" and discordCategory or (groups == true and groupsCategory or settingsCategory)
     if category and category.GetID and Settings and Settings.OpenToCategory then
         Settings.OpenToCategory(category:GetID())
     elseif category and InterfaceOptionsFrame_OpenToCategory then
         InterfaceOptionsFrame_OpenToCategory(category)
     elseif groups == "previews" then WoWStatusPreviews.show()
     elseif groups == "discord" then showDiscord()
-    elseif groups then WoWStatusGroups.show()
+    elseif groups == true then WoWStatusGroups.show()
     else showPanel() end
 end
 
