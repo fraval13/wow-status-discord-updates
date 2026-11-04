@@ -147,6 +147,8 @@ async def test_proxy_header_only_trusted_when_explicit_and_local(store, monkeypa
 
 async def test_ipv6_link_guesses_are_throttled_per_64(store, monkeypatch):
     monkeypatch.setattr(limits, 'AUTH_FAILURES_PER_IP_MINUTE', 5)
+    # Pin the clock mid-minute so every guess lands in the same fixed bucket.
+    monkeypatch.setattr('wow_status.store.time.time', lambda: 1_800_000_030.0)
     client = TestClient(TestServer(create_app(store, trust_proxy=True)))
     await client.start_server()
     try:
@@ -170,6 +172,10 @@ async def test_ipv6_link_guesses_are_throttled_per_64(store, monkeypatch):
     ('2001:db8:1:2:ffff:ffff:ffff:ffff', '2001:db8:1:2::/64'),
     ('2001:db8:1:3::1', '2001:db8:1:3::/64'),
     ('::ffff:192.0.2.1', '192.0.2.1'),
+    ('64:ff9b::192.0.2.1', '192.0.2.1'),
+    ('2002:c000:201::1', '192.0.2.1'),
+    ('2002:c000:201:ffff::1', '192.0.2.1'),
+    ('2001:0:4136:e378:8000:63bf:3fff:fdd2', '192.0.2.45'),
     ('fe80::1%eth0', 'fe80::/64'),
     ('unknown', 'unknown'),
 ])

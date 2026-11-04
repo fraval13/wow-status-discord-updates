@@ -4,10 +4,15 @@
 
 - Per-source throttles (link-code guesses, invalid auth, enrollment attempts)
   now key IPv6 clients on their /64 network instead of the exact address, since
-  one host or home network normally controls a whole /64 (issue #12). /64 was
-  chosen over /56 so separate households on one ISP do not share a budget.
-- IPv4 behaviour is unchanged. IPv4-mapped IPv6 (`::ffff:a.b.c.d`) is keyed on
-  the embedded IPv4 address so all mapped clients do not collapse into `::/64`.
+  one host or home network controls at least a whole /64 (issue #12).
+- Kept a single /64 tier, as the issue asked. Residential delegations are often
+  /56 or /48, so a determined client can still hold up to 256 or 65,536 budgets.
+  Wider prefixes are not used because mobile carriers hand single /64s to
+  unrelated customers from shared pools, which would throttle real friends
+  together. A second, looser /48 budget can be added if abuse appears.
+- IPv4 behaviour is unchanged. IPv4-mapped (`::ffff:a.b.c.d`), well-known NAT64
+  (`64:ff9b::/96`), 6to4 and Teredo addresses key on their embedded IPv4 client
+  address, so translated clients neither share one /64 nor get extra budgets.
 - Existing in-flight budgets keyed on exact IPv6 addresses simply expire.
 
 ## Runtime version in popup status — 4 November 2026

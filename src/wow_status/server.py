@@ -17,26 +17,35 @@ from .store import Conflict
 
 log = logging.getLogger(__name__)
 
-# One IPv6 host or home network normally controls a whole /64, so throttling
-# individual IPv6 addresses would give it effectively unlimited budgets.
+# One IPv6 host or home network normally controls at least a whole /64, so
+# throttling individual IPv6 addresses would give it effectively unlimited budgets.
 IPV6_THROTTLE_PREFIX = 64
+# RFC 6052 well-known NAT64 prefix: IPv4 clients translated onto IPv6.
+NAT64_WELL_KNOWN = ipaddress.ip_network('64:ff9b::/96')
 
 
 def throttle_identity(address):
     """Return the per-source throttle identity for a client address.
 
-    IPv4 addresses (including IPv4-mapped IPv6) are kept as-is; other IPv6
-    addresses collapse to their /64 network. Non-IP values pass through.
+    IPv4 addresses are kept as-is, as is the IPv4 address embedded in mapped,
+    NAT64, 6to4 and Teredo IPv6 addresses. Other IPv6 addresses collapse to
+    their /64 network. Non-IP values pass through unchanged.
     """
     try:
         ip = ipaddress.ip_address(address)
     except ValueError:
         return address
-    if ip.version == 6:
-        if ip.ipv4_mapped is not None:
-            return str(ip.ipv4_mapped)
-        return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
-    return str(ip)
+    if ip.version == 4:
+        return str(ip)
+    if ip.ipv4_mapped is not None:
+        return str(ip.ipv4_mapped)
+    if ip in NAT64_WELL_KNOWN:
+        return str(ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF))
+    if ip.sixtofour is not None:
+        return str(ip.sixtofour)
+    if ip.teredo is not None:
+        return str(ip.teredo[1])
+    return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
 
 
 def create_app(store, group=None, name=None, trust_proxy=False):
