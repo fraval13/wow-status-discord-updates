@@ -8,7 +8,13 @@ from aiohttp.test_utils import TestClient, TestServer
 
 from wow_status import cli
 from wow_status.companion import upload as companion_upload
-from wow_status.group_routing import for_group, group_key, memberships, withdrawal
+from wow_status.group_routing import (
+    for_group,
+    group_key,
+    memberships,
+    scoped_claim_secret,
+    withdrawal,
+)
 from wow_status.people import character_role, set_role
 from wow_status.schema import ValidationError, validate
 from wow_status.server import create_app
@@ -47,12 +53,12 @@ def archived(store, cid):
     return json.loads(path.read_text(encoding='utf-8')) if path.exists() else None
 
 
-def test_secret_must_be_32_lowercase_hex(payload):
+def test_only_a_32_lowercase_hex_secret_is_kept(payload):
     assert validate(upload(payload, SECRET))['claim_secret'] == SECRET
     assert 'claim_secret' not in validate(payload)
+    # The secret is optional: a malformed one is dropped and the upload still goes through.
     for bad in ('', SECRET[:-1], SECRET + '0', SECRET.upper(), 'g' * 32, 42, None):
-        with pytest.raises(ValidationError):
-            validate(dict(payload, claim_secret=bad))
+        assert 'claim_secret' not in validate(dict(payload, claim_secret=bad))
 
 
 def test_second_owner_with_the_secret_takes_over_with_history(store, payload):
@@ -116,15 +122,20 @@ def test_takeover_needs_a_newer_export(store, payload):
     assert owner_of(store, cid) == 'old-install'
 
 
-def test_two_installations_with_one_save_do_not_trade_ownership_on_every_upload(store, payload):
+def test_two_installations_with_one_save_do_not_trade_the_character(store, payload):
     cid = store.ingest('old-install', upload(payload, SECRET))['character_id']
     store.ingest('new-install', upload(payload, SECRET, later=1))
-    # The old companion keeps re-sending the export it already has.
-    with pytest.raises(Conflict):
-        store.ingest('old-install', upload(payload, SECRET, later=1))
+    # The old companion is still running: neither the same export nor a newer one,
+    # with the right secret, takes the character back.
+    for later in (1, 2):
+        with pytest.raises(Conflict, match='moved to another installation'):
+            store.ingest('old-install', upload(payload, SECRET, later=later))
     assert owner_of(store, cid) == 'new-install'
-    # Playing on the old installation again produces a newer export, which wins.
-    store.ingest('old-install', upload(payload, SECRET, later=2))
+    store.ingest('new-install', upload(payload, SECRET, later=3))
+    # The operator can still move it back on purpose.
+    store.redeem(store.create_link('old-install'))
+    assert store.release(cid, 'old-install') == 'moved'
+    store.ingest('old-install', upload(payload, SECRET, later=4))
     assert owner_of(store, cid) == 'old-install'
 
 
@@ -203,11 +214,11 @@ def test_release_deletes_a_squatted_character_so_the_owner_can_claim_it(store, p
     cid = store.ingest('squatter', upload(payload, OTHER_SECRET))['character_id']
     with pytest.raises(Conflict):
         store.ingest('real-owner', upload(payload, SECRET, later=1))
-    store.release(cid)
+    assert store.release(cid) == 'deleted'
     assert store.characters() == [] and claim(store, cid) is None
     assert archived(store, cid) is None
     # The squatter's companion uploads again before the real owner does.
-    with pytest.raises(Conflict, match='released from this owner'):
+    with pytest.raises(Conflict, match='moved to another installation'):
         store.ingest('squatter', upload(payload, OTHER_SECRET, later=1))
     assert store.characters() == []
     store.ingest('real-owner', upload(payload, SECRET, later=1))
@@ -216,7 +227,19 @@ def test_release_deletes_a_squatted_character_so_the_owner_can_claim_it(store, p
         store.ingest('squatter', upload(payload, OTHER_SECRET, later=2))
     # Deleting the squatter's data also forgets the release marker.
     store.delete('squatter')
-    assert store.db.execute('SELECT COUNT(*) FROM character_releases').fetchone()[0] == 0
+    assert store.db.execute('SELECT COUNT(*) FROM former_owners').fetchone()[0] == 0
+
+
+def test_a_mistaken_release_can_be_undone(store, payload):
+    cid = store.ingest('real-owner', upload(payload, SECRET))['character_id']
+    store.release(cid)
+    with pytest.raises(Conflict):
+        store.ingest('real-owner', upload(payload, SECRET, later=1))
+    assert store.release(cid, 'real-owner') == 'unblocked'
+    store.ingest('real-owner', upload(payload, SECRET, later=1))
+    assert owner_of(store, cid) == 'real-owner'
+    with pytest.raises(ValidationError, match='Unknown character'):
+        store.release('0' * 64, 'real-owner')
 
 
 def test_release_to_an_owner_lifts_their_release_marker(store, payload):
@@ -255,7 +278,20 @@ def test_release_rejects_unknown_character_or_owner(store, payload):
         store.db.execute("INSERT INTO group_pauses VALUES('paused')")
     with pytest.raises(ValidationError, match='paused'):
         store.release(cid, 'paused')
+    store.redeem(store.create_link('owner'))
+    with pytest.raises(ValidationError, match='already belongs'):
+        store.release(cid, 'owner')
     assert owner_of(store, cid) == 'owner'
+
+
+def test_owners_lists_enrolled_owners_without_characters(store, payload):
+    store.ingest('squatter', payload)
+    store.redeem(store.create_link('real-owner'))
+    with store.db:
+        store.db.execute("INSERT INTO group_pauses VALUES('real-owner')")
+    assert {row['owner']: (row['characters'], row['paused']) for row in store.owners()} == {
+        'squatter': (1, False), 'real-owner': (0, True)}
+    assert len(store.find_characters('THORA', 'test realm', 'Classic-Era')) == 1
 
 
 def run_cli(monkeypatch, db, *arguments):
@@ -289,6 +325,12 @@ def test_release_command_finds_the_character_by_name_and_realm(tmp_path, payload
         assert [char['id'] for char in store.characters()] == [other_cid]
     finally:
         store.close()
+    # Undo: the released owner may claim the deleted character again.
+    run_cli(monkeypatch, db, '--character-id', cid, '--to-owner', 'squatter')
+    assert 'may claim character' in capsys.readouterr().out
+    monkeypatch.setattr(sys, 'argv', ['wow-status', 'owners', '--db', str(db)])
+    cli.main()
+    assert capsys.readouterr().out.startswith('squatter\t')
 
 
 def grouped(payload, *labels):
@@ -320,3 +362,29 @@ async def test_dry_run_hides_the_secret(tmp_path, capsys):
                                   dry_run=True)
     output = capsys.readouterr().out
     assert '<hidden>' in output and SECRET not in output
+
+
+async def test_companion_without_groups_uploads_a_derived_secret(tmp_path, payload):
+    from pathlib import Path
+    store = Store(tmp_path / 'service.sqlite3')
+    client = TestClient(TestServer(create_app(store)))
+    await client.start_server()
+    try:
+        url = str(client.make_url('')).rstrip('/')
+        token = store.redeem(store.create_link('owner'))
+        (tmp_path / 'credentials.json').write_text(json.dumps({'url': url, 'token': token}),
+                                                    encoding='utf-8')
+        source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
+        source = source.replace('["enrolled"] = true,',
+                                f'["enrolled"] = true, claim_secret="{SECRET}",')
+        saved = tmp_path / 'WoWStatus.lua'
+        saved.write_text(source, encoding='utf-8')
+        assert await companion_upload([saved], tmp_path / 'credentials.json',
+                                      tmp_path / 'state.json', once=True)
+        cid = store.characters()[0]['id']
+        sent = scoped_claim_secret({'claim_secret': SECRET}, url)['claim_secret']
+        assert sent != SECRET
+        assert claim(store, cid) == Store.claim_hash(cid, sent)
+    finally:
+        await client.close()
+        store.close()

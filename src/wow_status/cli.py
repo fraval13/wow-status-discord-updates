@@ -13,7 +13,7 @@ from .daily import DailyRecaps
 from .formatting import announcement
 from .locking import FileLock
 from .people import person
-from .schema import ValidationError
+from .schema import LEVEL_CAPS, ValidationError
 from .server import serve
 from .store import Store
 
@@ -54,7 +54,7 @@ def parser():
     companion.add_argument('--dry-run', action='store_true')
     companion.add_argument('--interval', type=int, default=5)
     for name in ('create-link', 'outbox', 'resolve', 'simulate', 'export', 'recap', 'resolve-recap', 'weekly', 'resolve-weekly',
-                 'release-character'):
+                 'release-character', 'owners'):
         command = commands.add_parser(name)
         command.add_argument('--db', default='state/service.sqlite3')
         if name == 'export':
@@ -73,19 +73,33 @@ def parser():
             command.add_argument('resolution', choices=['retry', 'sent', 'discard'])
         if name == 'release-character':
             command.description = ('Recover a character claimed by the wrong owner. Without '
-                                   '--to-owner it is deleted, and the next upload claims it.')
+                                   '--to-owner it is deleted, and the next upload from anyone '
+                                   'but its current owner claims it.')
             command.add_argument('--character-id', help='ID from the character JSON archive')
             command.add_argument('--name', help='Character name, with --realm')
             command.add_argument('--realm')
-            command.add_argument('--client', help='Only needed when several clients match')
-            command.add_argument('--to-owner', help='Move it with its history to this owner ID instead')
+            command.add_argument('--client', choices=sorted(LEVEL_CAPS),
+                                 help='Only needed when several clients match')
+            command.add_argument('--to-owner', help='Move it with its history to this owner ID '
+                                 '(see the owners command); for a deleted character, let that '
+                                 'owner claim it again')
+        if name == 'owners':
+            command.description = 'List owner IDs with their names, for release-character --to-owner'
+
     return root
 
 
 def release_character(store, args):
     """Operator recovery for #11; returns the line to print."""
     if args.character_id:
-        matches = [char for char in [store.character(args.character_id)] if char]
+        char = store.character(args.character_id)
+        if char is None and args.to_owner:
+            try:  # Undo a mistaken release of a character that no longer exists.
+                store.release(args.character_id, args.to_owner)
+            except ValidationError as exc:
+                raise SystemExit(f'Not released: {exc}.') from None
+            return f'Owner {args.to_owner} may claim character {args.character_id} again.'
+        matches = [char] if char else []
     elif args.name and args.realm:
         matches = store.find_characters(args.name, args.realm, args.client)
     else:
@@ -108,7 +122,8 @@ def release_character(store, args):
     if args.to_owner:
         return (f'Moved {describe(char)} to owner {args.to_owner}. '
                 'Their next upload binds their claim secret.')
-    return f'Released {describe(char)}. Its data is deleted; the next upload claims it.'
+    return (f'Released {describe(char)}. Its data is deleted; the next upload from another '
+            'owner claims it.')
 
 
 def main():
@@ -170,6 +185,10 @@ def main():
                 print(store.create_link(args.owner))
             elif args.command == 'release-character':
                 print(release_character(store, args))
+            elif args.command == 'owners':
+                for row in store.owners():
+                    print(f"{row['owner']}\t{row['name']}\t{row['characters']} characters"
+                          + ('\tpaused' if row['paused'] else ''))
             elif args.command == 'outbox':
                 rows = store.db.execute('SELECT id,status,attempts,message_id FROM outbox').fetchall()
                 recaps = store.db.execute('SELECT * FROM digest_parts').fetchall()

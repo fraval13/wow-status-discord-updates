@@ -57,7 +57,8 @@ If they are lost, a new enrollment takes back its existing group characters
 automatically, as long as the addon's SavedVariables were kept: each character
 has a random `claim_secret` there. The companion sends each group a value derived
 from it, and the service stores only a hash. The takeover needs an export newer
-than the stored one, so it happens after the next `/reload` or logout. Without that
+than the stored one, so it happens after the next `/reload` or logout, and the old
+installation can't take the character back afterwards. Without that
 secret (for example after deleting the `WTF` folder too), or when the lost
 installation had paused sharing in that group, another installation's upload gets
 HTTP 409 and the operator has to release the character (see `release-character`

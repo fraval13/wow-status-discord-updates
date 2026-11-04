@@ -222,8 +222,10 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                             failed = True
                             status(connection='Temporarily limited; retained data will retry automatically.')
                             continue
-                        async with session.post(url + '/v1/upload',
-                            json={k: v for k, v in payload.items() if not k.startswith('_')},
+                        from .group_routing import scoped_claim_secret
+                        body = scoped_claim_secret(
+                            {k: v for k, v in payload.items() if not k.startswith('_')}, url)
+                        async with session.post(url + '/v1/upload', json=body,
                             headers={'Authorization': 'Bearer ' + config['token']},
                             allow_redirects=False) as response:
                             if response.status == 429:
