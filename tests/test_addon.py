@@ -650,6 +650,15 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
         SlashCmdList.WOWSTATUS("groups")
         assert(__opened == "Groups")
         assert(__categories.Groups.parent == __categories["WoW Status"])
+        -- Milestone choices live on the main page; no separate Milestones page exists.
+        local said
+        DEFAULT_CHAT_FRAME.AddMessage = function(_, message) said = message end
+        SlashCmdList.WOWSTATUS("milestones")
+        assert(__opened == "WoW Status")
+        assert(__categories.Milestones == nil)
+        assert(said and said:find("main WoW Status settings page", 1, true))
+        DEFAULT_CHAT_FRAME.AddMessage = function() end
+        SlashCmdList.WOWSTATUS("groups")
         assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
         assert(not WoWStatusGroupWindow.close:IsShown())
         WoWStatusGroupWindow.input:SetText("Unsaved edits")
@@ -679,6 +688,9 @@ def test_legacy_options_menu_registers_both_pages(lua):
         SlashCmdList.WOWSTATUS("groups")
         assert(__opened == "Groups")
         assert(__pages.Groups.parent == "WoW Status")
+        SlashCmdList.WOWSTATUS("milestones")
+        assert(__opened == "WoW Status")
+        assert(__pages.Milestones == nil)
         assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
     ''')
 

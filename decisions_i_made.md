@@ -17,6 +17,19 @@
 - TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
   public verifier parse TOCs strictly. Retail per-line load conditions
   (`[AllowLoadGameType ...]`) are not supported by any stage yet.
+## /wstatus milestones routing — 4 November 2026
+
+- The separate Milestones settings page was removed when the addon UI was
+  simplified (a032e1f); milestone choices now live on the main page, as
+  `docs/LIVE_POPUPS.md` describes. `/wstatus milestones` therefore opens the main
+  WoW Status page explicitly and says in chat that milestone choices are there,
+  rather than recreating a page the owner removed. Issue #22.
+- Removed the dead `milestonesCategory` and `WoWStatusMilestoneSettings` lookups,
+  the unused `ADDON` local and the unused `report`/`panel` locals in
+  `Milestones.lua` (luacheck W221/W211/W311). `WoWStatusMilestones.init` no longer
+  takes the unused reporter argument.
+- Tests: both the modern Settings and legacy InterfaceOptions paths assert the
+  command opens the main category and no Milestones category is registered.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
