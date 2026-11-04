@@ -218,9 +218,10 @@ def daily_status_message(rows, cutoff, group_name=None, custom=None):
     label = safe(group_name, 60) + ' \u00b7 ' if group_name else ''
     header = discord.Embed(
         title=clip(f'\U0001f4dc {label}Daily character status', 256),
-        description=f"Status at **{moment.strftime('%-d %B %Y, %H:%M')} \u00b7 {TIMEZONE}**\n"
+        description=f"Status at **{moment.day} {moment.strftime('%B %Y, %H:%M')} "
+                    f"\u00b7 {TIMEZONE}**\n"
                     f"Includes recorded progress before midnight, through "
-                    f"**{through.strftime('%-d %B')}**.",
+                    f"**{through.day} {through.strftime('%B')}**.",
         colour=0xC79C6E)
     header.set_footer(text='Cumulative recorded totals \u00b7 deaths tracked since addon installation')
 

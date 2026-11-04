@@ -1,6 +1,8 @@
 from datetime import datetime, time, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
+from wow_status import output
 from wow_status.group_status import GroupStatusReports, midnight, state
 from wow_status.output import daily_status_message
 
@@ -216,3 +218,23 @@ def test_names_are_escaped_and_cut_without_a_dangling_escape(store, payload, clo
             assert len(text) <= 4096
     levels = next(embed for embed in pages[0]['embeds'] if 'Levels' in embed.title)
     assert '\\*\\*x\\_' in levels.description
+
+
+def test_report_dates_avoid_platform_specific_strftime():
+    """%-d and %#d are platform extensions: one raises ValueError on the other OS."""
+    source = Path(output.__file__).read_text(encoding='utf-8')
+    rendered = source.split('def daily_status_message')[1]
+    assert '%-' not in rendered and '%#' not in rendered
+
+
+def test_header_states_the_cutoff_without_a_padded_day(store, payload):
+    day = datetime.now(ZONE).date() - timedelta(days=1)
+    cutoff = midnight(day + timedelta(days=1))
+    store.ingest('owner', yesterday_payload(payload, day, level=24, deaths=7))
+    standings = GroupStatusReports(store)
+    standings.prepare(datetime.fromtimestamp(cutoff + 60, ZONE))
+    rows = standings.pending()['rows']
+    header = daily_status_message(rows, cutoff, 'ronkalot')[0]['embeds'][0]
+    moment = datetime.fromtimestamp(cutoff, ZONE)
+    assert f'{moment.day} {moment.strftime("%B %Y")}' in header.description
+    assert 'Europe/Oslo' in header.description
