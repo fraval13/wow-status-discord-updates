@@ -130,7 +130,7 @@ end
 
 
 def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
-    runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
+    runtime = lupa.LuaRuntime(encoding='utf-8', unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))

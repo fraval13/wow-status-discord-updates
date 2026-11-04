@@ -13,7 +13,7 @@ ROOT = Path(__file__).parents[1]
 
 
 def tbc_runtime(name='Thora', extra='', *, join_announcements=False):
-    runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
+    runtime = lupa.LuaRuntime(encoding='utf-8', unpack_returned_tuples=True)
     runtime.execute(STUBS.replace('return "Thora" end',f'return "{name}" end') + '''
         WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
         WOW_PROJECT_ID=5

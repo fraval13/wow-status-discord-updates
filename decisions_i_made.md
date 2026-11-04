@@ -1,5 +1,13 @@
 # Decisions I made — 27 October 2026
 
+## Windows CI Lua encoding — 4 November 2026
+
+- The Windows Actions runner failed the flavour-bank consistency test because
+  Lupa's default Lua string encoding corrupted UTF-8 text such as “résumé”. Set
+  explicit UTF-8 encoding on every Lua test runtime. The flavour module passed
+  (6 tests) and the full suite passed locally (295 tests). The workflow must be
+  rerun on Windows to confirm the platform-specific fix.
+
 ## Daily status preview styling — 4 November 2026
 
 - Added class symbols to both fictional ranking lists, plus one class-coloured

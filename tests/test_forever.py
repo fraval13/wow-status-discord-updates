@@ -7,7 +7,7 @@ from test_addon import STUBS, lupa
 
 
 def forever_runtime(name='Thora', extra=''):
-    runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
+    runtime = lupa.LuaRuntime(encoding='utf-8', unpack_returned_tuples=True)
     runtime.execute(STUBS.replace('return "Thora" end', f'return "{name}" end'))
     runtime.execute('''
         WOW_PROJECT_MAINLINE=1
