@@ -159,7 +159,7 @@ local function showPanel(host)
             end)
             panel.checks[#panel.checks+1]={widget=check,key=key,group=group}
         end
-        button(panel,"Groups",24,-116,160,function() openSettings(true) end)
+        button(panel,"Groups",24,-116,160,function() openSettings("groups") end)
         button(panel,"Activity log",204,-116,160,function() WoWStatusJournal.show() end)
         button(panel,"Preview toasts",384,-116,170,function() openSettings("previews") end)
         checkbox("enabled","Share my progress",24,-174)
@@ -334,17 +334,17 @@ registerSettings = function()
         previewsCategory = previews
     end
 end
-openSettings = function(groups)
-    if groups=="discord" and not WoWStatusFeatures.discord then groups=nil end
+openSettings = function(mode)
+    if mode=="discord" and not WoWStatusFeatures.discord then mode=nil end
     registerSettings()
-    local category = groups == "previews" and previewsCategory or groups == "discord" and discordCategory or (groups == true and groupsCategory or settingsCategory)
+    local category = mode == "previews" and previewsCategory or mode == "discord" and discordCategory or (mode == "groups" and groupsCategory or settingsCategory)
     if category and category.GetID and Settings and Settings.OpenToCategory then
         Settings.OpenToCategory(category:GetID())
     elseif category and InterfaceOptionsFrame_OpenToCategory then
         InterfaceOptionsFrame_OpenToCategory(category)
-    elseif groups == "previews" then WoWStatusPreviews.show()
-    elseif groups == "discord" then showDiscord()
-    elseif groups == true then WoWStatusGroups.show()
+    elseif mode == "previews" then WoWStatusPreviews.show()
+    elseif mode == "discord" then showDiscord()
+    elseif mode == "groups" then WoWStatusGroups.show()
     else showPanel() end
 end
 
@@ -595,7 +595,7 @@ SlashCmdList.WOWSTATUS = function(message)
             current.exported_at = time()
             WoWStatusPopups.groupsChanged()
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
-        else openSettings(true) end
+        else openSettings("groups") end
     elseif command == "milestones" then
         -- Milestone choices live on the main page; there is no separate Milestones page.
         openSettings()
