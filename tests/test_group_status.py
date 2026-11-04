@@ -28,7 +28,9 @@ def yesterday_payload(payload, day, level=10, deaths=None):
 
 
 def test_report_uses_values_observed_before_the_midnight_cutoff(store, payload):
-    day = datetime.now(ZONE).date() - timedelta(days=1)
+    # Two days back: the later export at cutoff + 1 h must already be in the past,
+    # which "yesterday" is not during the first hour of the Oslo day.
+    day = datetime.now(ZONE).date() - timedelta(days=2)
     cutoff = midnight(day + timedelta(days=1))
     store.ingest('owner', yesterday_payload(payload, day, level=24, deaths=7))
     # Today's progress must not leak into yesterday's standings.
