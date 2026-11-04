@@ -4,7 +4,25 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 
 
-def safe(value):
+def clip(text, limit):
+    """Cut escaped Discord text to `limit` characters without a dangling escape.
+
+    Escaping turns each Markdown character into a two-character pair, so a plain slice can
+    keep the backslash and drop the character it escapes. That lone backslash would then
+    escape whatever follows it in the message, such as a closing `**`. Every backslash in
+    the text is expected to come from `safe()`, so an odd trailing run is always a cut pair.
+    """
+    text = text[:limit]
+    trailing = len(text) - len(text.rstrip('\\'))
+    return text[:-1] if trailing % 2 else text
+
+
+def safe(value, limit=500):
+    """Escape user text for Discord and cut it to at most `limit` characters.
+
+    The cut keeps escape pairs whole and never keeps a character whose zero-width-space
+    guard was cut off, so a bare `@` or `scheme:` cannot meet the text that follows.
+    """
     text = str(value)
     text = re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', text)
     text = re.sub(r'\|H[^|]+\|h(.*?)\|h', r'\1', text)
@@ -12,7 +30,34 @@ def safe(value):
     # Keep raw evidence in JSON, but user text cannot create clickable URLs/invites.
     text = re.sub(r'(?i)\b([a-z][a-z0-9+.-]{1,31}):(?=//)', r'\1:​', text)
     text = re.sub(r'(?i)\b(www|discord|discordapp)\.', r'\1​.', text)
-    return re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text)[:500]
+    text = re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text)
+    cut = clip(text, limit)
+    # The guards put U+200B after `@` and `scheme:`; `www` before its dot is harmless alone.
+    if text[len(cut):len(cut) + 1] == '\u200b' and cut.endswith(('@', ':')):
+        cut = cut[:-1]
+    return cut
+
+
+def fit_lines(lines, limit, separator='\n'):
+    """Join as many whole lines as fit in `limit` and say how many were left out.
+
+    Lines are never cut, so `**bold**`, `||spoiler||` and `safe()` guards stay whole. The
+    note about left-out lines counts toward `limit`; if no line fits beside it, only the
+    note is returned.
+    """
+    kept, size = [], 0
+    for line in lines:
+        size += len(line) + (len(separator) if kept else 0)
+        if size > limit:
+            break
+        kept.append(line)
+    while kept:
+        hidden = len(lines) - len(kept)
+        text = separator.join(kept) + (f'{separator}…and {hidden} more not shown.' if hidden else '')
+        if len(text) <= limit:
+            return text
+        kept.pop()
+    return f'{len(lines)} entries too long to show.' if lines else ''
 
 
 def norwegian(value):
@@ -33,7 +78,7 @@ def profile(char):
         lines.append(f'{key.title()}: {safe(value)}')
     lines.append(f"Last export: {norwegian(char['exported'])}\n"
                  f"Last upload: {norwegian(char['uploaded'])}")
-    return '\n'.join(lines)[:1900]
+    return clip('\n'.join(lines), 1900)
 
 
 def announcement(item):
@@ -64,7 +109,7 @@ def announcement(item):
         'lfg': f"**{name}** is looking for a group: {safe(data.get('text', '?'))}",
     }
     prefix = '[TEST] ' if data.get('synthetic') else ''
-    return prefix + messages[kind][:1780] + f"\nRecorded {norwegian(item['at'])} · uploaded character data"
+    return prefix + clip(messages[kind], 1780) + f"\nRecorded {norwegian(item['at'])} · uploaded character data"
 
 
 def roster_pages(store, characters):
@@ -76,18 +121,18 @@ def roster_pages(store, characters):
     for char in chars:
         owner = char['friend']['display_name']
         identity, snapshot = char['identity'], char['snapshot']
-        header = f"**{safe(owner)[:100]}**" if previous != char['owner'] else ''
+        header = f"**{safe(owner, 100)}**" if previous != char['owner'] else ''
         details = ' · '.join(str(snapshot[k]) for k in ('level', 'class') if k in snapshot)
-        line = (f"• {safe(identity['name'])[:100]} · {char['role']} · {safe(details)[:100]} · "
-                f"{safe(identity['realm'])[:100]} · {safe(identity['client'])[:50]}\n"
+        line = (f"• {safe(identity['name'], 100)} · {char['role']} · {safe(details, 100)} · "
+                f"{safe(identity['realm'], 100)} · {safe(identity['client'], 50)}\n"
                 f"  Last upload: {norwegian(char['uploaded'])}")
         professions = snapshot.get('professions', [])
         if professions:
-            line += '\n  Professions: ' + ', '.join(safe(p['name'])[:40] for p in professions[:6])
+            line += '\n  Professions: ' + ', '.join(safe(p['name'], 40) for p in professions[:6])
         addition = ('\n' + header if header else '') + '\n' + line
         if lines and len('\n'.join(lines)) + len(addition) > 1750:
             pages.append('\n'.join(lines))
-            lines = [f"**{safe(owner)[:100]}**", line]
+            lines = [f"**{safe(owner, 100)}**", line]
         else:
             if header:
                 lines.append(header)

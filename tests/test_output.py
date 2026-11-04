@@ -163,3 +163,15 @@ def test_milestone_event_payloads_survive_validation_and_respect_quest_privacy()
     assert clean['events'][1]['data']['title'] == 'Expert'
     item['settings']['fields']['quests'] = False
     assert all(event['kind'] != 'quest' for event in validate(item)['events'])
+
+
+def test_daily_recap_keeps_bold_closed_when_a_long_name_is_cut(store, payload):
+    # Issue #14: a 69-character name followed by `*` was cut to `...\` inside `**...**`,
+    # escaping the closing `**` and breaking the Markdown after it.
+    store.ingest('owner', payload)
+    day = datetime.fromtimestamp(payload['exported_at'], ZoneInfo('Europe/Oslo')).date()
+    recap = report(store, store.characters()[0]['id'], day)
+    recap['identity']['name'] = 'a' * 69 + '*'
+    text = render_group(store, [recap], 'Daily recap')
+    assert '• **' + 'a' * 69 + '** (' in text
+    assert '\\**' not in text
