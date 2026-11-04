@@ -1,5 +1,15 @@
 # Decisions I made — 27 October 2026
 
+## Runtime version in popup status — 4 November 2026
+
+- `/wstatus popup status` printed a hard-coded `0.14.8` while the TOCs were
+  `0.14.11` (issue #21). `Popups.lua` now reads `Version` from the WoWStatus TOC
+  at load: `C_AddOns.GetAddOnMetadata` first, the legacy global as a fallback,
+  and `unknown` when neither yields a short, printable, non-secret string.
+- Chose `unknown` over a hard-coded fallback version so releases only bump the
+  TOCs and `pyproject.toml`; a stale constant cannot return. Tests mock the
+  metadata API with each edition's real TOC fields; live clients are unchecked.
+
 ## Windows CI catalogue encoding — 4 November 2026
 
 - Reproduced the exact failure by making implicit Path.read_text calls use
