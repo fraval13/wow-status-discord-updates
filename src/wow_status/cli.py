@@ -171,10 +171,13 @@ def main():
                     token = os.environ.get('DISCORD_BOT_TOKEN')
                     if not token:
                         raise ValueError('Set DISCORD_BOT_TOKEN before using --discord')
-                    client = StatusBot(store, int(os.environ['DISCORD_GUILD_ID']),
-                                       int(os.environ['DISCORD_CHANNEL_ID']))
+                    guild_id = int(os.environ['DISCORD_GUILD_ID'])
+                    channel_id = int(os.environ['DISCORD_CHANNEL_ID'])
 
-                    async def bot():
+                    async def bot(status):
+                        # A fresh client per session: a closed discord.py client can't restart.
+                        client = StatusBot(store, guild_id, channel_id)
+                        status['ready'] = client.is_ready
                         async with client:
                             await client.start(token)
                 from .group_routing import group_key

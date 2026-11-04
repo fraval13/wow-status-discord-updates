@@ -126,6 +126,47 @@ curl --fail http://127.0.0.1:18081/health
 curl --fail http://127.0.0.1:18082/health
 ```
 
+Each `/health` reply also carries the bot's state: `"discord"` is `disabled` (no
+Discord settings), `starting`, `ready` or `retrying`, and `retrying` adds
+`"discord_error"`, the exception name plus Discord's HTTP status and error code.
+A Discord failure no longer stops the service: ingestion and `/health` keep
+running, the bot retries after 30 s, doubling to every 30 minutes, and the deploy's
+**Report Discord bot state** step warns when a group's bot is not `ready`.
+
+### Discord bot not connected
+
+```sh
+curl -s http://127.0.0.1:18082/health          # navsquad; 18081 is ronkalot
+journalctl -u wow-character-status@navsquad -n 50 --no-pager | grep -i discord
+```
+
+- `LoginFailure`: the token no longer works. Discord resets a token that is
+  published (for example in a public repository) or that starts more than 1,000
+  sessions in a day, and emails the bot owner. Reset it under Developer Portal >
+  Bot, put it in the group's `*_DISCORD_BOT_TOKEN` secret, then use **Re-run all
+  jobs** on the run for the tip of `main`.
+- `Forbidden 403 50001` (Missing Access) or `NotFound 404 10004` (Unknown Guild):
+  the bot was removed from the server, or the guild variable is wrong. Re-invite
+  it with the `bot` and `applications.commands` scopes.
+- `ClientConnectorError` or `TimeoutError`: the server cannot reach Discord; it
+  reconnects by itself.
+
+### A group service does not start
+
+If `curl` to the local port is refused and `systemctl status` shows restarts, the
+process exits before it listens, so the cause is in its own state:
+
+```sh
+journalctl -u wow-character-status@navsquad --since "1 hour ago" --no-pager | tail -60
+df -h /var/lib /opt; df -i /var/lib /opt         # ENOSPC, "database or disk is full"
+fuser -v /var/lib/wow-character-navsquad/service.sqlite3.lock   # "Another process is using this database"
+find /var/lib/wow-character-navsquad ! -user wow-character-navsquad -ls   # files a root tool created
+ls /opt/wow-character-status/releases | wc -l    # every deploy, failed ones too, leaves a release
+```
+
+Fix ownership with `chown -R wow-character-navsquad: /var/lib/wow-character-navsquad`
+after stopping the service. Old releases other than `current` can be deleted.
+
 Do not print environment files or config.json while inspecting logs. For backups,
 stop only these project services and copy their complete state directories, or use
 SQLite's consistent backup API. Stop the appropriate service before operator tools
