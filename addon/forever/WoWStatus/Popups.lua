@@ -171,18 +171,44 @@ local function remember(item)
         kind = item.kind or "level", text = item.text, flavour=item.flavour, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
 end
+-- Group channels are "WStatus" plus a 22-character hex group ID. Only names of
+-- exactly that shape are ever left, so the player's other channels are untouched.
+local function groupChannel(name)
+    name = S.string(name)
+    local key = name and name:lower()
+    if key and #key == 29 and key:match("^wstatus[0-9a-f]+$") then return key, name end
+end
+local function collectGroupChannels(result, ok, ...)
+    if not ok then return result end
+    -- Clients return (id, name, disabled) triples; older ones return (id, name) pairs.
+    for i = 1, select("#", ...) - 1 do
+        if S.number((select(i, ...))) then
+            local key, name = groupChannel((select(i + 1, ...)))
+            if key then result[key] = name end
+        end
+    end
+    return result
+end
+-- joinedByAddon is emptied by /reload while the game keeps its channels joined,
+-- so the client's own channel list is the source of truth for what to leave.
+local function leaveStaleChannels()
+    local current = {}
+    for name in pairs(joinedByAddon) do current[name] = name end
+    if GetChannelList then collectGroupChannels(current, pcall(GetChannelList)) end
+    local allowed = channels()
+    for key, name in pairs(current) do
+        if not allowed[key] then
+            if LeaveChannelByName then pcall(LeaveChannelByName, name) end
+            joinedByAddon[key] = nil
+        end
+    end
+end
 function P.groupsChanged()
     if not prefs then return end
     prefs.legacy_channel = false
     releaseRoster();rosterCache,rosterRequested={},{}
     for group in pairs(knownPeers) do if not WoWStatusGroups.contains(getCharacter(),group) then knownPeers[group]=nil end end
-    local allowed = channels()
-    for name in pairs(joinedByAddon) do
-        if not allowed[name] then
-            if LeaveChannelByName then pcall(LeaveChannelByName, name) end
-            joinedByAddon[name] = nil
-        end
-    end
+    leaveStaleChannels()
     local kept = {}
     for _, item in ipairs(incoming) do
         if item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id)) then
@@ -263,6 +289,7 @@ function P.init(database, getter, reporter)
     if register then pcall(register, ADDON_PREFIX) end
     clear()
     pruneSeen(time())
+    leaveStaleChannels()
     syncPending = true
     syncGroups()
 end
