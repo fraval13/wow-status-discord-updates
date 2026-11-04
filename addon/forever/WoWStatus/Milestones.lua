@@ -15,8 +15,8 @@ local function state()
 end
 local function clean(text, maximum)
     text = S.string(text)
-    if not text or #text > maximum or text:find("[%c|]") then return nil end
-    text = text:match("^%s*(.-)%s*$")
+    if not text or #text > maximum or text:find(S.CONTROL_OR_PIPE) then return nil end
+    text = S.trim(text)
     return text ~= "" and text or nil
 end
 local function spellName(id)

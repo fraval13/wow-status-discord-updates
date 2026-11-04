@@ -586,7 +586,7 @@ end)
 
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
-    local command, rest = message:match("^(%S*)%s*(.-)$")
+    local command, rest = message:match(S.SPLIT_WORD)
     if not current then say(A.display_name .. " character is not ready or identity is currently restricted."); return end
     if command == "groups" then
         if rest == "legacy" then
@@ -639,7 +639,7 @@ SlashCmdList.WOWSTATUS = function(message)
         end
         local names = {}
         for rawName in rest:gmatch("[^,]+") do
-            local name = rawName:match("^%s*(.-)%s*$")
+            local name = S.trim(rawName)
             if #name > 0 and #name <= 50 and #names < 6 then
                 table.insert(names, {name = name, source = "player_entered"})
             end

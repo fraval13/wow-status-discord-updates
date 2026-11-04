@@ -16,8 +16,8 @@ local rosterBusy=false
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
     local version = S.stringCall(lookup, ADDON_NAME, "Version")
-    version = version and version:match("^%s*(.-)%s*$")
-    if version and version ~= "" and #version <= 64 and not version:find("[%c|]") then return version end
+    version = version and S.trim(version)
+    if version and version ~= "" and #version <= 64 and not version:find(S.CONTROL_OR_PIPE) then return version end
 end
 local function tocVersion()
     return metadataVersion(type(C_AddOns) == "table" and C_AddOns.GetAddOnMetadata)
@@ -27,13 +27,13 @@ P.runtimeVersion=tocVersion()
 
 local function realm()
     local value = A.realmName()
-    return value and value:gsub("%s", "") or ""
+    return value and S.stripSpace(value) or ""
 end
 function P.senderKey(sender)
     sender = S.string(sender)
-    if type(sender) ~= "string" or #sender == 0 or #sender > 120 or sender:find("[%c|]") then return nil end
+    if type(sender) ~= "string" or #sender == 0 or #sender > 120 or sender:find(S.CONTROL_OR_PIPE) then return nil end
     if not sender:find("-", 1, true) then sender = sender .. "-" .. realm() end
-    return sender:gsub("%s", ""):lower()
+    return S.lowerASCII(S.stripSpace(sender))
 end
 local function combat()
     return InCombatLockdown and InCombatLockdown()
@@ -300,7 +300,7 @@ function P.receive(text, sender, channel)
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
-        if detail:find("[%c|]") then return invalidLogData(group,sender) end
+        if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
         if WoWStatusJournal and not WoWStatusJournal.validText(kind,detail) then return invalidLogData(group,sender) end
         local lootInfo
         if armor and kind~="loot" then return false end
@@ -599,12 +599,12 @@ function P.broadcast(character, event)
         local info=WoWStatusLoot.eventInfo(event.data)
         if not WoWStatusLoot.allowed(character.settings,info) then return end
         local name=info.name or (info.item or ""):match("%[([^%]]+)%]") or "Armor"
-        name=name:gsub("[%c|]"," ")
+        name=name:gsub(S.CONTROL_OR_PIPE," ")
         if #name>72 then name=name:sub(1,69):gsub("[\194-\244][\128-\191]*$","").."..." end
         text="WSTATUS7 "..A.client_id.." loot "..event.at.." "..nonce.." "..info.quality.." "..info.class_id.." "..info.equip_loc.." "..info.item_id.." "..name
     elseif event.kind == "dungeon" then
         local id,name=event.data.instance_id,event.data.name
-        if type(id)~="number" or id<1 or id>1000000000 or type(name)~="string" or #name>80 or name:find("[%c|]") then return end
+        if type(id)~="number" or id<1 or id>1000000000 or type(name)~="string" or #name>80 or name:find(S.CONTROL_OR_PIPE) then return end
         text="WSTATUS5 " .. A.client_id .. " dungeon " .. event.at .. " " .. nonce .. " " .. id .. " " .. name
     elseif event.kind == "level" then
         if event.data.level < 2 or event.data.level > A.max_level then return end
@@ -613,7 +613,8 @@ function P.broadcast(character, event)
         if event.kind == "loot" and (event.data.quality or 0) < character.settings.loot_quality then return end
         local detail = eventText(event)
         if not detail then return end
-        detail = detail:gsub("[%c]", " ")
+        detail = S.stripEscapes(detail):gsub(S.CONTROL_OR_PIPE, " ")
+        if not detail:find("[^ ]") then return end
         local modern = event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48
@@ -653,7 +654,7 @@ end
 
 function P.command(text)
     if not prefs then return end
-    local command, rest = text:match("^(%S*)%s*(.-)$")
+    local command, rest = text:match(S.SPLIT_WORD)
     if groupMode() and (command == "on" or command == "off" or command == "send") then
         notify("Group membership automatically enables updates. Remove a group in /wstatus groups to leave it.")
         return
@@ -680,9 +681,9 @@ function P.command(text)
         prefs.channel, prefs.legacy_channel = rest, true
         notify("Channel selected. Join it yourself with /join " .. rest .. ". Everyone must choose the same channel.")
     elseif command == "trust" or command == "untrust" then
-        local sender, alias = rest:match("^(%S+)%s*(.-)$")
+        local sender, alias = rest:match(S.SPLIT_WORD)
         local key = P.senderKey(sender)
-        if not key or #alias > 40 or alias:find("[%c|]") then notify("Use trust Character-Realm [optional friend label]."); return end
+        if not key or #alias > 40 or alias:find(S.CONTROL_OR_PIPE) then notify("Use trust Character-Realm [optional friend label]."); return end
         if command == "trust" then
             local count = 0
             for _ in pairs(prefs.trusted) do count = count + 1 end

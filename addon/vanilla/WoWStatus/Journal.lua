@@ -10,6 +10,7 @@ local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
 local pumpJobs
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
+local WITNESS = "^([%w%-]+) (%d+) (" .. S.NONSPACE .. "+)$"
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
@@ -18,12 +19,12 @@ local fields={level="level",zone="zone",quest="quests",questprogress="quests",pr
     professionprogress="professions",equipment="gear"}
 local function trim(text,limit)
     if type(text)~="string" then return "" end
-    text=text:gsub("[%c|]"," ")
+    text=S.stripEscapes(text):gsub(S.CONTROL_OR_PIPE," ")
     if #text>limit then text=text:sub(1,limit-3):gsub("[\194-\244][\128-\191]*$","").."..." end
     return text
 end
 local function ownName()
-    return (WoWStatusAdapter.playerName() or current.identity.name).."-"..(WoWStatusAdapter.realmName() or current.identity.realm):gsub("%s","")
+    return (WoWStatusAdapter.playerName() or current.identity.name).."-"..S.stripSpace(WoWStatusAdapter.realmName() or current.identity.realm)
 end
 function J.eventID(sender,nonce)
     local key=P.senderKey(sender)
@@ -104,9 +105,10 @@ local function add(entry)
         return false
     end
     if not entry.owner then
+        local senderKey=P.senderKey(entry.sender)
         for _, c in pairs(db.characters or {}) do
-            local name=c.identity.name.."-"..c.identity.realm:gsub("%s","")
-            if P.senderKey(name)==P.senderKey(entry.sender) and c.identity.client==entry.client then return false end
+            local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
+            if P.senderKey(name)==senderKey and c.identity.client==entry.client then return false end
         end
     end
     entry.groups=entry.groups or {}
@@ -124,7 +126,7 @@ function J.prepare(database)
         for _,event in ipairs(c.history and c.history.events or {}) do
             if event.kind=="loot" then
                 local epoch,sequence=event.id:match(":(%d+%-%d+):(%d+)$")
-                local name=c.identity.name.."-"..c.identity.realm:gsub("%s","")
+                local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
                 local id=epoch and c.identity.client..":"..P.senderKey(name)..":"..epoch.."-"..sequence
                 local entry=id and wanted[id]
                 if entry and event.data.item then
@@ -246,7 +248,7 @@ local function unpackEntry(text)
     -- Version differences and stale history are ordinary drops, never accusations.
     if client~=WoWStatusAdapter.client_id or not sharedKinds[kind] then return nil end
     if #id>220 or #sender>120 or not P.senderKey(sender) or not at or at~=math.floor(at)
-        or #detail>160 or detail:find("[%c|]") then return nil,"invalid" end
+        or #detail>160 or detail:find(S.CONTROL_OR_PIPE) then return nil,"invalid" end
     if at<time()-AGE or at>time()+300 then return nil end
     local prefix=client..":"..P.senderKey(sender)..":"
     if id:sub(1,#prefix)~=prefix or not id:sub(#prefix+1):match("^[%w%-]+$") or #id-#prefix>64 then return nil,"invalid" end
@@ -291,7 +293,7 @@ local function warning(group,accused,reporter)
 end
 function J.reportInvalid(group,sender)
     sender=S.string(sender)
-    if not db or not sender or not P.senderKey(sender) or sender:find("%s")
+    if not db or not sender or not P.senderKey(sender) or sender:find(S.SPACE)
         or not groupMember(group) or not peer(group,sender) then return false end
     -- Attribute the actual whisper sender, never the author claimed in a relay.
     if not warning(group,sender,ownName()) then return false end
@@ -371,7 +373,7 @@ function J.receive(message,sender,distribution)
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
     if op=="W" then
-        local client,at,accused=body:match("^([%w%-]+) (%d+) (%S+)$")
+        local client,at,accused=body:match(WITNESS)
         at=tonumber(at)
         if client~=WoWStatusAdapter.client_id or not at or at<time()-120 or at>time()+30
             or not P.senderKey(accused) or (P.senderKey(accused)~=P.senderKey(ownName()) and not peer(group,accused)) then return false end

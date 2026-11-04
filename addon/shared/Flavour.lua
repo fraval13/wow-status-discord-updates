@@ -1345,7 +1345,7 @@ local function playerClass(item)
         name,realm = S.string(name),S.string(realm)
         if name then
             realm=realm or S.stringCall(WoWStatusAdapter.realmName)
-            local full=name:find("-",1,true) and name or (realm and name.."-"..realm:gsub("%s","") or nil)
+            local full=name:find("-",1,true) and name or (realm and name.."-"..S.stripSpace(realm) or nil)
             if full and senderKey(full)==wanted then
                 local _,token=S.call(UnitClass,unit)
                 token=S.string(token)

@@ -1,6 +1,6 @@
 -- Account-wide group choices, with per-character join times and history boundaries.
 WoWStatusGroups = {}
-local G = WoWStatusGroups
+local G, S = WoWStatusGroups, WoWStatusSafe
 local getCharacter, database, report, panel
 local MAX_GROUPS = 8
 
@@ -8,9 +8,9 @@ function G.valid(id)
     return type(id) == "string" and #id == 22 and id:match("^[a-f0-9]+$") ~= nil
 end
 function G.key(text)
-    text = text:match("^%s*(.-)%s*$")
+    text = S.trim(text)
     local _, characters = text:gsub("[^\128-\191]", "")
-    if text == "" or characters > 80 or text:find("[%c]") then return nil end
+    if text == "" or characters > 80 or text:find(S.CONTROL) then return nil end
     local a, b, c = 5381, 2166136261, 104729
     local canonical = WoWStatusCaseFold(text)
     for i = 1, #canonical do
@@ -107,8 +107,8 @@ local function update(text, playerName)
             selected[id] = {label = cleaned}
         end
     end
-    playerName = playerName:match("^%s*(.-)%s*$")
-    if #playerName > 40 or playerName:find("[%c|]") then return false, "Use a name of up to 40 characters." end
+    playerName = S.trim(playerName)
+    if #playerName > 40 or playerName:find(S.CONTROL_OR_PIPE) then return false, "Use a name of up to 40 characters." end
     local joined = {}
     for id in pairs(selected) do
         joined[id] = database.account_group_joined_at[id] or time()
