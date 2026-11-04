@@ -116,6 +116,7 @@ def test_tbc_installer_selects_the_correct_client_and_interface(tmp_path):
              '--addons-dir',str(addons),'--interface']
     invalid=subprocess.run([*command,'11509'],capture_output=True)
     assert invalid.returncode!=0 and not (addons/'WoWStatus').exists()
+    assert b'Interface is outside this edition' in invalid.stderr
     subprocess.run([*command,'20506'],check=True,capture_output=True)
     assert (addons/'WoWStatus/TBC.lua').is_file()
     assert '## Interface: 20506' in (addons/'WoWStatus/WoWStatus.toc').read_text(encoding='utf-8')

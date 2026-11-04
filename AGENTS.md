@@ -117,11 +117,13 @@ node --check website/flavour.js
 git diff --check
 ```
 
-Windows CI decodes text with cp1252 unless told otherwise, so pass
-`encoding='utf-8'` to every `read_text`/`write_text`/`open` in tests and avoid
-`text=True` on subprocess calls; `tests/test_text_encoding.py` enforces this. To
-reproduce Windows' behaviour on Linux, run pytest under a non-UTF-8 locale, for
-example `LC_ALL=C python -X utf8=0 -m pytest -q`.
+Windows decodes text with cp1252 unless told otherwise. In `src/`, `scripts/` and
+`tests/`, pass `encoding='utf-8'` to every text-mode `read_text`, `write_text` and
+`open` (builtin, `Path`, `io`, `codecs`, `os.fdopen`, `tempfile`), and to any
+`subprocess` call that decodes output (`text=`, `universal_newlines=`, `errors=`,
+`getoutput`); `tests/test_text_encoding.py` enforces this. To reproduce Windows'
+behaviour on Linux, run pytest under a non-UTF-8 locale, for example
+`LC_ALL=C python -X utf8=0 -m pytest -q`.
 
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.

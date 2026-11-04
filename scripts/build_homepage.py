@@ -67,7 +67,7 @@ def build(root, output, addon_ref):
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('Unresolved homepage placeholder')
     (output / 'index.html').write_text(html, encoding='utf-8')
-    (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n')
+    (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
     print(f"Homepage built at {output}; addon {releases['vanilla']['version']} ({revision[:7]})")
 
 

@@ -17,11 +17,11 @@ def main():
     parser.add_argument('--daily-status', action='store_true', help='Use the fictional daily group standings example')
     parser.add_argument('--config', default='/etc/wow-character-status/config.json')
     args = parser.parse_args()
-    item = json.loads((Path(__file__).resolve().parents[1] / 'tests/fixtures/status_preview.json').read_text())
+    item = json.loads((Path(__file__).resolve().parents[1] / 'tests/fixtures/status_preview.json').read_text(encoding='utf-8'))
     item['identity']['name'] = 'Preview' + args.class_name.lower()
     item['snapshot'].update({'class': args.class_name, 'class_id': args.class_name.upper()})
     custom = {}
-    config = json.loads(Path(args.config).read_text())[args.group] if args.send else None
+    config = json.loads(Path(args.config).read_text(encoding='utf-8'))[args.group] if args.send else None
     api = 'https://discord.com/api/v10'
     headers = {'User-Agent': 'DiscordBot (https://github.com/fraval13/wow-status-discord-updates, 0.10.0)'}
     if config:
