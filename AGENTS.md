@@ -88,10 +88,11 @@ be checked against Git and the environment rather than assumed permanently true.
 - GitHub pushes work again and every push to `main` runs the hosted
   "Checks and addon packages" workflow (Ubuntu and Windows `validate`, then
   `deploy`). Check that run's result on GitHub Actions before describing a
-  release as validated or deployed; do not hunt for credentials. `deploy-gate`
-  skips `deploy` (with a "Deploy skipped" notice) when the run's commit is no
-  longer the tip of `main`, so check that `deploy` ran, not just that the run is
-  green.
+  release as validated or deployed; do not hunt for credentials. `deploy` shows
+  as skipped when `deploy-gate` finds the run's commit is no longer the tip of
+  `main` ("Deploy skipped" notice), and on a "Re-run failed jobs" attempt. Use
+  "Re-run all jobs" to redeploy, so check that `deploy` ran, not just that the
+  run is green.
 - Uncommitted work predating this feature remains: shared/all-edition
   `Minimap.lua` edits, Vanilla/Forever TOC `IconTexture` lines, `Textures/Logo.tga`
   files, and `assets/branding/`. These belong to separate branding work. Preserve

@@ -11,8 +11,11 @@ GATE = ROOT / 'scripts' / 'deploy_gate.py'
 
 
 def git(*args, cwd):
+    # Same isolation as tests/test_homepage_build.py: no signing or global hooks.
     result = subprocess.run(
-        ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com', *args],
+        ['git', '-c', 'user.name=Test', '-c', 'user.email=test@example.com',
+         '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false',
+         '-c', 'core.hooksPath=no-hooks', *args],
         cwd=cwd, check=True, capture_output=True, encoding='utf-8')
     return result.stdout.strip()
 
@@ -68,25 +71,19 @@ def test_older_run_skips_with_notice(repo, tmp_path):
     assert commits['B'] in summary
 
 
-def test_strict_rerun_of_older_run_fails(repo, tmp_path):
+def test_branch_ending_in_refs_heads_main_is_ignored(repo, tmp_path):
     work, commits = repo
     push_main(work, commits['B'])
-    result, output, _ = gate(work, tmp_path, commits['A'], '--strict')
-    assert result.returncode == 1
-    assert output == 'current=false\n'
-    assert '::error title=Deploy skipped::' in result.stdout
-
-
-def test_strict_tip_of_main_passes(repo, tmp_path):
-    work, commits = repo
-    push_main(work, commits['A'])
-    result, output, _ = gate(work, tmp_path, commits['A'], '--strict')
+    git('push', 'origin', f'{commits["A"]}:refs/heads/release/refs/heads/main', cwd=work)
+    result, output, _ = gate(work, tmp_path, commits['B'])
     assert result.returncode == 0, result.stderr
     assert output == 'current=true\n'
 
 
-def test_unreadable_main_fails_closed(repo, tmp_path):
+def test_unreadable_main_fails_closed_and_says_why(repo, tmp_path):
     work, commits = repo
+    git('remote', 'set-url', 'origin', str(tmp_path / 'missing.git'), cwd=work)
     result, output, _ = gate(work, tmp_path, commits['A'])
     assert result.returncode != 0
     assert output == ''
+    assert 'missing.git' in result.stderr
