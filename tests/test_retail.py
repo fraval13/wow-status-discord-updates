@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from test_addon import STUBS, lupa
+from test_addon import FRIEND_STUBS, STUBS, lupa
 
 from wow_status.schema import ValidationError, validate
 
@@ -14,7 +14,7 @@ ROOT=Path(__file__).parents[1]
 
 def retail_runtime(name='Thora',extra='', *, join_announcements=False):
     lua=lupa.LuaRuntime(unpack_returned_tuples=True)
-    lua.execute(STUBS.replace('return "Thora" end',f'return "{name}" end')+'''
+    lua.execute((FRIEND_STUBS if name == 'Eldrin' else STUBS.replace('return "Thora" end',f'return "{name}" end'))+'''
         WOW_PROJECT_MAINLINE=1;WOW_PROJECT_CAMELOT=18;WOW_PROJECT_ID=1
         __level=89;__honor=0
         function GetBuildInfo() return "12.1.5","70575","test",120105 end

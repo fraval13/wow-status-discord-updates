@@ -1,6 +1,6 @@
 """Observed milestones, conservative baselines and spoiler-safe friend delivery."""
 import pytest
-from test_addon import STUBS, make_lua
+from test_addon import FRIEND_STUBS, STUBS, make_lua
 
 from wow_status.archive import character_document
 from wow_status.formatting import announcement
@@ -174,7 +174,7 @@ def test_automatic_dungeon_roundtrip_and_legacy_manual_packets_are_rejected():
     packet = sender.eval('__sent[1].text')
     assert len(packet.encode()) <= 243
     assert 'WSTATUS5' in packet and '36 The Deadmines' in packet
-    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    receiver = make_lua(FRIEND_STUBS)
     receiver.eval('WoWStatusGroups.update')('dawnwatch', '')
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert 'First clear: The Deadmines' in receiver.eval('WoWStatusLevelPopup.message:GetText()')

@@ -57,9 +57,28 @@ def mesh(clients, start=11, duration=40, reorder=False):
                 clients[target].eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', text, 'WHISPER', sender+'-TestRealm')
 
 
+def join_roster(lua, name):
+    """Show a group member in this client's channel roster, as the game does."""
+    lua.execute(f'''
+        local found=false
+        for _,peer in ipairs(__peers) do if peer=="{name}" then found=true end end
+        if not found then table.insert(__peers,"{name}") end
+    ''')
+
+
 def deliver_popup(sender, receiver):
+    """Popups need the sender in the receiver's roster; it leaves again afterwards."""
     packet = sender.eval('__sent[1].text')
-    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', sender.eval('WoWStatusAdapter.playerName()')+'-TestRealm')
+    name = sender.eval('WoWStatusAdapter.playerName()')+'-TestRealm'
+    receiver.execute('__rosterBefore={unpack and unpack(__peers) or table.unpack(__peers)}')
+    join_roster(receiver, name)
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', name)
+    # The roster cache is keyed on member count: read the restored roster now, so
+    # a later roster of the same size is not mistaken for this one.
+    receiver.execute('''
+        __peers=__rosterBefore
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+    ''')
 
 
 def test_offline_author_is_recovered_from_another_peer_once_without_popup():
@@ -174,11 +193,14 @@ def test_unsolicited_malformed_and_non_member_sync_packets_are_ignored():
 
 def test_multiple_inventory_pages_and_known_pages_reconcile_without_duplicates():
     relay, late = actor('Eldrin'), actor('Mira')
-    channel = relay.eval('function() for id in pairs(character().group_ids) do return WoWStatusGroups.channel(id) end end')()
+    group = relay.eval('function() for id in pairs(character().group_ids) do return id end end')()
+    # Twenty live level-ups from one sender; the per-sender popup cap is not under test.
     for level in range(2, 22):
         clock(relay, 10+level)
-        assert relay.eval('WoWStatusPopups.receive')(f'WSTATUS2 classic-era LEVEL {level} {1793000010+level} epoch-{level}',
-                                                  'Thora-TestRealm', channel)
+        relay.eval('WoWStatusJournal.received')(relay.table_from({
+            'sender': 'Thora-TestRealm', 'level': level, 'at': 1793000010+level,
+            'nonce': f'epoch-{level}', 'group_id': group}))
+    assert relay.eval('#WoWStatusJournal.entries()') == 20
     mesh({'Eldrin': relay, 'Mira': late}, start=33, duration=90)
     assert late.eval('#WoWStatusJournal.entries()') == 20
     late.eval('WoWStatusJournal.sync')()
@@ -237,6 +259,7 @@ def test_same_id_live_in_two_groups_preserves_scope_without_duplicate_toasts():
     own.eval('fire')('PLAYER_LEVEL_UP', 2)
     packet = own.eval('__sent[1].text').split(' ', 1)[1]
     ids = friend.eval('function() local result={} for id in pairs(character().group_ids) do table.insert(result,id) end return result end')()
+    join_roster(friend, 'Thora-TestRealm')
     for i in [1, 2]:
         friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', ids[i]+' '+packet, 'WHISPER', 'Thora-TestRealm')
     assert friend.eval('#WoWStatusJournal.entries()') == 1

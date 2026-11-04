@@ -94,6 +94,7 @@ def test_modern_restrictions_delay_delivery_and_login_sync_remains_two_way_and_q
             WoWStatusGroups.announce=nil
             WoWStatusGroups.update("dawnwatch", "")
             for id in pairs(character().group_ids) do __channelNames={WoWStatusGroups.channel(id)} end
+            __peers={"Thora-TestRealm","Eldrin-TestRealm"}
         ''')
     own, friend = clients.values()
     own.eval('fire')('PLAYER_LEVEL_UP', 30)

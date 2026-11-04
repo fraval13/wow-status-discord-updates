@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from test_addon import STUBS, lupa
+from test_addon import FRIEND_STUBS, STUBS, lupa
 
 from wow_status.schema import ValidationError, validate
 
@@ -14,7 +14,7 @@ ROOT = Path(__file__).parents[1]
 
 def tbc_runtime(name='Thora', extra='', *, join_announcements=False):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
-    runtime.execute(STUBS.replace('return "Thora" end',f'return "{name}" end') + '''
+    runtime.execute((FRIEND_STUBS if name == 'Eldrin' else STUBS.replace('return "Thora" end',f'return "{name}" end')) + '''
         WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
         WOW_PROJECT_ID=5
         __level=69
