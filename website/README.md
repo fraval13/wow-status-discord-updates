@@ -66,5 +66,5 @@ manifest the site serves. It checks the exact commit revision, that the served
 manifest equals the local one, the visible download links, that every ZIP's size
 and SHA-256 match the local build, and the version labels. Each ZIP must hold
 exactly its TOC, the files the TOC lists and `Textures/*.tga` under `WoWStatus/`;
-path traversal, duplicate, directory or other unexpected entries fail. A stale,
+path traversal, duplicate, directory, symlink or other unexpected entries fail. A stale,
 tampered or missing public download fails the release verification step.

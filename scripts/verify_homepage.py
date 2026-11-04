@@ -10,6 +10,7 @@ import importlib.util
 import io
 import json
 import re
+import stat
 import time
 import urllib.request
 import zipfile
@@ -37,13 +38,23 @@ def package_files():
     return module.package_files
 
 
+def valid_release(edition, release):
+    return (isinstance(release, dict) and set(release) == set(RELEASE_FIELDS)
+            and release['file'] == f'WoWStatus-{edition}.zip'
+            and type(release['bytes']) is int and release['bytes'] > 0
+            and isinstance(release['sha256'], str)
+            and re.fullmatch('[a-f0-9]{64}', release['sha256']) is not None
+            and isinstance(release['version'], str)
+            and re.fullmatch(r'[\w.\-]+', release['version']) is not None)
+
+
 def check_local(expected, revision):
     """Require expected to be a complete local release.json built from revision."""
     if (not isinstance(expected, dict) or expected.get('addon_revision') != revision
             or not isinstance(expected.get('editions'), dict)
             or set(expected['editions']) != set(EDITIONS)
-            or not all(isinstance(release, dict) and all(field in release for field in RELEASE_FIELDS)
-                       for release in expected['editions'].values())):
+            or not all(valid_release(edition, release)
+                       for edition, release in expected['editions'].items())):
         raise ValueError(f'The local release.json is not a complete build of revision {revision}')
 
 
@@ -76,8 +87,11 @@ def check_entries(edition, package):
         name = item.filename
         # On Windows zipfile turns stored backslashes into '/', so check the stored name
         # first: otherwise the rewritten name could look like a duplicate or a valid file.
+        # zipfile also cuts a name at its first NUL; the stored name keeps it.
         if (item.is_dir() or not name.startswith(FOLDER) or '\\' in item.orig_filename
-                or ':' in name
+                or '\0' in item.orig_filename or ':' in name
+                # Regular files only: unzip would restore a symlink entry as a link.
+                or not stat.S_ISREG(item.external_attr >> 16)
                 or any(part in ('', '.', '..') for part in name.split('/'))):
             raise ValueError(f'The public {edition} ZIP has an unexpected entry: '
                              f'{item.orig_filename!r}')

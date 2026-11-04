@@ -208,6 +208,11 @@ def test_local_manifest_must_be_this_revisions_complete_build(built_site):
                                            if k != 'tbc'}),
                   dict(expected, editions=dict(expected['editions'], tbc=without_hash)),
                   dict(expected, editions=None),
+                  dict(expected, editions=dict(expected['editions'],
+                                               tbc=dict(expected['editions']['tbc'], bytes='1'))),
+                  dict(expected, editions=dict(expected['editions'],
+                                               tbc=dict(expected['editions']['tbc'],
+                                                        file='WoWStatus-other.zip'))),
                   ['not', 'a', 'manifest']):
         with pytest.raises(ValueError, match='local release.json'):
             public_verifier()('https://example.com', revision, fetch, expected=local)
@@ -248,6 +253,29 @@ def test_zip_entry_with_a_stored_backslash_fails_on_every_platform(built_site):
             verifier_module().check_entries('vanilla', package)
 
 
+def entry(name, mode):
+    info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+    info.external_attr = mode << 16
+    return info
+
+
+@pytest.mark.parametrize('stored, mode', [
+    (b'WoWStatus/Groups.lua\0../../x.lua', 0o100644),  # zipfile shows it as Groups.lua
+    (b'WoWStatus/Groups.lua', 0o120777),  # a symlink entry
+    (b'WoWStatus/Groups.lua', 0),  # no Unix mode recorded at all
+], ids=['nul_in_name', 'symlink', 'no_mode'])
+def test_disguised_listed_file_fails(built_site, stored, mode):
+    # Replace the real Groups.lua with an entry whose name or type only looks right.
+    original = (built_site/'downloads/WoWStatus-vanilla.zip').read_bytes()
+    marker = 'WoWStatus/Groups|' + 'x' * (len(stored) - len('WoWStatus/Groups|'))
+    data = rewrite_zip(original, drop={'WoWStatus/Groups.lua'},
+                       add={entry(marker, mode): b'../../../target'})
+    data = data.replace(marker.encode(), stored)
+    with zipfile.ZipFile(io.BytesIO(data)) as package:
+        with pytest.raises(ValueError, match='unexpected entry:'):
+            verifier_module().check_entries('vanilla', package)
+
+
 def test_every_built_zip_passes_the_entry_check(built_site):
     module = verifier_module()
     for edition in module.EDITIONS:
@@ -265,7 +293,7 @@ def test_deploy_passes_the_local_manifest_to_the_verifier():
     assert '--manifest dist/homepage/downloads/release.json' in deploy[verify:].split('\n      - ')[0]
 
 
-def test_command_line_requires_a_manifest_of_the_same_revision(built_site, tmp_path):
+def test_command_line_requires_a_manifest_of_the_same_revision(built_site):
     script = [sys.executable, str(ROOT/'scripts/verify_homepage.py'), '--url', 'https://example.com',
               '--revision', '1'*40]
     missing = subprocess.run(script, capture_output=True, text=True, encoding='utf-8')
