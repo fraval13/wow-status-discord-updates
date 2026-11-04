@@ -153,6 +153,30 @@ def test_outgoing_detail_strips_escapes_and_pipes_the_receiver_would_reject(lua,
     assert text.split(' ', 6)[6] == sent
 
 
+@pytest.mark.parametrize('text, stripped', [
+    ('|cnIQ4:Epic Mount|r', 'Epic Mount'),
+    ('a||rb', 'a|rb'),
+    ('||cffffffffX', '|cffffffffX'),
+    ('|KTb12|k friend', ' friend'),
+    ('|TInterface\\\\Icons\\\\X:0|t', ''),
+])
+def test_strip_escapes_handles_named_colours_protected_text_and_literal_pipes(
+        lua, text, stripped):
+    assert lua.execute(f'return WoWStatusSafe.stripEscapes("{text}")') == stripped
+
+
+def test_detail_that_is_only_escapes_is_not_sent(lua):
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    sent = lua.execute('''
+        local ids = {}
+        for id in pairs(character().group_ids) do ids[id] = true end
+        WoWStatusPopups.broadcast(character(), {id = "pvp-1", kind = "pvp", at = time(),
+            group_ids = ids, data = {text = "|TInterface\\\\Icons\\\\X:0|t"}})
+        return #__sent
+    ''')
+    assert sent == 0
+
+
 def test_sender_keys_never_call_locale_dependent_string_lower(lua):
     lua.execute('string.lower = function() error("locale-dependent lower") end')
     assert lua.eval('WoWStatusPopups.senderKey')('ÅSE-TestRealm') == 'Åse-testrealm'

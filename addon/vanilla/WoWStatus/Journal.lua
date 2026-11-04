@@ -19,7 +19,7 @@ local fields={level="level",zone="zone",quest="quests",questprogress="quests",pr
     professionprogress="professions",equipment="gear"}
 local function trim(text,limit)
     if type(text)~="string" then return "" end
-    text=text:gsub(S.CONTROL_OR_PIPE," ")
+    text=S.stripEscapes(text):gsub(S.CONTROL_OR_PIPE," ")
     if #text>limit then text=text:sub(1,limit-3):gsub("[\194-\244][\128-\191]*$","").."..." end
     return text
 end

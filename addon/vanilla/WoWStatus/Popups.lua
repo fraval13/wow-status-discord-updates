@@ -614,6 +614,7 @@ function P.broadcast(character, event)
         local detail = eventText(event)
         if not detail then return end
         detail = S.stripEscapes(detail):gsub(S.CONTROL_OR_PIPE, " ")
+        if not detail:find("[^ ]") then return end
         local modern = event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48

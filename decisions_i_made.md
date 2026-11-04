@@ -17,6 +17,31 @@
 - TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
   public verifier parse TOCs strictly. Retail per-line load conditions
   (`[AllowLoadGameType ...]`) are not supported by any stage yet.
+## Locale-independent text checks (issue #23) — 4 November 2026
+
+- Replaced every Lua `%c` in the addon with `WoWStatusSafe.CONTROL`
+  (`[%z\1-\31\127]`) or `CONTROL_OR_PIPE`. `%c` follows the C library's
+  locale; under macOS UTF-8 it matched the second byte of Æ, Ø and Å. `%z` keeps
+  the class valid in Lua 5.1 and still works in 5.4.
+- Review found `%s`/`%S` and `string.lower` share the same cause (0x85 counts as
+  a space; C3 lowercases to E3). Replaced them on player text with
+  `S.SPACE`, `S.NONSPACE`, `S.trim`, `S.stripSpace`, `S.SPLIT_WORD` and
+  `S.lowerASCII`. `lowerASCII` matches C-locale `lower`, so trust keys saved by
+  C-locale clients (the expected in-game case) stay valid. A client that really
+  ran under a non-C locale saved invalid UTF-8 keys; its players would need to
+  re-trust Æ/Ø/Å friends. No migration was written until #25 shows one exists.
+- Outgoing popup details and journal text strip WoW colour, named-colour, link,
+  texture, atlas and protected-text escapes before scrubbing `|`, so peers see
+  plain text instead of escape fragments. A detail that is only escapes is not sent.
+- Outgoing popup details now scrub `|` as well, because receivers reject it.
+- Tests: a guard failing on any `%c`/`%C`/`%s`/`%S` pattern in addon Lua (format
+  and date strings excepted), exhaustive 0-255 byte tests of the classes and
+  helpers, and Æ/Ø/Å sender, trust, group and player-name tests. Linux glibc
+  never showed the bug, so the byte and guard tests carry the proof.
+- Not changed: `%w`/`%a`/`%u` on ASCII protocol tokens (a non-C locale could only
+  widen what they accept) and `lower()` on local channel and dungeon names, which
+  are compared only on the same client. Whether any game client runs Lua under a
+  non-C locale is still the open live check in #25.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
@@ -54,31 +79,6 @@
 - Limit: clients read TOC metadata at launch, so after unzipping an update and
   only typing /reload, status shows the previous version until a full restart.
   TOC changes already need a restart, so this matches normal addon updates.
-
-## Locale-independent text checks (issue #23) — 4 November 2026
-
-- Replaced every Lua `%c` in the addon with `WoWStatusSafe.CONTROL`
-  (`[%z\1-\31\127]`) or `CONTROL_OR_PIPE`. `%c` follows the C library's
-  locale; under macOS UTF-8 it matched the second byte of Æ, Ø and Å. `%z` keeps
-  the class valid in Lua 5.1 and still works in 5.4.
-- Review found `%s`/`%S` and `string.lower` share the same cause (0x85 counts as
-  a space; C3 lowercases to E3). Replaced them on player text with
-  `S.SPACE`, `S.NONSPACE`, `S.trim`, `S.stripSpace`, `S.SPLIT_WORD` and
-  `S.lowerASCII`. `lowerASCII` matches C-locale `lower`, so trust keys saved by
-  C-locale clients (the expected in-game case) stay valid. A client that really
-  ran under a non-C locale saved invalid UTF-8 keys; its players would need to
-  re-trust Æ/Ø/Å friends. No migration was written until #25 shows one exists.
-- Outgoing popup details strip WoW colour, link, texture and atlas escapes before
-  scrubbing `|`, so peers see plain text instead of escape fragments.
-- Outgoing popup details now scrub `|` as well, because receivers reject it.
-- Tests: a guard failing on any `%c`/`%C`/`%s`/`%S` pattern in addon Lua (format
-  and date strings excepted), exhaustive 0-255 byte tests of the classes and
-  helpers, and Æ/Ø/Å sender, trust, group and player-name tests. Linux glibc
-  never showed the bug, so the byte and guard tests carry the proof.
-- Not changed: `%w`/`%a`/`%u` on ASCII protocol tokens (a non-C locale could only
-  widen what they accept) and `lower()` on local channel and dungeon names, which
-  are compared only on the same client. Whether any game client runs Lua under a
-  non-C locale is still the open live check in #25.
 
 ## Windows CI catalogue encoding — 4 November 2026
 

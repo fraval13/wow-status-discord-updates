@@ -25,10 +25,12 @@ function S.lowerASCII(text)
     return (text:gsub("[A-Z]", LOWER))
 end
 local COLOUR = "|c" .. ("[0-9a-fA-F]"):rep(8)
--- Remove WoW UI escapes (colour, link, texture, atlas) but keep link text.
+-- Remove WoW UI escapes (colour, named colour, link, texture, atlas, protected
+-- text) but keep link text. "||" is a literal pipe and is kept as one "|".
 function S.stripEscapes(text)
-    text = text:gsub(COLOUR, ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1")
-    return (text:gsub("|T.-|t", ""):gsub("|A.-|a", ""))
+    text = text:gsub("||", "\1"):gsub(COLOUR, ""):gsub("|cn[^:|]*:", ""):gsub("|r", "")
+    text = text:gsub("|H.-|h(.-)|h", "%1"):gsub("|T.-|t", ""):gsub("|A.-|a", ""):gsub("|K.-|k", "")
+    return (text:gsub("\1", "|"))
 end
 function S.value(value)
     if issecretvalue and issecretvalue(value) then return nil end
