@@ -1,15 +1,19 @@
 # Decisions I made — 27 October 2026
 
-## Windows CI Lua encoding — 4 November 2026
+## Windows CI catalogue encoding — 4 November 2026
 
-- The Windows Actions runner failed the flavour-bank consistency test because
-  non-ASCII Lua source literals were interpreted using the Windows code page.
-  Explicit Lupa encodings alone did not fix the hosted runner. Wrote accented
-  caption characters as UTF-8 decimal byte escapes in the Lua files, preserving
-  the same runtime text while making the source ASCII-only. The test now returns
-  caption bytes as ASCII hex before Python decodes them as UTF-8, avoiding Lupa's
-  Windows string conversion path. The caption tests pass under Lua 5.1 and the
-  full suite passes locally (295 tests). Windows CI must rerun to confirm.
+- Reproduced the exact failure by making implicit Path.read_text calls use
+  cp1252. The catalogue and website test reads omitted their UTF-8 encoding;
+  Lua's captions were correct. Windows log encoding made the corrupted expected
+  text look correct and the correct actual text look corrupted. Escaped character
+  codes confirmed the difference. Previous Lupa diagnoses were incorrect.
+- Specified UTF-8 for both catalogue and website reads. Removed the speculative
+  Lua source escapes, runtime encoding changes and hex conversion. Parameterized
+  the consistency test with UTF-8 and cp1252 file defaults: the cp1252 regression
+  fails with the original reads and passes with the corrected reads.
+- Full local suite: 296 passed normally and 296 passed with simulated cp1252
+  default file reads. The seven flavour tests also passed under Lua 5.1; Ruff
+  and whitespace checks passed. Hosted Windows CI still needs a rerun.
 
 ## Daily status preview styling — 4 November 2026
 

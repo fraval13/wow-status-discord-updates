@@ -13,7 +13,7 @@ ROOT=Path(__file__).parents[1]
 
 
 def retail_runtime(name='Thora',extra='', *, join_announcements=False):
-    lua=lupa.LuaRuntime(encoding='utf-8', source_encoding='utf-8', unpack_returned_tuples=True)
+    lua=lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS.replace('return "Thora" end',f'return "{name}" end')+'''
         WOW_PROJECT_MAINLINE=1;WOW_PROJECT_CAMELOT=18;WOW_PROJECT_ID=1
         __level=89;__honor=0
