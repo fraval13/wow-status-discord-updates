@@ -7,7 +7,7 @@ import sys
 import tarfile
 from pathlib import Path
 
-revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True, encoding='utf-8').strip()
+revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], encoding='utf-8').strip()
 homepage = Path('dist/homepage')
 manifest = json.loads((homepage / 'downloads/release.json').read_text(encoding='utf-8'))
 if manifest.get('addon_revision') != revision:

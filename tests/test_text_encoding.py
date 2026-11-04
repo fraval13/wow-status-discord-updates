@@ -11,6 +11,7 @@ of calls. Ruff's PLW1514 is preview-only and misses ``Path.read_text`` on
 computed paths, so it cannot do this job.
 """
 import ast
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
@@ -20,10 +21,18 @@ SCANNED = ('src', 'scripts', 'deploy', 'tests')
 OPENERS = {
     'open': (1, 3, 'r'), 'io.open': (1, 3, 'r'), 'os.fdopen': (1, 3, 'r'),
     'codecs.open': (1, 2, 'r'), 'gzip.open': (1, 3, 'rb'), 'bz2.open': (1, 3, 'rb'),
-    'lzma.open': (1, None, 'rb'),
+    'lzma.open': (1, None, 'rb'), 'io.TextIOWrapper': (None, 1, 'r'),
+    'tempfile.NamedTemporaryFile': (0, 2, 'w+b'), 'tempfile.TemporaryFile': (0, 2, 'w+b'),
+    'tempfile.SpooledTemporaryFile': (1, 3, 'w+b'),
 }
-SUBPROCESS_DECODING = {'run', 'check_output', 'Popen'}
-SUBPROCESS_ALWAYS_TEXT = {'getoutput', 'getstatusoutput'}
+# ``x.open(mode)`` is taken to be ``Path.open`` only when its first argument is a
+# literal mode string (or absent), so ``ZipFile.open(name)`` and ``opener.open(url)``
+# are not mistaken for it. Modules whose ``open`` is something else are skipped.
+PATH_OPEN = (0, 2, 'r')
+MODE = re.compile(r'[rwaxbt+]{1,3}')
+NOT_PATH_OPEN = {'os', 'io', 'codecs', 'gzip', 'bz2', 'lzma', 'tarfile', 'zipfile', 'webbrowser'}
+ALWAYS_LOCALE = {'os.popen', 'subprocess.getoutput', 'subprocess.getstatusoutput'}
+SUBPROCESS_DECODING = {'subprocess.run', 'subprocess.check_output', 'subprocess.Popen'}
 
 
 def _callee(func):
@@ -38,10 +47,13 @@ def _callee(func):
 
 
 def _argument(call, name, position):
+    """The argument node, ``True`` when ``**kwargs`` might supply it, else ``None``."""
     for keyword in call.keywords:
         if keyword.arg == name:
             return keyword.value
-    return call.args[position] if position is not None and len(call.args) > position else None
+    if position is not None and len(call.args) > position:
+        return call.args[position]
+    return ast.Constant(True) if any(keyword.arg is None for keyword in call.keywords) else None
 
 
 def _given(node):
@@ -62,19 +74,28 @@ def _problem(call):
     if method in {'read_text', 'write_text'} and callee != method:
         position = 0 if method == 'read_text' else 1
         return None if _explicit_encoding(_argument(call, 'encoding', position)) else method
-    if callee in OPENERS:
-        mode_position, encoding_position, default = OPENERS[callee]
+    if callee in ALWAYS_LOCALE:
+        return callee
+    opener = OPENERS.get(callee)
+    if opener is None and method == 'open' and callee != method and (
+            callee.partition('.')[0] not in NOT_PATH_OPEN) and (not call.args or (
+            isinstance(call.args[0], ast.Constant) and isinstance(call.args[0].value, str)
+            and MODE.fullmatch(call.args[0].value))):
+        opener = PATH_OPEN
+    if opener:
+        mode_position, encoding_position, default = opener
         mode = _argument(call, 'mode', mode_position)
         mode = default if mode is None else mode.value if isinstance(mode, ast.Constant) else None
         binary = isinstance(mode, str) and 'b' in mode
         if not binary and not _explicit_encoding(_argument(call, 'encoding', encoding_position)):
-            return callee
+            return callee.lstrip('.')
         return None
-    decodes = method in SUBPROCESS_ALWAYS_TEXT or method in SUBPROCESS_DECODING and any(
-        _given(_argument(call, name, None)) for name in ('text', 'universal_newlines', 'errors'))
-    if callee in {method, f'subprocess.{method}'} and decodes and not _explicit_encoding(
+    explicit = {keyword.arg: keyword.value for keyword in call.keywords if keyword.arg}
+    if callee in SUBPROCESS_DECODING and any(
+            _given(explicit.get(name)) for name in ('text', 'universal_newlines', 'errors')
+    ) and not _explicit_encoding(
             _argument(call, 'encoding', None)):
-        return f'subprocess.{method}'
+        return callee
     return None
 
 
@@ -103,6 +124,13 @@ BAD = [
     "subprocess.run(cmd, errors='replace', capture_output=True)",
     "subprocess.check_output(cmd, universal_newlines=True)",
     "subprocess.getoutput(cmd)",
+    "os.popen(cmd)",
+    "path.open()",
+    "path.open('w')",
+    "(base / 'x.lock').open('a')",
+    "tempfile.NamedTemporaryFile('w')",
+    "tempfile.NamedTemporaryFile(mode='w+')",
+    "io.TextIOWrapper(buffer)",
 ]
 GOOD = [
     "p.read_text(encoding='utf-8')",
@@ -125,6 +153,16 @@ GOOD = [
     "subprocess.run(cmd, capture_output=True)",
     "subprocess.run(cmd, text=False)",
     "runner.run(cmd, text=True)",
+    "run(cmd, text=True)",
+    "subprocess.run(cmd, encoding='utf-8')",
+    "subprocess.run(cmd, text=True, **options)",
+    "open(path, **options)",
+    "path.open('ab')",
+    "path.open('w', -1, 'utf-8')",
+    "tempfile.NamedTemporaryFile()",
+    "tempfile.NamedTemporaryFile('w', encoding='utf-8')",
+    "io.TextIOWrapper(buffer, 'utf-8')",
+    "archive.open('WoWStatus/WoWStatus.toc', 'r')",
 ]
 
 

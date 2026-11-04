@@ -119,12 +119,14 @@ git diff --check
 
 Windows decodes text with cp1252 unless told otherwise, so always pass
 `encoding='utf-8'` to text I/O (`read_text`, `write_text`, `open` and friends, and
-`subprocess` calls that decode output). CI runs pytest with
-`PYTHONWARNDEFAULTENCODING=1`, and `pyproject.toml` turns `EncodingWarning` into an
-error, so any such call on a tested path fails. `tests/test_text_encoding.py` also
-scans `src/`, `scripts/`, `deploy/` and `tests/` statically for the common forms.
-Reproduce both locally with
-`LC_ALL=C PYTHONWARNDEFAULTENCODING=1 python -X utf8=0 -m pytest -q`.
+`subprocess` calls that decode output). CI runs pytest and the homepage
+build with `PYTHONWARNDEFAULTENCODING=1` and `PYTHONWARNINGS=error::EncodingWarning`,
+so any such call on a tested path fails, including in scripts that tests start as
+subprocesses. `tests/test_text_encoding.py` also scans `src/`, `scripts/`, `deploy/`
+and `tests/` statically for the common forms; it cannot see code inside string
+literals such as the remote script in `deploy/publish_homepage.py`. Reproduce locally
+with `LC_ALL=C PYTHONWARNDEFAULTENCODING=1 PYTHONWARNINGS=error::EncodingWarning
+python -X utf8=0 -m pytest -q`.
 
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.

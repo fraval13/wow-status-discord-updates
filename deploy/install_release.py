@@ -103,7 +103,7 @@ def main():
     if os.geteuid() != 0:
         raise SystemExit('Receiver requires the dedicated sudo rule')
     os.umask(0o077)
-    deployment_lock = (BASE / 'deployment.lock').open('a', encoding='utf-8')
+    deployment_lock = (BASE / 'deployment.lock').open('ab')
     fcntl.flock(deployment_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     raw = sys.stdin.buffer.read(LIMIT + 1)
     if len(raw) > LIMIT:
