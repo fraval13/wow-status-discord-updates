@@ -18,7 +18,8 @@ from pathlib import Path
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 # Files the game loads without a TOC line. Anything else committed beside the addon
 # (editor files, a WTF/ folder, notes) stays out of the public ZIP.
-ASSETS = (re.compile(r'Textures/[^/]+\.tga', re.IGNORECASE),)
+# Dot files such as macOS ._Logo.tga resource forks never match.
+ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE),)
 
 
 def git(root, *args):
@@ -44,7 +45,7 @@ def package_files(toc, tracked):
 
 
 def project_version(root, revision):
-    pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode('utf-8-sig'))
+    pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode())
     return pyproject['project']['version']
 
 
@@ -54,15 +55,24 @@ def build(root, output, addon_ref):
     editions = {}
     for edition in EDITIONS:
         folder = f'addon/{edition}/WoWStatus/'
-        tracked = git(root, 'ls-tree', '-r', '--name-only', revision, '--', folder).decode().splitlines()
+        # -z keeps non-ASCII paths unquoted.
+        listing = git(root, 'ls-tree', '-r', '-z', '--name-only', revision, '--', folder).decode()
+        tracked = {name.removeprefix(folder) for name in listing.split('\0') if name}
         if not tracked:
             raise ValueError(f'No {edition} addon in {revision}')
-        tracked = {name.removeprefix(folder) for name in tracked}
-        toc = git(root, 'show', f'{revision}:{folder}WoWStatus.toc').decode('utf-8-sig')
-        match = re.search(r'^## Version: ([\w.\-]+)\r?$', toc, re.MULTILINE)
+        if 'WoWStatus.toc' not in tracked:
+            raise ValueError(f'No {edition} TOC in {revision}')
+        toc = git(root, 'show', f'{revision}:{folder}WoWStatus.toc').decode()
+        # The deploy receiver and the public verifier parse TOCs the same strict way.
+        if toc.startswith('\ufeff') or '\r' in toc:
+            raise ValueError(f'The {edition} TOC must be saved without a BOM and with LF line endings')
+        match = re.search(r'^## Version: ([\w.\-]+)$', toc, re.MULTILINE)
         if match is None:
             raise ValueError(f'No version in the {edition} TOC')
-        files = package_files(toc, tracked)
+        try:
+            files = package_files(toc, tracked)
+        except ValueError as error:
+            raise ValueError(f'{edition}: {error}') from error
         skipped = sorted(tracked.difference(files))
         if skipped:
             print(f"Not packaging unlisted {edition} files: {', '.join(skipped)}", file=sys.stderr)

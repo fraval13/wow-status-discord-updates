@@ -22,8 +22,10 @@ builder = load_builder()
 
 
 def git(root, *args):
+    # core.autocrlf=false: commit exactly the bytes a test writes, on Windows too.
     return subprocess.run(['git', '-C', str(root), '-c', 'user.name=Test', '-c', 'user.email=test@example.com',
-                           '-c', 'commit.gpgsign=false', *args], check=True, capture_output=True).stdout
+                           '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', *args],
+                          check=True, capture_output=True).stdout
 
 
 def zip_names(output, edition):
@@ -41,7 +43,11 @@ def addon_repo(tmp_path):
     repo.mkdir()
     archive = git(ROOT, 'archive', '--format=tar', 'HEAD', 'website', 'addon', 'pyproject.toml')
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
-        tar.extractall(repo, filter='data')
+        for member in tar.getmembers():
+            if member.isfile():
+                path = repo / member.name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(tar.extractfile(member).read())
     git(repo, 'init', '-q')
     git(repo, 'add', '-A')
     git(repo, 'commit', '-q', '-m', 'release')
@@ -74,6 +80,7 @@ def test_unlisted_committed_files_stay_out_of_every_zip(addon_repo, tmp_path):
         folder = f'addon/{edition}/WoWStatus/'
         stray |= {folder + '.DS_Store': b'\0\0\0\1Bud1', folder + 'WTF/WoWStatus.lua': b'WoWStatusDB = {}\n',
                   folder + 'Textures/.DS_Store': b'\0', folder + 'Textures/Logo.psd': b'8BPS',
+                  folder + 'Textures/._Logo.tga': b'\0\5\26\7',
                   folder + 'Textures/Old/Logo.tga': b'\0', folder + 'Notes.lua': b'-- not in the TOC\n'}
     commit(addon_repo, stray)
     builder.build(addon_repo, tmp_path / 'stray', 'HEAD')
@@ -99,23 +106,37 @@ def test_pyproject_version_must_match_the_addon_tocs(addon_repo, tmp_path):
 def test_a_toc_listed_file_must_be_committed(addon_repo, tmp_path):
     git(addon_repo, 'rm', '-q', 'addon/tbc/WoWStatus/Popups.lua')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
-    with pytest.raises(ValueError, match='Missing addon file: Popups.lua'):
+    with pytest.raises(ValueError, match='tbc: Missing addon file: Popups.lua'):
         builder.build(addon_repo, tmp_path, 'HEAD')
 
 
-def test_tocs_saved_with_a_bom_and_crlf_still_build(addon_repo, tmp_path):
-    builder.build(addon_repo, tmp_path / 'clean', 'HEAD')
+@pytest.mark.parametrize('variant', ['bom', 'crlf'])
+def test_a_toc_with_a_bom_or_crlf_fails_clearly(addon_repo, tmp_path, variant):
     toc = 'addon/retail/WoWStatus/WoWStatus.toc'
     data = (addon_repo / toc).read_bytes()
-    commit(addon_repo, {toc: b'\xef\xbb\xbf' + data.replace(b'\r\n', b'\n').replace(b'\n', b'\r\n')})
-    builder.build(addon_repo, tmp_path / 'windows', 'HEAD')
-    assert zip_names(tmp_path / 'windows', 'retail') == zip_names(tmp_path / 'clean', 'retail')
+    data = b'\xef\xbb\xbf' + data if variant == 'bom' else data.replace(b'\n', b'\r\n')
+    commit(addon_repo, {toc: data})
+    with pytest.raises(ValueError, match='retail TOC must be saved without a BOM and with LF'):
+        builder.build(addon_repo, tmp_path, 'HEAD')
+
+
+def test_a_missing_toc_fails_clearly(addon_repo, tmp_path):
+    git(addon_repo, 'rm', '-q', 'addon/forever/WoWStatus/WoWStatus.toc')
+    git(addon_repo, 'commit', '-q', '-m', 'drop')
+    with pytest.raises(ValueError, match='No forever TOC'):
+        builder.build(addon_repo, tmp_path, 'HEAD')
+
+
+def test_non_ascii_texture_names_ship(addon_repo, tmp_path):
+    commit(addon_repo, {'addon/vanilla/WoWStatus/Textures/Æsir.tga': b'\0'})
+    builder.build(addon_repo, tmp_path, 'HEAD')
+    assert 'WoWStatus/Textures/Æsir.tga' in zip_names(tmp_path, 'vanilla')
 
 
 def test_package_files_reads_toc_paths_and_allowlisted_textures():
     toc = '## Version: 1.0\n# comment\r\nLibs\\Lib.lua\r\n\nCore.lua\n'
     tracked = {'WoWStatus.toc', 'Libs/Lib.lua', 'Core.lua', 'Extra.lua', 'Textures/Logo.tga',
-               'Textures/Glow.TGA', 'Textures/Logo.tga.bak', 'Textures/Deep/Logo.tga',
+               'Textures/Glow.TGA', 'Textures/Logo.tga.bak', 'Textures/Deep/Logo.tga', 'Textures/._Logo.tga',
                'WTF/WoWStatus.lua', '.DS_Store'}
     assert builder.package_files(toc, tracked) == ['Core.lua', 'Libs/Lib.lua', 'Textures/Glow.TGA',
                                                    'Textures/Logo.tga', 'WoWStatus.toc']
