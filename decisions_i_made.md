@@ -26,7 +26,7 @@
   rather than recreating a page the owner removed. Issue #22.
 - Removed the dead `milestonesCategory` and `WoWStatusMilestoneSettings` lookups,
   the unused `ADDON` local and the unused `report`/`panel` locals in
-  `Milestones.lua` (luacheck W221/W211/W311). `WoWStatusMilestones.init` no longer
+  `Milestones.lua` (luacheck W221, W231 and W211). `WoWStatusMilestones.init` no longer
   takes the unused reporter argument.
 - Tests: both the modern Settings and legacy InterfaceOptions paths assert the
   command opens the main category and no Milestones category is registered.
