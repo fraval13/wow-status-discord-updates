@@ -10,7 +10,6 @@ import argparse
 import difflib
 import hashlib
 import json
-import re
 import subprocess
 import tarfile
 import tempfile
@@ -19,7 +18,6 @@ from pathlib import Path
 import render_caddyfile
 
 PRIVATE_GROUPS = render_caddyfile.GROUPS.as_posix()
-ROUTE_KEY = r'handle_path /groups/([0-9a-f]{22})/'
 
 REMOTE = r'''
 import hashlib, json, os, pathlib, shutil, subprocess, tarfile, time
@@ -101,20 +99,22 @@ def main(argv=None):
     if b'wow.frankvalde.com {' not in old_config or b'handle_path /groups/' not in old_config:
         parser.error('The target does not have the expected existing WoW gateway')
     caddyfile = render_caddyfile.render(private_groups(args.groups_config, ssh))
-    # Publishing the homepage never removes a group route: a partial --groups-config, or
-    # a checkout whose key derivation differs from the deployed one, would cut a group off.
-    dropped = len(set(re.findall(ROUTE_KEY, old_config.decode('utf-8'))) - set(re.findall(ROUTE_KEY, caddyfile)))
-    refusal = (f'The rendered Caddyfile would remove {dropped} live group route(s). Change group routes '
-               'with deploy/render_caddyfile.py on the server instead (deploy/SERVER.md).')
+    # Publishing the homepage never changes group routes. Differing routes mean a partial
+    # or stale --groups-config, a checkout whose key derivation differs from the deployed
+    # one, or the wrong host; any of them could cut a group off.
+    live_routes, new_routes = render_caddyfile.routes(old_config.decode('utf-8')), render_caddyfile.routes(caddyfile)
+    refusal = (f'The rendered Caddyfile would remove {len(live_routes - new_routes)} and add '
+               f'{len(new_routes - live_routes)} group route(s). The homepage publisher keeps the live '
+               'routes; change them with deploy/render_caddyfile.py on the server (deploy/SERVER.md).')
     if args.dry_run:
         diff = ''.join(difflib.unified_diff(old_config.decode('utf-8').splitlines(True), caddyfile.splitlines(True),
                                             '/etc/caddy/Caddyfile (live)', 'rendered from private groups.json'))
         print(diff or 'The rendered Caddyfile matches the live one.')
-        if dropped:
+        if live_routes != new_routes:
             print('Publishing would stop here: ' + refusal)
         print('Dry run: nothing was uploaded or changed.')
         return
-    if dropped:
+    if live_routes != new_routes:
         parser.error(refusal)
     import datetime
     release = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
@@ -130,7 +130,7 @@ def main(argv=None):
     # The rendered Caddyfile travels on the SSH stdin, never through the world-readable /tmp upload.
     variables = '\n'.join([f'PAYLOAD={json.dumps(remote_path)}', f'RELEASE={json.dumps(release)}',
                             f'EXPECTED={json.dumps(hashlib.sha256(old_config).hexdigest())}',
-                            f'CADDYFILE={json.dumps(caddyfile)}'])
+                            f'CADDYFILE={caddyfile!r}'])  # repr: a valid literal for any text
     subprocess.run([*ssh, 'python3 -'],input=(variables + '\n' + REMOTE).encode(),check=True)
 
 

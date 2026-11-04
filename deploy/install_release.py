@@ -79,10 +79,16 @@ def validate_groups(raw):
 
 
 def legacy_groups(config):
-    """Groups from the <instance>.env files an earlier receiver wrote before groups.json."""
+    """Groups from the <instance>.env files an earlier receiver wrote before groups.json.
+
+    A file counts only if its database path names its own instance, so a copy such as
+    a backup under another name is skipped.
+    """
     groups = {}
     for path in sorted(config.glob('*.env')):
         values = dict(re.findall(r'^([A-Z_]+)="([^"\n]*)"$', path.read_text(encoding='utf-8'), re.MULTILINE))
+        if values.get('WOW_STATUS_DATABASE') != f'/var/lib/wow-character-{path.stem}/service.sqlite3':
+            continue
         port = values.get('WOW_STATUS_PORT', '')
         groups[path.stem] = {'name': values.get('DISCORD_GROUP_NAME'),
                              'port': int(port) if port.isdigit() else None}
@@ -232,6 +238,7 @@ def main():
     old_homepage = (HOMEPAGE / 'current').resolve() if (HOMEPAGE / 'current').exists() else None
     old_config = {name: (CONFIG / name).read_bytes() if (CONFIG / name).exists() else None
                   for name in ['config.json', 'groups.json', *(f'{instance}.env' for instance in groups)]}
+    config_written = False
     activated = False
     homepage_activated = False
     candidate = None
@@ -279,6 +286,7 @@ def main():
         run('runuser', '-u', 'wow-character-build', '--', str(candidate / '.venv/bin/python'),
             '-m', 'pip', 'install', '--disable-pip-version-check', str(candidate))
         root_readonly_tree(candidate)
+        config_written = True
         for instance, group in groups.items():
             write_private(CONFIG / f'{instance}.env', service_environment(instance, group, merged[instance], revision))
         write_private(CONFIG / 'config.json', json.dumps(merged))
@@ -309,11 +317,8 @@ def main():
                 switch_homepage(old_homepage)
             else:
                 (HOMEPAGE / 'current').unlink(missing_ok=True)
-        if activated and old_target:
-            rollback = BASE / 'rollback'
-            rollback.unlink(missing_ok=True)
-            rollback.symlink_to(old_target)
-            rollback.replace(BASE / 'current')
+        if config_written and old_target:
+            # Also before activation: the old release must keep running with its own config.
             for name, value in old_config.items():
                 path = CONFIG / name
                 if value is None:
@@ -321,10 +326,17 @@ def main():
                 else:
                     path.write_bytes(value)
                     path.chmod(0o600)
+        if activated and old_target:
+            rollback = BASE / 'rollback'
+            rollback.unlink(missing_ok=True)
+            rollback.symlink_to(old_target)
+            rollback.replace(BASE / 'current')
             for instance in groups:
-                # An instance this deploy added has no env file any more: stop it.
-                existed = old_config[f'{instance}.env'] is not None
-                systemctl('restart' if existed else 'stop', instance, check=False)
+                if old_config[f'{instance}.env'] is not None:
+                    systemctl('restart', instance, check=False)
+                else:  # added by this deploy, and its env file is gone again
+                    systemctl('stop', instance, check=False)
+                    systemctl('disable', instance, check=False)
             print('Deployment failed; restored the preceding project release.', file=sys.stderr)
         elif activated:
             for instance in groups:

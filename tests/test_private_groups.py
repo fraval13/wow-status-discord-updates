@@ -3,6 +3,7 @@
 The deployment reads them from private configuration: the server's groups.json for
 services and Caddy routes, and one GitHub secret for Discord settings.
 """
+import ast
 import hashlib
 import importlib
 import json
@@ -102,7 +103,11 @@ def test_first_run_migrates_groups_from_the_previous_receivers_env_files(tmp_pat
         # Exactly what the previous receiver wrote, where the instance was the name.
         (tmp_path / f'{instance}.env').write_text(module.environment({
             'DISCORD_GROUP_NAME': group['name'], 'WOW_STATUS_PORT': str(group['port']),
-            'WOW_STATUS_REVISION': 'a' * 40, 'DISCORD_BOT_TOKEN': ''}), encoding='utf-8')
+            'WOW_STATUS_REVISION': 'a' * 40,
+            'WOW_STATUS_DATABASE': f'/var/lib/wow-character-{instance}/service.sqlite3',
+            'DISCORD_BOT_TOKEN': ''}), encoding='utf-8')
+    # A copy under another name (a backup, say) names another instance's database: skipped.
+    (tmp_path / 'group-a-old.env').write_bytes((tmp_path / 'group-a.env').read_bytes())
     groups, migrated = module.load_groups(tmp_path)
     assert (groups, migrated) == (GROUPS, True)
     (tmp_path / 'groups.json').write_text(json.dumps({'group-a': GROUPS['group-a']}), encoding='utf-8')
@@ -203,6 +208,19 @@ def test_caddyfile_render_rejects_invalid_private_config():
         load('deploy/render_caddyfile.py').render({'group-a': {'name': 'a"b', 'port': 18081}})
 
 
+def test_caddyfile_render_rejects_two_groups_with_one_route_key(monkeypatch):
+    module = load('deploy/render_caddyfile.py')
+    monkeypatch.setattr(module, 'group_key', lambda name: '0' * 22)
+    with pytest.raises(ValueError, match='route key'):
+        module.render(GROUPS)
+
+
+def test_rendered_routes_are_read_back_with_their_ports():
+    module = load('deploy/render_caddyfile.py')
+    assert module.routes(module.render(GROUPS)) == {
+        (group_key(group['name']), str(group['port'])) for group in GROUPS.values()}
+
+
 def test_render_command_writes_the_caddyfile_from_a_groups_file(tmp_path):
     config, output = tmp_path / 'groups.json', tmp_path / 'Caddyfile'
     config.write_text(json.dumps(GROUPS), encoding='utf-8')
@@ -214,7 +232,8 @@ def test_render_command_writes_the_caddyfile_from_a_groups_file(tmp_path):
     assert printed.replace('\r\n', '\n') == output.read_text(encoding='utf-8')
 
 
-OLD_ROUTE = b'wow.frankvalde.com {\n    handle_path /groups/0123456789abcdef012345/* {\n    }\n}\n'
+OLD_ROUTE = (b'wow.frankvalde.com {\n    handle_path /groups/0123456789abcdef012345/* {\n'
+             b'        reverse_proxy 127.0.0.1:18089 {\n        }\n    }\n}\n')
 
 
 @pytest.fixture
@@ -252,13 +271,16 @@ def test_publish_dry_run_shows_the_caddy_change_from_the_servers_private_config(
     printed = capsys.readouterr().out
     assert f'+    handle_path /groups/{group_key(GROUPS["group-a"]["name"])}/*' in printed
     assert '-    handle_path /groups/0123456789abcdef012345/*' in printed
-    assert 'would remove 1 live group route(s)' in printed
+    assert 'would remove 1 and add 2 group route(s)' in printed
     assert 'nothing was uploaded or changed' in printed
     assert not any(call[0] in ('scp', 'uploaded') or call[-1] == 'python3 -' for call in fake_ssh)
 
 
-def test_publish_refuses_to_drop_a_live_group_route(fake_ssh, live, tmp_path):
-    live['config'] = OLD_ROUTE
+@pytest.mark.parametrize('ports', [{'group-a': 18081}, {'group-a': 18082, 'group-b': 18081}])
+def test_publish_refuses_to_change_live_group_routes(fake_ssh, live, tmp_path, ports):
+    # A partial or stale private config: a group missing, or two groups' ports swapped.
+    changed = {instance: dict(GROUPS[instance], port=port) for instance, port in ports.items()}
+    live['config'] = load('deploy/render_caddyfile.py').render(changed).encode()
     site = tmp_path / 'homepage'
     (site / 'downloads').mkdir(parents=True)
     (site / 'index.html').write_text('<!doctype html>', encoding='utf-8')
@@ -269,6 +291,10 @@ def test_publish_refuses_to_drop_a_live_group_route(fake_ssh, live, tmp_path):
 
 
 def test_publish_sends_the_rendered_caddyfile_over_ssh_not_in_the_upload(fake_ssh, tmp_path, monkeypatch):
+    renderer = load('deploy/render_caddyfile.py')
+    template = tmp_path / 'Caddyfile.template'  # any text survives, even outside the BMP
+    template.write_text(renderer.TEMPLATE.read_text(encoding='utf-8') + '# \U0001f600\n', encoding='utf-8')
+    monkeypatch.setattr(renderer, 'TEMPLATE', template)
     site = tmp_path / 'homepage'
     (site / 'downloads').mkdir(parents=True)
     (site / 'index.html').write_text('<!doctype html>', encoding='utf-8')
@@ -288,7 +314,7 @@ def test_publish_sends_the_rendered_caddyfile_over_ssh_not_in_the_upload(fake_ss
                                              '--groups-config', str(config)])
     assert not any(call[-1] == 'cat /etc/wow-character-status/groups.json' for call in fake_ssh)
     variables = dict(line.split('=', 1) for line in sent['script'].split('\nimport ', 1)[0].splitlines())
-    assert json.loads(variables['CADDYFILE']) == load('deploy/render_caddyfile.py').render(GROUPS)
+    assert ast.literal_eval(variables['CADDYFILE']) == renderer.render(GROUPS)
     if sys.platform != 'win32':  # Windows can't reopen the open temporary upload
         uploaded = next(call[1] for call in fake_ssh if call[0] == 'uploaded')
         assert sorted(uploaded) == ['downloads/release.json', 'index.html']
