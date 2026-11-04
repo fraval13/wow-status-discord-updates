@@ -44,11 +44,19 @@ tracking began, not a claim of complete lifetime deaths.
 
 ## Integration status
 
-The retained desktop companion, ingestion service and legacy daily scheduler
-exist. The companion-only shared-journal relay, dated peer state/checkpoints and
-this upload-triggered group-state report still require implementation. Do not
-enable the old addon Discord options to implement this flow. Retain separate
-navsquad/ronkalot routes and databases. No AI call is needed to sort or count.
+The upload-triggered group-state report is implemented in
+`src/wow_status/group_status.py`, rendered by `output.daily_status_message` and
+delivered by `StatusBot.deliver_standings`. Cumulative level and death values are
+read from the dated snapshots and events already ingested; the companion-only
+shared-journal relay and dated peer state/checkpoints remain unimplemented, so
+coverage is limited to what consenting companions upload directly.
+
+A report is suppressed entirely unless a new observation whose own recorded time
+falls between the previous report's cutoff and the new one arrived after the new
+cutoff. Unchanged standings are never reposted, and no "nothing happened" message
+is sent. Do not enable the old addon Discord options to implement this flow.
+Retain separate navsquad/ronkalot routes and databases. No AI call is needed to
+sort or count.
 
 `python scripts/send_status_preview.py --daily-status` renders the prepared
 example locally. Adding `--send --group navsquad` explicitly posts that labelled

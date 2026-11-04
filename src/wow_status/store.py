@@ -89,6 +89,16 @@ class Store:
             status TEXT NOT NULL DEFAULT 'pending', next_try REAL NOT NULL DEFAULT 0,
             PRIMARY KEY(day,timezone));
         CREATE TABLE IF NOT EXISTS meta(key TEXT PRIMARY KEY, value TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS status_reports(
+            day TEXT NOT NULL, timezone TEXT NOT NULL, cutoff INTEGER NOT NULL,
+            covers_from INTEGER NOT NULL, generated INTEGER NOT NULL,
+            status TEXT NOT NULL DEFAULT 'pending', next_try REAL NOT NULL DEFAULT 0,
+            message_ids TEXT NOT NULL DEFAULT '[]', PRIMARY KEY(day,timezone));
+        CREATE TABLE IF NOT EXISTS status_report_rows(
+            day TEXT NOT NULL, timezone TEXT NOT NULL, character TEXT NOT NULL
+            REFERENCES characters(id) ON DELETE CASCADE, state TEXT NOT NULL,
+            PRIMARY KEY(day,timezone,character),
+            FOREIGN KEY(day,timezone) REFERENCES status_reports(day,timezone) ON DELETE CASCADE);
         CREATE TABLE IF NOT EXISTS digest_parts(
             day TEXT NOT NULL, timezone TEXT NOT NULL, character TEXT NOT NULL
             REFERENCES characters(id) ON DELETE CASCADE,
@@ -103,6 +113,7 @@ class Store:
             self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
             self.db.execute("UPDATE digest_parts SET status='uncertain' WHERE status='sending'")
             self.db.execute("UPDATE weekly_parts SET status='uncertain' WHERE status='sending'")
+            self.db.execute("UPDATE status_reports SET status='uncertain' WHERE status='sending'")
         # Backfill deduplication markers without rewriting existing event IDs or history.
         if not self.db.execute("SELECT 1 FROM meta WHERE key='level_claims_v1'").fetchone():
             with self.db:

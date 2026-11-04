@@ -8,7 +8,8 @@ from discord import app_commands
 
 from .daily import DailyRecaps
 from .formatting import announcement, fit_lines, profile, roster_pages, safe
-from .output import emoji, upload_summary
+from .group_status import GroupStatusReports
+from .output import daily_status_message, emoji, upload_summary
 from .output import message as announcement_message
 from .people import decorate, nickname, remember, set_role
 from .weekly import WeeklyRecaps
@@ -40,6 +41,7 @@ class StatusBot(discord.Client):
                          allowed_mentions=discord.AllowedMentions.none())
         self.store, self.guild_id, self.channel_id = store, guild_id, channel_id
         self.recaps = DailyRecaps(store)
+        self.standings = GroupStatusReports(store)
         self.weekly = WeeklyRecaps(store)
         self.tree = CommunityTree(self)
         self.worker = None
@@ -220,11 +222,13 @@ class StatusBot(discord.Client):
             if time.time() - last_schedule > 30:
                 self.recaps.schedule()
                 self.weekly.schedule()
+                self.standings.prepare()
                 last_schedule = time.time()
             # A continuous upload backlog must not starve scheduled summaries.
             if time.time() - last_recap >= 60 and self.store.can_post():
                 await self.deliver_recap()
                 await self.deliver_recap(self.weekly)
+                await self.deliver_standings()
                 last_recap = time.time()
             item = self.store.pending(ready_only=True)
             if not item:
@@ -295,3 +299,43 @@ class StatusBot(discord.Client):
                 recaps.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
         except (OSError, asyncio.TimeoutError):
             recaps.delivery(key, 'uncertain')
+
+    async def deliver_standings(self):
+        """One frozen cumulative report per group day; never a repeat of unchanged standings."""
+        if not self.store.can_post():
+            return
+        item = self.standings.pending()
+        if item is None:
+            return
+        key = item['key']
+        try:
+            channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
+            if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
+                self.standings.delivery(key, 'failed')
+                log.error('Status channel does not belong to configured server')
+                return
+            # Re-read after the network await so a withdrawal cancels the unsent report.
+            current = self.standings.pending()
+            if current is None or current['key'] != key:
+                return
+            name = self.store.db.execute(
+                "SELECT value FROM meta WHERE key='active_group_name'").fetchone()
+            pages = daily_status_message(current['rows'], current['cutoff'],
+                                         name['value'] if name else None, self.custom_emojis())
+            self.store.reserve_post()
+            self.standings.delivery(key, 'sending')
+            sent = []
+            for page in pages:
+                message = await channel.send(**page, allowed_mentions=discord.AllowedMentions.none())
+                sent.append(str(message.id))
+            self.standings.delivery(key, 'sent', sent)
+        except discord.Forbidden:
+            self.standings.delivery(key, 'failed')
+            log.error('Discord denied channel access for the daily status report')
+        except discord.HTTPException as exc:
+            if exc.status == 429:
+                self.standings.delivery(key, 'pending', delay=60)
+            else:
+                self.standings.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
+        except (OSError, asyncio.TimeoutError):
+            self.standings.delivery(key, 'uncertain')
