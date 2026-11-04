@@ -1224,3 +1224,18 @@ def test_first_equip_roundtrip_shows_equipped_text_not_looted():
     friend.eval('fire')('CHAT_MSG_ADDON','WoWStatus',packet,'WHISPER','Thora-TestRealm')
     assert 'Equipped' in friend.eval('WoWStatusLevelPopup.message:GetText()')
     assert friend.eval('WoWStatusJournal.entries()[1].text') == 'Equipped Rare armor'
+
+
+def test_spirit_release_does_not_recount_the_same_death(lua):
+    """PLAYER_ALIVE fires on spirit release while still a ghost; the death must count once."""
+    lua.eval('fire')('PLAYER_DEAD')
+    assert lua.eval('character().snapshot.deaths') == 1
+    lua.execute('UnitIsDeadOrGhost = function() return true end')
+    lua.eval('fire')('PLAYER_ALIVE')
+    lua.eval('fire')('PLAYER_DEAD')
+    assert lua.eval('character().snapshot.deaths') == 1
+    # Returning to life clears the latch, so a genuinely new death counts again.
+    lua.execute('UnitIsDeadOrGhost = function() return false end')
+    lua.eval('fire')('PLAYER_UNGHOST')
+    lua.eval('fire')('PLAYER_DEAD')
+    assert lua.eval('character().snapshot.deaths') == 2
