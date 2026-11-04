@@ -60,6 +60,11 @@ labels by hand on the website. The pipeline runs on pushed `main` commits or man
 workflow dispatches. Local commits alone cannot trigger GitHub Actions.
 
 After deployment, the workflow fetches the live homepage, release manifest and
-all four ZIP downloads using `scripts/verify_homepage.py`. It checks the exact
-commit revision, visible download links, public hashes, ZIP contents and version
-labels. A stale or missing public download fails the release verification step.
+all four ZIP downloads using `scripts/verify_homepage.py`, and compares them with
+the `release.json` the deploy job built itself (`--manifest`), not only with the
+manifest the site serves. It checks the exact commit revision, that the served
+manifest equals the local one, the visible download links, that every ZIP's size
+and SHA-256 match the local build, and the version labels. Each ZIP must hold
+exactly its TOC, the files the TOC lists and `Textures/*.tga` under `WoWStatus/`;
+path traversal, duplicate, directory, symlink or other unexpected entries fail. A stale,
+tampered or missing public download fails the release verification step.

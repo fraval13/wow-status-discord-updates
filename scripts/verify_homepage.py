@@ -1,17 +1,61 @@
-"""Verify the published homepage and every addon ZIP after a pipeline release."""
+"""Verify the published homepage and every addon ZIP after a pipeline release.
+
+The live site is compared with the release.json this machine just built, never only
+with the manifest the site itself serves: a tampered site could regenerate that.
+"""
 import argparse
+import functools
 import hashlib
+import importlib.util
 import io
 import json
 import re
+import stat
 import time
 import urllib.request
 import zipfile
 from html.parser import HTMLParser
+from pathlib import Path
 from urllib.parse import urlparse
 
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 MAX_BYTES = 32 * 1024 * 1024
+FOLDER = 'WoWStatus/'
+
+
+RELEASE_FIELDS = ('version', 'file', 'bytes', 'sha256')
+
+
+@functools.cache
+def package_files():
+    """The builder's own rule for what ships, so the builder and the verifier never disagree."""
+    builder = Path(__file__).with_name('build_homepage.py')
+    spec = importlib.util.spec_from_file_location('build_homepage', builder)
+    if spec is None or not builder.is_file():
+        raise RuntimeError(f'The verifier needs {builder} beside it')
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module.package_files
+
+
+def valid_release(edition, release):
+    return (isinstance(release, dict) and set(release) == set(RELEASE_FIELDS)
+            and release['file'] == f'WoWStatus-{edition}.zip'
+            and type(release['bytes']) is int and release['bytes'] > 0
+            and isinstance(release['sha256'], str)
+            and re.fullmatch('[a-f0-9]{64}', release['sha256']) is not None
+            and isinstance(release['version'], str)
+            and re.fullmatch(r'[\w.\-]+', release['version']) is not None)
+
+
+def check_local(expected, revision):
+    """Require expected to be a complete local release.json built from revision."""
+    if (not isinstance(expected, dict) or expected.get('addon_revision') != revision
+            or not isinstance(expected.get('editions'), dict)
+            or set(expected['editions']) != set(EDITIONS)
+            or not all(valid_release(edition, release)
+                       for edition, release in expected['editions'].items())):
+        raise ValueError(f'The local release.json is not a complete build of revision {revision}')
 
 
 class DownloadLinks(HTMLParser):
@@ -37,7 +81,39 @@ def read(url):
         return data
 
 
-def verify(base, revision, fetch=read):
+def check_entries(edition, package):
+    """Require exactly the TOC, the files it lists and allowlisted assets, all inside WoWStatus/."""
+    for item in package.infolist():
+        name = item.filename
+        # On Windows zipfile turns stored backslashes into '/', so check the stored name
+        # first: otherwise the rewritten name could look like a duplicate or a valid file.
+        # zipfile also cuts a name at its first NUL; the stored name keeps it.
+        if (item.is_dir() or not name.startswith(FOLDER) or '\\' in item.orig_filename
+                or '\0' in item.orig_filename or ':' in name
+                # Regular files only: unzip would restore a symlink entry as a link.
+                or not stat.S_ISREG(item.external_attr >> 16)
+                or any(part in ('', '.', '..') for part in name.split('/'))):
+            raise ValueError(f'The public {edition} ZIP has an unexpected entry: '
+                             f'{item.orig_filename!r}')
+    names = [item.filename for item in package.infolist()]
+    if len(set(names)) != len(names):
+        raise ValueError(f'The public {edition} ZIP has duplicate entries')
+    present = {name.removeprefix(FOLDER) for name in names}
+    if 'WoWStatus.toc' not in present:
+        raise ValueError(f'The public {edition} ZIP has no TOC')
+    toc = package.read(FOLDER + 'WoWStatus.toc').decode('utf-8')
+    try:
+        expected = package_files()(toc, present)
+    except ValueError as error:
+        raise ValueError(f'The public {edition} ZIP does not match its TOC: {error}') from error
+    unexpected = sorted(present.difference(expected))
+    if unexpected:
+        raise ValueError(f"The public {edition} ZIP has unexpected entries: {', '.join(unexpected)}")
+    return toc
+
+
+def check_inputs(base, revision, expected):
+    """Reject arguments that no retry can fix: a bad URL, revision or local manifest."""
     address = urlparse(base)
     if (address.username or address.password or address.query or address.fragment
             or (address.scheme != 'https' and not
@@ -45,34 +121,41 @@ def verify(base, revision, fetch=read):
         raise ValueError('Use HTTPS, or a localhost preview URL')
     if not re.fullmatch('[a-f0-9]{40}', revision):
         raise ValueError('Expected a complete Git commit revision')
+    check_local(expected, revision)
+
+
+def verify(base, revision, fetch=read, *, expected):
+    """Check the live site at base against expected, the release.json built locally for revision."""
+    check_inputs(base, revision, expected)
     base = base.rstrip('/')
     manifest = json.loads(fetch(base + '/downloads/release.json'))
-    if manifest.get('addon_revision') != revision:
+    # Checked on its own first: a stale deploy is the common failure, and this says so.
+    if not isinstance(manifest, dict) or manifest.get('addon_revision') != revision:
         raise ValueError('The live website is serving a different release revision')
-    if set(manifest.get('editions', {})) != set(EDITIONS):
-        raise ValueError('The live website does not contain every addon edition')
+    if manifest != expected:
+        raise ValueError('The live release.json differs from the locally built one')
     html = fetch(base + '/').decode('utf-8')
     parser = DownloadLinks()
     parser.feed(html)
     text = ' '.join(parser.text)
     versions = set()
     for edition in EDITIONS:
-        release = manifest['editions'][edition]
+        release = expected['editions'][edition]
         name = f'WoWStatus-{edition}.zip'
         path = '/downloads/' + name
-        if release.get('file') != name or path not in parser.links:
+        if release['file'] != name or path not in parser.links:
             raise ValueError(f'Missing or incorrect {edition} download link')
         data = fetch(base + path)
-        if (len(data) != release.get('bytes') or
-                hashlib.sha256(data).hexdigest() != release.get('sha256')):
-            raise ValueError(f'The public {edition} ZIP does not match its checksum')
+        if (len(data) != release['bytes'] or
+                hashlib.sha256(data).hexdigest() != release['sha256']):
+            raise ValueError(f'The public {edition} ZIP does not match the locally built one')
         with zipfile.ZipFile(io.BytesIO(data)) as package:
             if (sum(item.file_size for item in package.infolist()) > MAX_BYTES
                     or package.testzip() is not None):
                 raise ValueError(f'The public {edition} ZIP is invalid')
-            toc = package.read('WoWStatus/WoWStatus.toc').decode('utf-8')
+            toc = check_entries(edition, package)
             match = re.search(r'^## Version: ([\w.\-]+)$', toc, re.MULTILINE)
-            if not match or match.group(1) != release.get('version'):
+            if not match or match.group(1) != release['version']:
                 raise ValueError(f'The public {edition} version is incorrect')
         versions.add(release['version'])
     if len(versions) != 1 or f'VERSION {next(iter(versions))}' not in text:
@@ -86,14 +169,25 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--url', required=True)
     parser.add_argument('--revision', required=True)
+    parser.add_argument('--manifest', type=Path, required=True,
+                        help='downloads/release.json from the local build of --revision')
     parser.add_argument('--attempts', type=int, default=1)
     parser.add_argument('--delay', type=float, default=5)
     args = parser.parse_args()
     if not 1 <= args.attempts <= 12 or not 0 <= args.delay <= 10:
         parser.error('Use 1–12 attempts and a delay of 0–10 seconds')
+    try:
+        expected = json.loads(args.manifest.read_text(encoding='utf-8'))
+    except (OSError, ValueError) as error:
+        parser.error(f'Cannot read the local manifest {args.manifest}: {error}')
+    # Fail now rather than after every retry: a wrong argument or local build never becomes right.
+    try:
+        check_inputs(args.url, args.revision, expected)
+    except ValueError as error:
+        parser.error(str(error))
     for attempt in range(args.attempts):
         try:
-            result = verify(args.url, args.revision)
+            result = verify(args.url, args.revision, expected=expected)
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break

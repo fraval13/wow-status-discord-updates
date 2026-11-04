@@ -56,6 +56,8 @@ be checked against Git and the environment rather than assumed permanently true.
   equal the `pyproject.toml` version.
 - `.github/workflows/checks.yml`: Linux/Windows checks, packaging, deployment and
   public verification on `main` pushes; also supports manual dispatch.
+  `scripts/verify_homepage.py` compares the live site with the locally built
+  `release.json` (`--manifest`) and checks each ZIP's entries against its TOC.
   `scripts/deploy_gate.py` lets a run deploy only while its commit is the tip of
   `main`, so an older run never deploys over a newer one.
 - `deploy/SERVER.md`: current dedicated server deployment architecture.
@@ -181,7 +183,8 @@ With available authorized access and a built default output:
 SSH_AUTH_SOCK=/tmp/wow-forever-deploy-agent.sock \
   python deploy/publish_homepage.py --host root@193.243.189.202
 python scripts/verify_homepage.py --url https://wow.frankvalde.com \
-  --revision <full-40-character-addon-commit-sha>
+  --revision <full-40-character-addon-commit-sha> \
+  --manifest dist/homepage/downloads/release.json
 ```
 
 The publisher validates Caddy, atomically switches the static-site symlink and
