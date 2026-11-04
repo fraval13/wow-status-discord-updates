@@ -17,28 +17,6 @@
 - TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
   public verifier parse TOCs strictly. Retail per-line load conditions
   (`[AllowLoadGameType ...]`) are not supported by any stage yet.
-## Rejected uploads keep the display name (#10) — 4 November 2026
-
-- `/v1/upload` validated `player_name` and wrote it with `remember()` before
-  `store.ingest` validated the rest, so a 400 or 409 still renamed the owner and
-  rewrote their archives. The handler now only checks the name and passes it to
-  `Store.ingest(..., name=(label, source))`, which writes it inside the ingest
-  transaction after the conflict checks; any later rejection rolls it back. An
-  upload that stores nothing (new character, sharing off) does not rename either.
-  After the commit each archive is rewritten at most once: all of the owner's
-  when the label changed or the addon made a character main (which demotes the
-  others), otherwise only the uploaded character. `set_role(sync=False)` lets
-  ingest decide, and `pause` rewrites only the paused character or owner. A
-  crash between commit and rewrite is healed by the startup `sync_archives()`.
-- `people.store_name` is the non-committing write; `remember()` wraps it for the
-  enrollment and Discord paths, which behave as before.
-- Tests in `tests/test_upload_names.py`: 400 and 409 keep the name and archive,
-  an accepted upload renames every archived character (new or existing), an
-  empty upload keeps the name, a rename plus role change writes each archive
-  once, a new alt writes only its own archive, a 429 raised after the label write
-  rolls it back, and a blank name falls back to the Friend label as on `main`.
-- Left for the owner: whether a blank `player_name` should keep an existing
-  addon name instead of the Friend fallback (unchanged from `main`).
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
