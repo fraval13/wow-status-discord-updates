@@ -50,8 +50,9 @@ and [fictional example](daily-status-example.md).
 
 ## Implementation status
 
-These are the approved requirements for the proposed relay, not a claim that it
-is enabled. The retained companion currently exports opted-in character history;
-it does not yet upload the shared journal or generate AI recaps. The existing
-addon switch also disables the old exports. Implement the companion-only relay
-as a separate path without turning the addon switch on.
+The daily cumulative group-state report is implemented and delivered from the
+service (see [the report rules](DAILY_STATUS_REPORT.md)). The companion still
+exports only opted-in character history; it does not yet upload the shared
+journal, and dated peer checkpoints are still missing, so the report covers only
+directly uploaded observations. The existing addon switch continues to disable
+the old exports; the relay remains a separate path with that switch off.

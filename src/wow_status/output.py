@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 import discord
 
-from .archive import item_reference
+from .archive import TIMEZONE, item_reference
 from .daily import window
 from .formatting import announcement, clip, safe
 from .progression import timeline
@@ -153,6 +153,123 @@ def daily_status_preview(custom=None):
         card.set_thumbnail(url=f'https://wow.zamimg.com/images/wow/icons/large/classicon_{token.lower()}.jpg')
         cards.append(card)
     return {'content':'', 'embeds':cards}
+
+
+def status_display_names(rows):
+    """Disambiguate repeated character names across realms and client editions."""
+    counts = {}
+    for row in rows:
+        name = row['identity'].get('name', '?')
+        counts[name.casefold()] = counts.get(name.casefold(), 0) + 1
+    names = {}
+    for row in rows:
+        identity = row['identity']
+        name = safe(identity.get('name', '?'), 70)
+        if counts.get(identity.get('name', '?').casefold(), 0) > 1:
+            qualifier = ' \u00b7 '.join(safe(identity[key], 40) for key in ('realm', 'client')
+                                        if identity.get(key))
+            if qualifier:
+                name += f' ({qualifier})'
+        names[row['character_id']] = name
+    return names
+
+
+def status_row_text(row, names, lead, trail):
+    note = ''
+    if row['stale']:
+        observed = datetime.fromtimestamp(row['observed'], ZoneInfo(TIMEZONE)).strftime('%d %b')
+        note = f' \u00b7 last seen {observed}'
+    return f"{names[row['character_id']]} \u2014 {lead}{trail}{note}"
+
+
+def status_pages(entries, title, colour, limit=3800):
+    """Keep every character; continue into further embeds instead of truncating."""
+    cards, current, size = [], [], 0
+    for entry in entries:
+        if current and (size + len(entry) + 1 > limit or len(current) >= 25):
+            cards.append(current)
+            current, size = [], 0
+        current.append(entry)
+        size += len(entry) + 1
+    if current:
+        cards.append(current)
+    embeds = []
+    for index, lines in enumerate(cards, 1):
+        heading = title if len(cards) == 1 else f'{title} \u00b7 part {index} of {len(cards)}'
+        embeds.append(discord.Embed(title=heading, colour=colour,
+                                    description=clip('\n'.join(lines), 4096)))
+    return embeds
+
+
+def daily_status_message(rows, cutoff, group_name=None, custom=None):
+    """Real cumulative standings for one group day, split across messages if needed."""
+    from .group_status import death_order, level_order
+    custom = custom or {}
+
+    def class_icon(row):
+        token = str(row.get('class') or '').upper()
+        return custom.get('wow_' + token.lower(), CLASS_SYMBOLS.get(token, '\U0001f464'))
+
+    names = status_display_names(rows)
+    levels = sorted(rows, key=level_order)
+    deaths = sorted(rows, key=death_order)
+    moment = datetime.fromtimestamp(cutoff, ZoneInfo(TIMEZONE))
+    through = datetime.fromtimestamp(cutoff - 1, ZoneInfo(TIMEZONE))
+    label = safe(group_name, 60) + ' \u00b7 ' if group_name else ''
+    header = discord.Embed(
+        title=clip(f'\U0001f4dc {label}Daily character status', 256),
+        description=f"Status at **{moment.day} {moment.strftime('%B %Y, %H:%M')} "
+                    f"\u00b7 {TIMEZONE}**\n"
+                    f"Includes recorded progress before midnight, through "
+                    f"**{through.day} {through.strftime('%B')}**.",
+        colour=0xC79C6E)
+    header.set_footer(text='Cumulative recorded totals \u00b7 deaths tracked since addon installation')
+
+    def level_text(row):
+        return 'level not recorded' if row['level'] is None else f"Level **{row['level']}**"
+
+    def death_text(row):
+        return 'deaths not recorded' if row['deaths'] is None else f"**{row['deaths']} deaths**"
+
+    level_lines = [f"**{index}.** {class_icon(row)} " + status_row_text(
+                       row, names, level_text(row),
+                       ' \u00b7 deaths not recorded' if row['deaths'] is None
+                       else f" \u00b7 {row['deaths']} deaths")
+                   for index, row in enumerate(levels, 1)]
+    death_lines = [f"**{index}.** {class_icon(row)} " + status_row_text(
+                       row, names, death_text(row),
+                       ' \u00b7 level not recorded' if row['level'] is None
+                       else f" \u00b7 Level {row['level']}")
+                   for index, row in enumerate(deaths, 1)]
+    cards = [header]
+    cards += status_pages(level_lines, '\u2b06\ufe0f Levels \u00b7 highest first', 0x69CCF0)
+    cards += status_pages(death_lines, '\U0001f480 Recorded deaths \u00b7 highest first', 0x9482C9)
+    # Class artwork cards are decorative; a large roster needs the embed budget for the lists.
+    if len(cards) == 3 and len(rows) <= 6:
+        level_ranks = {row['character_id']: index for index, row in enumerate(levels, 1)}
+        death_ranks = {row['character_id']: index for index, row in enumerate(deaths, 1)}
+        for row in levels:
+            token = str(row.get('class') or '').upper()
+            card = discord.Embed(title=clip(f'{class_icon(row)} ' + names[row['character_id']], 256),
+                                 description=f'{level_text(row)} \u00b7 {death_text(row)}',
+                                 colour=CLASS_COLOURS.get(token, 0x5865F2))
+            card.add_field(name='Level rank', value=f"#{level_ranks[row['character_id']]}", inline=True)
+            card.add_field(name='Death rank', value=f"#{death_ranks[row['character_id']]}", inline=True)
+            if token in CLASS_COLOURS:
+                card.set_thumbnail(
+                    url=f'https://wow.zamimg.com/images/wow/icons/large/classicon_{token.lower()}.jpg')
+            cards.append(card)
+    pages, current = [], []
+    for card in cards:
+        if len(current) == 10:
+            pages.append(current)
+            current = []
+        current.append(card)
+    if current:
+        pages.append(current)
+    return [{'content': '' if index == 1 else
+             f'\U0001f4dc Daily character status \u00b7 continued ({index} of {len(pages)})',
+             'embeds': page} for index, page in enumerate(pages, 1)]
 
 
 def status_card(item, custom=None, preview=False):
