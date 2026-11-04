@@ -101,6 +101,23 @@ wow-status resolve-recap --db /var/lib/wow-status/service.sqlite3 --day YYYY-MM-
 
 Use `retry` only after verifying that the corresponding recap did not arrive.
 
+Characters belong to the owner (a group enrollment or a Discord account) that
+first uploaded them. Another owner takes one over only with the character's addon
+claim secret, so a
+player who lost their companion credentials but kept SavedVariables recovers on
+their own. When someone else claimed a character first, or an old character was
+stored before claim secrets existed, release it with the service stopped:
+
+```sh
+# Deletes the character and its data; the next upload claims it.
+wow-status release-character --db /var/lib/wow-status/service.sqlite3 --name Thora --realm "Realm Name"
+# Or keep its history and move it to a known owner ID (owner_id in the JSON archive).
+wow-status release-character --db /var/lib/wow-status/service.sqlite3 --character-id CHARACTER_ID --to-owner OWNER_ID
+```
+
+Several matches are listed with their IDs and owners; repeat with `--client` or
+`--character-id`. After `--to-owner`, that owner's next upload binds its secret.
+
 ## Friend-group behavior
 
 `/link` remembers the member's server display name; `/nickname` sets an optional

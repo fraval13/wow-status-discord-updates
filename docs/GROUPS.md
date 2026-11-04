@@ -52,9 +52,13 @@ Use the addon’s **Mark as my main** button for main/alt labels in ID-joined gr
 The companion needs the shared HTTPS service address once per installation. It
 reads the chosen IDs on `/reload` or logout, enrolls automatically in those groups,
 and saves private per-group upload credentials. Bot tokens are never entered into
-WoW or sent to the companion. Keep a private backup of companion credentials:
-losing them loses the installation’s ability to update/delete its existing group
-characters and requires operator assistance to restore or reset ownership.
+WoW or sent to the companion. Keep a private backup of companion credentials.
+If they are lost, a new enrollment takes back its existing group characters
+automatically, as long as the addon's SavedVariables were kept: each character
+has a random `claim_secret` there that the companion uploads, and the service
+stores only a hash of it. Without that secret (for example after deleting the
+`WTF` folder too), another installation's upload gets HTTP 409 and the operator
+has to release the character (see `release-character` in `deploy/README.md`).
 
 ## How you connect each ID to Discord
 
