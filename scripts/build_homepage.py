@@ -18,7 +18,7 @@ from pathlib import Path
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 # Files the game loads without a TOC line. Anything else committed beside the addon
 # (editor files, a WTF/ folder, notes) stays out of the public ZIP.
-ASSETS = (re.compile(r'Textures/[^/]+\.tga'),)
+ASSETS = (re.compile(r'Textures/[^/]+\.tga', re.IGNORECASE),)
 
 
 def git(root, *args):
@@ -44,12 +44,34 @@ def package_files(toc, tracked):
 
 
 def project_version(root, revision):
-    pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode())
+    pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode('utf-8-sig'))
     return pyproject['project']['version']
 
 
 def build(root, output, addon_ref):
     revision = git(root, 'rev-parse', '--verify', f'{addon_ref}^{{commit}}').decode().strip()
+    # Check every edition before writing anything, so a failed build leaves the output untouched.
+    editions = {}
+    for edition in EDITIONS:
+        folder = f'addon/{edition}/WoWStatus/'
+        tracked = git(root, 'ls-tree', '-r', '--name-only', revision, '--', folder).decode().splitlines()
+        if not tracked:
+            raise ValueError(f'No {edition} addon in {revision}')
+        tracked = {name.removeprefix(folder) for name in tracked}
+        toc = git(root, 'show', f'{revision}:{folder}WoWStatus.toc').decode('utf-8-sig')
+        match = re.search(r'^## Version: ([\w.\-]+)\r?$', toc, re.MULTILINE)
+        if match is None:
+            raise ValueError(f'No version in the {edition} TOC')
+        files = package_files(toc, tracked)
+        skipped = sorted(tracked.difference(files))
+        if skipped:
+            print(f"Not packaging unlisted {edition} files: {', '.join(skipped)}", file=sys.stderr)
+        editions[edition] = folder, files, match.group(1)
+    expected = project_version(root, revision)
+    versions = {version for _, _, version in editions.values()}
+    if versions != {expected}:
+        raise ValueError(f"Addon TOC versions {', '.join(sorted(versions))} must all equal "
+                         f'pyproject.toml version {expected}')
     output.mkdir(parents=True, exist_ok=True)
     for source in (root / 'website').iterdir():
         if source.name in {'README.md', 'ARTWORK.md'}:
@@ -62,20 +84,7 @@ def build(root, output, addon_ref):
     downloads = output / 'downloads'
     downloads.mkdir(exist_ok=True)
     releases = {}
-    for edition in EDITIONS:
-        folder = f'addon/{edition}/WoWStatus/'
-        tracked = git(root, 'ls-tree', '-r', '--name-only', revision, '--', folder).decode().splitlines()
-        if not tracked:
-            raise ValueError(f'No {edition} addon in {revision}')
-        tracked = {name.removeprefix(folder) for name in tracked}
-        toc = git(root, 'show', f'{revision}:{folder}WoWStatus.toc').decode()
-        match = re.search(r'^## Version: ([\w.\-]+)$', toc, re.MULTILINE)
-        if match is None:
-            raise ValueError(f'No version in the {edition} TOC')
-        files = package_files(toc, tracked)
-        skipped = sorted(tracked.difference(files))
-        if skipped:
-            print(f"Not packaging unlisted {edition} files: {', '.join(skipped)}", file=sys.stderr)
+    for edition, (folder, files, version) in editions.items():
         archive = downloads / f'WoWStatus-{edition}.zip'
         with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
             for file in files:
@@ -87,16 +96,9 @@ def build(root, output, addon_ref):
         with zipfile.ZipFile(archive) as package:
             if package.testzip() is not None:
                 raise ValueError(f'Broken archive: {archive}')
-        releases[edition] = {'version': match.group(1), 'file': archive.name,
+        releases[edition] = {'version': version, 'file': archive.name,
                              'bytes': archive.stat().st_size,
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
-    versions = {release['version'] for release in releases.values()}
-    if len(versions) != 1:
-        raise ValueError('Addon versions must match before publishing')
-    expected = project_version(root, revision)
-    if versions != {expected}:
-        raise ValueError(f'pyproject.toml version {expected} does not match addon version '
-                         f"{releases['vanilla']['version']}")
     html = (output / 'index.html').read_text(encoding='utf-8')
     html = html.replace('__VERSION__', releases['vanilla']['version'])
     for edition, release in releases.items():
