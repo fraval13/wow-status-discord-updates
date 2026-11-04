@@ -6,7 +6,7 @@ from datetime import time as day_time
 from zoneinfo import ZoneInfo
 
 from .archive import TIMEZONE, event_document, fields_document, timestamp
-from .formatting import safe
+from .formatting import clip, safe
 
 
 def window(day):
@@ -109,14 +109,14 @@ def render(recap):
                 + (' (late upload)' if e['late_upload'] else '') for e in levels[:12]))
         for event in [e for e in recap['events'] if e['type'] in ('loot', 'equipment', 'lfg')][:4]:
             value = event['data'].get('item', event['data'].get('text', ''))
-            lines.append(f"{event['type'].title()}: {safe(value)[:200]}")
+            lines.append(f"{event['type'].title()}: {safe(value, 200)}")
         late = sum(e['late_upload'] for e in recap['events'])
         if late:
             lines.append(f'{late} event(s) arrived late from earlier days; dates are kept in JSON.')
     known = recap['last_known_export_at']
     if known:
         lines.append(f"Last known export: {known['iso']}. Full consented history is saved in JSON.")
-    return '\n'.join(lines)[:1900]
+    return clip('\n'.join(lines), 1900)
 
 
 class DailyRecaps:
@@ -220,13 +220,13 @@ def render_group(store, reports, title):
     previous = None
     for recap in ordered:
         if previous != recap['owner']:
-            lines.append('\n**' + safe(person(store, recap['owner'])['display_name'])[:90] + '**')
+            lines.append('\n**' + safe(person(store, recap['owner'])['display_name'], 90) + '**')
         identity, snapshot = recap['identity'], recap['profile_at_day_end']
         role = character_role(store, recap['character_id'])
         level = f" · level {snapshot['level']}" if 'level' in snapshot else ''
-        klass = f" {safe(snapshot['class'])[:35]}" if 'class' in snapshot else ''
-        lines.append(f"• **{safe(identity['name'])[:70]}** ({role}){level}{klass} · "
-                     f"{safe(identity['realm'])[:60]}")
+        klass = f" {safe(snapshot['class'], 35)}" if 'class' in snapshot else ''
+        lines.append(f"• **{safe(identity['name'], 70)}** ({role}){level}{klass} · "
+                     f"{safe(identity['realm'], 60)}")
         progress = recap['progress_between_exports']
         changes = []
         summary = recap.get('activity_summary', {})
@@ -255,7 +255,7 @@ def render_group(store, reports, title):
             reference = item_reference(best['data']['item'])
             label = reference.get('display_name') or best['data']['item']
             quality = RARITIES.get(best['data'].get('quality'), ('Quality not recorded', 0))[0]
-            lines.append('  Loot highlight: ' + safe(label)[:90] + ' · ' + quality)
+            lines.append('  Loot highlight: ' + safe(label, 90) + ' · ' + quality)
         level_events = [e for e in recap['events'] if e['type'] == 'level' and not e['late_upload']]
         if level_events:
             details = []
@@ -264,12 +264,12 @@ def render_group(store, reports, title):
                 if event['data'].get('played_level_seconds') is not None:
                     detail += ' · ' + duration(event['data']['played_level_seconds']) + ' played'
                 if event['data'].get('zone'):
-                    detail += ' · ' + safe(event['data']['zone'])[:45]
+                    detail += ' · ' + safe(event['data']['zone'], 45)
                 details.append(detail)
             lines.append('  ' + '; '.join(details))
         death_events = [e for e in recap['events'] if e['type'] == 'death' and e['data'].get('zone')]
         if death_events:
-            lines.append('  Last recorded death: ' + safe(death_events[-1]['data']['zone'])[:90])
+            lines.append('  Last recorded death: ' + safe(death_events[-1]['data']['zone'], 90))
         known = recap['last_known_export_at']
         if known:
             lines.append('  Last export: ' + known['iso'])

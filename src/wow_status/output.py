@@ -7,7 +7,7 @@ import discord
 
 from .archive import item_reference
 from .daily import window
-from .formatting import announcement, safe
+from .formatting import announcement, clip, safe
 from .progression import timeline
 
 EMOJIS = {
@@ -78,13 +78,13 @@ def message(store, item, custom=None):
         text = head + '\n' + '\n'.join(details)
         if separator:
             text += separator + footer
-    result = {'content': text[:1950]}
+    result = {'content': clip(text, 1950)}
     if kind in ('loot', 'equipment'):
         reference = item_reference(data['item'])
         title = reference.get('display_name') or data['item']
         quality = data.get('quality')
         rarity, color = RARITIES.get(quality, ('Quality not recorded', 0x5865F2))
-        embed = discord.Embed(title=safe(title)[:256], colour=color)
+        embed = discord.Embed(title=safe(title, 256), colour=color)
         embed.description = rarity
         # Classic Era item IDs can be linked to Classic data. Forever-specific items have
         # no verified external database here; retain their names/IDs without inventing links.

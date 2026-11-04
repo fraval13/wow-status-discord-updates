@@ -215,3 +215,31 @@ def test_growth_budgets_survive_restart_and_expire_automatically(tmp_path, paylo
         assert reopened.ingest('owner', extra)['accepted'] == 1
     finally:
         reopened.close()
+
+
+def test_truncated_text_never_ends_in_a_dangling_escape():
+    # Issue #14: escaping then slicing kept the backslash and dropped the `*` it escaped.
+    output = safe('a' * 499 + '*')
+    assert not output.endswith('\\')
+    assert output == 'a' * 499
+
+
+@pytest.mark.parametrize('value,limit,expected', [
+    ('a' * 69 + '*', 70, 'a' * 69),
+    ('a' * 68 + '*', 70, 'a' * 68 + '\\*'),
+    ('a' * 69 + '\\', 70, 'a' * 69),
+    ('a' * 68 + '\\\\', 70, 'a' * 68 + '\\\\'),
+    ('a' * 67 + '\\*', 70, 'a' * 67 + '\\\\'),
+    ('a' * 66 + '\\*', 70, 'a' * 66 + '\\\\\\*'),
+])
+def test_truncation_keeps_whole_escape_pairs(value, limit, expected):
+    assert safe(value, limit) == expected
+
+
+def test_any_cut_of_escaped_text_keeps_backslashes_paired():
+    from wow_status.formatting import clip
+    full = safe('a\\*_`b\\\\~|>[]c')
+    for limit in range(len(full) + 1):
+        cut = clip(full, limit)
+        assert len(cut) <= limit and full.startswith(cut)
+        assert (len(cut) - len(cut.rstrip('\\'))) % 2 == 0
