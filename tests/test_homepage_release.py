@@ -1,4 +1,5 @@
 """Public downloads must match the release before their symlink can be activated."""
+import functools
 import hashlib
 import importlib.util
 import io
@@ -16,6 +17,7 @@ import pytest
 ROOT = Path(__file__).parents[1]
 
 
+@functools.cache
 def verifier_module():
     spec = importlib.util.spec_from_file_location('homepage_verify', ROOT/'scripts/verify_homepage.py')
     module = importlib.util.module_from_spec(spec)
@@ -108,7 +110,7 @@ def site_fetch(site, change=lambda path, data: data):
 
 
 def test_published_site_verification_checks_every_download(built_site):
-    manifest=json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))
+    manifest=local_manifest(built_site)
     fetch=site_fetch(built_site)
     assert public_verifier()('https://example.com',manifest['addon_revision'],fetch,
                              expected=manifest)==manifest
@@ -116,7 +118,7 @@ def test_published_site_verification_checks_every_download(built_site):
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
-    manifest=json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))
+    manifest=local_manifest(built_site)
     def change(path,data):
         if path=='downloads/release.json' and fault=='stale_revision':
             return json.dumps(dict(manifest,addon_revision='0'*40)).encode()
@@ -238,8 +240,8 @@ def test_zip_entry_with_a_stored_backslash_fails_on_every_platform(built_site):
     # On Windows zipfile reads a stored backslash as '/', so write the name with '|' and
     # patch the bytes: the check must see the stored name, whatever platform it runs on.
     original = (built_site/'downloads/WoWStatus-vanilla.zip').read_bytes()
-    data = rewrite_zip(original, add={'WoWStatus|Groups.lua': b''})
-    data = data.replace(b'WoWStatus|Groups.lua', b'WoWStatus\\Groups.lua')
+    data = rewrite_zip(original, add={'WoWStatus|Extra.lua': b''})
+    data = data.replace(b'WoWStatus|Extra.lua', b'WoWStatus\\Extra.lua')
     with zipfile.ZipFile(io.BytesIO(data)) as package:
         assert any('\\' in item.orig_filename for item in package.infolist())
         with pytest.raises(ValueError, match='unexpected entry:'):
@@ -248,7 +250,7 @@ def test_zip_entry_with_a_stored_backslash_fails_on_every_platform(built_site):
 
 def test_every_built_zip_passes_the_entry_check(built_site):
     module = verifier_module()
-    for edition in ('vanilla','forever','tbc','retail'):
+    for edition in module.EDITIONS:
         with zipfile.ZipFile(built_site/f'downloads/WoWStatus-{edition}.zip') as package:
             module.check_entries(edition, package)
 
@@ -271,3 +273,6 @@ def test_command_line_requires_a_manifest_of_the_same_revision(built_site, tmp_p
     other = subprocess.run([*script, '--manifest', str(built_site/'downloads/release.json')],
                            capture_output=True, text=True, encoding='utf-8')
     assert other.returncode == 2 and 'not a complete build of revision' in other.stderr
+    short = subprocess.run([*script[:-1], 'abc123', '--manifest', str(built_site/'downloads/release.json')],
+                           capture_output=True, text=True, encoding='utf-8')
+    assert short.returncode == 2 and 'complete Git commit revision' in short.stderr
