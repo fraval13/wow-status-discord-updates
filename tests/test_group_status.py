@@ -33,8 +33,8 @@ def test_report_uses_values_observed_before_the_midnight_cutoff(store, payload):
     store.ingest('owner', yesterday_payload(payload, day, level=24, deaths=7))
     # Today's progress must not leak into yesterday's standings.
     today = dict(yesterday_payload(payload, day, level=31, deaths=9),
-                 exported_at=cutoff + 3600)
-    today['events'] = [{'id': 'level-31', 'kind': 'level', 'at': cutoff + 3600,
+                 exported_at=cutoff + 60)
+    today['events'] = [{'id': 'level-31', 'kind': 'level', 'at': cutoff + 60,
                         'data': {'level': 31}}]
     store.ingest('owner', today)
     observed = state(store, store.character_id(payload['identity']), cutoff)
