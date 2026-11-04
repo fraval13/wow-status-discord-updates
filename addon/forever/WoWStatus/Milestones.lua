@@ -153,7 +153,8 @@ function M.checkDungeon(event, ...)
         if S.number(success)~=1 then return end
     end
     -- An arbitrary boss kill is not a dungeon clear. Require a complete roster.
-    local _, count = S.call(GetInstanceLockTimeRemaining)
+    -- The second return is the lock-extension flag; the encounter count is third.
+    local _, _, count = S.call(GetInstanceLockTimeRemaining)
     count=S.number(count)
     if not count or count<1 or count>64 or not GetInstanceLockTimeRemainingEncounter then return end
     for index=1,count do

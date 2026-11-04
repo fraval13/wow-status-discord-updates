@@ -5,6 +5,7 @@ local J, S, P = WoWStatusJournal, WoWStatusSafe, WoWStatusPopups
 local db, current, index, digests = nil,nil,{},{}
 local requests, sessions, sendQueue, cursors, rates = {},{},{},{},{}
 local serial,lastSend=0,0
+local warned,lastWarning={},nil
 local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
 local pumpJobs
@@ -231,39 +232,76 @@ local function pack(e)
     return table.concat(parts)
 end
 local function unpackEntry(text)
-    if #text>1024 then return nil end
+    if #text>1024 then return nil,"invalid" end
     local values,pos={},1
     for _=1,11 do
         local first,last,number=text:find("^(%d+):",pos)
-        if not first or #number>4 then return nil end
+        if not first or #number>4 then return nil,"invalid" end
         local count=tonumber(number)
-        if count>300 or last+count>#text then return nil end
+        if count>300 or last+count>#text then return nil,"invalid" end
         values[#values+1]=text:sub(last+1,last+count);pos=last+count+1
     end
-    if pos~=#text+1 then return nil end
+    if pos~=#text+1 then return nil,"invalid" end
     local id,client,sender,at,kind,level,detail=values[1],values[2],values[3],tonumber(values[4]),values[5],values[6],values[7]
-    if client~=WoWStatusAdapter.client_id or not sharedKinds[kind] or #id>220 or #sender>120 or not P.senderKey(sender)
-        or not at or at~=math.floor(at) or at<time()-AGE or at>time()+300 or #detail>160 or detail:find("[%c|]") then return nil end
+    -- Version differences and stale history are ordinary drops, never accusations.
+    if client~=WoWStatusAdapter.client_id or not sharedKinds[kind] then return nil end
+    if #id>220 or #sender>120 or not P.senderKey(sender) or not at or at~=math.floor(at)
+        or #detail>160 or detail:find("[%c|]") then return nil,"invalid" end
+    if at<time()-AGE or at>time()+300 then return nil end
     local prefix=client..":"..P.senderKey(sender)..":"
-    if id:sub(1,#prefix)~=prefix or not id:sub(#prefix+1):match("^[%w%-]+$") or #id-#prefix>64 then return nil end
+    if id:sub(1,#prefix)~=prefix or not id:sub(#prefix+1):match("^[%w%-]+$") or #id-#prefix>64 then return nil,"invalid" end
     if kind=="level" then
         level=tonumber(level)
-        if not level or level~=math.floor(level) or level<2 or level>WoWStatusAdapter.max_level then return nil end
-    elseif level~="" then return nil else level=nil end
+        if not level or level~=math.floor(level) or level<2 or level>WoWStatusAdapter.max_level then return nil,"invalid" end
+    elseif level~="" then return nil,"invalid" else level=nil end
+    if not J.validText(kind,detail,level) then return nil,"invalid" end
     local e={id=id,client=client,sender=sender,at=at,kind=kind,level=level,text=detail,groups={},origin="catchup",
         quality=tonumber(values[8]),class_id=tonumber(values[9]),equip_loc=values[10],item_id=tonumber(values[11])}
     if kind=="loot" and (not detail:match("^Equipped ") or not e.item_id or not WoWStatusLoot.allowed(current.settings,e)) then return nil end
     if kind~="loot" and (values[8]~="" or values[9]~="" or values[10]~="" or values[11]~="") then return nil end
     return e
 end
-local function queue(group,target,body,id)
+local function queue(group,target,body,id,expires)
     local text="J2 "..group.." "..body
     if #text>243 or #sendQueue>=512 then return false end
-    sendQueue[#sendQueue+1]={group=group,target=target,text=text,id=id,query=body:match("^Q ([%w%-]+)")}
+    sendQueue[#sendQueue+1]={group=group,target=target,text=text,id=id,expires=expires,query=body:match("^Q ([%w%-]+)")}
     return true
 end
 local function token()
     serial=serial+1;db.journal.request_serial=serial;return time().."-"..serial
+end
+-- Fixed-format facts must not become arbitrary free-text announcements.
+-- Plausible forged gameplay cannot be authenticated by a peer-only addon.
+function J.validText(kind,detail,level)
+    if kind=="level" then return detail=="Reached level "..level.."!" end
+    if kind=="introduction" then return detail=="Joined the group" or detail=="Joined the WoW Status group" end
+    if kind=="death" then return detail=="Died" or detail:match("^Total deaths: %d+$")~=nil end
+    return true
+end
+local function warning(group,accused,reporter)
+    if not current.settings.enabled or not P.canShare(current) then return false end
+    local now=time()
+    local key=group..":"..P.senderKey(accused)
+    if (lastWarning and now-lastWarning<60) or (warned[key] and now-warned[key]<600) then return false end
+    local count=0
+    for k,at in pairs(warned) do if now-at>=600 then warned[k]=nil else count=count+1 end end
+    if count>=128 or not P.guardWarning(group,accused,reporter) then return false end
+    warned[key],lastWarning=now,now
+    return true
+end
+function J.reportInvalid(group,sender)
+    sender=S.string(sender)
+    if not db or not sender or not P.senderKey(sender) or sender:find("%s")
+        or not groupMember(group) or not peer(group,sender) then return false end
+    -- Attribute the actual whisper sender, never the author claimed in a relay.
+    if not warning(group,sender,ownName()) then return false end
+    local now=time()
+    local body="W "..token().." "..WoWStatusAdapter.client_id.." "..now.." "..sender
+    for i,target in ipairs(P.peers(group)) do
+        if i>64 then break end
+        queue(group,target,body,nil,now+120)
+    end
+    return true
 end
 local function lootMask()
     local rarities=current.settings.loot_rarities or {rare=true,epic=true,legendary=true}
@@ -332,6 +370,14 @@ function J.receive(message,sender,distribution)
     local group,op,t,body=message:match("^J2 ([a-f0-9]+) (%u) ([%w%-]+) (.*)$")
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
+    if op=="W" then
+        local client,at,accused=body:match("^([%w%-]+) (%d+) (%S+)$")
+        at=tonumber(at)
+        if client~=WoWStatusAdapter.client_id or not at or at<time()-120 or at>time()+30
+            or not P.senderKey(accused) or (P.senderKey(accused)~=P.senderKey(ownName()) and not peer(group,accused)) then return false end
+        -- Another member's report, not verified guilt. Never rebroadcast reports.
+        return warning(group,accused,sender)
+    end
     if op=="H" then
         if body~=WoWStatusAdapter.client_id then return false end
         local helloKey=group..":"..key
@@ -406,12 +452,14 @@ function J.receive(message,sender,distribution)
         part,total=tonumber(part),tonumber(total)
         if not d or #d~=22 or not r.pending[d] or not part or not total or total<1 or total>16 or part<1 or part>total or #data>140 or #data%2~=0 then return false end
         local chunks=r.parts[d] or {total=total};r.parts[d]=chunks
-        if chunks.total~=total or (chunks[part] and chunks[part]~=data) then return false end
+        if chunks.total~=total or (chunks[part] and chunks[part]~=data) then J.reportInvalid(group,sender);return false end
         chunks[part]=data
         for i=1,total do if not chunks[i] then return true end end
         local decoded=table.concat(chunks):gsub("..",function(pair) return string.char(tonumber(pair,16)) end)
-        local e=unpackEntry(decoded)
-        if not e or digest(e.id)~=d or e.at<r.cutoff then return false end
+        local e,problem=unpackEntry(decoded)
+        if not e then if problem=="invalid" then J.reportInvalid(group,sender) end;return false end
+        if digest(e.id)~=d then J.reportInvalid(group,sender);return false end
+        if e.at<r.cutoff then return false end
         -- Forwarded identities are claims by the relay, not authenticated origins.
         e.groups[group]=true;e.via=sender
         add(e);r.pending[d]=nil;r.parts[d]=nil;advance(t)
@@ -438,6 +486,7 @@ function J.tick()
     local queryKey=item.group..":"..P.senderKey(item.target)
     if item.query and lastQuery[queryKey] and clock-lastQuery[queryKey]<2.1 then return end
     table.remove(sendQueue,1)
+    if item.expires and (now>item.expires or not current.settings.enabled) then return end
     if not groupMember(item.group) or not peer(item.group,item.target) then return end
     if item.id and (not index[item.id] or not relayable(index[item.id],item.group)) then return end
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage

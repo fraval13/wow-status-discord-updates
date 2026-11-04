@@ -10,7 +10,7 @@ PvP copy works for Classic ranks and Retail Honor milestones.
 ## Contents
 
 - [Level up](#level)
-- [Joined the group](#introduction)
+- [Joined the WoW Status group](#introduction)
 - [First rare, epic or legendary armor equip](#loot)
 - [Death — general and class-specific roasts](#death)
 - [First visit to a zone](#zone)
@@ -128,7 +128,7 @@ PvP copy works for Classic ranks and Retail Honor milestones.
 100. Onward, freshly upgraded menace.
 
 <a id="introduction"></a>
-## Joined the group
+## Joined the WoW Status group
 
 1. There goes the neighborhood.
 2. Another witness to our bad decisions.

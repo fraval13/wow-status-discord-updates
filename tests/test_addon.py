@@ -1151,7 +1151,7 @@ def test_join_is_logged_shared_and_never_replayed_for_same_group():
     assert own.eval('#WoWStatusJournal.entries()') == 1
     packet = own.eval('__sent[1].text')
     friend.eval('fire')('CHAT_MSG_ADDON','WoWStatus',packet,'WHISPER','Thora-TestRealm')
-    assert 'Joined the group' in friend.eval('WoWStatusLevelPopup.message:GetText()')
+    assert 'Joined the WoW Status group' in friend.eval('WoWStatusLevelPopup.message:GetText()')
     assert friend.eval('#WoWStatusJournal.entries()') == 2
     own.execute('''
         WoWStatusGroups.update("navsquad","")

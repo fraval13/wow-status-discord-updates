@@ -5,7 +5,7 @@ const samples = [
   { kind: 'level', heading: 'LEVEL UP!', message: 'Thora reached level 33!', icon: 'level', color: '#ebc25e' },
   { kind: 'loot', heading: 'EPIC ARMOR EQUIPPED!', message: 'Eldrin equipped Robe of the Archmage', icon: 'armor', color: '#cb93f2' },
   { kind: 'profession-learned', heading: 'PROFESSION LEARNED!', message: 'Mira learned Blacksmithing (Apprentice)', icon: 'blacksmithing', color: '#80cfdf' },
-  { kind: 'introduction', heading: 'WELCOME, ADVENTURER!', message: 'Thora joined the group', icon: 'quests', color: '#e5c78e' },
+  { kind: 'introduction', heading: 'WELCOME, ADVENTURER!', message: 'Thora joined the WoW Status group', icon: 'quests', color: '#e5c78e' },
 ];
 const toast = document.querySelector('#demo-toast');
 const controls = [...document.querySelectorAll('[data-preview]')];

@@ -12,7 +12,7 @@ from wow_status.schema import ValidationError, validate
 ROOT = Path(__file__).parents[1]
 
 
-def tbc_runtime(name='Thora', extra=''):
+def tbc_runtime(name='Thora', extra='', *, join_announcements=False):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(STUBS.replace('return "Thora" end',f'return "{name}" end') + '''
         WOW_PROJECT_BURNING_CRUSADE_CLASSIC=5
@@ -28,7 +28,8 @@ def tbc_runtime(name='Thora', extra=''):
         if line.strip() and not line.startswith('#'):
             runtime.execute((folder/line.strip()).read_text())
     runtime.eval('fire')('PLAYER_LOGIN')
-    runtime.execute('WoWStatusGroups.announce=nil')
+    if not join_announcements:
+        runtime.execute('WoWStatusGroups.announce=nil')
     return runtime
 
 

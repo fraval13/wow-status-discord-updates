@@ -29,6 +29,11 @@ historical releases; the current source and newest handoff notes take precedence
 
 ## Start sharing
 
+The current working source is **0.14.11**, with corrected Retail/Forever minimap
+button placement, the dungeon API fix, clearer group-join wording and group
+warnings for invalid log data.
+These changes have not yet been published; the release noted above is 0.14.9.
+
 1. Copy the appropriate `addon/vanilla/WoWStatus`, `addon/tbc/WoWStatus` (TBC Anniversary),
    `addon/retail/WoWStatus` (Retail), or `addon/forever/WoWStatus`
    folder into that client's `Interface/AddOns` directory. Complete ZIPs are in
@@ -55,9 +60,16 @@ silently when first enabling tracking. The rarity choices also filter incoming
 and recovered equipment announcements.
 
 Joining a group automatically announces once per character per group and appears
-in the log. There are no free-text announcements or manual dungeon reports.
+in the log as **Joined the WoW Status group**. There are no free-text announcements or manual dungeon reports.
 Dungeon completion requires a supported game completion signal; unsupported
 clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
+
+Malformed log data can trigger a group warning naming its direct sender:
+**"<character> is a really bad boy, shame on you!"** The popup identifies the
+reporter, is rate-limited, and is never saved as activity or replayed through
+history. This is a report about invalid data, not proof of cheating; a peer-only
+addon cannot verify every plausible milestone. All recipients need 0.14.10 to
+display these warnings. See [warning behavior and limits](docs/LOG_GUARD.md).
 
 ## Activity log and login sync
 
@@ -88,5 +100,6 @@ in-game rendering and API availability still require checking.
 
 - [Activity log, history and timings](docs/IN_GAME_HISTORY.md)
 - [In-game acceptance tests](docs/LIVE_POPUPS.md)
+- [Forever and Retail compatibility check](docs/CLIENT_COMPATIBILITY.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
 - [Decisions and handoff notes](decisions_i_made.md)

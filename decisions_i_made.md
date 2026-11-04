@@ -1,5 +1,138 @@
 # Decisions I made — 27 October 2026
 
+## Daily status preview styling — 4 November 2026
+
+- Added class symbols to both fictional ranking lists, plus one class-coloured
+  character card per example character with level/death rank fields and WoW class
+  artwork thumbnails. Matching guild emoji are used when available; symbol
+  fallbacks keep the preview readable without them. The rendered seven-embed
+  preview was inspected locally; no Discord message was sent. This changes only
+  the example sender and does not implement or enable automatic daily reports.
+
+## Navsquad daily-status example posted — 4 November 2026
+
+The owner opened an authenticated SSH master at /tmp/wow-status-ssh.sock and
+explicitly authorized posting the fictional daily-status example in navsquad.
+Reused that connection, checked the configured channel belongs to the configured
+guild, sent one labelled example with mentions disabled and an enforced nonce,
+then fetched the created message and verified its exact content. Message:
+https://discord.com/channels/1541036752117178411/1564649481079619634/1567637106199634072
+
+This resolves the example-posting access blocker recorded below. No fictional
+characters were ingested, services restarted or automatic reports enabled.
+Source versions remain 0.14.11; public addon downloads remain 0.14.9.
+
+## Daily cumulative status report example — 4 November 2026
+
+- The owner requested cumulative state for every character, with separate
+  level-descending and death-descending lists, using observations before today's
+  00:00 Europe/Oslo. The first relevant upload after midnight should trigger one
+  report for yesterday; later uploads must not create another daily post.
+- Updated docs/DISCORD_RELAY_PLAN.md and added docs/DAILY_STATUS_REPORT.md with
+  cutoff, dated-state, deduplication, consent, stale/unknown-value and late-upload
+  requirements. This replaces the planned frequent event-summary output. The
+  companion-only shared-state relay and new scheduler are still unimplemented;
+  no production reporting behavior was enabled by this example task.
+- Added docs/daily-status-example.md with clearly fictional characters/totals.
+  scripts/send_status_preview.py --daily-status renders it; explicit --send
+  reuses the existing bot configuration and safe mention-free preview sender.
+  It writes no fictional characters to the tracker and has a separate nonce.
+- The owner explicitly authorized posting this example in navsquad. Both normal
+  SSH and the config-independent BatchMode attempt to root@193.243.189.202 failed
+  with Permission denied (publickey); the previously documented agent socket is
+  absent. Plugin discovery found no usable Discord connection. No message was
+  posted, no credentials were searched/read/printed to recover access, and no
+  services were changed. Sending remains blocked on restored authorized access.
+- Checked preview rendering, descending orders, fictional label, message length
+  and disabled mentions. Ruff and whitespace checks passed. Addon/project source
+  versions remain 0.14.11; published downloads remain 0.14.9.
+
+## Retail/Forever minimap rim placement — 0.14.11, 4 November 2026
+
+- The owner reported the minimap icon sitting inside the Retail map while
+  Vanilla placement was good. The shared implementation used a fixed radius of
+  80 UI units for every client. Blizzard's mirrored Retail and Forever Mainline
+  Minimap.xml files define a 198-by-198 map, so the old radius falls inside it.
+  Sources: Retail 297d7aaaa736f346b3e036f38ee088eaf7f8c07f and Forever
+  eac30af597e5aaa43a60f6675ef5fdcea100375f, under
+  Interface/AddOns/Blizzard_Minimap/Mainline/Minimap.xml.
+- Retail and Forever now position the button using half the actual map width
+  and height plus 10 UI units, updating on map size changes and showing. Parent
+  coordinates preserve inherited UI/Edit Mode scaling. Dragging still saves only
+  the angle. Vanilla and TBC retain their existing 80-unit placement. Missing,
+  zero or restricted dimensions use the previous safe fallback until layout is
+  available. This targets the stock circular minimap; custom square masks are
+  not claimed as supported.
+- Copied only Minimap.lua to the four distributions, preserving the pre-existing
+  Logo texture choice and all other pending work. Bumped all four TOCs and
+  pyproject.toml from 0.14.10 to 0.14.11. No packaging, commit, push, publication
+  or local game installation was performed; public downloads remain 0.14.9.
+- Validation: 33 targeted minimap/Forever/Retail/client tests passed, also 33
+  under Lua 5.1; Ruff and whitespace checks passed. Geometry tests cover all four
+  clients, resizing, saved angles, dragging with non-unit effective scale and
+  unavailable/restricted dimensions. This is simulated validation; the owner
+  still needs to confirm the visual placement in Retail and Forever after
+  installing the updated source. SavedVariables were not changed.
+
+## Invalid-log group warnings — 0.14.10, 4 November 2026
+
+- The owner chose warnings shared with the WoW Status group. Selected malformed
+  live packets and requested catch-up entries are rejected and trigger the fixed
+  "<character> is a really bad boy, shame on you!" popup. It identifies the actual
+  sender of the invalid data and separately names the reporter. Relayed author
+  claims are never used to choose whom to accuse. See docs/LOG_GUARD.md for exact
+  triggers and limits; plausible forged gameplay/report claims cannot be proven
+  by this peer-only addon.
+- Added bounded J2 W reports on the existing addon-whisper transport. Reports
+  require known group peers, expire after two minutes, respect restrictions,
+  sharing pause/group removal, and never echo, persist in history, generate a
+  milestone or reach Discord. One warning per minute overall; one per accused
+  and group every ten minutes; at most 64 targets and 128 cooldown keys.
+- Ordinary duplicates, stale packets, wrong editions, unsolicited responses,
+  unknown message types and user rarity filters stay quiet. Fixed-format level,
+  introduction and death text cannot carry arbitrary injected announcements.
+  Both the old and new join wording remain readable during upgrades.
+- Bumped Vanilla, Forever, TBC Anniversary and Retail TOCs plus pyproject.toml
+  from 0.14.9 to 0.14.10. This supersedes the pre-release version note in the
+  compatibility checkpoint below. The release also includes the dungeon return
+  value correction and "Joined the WoW Status group" wording across editions.
+- Final validation: 289 tests passed from an isolated checkout excluding the
+  pre-existing branding edits; 189 tests passed under Lua 5.1. Ruff, JavaScript
+  syntax and whitespace checks passed. Tests simulate addon clients, not Discord
+  or live game sessions; no real player/Discord messages were sent.
+- Source changes remain local and uncommitted. No packages, public website,
+  game installations or services were updated. Public downloads remain 0.14.9.
+  Live Forever/Retail rendering and two-player delivery still require acceptance.
+
+## Forever/Retail compatibility check and clearer join notice — 4 November 2026
+
+- Checked current mirrored client sources: Forever 1.60.1 build 70790 at
+  eac30af597e5aaa43a60f6675ef5fdcea100375f and Retail 12.1.5 build 70783 at
+  297d7aaaa736f346b3e036f38ee088eaf7f8c07f. Both share the modern API family,
+  while professions, PvP and client identity retain separate adapters. Full
+  evidence and acceptance limits are in docs/CLIENT_COMPATIBILITY.md.
+- Fixed the shared dungeon-completion reader to use the third return from
+  GetInstanceLockTimeRemaining (encountersTotal), not the second (extending).
+  Corrected the inaccurate mock and added both-edition tests for complete,
+  incomplete and restricted rosters, failed encounters and deduplication.
+- Kept automatic group-join notifications per the owner's clarified request.
+  Changed the wording to "Joined the WoW Status group" in live notifications,
+  new activity entries, previews and the website demo. The join trigger, stable
+  IDs, once-per-character/group behavior and existing historical entries remain.
+- Added modern-peer tests for blocked/resumed sending, numeric API send results,
+  quiet two-way login recovery and duplicate suppression. All four distributions
+  contain the same task-owned shared files; unrelated branding work is intact.
+- Validation: 278 tests passed in an isolated checkout; 178 passed under Lua 5.1.
+  Ruff, JavaScript syntax and whitespace checks passed. The existing branding
+  changes still fail the older minimap-icon assertion in the ordinary checkout.
+  Sandbox socket restrictions were resolved by running HTTP checks with approved
+  local socket access; those were environment failures, not addon failures.
+- These changes are local and unreleased, still on source version 0.14.9.
+  No commit, push, packaging, publication or game installation was performed.
+  Bump all four TOCs and pyproject.toml together when releasing. Live game
+  rendering, gameplay signals and two-player delivery still require acceptance;
+  mocks do not certify them. No SavedVariables or Discord messages were touched.
+
 ## Persistent agent handoff — 1 November 2026
 
 Added root AGENTS.md so a replacement coding session can recover the product

@@ -1,5 +1,8 @@
 # Forever compatibility audit — 29 October 2026
 
+See the [4 November Forever/Retail check](CLIENT_COMPATIBILITY.md) for newer
+source revisions, the dungeon API fix and current validation results.
+
 Forever uses the modern/Mainline API family. It is not a Classic Era client with
 an updated version label, nor does that make it interchangeable with Retail.
 Our separate Forever addon targets interface 16001 and the Camelot project ID.

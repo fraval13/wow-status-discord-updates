@@ -6,7 +6,7 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from wow_status.output import upload_summary
+from wow_status.output import daily_status_preview, upload_summary
 
 
 def main():
@@ -14,6 +14,7 @@ def main():
     parser.add_argument('--send', action='store_true', help='Post one preview character status to Discord')
     parser.add_argument('--group', default='navsquad')
     parser.add_argument('--class-name', choices=['Warlock', 'Warrior', 'Paladin'], default='Warlock')
+    parser.add_argument('--daily-status', action='store_true', help='Use the fictional daily group standings example')
     parser.add_argument('--config', default='/etc/wow-character-status/config.json')
     args = parser.parse_args()
     item = json.loads((Path(__file__).resolve().parents[1] / 'tests/fixtures/status_preview.json').read_text())
@@ -30,13 +31,17 @@ def main():
             for entry in json.load(response):
                 if entry.get('available', True) and not entry.get('roles'):
                     custom[entry['name']] = '<' + ('a' if entry.get('animated') else '') + ':' + entry['name'] + ':' + entry['id'] + '>'
-    rendered = upload_summary([item], custom, preview=True)
+    if args.daily_status:
+        rendered = daily_status_preview(custom)
+    else:
+        rendered = upload_summary([item], custom, preview=True)
     payload = {'content': rendered['content'], 'embeds': [card.to_dict() for card in rendered['embeds']],
                'allowed_mentions': {'parse': []}}
     if not args.send:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return
-    payload.update(nonce=hashlib.sha256(('preview-v2:' + args.group + ':' + args.class_name).encode()).hexdigest()[:24], enforce_nonce=True)
+    variant = 'daily-status-2026-11-04' if args.daily_status else args.class_name
+    payload.update(nonce=hashlib.sha256(('preview-v2:' + args.group + ':' + variant).encode()).hexdigest()[:24], enforce_nonce=True)
     headers['Content-Type'] = 'application/json'
     request = urllib.request.Request(api + '/channels/' + str(config['channel_id']) + '/messages',
         data=json.dumps(payload).encode(), headers=headers, method='POST')

@@ -20,7 +20,7 @@ needed. Install the whole client folder and fully restart WoW for the new module
    while new activity arrives and check that the viewed entry stays anchored.
 6. Notification previews contains only toast choices and Close; there is no
    manual character introduction or bottom character-card demonstration. A Joined
-   a group preview is available.
+   the WoW Status group preview is available.
 
 ## First armor equips
 

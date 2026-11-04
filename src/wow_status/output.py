@@ -109,6 +109,50 @@ CLASS_COLOURS = {'WARRIOR':0xC79C6E,'PALADIN':0xF58CBA,'HUNTER':0xABD473,
                  'MAGE':0x69CCF0,'WARLOCK':0x9482C9,'DRUID':0xFF7D0A}
 CLASS_SYMBOLS = {'WARRIOR':'⚔️','PALADIN':'🛡️','HUNTER':'🏹','ROGUE':'🗡️',
                  'PRIEST':'✨','SHAMAN':'⚡','MAGE':'🔮','WARLOCK':'😈','DRUID':'🐾'}
+def daily_status_preview(custom=None):
+    """Fictional daily standings preview with class icons and character artwork."""
+    custom = custom or {}
+    people = [
+        {'name':'Thora','class':'WARRIOR','level':41,'deaths':7},
+        {'name':'Eldrin','class':'MAGE','level':38,'deaths':2},
+        {'name':'Mira','class':'PRIEST','level':35,'deaths':12},
+        {'name':'Brunna','class':'PALADIN','level':29,'deaths':0},
+    ]
+
+    def class_icon(token):
+        return custom.get('wow_' + token.lower(), CLASS_SYMBOLS[token])
+
+    levels = sorted(people, key=lambda person: (-person['level'], person['name']))
+    deaths = sorted(people, key=lambda person: (-person['deaths'], person['name']))
+    header = discord.Embed(title='📜 Navsquad · Daily character status',
+        description='**EXAMPLE — fictional characters and numbers**\n'
+        'Status at **4 November 2026, 00:00 · Europe/Oslo**\n'
+        'Includes recorded progress before midnight, through **3 November**.',
+        colour=0xC79C6E)
+    header.set_footer(text='Cumulative recorded totals · deaths tracked since addon installation')
+    level_card = discord.Embed(title='⬆️ Levels · highest first', colour=0x69CCF0)
+    level_card.description = '\n'.join(
+        f"**{index}.** {class_icon(person['class'])} **{person['name']}** — "
+        f"Level **{person['level']}** · {person['deaths']} deaths"
+        for index, person in enumerate(levels, 1))
+    death_card = discord.Embed(title='💀 Recorded deaths · highest first', colour=0x9482C9)
+    death_card.description = '\n'.join(
+        f"**{index}.** {class_icon(person['class'])} **{person['name']}** — "
+        f"**{person['deaths']} deaths** · Level {person['level']}"
+        for index, person in enumerate(deaths, 1))
+    cards = [header, level_card, death_card]
+    level_ranks = {person['name']: index for index, person in enumerate(levels, 1)}
+    death_ranks = {person['name']: index for index, person in enumerate(deaths, 1)}
+    for person in people:
+        token = person['class']
+        card = discord.Embed(title=f"{class_icon(token)} {person['name']}",
+            description=f"Level **{person['level']}** · **{person['deaths']} deaths**",
+            colour=CLASS_COLOURS[token])
+        card.add_field(name='Level rank', value=f"#{level_ranks[person['name']]}", inline=True)
+        card.add_field(name='Death rank', value=f"#{death_ranks[person['name']]}", inline=True)
+        card.set_thumbnail(url=f'https://wow.zamimg.com/images/wow/icons/large/classicon_{token.lower()}.jpg')
+        cards.append(card)
+    return {'content':'', 'embeds':cards}
 
 
 def status_card(item, custom=None, preview=False):

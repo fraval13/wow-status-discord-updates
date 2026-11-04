@@ -12,7 +12,7 @@ from wow_status.schema import ValidationError, validate
 ROOT=Path(__file__).parents[1]
 
 
-def retail_runtime(name='Thora',extra=''):
+def retail_runtime(name='Thora',extra='', *, join_announcements=False):
     lua=lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS.replace('return "Thora" end',f'return "{name}" end')+'''
         WOW_PROJECT_MAINLINE=1;WOW_PROJECT_CAMELOT=18;WOW_PROJECT_ID=1
@@ -30,7 +30,8 @@ def retail_runtime(name='Thora',extra=''):
         if line.strip() and not line.startswith('#'):
             lua.execute((folder/line.strip()).read_text(encoding='utf-8'))
     lua.eval('fire')('PLAYER_LOGIN')
-    lua.execute('WoWStatusGroups.announce=nil')
+    if not join_announcements:
+        lua.execute('WoWStatusGroups.announce=nil')
     return lua
 
 

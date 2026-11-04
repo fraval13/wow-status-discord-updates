@@ -255,6 +255,10 @@ function P.init(database, getter, reporter)
     syncGroups()
 end
 
+local function invalidLogData(group,sender)
+    if group~="legacy" and WoWStatusJournal then WoWStatusJournal.reportInvalid(group,sender) end
+    return false
+end
 function P.receive(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)
     if not receiving() or type(text) ~= "string" or #text > 220
@@ -284,7 +288,8 @@ function P.receive(text, sender, channel)
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
-        if detail:find("[%c|]") then return false end
+        if detail:find("[%c|]") then return invalidLogData(group,sender) end
+        if WoWStatusJournal and not WoWStatusJournal.validText(kind,detail) then return invalidLogData(group,sender) end
         local lootInfo
         if armor and kind~="loot" then return false end
         if kind=="loot" then
@@ -332,8 +337,8 @@ function P.receive(text, sender, channel)
     end
     if client ~= A.client_id then return false end
     local level, at, now = tonumber(levelText), tonumber(atText), time()
-    if not level or level < 2 or level > A.max_level or not at or not nonce or #nonce > 64
-        or at < now - 120 or at > now + 300 then return false end
+    if not at or not nonce or #nonce > 64 or at < now - 120 or at > now + 300 then return false end
+    if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
     pruneSeen(now)
     local duplicateKey = key .. ":" .. level
     local claims = prefs.level_claims[key]
@@ -420,7 +425,7 @@ local function show(item, now)
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
-    toast.message:SetText(name .. (item.level and " " or " — ") .. detail)
+    toast.message:SetText(name .. ((item.level or item.kind=="guard") and " " or " — ") .. detail)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
@@ -435,10 +440,22 @@ local function show(item, now)
     end
 end
 
+-- Reports are ephemeral: never record, relay through history, or award progress.
+function P.guardWarning(group, accused, reporter)
+    if not receiving() or not canShare(getCharacter()) or #incoming>=128
+        or not WoWStatusGroups.contains(getCharacter(),group)
+        or not P.senderKey(accused) or not P.senderKey(reporter) then return false end
+    table.insert(incoming,{sender=accused,key=P.senderKey(accused),kind="guard",group_id=group,
+        text="is a really bad boy, shame on you!",received_at=time(),
+        flavour="Invalid log data reported by "..reporter.."."})
+    P.tick()
+    return true
+end
+
 function P.preview(kind)
     if not prefs then return end
     local samples = {
-        introduction="Joined the group", loot="Equipped Robe of the Archmage",
+        introduction="Joined the WoW Status group", loot="Equipped Robe of the Archmage",
         death="Died — total tracked deaths: 15",
         zone="Entered Stranglethorn Vale", quest="Completed 100 quests!",
         profession="Tailoring: Expert (225 max)",
@@ -488,7 +505,7 @@ local function tick()
     if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
         local item = table.remove(incoming, 1)
         if (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
-            or prefs.trusted[item.key]) then show(item, now) end
+            or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
     end
     if #outgoing == 0 or now - lastAttempt < 1 then return end
     local item, character = outgoing[1], getCharacter()
@@ -543,7 +560,7 @@ local function eventText(event)
     local data = event.data or {}
     if event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
         or event.kind == "unlock" or event.kind == "pvp" then return data.text end
-    if event.kind == "introduction" then return "Joined the group" end
+    if event.kind == "introduction" then return "Joined the WoW Status group" end
     if event.kind == "quest" then
         return data.completed and ("Completed " .. data.completed .. " quests!") or nil
     end

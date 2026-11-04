@@ -10,6 +10,7 @@ function WoWStatusPresentation.theme(item)
         quest={"Achievement_Quests_Completed_08",1,.8,.2,"QUEST ACHIEVEMENT!"},
         profession={"Trade_Tailoring",.35,.85,1,"PROFESSION PROMOTION!"},
         introduction={"Achievement_Character_Human_Male",.9,.75,.4,"WELCOME, ADVENTURER!"},
+        guard={"INV_Misc_Book_07",1,.35,.2,"INVALID LOG DATA REPORTED"},
         dungeon={"Achievement_Dungeon_Deadmines",1,.75,.2,"FIRST DUNGEON CLEAR!"},
         mount={"Ability_Mount_RidingHorse",1,.8,.3,"A NEW ADVENTURE!"},
         reputation={"Achievement_Reputation_01",.3,.8,1,"REPUTATION MILESTONE!"},

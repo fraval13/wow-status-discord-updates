@@ -4,7 +4,7 @@ local P,A = WoWStatusPreviews,WoWStatusAdapter
 local panel, card
 local examples = {
     {"level", "Level up"},
-    {"introduction", "Joined a group"}, {"loot", "First armor equip"},
+    {"introduction", "Joined the WoW Status group"}, {"loot", "First armor equip"},
     {"death", "Death"}, {"zone", "New location"},
     {"quest", "100 quests achievement"}, {"profession_learned", "Learn a profession"}, {"profession", "Profession title promotion"},
     {"dungeon", "First dungeon clear"}, {"mount", "First mount"},

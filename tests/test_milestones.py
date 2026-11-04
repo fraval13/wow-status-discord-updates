@@ -127,7 +127,7 @@ def test_dungeon_requires_success_and_complete_roster_not_just_any_boss():
     lua = make_lua(STUBS + '''
         __allKilled=false;__kind="party"
         function GetInstanceInfo() return "The Deadmines",__kind,1,"Normal",5,false,false,36 end
-        function GetInstanceLockTimeRemaining() return 0,2 end
+        function GetInstanceLockTimeRemaining() return 0,false,2,__allKilled and 2 or 1 end
         function GetInstanceLockTimeRemainingEncounter(index) return "Boss",1,index==1 or __allKilled end
     ''')
     lua.execute('''

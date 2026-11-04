@@ -9,12 +9,26 @@ function M.init(database)
     button:SetSize(32,32);button:SetFrameStrata("MEDIUM");button:EnableMouse(true)
     local icon=button:CreateTexture(nil,"ARTWORK");icon:SetPoint("CENTER",-1,1);icon:SetSize(21,21)
     button.icon=icon
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+    icon:SetTexture("Interface\\AddOns\\WoWStatus\\Textures\\Logo")
     local border=button:CreateTexture(nil,"OVERLAY");border:SetPoint("TOPLEFT");border:SetSize(54,54)
     border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
     local function place()
         local angle=math.rad(S.number(db.minimap_angle) or 225)
-        button:ClearAllPoints();button:SetPoint("CENTER",Minimap,"CENTER",math.cos(angle)*80,math.sin(angle)*80)
+        local radiusX,radiusY=80,80
+        if WoWStatusAdapter.client_id=="retail" or WoWStatusAdapter.client_id=="forever" then
+            -- Mainline minimaps are larger than Classic's. Work in the map's
+            -- own coordinates so inherited UI/Edit Mode scaling stays correct.
+            local width=S.number(S.call(Minimap.GetWidth,Minimap))
+            local height=S.number(S.call(Minimap.GetHeight,Minimap))
+            if width and height and width>0 and height>0 then
+                radiusX,radiusY=width/2+10,height/2+10
+            end
+        end
+        button:ClearAllPoints();button:SetPoint("CENTER",Minimap,"CENTER",math.cos(angle)*radiusX,math.sin(angle)*radiusY)
+    end
+    if Minimap.HookScript then
+        pcall(Minimap.HookScript,Minimap,"OnSizeChanged",place)
+        pcall(Minimap.HookScript,Minimap,"OnShow",place)
     end
     button:RegisterForClicks("LeftButtonUp","RightButtonUp")
     button:SetScript("OnClick",function(_,which)

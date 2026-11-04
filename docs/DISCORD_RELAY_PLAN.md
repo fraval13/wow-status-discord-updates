@@ -27,16 +27,24 @@ return 404. Preserve that routing while implementing the relay.
 
 ## Summary behavior
 
-- On an opted-in uploader's reload/logout save, relay eligible announcements from
-  its shared account log, including friends' announcements it has received.
-- Preserve original source event IDs. Deduplicate at the backend per group and
-  client edition, independently of which companion uploaded an event.
-- Build summaries from events not already assigned to a summary. Empty uploads
-  create no AI request and no Discord message. Briefly coalesce concurrent
-  uploads so two companions do not produce two recaps for the same activity.
-- Calculate counts and changes in code; AI supplies wording from those facts.
-  Save the batch and generated text before sending. Keep delivery state and
-  Discord message IDs; do not blindly resend ambiguous deliveries.
+The owner's 4 November request replaces per-upload event summaries with a
+once-daily cumulative character-status report. See [the current report rules](DAILY_STATUS_REPORT.md)
+and [fictional example](daily-status-example.md).
+
+- Opted-in companions upload the shared journal and dated character-state
+  observations on reload/logout saves, including friends' permitted observations.
+- Preserve original event IDs and observation times. Deduplicate per group and
+  client edition, independently of which companion uploaded the observation.
+- The first upload after Oslo midnight containing yesterday's data triggers one
+  group/day report. Include all known consented characters with their cumulative
+  level and recorded deaths before today's 00:00. Today's activity is excluded.
+- Show separate level-descending and death-descending lists. Include both values
+  for each character, mark stale/unknown observations and never invent zeros.
+- Persist the frozen report and delivery state. Retries, other companions and
+  later uploads must not create a second report for that day. No upload means
+  no report; later data contributes to the next cumulative report.
+- Compute values and ordering in code; AI wording is not required. Keep Discord
+  message IDs and do not blindly resend ambiguous deliveries.
 - Recovery depends on an online member retaining the relevant events. The relay
   cannot reconstruct unavailable history or bypass game communication rules.
 

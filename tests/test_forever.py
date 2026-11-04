@@ -6,10 +6,9 @@ import pytest
 from test_addon import STUBS, lupa
 
 
-@pytest.fixture
-def forever_lua():
+def forever_runtime(name='Thora', extra=''):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
-    runtime.execute(STUBS)
+    runtime.execute(STUBS.replace('return "Thora" end', f'return "{name}" end'))
     runtime.execute('''
         WOW_PROJECT_MAINLINE=1
         WOW_PROJECT_CAMELOT=18
@@ -20,7 +19,7 @@ def forever_lua():
         SendChatMessage=nil
         __secret={}
         function issecretvalue(value) return value==__secret end
-    ''')
+    ''' + extra)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
@@ -28,6 +27,11 @@ def forever_lua():
                  'Groups.lua', 'Flavour.lua', 'Presentation.lua', 'Popups.lua', 'Journal.lua', 'Minimap.lua', 'Previews.lua', 'Milestones.lua', 'WoWStatus.lua'):
         runtime.execute((root / name).read_text(encoding='utf-8'))
     return runtime
+
+
+@pytest.fixture
+def forever_lua():
+    return forever_runtime()
 
 
 def test_forever_collects_under_distinct_client_identity(forever_lua):
