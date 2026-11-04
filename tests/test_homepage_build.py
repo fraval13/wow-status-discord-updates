@@ -21,11 +21,13 @@ def load_builder():
 builder = load_builder()
 
 
-def git(root, *args):
+def git(root, *args, data=None):
     # core.autocrlf=false: commit exactly the bytes a test writes, on Windows too.
+    # core.hooksPath: a developer's global hooks must not run in the test repositories.
     return subprocess.run(['git', '-C', str(root), '-c', 'user.name=Test', '-c', 'user.email=test@example.com',
-                           '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', *args],
-                          check=True, capture_output=True).stdout
+                           '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false',
+                           '-c', 'core.hooksPath=no-hooks', *args],
+                          input=data, check=True, capture_output=True).stdout
 
 
 def zip_names(output, edition):
@@ -55,12 +57,11 @@ def addon_repo(tmp_path):
 
 
 def commit(repo, files):
+    # Write blobs straight into the index: the working tree may be case-insensitive (Windows,
+    # macOS) and a developer's global .gitignore could hide files such as .DS_Store.
     for name, data in files.items():
-        path = repo / name
-        path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(data)
-    # -f: the project .gitignore does not apply here, but a developer's global one might.
-    git(repo, 'add', '-f', *files)
+        blob = git(repo, 'hash-object', '-w', '--stdin', data=data).decode().strip()
+        git(repo, 'update-index', '--add', '--cacheinfo', f'100644,{blob},{name}')
     git(repo, 'commit', '-q', '-m', 'change')
 
 
@@ -69,8 +70,9 @@ def test_current_release_ships_every_committed_addon_file(tmp_path):
     builder.build(ROOT, tmp_path, 'HEAD')
     for edition in builder.EDITIONS:
         folder = f'addon/{edition}/WoWStatus/'
-        tracked = git(ROOT, 'ls-tree', '-r', '--name-only', 'HEAD', '--', folder).decode().splitlines()
-        assert zip_names(tmp_path, edition) == sorted('WoWStatus/' + name.removeprefix(folder) for name in tracked)
+        tracked = git(ROOT, 'ls-tree', '-r', '-z', '--name-only', 'HEAD', '--', folder).decode().split('\0')
+        assert zip_names(tmp_path, edition) == sorted('WoWStatus/' + name.removeprefix(folder)
+                                                      for name in tracked if name)
 
 
 def test_unlisted_committed_files_stay_out_of_every_zip(addon_repo, tmp_path):
@@ -97,7 +99,7 @@ def test_pyproject_version_must_match_the_addon_tocs(addon_repo, tmp_path):
     commit(addon_repo, {'pyproject.toml': pyproject.replace(f'version = "{version}"',
                                                             'version = "9.9.9"').encode()})
     output = tmp_path / 'site'
-    with pytest.raises(ValueError, match='pyproject.toml version 9.9.9'):
+    with pytest.raises(ValueError, match=r'\(vanilla .*, retail .*\) must all equal pyproject.toml version 9.9.9'):
         builder.build(addon_repo, output, 'HEAD')
     # Nothing is written, so an existing site is never left half-updated.
     assert not output.exists()
@@ -124,6 +126,19 @@ def test_a_missing_toc_fails_clearly(addon_repo, tmp_path):
     git(addon_repo, 'rm', '-q', 'addon/forever/WoWStatus/WoWStatus.toc')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='No forever TOC'):
+        builder.build(addon_repo, tmp_path, 'HEAD')
+
+
+def test_textures_that_differ_only_by_case_fail(addon_repo, tmp_path):
+    commit(addon_repo, {'addon/tbc/WoWStatus/Textures/logo.TGA': b'\0'})
+    with pytest.raises(ValueError, match='tbc: Addon files differ only by case: Textures/Logo.tga, Textures/logo.TGA'):
+        builder.build(addon_repo, tmp_path, 'HEAD')
+
+
+def test_a_revision_without_pyproject_fails_clearly(addon_repo, tmp_path):
+    git(addon_repo, 'rm', '-q', 'pyproject.toml')
+    git(addon_repo, 'commit', '-q', '-m', 'drop')
+    with pytest.raises(ValueError, match='No pyproject.toml project version'):
         builder.build(addon_repo, tmp_path, 'HEAD')
 
 

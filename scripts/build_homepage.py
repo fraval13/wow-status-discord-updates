@@ -41,12 +41,21 @@ def package_files(toc, tracked):
         if relative not in tracked:
             raise ValueError(f'Missing addon file: {relative}')
     assets = {name for name in tracked if any(pattern.fullmatch(name) for pattern in ASSETS)}
-    return sorted({'WoWStatus.toc', *listed, *assets})
+    files = sorted({'WoWStatus.toc', *listed, *assets})
+    # Players unzip on case-insensitive file systems, where one of the two would be lost.
+    folded = {}
+    for name in files:
+        if (other := folded.setdefault(name.casefold(), name)) != name:
+            raise ValueError(f'Addon files differ only by case: {other}, {name}')
+    return files
 
 
 def project_version(root, revision):
-    pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode())
-    return pyproject['project']['version']
+    try:
+        pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode())
+        return pyproject['project']['version']
+    except (subprocess.CalledProcessError, KeyError) as error:
+        raise ValueError(f'No pyproject.toml project version in {revision}') from error
 
 
 def build(root, output, addon_ref):
@@ -76,12 +85,11 @@ def build(root, output, addon_ref):
         skipped = sorted(tracked.difference(files))
         if skipped:
             print(f"Not packaging unlisted {edition} files: {', '.join(skipped)}", file=sys.stderr)
-        editions[edition] = folder, files, match.group(1)
+        editions[edition] = files, match.group(1)
     expected = project_version(root, revision)
-    versions = {version for _, _, version in editions.values()}
-    if versions != {expected}:
-        raise ValueError(f"Addon TOC versions {', '.join(sorted(versions))} must all equal "
-                         f'pyproject.toml version {expected}')
+    if any(version != expected for _, version in editions.values()):
+        found = ', '.join(f'{edition} {version}' for edition, (_, version) in editions.items())
+        raise ValueError(f'Addon TOC versions ({found}) must all equal pyproject.toml version {expected}')
     output.mkdir(parents=True, exist_ok=True)
     for source in (root / 'website').iterdir():
         if source.name in {'README.md', 'ARTWORK.md'}:
@@ -94,7 +102,8 @@ def build(root, output, addon_ref):
     downloads = output / 'downloads'
     downloads.mkdir(exist_ok=True)
     releases = {}
-    for edition, (folder, files, version) in editions.items():
+    for edition, (files, version) in editions.items():
+        folder = f'addon/{edition}/WoWStatus/'
         archive = downloads / f'WoWStatus-{edition}.zip'
         with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
             for file in files:
@@ -110,14 +119,14 @@ def build(root, output, addon_ref):
                              'bytes': archive.stat().st_size,
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
     html = (output / 'index.html').read_text(encoding='utf-8')
-    html = html.replace('__VERSION__', releases['vanilla']['version'])
+    html = html.replace('__VERSION__', expected)
     for edition, release in releases.items():
         html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('Unresolved homepage placeholder')
     (output / 'index.html').write_text(html, encoding='utf-8')
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
-    print(f"Homepage built at {output}; addon {releases['vanilla']['version']} ({revision[:7]})")
+    print(f'Homepage built at {output}; addon {expected} ({revision[:7]})')
 
 
 if __name__ == '__main__':
