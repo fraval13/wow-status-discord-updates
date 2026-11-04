@@ -7,11 +7,12 @@ the same scope (top-level ``*.lua`` and ``Textures/``) is made to match exactly:
 changed files are rewritten and tracked copies whose shared source is gone are
 deleted. Edition-owned files (the adapter Lua and the TOC) are left alone.
 
-Untracked files in an edition's mirrored scope are reported but not deleted, so
-uncommitted work is never lost; the release builder reads from Git and does not
-ship them. The run stops before changing anything if a tracked shared file is
-missing from disk (``git mv`` or ``git rm`` it) or a file it would delete has
-unstaged edits.
+Untracked files in an edition's mirrored scope are reported but not deleted; the
+release builder reads from Git and does not ship them. Edition copies of shared
+files are overwritten, as before, so edit ``addon/shared`` rather than an edition.
+The run stops before changing anything if a tracked shared file is missing from
+disk (``git mv`` or ``git rm`` it), a file it would delete has unstaged edits, or
+an edition copy would be deleted while its shared source is untracked.
 
 ``--check`` changes nothing and exits with status 1 when any edition is out of
 sync. This only touches source files; it does not start a game, service or tests.
@@ -73,7 +74,7 @@ def _git_files(repo: Path, folder: Path, *options: str) -> set[PurePosixPath]:
              folder.relative_to(repo).as_posix()],
             check=True, capture_output=True, encoding='utf-8',
         )
-    except (OSError, subprocess.CalledProcessError) as error:
+    except (OSError, UnicodeDecodeError, subprocess.CalledProcessError) as error:
         detail = getattr(error, 'stderr', '') or error
         raise SyncError(f'git ls-files failed in {repo}: {detail}') from error
     prefix = PurePosixPath(folder.relative_to(repo).as_posix())
@@ -108,9 +109,8 @@ def plan_sync(repo: Path = ROOT) -> Plan:
     if not tracked_shared:
         raise SyncError(f'no tracked shared files found under {shared}')
     sources = {path: (shared / path).read_bytes() for path in tracked_shared}
-    plan = Plan(untracked_shared=sorted(
-        shared / path for path in _scoped_files(shared) - tracked_shared
-    ))
+    untracked_shared = _scoped_files(shared) - tracked_shared
+    plan = Plan(untracked_shared=sorted(shared / path for path in untracked_shared))
     for edition, owned_names in EDITIONS.items():
         destination = addon / edition / 'WoWStatus'
         if not destination.is_dir():
@@ -128,9 +128,12 @@ def plan_sync(repo: Path = ROOT) -> Plan:
             if relative not in tracked_edition:
                 plan.untracked_extras.append(target)
                 continue
+            if relative in untracked_shared:
+                raise SyncError(f'addon/shared/{relative} is untracked, so its edition copies '
+                                'would be deleted; git add it first')
             if relative in modified_edition:
                 raise SyncError(f'{target} would be deleted but has unstaged edits; '
-                                'commit, stage or discard them first')
+                                'commit or discard them first')
             plan.deletes.append((destination, relative))
             deleted_folded.add(_folded(relative))
 
@@ -169,7 +172,8 @@ def apply(plan: Plan, report: Callable[[str, Path, Path | None], None] = lambda 
 
 
 def main(argv: list[str] | None = None, repo: Path = ROOT) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(
+        description='Mirror tracked shared addon files into every edition folder.')
     parser.add_argument('--check', action='store_true',
                         help='report differences and exit 1 instead of changing files')
     args = parser.parse_args(argv)
@@ -197,6 +201,14 @@ def main(argv: list[str] | None = None, repo: Path = ROOT) -> int:
             report('would copy', target, source)
         return 0 if plan.in_sync else 1
     apply(plan, report)
+    renamed = {
+        (destination / old, target)
+        for destination, old in plan.deletes for _, target in plan.copies
+        if target.parent == (destination / old).parent and target != destination / old
+        and target.name.casefold() == old.name.casefold()
+    }
+    for old, new in sorted(renamed):
+        print(f'case-only rename: on Windows/macOS run git mv {relative(old)} {relative(new)}')
     return 0
 
 

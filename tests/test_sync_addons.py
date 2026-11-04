@@ -97,6 +97,16 @@ def test_stale_file_with_unstaged_edits_stops_the_run(repo, capsys):
     assert (repo / 'addon/tbc/WoWStatus/Core.lua').read_bytes() == b'-- local edits\n'
 
 
+def test_untracked_shared_source_stops_deleting_its_tracked_copies(repo, capsys):
+    (repo / 'addon/shared/New.lua').write_bytes(b'-- new\n')
+    for folder in editions(repo):
+        (folder / 'New.lua').write_bytes(b'-- new\n')
+    git(repo, 'add', 'addon/vanilla', 'addon/forever', 'addon/tbc', 'addon/retail')
+    assert sync.main([], repo=repo) == 2
+    assert 'addon/shared/New.lua is untracked' in capsys.readouterr().err
+    assert all((folder / 'New.lua').exists() for folder in editions(repo))
+
+
 def test_shared_file_moved_without_git_stops_the_run(repo, capsys):
     shared = repo / 'addon/shared'
     (shared / 'Core.lua').rename(shared / 'CoreRenamed.lua')
@@ -112,6 +122,13 @@ def test_case_only_rename_rewrites_the_file_after_deleting_the_old_name(repo):
     for folder in editions(repo):
         assert (folder, PurePosixPath('Textures/Logo.tga')) in plan.deletes
         assert (repo / 'addon/shared/Textures/LOGO.tga', folder / 'Textures/LOGO.tga') in plan.copies
+
+
+def test_case_only_rename_prints_a_git_mv_hint(repo, capsys):
+    git(repo, 'mv', 'addon/shared/Textures/Logo.tga', 'addon/shared/Textures/LOGO.tga')
+    assert sync.main([], repo=repo) == 0
+    assert ('case-only rename: on Windows/macOS run git mv addon/tbc/WoWStatus/Textures/Logo.tga '
+            'addon/tbc/WoWStatus/Textures/LOGO.tga') in capsys.readouterr().out
 
 
 def test_apply_deletes_before_copying(tmp_path):
