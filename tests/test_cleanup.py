@@ -217,7 +217,7 @@ def test_discord_suspension_stops_exports_and_can_restore_saved_opt_ins(tmp_path
     assert disabled.eval('character().settings.discord_enabled') is False
     assert disabled.eval('WoWStatusDB.characters.other.settings.discord_enabled') is False
     path = tmp_path/'WoWStatus.lua'
-    path.write_text(saved(disabled))
+    path.write_text(saved(disabled), encoding='utf-8')
     assert list(exports(path)) == []
     restored = make_lua(STUBS + saved(disabled), discord_feature=True)
     assert restored.eval('function() for _,c in pairs(WoWStatusDB.characters) do if c.identity.guid=="Player-123-0001" then return c.settings.discord_enabled end end end')() is True

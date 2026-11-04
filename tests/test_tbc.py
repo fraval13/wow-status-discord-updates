@@ -24,9 +24,9 @@ def tbc_runtime(name='Thora', extra='', *, join_announcements=False):
     ''' + extra)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(at,timezone.utc).strftime(fmt.lstrip('!'))
     folder = ROOT/'addon/tbc/WoWStatus'
-    for line in (folder/'WoWStatus.toc').read_text().splitlines():
+    for line in (folder/'WoWStatus.toc').read_text(encoding='utf-8').splitlines():
         if line.strip() and not line.startswith('#'):
-            runtime.execute((folder/line.strip()).read_text())
+            runtime.execute((folder/line.strip()).read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
     if not join_announcements:
         runtime.execute('WoWStatusGroups.announce=nil')
@@ -114,8 +114,8 @@ def test_tbc_installer_selects_the_correct_client_and_interface(tmp_path):
     addons.mkdir(parents=True)
     command=[sys.executable,str(ROOT/'scripts/install_addon.py'),'--client','tbc',
              '--addons-dir',str(addons),'--interface']
-    invalid=subprocess.run([*command,'11509'],capture_output=True,text=True)
+    invalid=subprocess.run([*command,'11509'],capture_output=True)
     assert invalid.returncode!=0 and not (addons/'WoWStatus').exists()
-    subprocess.run([*command,'20506'],check=True,capture_output=True,text=True)
+    subprocess.run([*command,'20506'],check=True,capture_output=True)
     assert (addons/'WoWStatus/TBC.lua').is_file()
-    assert '## Interface: 20506' in (addons/'WoWStatus/WoWStatus.toc').read_text()
+    assert '## Interface: 20506' in (addons/'WoWStatus/WoWStatus.toc').read_text(encoding='utf-8')

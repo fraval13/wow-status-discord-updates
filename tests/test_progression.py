@@ -52,7 +52,7 @@ def test_full_local_history_is_uploaded_in_small_batches(tmp_path):
         },
     }''' % records
     path = tmp_path / 'WoWStatus.lua'
-    path.write_text(text)
+    path.write_text(text, encoding='utf-8')
     batches = list(exports(path))
     assert [len(batch['events']) for batch in batches] == [100, 100, 75]
     assert len({event['id'] for batch in batches for event in batch['events']}) == 275

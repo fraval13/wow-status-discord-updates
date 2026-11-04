@@ -80,7 +80,7 @@ def test_remote_credentials_require_https_without_url_secrets(url):
 
 def test_explicit_export_skips_nonconsenting_characters(tmp_path):
     path = tmp_path / 'WoWStatus.lua'
-    path.write_text('WoWStatusDB = {version=1, characters={x={enrolled=false}}}')
+    path.write_text('WoWStatusDB = {version=1, characters={x={enrolled=false}}}', encoding='utf-8')
     assert list(exports(path)) == []
 
 
@@ -108,12 +108,12 @@ def test_forever_is_accepted_and_other_unknown_clients_are_rejected(payload):
 ])
 def test_exports_recover_enabled_characters_missing_enrollment(tmp_path, flag, enabled, expected):
     from pathlib import Path
-    fixture = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text()
+    fixture = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
     fixture = fixture.replace('["enrolled"] = true,', flag)
     if not enabled:
         fixture = fixture.replace('enabled=true,', 'enabled=false,', 1)
     path = tmp_path / 'WoWStatus.lua'
-    path.write_text(fixture)
+    path.write_text(fixture, encoding='utf-8')
     values = list(exports(path))
     assert len(values) == expected
     if expected:
@@ -123,13 +123,13 @@ def test_exports_recover_enabled_characters_missing_enrollment(tmp_path, flag, e
 
 def test_discord_opt_out_skips_new_characters_and_emits_only_pause_for_prior_opt_in(tmp_path):
     from pathlib import Path
-    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text()
+    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
     source = source.replace('discord_enabled=true', 'discord_enabled=false')
     path = tmp_path / 'WoWStatus.lua'
-    path.write_text(source)
+    path.write_text(source, encoding='utf-8')
     assert list(exports(path)) == []
     source = source.replace('["enrolled"] = true,', '["enrolled"] = true, discord_enrolled=true,')
-    path.write_text(source)
+    path.write_text(source, encoding='utf-8')
     paused = list(exports(path))
     assert len(paused) == 1
     assert paused[0]['settings']['enabled'] is False
@@ -139,11 +139,11 @@ def test_discord_opt_out_skips_new_characters_and_emits_only_pause_for_prior_opt
 
 def test_discord_opt_in_does_not_backfill_earlier_local_history(tmp_path):
     from pathlib import Path
-    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text()
+    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
     source = source.replace('["enrolled"] = true,', '["enrolled"] = true, discord_since=1793000001,')
     source = source.replace('["exported_at"] = 1793000000', '["exported_at"] = 1793000002')
     path = tmp_path / 'WoWStatus.lua'
-    path.write_text(source)
+    path.write_text(source, encoding='utf-8')
     batch = list(exports(path))[0]
     assert batch['events'] == []
     assert batch['settings']['discord_delivery'] == 'summary'

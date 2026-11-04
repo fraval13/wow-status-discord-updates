@@ -80,10 +80,10 @@ be checked against Git and the environment rather than assumed permanently true.
 - `docs/IMPLEMENTATION_STATUS.md` and older dated notes include historical
   versions/limitations. Use current source, README and newest decision entries
   when they disagree with old descriptions.
-- GitHub SSH pushes failed with `Permission denied (publickey)`. Local commits
-  exist and website releases were published directly through authorized SSH.
-  Check current Git/auth state before retrying; do not hunt for credentials or
-  claim that the hosted pipeline ran merely because local commits exist.
+- GitHub pushes work again and every push to `main` runs the hosted
+  "Checks and addon packages" workflow (Ubuntu and Windows `validate`, then
+  `deploy`). Check that run's result on GitHub Actions before describing a
+  release as validated or deployed; do not hunt for credentials.
 - Uncommitted work predating this feature remains: shared/all-edition
   `Minimap.lua` edits, Vanilla/Forever TOC `IconTexture` lines, `Textures/Logo.tga`
   files, and `assets/branding/`. These belong to separate branding work. Preserve
@@ -116,6 +116,12 @@ node --check website/app.js
 node --check website/flavour.js
 git diff --check
 ```
+
+Windows CI decodes text with cp1252 unless told otherwise, so pass
+`encoding='utf-8'` to every `read_text`/`write_text`/`open` in tests and avoid
+`text=True` on subprocess calls; `tests/test_text_encoding.py` enforces this. To
+reproduce Windows' behaviour on Linux, run pytest under a non-UTF-8 locale, for
+example `LC_ALL=C python -X utf8=0 -m pytest -q`.
 
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.

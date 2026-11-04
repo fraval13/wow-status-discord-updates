@@ -45,7 +45,7 @@ def staged(built_site,tmp_path):
             toc=tmp_path/f'addon/{edition}/WoWStatus/WoWStatus.toc'
             toc.parent.mkdir(parents=True)
             toc.write_bytes(archive.read('WoWStatus/WoWStatus.toc'))
-    return tmp_path,json.loads((public/'downloads/release.json').read_text())['addon_revision']
+    return tmp_path,json.loads((public/'downloads/release.json').read_text(encoding='utf-8'))['addon_revision']
 
 
 def test_release_rejects_wrong_revision_or_corrupt_download_before_activation(staged):
@@ -83,17 +83,17 @@ def test_valid_release_switches_all_public_downloads_together(staged,monkeypatch
     assert (site/'current').resolve()==old
     module.switch_homepage(public)
     assert (site/'current').resolve()==public
-    manifest=json.loads((site/'current/downloads/release.json').read_text())
+    manifest=json.loads((site/'current/downloads/release.json').read_text(encoding='utf-8'))
     for edition in ('vanilla','forever','tbc','retail'):
         assert (site/f'current/downloads/WoWStatus-{edition}.zip').is_file()
-        assert f'VERSION {manifest["editions"][edition]["version"]}' in (site/'current/index.html').read_text()
+        assert f'VERSION {manifest["editions"][edition]["version"]}' in (site/'current/index.html').read_text(encoding='utf-8')
     # Receiver rollback returns the complete previous site, including downloads.
     module.switch_homepage(old)
     assert (site/'current').resolve()==old
 
 
 def test_published_site_verification_checks_every_download(built_site):
-    manifest=json.loads((built_site/'downloads/release.json').read_text())
+    manifest=json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))
     def fetch(url):
         path=urlparse(url).path.lstrip('/') or 'index.html'
         return (built_site/path).read_bytes()
@@ -102,7 +102,7 @@ def test_published_site_verification_checks_every_download(built_site):
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
-    manifest=json.loads((built_site/'downloads/release.json').read_text())
+    manifest=json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))
     def fetch(url):
         path=urlparse(url).path.lstrip('/') or 'index.html'
         data=(built_site/path).read_bytes()

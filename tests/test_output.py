@@ -116,7 +116,7 @@ def test_status_card_is_cumulative_tidy_and_uses_custom_faction_and_class_emojis
     from pathlib import Path
 
     from wow_status.output import upload_summary
-    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text(encoding='utf-8'))
     result = upload_summary([item], {'wow_warlock':'<:wow_warlock:123>','wow_alliance':'<:wow_alliance:456>'},preview=True)
     assert result['content'] == '📜 **WoW Progress**'
     assert 'EXAMPLE' not in result['embeds'][0].description
@@ -141,7 +141,7 @@ def test_status_card_is_cumulative_tidy_and_uses_custom_faction_and_class_emojis
 def test_status_metrics_and_skill_ranks_are_filtered_with_profile_privacy():
     import json
     from pathlib import Path
-    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text(encoding='utf-8'))
     item['settings']['fields'].update(deaths=False, quests=False, level=False, professions=False, race=False, **{'class':False})
     result = validate(item)['snapshot']
     for key in ['deaths','deaths_since','quests_completed','quests_source','quests_since',
@@ -152,7 +152,7 @@ def test_status_metrics_and_skill_ranks_are_filtered_with_profile_privacy():
 def test_milestone_event_payloads_survive_validation_and_respect_quest_privacy():
     import json
     from pathlib import Path
-    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text())
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text(encoding='utf-8'))
     item['events'] = [
         {'id':'quest100', 'kind':'quest', 'at':item['exported_at'], 'data':{'completed':100,'source':'game_api'}},
         {'id':'expert', 'kind':'profession', 'at':item['exported_at'],
