@@ -1,16 +1,19 @@
 import copy
 import sys
 import time
+import types
 
 import pytest
 
 from wow_status.store import Store
 
 # Every WoW client runs Lua 5.1, but lupa's default ``LuaRuntime`` is a newer Lua
-# (5.5 in lupa 2.8). ``--lua=5.1`` swaps ``lupa`` for ``lupa.lua51`` before any
-# test module imports it, so the same suite exercises the game's Lua (issue #24).
+# (5.5 in lupa 2.8). ``--lua=5.1`` makes ``import lupa`` give Lua 5.1 before any test
+# module imports it, so the same suite exercises the game's Lua (issue #24).
 _lua_tests = set()
+_runtimes_outside_tests = 0
 _current_test = None
+_no_lua_ran = False
 
 
 def pytest_addoption(parser):
@@ -22,23 +25,34 @@ def pytest_addoption(parser):
 def pytest_configure(config):
     if config.getoption('lua') != '5.1':
         return
-    # A plain import, not importorskip: a missing runtime must fail the run rather
-    # than silently skip every Lua-backed test.
-    from lupa import lua51
+    # Not importorskip: a missing runtime must fail the run rather than silently
+    # skip every Lua-backed test.
+    try:
+        import lupa
+        from lupa import lua51
+    except ImportError as error:
+        raise pytest.UsageError(f'--lua=5.1 needs lupa with its lua51 module ({error})') from None
     version = lua51.LuaRuntime().eval('_VERSION')
     if version != 'Lua 5.1':
         raise pytest.UsageError(f'--lua=5.1 needs lupa.lua51, which reports {version!r}')
 
-    class LuaRuntime(lua51.LuaRuntime):
+    def LuaRuntime(*args, **kwargs):
         """Records which tests start Lua, so the run can prove it reached them."""
+        global _runtimes_outside_tests
+        if _current_test is None:
+            _runtimes_outside_tests += 1
+        else:
+            _lua_tests.add(_current_test)
+        return lua51.LuaRuntime(*args, **kwargs)
 
-        def __init__(self, *args, **kwargs):
-            # The Cython base takes its arguments in __cinit__; object.__init__ takes none.
-            if _current_test is not None:
-                _lua_tests.add(_current_test)
-
-    lua51.LuaRuntime = LuaRuntime
-    sys.modules['lupa'] = lua51
+    # A copy of the lupa package (``lupa.version`` and ``import lupa.lua54`` keep
+    # working) whose runtime names are all Lua 5.1's. Its lazy ``__getattr__`` is
+    # left out so that no name silently falls through to the newest Lua.
+    swapped = types.ModuleType('lupa')
+    swapped.__dict__.update({k: v for k, v in vars(lupa).items() if k != '__getattr__'})
+    swapped.__dict__.update({k: v for k, v in vars(lua51).items() if not k.startswith('_')})
+    swapped.LuaRuntime = LuaRuntime
+    sys.modules['lupa'] = swapped
 
 
 def pytest_report_header(config):
@@ -59,15 +73,25 @@ def pytest_runtest_protocol(item, nextitem):
         _current_test = None
 
 
-def pytest_terminal_summary(terminalreporter, config):
-    if config.getoption('lua') == '5.1':
-        terminalreporter.write_line(f'{len(_lua_tests)} tests ran Lua 5.1 code')
-
-
 def pytest_sessionfinish(session):
-    if session.config.getoption('lua') == '5.1' and not _lua_tests and session.exitstatus == 0:
+    global _no_lua_ran
+    if (session.config.getoption('lua') == '5.1' and session.exitstatus == 0
+            and not _lua_tests and not _runtimes_outside_tests):
         # Guards against the Lua tests being skipped or deselected unnoticed.
+        _no_lua_ran = True
         session.exitstatus = pytest.ExitCode.TESTS_FAILED
+
+
+def pytest_terminal_summary(terminalreporter, config):
+    if config.getoption('lua') != '5.1':
+        return
+    outside = f' (plus {_runtimes_outside_tests} runtimes started outside a test)' * bool(
+        _runtimes_outside_tests)
+    terminalreporter.write_line(f'{len(_lua_tests)} tests started a Lua 5.1 runtime{outside}')
+    if _no_lua_ran:
+        terminalreporter.write_line(
+            'ERROR: --lua=5.1 ran no Lua code, so nothing was checked under Lua 5.1. '
+            'Select at least one Lua-backed test.', red=True, bold=True)
 
 
 @pytest.fixture
