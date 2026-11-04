@@ -12,6 +12,8 @@ from .companion import link, upload
 from .daily import DailyRecaps
 from .formatting import announcement
 from .locking import FileLock
+from .people import person
+from .schema import LEVEL_CAPS, ValidationError
 from .server import serve
 from .store import Store
 
@@ -51,7 +53,8 @@ def parser():
     companion.add_argument('--once', action='store_true')
     companion.add_argument('--dry-run', action='store_true')
     companion.add_argument('--interval', type=int, default=5)
-    for name in ('create-link', 'outbox', 'resolve', 'simulate', 'export', 'recap', 'resolve-recap', 'weekly', 'resolve-weekly'):
+    for name in ('create-link', 'outbox', 'resolve', 'simulate', 'export', 'recap', 'resolve-recap', 'weekly', 'resolve-weekly',
+                 'release-character', 'owners'):
         command = commands.add_parser(name)
         command.add_argument('--db', default='state/service.sqlite3')
         if name == 'export':
@@ -68,7 +71,58 @@ def parser():
         if name == 'resolve':
             command.add_argument('delivery_id', type=int)
             command.add_argument('resolution', choices=['retry', 'sent', 'discard'])
+        if name == 'release-character':
+            command.description = ('Recover a character claimed by the wrong owner. Without '
+                                   '--to-owner it is deleted, and the next upload from anyone '
+                                   'but its current owner claims it.')
+            command.add_argument('--character-id', help='ID from the character JSON archive')
+            command.add_argument('--name', help='Character name, with --realm')
+            command.add_argument('--realm')
+            command.add_argument('--client', choices=sorted(LEVEL_CAPS),
+                                 help='Only needed when several clients match')
+            command.add_argument('--to-owner', help='Move it with its history to this owner ID '
+                                 '(see the owners command); for a deleted character, let that '
+                                 'owner claim it again')
+        if name == 'owners':
+            command.description = 'List owner IDs with their names, for release-character --to-owner'
+
     return root
+
+
+def release_character(store, args):
+    """Operator recovery for #11; returns the line to print."""
+    if args.character_id:
+        char = store.character(args.character_id)
+        # A deleted character can't be listed, but --to-owner may still lift a block.
+        matches = [char] if char else ([{'id': args.character_id}] if args.to_owner else [])
+    elif args.name and args.realm:
+        matches = store.find_characters(args.name, args.realm, args.client)
+    else:
+        raise SystemExit('Give --character-id, or --name with --realm.')
+
+    def describe(char):
+        if 'identity' not in char:
+            return f"character {char['id']}"
+        identity = char['identity']
+        return (f"{identity['name']} ({identity['realm']}, {identity['client']}) {char['id']}, "
+                f"owner {char['owner']} ({person(store, char['owner'])['display_name']})")
+    if len(matches) != 1:
+        for char in matches:
+            print(describe(char))
+        raise SystemExit('No character matches.' if not matches else
+                         'Several characters match; choose one with --character-id.')
+    char = matches[0]
+    try:
+        result = store.release(char['id'], args.to_owner)
+    except ValidationError as exc:
+        raise SystemExit(f'Not released: {exc}.') from None
+    return {
+        'unblocked': f'Owner {args.to_owner} may claim {describe(char)} again.',
+        'moved': (f'Moved {describe(char)} to owner {args.to_owner}. '
+                  'Their next upload binds their claim secret.'),
+        'deleted': (f'Released {describe(char)}. Its data is deleted; the next upload from '
+                    'another owner claims it.'),
+    }[result]
 
 
 def main():
@@ -128,6 +182,12 @@ def main():
                 asyncio.run(serve(store, args.host, args.port, bot, selected_group, args.group, args.trust_proxy))
             elif args.command == 'create-link':
                 print(store.create_link(args.owner))
+            elif args.command == 'release-character':
+                print(release_character(store, args))
+            elif args.command == 'owners':
+                for row in store.owners():
+                    print(f"{row['owner']}\t{row['name']}\t{row['characters']} characters"
+                          + ('\tpaused' if row['paused'] else ''))
             elif args.command == 'outbox':
                 rows = store.db.execute('SELECT id,status,attempts,message_id FROM outbox').fetchall()
                 recaps = store.db.execute('SELECT * FROM digest_parts').fetchall()

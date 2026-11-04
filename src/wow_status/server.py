@@ -208,7 +208,7 @@ def create_app(store, group=None, name=None, trust_proxy=False):
                 raise ValidationError('Wrong group')
             if name is not None and canonical_group(payload.get('group_name', name)) != canonical_group(name):
                 raise web.HTTPForbidden()
-            if store.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (owner,)).fetchone():
+            if store.paused(owner):
                 raise web.HTTPForbidden()
             if 'player_name' in payload:
                 player = payload['player_name']

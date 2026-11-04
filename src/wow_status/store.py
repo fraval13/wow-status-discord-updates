@@ -1,5 +1,6 @@
 """Transactional enrollment, privacy, deduplication and announcement outbox."""
 import hashlib
+import hmac
 import json
 import secrets
 import sqlite3
@@ -36,6 +37,11 @@ class Store:
         CREATE TABLE IF NOT EXISTS people(
             owner TEXT PRIMARY KEY, display_name TEXT NOT NULL, nickname TEXT,
             source TEXT NOT NULL DEFAULT 'discord');
+        CREATE TABLE IF NOT EXISTS character_claims(
+            character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
+            secret_hash TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS former_owners(
+            character TEXT NOT NULL, owner TEXT NOT NULL, PRIMARY KEY(character,owner));
         CREATE TABLE IF NOT EXISTS character_labels(
             character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
             role TEXT NOT NULL DEFAULT 'alt', source TEXT NOT NULL DEFAULT 'addon');
@@ -110,7 +116,7 @@ class Store:
         known = {char['id'] for char in self.characters()}
         for archive in self.archive_directory.glob('*.json'):
             if archive.stem not in known:
-                archive.unlink()
+                self.drop_archive(archive.stem)
 
     def close(self):
         self.db.close()
@@ -122,6 +128,11 @@ class Store:
     @staticmethod
     def character_id(identity):
         return Store.digest(json.dumps([identity['client'], identity['realm'], identity['guid']]))
+
+    @staticmethod
+    def claim_hash(cid, secret):
+        # Bound to the character, so one stored hash never matches another character.
+        return Store.digest(json.dumps(['claim', cid, secret]))
 
     @staticmethod
     def level_claim(data):
@@ -179,7 +190,10 @@ class Store:
     def ingest(self, owner, payload, name=None):
         """Store one upload. ``name`` is an optional ``(display_name, source)`` owner label,
         written in the upload's transaction: a rejected upload, or one for a new character
-        that stores nothing, leaves it unchanged."""
+        that stores nothing, leaves it unchanged.
+
+        Another owner's character is taken over, with its history, only when the upload
+        presents the claim secret stored for it (#11). Without one, it is a 409."""
         from .people import set_role, store_name
         p = validate(payload)
         cid = self.character_id(p['identity'])
@@ -188,18 +202,43 @@ class Store:
             old = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
             if not old and not p['settings']['enabled']:
                 return {'character_id': cid, 'accepted': 0}
-            if old and old['owner'] != owner:
-                raise Conflict('Character already belongs to another linked user')
-            if old and p['exported_at'] < old['exported']:
+            # An installation that lost the character can't take it back (#11).
+            if self.barred(cid, owner):
+                raise Conflict('Character moved to another installation; ask the operator to move it back')
+            proof = self.claim_hash(cid, p['claim_secret']) if 'claim_secret' in p else None
+            takeover = bool(old) and old['owner'] != owner
+            if takeover:
+                claimed = self.db.execute('SELECT secret_hash FROM character_claims WHERE character=?',
+                                          (cid,)).fetchone()
+                # A character stored before claim secrets existed needs the operator command.
+                if not (proof and claimed and hmac.compare_digest(claimed['secret_hash'], proof)):
+                    raise Conflict('Character already belongs to another linked user')
+                # Another installation must not undo the old one's group privacy pause.
+                if self.paused(old['owner']):
+                    raise Conflict('Character owner paused sharing; resume from that installation')
+            # A takeover needs a strictly newer export, so two installations reading the
+            # same SavedVariables can't pass the character back and forth.
+            if old and (p['exported_at'] <= old['exported'] if takeover
+                        else p['exported_at'] < old['exported']):
                 raise Conflict('Stale export rejected; export current settings with /reload')
+            if takeover:
+                # The previous owner's main/alt choice does not carry over, and the old
+                # installation can't take the character back, even with the secret.
+                self.db.execute('DELETE FROM character_labels WHERE character=?', (cid,))
+                self.db.execute('INSERT OR IGNORE INTO former_owners VALUES(?,?)',
+                                (cid, old['owner']))
             # Any later rejection inside this transaction rolls the label back too.
             renamed = name is not None and store_name(self.db, owner, *name)
             self.db.execute('''INSERT INTO characters(id,owner,identity,settings,snapshot,exported,uploaded) VALUES(?,?,?,?,?,?,?)
-                ON CONFLICT(id) DO UPDATE SET identity=excluded.identity,
+                ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,identity=excluded.identity,
                 settings=excluded.settings,snapshot=excluded.snapshot,
                 exported=excluded.exported,uploaded=excluded.uploaded''',
                 (cid, owner, json.dumps(p['identity']), json.dumps(p['settings']),
                  json.dumps(p['snapshot']), p['exported_at'], now))
+            if proof:
+                # The current owner's latest secret wins, e.g. after a SavedVariables reset.
+                self.db.execute('INSERT INTO character_claims VALUES(?,?) ON CONFLICT(character) '
+                                'DO UPDATE SET secret_hash=excluded.secret_hash', (cid, proof))
             if (not p['settings']['enabled'] or not p['settings']['fields']['level']
                     or not p['settings']['collection']['level']):
                 self.db.execute('DELETE FROM level_tracking WHERE character=?', (cid,))
@@ -310,7 +349,8 @@ class Store:
                 new_bytes += len(json.dumps({k: p[k] for k in
                     ('identity', 'snapshot', 'settings', 'exported_at')}).encode('utf-8')) if snapshot_added else 0
                 limits.charge(self.db, [
-                    ('characters:' + owner, limits.NEW_CHARACTERS_PER_OWNER_DAY, 86400, int(old is None)),
+                    ('characters:' + owner, limits.NEW_CHARACTERS_PER_OWNER_DAY, 86400,
+                     int(old is None or takeover)),
                     ('characters:group', limits.NEW_CHARACTERS_PER_GROUP_DAY, 86400, int(old is None)),
                     ('events:' + owner, limits.NEW_EVENTS_PER_OWNER_DAY, 86400, accepted),
                     ('events:group', limits.NEW_EVENTS_PER_GROUP_DAY, 86400, accepted),
@@ -383,8 +423,87 @@ class Store:
             self.db.execute('DELETE FROM upload_receipts WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
+            self.db.execute('DELETE FROM former_owners WHERE owner=?', (owner,))
+            self.db.executemany('DELETE FROM former_owners WHERE character=?', [(cid,) for cid in ids])
         for cid in ids:
-            (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
+            self.drop_archive(cid)
+
+    def paused(self, owner):
+        """Whether this owner paused sharing in an ID-joined group."""
+        return self.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (owner,)).fetchone() is not None
+
+    def barred(self, cid, owner):
+        """Whether this owner lost the character to a takeover or an operator release."""
+        return self.db.execute('SELECT 1 FROM former_owners WHERE character=? AND owner=?',
+                               (cid, owner)).fetchone() is not None
+
+    def drop_archive(self, cid):
+        (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
+
+    def character(self, cid):
+        row = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
+        return self.decode(row) if row else None
+
+    def find_characters(self, name, realm, client=None):
+        """Characters whose identity matches, ignoring case; for operator commands.
+        Python's casefold() also matches non-ASCII names, which SQL NOCASE does not."""
+        def same(a, b):
+            return a.casefold() == b.casefold()
+        matches = []
+        for row in self.db.execute('SELECT id,owner,identity FROM characters'):
+            identity = json.loads(row['identity'])
+            if (same(identity['name'], name) and same(identity['realm'], realm)
+                    and (client is None or same(identity['client'], client))):
+                matches.append({'id': row['id'], 'owner': row['owner'], 'identity': identity})
+        return matches
+
+    def release(self, cid, owner=None):
+        """Operator recovery for a squatted or orphaned character (#11); returns what it did.
+
+        Without ``owner`` the character and all its data are deleted, and its current owner
+        can't claim it again, so the next upload from anyone else claims it fresh. With
+        ``owner`` it moves to that owner with its history, the current owner can't take it
+        back, and the stored claim is dropped so the new owner's next upload binds its own
+        secret. For a deleted character, ``owner`` only lifts that owner's block."""
+        char = self.character(cid)
+        if char is None:
+            if owner is None or not self.barred(cid, owner):
+                raise ValidationError('Unknown character')
+            with self.db:
+                self.db.execute('DELETE FROM former_owners WHERE character=? AND owner=?', (cid, owner))
+            return 'unblocked'
+        if owner is None:
+            with self.db:
+                self.db.execute('INSERT OR IGNORE INTO former_owners VALUES(?,?)', (cid, char['owner']))
+                self.db.execute('DELETE FROM characters WHERE id=?', (cid,))
+            self.drop_archive(cid)
+            return 'deleted'
+        if owner == char['owner']:
+            raise ValidationError('Character already belongs to that owner')
+        if not self.db.execute('SELECT 1 FROM installations WHERE owner=? UNION ALL '
+                               'SELECT 1 FROM people WHERE owner=?', (owner, owner)).fetchone():
+            raise ValidationError('Unknown owner')
+        if self.paused(owner):
+            raise ValidationError('Owner has paused sharing; they must resume first')
+        with self.db:
+            self.db.execute('UPDATE characters SET owner=? WHERE id=?', (owner, cid))
+            self.db.execute('DELETE FROM character_claims WHERE character=?', (cid,))
+            self.db.execute('DELETE FROM character_labels WHERE character=?', (cid,))
+            self.db.execute('INSERT OR IGNORE INTO former_owners VALUES(?,?)', (cid, char['owner']))
+            self.db.execute('DELETE FROM former_owners WHERE character=? AND owner=?', (cid, owner))
+        self.sync_archive(cid)
+        return 'moved'
+
+    def owners(self):
+        """Every known owner with label, character count and pause; for operator commands."""
+        from .people import person
+        rows = self.db.execute('''SELECT o.owner, COUNT(c.id) AS characters,
+            EXISTS(SELECT 1 FROM group_pauses g WHERE g.owner=o.owner) AS paused
+            FROM (SELECT owner FROM installations UNION SELECT owner FROM people
+                  UNION SELECT owner FROM characters) o
+            LEFT JOIN characters c ON c.owner=o.owner GROUP BY o.owner ORDER BY o.owner''').fetchall()
+        return [{'owner': row['owner'], 'name': person(self, row['owner'])['display_name'],
+                 'characters': row['characters'], 'paused': bool(row['paused'])} for row in rows]
 
     def sync_archive(self, cid):
         from .archive import write_character

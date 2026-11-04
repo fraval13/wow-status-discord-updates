@@ -101,6 +101,32 @@ wow-status resolve-recap --db /var/lib/wow-status/service.sqlite3 --day YYYY-MM-
 
 Use `retry` only after verifying that the corresponding recap did not arrive.
 
+Characters belong to the owner (a group enrollment or a Discord account) that
+first uploaded them. Another owner takes one over only with the character's addon
+claim secret and a newer export, so a player who lost their companion credentials
+but kept SavedVariables recovers on their own. The old owner can't take it back
+after that. Run these commands with the service stopped:
+
+```sh
+# Owner IDs, names and character counts, including owners whose uploads all got 409.
+wow-status owners --db /var/lib/wow-status/service.sqlite3
+# Someone else claimed it first: delete the character and its data. Its current
+# owner can't claim it again; the real owner's next upload does, and their events
+# are posted as new because the service never had them.
+wow-status release-character --db /var/lib/wow-status/service.sqlite3 --name Thora --realm "Realm Name"
+# The player's own character, stored before claim secrets existed, after they lost
+# their credentials: move it with its history, so nothing is posted twice.
+wow-status release-character --db /var/lib/wow-status/service.sqlite3 --character-id CHARACTER_ID --to-owner OWNER_ID
+```
+
+Several matches are listed with their IDs and owners; repeat with `--client` or
+`--character-id`. After `--to-owner`, that owner's next upload binds its secret,
+and the previous owner can't take it back. `--to-owner` refuses an owner who has
+paused sharing. A release only bars the exact owner ID, so a squatter who enrolls
+again can claim the character again before the real owner does; then move it with
+`--to-owner` instead. To undo a release of a now-deleted character, run
+`release-character --character-id CHARACTER_ID --to-owner OWNER_ID` for the barred owner.
+
 ## Friend-group behavior
 
 `/link` remembers the member's server display name; `/nickname` sets an optional
