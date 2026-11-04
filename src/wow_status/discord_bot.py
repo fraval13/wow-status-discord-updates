@@ -7,7 +7,7 @@ import discord
 from discord import app_commands
 
 from .daily import DailyRecaps
-from .formatting import announcement, clip, profile, roster_pages, safe
+from .formatting import announcement, clip, fit_lines, profile, roster_pages, safe
 from .output import emoji, upload_summary
 from .output import message as announcement_message
 from .people import decorate, nickname, remember, set_role
@@ -166,7 +166,7 @@ class StatusBot(discord.Client):
             lines = [announcement(dict(char, **event))
                      for event in self.store.activity(char['id'])[:8]]
             await interaction.response.send_message(
-                clip('\n\n'.join(lines), 1900) or 'No recent shared activity.', ephemeral=True)
+                fit_lines(lines, 1900, '\n\n') or 'No recent shared activity.', ephemeral=True)
 
         @self.tree.command(name='privacy', description='Inspect, pause, unlink, or delete your data')
         @app_commands.choices(action=[
@@ -203,12 +203,14 @@ class StatusBot(discord.Client):
                     collected = ', '.join(k for k, v in settings['collection'].items() if v) or 'none'
                     lines.append(f"{safe(char['identity']['name'])}: sharing={settings['enabled']}; "
                                  f'profile: {fields}; stored: {collected}; announcements: {events}')
-                text = ('\n'.join(lines) or 'No uploaded characters.') + (
+                notice = (
                     '\nFor ID-joined groups, use the companion’s group privacy controls; no Discord link is needed. '
                     'Identity (name, realm, client, GUID) is required for enrollment. '
                     'Consented history is retained in structured per-character JSON until deletion. '
                     'Stored events also feed daily recaps at 00:05 Europe/Oslo. '
                     'Historical Discord messages remain after deletion.')
+                # Cut whole character lines so the retention notice is never dropped.
+                text = (fit_lines(lines, 1900 - len(notice)) if lines else 'No uploaded characters.') + notice
             await interaction.response.send_message(clip(text, 1900), ephemeral=True)
 
     async def deliver(self):

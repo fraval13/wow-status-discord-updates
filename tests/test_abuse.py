@@ -6,7 +6,7 @@ import pytest
 from aiohttp.test_utils import TestClient, TestServer
 
 from wow_status import limits
-from wow_status.formatting import safe
+from wow_status.formatting import clip, fit_lines, safe
 from wow_status.schema import ValidationError, validate
 from wow_status.server import create_app
 from wow_status.store import Store
@@ -237,9 +237,22 @@ def test_truncation_keeps_whole_escape_pairs(value, limit, expected):
 
 
 def test_any_cut_of_escaped_text_keeps_backslashes_paired():
-    from wow_status.formatting import clip
     full = safe('a\\*_`b\\\\~|>[]c')
     for limit in range(len(full) + 1):
         cut = clip(full, limit)
         assert len(cut) <= limit and full.startswith(cut)
         assert (len(cut) - len(cut.rstrip('\\'))) % 2 == 0
+
+
+@pytest.mark.parametrize('value,limit', [('x' * 66 + '@everyone', 67), ('x' * 59 + ' https://e.x', 66)])
+def test_truncation_never_keeps_a_character_without_its_guard(value, limit):
+    output = safe(value, limit)
+    assert not output.endswith(('@', ':'))
+    assert len(output) < limit
+
+
+def test_fit_lines_keeps_whole_lines_so_spoilers_stay_closed():
+    lines = ['**A** · shared a discovery: ||' + 'x' * 40 + '||', '**B** · ' + 'y' * 40]
+    assert fit_lines(lines, 130, '\n\n') == '\n\n'.join(lines)
+    assert fit_lines(lines, 80, '\n\n') == lines[0]
+    assert fit_lines(lines, 10) == ''

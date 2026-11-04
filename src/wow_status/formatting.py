@@ -9,7 +9,8 @@ def clip(text, limit):
 
     Escaping turns each Markdown character into a two-character pair, so a plain slice can
     keep the backslash and drop the character it escapes. That lone backslash would then
-    escape whatever follows it in the message, such as a closing `**`.
+    escape whatever follows it in the message, such as a closing `**`. Every backslash in
+    the text is expected to come from `safe()`, so an odd trailing run is always a cut pair.
     """
     text = text[:limit]
     trailing = len(text) - len(text.rstrip('\\'))
@@ -17,7 +18,11 @@ def clip(text, limit):
 
 
 def safe(value, limit=500):
-    """Escape user text for Discord and cut it to at most `limit` characters."""
+    """Escape user text for Discord and cut it to at most `limit` characters.
+
+    The cut keeps escape pairs whole and never keeps a character whose zero-width-space
+    guard was cut off, so a bare `@` or `scheme:` cannot meet the text that follows.
+    """
     text = str(value)
     text = re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', text)
     text = re.sub(r'\|H[^|]+\|h(.*?)\|h', r'\1', text)
@@ -25,7 +30,22 @@ def safe(value, limit=500):
     # Keep raw evidence in JSON, but user text cannot create clickable URLs/invites.
     text = re.sub(r'(?i)\b([a-z][a-z0-9+.-]{1,31}):(?=//)', r'\1:​', text)
     text = re.sub(r'(?i)\b(www|discord|discordapp)\.', r'\1​.', text)
-    return clip(re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text), limit)
+    text = re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text)
+    cut = clip(text, limit)
+    if text[len(cut):len(cut) + 1] == '\u200b':
+        cut = cut[:-1]
+    return cut
+
+
+def fit_lines(lines, limit, separator='\n'):
+    """Join whole lines while they fit in `limit`, so a cut never splits Markdown spans."""
+    kept, size = [], 0
+    for line in lines:
+        size += len(line) + (len(separator) if kept else 0)
+        if size > limit:
+            break
+        kept.append(line)
+    return separator.join(kept)
 
 
 def norwegian(value):
