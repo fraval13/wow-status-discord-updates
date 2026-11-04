@@ -89,7 +89,9 @@ Friends should update to the same release for login sync and armor metadata.
 
 ## Development
 
-Canonical Lua is in `addon/shared`; run `python scripts/sync_addons.py` after edits.
+Canonical Lua is in `addon/shared`; run `python scripts/sync_addons.py` after edits
+(`--check` reports differences without changing files). It mirrors Git-tracked
+shared files only, so `git add` new shared files first.
 Standalone client folders contain all required Lua and texture files. Client
 adapters remain separate, and missing optional APIs are guarded.
 

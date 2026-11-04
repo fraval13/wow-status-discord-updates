@@ -70,8 +70,12 @@ Edit `addon/shared/*.lua`, then synchronize the four installable folders with:
 python scripts/sync_addons.py
 ```
 
-This copies source only. Adapters and TOCs stay separate. The authored test suite
-checks that all packages contain the same shared files, and mocks each edition’s API paths.
+This mirrors source only: Git-tracked shared Lua and `Textures/` (subfolders
+included, dotfiles skipped) are copied, and tracked edition copies whose shared
+source was removed are deleted. Untracked files are never copied or deleted, so
+`git add` a new shared file before syncing. `--check` reports differences without
+changing anything. Adapters and TOCs stay separate. The authored test suite
+checks both ways that all packages contain exactly the shared files, and mocks each edition’s API paths.
 GitHub Actions produces separate Vanilla, Forever, TBC Anniversary and Retail ZIP artifacts after checks.
 
 
