@@ -405,17 +405,78 @@ function P.receive(text, sender, channel)
     return true
 end
 
+-- Big banners (#61): max level and every 10th level get a larger toast.
+-- First raid clears and epic mounts are not detected by the addon yet.
+function P.bigMoment(item)
+    if not prefs or prefs.big_banners == false then return false end
+    local level = S.number(item.level)
+    return level ~= nil and level > 0 and (level % 10 == 0 or level == A.max_level)
+end
+local function anchor(frame, drop)
+    local position = prefs and prefs.popup_position
+    frame:ClearAllPoints()
+    if type(position) == "table" and type(position.point) == "string" and type(position.x) == "number"
+        and type(position.y) == "number" then
+        frame:SetPoint(position.point, UIParent, position.relative or position.point, position.x, position.y - drop)
+    else
+        frame:SetPoint("TOP", 0, -170 - drop)
+    end
+end
+-- Movable popups: unlocking shows a drag handle; the position is account-wide.
+function P.setUnlocked(value)
+    if not prefs then return end
+    prefs.popup_unlocked = value == true
+    if toast then toast.handle:SetShown(prefs.popup_unlocked) end
+    if prefs.popup_unlocked then P.preview("level") end
+end
+function P.resetPosition()
+    if not prefs then return end
+    prefs.popup_position = nil
+    if toast then anchor(toast, 0) end
+end
+function P.setBigBanners(value) if prefs then prefs.big_banners = value ~= false end end
+function P.options()
+    return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or prefs.big_banners ~= false}
+end
+-- Left-click opens the toast's activity-log entry; any click dismisses it.
+local function entryID(item)
+    if not item or item.preview or not item.nonce or not WoWStatusJournal then return nil end
+    local id = WoWStatusJournal.eventID(item.sender, item.nonce)
+    return id and WoWStatusJournal.contains(id) and id or nil
+end
+
 local function show(item, now)
     if not toast then
         toast = CreateFrame("Frame", "WoWStatusLevelPopup", UIParent)
         toast:SetSize(560, 124)
-        toast:SetPoint("TOP", 0, -170)
+        anchor(toast, 0)
         toast:SetFrameStrata("DIALOG")
         toast:EnableMouse(true)
+        toast:SetMovable(true)
+        toast:RegisterForDrag("LeftButton")
+        toast:SetScript("OnDragStart", function(self)
+            if not prefs.popup_unlocked then return end
+            self.dragging, self.moved = true, true
+            self:StartMoving()
+        end)
+        toast:SetScript("OnDragStop", function(self)
+            if not self.dragging then return end
+            self:StopMovingOrSizing()
+            self.dragging = false
+            if self.GetPoint then
+                local point, _, relative, x, y = self:GetPoint(1)
+                if type(point) == "string" and type(x) == "number" and type(y) == "number" then
+                    prefs.popup_position = {point=point, relative=relative, x=x, y=y}
+                end
+            end
+        end)
         toast:SetScript("OnMouseUp",function(self,button)
+            if self.moved then self.moved = false; return end -- The end of a drag, not a click.
             if button=="LeftButton" or button=="RightButton" then
+                local id = button=="LeftButton" and entryID(self.item)
                 self:Hide();active=nil
                 lastDisplay=time()-7 -- Advance on the next tick, without dropping queued entries.
+                if id then WoWStatusJournal.focus(id) end
             end
         end)
         local bg = toast:CreateTexture(nil, "BACKGROUND")
@@ -437,12 +498,17 @@ local function show(item, now)
         toast.detail = toast:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
         toast.detail:SetPoint("BOTTOMLEFT", 104, 12); toast.detail:SetWidth(438)
         toast.detail:SetJustifyH("LEFT")
+        toast.handle = toast:CreateTexture(nil, "OVERLAY")
+        toast.handle:SetPoint("BOTTOMLEFT", toast, "TOPLEFT"); toast.handle:SetSize(560, 10)
+        toast.handle:SetColorTexture(1, .82, .25, .8)
+        toast.handle:SetShown(prefs.popup_unlocked == true)
         toast:SetScript("OnUpdate", function(self, elapsed)
+            if self.dragging then return end -- Hold still and stay visible while being moved.
             self.age = (self.age or 0) + elapsed
             local entrance = math.min(1, self.age / .22)
             local fade = math.max(0, math.min(1, (6 - self.age) / .5))
             self:SetAlpha(entrance * fade)
-            self:ClearAllPoints(); self:SetPoint("TOP", 0, -170 - (1 - entrance) * 12)
+            anchor(self, (1 - entrance) * 12)
             self.glow:SetAlpha(.5 + .3 * math.sin(self.age * 7))
             if self.age >= 6 then self:Hide(); active = nil end
         end)
@@ -452,6 +518,14 @@ local function show(item, now)
     if type(alias) == "string" and alias ~= "" then name = alias .. "’s " .. name end
     name = name:gsub("|", "||")
     local texture, r, g, b, heading = WoWStatusPresentation.theme(item)
+    local big = P.bigMoment(item)
+    if big then
+        local level = S.number(item.level)
+        heading = level == A.max_level and "MAXIMUM LEVEL!" or ("LEVEL " .. level .. "!")
+    end
+    toast:SetScale(big and 1.35 or 1)
+    toast.big, toast.item = big, item
+    toast.handle:SetShown(prefs.popup_unlocked == true)
     toast.icon:SetTexture(texture)
     toast.glow:SetVertexColor(r,g,b)
     toast.accent:SetColorTexture(r,g,b,1)
