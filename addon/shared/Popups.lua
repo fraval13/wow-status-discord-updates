@@ -45,6 +45,21 @@ function P.senderKey(sender)
     if not sender:find("-", 1, true) then sender = sender .. "-" .. realm() end
     return S.lowerASCII(S.stripSpace(sender))
 end
+-- An event's nonce is "<epoch>-<sequence>-<random>". Epoch and sequence keep a
+-- character's IDs unique; the random tail makes the next one unpredictable, so a
+-- relay can't claim it in advance (issue #3). Receivers accept any [%w-] nonce.
+function P.newNonce(character)
+    return character.epoch .. "-" .. character.sequence .. "-"
+        .. string.format("%04x%04x", math.random(0, 65535), math.random(0, 65535))
+end
+-- Events from before random tails derive the old "<epoch>-<sequence>" form from
+-- their "<guid>:<epoch>:<sequence>" ID.
+function P.eventNonce(event)
+    if type(event.nonce) == "string" then return event.nonce end
+    if type(event.id) ~= "string" then return nil end
+    local epoch, sequence = event.id:match(":(%d+%-%d+):(%d+)$")
+    return epoch and epoch .. "-" .. sequence or nil
+end
 -- Whether popups should wait: the player's own combat state where the client
 -- reports it. The UI lockdown flag is only a fallback; WoW Forever can report a
 -- lockdown outside combat, which held every popup until it expired.
@@ -207,10 +222,11 @@ function P.peers(group)
     end
     rosterBusy=false;return withKnown(group,{})
 end
-local function remember(item)
+-- logged: commit already wrote this update to the log.
+local function remember(item, logged)
     if item.preview then return end
     item.flavour=WoWStatusFlavour.text(item)
-    if WoWStatusJournal then WoWStatusJournal.received(item) end
+    if WoWStatusJournal and not logged then WoWStatusJournal.received(item) end
     prefs.activity = prefs.activity or {}
     table.insert(prefs.activity, 1, {sender = item.sender, level = item.level,
         kind = item.kind or "level", text = item.text, flavour=item.flavour, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
@@ -363,11 +379,16 @@ local function commit(c, now)
         automatic=c.automatic, received_at=now, at=c.at, nonce=c.nonce, group_id=c.group~="legacy" and c.group or nil}
     for k,v in pairs(c.loot or {}) do item[k]=v end
     local duplicate = c.key .. ":" .. (c.level or c.nonce)
+    local logged = false
     if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(c.sender,c.nonce)) then
-        WoWStatusJournal.received(item)
-        prefs.seen[duplicate]=now
-        noteReceive("already_in_log", c, now)
-        return false
+        -- A relay's claim on this ID with other content is not a duplicate: the
+        -- live data replaces it in the log, even if the popup is dropped below.
+        if not WoWStatusJournal.received(item) then
+            prefs.seen[duplicate]=now
+            noteReceive("already_in_log", c, now)
+            return false
+        end
+        logged = true
     end
     local claims = c.level and prefs.level_claims[c.key]
     if prefs.seen[duplicate] or (claims and claims.levels[c.level]) or #incoming >= 128 then return false end
@@ -386,7 +407,7 @@ local function commit(c, now)
         end
         claims.levels[c.level], claims.at = true, now
     end
-    remember(item)
+    remember(item, logged)
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
@@ -813,7 +834,8 @@ P.canShare = canShare
 P.eventText = eventText
 function P.broadcast(character, event)
     if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
-    local nonce = character.epoch .. "-" .. character.sequence
+    local nonce = P.eventNonce(event)
+    if not nonce then return end
     local text
     if event.kind=="loot" then
         local info=WoWStatusLoot.eventInfo(event.data)
