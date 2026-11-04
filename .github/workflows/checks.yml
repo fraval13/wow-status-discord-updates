@@ -127,4 +127,9 @@ jobs:
       - name: Verify live homepage and all addon downloads
         env:
           RELEASE_REVISION: ${{ github.sha }}
-        run: python scripts/verify_homepage.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION" --attempts 6
+        # Compare the live site with the release.json this job built, not only with the
+        # manifest the site serves, which a tampered site could regenerate.
+        run: >-
+          python scripts/verify_homepage.py --url https://wow.frankvalde.com
+          --revision "$RELEASE_REVISION" --manifest dist/homepage/downloads/release.json
+          --attempts 6
