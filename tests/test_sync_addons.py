@@ -2,7 +2,7 @@ import importlib.util
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import pytest
 
@@ -76,15 +76,55 @@ def test_stale_tracked_edition_file_is_deleted_and_edition_files_kept(repo):
         assert all((folder / name).exists() for name in owned)
 
 
-def test_stale_tracked_texture_is_deleted_with_its_empty_folder(repo):
+def test_stale_tracked_texture_is_deleted_with_its_empty_folders(repo):
     for folder in editions(repo):
-        (folder / 'Textures/Old').mkdir()
-        (folder / 'Textures/Old/Gone.tga').write_bytes(b'old')
+        (folder / 'Textures/Old/Textures').mkdir(parents=True)
+        (folder / 'Textures/Old/Textures/Gone.tga').write_bytes(b'old')
     git(repo, 'add', '-A')
     assert sync.main([], repo=repo) == 0
     for folder in editions(repo):
         assert not (folder / 'Textures/Old').exists()
         assert (folder / 'Textures/Logo.tga').exists()
+
+
+def test_stale_file_with_unstaged_edits_stops_the_run(repo, capsys):
+    (repo / 'addon/shared/Core.lua').unlink()
+    git(repo, 'add', '-A')
+    (repo / 'addon/tbc/WoWStatus/Core.lua').write_bytes(b'-- local edits\n')
+    assert sync.main([], repo=repo) == 2
+    assert 'unstaged edits' in capsys.readouterr().err
+    assert (repo / 'addon/vanilla/WoWStatus/Core.lua').exists()
+    assert (repo / 'addon/tbc/WoWStatus/Core.lua').read_bytes() == b'-- local edits\n'
+
+
+def test_shared_file_moved_without_git_stops_the_run(repo, capsys):
+    shared = repo / 'addon/shared'
+    (shared / 'Core.lua').rename(shared / 'CoreRenamed.lua')
+    assert sync.main([], repo=repo) == 2
+    assert 'addon/shared/Core.lua' in capsys.readouterr().err
+    for folder in editions(repo):
+        assert (folder / 'Core.lua').exists()
+
+
+def test_case_only_rename_rewrites_the_file_after_deleting_the_old_name(repo):
+    git(repo, 'mv', 'addon/shared/Textures/Logo.tga', 'addon/shared/Textures/LOGO.tga')
+    plan = sync.plan_sync(repo)
+    for folder in editions(repo):
+        assert (folder, PurePosixPath('Textures/Logo.tga')) in plan.deletes
+        assert (repo / 'addon/shared/Textures/LOGO.tga', folder / 'Textures/LOGO.tga') in plan.copies
+
+
+def test_apply_deletes_before_copying(tmp_path):
+    # On a case-insensitive filesystem the old and new names are one file; model
+    # that by deleting and copying the same path.
+    source, folder = tmp_path / 'Logo.tga', tmp_path / 'WoWStatus'
+    (folder / 'Textures').mkdir(parents=True)
+    source.write_bytes(b'logo')
+    (folder / 'Textures/Logo.tga').write_bytes(b'logo')
+    plan = sync.Plan(copies=[(source, folder / 'Textures/Logo.tga')],
+                     deletes=[(folder, PurePosixPath('Textures/Logo.tga'))])
+    sync.apply(plan)
+    assert (folder / 'Textures/Logo.tga').read_bytes() == b'logo'
 
 
 def test_dotfiles_and_untracked_shared_files_are_not_copied(repo, capsys):
@@ -133,23 +173,33 @@ def test_problems_are_found_before_any_edition_is_written(repo):
     assert (repo / 'addon/vanilla/WoWStatus/Core.lua').read_bytes() == b'-- core\n'
 
 
+def _in_git_checkout(path):
+    result = subprocess.run(['git', '-C', str(path), 'rev-parse', '--is-inside-work-tree'],
+                            capture_output=True, encoding='utf-8')
+    return result.returncode == 0
+
+
+@pytest.mark.skipif(shutil.which('git') is None or not _in_git_checkout(ROOT),
+                    reason='needs a Git checkout')
 def test_repository_editions_mirror_shared_files_both_ways():
     """CI guard: every tracked shared Lua/texture is in each edition, and nothing extra is."""
     plan = sync.plan_sync(ROOT)
     assert not plan.copies, [str(target) for _, target in plan.copies]
-    assert not plan.deletes, [str(target) for target in plan.deletes]
+    assert not plan.deletes, [str(folder / path) for folder, path in plan.deletes]
     tracked = subprocess.run(
         ['git', '-C', str(ROOT), 'ls-files', '-z', '--', 'addon'],
         check=True, capture_output=True, encoding='utf-8',
     ).stdout.split('\0')
+
+    def mirrored(prefix):
+        return {
+            PurePosixPath(name[len(prefix):]) for name in tracked
+            if name.startswith(prefix) and sync.in_scope(PurePosixPath(name[len(prefix):]))
+        }
+
+    shared = mirrored('addon/shared/')
+    assert shared
     for edition, owned in sync.EDITIONS.items():
-        prefix = f'addon/{edition}/WoWStatus/'
-        mirrored = {
-            name[len(prefix):] for name in tracked
-            if name.startswith(prefix) and name.endswith(('.lua', '.tga', '.blp'))
-        }
-        shared = {
-            name[len('addon/shared/'):] for name in tracked
-            if name.startswith('addon/shared/') and name.endswith(('.lua', '.tga', '.blp'))
-        }
-        assert mirrored - owned == shared, edition
+        files = mirrored(f'addon/{edition}/WoWStatus/')
+        assert {PurePosixPath(name) for name in owned} <= files, edition
+        assert files - {PurePosixPath(name) for name in owned} == shared, edition
