@@ -129,12 +129,12 @@ class Store:
 
     def recover_interrupted_sends(self):
         """A process or bot session that ended after sending, but before recording
-        success, may or may not have posted: mark those rows for operator review."""
+        success, may or may not have posted: mark those rows for operator review.
+        Returns how many rows changed."""
         with self.db:
-            self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
-            self.db.execute("UPDATE digest_parts SET status='uncertain' WHERE status='sending'")
-            self.db.execute("UPDATE weekly_parts SET status='uncertain' WHERE status='sending'")
-            self.db.execute("UPDATE status_reports SET status='uncertain' WHERE status='sending'")
+            return sum(self.db.execute(f"UPDATE {table} SET status='uncertain' "
+                                       "WHERE status='sending'").rowcount
+                       for table in ('outbox', 'digest_parts', 'weekly_parts', 'status_reports'))
 
     @staticmethod
     def digest(value):

@@ -79,7 +79,7 @@ def discord_state(status):
     probe = status.get('probe')
     live = probe() if probe is not None else None
     if live:
-        return {'discord': live}
+        return live
     report = {'discord': status.get('state', 'starting')}
     if status.get('error'):
         report['discord_error'] = status['error']

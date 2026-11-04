@@ -12,6 +12,7 @@ from .group_status import GroupStatusReports
 from .output import daily_status_message, emoji, upload_summary
 from .output import message as announcement_message
 from .people import decorate, nickname, remember, set_role
+from .server import DISCORD_RETRY_FIRST, DISCORD_RETRY_MAX, failure_name
 from .weekly import WeeklyRecaps
 
 log = logging.getLogger(__name__)
@@ -45,9 +46,8 @@ class StatusBot(discord.Client):
         self.weekly = WeeklyRecaps(store)
         self.tree = CommunityTree(self)
         self.worker = None
-        self.worker_error = None
+        self.delivery_error = None
         self.online = False
-        self._stopping = None
         self.register_commands()
 
     def custom_emojis(self):
@@ -59,17 +59,32 @@ class StatusBot(discord.Client):
         guild = discord.Object(id=self.guild_id)
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
-        self.worker = asyncio.create_task(self.deliver())
-        self.worker.add_done_callback(self.worker_stopped)
+        self.worker = asyncio.create_task(self.keep_delivering())
 
-    def worker_stopped(self, task):
-        """A crashed delivery worker ends the session, so the supervisor logs it,
-        reports it on /health and retries instead of staying connected but silent."""
-        if task.cancelled() or task.exception() is None:
-            return
-        self.worker_error = task.exception()
-        if not self.is_closed():
-            self._stopping = asyncio.create_task(self.close())
+    async def keep_delivering(self, sleep=asyncio.sleep, clock=time.monotonic):
+        """Restart a crashed delivery loop with backoff. The session, and with it the
+        slash commands, stays up; /health shows the failure until delivery restarts."""
+        delay = DISCORD_RETRY_FIRST
+        while True:
+            started = clock()
+            try:
+                await self.deliver()
+                return  # The client closed.
+            except Exception as exc:
+                if clock() - started >= DISCORD_RETRY_MAX:
+                    delay = DISCORD_RETRY_FIRST
+                self.delivery_error = failure_name(exc)
+                log.exception('Discord delivery failed (%s); restarting it in %d s',
+                              self.delivery_error, delay)
+            self.recover_sends()
+            await sleep(delay)
+            delay = min(delay * 2, DISCORD_RETRY_MAX)
+            self.delivery_error = None
+
+    def recover_sends(self):
+        # Stopped mid-send: the message may or may not have posted.
+        if self.store.recover_interrupted_sends():
+            self.store.sync_archives()  # Archives show each delivery's status.
 
     async def on_ready(self):
         self.online = True
@@ -84,7 +99,11 @@ class StatusBot(discord.Client):
         """Health view of this session: None until logged in and the guild cache is ready."""
         if not self.is_ready():
             return None
-        return 'ready' if self.online else 'reconnecting'
+        if not self.online:
+            return {'discord': 'reconnecting'}
+        if self.delivery_error:
+            return {'discord': 'delivery_retrying', 'discord_error': self.delivery_error}
+        return {'discord': 'ready'}
 
     async def close(self):
         try:
@@ -94,10 +113,7 @@ class StatusBot(discord.Client):
                     await self.worker
                 except asyncio.CancelledError:
                     pass
-                except Exception:
-                    pass  # Kept in worker_error; the supervisor logs it with its traceback.
-                # Stopped mid-send: the message may or may not have posted.
-                self.store.recover_interrupted_sends()
+                self.recover_sends()
         finally:
             # A session is retried in the same process, so its HTTP session and
             # gateway must close even when the worker failed.
@@ -384,6 +400,4 @@ def session(store, guild_id, channel_id, token):
         status['probe'] = client.state
         async with client:
             await client.start(token)
-        if client.worker_error is not None:
-            raise client.worker_error
     return bot

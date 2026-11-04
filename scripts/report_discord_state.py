@@ -16,6 +16,7 @@ DEPLOY = Path(__file__).resolve().parent.parent / 'deploy'
 SETTLED = ('ready', 'disabled')
 # States that can still change within this step's polling window.
 TRANSIENT = ('starting', 'reconnecting', 'health check failed')
+MOVED = 'serving another revision'
 MAX_BYTES = 64 * 1024
 
 
@@ -49,19 +50,25 @@ def read(url):
         return json.loads(data)
 
 
+def clean(value):
+    """The public site is untrusted: keep its words, never its markup or line breaks."""
+    return re.sub(r'[^A-Za-z0-9 ._-]', '?', str(value))[:80]
+
+
 def problem(body, revision):
     """None when the group's bot is settled, otherwise what to warn about."""
     if body['revision'] != revision:
-        return 'serving another revision'
+        return MOVED
     if body['discord'] in SETTLED:
         return None
-    return ' '.join(str(body[key]) for key in ('discord', 'discord_error') if body.get(key))
+    return ' '.join(clean(body[key]) for key in ('discord', 'discord_error') if body.get(key))
 
 
 def report(base, routes, revision, names=None, fetch=None, attempts=12, pause=5,
-           sleep=time.sleep):
+           sleep=time.sleep, notices=None):
     """Return one warning per group whose bot did not settle; a fresh bot needs a few
-    seconds after the service restarts to log in and reach Discord's gateway."""
+    seconds after the service restarts to log in and reach Discord's gateway. A group
+    a newer deploy already replaced goes to ``notices`` instead."""
     fetch = fetch or read
     states = {}
     for attempt in range(attempts):
@@ -74,9 +81,21 @@ def report(base, routes, revision, names=None, fetch=None, attempts=12, pause=5,
                 state and state.startswith(TRANSIENT) for state in states.values())):
             break
         sleep(pause)
-    names = names or {}
-    return [f'{names.get(port, "port " + port)}: {state}'
-            for port, state in sorted(states.items()) if state]
+    names, warnings = names or {}, []
+    for port, state in sorted(states.items()):
+        name = names.get(port, 'port ' + port)
+        if state == MOVED:
+            if notices is not None:
+                notices.append(f'{name} already serves another revision, so its bot was not '
+                               'checked for this one')
+        elif state:
+            warnings.append(f'{name}: {state}')
+    return warnings
+
+
+def command_text(text):
+    """Escape a workflow command's message so it stays one annotation."""
+    return text.replace('%', '%25').replace('\r', '%0D').replace('\n', '%0A')
 
 
 def main():
@@ -90,14 +109,18 @@ def main():
     routes = [(prefix, port) for prefix, port in routes if port is not None]
     warnings = [f'{prefix}: no local upstream found in deploy/Caddyfile.production, not checked'
                 for prefix in unreadable]
+    notices = []
     if routes:
-        warnings += report(args.url, routes, args.revision, names)
+        warnings += report(args.url, routes, args.revision, names, notices=notices)
     elif not unreadable:
         warnings.append('no group routes found in deploy/Caddyfile.production, '
                         'so no bot was checked')
     for warning in warnings:
-        print(f'::warning title=Discord bot not connected::{warning}. Ingestion is running; '
-              'see "Discord bot not connected" in deploy/SERVER.md.')
+        print('::warning title=Discord bot not connected::' + command_text(
+            f'{warning}. Ingestion is running; see "Discord bot not connected" in '
+            'deploy/SERVER.md.'))
+    for notice in notices:
+        print('::notice title=Discord bot not checked::' + command_text(notice) + '.')
     if not warnings:
         print(f'Discord bots settled for {len(routes)} group(s).')
 

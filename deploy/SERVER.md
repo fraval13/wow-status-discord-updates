@@ -128,12 +128,13 @@ curl --fail http://127.0.0.1:18082/health
 
 Each `/health` reply also carries the bot's state: `"discord"` is `disabled` (no
 Discord settings), `starting`, `ready`, `reconnecting` (discord.py is restoring a
-dropped gateway) or `retrying`, and `retrying` adds `"discord_error"`, the exception
-name plus Discord's HTTP status and error code. A Discord failure, or a crash of
-the bot's delivery worker, no longer stops the service: ingestion and `/health`
-keep running, a new bot session starts after 30 s, doubling to every 10 minutes,
-and the deploy's **Report Discord bot state** step warns when a group's bot is not
-`ready`.
+dropped gateway), `delivery_retrying` (connected, but posting crashed) or
+`retrying` (the session failed). The last two add `"discord_error"`, the exception
+name plus Discord's HTTP status and error code. A Discord failure no longer stops
+the service: ingestion and `/health` keep running, and a new bot session starts
+after 30 s, doubling to every 10 minutes. A crash in posting restarts only the
+delivery loop on the same schedule, so slash commands stay available. The deploy's
+**Report Discord bot state** step warns when a group's bot is not `ready`.
 
 ### Discord bot not connected
 
@@ -152,8 +153,8 @@ journalctl -u wow-character-status@navsquad -n 50 --no-pager | grep -i discord
   it with the `bot` and `applications.commands` scopes.
 - `ClientConnectorError` or `TimeoutError`: the server cannot reach Discord; it
   reconnects by itself within 10 minutes of Discord coming back.
-- Any other name (for example `OperationalError` or `KeyError`) is a crash of the
-  delivery worker; the journal has its traceback.
+- `delivery_retrying` with any name (for example `OperationalError` or `KeyError`)
+  is a crash while posting; the journal has its traceback.
 
 ### A group service does not start
 
