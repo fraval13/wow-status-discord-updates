@@ -14,6 +14,7 @@ from pathlib import Path
 
 DEPLOY = Path(__file__).resolve().parent.parent / 'deploy'
 SETTLED = ('ready', 'disabled')
+MAX_BYTES = 64 * 1024
 
 
 def group_routes(caddyfile):
@@ -34,7 +35,19 @@ def group_names(receiver):
 def read(url):
     request = urllib.request.Request(url, headers={'Cache-Control': 'no-cache'})
     with urllib.request.urlopen(request, timeout=10) as response:
-        return json.loads(response.read(64 * 1024))
+        data = response.read(MAX_BYTES + 1)
+        if response.status != 200 or len(data) > MAX_BYTES:
+            raise ValueError('Invalid or oversized health response')
+        return json.loads(data)
+
+
+def problem(body, revision):
+    """None when the group's bot is settled, otherwise what to warn about."""
+    if body['revision'] != revision:
+        return 'serving another revision'
+    if body['discord'] in SETTLED:
+        return None
+    return ' '.join(str(body[key]) for key in ('discord', 'discord_error') if body.get(key))
 
 
 def report(base, routes, revision, names=None, fetch=read, attempts=12, pause=5,
@@ -45,17 +58,9 @@ def report(base, routes, revision, names=None, fetch=read, attempts=12, pause=5,
     for attempt in range(attempts):
         for prefix, port in routes:
             try:
-                body = fetch(base.rstrip('/') + prefix + '/health')
+                states[port] = problem(fetch(base.rstrip('/') + prefix + '/health'), revision)
             except Exception as exc:  # A warning step: report it, never fail the run.
                 states[port] = f'health check failed ({type(exc).__name__})'
-                continue
-            if body.get('revision') != revision:
-                states[port] = 'serving another revision'
-            elif body.get('discord') in SETTLED:
-                states[port] = None
-            else:
-                states[port] = ' '.join(str(body[key]) for key in ('discord', 'discord_error')
-                                        if body.get(key))
         if not any(states.values()) or attempt == attempts - 1:
             break
         sleep(pause)
@@ -71,7 +76,8 @@ def main():
     args = parser.parse_args()
     routes = group_routes((DEPLOY / 'Caddyfile.production').read_text(encoding='utf-8'))
     names = group_names((DEPLOY / 'install_release.py').read_text(encoding='utf-8'))
-    warnings = report(args.url, routes, args.revision, names)
+    warnings = report(args.url, routes, args.revision, names) if routes else [
+        'no group routes found in deploy/Caddyfile.production, so no bot was checked']
     for warning in warnings:
         print(f'::warning title=Discord bot not connected::{warning}. Ingestion is running; '
               'see "Discord bot not connected" in deploy/SERVER.md.')

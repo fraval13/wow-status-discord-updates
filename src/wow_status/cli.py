@@ -167,19 +167,12 @@ def main():
             if args.command == 'serve':
                 bot = None
                 if args.discord:
-                    from .discord_bot import StatusBot
+                    from .discord_bot import session
                     token = os.environ.get('DISCORD_BOT_TOKEN')
                     if not token:
                         raise ValueError('Set DISCORD_BOT_TOKEN before using --discord')
-                    guild_id = int(os.environ['DISCORD_GUILD_ID'])
-                    channel_id = int(os.environ['DISCORD_CHANNEL_ID'])
-
-                    async def bot(status):
-                        # A fresh client per session: a closed discord.py client can't restart.
-                        client = StatusBot(store, guild_id, channel_id)
-                        status['ready'] = client.is_ready
-                        async with client:
-                            await client.start(token)
+                    bot = session(store, int(os.environ['DISCORD_GUILD_ID']),
+                                  int(os.environ['DISCORD_CHANNEL_ID']), token)
                 from .group_routing import group_key
                 selected_group = group_key(args.group) if args.group else args.group_id
                 asyncio.run(serve(store, args.host, args.port, bot, selected_group, args.group, args.trust_proxy))

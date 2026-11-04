@@ -59,13 +59,19 @@ class StatusBot(discord.Client):
         self.worker = asyncio.create_task(self.deliver())
 
     async def close(self):
-        if self.worker:
-            self.worker.cancel()
-            try:
-                await self.worker
-            except asyncio.CancelledError:
-                pass
-        await super().close()
+        try:
+            if self.worker:
+                self.worker.cancel()
+                try:
+                    await self.worker
+                except asyncio.CancelledError:
+                    pass
+                except Exception:
+                    log.exception('Discord delivery worker failed')
+        finally:
+            # A session is retried in the same process, so its HTTP session and
+            # gateway must close even when the worker failed.
+            await super().close()
 
     def visible(self):
         return [c for c in self.store.characters() if c['settings']['enabled']]
@@ -339,3 +345,15 @@ class StatusBot(discord.Client):
                 self.standings.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
         except (OSError, asyncio.TimeoutError):
             self.standings.delivery(key, 'uncertain')
+
+def session(store, guild_id, channel_id, token):
+    """One Discord session per call, for ``server.run_discord`` to supervise."""
+    async def bot(status):
+        # The previous session in this process may have stopped mid-send.
+        store.recover_interrupted_sends()
+        # A fresh client per session: a closed discord.py client can't restart.
+        client = StatusBot(store, guild_id, channel_id)
+        status['ready'] = client.is_ready
+        async with client:
+            await client.start(token)
+    return bot

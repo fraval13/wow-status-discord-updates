@@ -2,13 +2,17 @@
 import asyncio
 import importlib.util
 import json
+import logging
 import socket
 import urllib.request
+import warnings
 from pathlib import Path
 
+import aiohttp
 import pytest
 from aiohttp.test_utils import TestClient, TestServer
 
+from wow_status import discord_bot
 from wow_status.server import (
     DISCORD_RETRY_FIRST,
     DISCORD_RETRY_MAX,
@@ -21,10 +25,12 @@ from wow_status.server import (
 
 class LoginFailure(Exception):
     """Stands in for discord.LoginFailure (a revoked or reset bot token)."""
+    __module__ = 'discord.errors'
 
 
 class Forbidden(Exception):
     """Stands in for discord.Forbidden, which carries Discord's status and error code."""
+    __module__ = 'discord.errors'
     status, code = 403, 50001
 
 
@@ -70,6 +76,29 @@ async def test_health_reports_ready_bot_and_retrying_bot_without_secrets(store):
 def test_failure_name_adds_discord_http_status_and_code():
     assert failure_name(LoginFailure('Improper token has been passed.')) == 'LoginFailure'
     assert failure_name(Forbidden('Missing Access')) == 'Forbidden 403 50001'
+    # aiohttp's `code` is a deprecated alias of `status`: name only, and no warning.
+    error = aiohttp.ClientResponseError(None, (), status=503)
+    with warnings.catch_warnings():
+        warnings.simplefilter('error')
+        assert failure_name(error) == 'ClientResponseError'
+
+
+async def test_a_retry_clears_the_last_error_and_logs_the_traceback(caplog):
+    seen, status = [], {}
+
+    async def bot(state):
+        seen.append(dict(state))
+        raise LoginFailure()
+
+    async def sleep(delay):
+        if len(seen) == 2:
+            raise Stop
+
+    with caplog.at_level(logging.ERROR, logger='wow_status.server'), pytest.raises(Stop):
+        await run_discord(bot, status, sleep=sleep)
+    assert seen[1]['state'] == 'starting' and 'error' not in seen[1]
+    record = caplog.records[0]
+    assert 'LoginFailure' in record.getMessage() and record.exc_info[0] is LoginFailure
 
 
 async def test_failures_are_retried_with_doubling_capped_backoff():
@@ -128,6 +157,68 @@ async def test_cancelling_the_service_stops_the_bot_without_a_retry():
     with pytest.raises(asyncio.CancelledError):
         await task
     assert status['state'] == 'starting' and 'error' not in status
+
+
+class FakeClient:
+    instances = []
+
+    def __init__(self, store, guild_id, channel_id):
+        self.args = (guild_id, channel_id)
+        self.closed = False
+        FakeClient.instances.append(self)
+
+    def is_ready(self):
+        return False
+
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *exc):
+        self.closed = True
+
+    async def start(self, token):
+        assert token == 'secret-token'
+        raise LoginFailure()
+
+
+async def test_each_session_uses_a_fresh_closed_client(store, monkeypatch):
+    monkeypatch.setattr(discord_bot, 'StatusBot', FakeClient)
+    FakeClient.instances.clear()
+    bot = discord_bot.session(store, 1, 2, 'secret-token')
+    for _ in range(2):
+        status = {}
+        with pytest.raises(LoginFailure):
+            await bot(status)
+        assert status['ready'] == FakeClient.instances[-1].is_ready
+    first, second = FakeClient.instances
+    assert first is not second and first.closed and second.closed and first.args == (1, 2)
+
+
+async def test_a_new_session_marks_a_send_the_last_one_interrupted_uncertain(store, payload,
+                                                                             monkeypatch):
+    """Store() did this only at process start; sessions now restart in-process."""
+    monkeypatch.setattr(discord_bot, 'StatusBot', FakeClient)
+    store.ingest('owner', payload)
+    delivery = store.pending()['delivery_id']
+    store.delivery(delivery, 'sending')  # The previous session stopped mid-send.
+    with pytest.raises(LoginFailure):
+        await discord_bot.session(store, 1, 2, 'secret-token')({})
+    assert store.db.execute('SELECT status FROM outbox WHERE id=?',
+                            (delivery,)).fetchone()[0] == 'uncertain'
+
+
+async def test_closing_a_bot_whose_worker_failed_still_closes_discord(store, caplog):
+    client = discord_bot.StatusBot(store, 1, 2)
+
+    async def broken():
+        raise KeyError('formatting bug')
+
+    client.worker = asyncio.create_task(broken())
+    await asyncio.sleep(0)
+    with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
+        await client.close()
+    assert client.is_closed()
+    assert any(record.exc_info and record.exc_info[0] is KeyError for record in caplog.records)
 
 
 def free_port():
@@ -229,3 +320,28 @@ def test_report_stops_polling_once_bots_are_ready_and_flags_unreachable_or_stale
                          sleep=pauses.append) == [
         'port 18081: health check failed (TimeoutError)',
         'port 18082: serving another revision']
+
+
+def test_report_flags_replies_without_a_bot_state():
+    module = report_module()
+    routes = [('/groups/aa', '18081'), ('/groups/bb', '18082')]
+    replies = {'/groups/aa': {'revision': REVISION}, '/groups/bb': ['not', 'an', 'object']}
+
+    def fetch(url):
+        return replies[url[len('https://example.test'):-len('/health')]]
+
+    assert module.report('https://example.test', routes, REVISION, fetch=fetch, attempts=1) == [
+        'port 18081: health check failed (KeyError)',
+        'port 18082: health check failed (TypeError)']
+
+
+def test_report_warns_when_it_finds_no_group_routes(tmp_path, monkeypatch, capsys):
+    module = report_module()
+    (tmp_path / 'Caddyfile.production').write_text('wow.example.test {\n}\n', encoding='utf-8')
+    (tmp_path / 'install_release.py').write_text("GROUPS = {}\n", encoding='utf-8')
+    monkeypatch.setattr(module, 'DEPLOY', tmp_path)
+    monkeypatch.setattr('sys.argv', ['report', '--url', 'https://example.test',
+                                     '--revision', REVISION])
+    module.main()
+    output = capsys.readouterr().out
+    assert output.startswith('::warning ') and 'no group routes found' in output

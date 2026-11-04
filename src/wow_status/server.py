@@ -87,6 +87,8 @@ def discord_state(status):
 
 def failure_name(exc):
     """Exception class plus Discord's HTTP status and error code, when it has them."""
+    if not type(exc).__module__.startswith('discord'):
+        return type(exc).__name__  # e.g. aiohttp's deprecated `code` alias of `status`
     details = [str(value) for value in (getattr(exc, 'status', None), getattr(exc, 'code', None))
                if isinstance(value, int)]
     return ' '.join([type(exc).__name__] + details)
@@ -99,16 +101,20 @@ async def run_discord(bot, status, first=DISCORD_RETRY_FIRST, cap=DISCORD_RETRY_
     delay = first
     while True:
         status.update(state='starting', ready=None)
+        status.pop('error', None)
         started = clock()
+        failure = None
         try:
             await bot(status)
-            error = 'Stopped'
         except Exception as exc:  # Any bot failure must leave ingestion running.
-            error = failure_name(exc)
+            failure = exc
         if clock() - started >= cap:
             delay = first  # A long healthy session earns a quick reconnect.
+        error = failure_name(failure) if failure else 'Stopped'
         status.update(state='retrying', ready=None, error=error)
-        log.error('Discord bot stopped (%s); ingestion continues, retrying in %d s', error, delay)
+        # The traceback names discord.py frames and Discord's reply, never the token.
+        log.error('Discord bot stopped (%s); ingestion continues, retrying in %d s', error, delay,
+                  exc_info=failure)
         await sleep(delay)
         delay = min(delay * 2, cap)
 

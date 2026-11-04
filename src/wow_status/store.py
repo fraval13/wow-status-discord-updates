@@ -108,12 +108,7 @@ class Store:
         ''')
         if 'source' not in {row['name'] for row in self.db.execute('PRAGMA table_info(people)')}:
             self.db.execute("ALTER TABLE people ADD COLUMN source TEXT NOT NULL DEFAULT 'discord'")
-        # A previous process might have died after sending but before recording success.
-        with self.db:
-            self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
-            self.db.execute("UPDATE digest_parts SET status='uncertain' WHERE status='sending'")
-            self.db.execute("UPDATE weekly_parts SET status='uncertain' WHERE status='sending'")
-            self.db.execute("UPDATE status_reports SET status='uncertain' WHERE status='sending'")
+        self.recover_interrupted_sends()
         # Backfill deduplication markers without rewriting existing event IDs or history.
         if not self.db.execute("SELECT 1 FROM meta WHERE key='level_claims_v1'").fetchone():
             with self.db:
@@ -131,6 +126,15 @@ class Store:
 
     def close(self):
         self.db.close()
+
+    def recover_interrupted_sends(self):
+        """A process or bot session that ended after sending, but before recording
+        success, may or may not have posted: mark those rows for operator review."""
+        with self.db:
+            self.db.execute("UPDATE outbox SET status='uncertain' WHERE status='sending'")
+            self.db.execute("UPDATE digest_parts SET status='uncertain' WHERE status='sending'")
+            self.db.execute("UPDATE weekly_parts SET status='uncertain' WHERE status='sending'")
+            self.db.execute("UPDATE status_reports SET status='uncertain' WHERE status='sending'")
 
     @staticmethod
     def digest(value):
