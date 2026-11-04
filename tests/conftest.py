@@ -1,4 +1,5 @@
 import copy
+import importlib
 import sys
 import time
 import types
@@ -55,11 +56,18 @@ def pytest_configure(config):
             return super().__new__(cls, *args, **kwargs)
 
     # A copy of the lupa package (``lupa.version`` and ``import lupa.lua54`` keep
-    # working) whose runtime names are all Lua 5.1's. Its lazy ``__getattr__`` is
-    # left out so that no name silently falls through to the newest Lua.
+    # working) whose runtime names are all Lua 5.1's. Its lazy ``__getattr__``, which
+    # serves the newest Lua, is replaced by one that only loads ``lupa.luaXY``
+    # submodules, so that no name silently falls through to the newest Lua.
+    def submodule(name):
+        if name.startswith('lua') and name[3:].isdigit():
+            return importlib.import_module(f'lupa.{name}')
+        raise AttributeError(f"module 'lupa' has no attribute {name!r} under --lua=5.1")
+
     swapped = types.ModuleType('lupa')
-    swapped.__dict__.update({k: v for k, v in vars(lupa).items() if k != '__getattr__'})
+    swapped.__dict__.update(vars(lupa))
     swapped.__dict__.update({k: v for k, v in vars(lua51).items() if not k.startswith('_')})
+    swapped.__getattr__ = submodule
     swapped.LuaRuntime = LuaRuntime
     _original_lupa = sys.modules['lupa']
     sys.modules['lupa'] = swapped
@@ -77,9 +85,10 @@ def pytest_report_header(config):
         return f'lua: {_lua_version} (--lua=5.1)'
     try:
         import lupa
-    except ImportError:
-        return 'lua: lupa not installed, Lua-backed tests are skipped'
-    return f"lua: {lupa.LuaRuntime().eval('_VERSION')} (lupa default; --lua=5.1 for the game's)"
+        version = lupa.LuaRuntime().eval('_VERSION')
+    except Exception as error:  # lupa loads its binary modules lazily, on first use
+        return f'lua: unavailable ({type(error).__name__}), Lua-backed tests are skipped or fail'
+    return f"lua: {version} (lupa default; --lua=5.1 for the game's)"
 
 
 @pytest.hookimpl(wrapper=True)
@@ -92,11 +101,18 @@ def pytest_runtest_protocol(item, nextitem):
         _current_test = None
 
 
+def _guarded(config):
+    """False for modes that run no test bodies here: collection, setup plans, xdist."""
+    option = config.option
+    return config.getoption('lua') == '5.1' and not (
+        option.collectonly or getattr(option, 'setuponly', False)
+        or getattr(option, 'setupplan', False) or getattr(option, 'numprocesses', None)
+        or hasattr(config, 'workerinput'))
+
+
 def pytest_sessionfinish(session):
     global _no_lua_ran
-    config = session.config
-    if (config.getoption('lua') == '5.1' and not config.option.collectonly
-            and session.exitstatus == 0 and not _lua_tests):
+    if _guarded(session.config) and session.exitstatus == 0 and not _lua_tests:
         # Guards against the Lua tests being skipped or deselected unnoticed. Runtimes
         # started outside a test do not count: they show nothing was checked.
         _no_lua_ran = True
@@ -104,7 +120,7 @@ def pytest_sessionfinish(session):
 
 
 def pytest_terminal_summary(terminalreporter, config):
-    if config.getoption('lua') != '5.1' or config.option.collectonly:
+    if not _guarded(config):
         return
     count = len(_lua_tests)
     line = f"{count} test{'s' * (count != 1)} started a Lua 5.1 runtime"
