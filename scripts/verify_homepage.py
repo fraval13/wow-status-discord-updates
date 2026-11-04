@@ -4,6 +4,7 @@ The live site is compared with the release.json this machine just built, never o
 with the manifest the site itself serves: a tampered site could regenerate that.
 """
 import argparse
+import functools
 import hashlib
 import importlib.util
 import io
@@ -21,16 +22,29 @@ MAX_BYTES = 32 * 1024 * 1024
 FOLDER = 'WoWStatus/'
 
 
-def _package_files():
-    # The builder's own rule for what ships, so the two can never disagree.
-    spec = importlib.util.spec_from_file_location(
-        'build_homepage', Path(__file__).with_name('build_homepage.py'))
+RELEASE_FIELDS = ('version', 'file', 'bytes', 'sha256')
+
+
+@functools.cache
+def package_files():
+    """The builder's own rule for what ships, so the builder and the verifier never disagree."""
+    builder = Path(__file__).with_name('build_homepage.py')
+    spec = importlib.util.spec_from_file_location('build_homepage', builder)
+    if spec is None or not builder.is_file():
+        raise RuntimeError(f'The verifier needs {builder} beside it')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module.package_files
 
 
-package_files = _package_files()
+def check_local(expected, revision):
+    """Require expected to be a complete local release.json built from revision."""
+    if (not isinstance(expected, dict) or expected.get('addon_revision') != revision
+            or not isinstance(expected.get('editions'), dict)
+            or set(expected['editions']) != set(EDITIONS)
+            or not all(isinstance(release, dict) and all(field in release for field in RELEASE_FIELDS)
+                       for release in expected['editions'].values())):
+        raise ValueError(f'The local release.json is not a complete build of revision {revision}')
 
 
 class DownloadLinks(HTMLParser):
@@ -63,7 +77,9 @@ def check_entries(edition, package):
         raise ValueError(f'The public {edition} ZIP has duplicate entries')
     for item in package.infolist():
         name = item.filename
-        if (item.is_dir() or not name.startswith(FOLDER) or '\\' in name or ':' in name
+        # On Windows zipfile turns stored backslashes into '/', so check the stored name.
+        if (item.is_dir() or not name.startswith(FOLDER) or '\\' in item.orig_filename
+                or ':' in name
                 or any(part in ('', '.', '..') for part in name.split('/'))):
             raise ValueError(f'The public {edition} ZIP has an unexpected entry: {name!r}')
     present = {name.removeprefix(FOLDER) for name in names}
@@ -71,7 +87,7 @@ def check_entries(edition, package):
         raise ValueError(f'The public {edition} ZIP has no TOC')
     toc = package.read(FOLDER + 'WoWStatus.toc').decode('utf-8')
     try:
-        expected = package_files(toc, present)
+        expected = package_files()(toc, present)
     except ValueError as error:
         raise ValueError(f'The public {edition} ZIP is incomplete: {error}') from error
     unexpected = sorted(present.difference(expected))
@@ -89,9 +105,7 @@ def verify(base, revision, fetch=read, *, expected):
         raise ValueError('Use HTTPS, or a localhost preview URL')
     if not re.fullmatch('[a-f0-9]{40}', revision):
         raise ValueError('Expected a complete Git commit revision')
-    if (expected.get('addon_revision') != revision
-            or set(expected.get('editions', {})) != set(EDITIONS)):
-        raise ValueError('The local release.json is not a complete build of this revision')
+    check_local(expected, revision)
     base = base.rstrip('/')
     manifest = json.loads(fetch(base + '/downloads/release.json'))
     if not isinstance(manifest, dict) or manifest.get('addon_revision') != revision:
@@ -145,8 +159,11 @@ if __name__ == '__main__':
         expected = json.loads(args.manifest.read_text(encoding='utf-8'))
     except (OSError, ValueError) as error:
         parser.error(f'Cannot read the local manifest {args.manifest}: {error}')
-    if not isinstance(expected, dict) or expected.get('addon_revision') != args.revision:
-        parser.error(f'{args.manifest} was not built from revision {args.revision}')
+    # Fail now rather than after every retry: a wrong local build never becomes right.
+    try:
+        check_local(expected, args.revision)
+    except ValueError as error:
+        parser.error(f'{args.manifest}: {error}')
     for attempt in range(args.attempts):
         try:
             result = verify(args.url, args.revision, expected=expected)
