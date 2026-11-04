@@ -8,7 +8,7 @@ from aiohttp.test_utils import TestClient, TestServer
 from wow_status import limits
 from wow_status.formatting import clip, fit_lines, safe
 from wow_status.schema import ValidationError, validate
-from wow_status.server import create_app
+from wow_status.server import create_app, throttle_identity
 from wow_status.store import Store
 
 
@@ -143,6 +143,38 @@ async def test_proxy_header_only_trusted_when_explicit_and_local(store, monkeypa
         assert (await client.post('/v1/group-enroll', json=body, headers=headers)).status == 429
     finally:
         await client.close()
+
+
+async def test_ipv6_link_guesses_are_throttled_per_64(store, monkeypatch):
+    monkeypatch.setattr(limits, 'AUTH_FAILURES_PER_IP_MINUTE', 5)
+    client = TestClient(TestServer(create_app(store, trust_proxy=True)))
+    await client.start_server()
+    try:
+        async def guess(address):
+            response = await client.post('/v1/link', json={'code': 'wrong'},
+                                         headers={'X-WoW-Client-IP': address})
+            return response.status
+        statuses = [await guess(f'2001:db8:1:2::{index:x}') for index in range(1, 12)]
+        assert statuses[:5] == [400] * 5
+        assert statuses[5:] == [429] * 6
+        # Another /64 and IPv4 clients keep their own budgets.
+        assert await guess('2001:db8:1:3::1') == 400
+        assert await guess('192.0.2.1') == 400
+    finally:
+        await client.close()
+
+
+@pytest.mark.parametrize('address, identity', [
+    ('192.0.2.1', '192.0.2.1'),
+    ('2001:db8:1:2::1', '2001:db8:1:2::/64'),
+    ('2001:db8:1:2:ffff:ffff:ffff:ffff', '2001:db8:1:2::/64'),
+    ('2001:db8:1:3::1', '2001:db8:1:3::/64'),
+    ('::ffff:192.0.2.1', '192.0.2.1'),
+    ('fe80::1%eth0', 'fe80::/64'),
+    ('unknown', 'unknown'),
+])
+def test_throttle_identity_groups_ipv6_by_64_and_keeps_ipv4(address, identity):
+    assert throttle_identity(address) == identity
 
 
 def test_user_text_cannot_create_mentions_or_clickable_urls():

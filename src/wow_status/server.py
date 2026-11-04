@@ -17,6 +17,27 @@ from .store import Conflict
 
 log = logging.getLogger(__name__)
 
+# One IPv6 host or home network normally controls a whole /64, so throttling
+# individual IPv6 addresses would give it effectively unlimited budgets.
+IPV6_THROTTLE_PREFIX = 64
+
+
+def throttle_identity(address):
+    """Return the per-source throttle identity for a client address.
+
+    IPv4 addresses (including IPv4-mapped IPv6) are kept as-is; other IPv6
+    addresses collapse to their /64 network. Non-IP values pass through.
+    """
+    try:
+        ip = ipaddress.ip_address(address)
+    except ValueError:
+        return address
+    if ip.version == 6:
+        if ip.ipv4_mapped is not None:
+            return str(ip.ipv4_mapped)
+        return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
+    return str(ip)
+
 
 def create_app(store, group=None, name=None, trust_proxy=False):
     if group is not None:
@@ -71,7 +92,7 @@ def create_app(store, group=None, name=None, trust_proxy=False):
         return remote
 
     def throttle(request, operation, count, seconds):
-        key = store.digest(client_ip(request))
+        key = store.digest(throttle_identity(client_ip(request)))
         store.request_budget(operation + ':' + key, count, seconds)
 
     def authenticated_budget(owner, operation):

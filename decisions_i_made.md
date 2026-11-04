@@ -1,5 +1,15 @@
 # Decisions I made — 27 October 2026
 
+## IPv6 throttles grouped by /64 — 4 November 2026
+
+- Per-source throttles (link-code guesses, invalid auth, enrollment attempts)
+  now key IPv6 clients on their /64 network instead of the exact address, since
+  one host or home network normally controls a whole /64 (issue #12). /64 was
+  chosen over /56 so separate households on one ISP do not share a budget.
+- IPv4 behaviour is unchanged. IPv4-mapped IPv6 (`::ffff:a.b.c.d`) is keyed on
+  the embedded IPv4 address so all mapped clients do not collapse into `::/64`.
+- Existing in-flight budgets keyed on exact IPv6 addresses simply expire.
+
 ## Runtime version in popup status — 4 November 2026
 
 - `/wstatus popup status` printed a hard-coded `0.14.8` while the TOCs were
