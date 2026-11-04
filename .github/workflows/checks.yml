@@ -78,14 +78,20 @@ jobs:
         run: python3 scripts/deploy_gate.py --revision "$GITHUB_SHA"
   deploy:
     needs: deploy-gate
-    # The gate must have run in this attempt: "Re-run failed jobs" reuses an earlier
-    # attempt's gate result, which may be stale. Use "Re-run all jobs" instead.
-    if: needs.deploy-gate.outputs.current == 'true' && needs.deploy-gate.outputs.attempt == github.run_attempt
+    if: needs.deploy-gate.outputs.current == 'true'
     runs-on: ubuntu-latest
     concurrency:
-      group: character-status-production
+      # "Re-run failed jobs" reuses an earlier attempt's gate result, which may be
+      # stale. Such a re-run gets a group of its own, so it can't cancel a newer
+      # waiting deploy, and its first step fails.
+      group: ${{ needs.deploy-gate.outputs.attempt == github.run_attempt && 'character-status-production' || format('character-status-rerun-{0}', github.run_id) }}
       cancel-in-progress: false
     steps:
+      - name: Refuse a partial re-run
+        if: needs.deploy-gate.outputs.attempt != github.run_attempt
+        run: |
+          echo '::error title=Use "Re-run all jobs"::"Re-run failed jobs" does not re-check that this commit is still the tip of main, so it cannot deploy. Use "Re-run all jobs" on the run for the current tip of main.'
+          exit 1
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:

@@ -17,8 +17,11 @@ def main_revision(remote, branch):
                             check=True, stdout=subprocess.PIPE, encoding='utf-8')
     # ls-remote matches the pattern against the end of each ref, so a branch such as
     # `x/refs/heads/main` is listed too. Only the exact ref counts.
-    revisions = [line.split('\t')[0] for line in result.stdout.splitlines()
-                 if line.split('\t')[-1] == ref]
+    revisions = []
+    for line in result.stdout.splitlines():
+        revision, name = line.split('\t', 1)
+        if name == ref:
+            revisions.append(revision)
     if len(revisions) != 1:
         raise ValueError(f'Expected one revision for {ref}, got {revisions}')
     return revisions[0]
