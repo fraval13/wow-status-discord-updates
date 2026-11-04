@@ -3,9 +3,8 @@
 The deployment reads them from private configuration: the server's groups.json for
 services and Caddy routes, and one GitHub secret for Discord settings.
 """
-import functools
 import hashlib
-import importlib.util
+import importlib
 import json
 import re
 import subprocess
@@ -18,6 +17,7 @@ import pytest
 from wow_status.group_routing import group_key
 
 ROOT = Path(__file__).parents[1]
+sys.path.insert(0, str(ROOT / 'deploy'))  # the deploy scripts import each other by name
 
 # SHA-256 of the group names and route keys that were once committed. They remain in
 # Git history, so the hashes reveal nothing new, and the plain values stay out of here.
@@ -31,12 +31,8 @@ GROUPS = {'group-b': {'name': 'second quiet harbor lantern', 'port': 18082},
           'group-a': {'name': 'Copper Otter Ridge 47', 'port': 18081}}
 
 
-@functools.cache
 def load(path):
-    spec = importlib.util.spec_from_file_location(Path(path).stem + '_under_test', ROOT / path)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    return importlib.import_module(Path(path).stem)
 
 
 def receiver():
@@ -69,11 +65,14 @@ def test_group_config_accepts_instances_with_names_and_ports():
 
 @pytest.mark.parametrize('change', [
     {'../etc': {'name': 'x', 'port': 18083}},             # instance becomes a path and account
+    {'deploy': {'name': 'x', 'port': 18083}},             # the pipeline's own accounts
+    {'build': {'name': 'x', 'port': 18083}},
     {'Group-C': {'name': 'x', 'port': 18083}},
     {'group-with-a-long-label': {'name': 'x', 'port': 18083}},  # account name over 32 characters
     {'group-c': {'name': 'say "hi"', 'port': 18083}},      # breaks the environment file
     {'group-c': {'name': 'cost $5', 'port': 18083}},
     {'group-c': {'name': ' padded', 'port': 18083}},
+    {'group-c': {'name': '-quiet-harbor', 'port': 18083}},  # read as an option by the service
     {'group-c': {'name': 'line\nbreak', 'port': 18083}},
     {'group-c': {'name': 'x' * 81, 'port': 18083}},
     {'group-c': {'name': 'x', 'port': '18083'}},
@@ -138,6 +137,15 @@ def test_invalid_discord_settings_stop_the_deployment(incoming):
         receiver().merge_discord(GROUPS, {}, incoming)
 
 
+def test_systemctl_output_stays_out_of_the_public_deploy_log(monkeypatch):
+    seen = []
+    monkeypatch.setattr(subprocess, 'run', lambda command, **kwargs: seen.append((command, kwargs)))
+    receiver().systemctl('enable', 'group-c')
+    command, kwargs = seen[0]
+    assert command == ['systemctl', 'enable', 'wow-character-status@group-c.service']
+    assert kwargs['stdout'] is subprocess.DEVNULL and kwargs['stderr'] is subprocess.DEVNULL
+
+
 def test_service_environment_takes_the_group_name_from_private_config():
     text = receiver().service_environment('group-a', GROUPS['group-a'], {'guild_id': '1'}, 'b' * 40)
     assert 'DISCORD_GROUP_NAME="Copper Otter Ridge 47"\n' in text
@@ -151,17 +159,23 @@ def test_release_without_the_discord_secret_keeps_the_servers_settings(capsys):
     assert 'Discord settings unchanged' in capsys.readouterr().out
 
 
-def test_release_reads_discord_settings_from_one_json_secret():
+def test_release_reads_discord_settings_from_one_json_secret(capsys):
     raw = json.dumps({'group-a': {'bot_token': 'abc.def', 'guild_id': 123456789012345678,
                                   'channel_id': '987'}})
     assert load('deploy/make_release.py').discord_config(raw) == {
         'group-a': {'bot_token': 'abc.def', 'guild_id': '123456789012345678', 'channel_id': '987'}}
+    # Each token is masked on its own, not only as part of the whole JSON secret.
+    assert capsys.readouterr().out == '::add-mask::abc.def\n'
 
 
 @pytest.mark.parametrize('raw', ['{"group-a": {"bot_token": "s3cr3t-value"', '["s3cr3t-value"]',
                                  '{"group-a": {"password": "s3cr3t-value"}}',
-                                 '{"group-a": {"bot_token": 7}}'])
-def test_malformed_discord_secret_fails_without_echoing_it(raw):
+                                 '{"group-a": {"bot_token": 7}}',
+                                 '{"group-a": {"bot_token": "s3cr3t value"}}',
+                                 '{"group-a": {"guild_id": -1, "bot_token": "s3cr3t"}}',
+                                 '{"s3cr3t-Label": {"guild_id": "1"}}',
+                                 '{"deploy": {"guild_id": "1", "bot_token": "s3cr3t"}}'])
+def test_malformed_discord_secret_fails_on_the_runner_without_echoing_it(raw):
     with pytest.raises(SystemExit) as failure:
         load('deploy/make_release.py').discord_config(raw)
     assert 's3cr3t' not in str(failure.value) and 'WOW_STATUS_DISCORD_CONFIG' in str(failure.value)
@@ -200,17 +214,23 @@ def test_render_command_writes_the_caddyfile_from_a_groups_file(tmp_path):
     assert printed.replace('\r\n', '\n') == output.read_text(encoding='utf-8')
 
 
-LIVE = (b'wow.frankvalde.com {\n    handle_path /groups/0123456789abcdef012345/* {\n    }\n}\n')
+OLD_ROUTE = b'wow.frankvalde.com {\n    handle_path /groups/0123456789abcdef012345/* {\n    }\n}\n'
 
 
 @pytest.fixture
-def fake_ssh(monkeypatch):
+def live():
+    """The live Caddyfile: by default the one the private config renders."""
+    return {'config': load('deploy/render_caddyfile.py').render(GROUPS).encode()}
+
+
+@pytest.fixture
+def fake_ssh(monkeypatch, live):
     calls = []
 
     def check_output(command, **kwargs):
         calls.append(command)
         assert command[-1] == 'cat /etc/caddy/Caddyfile'
-        return LIVE
+        return live['config']
 
     def run(command, **kwargs):
         calls.append(command)
@@ -226,12 +246,25 @@ def fake_ssh(monkeypatch):
     return calls
 
 
-def test_publish_dry_run_shows_the_caddy_change_from_the_servers_private_config(fake_ssh, capsys):
+def test_publish_dry_run_shows_the_caddy_change_from_the_servers_private_config(fake_ssh, live, capsys):
+    live['config'] = OLD_ROUTE
     load('deploy/publish_homepage.py').main(['--host', 'root@example.test', '--dry-run'])
     printed = capsys.readouterr().out
     assert f'+    handle_path /groups/{group_key(GROUPS["group-a"]["name"])}/*' in printed
     assert '-    handle_path /groups/0123456789abcdef012345/*' in printed
+    assert 'would remove 1 live group route(s)' in printed
     assert 'nothing was uploaded or changed' in printed
+    assert not any(call[0] in ('scp', 'uploaded') or call[-1] == 'python3 -' for call in fake_ssh)
+
+
+def test_publish_refuses_to_drop_a_live_group_route(fake_ssh, live, tmp_path):
+    live['config'] = OLD_ROUTE
+    site = tmp_path / 'homepage'
+    (site / 'downloads').mkdir(parents=True)
+    (site / 'index.html').write_text('<!doctype html>', encoding='utf-8')
+    (site / 'downloads/release.json').write_text('{}', encoding='utf-8')
+    with pytest.raises(SystemExit):
+        load('deploy/publish_homepage.py').main(['--host', 'root@example.test', '--directory', str(site)])
     assert not any(call[0] in ('scp', 'uploaded') or call[-1] == 'python3 -' for call in fake_ssh)
 
 
@@ -262,7 +295,7 @@ def test_publish_sends_the_rendered_caddyfile_over_ssh_not_in_the_upload(fake_ss
 
 
 def test_publish_without_private_config_on_the_host_stops_before_uploading(monkeypatch):
-    monkeypatch.setattr(subprocess, 'check_output', lambda command, **kwargs: LIVE)
+    monkeypatch.setattr(subprocess, 'check_output', lambda command, **kwargs: OLD_ROUTE)
     calls = []
 
     def run(command, **kwargs):

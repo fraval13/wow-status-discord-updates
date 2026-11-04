@@ -9,14 +9,17 @@ the group route keys, so do not paste it anywhere public.
 import argparse
 import difflib
 import hashlib
-import importlib.util
 import json
+import re
 import subprocess
 import tarfile
 import tempfile
 from pathlib import Path
 
-PRIVATE_GROUPS = '/etc/wow-character-status/groups.json'
+import render_caddyfile
+
+PRIVATE_GROUPS = render_caddyfile.GROUPS.as_posix()
+ROUTE_KEY = r'handle_path /groups/([0-9a-f]{22})/'
 
 REMOTE = r'''
 import hashlib, json, os, pathlib, shutil, subprocess, tarfile, time
@@ -68,13 +71,6 @@ finally:
 '''
 
 
-def _renderer():
-    spec = importlib.util.spec_from_file_location('caddyfile_renderer', Path(__file__).resolve().parent / 'render_caddyfile.py')
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
 def private_groups(path, ssh):
     """The private group list: a local file if given, otherwise the server's own."""
     if path is not None:
@@ -104,13 +100,22 @@ def main(argv=None):
     # Refuse an unrelated host/config rather than replacing another site's setup.
     if b'wow.frankvalde.com {' not in old_config or b'handle_path /groups/' not in old_config:
         parser.error('The target does not have the expected existing WoW gateway')
-    caddyfile = _renderer().render(private_groups(args.groups_config, ssh))
+    caddyfile = render_caddyfile.render(private_groups(args.groups_config, ssh))
+    # Publishing the homepage never removes a group route: a partial --groups-config, or
+    # a checkout whose key derivation differs from the deployed one, would cut a group off.
+    dropped = len(set(re.findall(ROUTE_KEY, old_config.decode('utf-8'))) - set(re.findall(ROUTE_KEY, caddyfile)))
+    refusal = (f'The rendered Caddyfile would remove {dropped} live group route(s). Change group routes '
+               'with deploy/render_caddyfile.py on the server instead (deploy/SERVER.md).')
     if args.dry_run:
         diff = ''.join(difflib.unified_diff(old_config.decode('utf-8').splitlines(True), caddyfile.splitlines(True),
                                             '/etc/caddy/Caddyfile (live)', 'rendered from private groups.json'))
         print(diff or 'The rendered Caddyfile matches the live one.')
+        if dropped:
+            print('Publishing would stop here: ' + refusal)
         print('Dry run: nothing was uploaded or changed.')
         return
+    if dropped:
+        parser.error(refusal)
     import datetime
     release = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
     remote_path = f'/tmp/wow-homepage-{release}.tar.gz'

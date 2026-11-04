@@ -55,17 +55,20 @@ in GitHub Actions logs. The server keeps them in `/etc/wow-character-status/grou
 - The key (`group-a`) is the instance label: the systemd instance, the account
   `wow-character-<instance>`, the data directory, the `<instance>.env` file and the
   key in the Discord secret below. Use lowercase letters, digits and `-`, start with
-  a letter, at most 18 characters. Do not use the group name as the label.
+  a letter, at most 18 characters; `build` and `deploy` are taken by the pipeline's
+  own accounts. Do not use the group name as the label.
 - `name` is the exact text members enter in WoW. The server accepts letters, digits,
-  spaces, `.`, `_` and `-`, at most 80 characters, so it can go into a systemd
-  environment file unchanged.
+  spaces, `.`, `_` and `-`, at most 80 characters, starting with a letter or digit, so
+  it can go into a systemd environment file and command line unchanged.
 - `port` is the instance's loopback port. Names (ignoring case) and ports are unique.
 
 The receiver restarts and health-checks exactly the instances listed there and
 writes each `<instance>.env` from it on every deployment. Its output in the
-Actions log names no group or instance. When a receiver from this revision finds no
-`groups.json`, it creates one from the `<instance>.env` files the previous receiver
-wrote, so the existing services keep their names, ports and data. Install a new
+Actions log names no group or instance (it discards systemctl's output; use
+`journalctl` on the server). When a receiver from this revision finds no
+`groups.json`, it creates one from all `<instance>.env` files in the directory, which
+the previous receiver wrote, so the existing services keep their names, ports and
+data. Delete a retired instance's env file when you remove it from `groups.json`. Install a new
 receiver as root from a checkout of the revision:
 `install -o root -g root -m 0755 deploy/install_release.py /usr/local/sbin/wow-character-status-deploy`.
 The gateway's group routes are rendered from the same file (see

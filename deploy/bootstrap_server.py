@@ -10,8 +10,9 @@ import os
 import pwd
 import shutil
 import subprocess
-import sys
 from pathlib import Path
+
+from install_release import validate_groups, write_private  # the receiver owns the rules
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--public-key', required=True, type=Path)
@@ -23,9 +24,6 @@ public_key = args.public_key.read_text(encoding='utf-8').strip()
 if not public_key.startswith('ssh-ed25519 ') or '\n' in public_key:
     raise SystemExit('Expected a single dedicated Ed25519 public key')
 source = Path(__file__).resolve().parent
-sys.path.insert(0, str(source))
-from install_release import validate_groups  # noqa: E402  (the receiver owns the rules)
-
 groups = validate_groups(json.loads(args.groups_config.read_text(encoding='utf-8')))
 base, config = Path('/opt/wow-character-status'), Path('/etc/wow-character-status')
 if base.exists() or config.exists():
@@ -42,8 +40,7 @@ for account in ('wow-character-build', 'wow-character-deploy', *(f'wow-character
 base.mkdir(mode=0o755)
 (base / 'releases').mkdir(mode=0o755)
 config.mkdir(mode=0o700)
-(config / 'groups.json').write_text(json.dumps(groups, indent=2) + '\n', encoding='utf-8')
-(config / 'groups.json').chmod(0o600)
+write_private(config / 'groups.json', json.dumps(groups, indent=2) + '\n')
 for name, source_name in [('wow-character-status-deploy', 'install_release.py'),
                            ('wow-character-status-receive', 'receive-release')]:
     target = Path('/usr/local/sbin') / name

@@ -16,13 +16,14 @@ import sys
 import tarfile
 from pathlib import Path
 
-DISCORD_KEYS = ('bot_token', 'guild_id', 'channel_id')
+from install_release import DISCORD, INSTANCE, RESERVED, discord_value
+
 SHAPE = ('WOW_STATUS_DISCORD_CONFIG must map each group instance to an object with '
-         'bot_token, guild_id and channel_id strings')
+         'bot_token, guild_id and channel_id values')
 
 
 def discord_config(raw):
-    """Validated settings per instance; never echoes the secret in an error."""
+    """Settings per instance, checked as the receiver will; errors never echo the secret."""
     if not raw or not raw.strip():
         print('::warning title=Discord settings unchanged::WOW_STATUS_DISCORD_CONFIG is not set, '
               'so the server keeps its existing Discord settings.')
@@ -35,15 +36,24 @@ def discord_config(raw):
         raise SystemExit(SHAPE)
     result = {}
     for instance, values in config.items():
-        if not isinstance(values, dict) or not set(values) <= set(DISCORD_KEYS):
+        if not isinstance(values, dict) or not set(values) <= set(DISCORD):
             raise SystemExit(SHAPE)
+        # No label in the message: a migrated label can be an old group name, and this log is public.
+        if not INSTANCE.fullmatch(instance) or instance in RESERVED:
+            raise SystemExit('WOW_STATUS_DISCORD_CONFIG has a key that is not a group instance label '
+                             '(lowercase letters, digits and -, see deploy/SERVER.md)')
         result[instance] = {}
         for key, value in values.items():
             # Discord IDs are often pasted as JSON numbers; the receiver expects text.
             if key != 'bot_token' and type(value) is int:
                 value = str(value)
-            if not isinstance(value, str):
-                raise SystemExit(SHAPE)
+            try:
+                discord_value(key, value)
+            except ValueError:
+                raise SystemExit(f'WOW_STATUS_DISCORD_CONFIG has an invalid {key}') from None
+            if key == 'bot_token' and value:
+                # GitHub masks the whole JSON secret, not a token printed on its own.
+                print('::add-mask::' + value)
             result[instance][key] = value
     return result
 

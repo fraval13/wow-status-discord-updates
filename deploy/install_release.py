@@ -27,13 +27,32 @@ BASE = Path('/opt/wow-character-status')
 CONFIG = Path('/etc/wow-character-status')
 HOMEPAGE = Path('/srv/wow-status-homepage')
 LIMIT = 64 * 1024 * 1024
+GROUPS_FILE = CONFIG / 'groups.json'
 # Becomes systemd instance wow-character-status@<instance>, account wow-character-<instance>
 # (at most 32 characters) and /var/lib/wow-character-<instance>.
 INSTANCE = re.compile(r'[a-z][a-z0-9-]{0,17}')
+# Labels whose account already exists for the pipeline itself.
+RESERVED = {'build', 'deploy'}
 # A subset of what the addon accepts: no quotes, backslashes or dollar signs, so the name
-# is written to a systemd environment file unchanged.
-GROUP_NAME = re.compile(r'[A-Za-z0-9._-](?:[A-Za-z0-9 ._-]{0,78}[A-Za-z0-9._-])?')
-DISCORD_KEYS = ('bot_token', 'guild_id', 'channel_id')
+# is written to a systemd environment file unchanged; no leading '-', so the service's
+# command line can't read it as an option.
+GROUP_NAME = re.compile(r'[A-Za-z0-9](?:[A-Za-z0-9 ._-]{0,78}[A-Za-z0-9._-])?')
+DISCORD = {'bot_token': re.compile(r'[A-Za-z0-9._=-]+'), 'guild_id': re.compile(r'[0-9]{1,30}'),
+           'channel_id': re.compile(r'[0-9]{1,30}')}
+
+
+def discord_value(key, value):
+    """Raise unless an empty or well-formed Discord setting; never includes the value."""
+    if key not in DISCORD or not isinstance(value, str):
+        raise ValueError('Invalid Discord setting')
+    if value and not DISCORD[key].fullmatch(value):
+        raise ValueError(f'Invalid Discord {key} format')
+    return value
+
+
+def write_private(path, text):
+    path.write_text(text, encoding='utf-8')
+    path.chmod(0o600)
 
 
 def validate_groups(raw):
@@ -42,7 +61,7 @@ def validate_groups(raw):
         raise ValueError('Group configuration needs 1 to 8 group instances')
     groups, names, ports = {}, set(), set()
     for instance, entry in raw.items():
-        if not isinstance(instance, str) or not INSTANCE.fullmatch(instance):
+        if not isinstance(instance, str) or not INSTANCE.fullmatch(instance) or instance in RESERVED:
             raise ValueError('Invalid group instance label')
         if not isinstance(entry, dict) or set(entry) != {'name', 'port'}:
             raise ValueError('Each group instance needs exactly a name and a port')
@@ -71,8 +90,12 @@ def legacy_groups(config):
 
 
 def load_groups(config=CONFIG):
-    """The private group list, migrating once from the previous receiver's env files."""
-    path = config / 'groups.json'
+    """The private group list, or (once) the one the previous receiver's env files imply.
+
+    Returns (groups, migrated). With groups.json absent, every *.env file counts, so
+    remove a retired instance's env file along with its groups.json entry.
+    """
+    path = config / GROUPS_FILE.name
     if path.exists():
         return validate_groups(json.loads(path.read_text(encoding='utf-8'))), False
     return validate_groups(legacy_groups(config)), True
@@ -90,15 +113,9 @@ def merge_discord(groups, merged, incoming):
         supplied = incoming.get(instance, {})
         if not isinstance(supplied, dict) or not isinstance(values, dict):
             raise ValueError('Invalid Discord setting')
-        for key in DISCORD_KEYS:
-            value = supplied.get(key, '')
-            if not isinstance(value, str):
-                raise ValueError('Invalid Discord setting')
-            if value:
-                pattern = r'[A-Za-z0-9._=-]+' if key == 'bot_token' else r'[0-9]{1,30}'
-                if not re.fullmatch(pattern, value):
-                    raise ValueError('Invalid Discord credential format')
-                values[key] = value
+        for key in DISCORD:
+            if discord_value(key, supplied.get(key, '')):
+                values[key] = supplied[key]
     return len(set(incoming) - set(groups))
 
 
@@ -114,6 +131,13 @@ def service_environment(instance, group, values, revision):
 
 def run(*args):
     subprocess.run(args, check=True, stdin=subprocess.DEVNULL)
+
+
+def systemctl(action, instance, check=True):
+    # systemctl output names the unit, and this receiver's output reaches the public
+    # Actions log, so it is discarded; read journalctl on the server instead.
+    subprocess.run(['systemctl', action, f'wow-character-status@{instance}.service'], check=check,
+                   stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
 def environment(values):
@@ -197,6 +221,8 @@ def main():
     deployment_lock = (BASE / 'deployment.lock').open('ab')
     fcntl.flock(deployment_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
     groups, migrated = load_groups()
+    if migrated:
+        print(f'No groups.json yet: using {len(groups)} existing service env files.', file=sys.stderr)
     raw = sys.stdin.buffer.read(LIMIT + 1)
     if len(raw) > LIMIT:
         raise ValueError('Release archive is too large')
@@ -254,25 +280,21 @@ def main():
             '-m', 'pip', 'install', '--disable-pip-version-check', str(candidate))
         root_readonly_tree(candidate)
         for instance, group in groups.items():
-            path = CONFIG / f'{instance}.env'
-            path.write_text(service_environment(instance, group, merged[instance], revision), encoding='utf-8')
-            path.chmod(0o600)
-        (CONFIG / 'config.json').write_text(json.dumps(merged), encoding='utf-8')
-        (CONFIG / 'config.json').chmod(0o600)
+            write_private(CONFIG / f'{instance}.env', service_environment(instance, group, merged[instance], revision))
+        write_private(CONFIG / 'config.json', json.dumps(merged))
         if migrated:
-            (CONFIG / 'groups.json').write_text(json.dumps(groups, indent=2) + '\n', encoding='utf-8')
-            (CONFIG / 'groups.json').chmod(0o600)
+            write_private(GROUPS_FILE, json.dumps(groups, indent=2) + '\n')
         swap = BASE / 'next'
         swap.unlink(missing_ok=True)
         swap.symlink_to(candidate)
         swap.replace(BASE / 'current')
         activated = True
         for instance in groups:
-            run('systemctl', 'restart', f'wow-character-status@{instance}.service')
+            systemctl('restart', instance)
         for _ in range(20):
             if all(healthy(group['port'], revision) for group in groups.values()):
                 for instance in groups:
-                    run('systemctl', 'enable', f'wow-character-status@{instance}.service')
+                    systemctl('enable', instance)
                 switch_homepage(candidate / 'public-homepage')
                 homepage_activated = True
                 # No instance labels or group names: this output reaches the public Actions log.
@@ -300,11 +322,13 @@ def main():
                     path.write_bytes(value)
                     path.chmod(0o600)
             for instance in groups:
-                subprocess.run(['systemctl', 'restart', f'wow-character-status@{instance}.service'], check=False)
+                # An instance this deploy added has no env file any more: stop it.
+                existed = old_config[f'{instance}.env'] is not None
+                systemctl('restart' if existed else 'stop', instance, check=False)
             print('Deployment failed; restored the preceding project release.', file=sys.stderr)
         elif activated:
             for instance in groups:
-                subprocess.run(['systemctl', 'stop', f'wow-character-status@{instance}.service'], check=False)
+                systemctl('stop', instance, check=False)
             print('Initial activation failed; project services stopped.', file=sys.stderr)
         raise
     finally:
