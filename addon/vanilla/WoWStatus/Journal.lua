@@ -10,6 +10,7 @@ local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
 local pumpJobs
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
+local WITNESS = "^([%w%-]+) (%d+) (" .. S.NONSPACE .. "+)$"
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
@@ -104,9 +105,10 @@ local function add(entry)
         return false
     end
     if not entry.owner then
+        local senderKey=P.senderKey(entry.sender)
         for _, c in pairs(db.characters or {}) do
             local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
-            if P.senderKey(name)==P.senderKey(entry.sender) and c.identity.client==entry.client then return false end
+            if P.senderKey(name)==senderKey and c.identity.client==entry.client then return false end
         end
     end
     entry.groups=entry.groups or {}
@@ -371,7 +373,7 @@ function J.receive(message,sender,distribution)
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
     if op=="W" then
-        local client,at,accused=body:match("^([%w%-]+) (%d+) (" .. S.NONSPACE .. "+)$")
+        local client,at,accused=body:match(WITNESS)
         at=tonumber(at)
         if client~=WoWStatusAdapter.client_id or not at or at<time()-120 or at>time()+30
             or not P.senderKey(accused) or (P.senderKey(accused)~=P.senderKey(ownName()) and not peer(group,accused)) then return false end

@@ -64,7 +64,12 @@
 - Review found `%s`/`%S` and `string.lower` share the same cause (0x85 counts as
   a space; C3 lowercases to E3). Replaced them on player text with
   `S.SPACE`, `S.NONSPACE`, `S.trim`, `S.stripSpace`, `S.SPLIT_WORD` and
-  `S.lowerASCII`. `lowerASCII` matches C-locale `lower`, so saved trust keys stay valid.
+  `S.lowerASCII`. `lowerASCII` matches C-locale `lower`, so trust keys saved by
+  C-locale clients (the expected in-game case) stay valid. A client that really
+  ran under a non-C locale saved invalid UTF-8 keys; its players would need to
+  re-trust Æ/Ø/Å friends. No migration was written until #25 shows one exists.
+- Outgoing popup details strip WoW colour, link, texture and atlas escapes before
+  scrubbing `|`, so peers see plain text instead of escape fragments.
 - Outgoing popup details now scrub `|` as well, because receivers reject it.
 - Tests: a guard failing on any `%c`/`%C`/`%s`/`%S` pattern in addon Lua (format
   and date strings excepted), exhaustive 0-255 byte tests of the classes and

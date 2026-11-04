@@ -613,7 +613,7 @@ function P.broadcast(character, event)
         if event.kind == "loot" and (event.data.quality or 0) < character.settings.loot_quality then return end
         local detail = eventText(event)
         if not detail then return end
-        detail = detail:gsub(S.CONTROL_OR_PIPE, " ")
+        detail = S.stripEscapes(detail):gsub(S.CONTROL_OR_PIPE, " ")
         local modern = event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48

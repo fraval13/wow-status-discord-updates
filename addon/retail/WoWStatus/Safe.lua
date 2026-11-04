@@ -2,7 +2,8 @@
 WoWStatusSafe = {}
 local S = WoWStatusSafe
 -- Locale-independent byte classes. Never use Lua's built-in control or space
--- classes, or string.lower, on player text: they follow the C library's locale,
+-- classes on player text, nor string.lower on keys that peers compare or that
+-- travel in packets: they follow the C library's locale,
 -- which in some locales (macOS UTF-8) treats bytes 0x80-0xFF as Latin-1. That
 -- matches the second byte of AE, O-slash and A-ring (C3 86/98/85) as a control
 -- byte, 0x85 as a space, and lowercases the lead byte C3 to E3.
@@ -22,6 +23,12 @@ function S.stripSpace(text)
 end
 function S.lowerASCII(text)
     return (text:gsub("[A-Z]", LOWER))
+end
+local COLOUR = "|c" .. ("[0-9a-fA-F]"):rep(8)
+-- Remove WoW UI escapes (colour, link, texture, atlas) but keep link text.
+function S.stripEscapes(text)
+    text = text:gsub(COLOUR, ""):gsub("|r", ""):gsub("|H.-|h(.-)|h", "%1")
+    return (text:gsub("|T.-|t", ""):gsub("|A.-|a", ""))
 end
 function S.value(value)
     if issecretvalue and issecretvalue(value) then return nil end

@@ -17,7 +17,12 @@ ADDON = Path(__file__).parents[1] / 'addon'
 CONTROL_CLASS = re.compile(r'(?<!%)(?:%%)*%[cC]')
 SPACE_CLASS = re.compile(r'(?<!%)(?:%%)*%[sS]')
 # Format strings, not patterns: %s and %S mean "string" and "seconds" there.
-FORMAT_CALL = re.compile(r'\b(?:format|date)\(')
+FORMAT_LITERAL = re.compile(r'\b(?:format|date)\(\s*"[^"]*"')
+
+
+def locale_dependent(line):
+    line = FORMAT_LITERAL.sub('', line)
+    return bool(CONTROL_CLASS.search(line) or SPACE_CLASS.search(line))
 NORDIC = ['Ærlig', 'Øystein', 'Åse']
 
 
@@ -33,8 +38,7 @@ def test_addon_lua_never_uses_locale_dependent_control_or_space_classes():
     offenders = []
     for path in files:
         for number, line in enumerate(path.read_text(encoding='utf-8').splitlines(), 1):
-            if CONTROL_CLASS.search(line) or (SPACE_CLASS.search(line)
-                                              and not FORMAT_CALL.search(line)):
+            if locale_dependent(line):
                 offenders.append(f'{path.relative_to(ADDON)}:{number}: {line.strip()}')
     assert offenders == [], 'use WoWStatusSafe classes instead:\n' + '\n'.join(offenders)
 
@@ -47,11 +51,10 @@ def test_addon_lua_never_uses_locale_dependent_control_or_space_classes():
     ('x:gsub("%%s", "")', False),
     ('string.format("%s", value)', False),
     ('date("!%H:%M:%S", at)', False),
+    ('string.format("%s", x):match("^%s*(.-)$")', True),
 ])
 def test_guard_counts_escaped_percent_signs(line, flagged):
-    found = bool(CONTROL_CLASS.search(line)
-                 or (SPACE_CLASS.search(line) and not FORMAT_CALL.search(line)))
-    assert found is flagged
+    assert locale_dependent(line) is flagged
 
 
 def test_safe_lua_loads_before_every_consumer():
@@ -133,16 +136,26 @@ def test_popup_from_nordic_sender_is_received(lua, name):
     assert lua.eval('WoWStatusLevelPopup.message.text') == f'Ølvenn’s {name} reached level 25!'
 
 
-def test_outgoing_detail_scrubs_pipes_the_receiver_would_reject(lua):
+@pytest.mark.parametrize('detail, sent', [
+    ('Won |cffff0000a duel|r\\tin Ærlig', 'Won a duel in Ærlig'),
+    ('Won |Hitem:1|h[Ærlig Blade]|h |TInterface\\\\Icon:0|t', 'Won [Ærlig Blade] '),
+    ('Odd | pipe', 'Odd   pipe'),
+])
+def test_outgoing_detail_strips_escapes_and_pipes_the_receiver_would_reject(lua, detail, sent):
     lua.eval('WoWStatusGroups.update')('navsquad', '')
-    text = lua.execute('''
-        local ids = {}
+    text = lua.execute(f'''
+        local ids = {{}}
         for id in pairs(character().group_ids) do ids[id] = true end
-        WoWStatusPopups.broadcast(character(), {id = "pvp-1", kind = "pvp", at = time(),
-            group_ids = ids, data = {text = "Won |cffff0000a duel\\tin Ærlig"}})
+        WoWStatusPopups.broadcast(character(), {{id = "pvp-1", kind = "pvp", at = time(),
+            group_ids = ids, data = {{text = "{detail}"}}}})
         return __sent[1].text
     ''')
-    assert text.endswith(' Won  cffff0000a duel in Ærlig')
+    assert text.split(' ', 6)[6] == sent
+
+
+def test_sender_keys_never_call_locale_dependent_string_lower(lua):
+    lua.execute('string.lower = function() error("locale-dependent lower") end')
+    assert lua.eval('WoWStatusPopups.senderKey')('ÅSE-TestRealm') == 'Åse-testrealm'
 
 
 def test_trust_command_splits_nordic_names_and_aliases(lua):
