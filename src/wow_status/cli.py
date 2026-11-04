@@ -93,19 +93,16 @@ def release_character(store, args):
     """Operator recovery for #11; returns the line to print."""
     if args.character_id:
         char = store.character(args.character_id)
-        if char is None and args.to_owner:
-            try:  # Undo a mistaken release of a character that no longer exists.
-                store.release(args.character_id, args.to_owner)
-            except ValidationError as exc:
-                raise SystemExit(f'Not released: {exc}.') from None
-            return f'Owner {args.to_owner} may claim character {args.character_id} again.'
-        matches = [char] if char else []
+        # A deleted character can't be listed, but --to-owner may still lift a block.
+        matches = [char] if char else ([{'id': args.character_id}] if args.to_owner else [])
     elif args.name and args.realm:
         matches = store.find_characters(args.name, args.realm, args.client)
     else:
         raise SystemExit('Give --character-id, or --name with --realm.')
 
     def describe(char):
+        if 'identity' not in char:
+            return f"character {char['id']}"
         identity = char['identity']
         return (f"{identity['name']} ({identity['realm']}, {identity['client']}) {char['id']}, "
                 f"owner {char['owner']} ({person(store, char['owner'])['display_name']})")
@@ -116,14 +113,16 @@ def release_character(store, args):
                          'Several characters match; choose one with --character-id.')
     char = matches[0]
     try:
-        store.release(char['id'], args.to_owner)
+        result = store.release(char['id'], args.to_owner)
     except ValidationError as exc:
         raise SystemExit(f'Not released: {exc}.') from None
-    if args.to_owner:
-        return (f'Moved {describe(char)} to owner {args.to_owner}. '
-                'Their next upload binds their claim secret.')
-    return (f'Released {describe(char)}. Its data is deleted; the next upload from another '
-            'owner claims it.')
+    return {
+        'unblocked': f'Owner {args.to_owner} may claim {describe(char)} again.',
+        'moved': (f'Moved {describe(char)} to owner {args.to_owner}. '
+                  'Their next upload binds their claim secret.'),
+        'deleted': (f'Released {describe(char)}. Its data is deleted; the next upload from '
+                    'another owner claims it.'),
+    }[result]
 
 
 def main():

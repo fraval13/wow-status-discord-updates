@@ -1,6 +1,5 @@
 """Explicit addon group selection; destinations never learn other selected IDs."""
 import copy
-import hashlib
 import json
 import re
 from functools import lru_cache
@@ -64,16 +63,6 @@ def memberships(raw, exported_at):
     return result
 
 
-def scoped_claim_secret(result, destination):
-    """Send each destination (group ID, or service URL without groups) its own value
-    derived from the addon's claim secret, so a secret seen by one service can't take
-    the character over on another (#11)."""
-    if 'claim_secret' in result:
-        result['claim_secret'] = hashlib.sha256(
-            f'wow-status-claim:{destination}:{result["claim_secret"]}'.encode()).hexdigest()[:32]
-    return result
-
-
 def for_group(payload, target, minimum=0):
     """Only selected, post-join events; never include the routing list on the wire."""
     selected = payload.get('_groups', {})
@@ -83,7 +72,6 @@ def for_group(payload, target, minimum=0):
     if result['snapshot'].get('playtime_recorded_at', since) < since:
         result['snapshot'].pop('playtime_recorded_at', None)
     result['group_id'] = group_id(target)
-    scoped_claim_secret(result, target)
     result['group_name'] = member['label']
     result['player_name'] = payload.get('_player_name', '')
     event_targets = payload.get('_event_targets', {})
@@ -118,7 +106,6 @@ def for_group(payload, target, minimum=0):
 def withdrawal(payload, target):
     result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
     result['group_id'] = group_id(target)
-    scoped_claim_secret(result, target)
     result['settings']['enabled'] = False
     result['settings']['introduction_confirmed'] = False
     result['events'], result['snapshot'] = [], {}

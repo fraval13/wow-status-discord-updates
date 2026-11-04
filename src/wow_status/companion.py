@@ -24,6 +24,21 @@ def endpoint(url):
     return url.rstrip('/')
 
 
+def scoped_claim_secret(payload, url):
+    """Give each destination its own value derived from the addon's claim secret, so a
+    value seen by one service or group can't take the character over on another (#11).
+    Equivalent spellings of one URL give the same value."""
+    if 'claim_secret' not in payload:
+        return payload
+    parsed = urlparse(url)
+    default = {'https': 443, 'http': 80}.get(parsed.scheme)
+    port = f':{parsed.port}' if parsed.port and parsed.port != default else ''
+    destination = f'{parsed.scheme}://{parsed.hostname}{port}{parsed.path.rstrip("/")}'
+    secret = hashlib.sha256(f'wow-status-claim:{destination}:{payload["claim_secret"]}'
+                            .encode()).hexdigest()[:32]
+    return dict(payload, claim_secret=secret)
+
+
 def atomic_json(path, data):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -222,7 +237,6 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                             failed = True
                             status(connection='Temporarily limited; retained data will retry automatically.')
                             continue
-                        from .group_routing import scoped_claim_secret
                         body = scoped_claim_secret(
                             {k: v for k, v in payload.items() if not k.startswith('_')}, url)
                         async with session.post(url + '/v1/upload', json=body,

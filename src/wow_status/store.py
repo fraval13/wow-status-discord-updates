@@ -203,8 +203,7 @@ class Store:
             if not old and not p['settings']['enabled']:
                 return {'character_id': cid, 'accepted': 0}
             # An installation that lost the character can't take it back (#11).
-            if self.db.execute('SELECT 1 FROM former_owners WHERE character=? AND owner=?',
-                               (cid, owner)).fetchone():
+            if self.barred(cid, owner):
                 raise Conflict('Character moved to another installation; ask the operator to move it back')
             proof = self.claim_hash(cid, p['claim_secret']) if 'claim_secret' in p else None
             takeover = bool(old) and old['owner'] != owner
@@ -425,12 +424,18 @@ class Store:
             self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM former_owners WHERE owner=?', (owner,))
+            self.db.executemany('DELETE FROM former_owners WHERE character=?', [(cid,) for cid in ids])
         for cid in ids:
             self.drop_archive(cid)
 
     def paused(self, owner):
         """Whether this owner paused sharing in an ID-joined group."""
         return self.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (owner,)).fetchone() is not None
+
+    def barred(self, cid, owner):
+        """Whether this owner lost the character to a takeover or an operator release."""
+        return self.db.execute('SELECT 1 FROM former_owners WHERE character=? AND owner=?',
+                               (cid, owner)).fetchone() is not None
 
     def drop_archive(self, cid):
         (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
@@ -440,12 +445,17 @@ class Store:
         return self.decode(row) if row else None
 
     def find_characters(self, name, realm, client=None):
-        """Characters whose identity matches, ignoring case; for operator commands."""
+        """Characters whose identity matches, ignoring case; for operator commands.
+        Python's casefold() also matches non-ASCII names, which SQL NOCASE does not."""
         def same(a, b):
             return a.casefold() == b.casefold()
-        return [char for char in self.characters()
-                if same(char['identity']['name'], name) and same(char['identity']['realm'], realm)
-                and (client is None or same(char['identity']['client'], client))]
+        matches = []
+        for row in self.db.execute('SELECT id,owner,identity FROM characters'):
+            identity = json.loads(row['identity'])
+            if (same(identity['name'], name) and same(identity['realm'], realm)
+                    and (client is None or same(identity['client'], client))):
+                matches.append({'id': row['id'], 'owner': row['owner'], 'identity': identity})
+        return matches
 
     def release(self, cid, owner=None):
         """Operator recovery for a squatted or orphaned character (#11); returns what it did.
@@ -456,10 +466,8 @@ class Store:
         back, and the stored claim is dropped so the new owner's next upload binds its own
         secret. For a deleted character, ``owner`` only lifts that owner's block."""
         char = self.character(cid)
-        blocked = owner is not None and self.db.execute(
-            'SELECT 1 FROM former_owners WHERE character=? AND owner=?', (cid, owner)).fetchone()
         if char is None:
-            if not blocked:
+            if owner is None or not self.barred(cid, owner):
                 raise ValidationError('Unknown character')
             with self.db:
                 self.db.execute('DELETE FROM former_owners WHERE character=? AND owner=?', (cid, owner))
@@ -489,11 +497,13 @@ class Store:
     def owners(self):
         """Every known owner with label, character count and pause; for operator commands."""
         from .people import person
-        rows = self.db.execute('SELECT owner FROM installations UNION SELECT owner FROM people '
-                               'UNION SELECT owner FROM characters ORDER BY owner').fetchall()
+        rows = self.db.execute('''SELECT o.owner, COUNT(c.id) AS characters,
+            EXISTS(SELECT 1 FROM group_pauses g WHERE g.owner=o.owner) AS paused
+            FROM (SELECT owner FROM installations UNION SELECT owner FROM people
+                  UNION SELECT owner FROM characters) o
+            LEFT JOIN characters c ON c.owner=o.owner GROUP BY o.owner ORDER BY o.owner''').fetchall()
         return [{'owner': row['owner'], 'name': person(self, row['owner'])['display_name'],
-                 'characters': len(self.characters(row['owner'])), 'paused': self.paused(row['owner'])}
-                for row in rows]
+                 'characters': row['characters'], 'paused': bool(row['paused'])} for row in rows]
 
     def sync_archive(self, cid):
         from .archive import write_character

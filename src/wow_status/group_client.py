@@ -6,7 +6,7 @@ from pathlib import Path
 
 import aiohttp
 
-from .companion import atomic_json, endpoint
+from .companion import atomic_json, endpoint, scoped_claim_secret
 from .group_routing import for_group, withdrawal
 
 
@@ -65,6 +65,7 @@ class GroupUploader:
 
     async def send(self, target, route, payload, fingerprint_key=None):
         import hashlib
+        payload = scoped_claim_secret(payload, route['url'])
         fingerprint = hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
         if fingerprint_key and self.cache.get(fingerprint_key) == fingerprint:
             return True

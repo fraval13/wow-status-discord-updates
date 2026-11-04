@@ -2,19 +2,16 @@
 import json
 import sqlite3
 import sys
+from pathlib import Path
 
+import aiohttp
 import pytest
 from aiohttp.test_utils import TestClient, TestServer
 
 from wow_status import cli
+from wow_status.companion import scoped_claim_secret
 from wow_status.companion import upload as companion_upload
-from wow_status.group_routing import (
-    for_group,
-    group_key,
-    memberships,
-    scoped_claim_secret,
-    withdrawal,
-)
+from wow_status.group_routing import group_key
 from wow_status.people import character_role, set_role
 from wow_status.schema import ValidationError, validate
 from wow_status.server import create_app
@@ -333,27 +330,27 @@ def test_release_command_finds_the_character_by_name_and_realm(tmp_path, payload
     assert capsys.readouterr().out.startswith('squatter\t')
 
 
-def grouped(payload, *labels):
-    value = upload(payload, SECRET)
-    value['_groups'] = memberships({group_key(label): {'label': label, 'joined_at': 1}
-                                    for label in labels}, value['exported_at'])
-    return value
+def derived(url):
+    return scoped_claim_secret({'claim_secret': SECRET}, url)['claim_secret']
 
 
-def test_each_group_service_gets_its_own_derived_secret(payload):
-    value = grouped(payload, 'Weekend Crew', 'Raid Night')
-    first, second = (group_key(label) for label in ('Weekend Crew', 'Raid Night'))
-    derived = {target: for_group(value, target)['claim_secret'] for target in (first, second)}
-    assert len(set(derived.values()) | {SECRET}) == 3
-    for secret in derived.values():
-        assert validate(dict(payload, claim_secret=secret))
-    # A withdrawal must present the same value, or it would rebind the claim.
-    assert withdrawal(value, first)['claim_secret'] == derived[first]
-    assert for_group(value, first)['claim_secret'] == derived[first]
+def test_each_destination_gets_its_own_derived_secret(payload):
+    service = 'https://status.example.com'
+    values = {derived(service), derived(service + '/groups/' + GROUP),
+              derived(service + '/groups/' + group_key('Raid Night')),
+              derived('https://other.example.com/groups/' + GROUP), SECRET}
+    assert len(values) == 5
+    for value in values:
+        assert validate(dict(payload, claim_secret=value))['claim_secret'] == value
+    # Equivalent spellings of one URL give the same value, so recovery still works.
+    for spelling in ('https://Status.Example.com', 'https://status.example.com:443/',
+                     'HTTPS://status.example.com/'):
+        assert derived(spelling) == derived(service)
+    assert derived('https://status.example.com:8443') != derived(service)
+    assert scoped_claim_secret({'version': 1}, service) == {'version': 1}
 
 
 async def test_dry_run_hides_the_secret(tmp_path, capsys):
-    from pathlib import Path
     source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
     source = source.replace('["enrolled"] = true,', f'["enrolled"] = true, claim_secret="{SECRET}",')
     path = tmp_path / 'WoWStatus.lua'
@@ -365,7 +362,6 @@ async def test_dry_run_hides_the_secret(tmp_path, capsys):
 
 
 async def test_companion_without_groups_uploads_a_derived_secret(tmp_path, payload):
-    from pathlib import Path
     store = Store(tmp_path / 'service.sqlite3')
     client = TestClient(TestServer(create_app(store)))
     await client.start_server()
@@ -382,9 +378,50 @@ async def test_companion_without_groups_uploads_a_derived_secret(tmp_path, paylo
         assert await companion_upload([saved], tmp_path / 'credentials.json',
                                       tmp_path / 'state.json', once=True)
         cid = store.characters()[0]['id']
-        sent = scoped_claim_secret({'claim_secret': SECRET}, url)['claim_secret']
+        sent = derived(url)
         assert sent != SECRET
         assert claim(store, cid) == Store.claim_hash(cid, sent)
     finally:
         await client.close()
         store.close()
+
+
+async def test_group_companion_uploads_a_value_derived_for_its_group_route(tmp_path, monkeypatch):
+    store = Store(tmp_path / 'group.sqlite3')
+    client = TestClient(TestServer(create_app(store, GROUP, NAME)))
+    await client.start_server()
+    try:
+        url = str(client.make_url('')).rstrip('/')
+        route = url + '/groups/' + GROUP
+        (tmp_path / 'credentials.json').write_text(
+            json.dumps({'url': url, 'mode': 'groups', 'groups': {}}), encoding='utf-8')
+        source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
+        source = source.replace('["enrolled"] = true,', f'''["enrolled"] = true, claim_secret="{SECRET}",
+            group_ids={{["{GROUP}"]={{label="{NAME}", joined_at=1793000000}}}},''')
+        saved = tmp_path / 'WoWStatus.lua'
+        saved.write_text(source, encoding='utf-8')
+        # The test server serves its one group at the root, like the proxy does in production.
+        requested, post = [], aiohttp.ClientSession.post
+
+        def proxied(session, address, **kwargs):
+            requested.append(address)
+            return post(session, address.replace(route, url), **kwargs)
+        monkeypatch.setattr(aiohttp.ClientSession, 'post', proxied)
+        assert await companion_upload([saved], tmp_path / 'credentials.json',
+                                      tmp_path / 'state.json', once=True)
+        assert route + '/v1/upload' in requested
+        cid = store.characters()[0]['id']
+        assert claim(store, cid) == Store.claim_hash(cid, derived(route))
+    finally:
+        await client.close()
+        store.close()
+
+
+def test_privacy_delete_forgets_the_deleted_characters_former_owners(store, payload):
+    cid = store.ingest('old-install', upload(payload, SECRET))['character_id']
+    store.ingest('new-install', upload(payload, SECRET, later=1))
+    store.delete('new-install')
+    assert store.characters() == []
+    # The character no longer exists, so its old installation may claim it afresh.
+    store.ingest('old-install', upload(payload, SECRET, later=2))
+    assert owner_of(store, cid) == 'old-install'
