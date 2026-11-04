@@ -36,7 +36,9 @@ a death once when the player releases their spirit.
    `dist/` after packaging. Restart WoW after updating.
 2. Open **Options → AddOns → WoW Status → Groups** and add the same group ID as
    your friends. Groups are saved account-wide; character preferences are separate.
-3. Click the minimap book to open **Activity log**, or use `/wstatus activity`.
+3. Click the minimap book to open the **WoW Status** window on its last page (the
+   **Activity** tab at first), or use `/wstatus activity`. `/wstatus <page>` opens any
+   tab directly; the window remembers its position.
    Right-click the book for Options; drag it to move it around the minimap.
 4. To invite a friend who does not have the addon yet, right-click their name and
    choose **Share WoW Status** (clients with the modern menu), or type

@@ -577,51 +577,48 @@ refresh=function()
     end
     render()
 end
+local function build(parent)
+    panel=CreateFrame("Frame","WoWStatusActivityLog",parent);panel:SetAllPoints(parent)
+    panel.scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate")
+    panel.scroll:SetPoint("TOPLEFT",24,-4);panel.scroll:SetSize(710,470)
+    panel.child=CreateFrame("Frame",nil,panel.scroll);panel.child:SetSize(686,420);panel.scroll:SetScrollChild(panel.child)
+    panel.empty=label(panel.child,"GameFontHighlightLarge",24,-180,620)
+    panel.empty:SetJustifyH("CENTER");panel.empty:SetText("No activity yet")
+    panel.rows={};panel.filter="all"
+    for i=1,6 do
+        local row=CreateFrame("Frame",nil,panel.child);row:SetSize(680,124)
+        local background=row:CreateTexture(nil,"BACKGROUND");background:SetAllPoints();background:SetColorTexture(.04,.05,.08,.98)
+        row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT");row.accent:SetSize(680,3)
+        row.icon=row:CreateTexture(nil,"ARTWORK");row.icon:SetPoint("TOPLEFT",14,-22);row.icon:SetSize(56,56)
+        row.heading=label(row,"GameFontNormalLarge",88,-12,570)
+        row.message=label(row,"GameFontHighlightLarge",88,-36,570);row.message:SetHeight(42)
+        row:EnableMouse(true)
+        row:SetScript("OnEnter",function(self)
+            if GameTooltip and self.entry then
+                GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
+                GameTooltip:AddLine(self.entry.text,1,1,1,true)
+                GameTooltip:AddLine("Event ID: "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
+            end
+        end)
+        row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
+        row.flavour=label(row,"GameFontHighlightSmall",88,-80,570)
+        row.detail=label(row,"GameFontHighlightSmall",88,-102,570)
+        panel.rows[i]=row
+    end
+    if panel.scroll.HookScript then panel.scroll:HookScript("OnVerticalScroll",render)
+    else panel.scroll:SetScript("OnVerticalScroll",render) end
+    local buttons={{"All","all"},{"Mine","mine"},{"Friends","friends"}}
+    for i,b in ipairs(buttons) do
+        local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-490);widget:SetSize(160,30);widget:SetText(b[1])
+        widget:SetScript("OnClick",function() panel.filter=b[2];panel.scroll:SetVerticalScroll(0);render() end)
+    end
+    return panel
+end
+-- The log is the Activity page of the main window (#57).
+WoWStatusMainWindow.register("activity","Activity",build,function() render() end)
 function J.show()
     if not db then return end
-    if not panel then
-        panel=CreateFrame("Frame","WoWStatusActivityLog",UIParent);panel:SetSize(780,610);panel:SetPoint("CENTER")
-        panel:SetFrameStrata("FULLSCREEN_DIALOG");panel:EnableMouse(true);panel:SetMovable(true);panel:RegisterForDrag("LeftButton")
-        panel:SetScript("OnDragStart",panel.StartMoving);panel:SetScript("OnDragStop",panel.StopMovingOrSizing)
-        local bg=panel:CreateTexture(nil,"BACKGROUND");bg:SetAllPoints();bg:SetColorTexture(.025,.035,.065,.98)
-        label(panel,"GameFontNormalLarge",24,-20,720):SetText("WoW Status — activity log")
-        panel.scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate")
-        panel.scroll:SetPoint("TOPLEFT",24,-66);panel.scroll:SetSize(710,480)
-        panel.child=CreateFrame("Frame",nil,panel.scroll);panel.child:SetSize(686,420);panel.scroll:SetScrollChild(panel.child)
-        panel.empty=label(panel.child,"GameFontHighlightLarge",24,-180,620)
-        panel.empty:SetJustifyH("CENTER");panel.empty:SetText("No activity yet")
-        panel.rows={};panel.filter="all"
-        for i=1,6 do
-            local row=CreateFrame("Frame",nil,panel.child);row:SetSize(680,124)
-            local background=row:CreateTexture(nil,"BACKGROUND");background:SetAllPoints();background:SetColorTexture(.04,.05,.08,.98)
-            row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT");row.accent:SetSize(680,3)
-            row.icon=row:CreateTexture(nil,"ARTWORK");row.icon:SetPoint("TOPLEFT",14,-22);row.icon:SetSize(56,56)
-            row.heading=label(row,"GameFontNormalLarge",88,-12,570)
-            row.message=label(row,"GameFontHighlightLarge",88,-36,570);row.message:SetHeight(42)
-            row:EnableMouse(true)
-            row:SetScript("OnEnter",function(self)
-                if GameTooltip and self.entry then
-                    GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
-                    GameTooltip:AddLine(self.entry.text,1,1,1,true)
-                    GameTooltip:AddLine("Event ID: "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
-                end
-            end)
-            row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
-            row.flavour=label(row,"GameFontHighlightSmall",88,-80,570)
-            row.detail=label(row,"GameFontHighlightSmall",88,-102,570)
-            panel.rows[i]=row
-        end
-        if panel.scroll.HookScript then panel.scroll:HookScript("OnVerticalScroll",render)
-        else panel.scroll:SetScript("OnVerticalScroll",render) end
-        local buttons={{"All",function() panel.filter="all" end},{"Mine",function() panel.filter="mine" end},
-            {"Friends",function() panel.filter="friends" end},{"Close",function() panel:Hide() end}}
-        for i,b in ipairs(buttons) do
-            local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-556);widget:SetSize(160,30);widget:SetText(b[1])
-            widget:SetScript("OnClick",function() b[2]();panel.scroll:SetVerticalScroll(0);render() end)
-        end
-        table.insert(UISpecialFrames,"WoWStatusActivityLog")
-    end
-    render();panel:Show()
+    WoWStatusMainWindow.show("activity")
 end
 local frame=CreateFrame("Frame")
 frame:RegisterEvent("CHAT_MSG_ADDON")

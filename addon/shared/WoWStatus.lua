@@ -685,6 +685,7 @@ SlashCmdList.WOWSTATUS = function(message)
         current.professions = names
         snapshot()
         say("Shared profession labels updated. /reload to export.")
+    elseif WoWStatusMainWindow.has(command) then WoWStatusMainWindow.show(command)
     else openSettings() end
 end
 
