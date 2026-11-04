@@ -17,6 +17,18 @@
 - TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
   public verifier parse TOCs strictly. Retail per-line load conditions
   (`[AllowLoadGameType ...]`) are not supported by any stage yet.
+## Malformed SavedVariables no longer stop the companion — 4 November 2026
+
+- Issue #13. Reading and normalising one SavedVariables file now has its own
+  error boundary in `upload()`: any exception there skips that file for this
+  pass, logs only the exception type, marks the pass failed and retries on the
+  next pass. Errors from sending or the service keep the existing narrow catch,
+  so programming errors on the network path are not hidden.
+- `validate` uses a string-only membership check for the client, event kind,
+  class ID and profession key, so tables and lists raise `ValidationError` (or
+  are dropped where the field is optional) instead of `TypeError`. A mutation
+  test replaces every value of a full payload with a table, list, text, nil,
+  float, boolean and negative number and requires only `ValidationError`.
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 

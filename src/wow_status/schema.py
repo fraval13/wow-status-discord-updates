@@ -29,6 +29,11 @@ def string(value, name, limit=120):
     return value
 
 
+def choice(value, allowed):
+    """Membership test that treats lists/tables as invalid instead of raising TypeError."""
+    return isinstance(value, str) and value in allowed
+
+
 def integer(value, name, low, high):
     if type(value) is not int or not low <= value <= high:
         raise ValidationError(f'Invalid {name}')
@@ -43,7 +48,7 @@ def validate(payload):
     settings = payload.get('settings', {})
     if not isinstance(identity, dict) or not isinstance(settings, dict):
         raise ValidationError('Invalid identity or settings')
-    if identity.get('client') not in LEVEL_CAPS:
+    if not choice(identity.get('client'), LEVEL_CAPS):
         raise ValidationError('Unsupported client adapter')
     cap = LEVEL_CAPS[identity['client']]
     clean = {'version': 1, 'identity': {k: string(identity.get(k), k) for k in
@@ -116,8 +121,8 @@ def validate(payload):
                         if 'skill' in profession:
                             entry['max_skill'] = integer(profession.get('max_skill'), 'profession maximum', 1, 2000)
                             entry['skill'] = integer(profession['skill'], 'profession skill', 0, entry['max_skill'])
-                        if profession.get('key') in {'alchemy','blacksmithing','enchanting','engineering',
-                                'herbalism','leatherworking','mining','skinning','tailoring','jewelcrafting','inscription','archaeology','cooking','first_aid','fishing'}:
+                        if choice(profession.get('key'), {'alchemy','blacksmithing','enchanting','engineering',
+                                'herbalism','leatherworking','mining','skinning','tailoring','jewelcrafting','inscription','archaeology','cooking','first_aid','fishing'}):
                             entry['key'] = profession['key']
                         professions.append(entry)
                     val = professions
@@ -133,8 +138,8 @@ def validate(payload):
     if clean['settings']['enabled']:
         if clean['settings']['fields']['race'] and snapshot.get('sex') in ('Male', 'Female'):
             clean['snapshot']['sex'] = snapshot['sex']
-        if clean['settings']['fields']['class'] and snapshot.get('class_id') in {
-                'WARRIOR','PALADIN','HUNTER','ROGUE','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}:
+        if clean['settings']['fields']['class'] and choice(snapshot.get('class_id'), {
+                'WARRIOR','PALADIN','HUNTER','ROGUE','PRIEST','SHAMAN','MAGE','WARLOCK','DRUID'}):
             clean['snapshot']['class_id'] = snapshot['class_id']
         if clean['settings']['fields']['level'] and 'xp_current' in snapshot:
             maximum = integer(snapshot.get('xp_max'), 'XP maximum', 1, 2_000_000_000)
@@ -160,7 +165,7 @@ def validate(payload):
         if not isinstance(event, dict):
             raise ValidationError('Invalid event')
         kind = event.get('kind')
-        if kind not in KINDS:
+        if not choice(kind, KINDS):
             raise ValidationError('Unsupported event kind')
         eid = string(event.get('id'), 'event ID', 180)
         at = integer(event.get('at'), 'event timestamp', 1, clean['exported_at'] + 300)
