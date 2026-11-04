@@ -1,5 +1,23 @@
 # Decisions I made — 27 October 2026
 
+## Release ZIPs ship only TOC files; version gate — 4 November 2026
+
+- `build_homepage.py` zipped every committed file under an edition folder
+  (issue #17). Each ZIP now holds the TOC, the files it lists and
+  `Textures/*.tga` (any case, no dot files). Other committed files, such as
+  `.DS_Store`, `WTF/` or `._Logo.tga`, are skipped with a stderr note. Today's
+  four ZIPs are byte-identical to the old builder's output.
+- Chose warn-and-skip over failing on unlisted files, as the issue asked. The
+  guard is `test_current_release_ships_every_committed_addon_file`: it fails CI
+  if any file committed to an addon folder on `main` stops shipping, so a needed
+  new asset (an `.xml`, `.blp` or sound) shows up as a red test, not a broken ZIP.
+- The build fails before writing anything unless all four TOC versions equal
+  `pyproject.toml`. Old releases with mismatched versions (0.8.1–0.8.3, 0.9.1)
+  can no longer be rebuilt; rollback switches to the previous built site instead.
+- TOCs with a BOM or CRLF endings are rejected because the deploy receiver and
+  public verifier parse TOCs strictly. Retail per-line load conditions
+  (`[AllowLoadGameType ...]`) are not supported by any stage yet.
+
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
 - Per-source throttles (link-code guesses, invalid auth, enrollment attempts)

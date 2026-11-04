@@ -51,6 +51,9 @@ be checked against Git and the environment rather than assumed permanently true.
 - `website/`: buildless static HTML/CSS/JS and locally served artwork/fonts.
 - `scripts/build_homepage.py`: packages committed addon source into four ZIPs;
   fills website versions/sizes and publishes a checksummed release manifest.
+  Each ZIP holds only the TOC, the files it lists and `Textures/*.tga`; other
+  committed files are skipped. The build fails unless all four TOC versions
+  equal the `pyproject.toml` version.
 - `.github/workflows/checks.yml`: Linux/Windows checks, packaging, deployment and
   public verification on `main` pushes; also supports manual dispatch.
 - `deploy/SERVER.md`: current dedicated server deployment architecture.

@@ -10,16 +10,86 @@ import json
 import re
 import shutil
 import subprocess
+import sys
+import tomllib
 import zipfile
 from pathlib import Path
+
+EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
+# Files the game loads without a TOC line. Anything else committed beside the addon
+# (editor files, a WTF/ folder, notes) stays out of the public ZIP.
+# Dot files such as macOS ._Logo.tga resource forks never match.
+ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE),)
 
 
 def git(root, *args):
     return subprocess.check_output(['git', '-C', str(root), *args])
 
 
+def package_files(toc, tracked):
+    """Return what ships for one edition: its TOC, every file the TOC lists and allowlisted assets.
+
+    Paths are relative to the edition's WoWStatus/ folder. A listed file that is not
+    committed fails the build, because the game would load a broken addon.
+    """
+    listed = []
+    for line in toc.splitlines():
+        relative = line.strip().replace('\\', '/')
+        if relative and not relative.startswith('#'):
+            listed.append(relative)
+    for relative in listed:
+        if relative not in tracked:
+            raise ValueError(f'Missing addon file: {relative}')
+    assets = {name for name in tracked if any(pattern.fullmatch(name) for pattern in ASSETS)}
+    files = sorted({'WoWStatus.toc', *listed, *assets})
+    # Players unzip on case-insensitive file systems, where one of the two would be lost.
+    folded = {}
+    for name in files:
+        if (other := folded.setdefault(name.casefold(), name)) != name:
+            raise ValueError(f'Addon files differ only by case: {other}, {name}')
+    return files
+
+
+def project_version(root, revision):
+    try:
+        pyproject = tomllib.loads(git(root, 'show', f'{revision}:pyproject.toml').decode())
+        return pyproject['project']['version']
+    except (subprocess.CalledProcessError, KeyError) as error:
+        raise ValueError(f'No pyproject.toml project version in {revision}') from error
+
+
 def build(root, output, addon_ref):
     revision = git(root, 'rev-parse', '--verify', f'{addon_ref}^{{commit}}').decode().strip()
+    # Check every edition before writing anything, so a failed build leaves the output untouched.
+    editions = {}
+    for edition in EDITIONS:
+        folder = f'addon/{edition}/WoWStatus/'
+        # -z keeps non-ASCII paths unquoted.
+        listing = git(root, 'ls-tree', '-r', '-z', '--name-only', revision, '--', folder).decode()
+        tracked = {name.removeprefix(folder) for name in listing.split('\0') if name}
+        if not tracked:
+            raise ValueError(f'No {edition} addon in {revision}')
+        if 'WoWStatus.toc' not in tracked:
+            raise ValueError(f'No {edition} TOC in {revision}')
+        toc = git(root, 'show', f'{revision}:{folder}WoWStatus.toc').decode()
+        # The deploy receiver and the public verifier parse TOCs the same strict way.
+        if toc.startswith('\ufeff') or '\r' in toc:
+            raise ValueError(f'The {edition} TOC must be saved without a BOM and with LF line endings')
+        match = re.search(r'^## Version: ([\w.\-]+)$', toc, re.MULTILINE)
+        if match is None:
+            raise ValueError(f'No version in the {edition} TOC')
+        try:
+            files = package_files(toc, tracked)
+        except ValueError as error:
+            raise ValueError(f'{edition}: {error}') from error
+        skipped = sorted(tracked.difference(files))
+        if skipped:
+            print(f"Not packaging unlisted {edition} files: {', '.join(skipped)}", file=sys.stderr)
+        editions[edition] = files, match.group(1)
+    expected = project_version(root, revision)
+    if any(version != expected for _, version in editions.values()):
+        found = ', '.join(f'{edition} {version}' for edition, (_, version) in editions.items())
+        raise ValueError(f'Addon TOC versions ({found}) must all equal pyproject.toml version {expected}')
     output.mkdir(parents=True, exist_ok=True)
     for source in (root / 'website').iterdir():
         if source.name in {'README.md', 'ARTWORK.md'}:
@@ -32,43 +102,31 @@ def build(root, output, addon_ref):
     downloads = output / 'downloads'
     downloads.mkdir(exist_ok=True)
     releases = {}
-    for edition in ('vanilla', 'forever', 'tbc', 'retail'):
-        prefix = f'addon/{edition}/'
-        files = git(root, 'ls-tree', '-r', '--name-only', revision, '--', prefix + 'WoWStatus').decode().splitlines()
-        if not files:
-            raise ValueError(f'No {edition} addon in {revision}')
-        toc = git(root, 'show', f'{revision}:{prefix}WoWStatus/WoWStatus.toc').decode()
-        version = re.search(r'^## Version: ([\w.\-]+)$', toc, re.MULTILINE).group(1)
+    for edition, (files, version) in editions.items():
+        folder = f'addon/{edition}/WoWStatus/'
         archive = downloads / f'WoWStatus-{edition}.zip'
         with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
-            for file in sorted(files):
+            for file in files:
                 # Stable timestamps keep repeated builds byte-identical.
-                info = zipfile.ZipInfo(file.removeprefix(prefix), date_time=(2026, 1, 1, 0, 0, 0))
+                info = zipfile.ZipInfo(f'WoWStatus/{file}', date_time=(2026, 1, 1, 0, 0, 0))
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
-                package.writestr(info, git(root, 'show', f'{revision}:{file}'))
+                package.writestr(info, git(root, 'show', f'{revision}:{folder}{file}'))
         with zipfile.ZipFile(archive) as package:
             if package.testzip() is not None:
                 raise ValueError(f'Broken archive: {archive}')
-            names = set(package.namelist())
-            for line in toc.splitlines():
-                relative = line.strip().replace('\\', '/')
-                if relative and not relative.startswith('#') and f'WoWStatus/{relative}' not in names:
-                    raise ValueError(f'Missing addon file: {relative}')
         releases[edition] = {'version': version, 'file': archive.name,
                              'bytes': archive.stat().st_size,
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
-    if len({release['version'] for release in releases.values()}) != 1:
-        raise ValueError('Addon versions must match before publishing')
     html = (output / 'index.html').read_text(encoding='utf-8')
-    html = html.replace('__VERSION__', releases['vanilla']['version'])
+    html = html.replace('__VERSION__', expected)
     for edition, release in releases.items():
         html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('Unresolved homepage placeholder')
     (output / 'index.html').write_text(html, encoding='utf-8')
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
-    print(f"Homepage built at {output}; addon {releases['vanilla']['version']} ({revision[:7]})")
+    print(f'Homepage built at {output}; addon {expected} ({revision[:7]})')
 
 
 if __name__ == '__main__':
