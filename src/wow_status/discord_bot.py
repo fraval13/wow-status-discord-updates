@@ -45,6 +45,9 @@ class StatusBot(discord.Client):
         self.weekly = WeeklyRecaps(store)
         self.tree = CommunityTree(self)
         self.worker = None
+        self.worker_error = None
+        self.online = False
+        self._stopping = None
         self.register_commands()
 
     def custom_emojis(self):
@@ -57,6 +60,31 @@ class StatusBot(discord.Client):
         self.tree.copy_global_to(guild=guild)
         await self.tree.sync(guild=guild)
         self.worker = asyncio.create_task(self.deliver())
+        self.worker.add_done_callback(self.worker_stopped)
+
+    def worker_stopped(self, task):
+        """A crashed delivery worker ends the session, so the supervisor logs it,
+        reports it on /health and retries instead of staying connected but silent."""
+        if task.cancelled() or task.exception() is None:
+            return
+        self.worker_error = task.exception()
+        if not self.is_closed():
+            self._stopping = asyncio.create_task(self.close())
+
+    async def on_ready(self):
+        self.online = True
+
+    async def on_resumed(self):
+        self.online = True
+
+    async def on_disconnect(self):
+        self.online = False  # discord.py keeps is_ready() set while it reconnects.
+
+    def state(self):
+        """Health view of this session: None until logged in and the guild cache is ready."""
+        if not self.is_ready():
+            return None
+        return 'ready' if self.online else 'reconnecting'
 
     async def close(self):
         try:
@@ -67,7 +95,9 @@ class StatusBot(discord.Client):
                 except asyncio.CancelledError:
                     pass
                 except Exception:
-                    log.exception('Discord delivery worker failed')
+                    pass  # Kept in worker_error; the supervisor logs it with its traceback.
+                # Stopped mid-send: the message may or may not have posted.
+                self.store.recover_interrupted_sends()
         finally:
             # A session is retried in the same process, so its HTTP session and
             # gateway must close even when the worker failed.
@@ -349,11 +379,11 @@ class StatusBot(discord.Client):
 def session(store, guild_id, channel_id, token):
     """One Discord session per call, for ``server.run_discord`` to supervise."""
     async def bot(status):
-        # The previous session in this process may have stopped mid-send.
-        store.recover_interrupted_sends()
         # A fresh client per session: a closed discord.py client can't restart.
         client = StatusBot(store, guild_id, channel_id)
-        status['ready'] = client.is_ready
+        status['probe'] = client.state
         async with client:
             await client.start(token)
+        if client.worker_error is not None:
+            raise client.worker_error
     return bot

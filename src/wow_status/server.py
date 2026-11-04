@@ -65,20 +65,21 @@ def throttle_identity(address):
     return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
 
 
-# A failed Discord connection is retried after this many seconds, doubling up to the cap.
-# The cap keeps a revoked token or a removed bot from ever exhausting Discord's
-# daily session-start budget, which a fast restart loop would do.
+# A failed Discord session is retried after this many seconds, doubling up to the cap.
+# At most 144 session starts a day stays far below Discord's daily budget of 1,000,
+# which a 10-second restart loop would exhaust (Discord then resets the token).
 DISCORD_RETRY_FIRST = 30
-DISCORD_RETRY_MAX = 1800
+DISCORD_RETRY_MAX = 600
 
 
 def discord_state(status):
     """Health view of the Discord bot: no credentials, messages or user data."""
     if status is None:
         return {'discord': 'disabled'}
-    ready = status.get('ready')
-    if ready is not None and ready():
-        return {'discord': 'ready'}
+    probe = status.get('probe')
+    live = probe() if probe is not None else None
+    if live:
+        return {'discord': live}
     report = {'discord': status.get('state', 'starting')}
     if status.get('error'):
         report['discord_error'] = status['error']
@@ -100,7 +101,7 @@ async def run_discord(bot, status, first=DISCORD_RETRY_FIRST, cap=DISCORD_RETRY_
     shown on /health and retried with backoff, instead of exiting the whole service."""
     delay = first
     while True:
-        status.update(state='starting', ready=None)
+        status.update(state='starting', probe=None)
         status.pop('error', None)
         started = clock()
         failure = None
@@ -111,7 +112,7 @@ async def run_discord(bot, status, first=DISCORD_RETRY_FIRST, cap=DISCORD_RETRY_
         if clock() - started >= cap:
             delay = first  # A long healthy session earns a quick reconnect.
         error = failure_name(failure) if failure else 'Stopped'
-        status.update(state='retrying', ready=None, error=error)
+        status.update(state='retrying', probe=None, error=error)
         # The traceback names discord.py frames and Discord's reply, never the token.
         log.error('Discord bot stopped (%s); ingestion continues, retrying in %d s', error, delay,
                   exc_info=failure)

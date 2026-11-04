@@ -127,11 +127,13 @@ curl --fail http://127.0.0.1:18082/health
 ```
 
 Each `/health` reply also carries the bot's state: `"discord"` is `disabled` (no
-Discord settings), `starting`, `ready` or `retrying`, and `retrying` adds
-`"discord_error"`, the exception name plus Discord's HTTP status and error code.
-A Discord failure no longer stops the service: ingestion and `/health` keep
-running, the bot retries after 30 s, doubling to every 30 minutes, and the deploy's
-**Report Discord bot state** step warns when a group's bot is not `ready`.
+Discord settings), `starting`, `ready`, `reconnecting` (discord.py is restoring a
+dropped gateway) or `retrying`, and `retrying` adds `"discord_error"`, the exception
+name plus Discord's HTTP status and error code. A Discord failure, or a crash of
+the bot's delivery worker, no longer stops the service: ingestion and `/health`
+keep running, a new bot session starts after 30 s, doubling to every 10 minutes,
+and the deploy's **Report Discord bot state** step warns when a group's bot is not
+`ready`.
 
 ### Discord bot not connected
 
@@ -149,7 +151,9 @@ journalctl -u wow-character-status@navsquad -n 50 --no-pager | grep -i discord
   the bot was removed from the server, or the guild variable is wrong. Re-invite
   it with the `bot` and `applications.commands` scopes.
 - `ClientConnectorError` or `TimeoutError`: the server cannot reach Discord; it
-  reconnects by itself.
+  reconnects by itself within 10 minutes of Discord coming back.
+- Any other name (for example `OperationalError` or `KeyError`) is a crash of the
+  delivery worker; the journal has its traceback.
 
 ### A group service does not start
 

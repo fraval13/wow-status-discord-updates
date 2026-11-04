@@ -14,13 +14,21 @@ from pathlib import Path
 
 DEPLOY = Path(__file__).resolve().parent.parent / 'deploy'
 SETTLED = ('ready', 'disabled')
+# States that can still change within this step's polling window.
+TRANSIENT = ('starting', 'reconnecting', 'health check failed')
 MAX_BYTES = 64 * 1024
 
 
 def group_routes(caddyfile):
-    """(path prefix, local port) for every group route in the Caddy config."""
-    return re.findall(r'handle_path (/groups/[0-9a-f]+)/\*\s*\{\s*'
-                      r'reverse_proxy 127\.0\.0\.1:(\d+)', caddyfile)
+    """(path prefix, local port) for every group route in the Caddy config; the port
+    is None when a group's block has no local upstream."""
+    routes = []
+    for block in re.split(r'(?=handle_path )', caddyfile):
+        prefix = re.match(r'handle_path (/groups/[0-9a-f]+)/\*', block)
+        if prefix:
+            port = re.search(r'reverse_proxy 127\.0\.0\.1:(\d+)', block)
+            routes.append((prefix.group(1), port.group(1) if port else None))
+    return routes
 
 
 def group_names(receiver):
@@ -50,10 +58,11 @@ def problem(body, revision):
     return ' '.join(str(body[key]) for key in ('discord', 'discord_error') if body.get(key))
 
 
-def report(base, routes, revision, names=None, fetch=read, attempts=12, pause=5,
+def report(base, routes, revision, names=None, fetch=None, attempts=12, pause=5,
            sleep=time.sleep):
     """Return one warning per group whose bot did not settle; a fresh bot needs a few
     seconds after the service restarts to log in and reach Discord's gateway."""
+    fetch = fetch or read
     states = {}
     for attempt in range(attempts):
         for prefix, port in routes:
@@ -61,7 +70,8 @@ def report(base, routes, revision, names=None, fetch=read, attempts=12, pause=5,
                 states[port] = problem(fetch(base.rstrip('/') + prefix + '/health'), revision)
             except Exception as exc:  # A warning step: report it, never fail the run.
                 states[port] = f'health check failed ({type(exc).__name__})'
-        if not any(states.values()) or attempt == attempts - 1:
+        if (attempt == attempts - 1 or not any(
+                state and state.startswith(TRANSIENT) for state in states.values())):
             break
         sleep(pause)
     names = names or {}
@@ -76,8 +86,15 @@ def main():
     args = parser.parse_args()
     routes = group_routes((DEPLOY / 'Caddyfile.production').read_text(encoding='utf-8'))
     names = group_names((DEPLOY / 'install_release.py').read_text(encoding='utf-8'))
-    warnings = report(args.url, routes, args.revision, names) if routes else [
-        'no group routes found in deploy/Caddyfile.production, so no bot was checked']
+    unreadable = [prefix for prefix, port in routes if port is None]
+    routes = [(prefix, port) for prefix, port in routes if port is not None]
+    warnings = [f'{prefix}: no local upstream found in deploy/Caddyfile.production, not checked'
+                for prefix in unreadable]
+    if routes:
+        warnings += report(args.url, routes, args.revision, names)
+    elif not unreadable:
+        warnings.append('no group routes found in deploy/Caddyfile.production, '
+                        'so no bot was checked')
     for warning in warnings:
         print(f'::warning title=Discord bot not connected::{warning}. Ingestion is running; '
               'see "Discord bot not connected" in deploy/SERVER.md.')

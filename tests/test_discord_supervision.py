@@ -60,11 +60,13 @@ async def test_health_reports_ready_bot_and_retrying_bot_without_secrets(store):
     client = TestClient(TestServer(create_app(store, discord=status)))
     await client.start_server()
     try:
-        status.update(state='starting', ready=lambda: False)
+        status.update(state='starting', probe=lambda: None)
         assert (await health(client))['discord'] == 'starting'
-        status['ready'] = lambda: True
+        status['probe'] = lambda: 'ready'
         assert (await health(client))['discord'] == 'ready'
-        status.update(state='retrying', ready=None, error='LoginFailure')
+        status['probe'] = lambda: 'reconnecting'
+        assert (await health(client))['discord'] == 'reconnecting'
+        status.update(state='retrying', probe=None, error='LoginFailure')
         body = await health(client)
         # The deploy receiver only accepts status 'ok'; a Discord outage must not fail it.
         assert body['status'] == 'ok'
@@ -117,7 +119,7 @@ async def test_failures_are_retried_with_doubling_capped_backoff():
     with pytest.raises(Stop):
         await run_discord(bot, status, sleep=sleep)
     assert len(calls) == 9 and all(call['state'] == 'starting' for call in calls)
-    assert delays == [30, 60, 120, 240, 480, 960, 1800, 1800, 1800]
+    assert delays == [30, 60, 120, 240, 480, 600, 600, 600, 600]
     assert delays[0] == DISCORD_RETRY_FIRST and max(delays) == DISCORD_RETRY_MAX
 
 
@@ -161,14 +163,16 @@ async def test_cancelling_the_service_stops_the_bot_without_a_retry():
 
 class FakeClient:
     instances = []
+    finish = LoginFailure
 
     def __init__(self, store, guild_id, channel_id):
         self.args = (guild_id, channel_id)
         self.closed = False
+        self.worker_error = None
         FakeClient.instances.append(self)
 
-    def is_ready(self):
-        return False
+    def state(self):
+        return None
 
     async def __aenter__(self):
         return self
@@ -178,47 +182,64 @@ class FakeClient:
 
     async def start(self, token):
         assert token == 'secret-token'
-        raise LoginFailure()
+        if isinstance(FakeClient.finish, BaseException):
+            self.worker_error = FakeClient.finish  # start() returns after the worker stops it
+            return
+        raise FakeClient.finish()
 
 
 async def test_each_session_uses_a_fresh_closed_client(store, monkeypatch):
     monkeypatch.setattr(discord_bot, 'StatusBot', FakeClient)
+    monkeypatch.setattr(FakeClient, 'finish', LoginFailure)
     FakeClient.instances.clear()
     bot = discord_bot.session(store, 1, 2, 'secret-token')
     for _ in range(2):
         status = {}
         with pytest.raises(LoginFailure):
             await bot(status)
-        assert status['ready'] == FakeClient.instances[-1].is_ready
+        assert status['probe'] == FakeClient.instances[-1].state
     first, second = FakeClient.instances
     assert first is not second and first.closed and second.closed and first.args == (1, 2)
 
 
-async def test_a_new_session_marks_a_send_the_last_one_interrupted_uncertain(store, payload,
-                                                                             monkeypatch):
-    """Store() did this only at process start; sessions now restart in-process."""
+async def test_a_session_whose_worker_crashed_fails_with_the_worker_error(store, monkeypatch):
     monkeypatch.setattr(discord_bot, 'StatusBot', FakeClient)
+    monkeypatch.setattr(FakeClient, 'finish', KeyError('formatting bug'))
+    with pytest.raises(KeyError, match='formatting bug'):
+        await discord_bot.session(store, 1, 2, 'secret-token')({})
+
+
+async def test_a_crashed_worker_closes_the_session_and_marks_its_send_uncertain(store, payload):
+    """Store() recovered 'sending' rows only at process start; sessions now end in-process."""
     store.ingest('owner', payload)
     delivery = store.pending()['delivery_id']
-    store.delivery(delivery, 'sending')  # The previous session stopped mid-send.
-    with pytest.raises(LoginFailure):
-        await discord_bot.session(store, 1, 2, 'secret-token')({})
+    client = discord_bot.StatusBot(store, 1, 2)
+
+    async def broken():
+        store.delivery(delivery, 'sending')
+        raise KeyError('formatting bug')
+
+    client.worker = asyncio.create_task(broken())
+    client.worker.add_done_callback(client.worker_stopped)
+    for _ in range(10):  # The task finishes, then its done-callback runs on a later turn.
+        await asyncio.sleep(0)
+    await client._stopping
+    assert isinstance(client.worker_error, KeyError)
+    assert client.is_closed()  # discord.py closed despite the worker failure
     assert store.db.execute('SELECT status FROM outbox WHERE id=?',
                             (delivery,)).fetchone()[0] == 'uncertain'
 
 
-async def test_closing_a_bot_whose_worker_failed_still_closes_discord(store, caplog):
+async def test_bot_state_is_ready_only_while_the_gateway_is_connected(store, monkeypatch):
     client = discord_bot.StatusBot(store, 1, 2)
-
-    async def broken():
-        raise KeyError('formatting bug')
-
-    client.worker = asyncio.create_task(broken())
-    await asyncio.sleep(0)
-    with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
-        await client.close()
-    assert client.is_closed()
-    assert any(record.exc_info and record.exc_info[0] is KeyError for record in caplog.records)
+    assert client.state() is None  # still logging in
+    monkeypatch.setattr(client, 'is_ready', lambda: True)
+    await client.on_ready()
+    assert client.state() == 'ready'
+    await client.on_disconnect()
+    assert client.state() == 'reconnecting'
+    await client.on_resumed()
+    assert client.state() == 'ready'
 
 
 def free_port():
@@ -299,7 +320,7 @@ def test_report_waits_for_a_bot_to_settle_then_warns_only_for_broken_groups():
     warnings = module.report('https://example.test/', routes, REVISION, names, fetch=fetch,
                              attempts=3, pause=5, sleep=pauses.append)
     assert warnings == ['navsquad: retrying LoginFailure']
-    assert pauses == [5, 5]
+    assert pauses == [5]  # 'retrying' can't change within the window, so it stops there.
 
 
 def test_report_stops_polling_once_bots_are_ready_and_flags_unreachable_or_stale_groups():
@@ -345,3 +366,23 @@ def test_report_warns_when_it_finds_no_group_routes(tmp_path, monkeypatch, capsy
     module.main()
     output = capsys.readouterr().out
     assert output.startswith('::warning ') and 'no group routes found' in output
+
+
+def test_report_finds_routes_whatever_comes_before_the_upstream(tmp_path, monkeypatch, capsys):
+    module = report_module()
+    caddy = ('handle_path /groups/aa/* {\n  header X-Test {\n    a b\n  }\n'
+             '  reverse_proxy 127.0.0.1:18081 {\n  }\n}\n'
+             'handle_path /groups/bb/* {\n  respond "moved" 410\n}\n')
+    assert module.group_routes(caddy) == [('/groups/aa', '18081'), ('/groups/bb', None)]
+    (tmp_path / 'Caddyfile.production').write_text(caddy, encoding='utf-8')
+    (tmp_path / 'install_release.py').write_text("GROUPS = {'ronkalot': 18081}\n",
+                                                 encoding='utf-8')
+    monkeypatch.setattr(module, 'DEPLOY', tmp_path)
+    monkeypatch.setattr(module, 'read', lambda url: {'revision': REVISION, 'discord': 'ready'})
+    monkeypatch.setattr('sys.argv', ['report', '--url', 'https://example.test',
+                                     '--revision', REVISION])
+    module.main()
+    output = capsys.readouterr().out.splitlines()
+    assert output == ['::warning title=Discord bot not connected::/groups/bb: no local upstream '
+                      'found in deploy/Caddyfile.production, not checked. Ingestion is running; '
+                      'see "Discord bot not connected" in deploy/SERVER.md.']
