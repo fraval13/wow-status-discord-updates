@@ -6,9 +6,10 @@
   non-ASCII Lua source literals were interpreted using the Windows code page.
   Explicit Lupa encodings alone did not fix the hosted runner. Wrote accented
   caption characters as UTF-8 decimal byte escapes in the Lua files, preserving
-  the same runtime text while making the source ASCII-only. The caption tests
-  passed with simulated cp1252 source decoding and Lua 5.1; the full suite passed
-  locally (295 tests). The workflow must rerun on Windows to confirm.
+  the same runtime text while making the source ASCII-only. The test now returns
+  caption bytes as ASCII hex before Python decodes them as UTF-8, avoiding Lupa's
+  Windows string conversion path. The caption tests pass under Lua 5.1 and the
+  full suite passes locally (295 tests). Windows CI must rerun to confirm.
 
 ## Daily status preview styling — 4 November 2026
 

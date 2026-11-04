@@ -21,12 +21,22 @@ def test_all_banks_have_100_lines_and_generated_editions_match():
     catalogue = (project / 'docs/notification-flavour-text.md').read_text()
     web = (project / 'website/flavour.js').read_text()
     web_banks = json.loads(web.split(' = ', 1)[1].rstrip().removesuffix(';'))
+    lua_lines_as_hex = lua.eval('''function(bank)
+        local result={}
+        for index,line in ipairs(bank) do
+            result[index]=string.gsub(line,".",function(char)
+                return string.format("%02x",string.byte(char))
+            end)
+        end
+        return result
+    end''')
     sections = re.findall(
         r'<a id="([\w-]+)"></a>\n## [^\n]+\n(.*?)(?=\n<a id=|\Z)',
         catalogue, re.S)
     for key, body in sections:
         expected = re.findall(r'^\d+\. (.+)$', body, re.M)
-        actual = list(lua.globals().WoWStatusFlavour.banks[key.replace('-', '_')].values())
+        actual = [bytes.fromhex(line).decode('utf-8') for line in
+                  lua_lines_as_hex(lua.globals().WoWStatusFlavour.banks[key.replace('-', '_')]).values()]
         assert actual == expected
         if key in web_banks:
             assert web_banks[key] == expected
