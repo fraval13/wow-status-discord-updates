@@ -599,7 +599,7 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "milestones" then
         -- Milestone choices live on the main page; there is no separate Milestones page.
         openSettings()
-        say("Milestone choices are on the main WoW Status settings page.")
+        say("Milestone choices are on the main WoW Status page.")
     elseif command == "discover" or command == "dungeon" or command == "lfg" then
         say("Manual announcements have been removed. Milestones are detected automatically.")
     elseif command == "previews" then openSettings("previews")

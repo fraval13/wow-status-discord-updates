@@ -657,7 +657,7 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
         DEFAULT_CHAT_FRAME.AddMessage = addMessage
         assert(__opened == "WoW Status")
         for name in pairs(__categories) do assert(not name:lower():find("milestone", 1, true)) end
-        assert(said and said:find("main WoW Status settings page", 1, true))
+        assert(said and said:find("main WoW Status page", 1, true))
         SlashCmdList.WOWSTATUS("groups")
         assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
         assert(not WoWStatusGroupWindow.close:IsShown())
@@ -694,7 +694,7 @@ def test_legacy_options_menu_registers_both_pages(lua):
         DEFAULT_CHAT_FRAME.AddMessage = addMessage
         assert(__opened == "WoW Status")
         for name in pairs(__pages) do assert(not name:lower():find("milestone", 1, true)) end
-        assert(said and said:find("main WoW Status settings page", 1, true))
+        assert(said and said:find("main WoW Status page", 1, true))
         assert(WoWStatusGroupWindow:GetParent() ~= UIParent)
     ''')
 
