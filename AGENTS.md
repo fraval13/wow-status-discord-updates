@@ -126,6 +126,12 @@ number. A release is its own small pull request that only runs
 all four TOCs together; `--check` reports them) and adds release notes. Merging
 it publishes the new number.
 
+Release notes live in `CHANGELOG.md` (newest `## <version>` first; it must match
+`pyproject.toml`). After editing it run `python scripts/whats_new.py` and
+`python scripts/sync_addons.py`: the addon's one-time What's New page and the
+homepage release panel both come from it, and the homepage build fails when the
+release version has no notes.
+
 Development setup and ordinary checks:
 
 ```sh
