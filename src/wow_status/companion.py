@@ -205,7 +205,9 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                                              .encode()).hexdigest()
                         fingerprint = hashlib.sha256(encoded.encode()).hexdigest()
                         if dry_run:
-                            print(json.dumps(payload, indent=2))
+                            # Output may be pasted into bug reports; keep the secret out.
+                            shown = dict(payload, claim_secret='<hidden>') if 'claim_secret' in payload else payload
+                            print(json.dumps(shown, indent=2))
                             continue
                         if group_uploader:
                             if not await group_uploader.upload(payload):

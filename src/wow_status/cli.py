@@ -85,7 +85,7 @@ def parser():
 def release_character(store, args):
     """Operator recovery for #11; returns the line to print."""
     if args.character_id:
-        matches = [char for char in store.characters() if char['id'] == args.character_id]
+        matches = [char for char in [store.character(args.character_id)] if char]
     elif args.name and args.realm:
         matches = store.find_characters(args.name, args.realm, args.client)
     else:

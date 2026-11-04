@@ -28,16 +28,12 @@ end
 
 -- A random per-character secret that stays in SavedVariables. The companion includes it
 -- in uploads so a later enrollment of the same player can take the character back (#11).
--- It is never sent in game. math.random is not cryptographic, so a timer is mixed in.
+-- It is never sent in game. Since patch 5.4.2, math.random uses the client's secure RNG.
 local function claimSecret(character)
     local secret = character.claim_secret
     if type(secret) == "string" and #secret == 32 and not secret:find("[^0-9a-f]") then return end
-    local clock = debugprofilestop and math.floor(debugprofilestop() * 1000) or 0
     local digits = {}
-    for i = 1, 32 do
-        digits[i] = string.format("%x", (math.random(0, 15) + clock) % 16)
-        clock = math.floor(clock / 16)
-    end
+    for i = 1, 32 do digits[i] = string.format("%x", math.random(0, 15)) end
     character.claim_secret = table.concat(digits)
 end
 

@@ -7,7 +7,8 @@ import pytest
 from aiohttp.test_utils import TestClient, TestServer
 
 from wow_status import cli
-from wow_status.group_routing import group_key
+from wow_status.companion import upload as companion_upload
+from wow_status.group_routing import for_group, group_key, memberships, withdrawal
 from wow_status.people import character_role, set_role
 from wow_status.schema import ValidationError, validate
 from wow_status.server import create_app
@@ -107,10 +108,23 @@ async def test_reenrolled_installation_recovers_character_over_http(tmp_path, pa
         store.close()
 
 
-def test_takeover_needs_a_current_export(store, payload):
+def test_takeover_needs_a_newer_export(store, payload):
     cid = store.ingest('old-install', upload(payload, SECRET, later=5))['character_id']
-    with pytest.raises(Conflict, match='Stale export'):
-        store.ingest('new-install', upload(payload, SECRET))
+    for later in (0, 5):  # older, or the very same SavedVariables export
+        with pytest.raises(Conflict, match='Stale export'):
+            store.ingest('new-install', upload(payload, SECRET, later=later))
+    assert owner_of(store, cid) == 'old-install'
+
+
+def test_two_installations_with_one_save_do_not_trade_ownership_on_every_upload(store, payload):
+    cid = store.ingest('old-install', upload(payload, SECRET))['character_id']
+    store.ingest('new-install', upload(payload, SECRET, later=1))
+    # The old companion keeps re-sending the export it already has.
+    with pytest.raises(Conflict):
+        store.ingest('old-install', upload(payload, SECRET, later=1))
+    assert owner_of(store, cid) == 'new-install'
+    # Playing on the old installation again produces a newer export, which wins.
+    store.ingest('old-install', upload(payload, SECRET, later=2))
     assert owner_of(store, cid) == 'old-install'
 
 
@@ -192,10 +206,27 @@ def test_release_deletes_a_squatted_character_so_the_owner_can_claim_it(store, p
     store.release(cid)
     assert store.characters() == [] and claim(store, cid) is None
     assert archived(store, cid) is None
+    # The squatter's companion uploads again before the real owner does.
+    with pytest.raises(Conflict, match='released from this owner'):
+        store.ingest('squatter', upload(payload, OTHER_SECRET, later=1))
+    assert store.characters() == []
     store.ingest('real-owner', upload(payload, SECRET, later=1))
     assert owner_of(store, cid) == 'real-owner'
     with pytest.raises(Conflict):
         store.ingest('squatter', upload(payload, OTHER_SECRET, later=2))
+    # Deleting the squatter's data also forgets the release marker.
+    store.delete('squatter')
+    assert store.db.execute('SELECT COUNT(*) FROM character_releases').fetchone()[0] == 0
+
+
+def test_release_to_an_owner_lifts_their_release_marker(store, payload):
+    cid = store.ingest('first', upload(payload))['character_id']
+    store.redeem(store.create_link('first'))
+    store.release(cid)
+    store.ingest('second', upload(payload, later=1))
+    store.release(cid, 'first')
+    store.ingest('first', upload(payload, SECRET, later=2))
+    assert owner_of(store, cid) == 'first'
 
 
 def test_release_to_an_owner_keeps_history_and_their_next_upload_binds(store, payload):
@@ -219,6 +250,11 @@ def test_release_rejects_unknown_character_or_owner(store, payload):
         store.release('0' * 64)
     with pytest.raises(ValidationError, match='Unknown owner'):
         store.release(cid, 'nobody')
+    store.redeem(store.create_link('paused'))
+    with store.db:
+        store.db.execute("INSERT INTO group_pauses VALUES('paused')")
+    with pytest.raises(ValidationError, match='paused'):
+        store.release(cid, 'paused')
     assert owner_of(store, cid) == 'owner'
 
 
@@ -253,3 +289,34 @@ def test_release_command_finds_the_character_by_name_and_realm(tmp_path, payload
         assert [char['id'] for char in store.characters()] == [other_cid]
     finally:
         store.close()
+
+
+def grouped(payload, *labels):
+    value = upload(payload, SECRET)
+    value['_groups'] = memberships({group_key(label): {'label': label, 'joined_at': 1}
+                                    for label in labels}, value['exported_at'])
+    return value
+
+
+def test_each_group_service_gets_its_own_derived_secret(payload):
+    value = grouped(payload, 'Weekend Crew', 'Raid Night')
+    first, second = (group_key(label) for label in ('Weekend Crew', 'Raid Night'))
+    derived = {target: for_group(value, target)['claim_secret'] for target in (first, second)}
+    assert len(set(derived.values()) | {SECRET}) == 3
+    for secret in derived.values():
+        assert validate(dict(payload, claim_secret=secret))
+    # A withdrawal must present the same value, or it would rebind the claim.
+    assert withdrawal(value, first)['claim_secret'] == derived[first]
+    assert for_group(value, first)['claim_secret'] == derived[first]
+
+
+async def test_dry_run_hides_the_secret(tmp_path, capsys):
+    from pathlib import Path
+    source = (Path(__file__).parent / 'fixtures/WoWStatus.lua').read_text(encoding='utf-8')
+    source = source.replace('["enrolled"] = true,', f'["enrolled"] = true, claim_secret="{SECRET}",')
+    path = tmp_path / 'WoWStatus.lua'
+    path.write_text(source, encoding='utf-8')
+    assert await companion_upload([path], tmp_path / 'credentials.json', tmp_path / 'state.json',
+                                  dry_run=True)
+    output = capsys.readouterr().out
+    assert '<hidden>' in output and SECRET not in output

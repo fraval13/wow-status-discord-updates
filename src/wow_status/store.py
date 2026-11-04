@@ -40,6 +40,8 @@ class Store:
         CREATE TABLE IF NOT EXISTS character_claims(
             character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
             secret_hash TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS character_releases(
+            character TEXT NOT NULL, owner TEXT NOT NULL, PRIMARY KEY(character,owner));
         CREATE TABLE IF NOT EXISTS character_labels(
             character TEXT PRIMARY KEY REFERENCES characters(id) ON DELETE CASCADE,
             role TEXT NOT NULL DEFAULT 'alt', source TEXT NOT NULL DEFAULT 'addon');
@@ -114,7 +116,7 @@ class Store:
         known = {char['id'] for char in self.characters()}
         for archive in self.archive_directory.glob('*.json'):
             if archive.stem not in known:
-                archive.unlink()
+                self.drop_archive(archive.stem)
 
     def close(self):
         self.db.close()
@@ -200,6 +202,9 @@ class Store:
             old = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
             if not old and not p['settings']['enabled']:
                 return {'character_id': cid, 'accepted': 0}
+            if self.db.execute('SELECT 1 FROM character_releases WHERE character=? AND owner=?',
+                               (cid, owner)).fetchone():
+                raise Conflict('Character was released from this owner by the operator')
             proof = self.claim_hash(cid, p['claim_secret']) if 'claim_secret' in p else None
             takeover = bool(old) and old['owner'] != owner
             if takeover:
@@ -211,7 +216,10 @@ class Store:
                 # Another installation must not undo an explicit privacy pause.
                 if self.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (old['owner'],)).fetchone():
                     raise Conflict('Character owner paused sharing; resume from that installation')
-            if old and p['exported_at'] < old['exported']:
+            # A takeover needs a strictly newer export, so two installations reading the
+            # same SavedVariables can't pass the character back and forth.
+            if old and (p['exported_at'] <= old['exported'] if takeover
+                        else p['exported_at'] < old['exported']):
                 raise Conflict('Stale export rejected; export current settings with /reload')
             if takeover:
                 # The previous owner's main/alt choice does not carry over.
@@ -412,8 +420,16 @@ class Store:
             self.db.execute('DELETE FROM upload_receipts WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
+            self.db.execute('DELETE FROM character_releases WHERE owner=?', (owner,))
         for cid in ids:
-            (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
+            self.drop_archive(cid)
+
+    def drop_archive(self, cid):
+        (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
+
+    def character(self, cid):
+        row = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
+        return self.decode(row) if row else None
 
     def find_characters(self, name, realm, client=None):
         """Characters whose identity matches, ignoring case; for operator commands."""
@@ -426,23 +442,31 @@ class Store:
     def release(self, cid, owner=None):
         """Operator recovery for a squatted or orphaned character (#11).
 
-        Without ``owner`` the character and all its data are deleted, so the next upload
-        claims it fresh. With ``owner`` it moves to that owner with its history, and the
-        stored claim is dropped so that owner's next upload binds its own secret."""
-        if not self.db.execute('SELECT 1 FROM characters WHERE id=?', (cid,)).fetchone():
+        Without ``owner`` the character and all its data are deleted, and its previous
+        owner can't claim it again, so the next upload from anyone else claims it fresh.
+        With ``owner`` it moves to that owner with its history, and the stored claim is
+        dropped so that owner's next upload binds its own secret."""
+        char = self.character(cid)
+        if char is None:
             raise ValidationError('Unknown character')
         if owner is None:
             with self.db:
+                self.db.execute('INSERT OR IGNORE INTO character_releases VALUES(?,?)',
+                                (cid, char['owner']))
                 self.db.execute('DELETE FROM characters WHERE id=?', (cid,))
-            (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
+            self.drop_archive(cid)
             return
         if not self.db.execute('SELECT 1 FROM installations WHERE owner=? UNION ALL '
                                'SELECT 1 FROM people WHERE owner=?', (owner, owner)).fetchone():
             raise ValidationError('Unknown owner')
+        if self.db.execute('SELECT 1 FROM group_pauses WHERE owner=?', (owner,)).fetchone():
+            raise ValidationError('Owner has paused sharing; they must resume first')
         with self.db:
             self.db.execute('UPDATE characters SET owner=? WHERE id=?', (owner, cid))
             self.db.execute('DELETE FROM character_claims WHERE character=?', (cid,))
             self.db.execute('DELETE FROM character_labels WHERE character=?', (cid,))
+            self.db.execute('DELETE FROM character_releases WHERE character=? AND owner=?',
+                            (cid, owner))
         self.sync_archive(cid)
 
     def sync_archive(self, cid):

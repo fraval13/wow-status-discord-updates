@@ -109,7 +109,8 @@ their own. When someone else claimed a character first, or an old character was
 stored before claim secrets existed, release it with the service stopped:
 
 ```sh
-# Deletes the character and its data; the next upload claims it.
+# Deletes the character and its data. Its current owner can't claim it again;
+# the next upload from anyone else does.
 wow-status release-character --db /var/lib/wow-status/service.sqlite3 --name Thora --realm "Realm Name"
 # Or keep its history and move it to a known owner ID (owner_id in the JSON archive).
 wow-status release-character --db /var/lib/wow-status/service.sqlite3 --character-id CHARACTER_ID --to-owner OWNER_ID
@@ -117,6 +118,7 @@ wow-status release-character --db /var/lib/wow-status/service.sqlite3 --characte
 
 Several matches are listed with their IDs and owners; repeat with `--client` or
 `--character-id`. After `--to-owner`, that owner's next upload binds its secret.
+`--to-owner` refuses an owner who has paused sharing.
 
 ## Friend-group behavior
 
