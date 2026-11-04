@@ -328,8 +328,8 @@ class Store:
             not old_role or (old_role['source'] == 'addon' and old_role['role'] != role))
         if role_changed:
             set_role(self, owner, cid, role, source='addon', sync=False)
-        # A role or label change shows on every archive the owner has.
-        if role_changed or renamed:
+        # A new label shows on every owner archive; a new main also demotes the siblings.
+        if renamed or (role_changed and role == 'main'):
             self.sync_owner_archives(owner)
         else:
             self.sync_archive(cid)
@@ -369,8 +369,10 @@ class Store:
                 self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (char['id'],))
                 self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=?", (char['id'],))
-
-        self.sync_owner_archives(owner)
+        if cid:
+            self.sync_archive(cid)
+        else:
+            self.sync_owner_archives(owner)
 
     def delete(self, owner):
         ids = [char['id'] for char in self.characters(owner)]

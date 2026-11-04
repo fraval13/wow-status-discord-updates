@@ -106,7 +106,7 @@ async def test_blank_player_name_falls_back_to_friend_label(group, payload):
     assert display_name(store, owner) == ('Friend ' + owner[-6:], 'unavailable')
 
 
-def test_store_rolls_back_label_when_ingest_rejects(store, payload):
+def test_store_conflict_does_not_write_label(store, payload):
     store.ingest('group:owner', payload, name=('Thora', 'addon'))
     other_owner = dict(payload, exported_at=payload['exported_at'] + 1)
     with pytest.raises(Conflict):
@@ -173,3 +173,16 @@ async def test_rejection_after_label_write_rolls_it_back(group, payload, monkeyp
     upload = group_payload(payload, player_name='Impersonated')
     assert (await client.post('/v1/upload', json=upload, headers=headers)).status == 429
     assert display_name(store, owner) == ('Thora', 'addon')
+
+
+async def test_new_alt_rewrites_only_its_own_archive(group, payload, monkeypatch):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    upload = group_payload(payload, player_name='Thora')
+    assert (await client.post('/v1/upload', json=upload, headers=headers)).status == 200
+    writes = []
+    original = store.sync_archive
+    monkeypatch.setattr(store, 'sync_archive', lambda cid: (writes.append(cid), original(cid)))
+    alt = group_payload(payload, guid='Player-123-0002', player_name='Thora')
+    response = await client.post('/v1/upload', json=alt, headers=headers)
+    assert writes == [(await response.json())['character_id']]

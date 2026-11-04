@@ -25,15 +25,20 @@
   `Store.ingest(..., name=(label, source))`, which writes it inside the ingest
   transaction after the conflict checks; any later rejection rolls it back. An
   upload that stores nothing (new character, sharing off) does not rename either.
-  After the commit each owner archive is rewritten once: all of them when the
-  label or addon role changed, otherwise only the uploaded character. A crash
-  between commit and rewrite is healed by the startup `sync_archives()`.
+  After the commit each archive is rewritten at most once: all of the owner's
+  when the label changed or the addon made a character main (which demotes the
+  others), otherwise only the uploaded character. `set_role(sync=False)` lets
+  ingest decide, and `pause` rewrites only the paused character or owner. A
+  crash between commit and rewrite is healed by the startup `sync_archives()`.
 - `people.store_name` is the non-committing write; `remember()` wraps it for the
   enrollment and Discord paths, which behave as before.
 - Tests in `tests/test_upload_names.py`: 400 and 409 keep the name and archive,
-  an accepted upload renames every archived character, an empty upload keeps the
-  name, a rename plus role change writes each archive once, a blank name falls
-  back to the Friend label, and a store-level Conflict rolls the label back.
+  an accepted upload renames every archived character (new or existing), an
+  empty upload keeps the name, a rename plus role change writes each archive
+  once, a new alt writes only its own archive, a 429 raised after the label write
+  rolls it back, and a blank name falls back to the Friend label as on `main`.
+- Left for the owner: whether a blank `player_name` should keep an existing
+  addon name instead of the Friend fallback (unchanged from `main`).
 
 ## IPv6 throttles grouped by /64 — 4 November 2026
 
