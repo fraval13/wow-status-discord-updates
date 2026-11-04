@@ -23,7 +23,7 @@ local function trim(text,limit)
     return text
 end
 local function ownName()
-    return (WoWStatusAdapter.playerName() or current.identity.name).."-"..(WoWStatusAdapter.realmName() or current.identity.realm):gsub("%s","")
+    return (WoWStatusAdapter.playerName() or current.identity.name).."-"..S.stripSpace(WoWStatusAdapter.realmName() or current.identity.realm)
 end
 function J.eventID(sender,nonce)
     local key=P.senderKey(sender)
@@ -105,7 +105,7 @@ local function add(entry)
     end
     if not entry.owner then
         for _, c in pairs(db.characters or {}) do
-            local name=c.identity.name.."-"..c.identity.realm:gsub("%s","")
+            local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
             if P.senderKey(name)==P.senderKey(entry.sender) and c.identity.client==entry.client then return false end
         end
     end
@@ -124,7 +124,7 @@ function J.prepare(database)
         for _,event in ipairs(c.history and c.history.events or {}) do
             if event.kind=="loot" then
                 local epoch,sequence=event.id:match(":(%d+%-%d+):(%d+)$")
-                local name=c.identity.name.."-"..c.identity.realm:gsub("%s","")
+                local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
                 local id=epoch and c.identity.client..":"..P.senderKey(name)..":"..epoch.."-"..sequence
                 local entry=id and wanted[id]
                 if entry and event.data.item then
@@ -291,7 +291,7 @@ local function warning(group,accused,reporter)
 end
 function J.reportInvalid(group,sender)
     sender=S.string(sender)
-    if not db or not sender or not P.senderKey(sender) or sender:find("%s")
+    if not db or not sender or not P.senderKey(sender) or sender:find(S.SPACE)
         or not groupMember(group) or not peer(group,sender) then return false end
     -- Attribute the actual whisper sender, never the author claimed in a relay.
     if not warning(group,sender,ownName()) then return false end
@@ -371,7 +371,7 @@ function J.receive(message,sender,distribution)
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
     if op=="W" then
-        local client,at,accused=body:match("^([%w%-]+) (%d+) (%S+)$")
+        local client,at,accused=body:match("^([%w%-]+) (%d+) (" .. S.NONSPACE .. "+)$")
         at=tonumber(at)
         if client~=WoWStatusAdapter.client_id or not at or at<time()-120 or at>time()+30
             or not P.senderKey(accused) or (P.senderKey(accused)~=P.senderKey(ownName()) and not peer(group,accused)) then return false end

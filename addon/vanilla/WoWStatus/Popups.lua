@@ -27,13 +27,13 @@ P.runtimeVersion=tocVersion()
 
 local function realm()
     local value = A.realmName()
-    return value and value:gsub("%s", "") or ""
+    return value and S.stripSpace(value) or ""
 end
 function P.senderKey(sender)
     sender = S.string(sender)
     if type(sender) ~= "string" or #sender == 0 or #sender > 120 or sender:find(S.CONTROL_OR_PIPE) then return nil end
     if not sender:find("-", 1, true) then sender = sender .. "-" .. realm() end
-    return sender:gsub("%s", ""):lower()
+    return S.lowerASCII(S.stripSpace(sender))
 end
 local function combat()
     return InCombatLockdown and InCombatLockdown()
@@ -613,7 +613,7 @@ function P.broadcast(character, event)
         if event.kind == "loot" and (event.data.quality or 0) < character.settings.loot_quality then return end
         local detail = eventText(event)
         if not detail then return end
-        detail = detail:gsub(S.CONTROL, " ")
+        detail = detail:gsub(S.CONTROL_OR_PIPE, " ")
         local modern = event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48
@@ -653,7 +653,7 @@ end
 
 function P.command(text)
     if not prefs then return end
-    local command, rest = text:match("^(%S*)%s*(.-)$")
+    local command, rest = text:match(S.SPLIT_WORD)
     if groupMode() and (command == "on" or command == "off" or command == "send") then
         notify("Group membership automatically enables updates. Remove a group in /wstatus groups to leave it.")
         return
@@ -680,7 +680,7 @@ function P.command(text)
         prefs.channel, prefs.legacy_channel = rest, true
         notify("Channel selected. Join it yourself with /join " .. rest .. ". Everyone must choose the same channel.")
     elseif command == "trust" or command == "untrust" then
-        local sender, alias = rest:match("^(%S+)%s*(.-)$")
+        local sender, alias = rest:match(S.SPLIT_WORD)
         local key = P.senderKey(sender)
         if not key or #alias > 40 or alias:find(S.CONTROL_OR_PIPE) then notify("Use trust Character-Realm [optional friend label]."); return end
         if command == "trust" then

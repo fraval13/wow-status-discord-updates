@@ -55,18 +55,25 @@
   only typing /reload, status shows the previous version until a full restart.
   TOC changes already need a restart, so this matches normal addon updates.
 
-## Locale-independent control-byte checks (issue #23) — 4 November 2026
+## Locale-independent text checks (issue #23) — 4 November 2026
 
 - Replaced every Lua `%c` in the addon with `WoWStatusSafe.CONTROL`
   (`[%z\1-\31\127]`) or `CONTROL_OR_PIPE`. `%c` follows the C library's
   locale; under macOS UTF-8 it matched the second byte of Æ, Ø and Å. `%z` keeps
   the class valid in Lua 5.1 and still works in 5.4.
-- Added a guard test that fails on any `%c`/`%C` in addon Lua, an exhaustive
-  0-255 byte test of both classes, and Æ/Ø/Å sender, group and player-name tests.
-  Linux glibc never showed the bug, so the byte and guard tests carry the proof.
-- Not changed: `%s`, `%w` and `string.lower` are also locale-dependent in the C
-  library. Whether any game client runs Lua under a non-C locale is still the
-  open live check in #25.
+- Review found `%s`/`%S` and `string.lower` share the same cause (0x85 counts as
+  a space; C3 lowercases to E3). Replaced them on player text with
+  `S.SPACE`, `S.NONSPACE`, `S.trim`, `S.stripSpace`, `S.SPLIT_WORD` and
+  `S.lowerASCII`. `lowerASCII` matches C-locale `lower`, so saved trust keys stay valid.
+- Outgoing popup details now scrub `|` as well, because receivers reject it.
+- Tests: a guard failing on any `%c`/`%C`/`%s`/`%S` pattern in addon Lua (format
+  and date strings excepted), exhaustive 0-255 byte tests of the classes and
+  helpers, and Æ/Ø/Å sender, trust, group and player-name tests. Linux glibc
+  never showed the bug, so the byte and guard tests carry the proof.
+- Not changed: `%w`/`%a`/`%u` on ASCII protocol tokens (a non-C locale could only
+  widen what they accept) and `lower()` on local channel and dungeon names, which
+  are compared only on the same client. Whether any game client runs Lua under a
+  non-C locale is still the open live check in #25.
 
 ## Windows CI catalogue encoding — 4 November 2026
 
