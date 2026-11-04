@@ -4,6 +4,7 @@ import json
 import pytest
 from aiohttp.test_utils import TestClient, TestServer
 
+from wow_status import limits
 from wow_status.group_routing import group_key
 from wow_status.server import create_app
 from wow_status.store import Conflict, Store
@@ -138,3 +139,37 @@ async def test_rename_with_role_change_writes_each_archive_once(group, payload, 
     assert (await client.post('/v1/upload', json=renamed, headers=headers)).status == 200
     assert sorted(writes) == sorted(char['id'] for char in store.characters(owner))
     assert store.db.execute("SELECT COUNT(*) FROM character_labels WHERE role='main'").fetchone()[0] == 1
+
+
+async def test_existing_character_rename_rewrites_sibling_archives(group, payload):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+    cids = []
+    for guid in ('Player-123-0001', 'Player-123-0002'):
+        upload = group_payload(payload, guid=guid, player_name='Thora')
+        cids.append((await (await client.post('/v1/upload', json=upload, headers=headers)).json())
+                    ['character_id'])
+    # Same character and role as before: only the label changes.
+    again = group_payload(payload, player_name='Brann', exported_at=payload['exported_at'] + 1)
+    assert (await client.post('/v1/upload', json=again, headers=headers)).status == 200
+    assert [archived_name(store, cid) for cid in cids] == ['Brann', 'Brann']
+
+
+async def test_rejection_after_label_write_rolls_it_back(group, payload, monkeypatch):
+    store, client = group
+    owner, headers = await enroll(client, 'Thora')
+
+    charge = limits.charge
+
+    def exhausted(db, entries, now):
+        if not any(scope.startswith('bytes:') for scope, *_ in entries):
+            return charge(db, entries, now)  # request budgets
+        # The upload's storage budget is charged last, after the label was written.
+        assert db.execute('SELECT display_name FROM people WHERE owner=?',
+                          (owner,)).fetchone()[0] == 'Impersonated'
+        raise limits.Limited(60)
+
+    monkeypatch.setattr('wow_status.store.limits.charge', exhausted)
+    upload = group_payload(payload, player_name='Impersonated')
+    assert (await client.post('/v1/upload', json=upload, headers=headers)).status == 429
+    assert display_name(store, owner) == ('Thora', 'addon')

@@ -45,7 +45,7 @@ def character_role(store, cid):
     return row['role'] if row else 'alt'
 
 
-def set_role(store, owner, cid, role, source='discord'):
+def set_role(store, owner, cid, role, source='discord', sync=True):
     if role not in ('main', 'alt'):
         raise ValidationError('Role must be main or alt')
     row = store.db.execute('SELECT owner FROM characters WHERE id=?', (cid,)).fetchone()
@@ -57,7 +57,8 @@ def set_role(store, owner, cid, role, source='discord'):
                              '(SELECT id FROM characters WHERE owner=?)', (owner,))
         store.db.execute('INSERT INTO character_labels VALUES(?,?,?) ON CONFLICT(character) '
                          'DO UPDATE SET role=excluded.role,source=excluded.source', (cid, role, source))
-    store.sync_owner_archives(owner)
+    if sync:
+        store.sync_owner_archives(owner)
 
 
 def decorate(store, char):

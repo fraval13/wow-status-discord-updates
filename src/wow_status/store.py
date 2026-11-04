@@ -178,7 +178,8 @@ class Store:
 
     def ingest(self, owner, payload, name=None):
         """Store one upload. ``name`` is an optional ``(display_name, source)`` owner label,
-        written in the upload's transaction so a rejected or empty upload leaves it unchanged."""
+        written in the upload's transaction: a rejected upload, or one for a new character
+        that stores nothing, leaves it unchanged."""
         from .people import set_role, store_name
         p = validate(payload)
         cid = self.character_id(p['identity'])
@@ -322,11 +323,13 @@ class Store:
         discord_main = self.db.execute("SELECT 1 FROM character_labels l JOIN characters c "
             "ON c.id=l.character WHERE c.owner=? AND l.source='discord' AND l.role='main'",
             (owner,)).fetchone()
-        role_changed = (role and not discord_main and (not old_role or old_role['source'] == 'addon')
-                        and (not old_role or old_role['role'] != role))
+        # validate() always sets a role; the addon may only change its own label.
+        role_changed = not discord_main and (
+            not old_role or (old_role['source'] == 'addon' and old_role['role'] != role))
         if role_changed:
-            set_role(self, owner, cid, role, source='addon')  # rewrites every owner archive
-        elif renamed:
+            set_role(self, owner, cid, role, source='addon', sync=False)
+        # A role or label change shows on every archive the owner has.
+        if role_changed or renamed:
             self.sync_owner_archives(owner)
         else:
             self.sync_archive(cid)
@@ -367,7 +370,7 @@ class Store:
                                 "AND status IN ('pending','uncertain','failed')", (char['id'],))
                 self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=?", (char['id'],))
 
-        self.sync_archives()
+        self.sync_owner_archives(owner)
 
     def delete(self, owner):
         ids = [char['id'] for char in self.characters(owner)]
