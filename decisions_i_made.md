@@ -15,9 +15,12 @@
   embedded IPv4 client address, so translated clients do not all share one /64.
   6to4 addresses key on the site's 6to4 router IPv4, so every host behind one
   6to4 router shares a budget with that router's native IPv4 traffic.
-- Embedded IPv4 values that are not global (loopback, private, reserved) are
-  ignored and the address is keyed on its /64, so a forwarded value cannot
-  share the loopback key used for the local proxy.
+- When an embedded IPv4 value is not global (loopback, private, reserved), the
+  exact IPv6 address is the key. That keeps forwarded values off the proxy's
+  loopback key, and it stops private clients behind one NAT64/SIIT translator
+  from sharing the translator's /64. IPv6 loopback and unspecified addresses
+  also keep their exact key. IPv4-mapped addresses always use their IPv4,
+  because a mapped peer is the same IPv4 host.
 - Existing in-flight budgets keyed on exact IPv6 addresses simply expire.
 
 ## Runtime version in popup status — 4 November 2026

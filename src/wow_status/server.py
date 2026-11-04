@@ -41,8 +41,10 @@ def throttle_identity(address):
     """Return the per-source throttle identity for a client address.
 
     IPv4 and IPv4-mapped addresses key on the IPv4 address. NAT64, SIIT, 6to4
-    and Teredo addresses key on their embedded global IPv4 address. Other IPv6
-    addresses collapse to their /64 network. Non-IP values pass through.
+    and Teredo addresses key on their embedded global IPv4 address, or on the
+    exact address when that IPv4 is not global. Loopback and unspecified IPv6
+    keep their exact address. Other IPv6 addresses collapse to their /64
+    network. Non-IP values pass through.
     """
     try:
         ip = ipaddress.ip_address(address)
@@ -52,11 +54,13 @@ def throttle_identity(address):
         return str(ip)
     if ip.ipv4_mapped is not None:
         return str(ip.ipv4_mapped)
+    if ip.is_loopback or ip.is_unspecified:
+        return str(ip)
     embedded = _embedded_ipv4(ip)
-    # Non-global embedded values (loopback, private, ...) must not collide with
-    # keys used for local traffic; key those on their /64 instead.
-    if embedded is not None and embedded.is_global:
-        return str(embedded)
+    if embedded is not None:
+        # A translator or relay owns the surrounding /64, not the client, and
+        # non-global values must not become loopback/private IPv4 keys.
+        return str(embedded) if embedded.is_global else str(ip)
     return str(ipaddress.ip_network((ip, IPV6_THROTTLE_PREFIX), strict=False))
 
 

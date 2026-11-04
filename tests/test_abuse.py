@@ -181,11 +181,18 @@ async def test_ipv6_link_guesses_are_throttled_per_64(store, monkeypatch):
     ('2002:808:808::1', '8.8.8.8'),
     ('2002:808:808:ffff::1', '8.8.8.8'),
     ('2001:0:4136:e378:8000:63bf:f7f7:f7f7', '8.8.8.8'),
-    # Non-global embedded IPv4 never becomes a loopback/private key.
-    ('64:ff9b::7f00:1', '64:ff9b::/64'),
-    ('2002:7f00:1::1', '2002:7f00:1::/64'),
-    ('2002:a00:1::1', '2002:a00:1::/64'),
-    ('2001:0:4136:e378:8000:63bf:ffff:fffe', '2001:0:4136:e378::/64'),
+    # Non-global embedded IPv4 keeps the exact address: never a loopback or
+    # private IPv4 key, and never the translator's shared /64.
+    ('64:ff9b::7f00:1', '64:ff9b::7f00:1'),
+    ('64:ff9b::a00:1', '64:ff9b::a00:1'),
+    ('64:ff9b::a00:2', '64:ff9b::a00:2'),
+    ('::ffff:0:a00:1', '::ffff:0:a00:1'),
+    ('2002:7f00:1::1', '2002:7f00:1::1'),
+    ('2002:a00:1::1', '2002:a00:1::1'),
+    ('2001:0:4136:e378:8000:63bf:ffff:fffe', '2001:0:4136:e378:8000:63bf:ffff:fffe'),
+    # Loopback and unspecified keep their own keys instead of sharing ::/64.
+    ('::1', '::1'),
+    ('::', '::'),
     ('fe80::1%eth0', 'fe80::/64'),
     ('unknown', 'unknown'),
 ])
