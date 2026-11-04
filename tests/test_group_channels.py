@@ -7,11 +7,10 @@ POPUPS = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus/Popups.lua'
 HEX22 = '0123456789abcdef012345'
 
 # A client that remembers joined channels like the game does: in order, case-insensitively,
-# and across /reload. GetChannelList returns (id, name, disabled) triples.
+# and across /reload.
 CHANNEL_STUBS = STUBS + r'''
 __list = {}
 __left = {}
-__pairsFormat = false
 local function find(name)
     for i, entry in ipairs(__list) do if entry.name:lower() == name:lower() then return i end end
 end
@@ -28,16 +27,12 @@ function LeaveChannelByName(name)
     local i = find(name)
     if i then table.remove(__list, i) end
 end
-function GetChannelList()
-    local values = {}
-    for _, entry in ipairs(__list) do
-        table.insert(values, entry.id)
-        table.insert(values, entry.name)
-        if not __pairsFormat then table.insert(values, false) end
-    end
-    return (table.unpack or unpack)(values)
-end
 function joinedChannel(name) return find(name) ~= nil end
+function savedChannelCount()
+    local n = 0
+    for _ in pairs(WoWStatusDB.popups.joined_channels) do n = n + 1 end
+    return n
+end
 '''
 
 UNRELATED = [
@@ -46,11 +41,23 @@ UNRELATED = [
     'LookingForGroup',
     'WStatusFriends',          # the legacy default channel
     'MyGuildChat',
-    'WStatus' + HEX22[:21],    # one hex character short
-    'WStatus' + HEX22 + 'a',   # one hex character long
-    'WStatus' + HEX22[:21] + 'g',  # right length, not hex
-    'xWStatus' + HEX22,        # prefix is not anchored at the start
+    'WStatus' + HEX22,         # group-shaped, but joined by the player with /join
 ]
+
+DAMAGED_SAVE = '''
+WoWStatusDB.popups.joined_channels = {
+    ["general - dun morogh"] = true, ["wstatusfriends"] = true,
+    ["wstatus0123456789abcdef01234"] = true,
+    ["wstatus0123456789abcdef012345"] = "yes",
+    [1] = true,
+}
+'''
+
+OVERSIZED_SAVE = '''
+local saved = {}
+for i = 1, 100 do saved[string.format("wstatus%022x", i)] = true end
+WoWStatusDB.popups.joined_channels = saved
+'''
 
 
 def group_channel(lua, label):
@@ -67,6 +74,10 @@ def joined(lua, name):
     return lua.eval('joinedChannel')(name)
 
 
+def left(lua):
+    return [name.lower() for name in lua.eval('__left').values()]
+
+
 def test_removing_a_group_after_reload_leaves_its_channel():
     lua = make_lua(CHANNEL_STUBS)
     lua.eval('WoWStatusGroups.update')('navsquad-test', '')
@@ -74,7 +85,7 @@ def test_removing_a_group_after_reload_leaves_its_channel():
     channel = group_channel(lua, 'navsquad-test')
     assert joined(lua, channel)
     reload_popups(lua)
-    assert joined(lua, channel)   # still a member, so nothing is left at init
+    assert joined(lua, channel)   # still a member, so init leaves nothing
     lua.eval('WoWStatusGroups.update')('', '')
     assert not joined(lua, channel)
 
@@ -86,6 +97,7 @@ def test_removing_a_group_without_reload_still_leaves_its_channel():
     channel = group_channel(lua, 'navsquad-test')
     lua.eval('WoWStatusGroups.update')('', '')
     assert not joined(lua, channel)
+    assert lua.eval('savedChannelCount()') == 0
 
 
 def test_only_the_removed_group_channel_is_left_and_unrelated_channels_stay():
@@ -102,7 +114,7 @@ def test_only_the_removed_group_channel_is_left_and_unrelated_channels_stay():
     assert joined(lua, kept)
     for name in UNRELATED:
         assert joined(lua, name), name
-    assert list(lua.eval('__left').values()) == [removed]
+    assert left(lua) == [removed.lower()]
 
 
 def test_leaving_all_groups_never_leaves_unrelated_channels():
@@ -116,44 +128,32 @@ def test_leaving_all_groups_never_leaves_unrelated_channels():
     lua.eval('WoWStatusPopups.tick')()
     for name in UNRELATED:
         assert joined(lua, name), name
-    assert list(lua.eval('__left').values()) == [group_channel(lua, 'navsquad-test')]
+    assert left(lua) == [group_channel(lua, 'navsquad-test').lower()]
 
 
-def test_older_pair_format_channel_list_is_understood():
+def test_a_group_channel_the_player_joined_first_is_not_left():
+    # The addon only leaves what it joined; a channel already joined by hand stays theirs.
     lua = make_lua(CHANNEL_STUBS)
-    lua.execute('__pairsFormat = true')
+    channel = group_channel(lua, 'navsquad-test')
+    lua.eval('JoinTemporaryChannel')(channel)
+    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusPopups.tick')()
+    reload_popups(lua)
+    lua.eval('WoWStatusGroups.update')('', '')
+    assert joined(lua, channel)
+    assert left(lua) == []
+
+
+def test_damaged_saved_channel_list_cannot_name_other_channels():
+    lua = make_lua(CHANNEL_STUBS)
     lua.eval('JoinTemporaryChannel')('General - Dun Morogh')
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
-    lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    lua.eval('JoinTemporaryChannel')('WStatusFriends')
+    lua.execute(DAMAGED_SAVE)
     reload_popups(lua)
-    lua.eval('WoWStatusGroups.update')('', '')
-    assert not joined(lua, channel)
-    assert joined(lua, 'General - Dun Morogh')
-
-
-def test_group_removed_elsewhere_is_left_on_the_next_reload():
-    # Groups are account-wide: another character (or an older addon version) may have
-    # dropped the group while this character's game session kept the channel.
-    lua = make_lua(CHANNEL_STUBS)
-    lua.eval('WoWStatusGroups.update')('navsquad-test\nronkalot-test', '')
-    lua.eval('WoWStatusPopups.tick')()
-    removed, kept = group_channel(lua, 'navsquad-test'), group_channel(lua, 'ronkalot-test')
-    lua.execute(f'''
-        local id = "{removed[len('WStatus'):]}"
-        WoWStatusDB.account_groups[id] = nil
-        for _, saved in pairs(WoWStatusDB.characters) do saved.group_ids[id] = nil end
-    ''')
+    assert lua.eval('savedChannelCount()') == 0
+    lua.execute(OVERSIZED_SAVE)
     reload_popups(lua)
-    assert not joined(lua, removed)
-    assert joined(lua, kept)
-
-
-def test_missing_channel_list_api_falls_back_to_channels_joined_this_session():
-    lua = make_lua(CHANNEL_STUBS)
-    lua.execute('GetChannelList = nil')
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
-    lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    assert lua.eval('savedChannelCount()') == 32
     lua.eval('WoWStatusGroups.update')('', '')
-    assert not joined(lua, channel)
+    assert joined(lua, 'General - Dun Morogh') and joined(lua, 'WStatusFriends')
+    assert lua.eval('savedChannelCount()') == 0
