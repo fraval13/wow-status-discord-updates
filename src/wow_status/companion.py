@@ -39,13 +39,29 @@ def scoped_claim_secret(payload, url):
     return dict(payload, claim_secret=secret)
 
 
+# Characters of encoded JSON gathered before each write in atomic_json.
+WRITE_BATCH = 1 << 20
+
+
 def atomic_json(path, data):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix('.tmp')
+    # The incremental encoder, unlike json.dumps, lets other threads run while it encodes
+    # a large archive. Its many small pieces are written in large batches: a write per
+    # piece released and retook the GIL so often that the event loop waited for it, and
+    # one write of the whole text would hold a second copy of a large archive (#2).
     fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(fd, 'w', encoding='utf-8') as stream:
-        json.dump(data, stream, ensure_ascii=False, indent=2, sort_keys=True)
+        batch, size = [], 0
+        for piece in json.JSONEncoder(ensure_ascii=False, indent=2,
+                                      sort_keys=True).iterencode(data):
+            batch.append(piece)
+            size += len(piece)
+            if size >= WRITE_BATCH:
+                stream.write(''.join(batch))
+                batch, size = [], 0
+        stream.write(''.join(batch))
     os.replace(temp, path)
     if os.name != 'nt':
         path.chmod(0o600)

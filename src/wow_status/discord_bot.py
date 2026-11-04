@@ -23,7 +23,8 @@ class CommunityTree(app_commands.CommandTree):
         if interaction.guild_id != self.client.guild_id:
             # Another instance of this bot may own that server; never race its response.
             return False
-        remember(self.client.store, str(interaction.user.id), interaction.user.display_name)
+        store = self.client.store
+        await store.call(remember, store, str(interaction.user.id), interaction.user.display_name)
         return True
 
     async def on_error(self, interaction, error):
@@ -76,15 +77,17 @@ class StatusBot(discord.Client):
                 self.delivery_error = failure_name(exc)
                 log.exception('Discord delivery failed (%s); restarting it in %d s',
                               self.delivery_error, delay)
-            self.recover_sends()
+            await self.recover_sends()
             await sleep(delay)
             delay = min(delay * 2, DISCORD_RETRY_MAX)
             self.delivery_error = None
 
-    def recover_sends(self):
+    async def recover_sends(self):
         # Stopped mid-send: the message may or may not have posted.
-        if self.store.recover_interrupted_sends():
-            self.store.sync_archives()  # Archives show each delivery's status.
+        def recover():
+            if self.store.recover_interrupted_sends():
+                self.store.sync_archives()  # Archives show each delivery's status.
+        await self.store.call(recover)
 
     async def on_ready(self):
         self.online = True
@@ -113,7 +116,7 @@ class StatusBot(discord.Client):
                     await self.worker
                 except asyncio.CancelledError:
                     pass
-                self.recover_sends()
+                await self.recover_sends()
         finally:
             # A session is retried in the same process, so its HTTP session and
             # gateway must close even when the worker failed.
@@ -122,10 +125,20 @@ class StatusBot(discord.Client):
     def visible(self):
         return [c for c in self.store.characters() if c['settings']['enabled']]
 
+    @staticmethod
+    def matching(chars, name, realm, client):
+        return [c for c in chars if c['identity']['name'].casefold() == name.casefold()
+                and (not realm or c['identity']['realm'].casefold() == realm.casefold())
+                and (not client or c['identity']['client'].casefold() == client.casefold())]
+
     def register_commands(self):
+        # Store work runs through store.call: on the store thread while the service runs,
+        # in order with uploads, so the event loop never waits for SQLite (#2).
+        call = self.store.call
+
         @self.tree.command(name='link', description='Privately link your companion uploader')
         async def link(interaction: discord.Interaction):
-            code = self.store.create_link(str(interaction.user.id))
+            code = await call(self.store.create_link, str(interaction.user.id))
             await interaction.response.send_message(
                 'One-use code (expires in 10 minutes):\n' + f'`{code}`\n'
                 'On your gaming computer open `wow-status desktop` and paste the code to link. '
@@ -133,14 +146,14 @@ class StatusBot(discord.Client):
 
         @self.tree.command(name='characters', description='List characters sharing with this server')
         async def characters(interaction: discord.Interaction):
-            pages = roster_pages(self.store, self.visible())
+            pages = await call(lambda: roster_pages(self.store, self.visible()))
             await interaction.response.send_message(pages[0], ephemeral=True)
             for page in pages[1:]:
                 await interaction.followup.send(page, ephemeral=True)
 
         @self.tree.command(name='roster', description='Show friends, mains and alts with latest uploads')
         async def roster(interaction: discord.Interaction):
-            pages = roster_pages(self.store, self.visible())
+            pages = await call(lambda: roster_pages(self.store, self.visible()))
             await interaction.response.send_message(pages[0], ephemeral=True)
             for page in pages[1:]:
                 await interaction.followup.send(page, ephemeral=True)
@@ -152,7 +165,7 @@ class StatusBot(discord.Client):
                     'Enter a nickname, or reset:True to use your Discord display name.', ephemeral=True)
                 return
             try:
-                nickname(self.store, str(interaction.user.id), None if reset else name)
+                await call(nickname, self.store, str(interaction.user.id), None if reset else name)
             except ValueError:
                 await interaction.response.send_message('Use a name of 1–40 characters.', ephemeral=True)
                 return
@@ -160,16 +173,18 @@ class StatusBot(discord.Client):
 
         @self.tree.command(name='main', description='Choose your main character; your others become alts')
         async def main(interaction: discord.Interaction, name: str, realm: str = '', client: str = ''):
-            matches = [c for c in self.store.characters(str(interaction.user.id))
-                       if c['identity']['name'].casefold() == name.casefold()
-                       and (not realm or c['identity']['realm'].casefold() == realm.casefold())
-                       and (not client or c['identity']['client'].casefold() == client.casefold())]
-            if len(matches) != 1:
+            owner = str(interaction.user.id)
+
+            def choose():
+                matches = self.matching(self.store.characters(owner), name, realm, client)
+                if len(matches) == 1:
+                    set_role(self.store, owner, matches[0]['id'], 'main')
+                return len(matches) == 1
+            if not await call(choose):
                 await interaction.response.send_message(
                     'Choose one of your Discord-linked characters, or mark your main in the addon for ID-joined groups.',
                     ephemeral=True)
                 return
-            set_role(self.store, str(interaction.user.id), matches[0]['id'], 'main')
             await interaction.response.send_message('Main character saved; your others are alts.',
                                                      ephemeral=True)
 
@@ -188,10 +203,13 @@ class StatusBot(discord.Client):
             if mode and mode not in ('celebrations', 'daily_only', 'all'):
                 await interaction.response.send_message('Unknown announcement mode.', ephemeral=True)
                 return
-            if mode:
-                self.store.set_community_setting('immediate_mode', mode)
-            self.store.set_community_setting('level_interval', str(level_interval))
-            self.store.set_community_setting('loot_quality', str(loot_quality))
+
+            def save():
+                if mode:
+                    self.store.set_community_setting('immediate_mode', mode)
+                self.store.set_community_setting('level_interval', str(level_interval))
+                self.store.set_community_setting('loot_quality', str(loot_quality))
+            await call(save)
             await interaction.response.send_message(
                 'Community posting filters saved. Collection history and personal privacy stay separate.',
                 ephemeral=True)
@@ -199,26 +217,27 @@ class StatusBot(discord.Client):
         @self.tree.command(name='character', description='Show a last-uploaded character profile')
         async def character(interaction: discord.Interaction, name: str,
                             realm: str = '', client: str = ''):
-            chars = [c for c in self.visible() if c['identity']['name'].casefold() == name.casefold()
-                     and (not realm or c['identity']['realm'].casefold() == realm.casefold())
-                     and (not client or c['identity']['client'].casefold() == client.casefold())]
-            text = profile(decorate(self.store, chars[0])) if len(chars) == 1 else (
-                'Several characters match. Specify realm and client.' if chars else 'No shared match.')
-            await interaction.response.send_message(text, ephemeral=True)
+            def show():
+                chars = self.matching(self.visible(), name, realm, client)
+                return profile(decorate(self.store, chars[0])) if len(chars) == 1 else (
+                    'Several characters match. Specify realm and client.' if chars else 'No shared match.')
+            await interaction.response.send_message(await call(show), ephemeral=True)
 
         @self.tree.command(name='activity', description='Show recent shared character milestones')
         async def activity(interaction: discord.Interaction, name: str,
                            realm: str = '', client: str = ''):
-            chars = [c for c in self.visible() if c['identity']['name'].casefold() == name.casefold()
-                     and (not realm or c['identity']['realm'].casefold() == realm.casefold())
-                     and (not client or c['identity']['client'].casefold() == client.casefold())]
-            if len(chars) != 1:
+            def recent():
+                chars = self.matching(self.visible(), name, realm, client)
+                if len(chars) != 1:
+                    return None
+                char = decorate(self.store, chars[0])
+                return [announcement(dict(char, **event))
+                        for event in self.store.activity(char['id'])[:8]]
+            lines = await call(recent)
+            if lines is None:
                 await interaction.response.send_message(
                     'Specify a unique shared name, realm and client.', ephemeral=True)
                 return
-            char = decorate(self.store, chars[0])
-            lines = [announcement(dict(char, **event))
-                     for event in self.store.activity(char['id'])[:8]]
             await interaction.response.send_message(
                 fit_lines(lines, 1900, '\n\n') or 'No recent shared activity.', ephemeral=True)
 
@@ -239,18 +258,21 @@ class StatusBot(discord.Client):
                     'a future enrollment can introduce the character again.', ephemeral=True)
                 return
             if action == 'delete':
-                self.store.delete(owner)
+                await call(self.store.delete, owner)
                 text = 'Stored characters, events, credentials and link codes deleted.'
             elif action == 'pause':
-                self.store.pause(owner)
-                with self.store.db:
-                    self.store.db.execute('DELETE FROM installations WHERE owner=?', (owner,))
-                    self.store.db.execute('DELETE FROM links WHERE owner=?', (owner,))
+                def pause():
+                    # One store call, so no upload with the old credentials lands between.
+                    self.store.pause(owner)
+                    with self.store.db:
+                        self.store.db.execute('DELETE FROM installations WHERE owner=?', (owner,))
+                        self.store.db.execute('DELETE FROM links WHERE owner=?', (owner,))
+                await call(pause)
                 text = ('Sharing paused, queued messages removed, uploader credentials revoked. '
                         'Pause the addon too. To resume, link again and export current settings.')
             else:
                 lines = []
-                for char in self.store.characters(owner):
+                for char in await call(self.store.characters, owner):
                     settings = char['settings']
                     fields = ', '.join(k for k, v in settings['fields'].items() if v) or 'none'
                     events = ', '.join(k for k, v in settings['announcements'].items() if v) or 'none'
@@ -267,130 +289,162 @@ class StatusBot(discord.Client):
                 text = (fit_lines(lines, 1900 - len(notice)) if lines else 'No uploaded characters.') + notice
             await interaction.response.send_message(text, ephemeral=True)
 
+    def schedule(self):
+        self.recaps.schedule()
+        self.weekly.schedule()
+        self.standings.prepare()
+
+    def claim(self, delivery_id, emojis):
+        """Re-read a delivery and mark it as sending, in one store call, so no upload or
+        privacy change lands between the check and the mark; then build its message."""
+        current = self.store.pending(ready_only=True)
+        if current is None or current['delivery_id'] != delivery_id:
+            return None
+        items = self.store.summary_items(current)
+        if not items:
+            return None
+        self.store.deliver_many(items, 'sending')
+        content = (upload_summary(items, emojis) if current['settings'].get('discord_delivery') == 'summary'
+                   else announcement_message(self.store, current, emojis))
+        return items, content
+
     async def deliver(self):
         await self.wait_until_ready()
+        call = self.store.call
         last_schedule, last_recap = 0, 0
         while not self.is_closed():
             if time.time() - last_schedule > 30:
-                self.recaps.schedule()
-                self.weekly.schedule()
-                self.standings.prepare()
+                await call(self.schedule)
                 last_schedule = time.time()
             # A continuous upload backlog must not starve scheduled summaries.
-            if time.time() - last_recap >= 60 and self.store.can_post():
+            if time.time() - last_recap >= 60 and await call(self.store.can_post):
                 await self.deliver_recap()
                 await self.deliver_recap(self.weekly)
                 await self.deliver_standings()
                 last_recap = time.time()
-            item = self.store.pending(ready_only=True)
+            item = await call(self.store.pending, ready_only=True)
             if not item:
                 await self.deliver_recap()
                 await self.deliver_recap(self.weekly)
                 await asyncio.sleep(2)
                 continue
             delivery_id = item['delivery_id']
-            items = self.store.summary_items(item)
+            items = await call(self.store.summary_items, item)
             try:
                 channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
                 if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
-                    self.store.deliver_many(items, 'failed')
+                    await call(self.store.deliver_many, items, 'failed')
                     log.error('Announcement channel does not belong to configured server')
                     continue
                 # Re-read after network await so privacy changes cancel pending messages.
-                current = self.store.pending(ready_only=True)
-                if current is None or current['delivery_id'] != delivery_id:
+                claimed = await call(self.claim, delivery_id, self.custom_emojis())
+                if claimed is None:
                     continue
-                items = self.store.summary_items(current)
-                if not items:
-                    continue
-                self.store.deliver_many(items, 'sending')
-                content = (upload_summary(items, self.custom_emojis()) if current['settings'].get('discord_delivery') == 'summary'
-                           else announcement_message(self.store, current, self.custom_emojis()))
+                items, content = claimed
                 message = await channel.send(**content, allowed_mentions=discord.AllowedMentions.none())
-                self.store.deliver_many(items, 'sent', message_id=str(message.id))
+                await call(self.store.deliver_many, items, 'sent', message_id=str(message.id))
             except discord.Forbidden:
-                self.store.deliver_many(items, 'failed')
+                await call(self.store.deliver_many, items, 'failed')
                 log.error('Discord denied channel access; fix permissions then resolve the delivery')
             except discord.HTTPException as exc:
                 if exc.status == 429:
-                    self.store.deliver_many(items, 'pending', delay=60)
+                    await call(self.store.deliver_many, items, 'pending', delay=60)
                 else:
-                    self.store.deliver_many(items, 'uncertain' if exc.status >= 500 else 'failed')
+                    await call(self.store.deliver_many, items,
+                               'uncertain' if exc.status >= 500 else 'failed')
             except (OSError, asyncio.TimeoutError):
-                self.store.deliver_many(items, 'uncertain')
+                await call(self.store.deliver_many, items, 'uncertain')
             await asyncio.sleep(1)
 
+    def claim_recap(self, recaps, key):
+        """Refresh a recap after awaits and mark it as sending, in one store call: data
+        removal must also affect queued recaps."""
+        current = recaps.pending()
+        if current is None or current['key'] != key:
+            return None
+        self.store.reserve_post()
+        recaps.delivery(key, 'sending')
+        return current
+
     async def deliver_recap(self, recaps=None):
-        if not self.store.can_post():
+        call = self.store.call
+        if not await call(self.store.can_post):
             return
         recaps = recaps or self.recaps
-        item = recaps.pending()
+        item = await call(recaps.pending)
         if item is None:
             return
         key = item['key']
         try:
             channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
             if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
-                recaps.delivery(key, 'failed')
+                await call(recaps.delivery, key, 'failed')
                 return
-            # Refresh all content after awaits: data removal must also affect queued recaps.
-            current = recaps.pending()
-            if current is None or current['key'] != key:
+            current = await call(self.claim_recap, recaps, key)
+            if current is None:
                 return
-            self.store.reserve_post()
-            recaps.delivery(key, 'sending')
             message = await channel.send(emoji('recap', self.custom_emojis()) + ' ' + current['text'],
                                          allowed_mentions=discord.AllowedMentions.none())
-            recaps.delivery(key, 'sent', str(message.id))
+            await call(recaps.delivery, key, 'sent', str(message.id))
         except discord.Forbidden:
-            recaps.delivery(key, 'failed')
+            await call(recaps.delivery, key, 'failed')
         except discord.HTTPException as exc:
             if exc.status == 429:
-                recaps.delivery(key, 'pending', delay=60)
+                await call(recaps.delivery, key, 'pending', delay=60)
             else:
-                recaps.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
+                await call(recaps.delivery, key, 'uncertain' if exc.status >= 500 else 'failed')
         except (OSError, asyncio.TimeoutError):
-            recaps.delivery(key, 'uncertain')
+            await call(recaps.delivery, key, 'uncertain')
+
+    def claim_standings(self, key, emojis):
+        """Re-read the report and mark it as sending, in one store call, so a withdrawal
+        cancels the unsent report; then build its pages."""
+        current = self.standings.pending()
+        if current is None or current['key'] != key:
+            return None
+        name = self.store.db.execute(
+            "SELECT value FROM meta WHERE key='active_group_name'").fetchone()
+        pages = daily_status_message(current['rows'], current['cutoff'],
+                                     name['value'] if name else None, emojis)
+        self.store.reserve_post()
+        self.standings.delivery(key, 'sending')
+        return pages
 
     async def deliver_standings(self):
         """One frozen cumulative report per group day; never a repeat of unchanged standings."""
-        if not self.store.can_post():
+        call = self.store.call
+        if not await call(self.store.can_post):
             return
-        item = self.standings.pending()
+        item = await call(self.standings.pending)
         if item is None:
             return
         key = item['key']
         try:
             channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
             if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
-                self.standings.delivery(key, 'failed')
+                await call(self.standings.delivery, key, 'failed')
                 log.error('Status channel does not belong to configured server')
                 return
             # Re-read after the network await so a withdrawal cancels the unsent report.
-            current = self.standings.pending()
-            if current is None or current['key'] != key:
+            pages = await call(self.claim_standings, key, self.custom_emojis())
+            if pages is None:
                 return
-            name = self.store.db.execute(
-                "SELECT value FROM meta WHERE key='active_group_name'").fetchone()
-            pages = daily_status_message(current['rows'], current['cutoff'],
-                                         name['value'] if name else None, self.custom_emojis())
-            self.store.reserve_post()
-            self.standings.delivery(key, 'sending')
             sent = []
             for page in pages:
                 message = await channel.send(**page, allowed_mentions=discord.AllowedMentions.none())
                 sent.append(str(message.id))
-            self.standings.delivery(key, 'sent', sent)
+            await call(self.standings.delivery, key, 'sent', sent)
         except discord.Forbidden:
-            self.standings.delivery(key, 'failed')
+            await call(self.standings.delivery, key, 'failed')
             log.error('Discord denied channel access for the daily status report')
         except discord.HTTPException as exc:
             if exc.status == 429:
-                self.standings.delivery(key, 'pending', delay=60)
+                await call(self.standings.delivery, key, 'pending', delay=60)
             else:
-                self.standings.delivery(key, 'uncertain' if exc.status >= 500 else 'failed')
+                await call(self.standings.delivery, key, 'uncertain' if exc.status >= 500 else 'failed')
         except (OSError, asyncio.TimeoutError):
-            self.standings.delivery(key, 'uncertain')
+            await call(self.standings.delivery, key, 'uncertain')
+
 
 def session(store, guild_id, channel_id, token):
     """One Discord session per call, for ``server.run_discord`` to supervise."""

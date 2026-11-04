@@ -80,6 +80,15 @@ build/interface metadata is preserved when provided by the addon.
 All data is player-reported; the server records first upload time separately from
 the player's game timestamp.
 
+The database is the source of truth, and each character file is rebuilt from it. While
+the service runs, a background thread rebuilds a file shortly after its data changes,
+so it can lag the database by a moment. A change that withdraws data (pausing, hiding a
+field, or turning off a collection category or sharing) rewrites the file before it is
+answered, and deleting removes the file at once. A shutdown doesn't wait for files that
+are still waiting for a rebuild, because every file is rebuilt once at startup.
+An upload that changes nothing, such as a retry, writes nothing, so
+`profile.last_uploaded_at` is the time of the last upload that changed stored data.
+
 ## Collection and posting are separate
 
 The addon has separate columns for **Store events / daily recap** and **Immediate

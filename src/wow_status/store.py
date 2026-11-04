@@ -1,14 +1,40 @@
 """Transactional enrollment, privacy, deduplication and announcement outbox."""
+import asyncio
+import functools
 import hashlib
 import hmac
 import json
 import secrets
 import sqlite3
+import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from . import limits
+from .archive import ArchiveWriter, archived_bytes, event_entry, snapshot_entry
 from .schema import STATUS_FIELDS, ValidationError, should_announce, validate
+
+# Settings that decide which stored snapshot fields and event data may be kept.
+PRIVACY_FLAGS = ('enabled', 'introduction_confirmed')
+PRIVACY_SECTIONS = ('fields', 'collection', 'announcements')
+
+
+def narrows_privacy(old, new):
+    """Whether ``new`` stops sharing something ``old`` allowed. Only then can stored
+    history contain data that must be scrubbed: validate() never adds data back, so
+    re-filtering under equal or wider settings keeps everything as it is (#2). A value
+    missing from ``old`` counts as allowed."""
+    if any(new[key] is False and old.get(key) is not False for key in PRIVACY_FLAGS):
+        return True
+    return any(allowed is False and (old.get(section) or {}).get(key) is not False
+               for section in PRIVACY_SECTIONS for key, allowed in new[section].items())
+
+
+def sqlite_bytes(cid, event_id, value):
+    """Rough SQLite growth for one stored row: its JSON plus the character and event
+    keys, which the table and its two indexes each repeat."""
+    return len(json.dumps(value).encode('utf-8')) + 3 * len(cid) + 2 * len(event_id)
 
 
 class Conflict(ValidationError):
@@ -18,10 +44,15 @@ class Conflict(ValidationError):
 class Store:
     def __init__(self, path):
         Path(path).parent.mkdir(parents=True, exist_ok=True)
+        self.path = Path(path)
         self.archive_directory = Path(path).parent / (Path(path).stem + '-characters')
-        self.db = sqlite3.connect(path)
-        self.db.row_factory = sqlite3.Row
-        self.db.execute('PRAGMA foreign_keys=ON')
+        self._local = threading.local()
+        self._connections = set()
+        self._connections_lock = threading.Lock()
+        self._executor = None
+        self._pending = set()  # store calls queued or running; touched on the loop thread only
+        self._closed = False
+        self.archives = ArchiveWriter(self)
         self.db.execute('PRAGMA journal_mode=WAL')
         self.db.executescript('''
         CREATE TABLE IF NOT EXISTS resource_usage(
@@ -118,14 +149,105 @@ class Store:
                         self.db.execute('INSERT OR IGNORE INTO level_claims VALUES(?,?)',
                             (row['character'], self.level_claim(data)))
                 self.db.execute("INSERT INTO meta VALUES('level_claims_v1','1')")
-        self.sync_archives()
+        # Archives are rebuilt once when the service starts (server.create_app), off the
+        # event loop, not on every open (#2). Orphans are cheap to remove here.
         known = {char['id'] for char in self.characters()}
         for archive in self.archive_directory.glob('*.json'):
             if archive.stem not in known:
                 self.drop_archive(archive.stem)
 
+    @property
+    def db(self):
+        """This thread's SQLite connection. Each thread gets its own, so the store thread
+        and the archive thread never share a connection or a transaction with the event
+        loop's thread."""
+        db = getattr(self._local, 'db', None)
+        if db is None:
+            if self._closed:
+                raise sqlite3.ProgrammingError('Cannot operate on a closed database.')
+            # check_same_thread=False only lets close() close another thread's leftover
+            # connection; each connection is still used by its own thread alone.
+            db = sqlite3.connect(self.path, check_same_thread=False)
+            db.row_factory = sqlite3.Row
+            db.execute('PRAGMA foreign_keys=ON')
+            with self._connections_lock:
+                self._connections.add(db)
+            self._local.db = db
+        return db
+
+    def close_thread_connection(self):
+        db = getattr(self._local, 'db', None)
+        if db is not None:
+            self._local.db = None
+            with self._connections_lock:
+                self._connections.discard(db)
+            db.close()
+
+    def start_background(self):
+        """Move store work and archive rebuilds off the event loop while the service runs:
+        ``call`` then runs work on one store thread, in order, and marked archives are
+        rebuilt by the archive thread."""
+        if self._executor is None:
+            self._executor = ThreadPoolExecutor(1, thread_name_prefix='wow-status-store')
+        self.archives.start()
+
+    def stop_background(self):
+        """Finish queued store work and the archive rebuild in progress; later calls run
+        inline. Outside the event loop only: on it, ``stop_background_from_loop``."""
+        executor, self._executor = self._executor, None
+        self._shut_down(executor)
+
+    def _shut_down(self, executor):
+        if executor is not None:
+            executor.submit(self.close_thread_connection)
+            executor.shutdown(wait=True)
+        self.archives.stop()
+
+    async def stop_background_from_loop(self):
+        """Stop the background threads from the event loop that makes the calls.
+
+        Queued store work finishes first, while the store thread still takes new calls:
+        once it is gone, a call runs inline, and it must never run beside one still queued.
+        The threads are then joined off the loop."""
+        while self._pending:
+            await asyncio.wait(set(self._pending))
+        # Nothing is queued, and no call can start before this line: no await since the check.
+        executor, self._executor = self._executor, None
+        await asyncio.to_thread(self._shut_down, executor)
+
+    async def call(self, function, *args, **kwargs):
+        """Run ``function`` on the store thread, or inline when it isn't running.
+
+        One thread runs every call in the order they arrive, so a call is atomic towards
+        every other call, as the single event loop thread made it before (#2). Work that
+        must not interleave with an upload, such as re-checking a delivery before marking
+        it as sending, belongs in one call."""
+        if self._executor is None:
+            return function(*args, **kwargs)
+        future = asyncio.get_running_loop().run_in_executor(
+            self._executor, functools.partial(function, *args, **kwargs))
+        # Once queued, store work runs to the end even if the caller is cancelled, as a
+        # synchronous call did: a shutdown must not drop the record of a posted message.
+        self._pending.add(future)
+        future.add_done_callback(self._settled)
+        return await asyncio.shield(future)
+
+    def _settled(self, future):
+        self._pending.discard(future)
+        if not future.cancelled():
+            future.exception()  # retrieved, so a cancelled caller logs no warning
+
+    def flush_archives(self):
+        self.archives.flush()
+
     def close(self):
-        self.db.close()
+        self.stop_background()
+        self._closed = True
+        with self._connections_lock:
+            connections, self._connections = self._connections, set()
+        self._local.db = None
+        for db in connections:
+            db.close()
 
     def recover_interrupted_sends(self):
         """A process or bot session that ended after sending, but before recording
@@ -213,7 +335,12 @@ class Store:
         p = validate(payload)
         cid = self.character_id(p['identity'])
         now = int(time.time())
+        # Whether the archive needs a rebuild: an upload that changes nothing writes
+        # nothing, so a retry costs no archive rewrite (#2).
+        rebuild = False
         with self.db:
+            # Read and write in one write transaction, even if another connection writes.
+            self.db.execute('BEGIN IMMEDIATE')
             old = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
             if not old and not p['settings']['enabled']:
                 return {'character_id': cid, 'accepted': 0}
@@ -244,42 +371,75 @@ class Store:
                                 (cid, old['owner']))
             # Any later rejection inside this transaction rolls the label back too.
             renamed = name is not None and store_name(self.db, owner, *name)
-            self.db.execute('''INSERT INTO characters(id,owner,identity,settings,snapshot,exported,uploaded) VALUES(?,?,?,?,?,?,?)
-                ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,identity=excluded.identity,
-                settings=excluded.settings,snapshot=excluded.snapshot,
-                exported=excluded.exported,uploaded=excluded.uploaded''',
-                (cid, owner, json.dumps(p['identity']), json.dumps(p['settings']),
-                 json.dumps(p['snapshot']), p['exported_at'], now))
+            old_settings = json.loads(old['settings']) if old else None
+            row_written = (not old or takeover or old_settings != p['settings']
+                           or json.loads(old['identity']) != p['identity']
+                           or json.loads(old['snapshot']) != p['snapshot']
+                           or old['exported'] != p['exported_at'])
+            if row_written:
+                rebuild = True
+                self.db.execute('''INSERT INTO characters(id,owner,identity,settings,snapshot,exported,uploaded) VALUES(?,?,?,?,?,?,?)
+                    ON CONFLICT(id) DO UPDATE SET owner=excluded.owner,identity=excluded.identity,
+                    settings=excluded.settings,snapshot=excluded.snapshot,
+                    exported=excluded.exported,uploaded=excluded.uploaded''',
+                    (cid, owner, json.dumps(p['identity']), json.dumps(p['settings']),
+                     json.dumps(p['snapshot']), p['exported_at'], now))
             if proof:
                 # The current owner's latest secret wins, e.g. after a SavedVariables reset.
                 self.db.execute('INSERT INTO character_claims VALUES(?,?) ON CONFLICT(character) '
-                                'DO UPDATE SET secret_hash=excluded.secret_hash', (cid, proof))
+                                'DO UPDATE SET secret_hash=excluded.secret_hash '
+                                'WHERE secret_hash<>excluded.secret_hash', (cid, proof))
             if (not p['settings']['enabled'] or not p['settings']['fields']['level']
                     or not p['settings']['collection']['level']):
-                self.db.execute('DELETE FROM level_tracking WHERE character=?', (cid,))
+                rebuild |= self.db.execute('DELETE FROM level_tracking WHERE character=?',
+                                           (cid,)).rowcount > 0
             elif 'tracking' in p:
-                self.db.execute('INSERT OR REPLACE INTO level_tracking VALUES(?,?)',
-                                (cid, json.dumps(p['tracking'])))
+                tracking = json.dumps(p['tracking'])
+                rebuild |= self.db.execute(
+                    'INSERT INTO level_tracking VALUES(?,?) ON CONFLICT(character) '
+                    'DO UPDATE SET data=excluded.data WHERE data<>excluded.data',
+                    (cid, tracking)).rowcount > 0
             # Archive each distinct consented export; retries do not create extra history.
             snapshot_id = self.digest(json.dumps([cid, p['exported_at'], p['snapshot'],
                                                   p['settings']], sort_keys=True))
             snapshot_added = self.db.execute('INSERT OR IGNORE INTO snapshots VALUES(?,?,?,?,?,?)',
                             (snapshot_id, cid, p['exported_at'], now,
                              json.dumps(p['snapshot']), json.dumps(p['settings']))).rowcount
+            rebuild |= bool(snapshot_added)
+            # Only a narrowing change can leave stored data that must go, so other setting
+            # changes skip re-validating the whole history (#2).
+            scrub = old is not None and narrows_privacy(old_settings, p['settings'])
             # Privacy changes scrub old snapshots too, without discarding permitted history.
-            if old and json.loads(old['settings']) != p['settings']:
+            if scrub:
+                rebuild = True
+                # Tracking points are not part of a snapshot; don't re-validate them each time.
+                current = {key: value for key, value in p.items() if key != 'tracking'}
                 for row in self.db.execute('SELECT * FROM snapshots WHERE character=?', (cid,)).fetchall():
                     old_snapshot = json.loads(row['snapshot'])
-                    kept = validate(dict(p, snapshot=old_snapshot, events=[]))['snapshot']
+                    kept = validate(dict(current, snapshot=old_snapshot, events=[]))['snapshot']
                     self.db.execute('UPDATE snapshots SET snapshot=? WHERE id=?',
                                     (json.dumps(kept), row['id']))
             if not p['settings']['enabled']:
-                self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
-                                "AND status IN ('pending','uncertain','failed')", (cid,))
-                self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? "
-                                "AND status IN ('pending','uncertain','failed')", (cid,))
+                rebuild |= self.db.execute(
+                    "UPDATE digest_parts SET status='discarded' WHERE character=? "
+                    "AND status IN ('pending','uncertain','failed')", (cid,)).rowcount > 0
+                rebuild |= self.db.execute(
+                    "UPDATE weekly_parts SET status='discarded' WHERE character=? "
+                    "AND status IN ('pending','uncertain','failed')", (cid,)).rowcount > 0
+            if old and not scrub and old_settings != p['settings']:
+                # Stored data stays as it is, but an announcement setting may have changed:
+                # recheck only what is still waiting to be posted.
+                for row in self.db.execute('''SELECT o.event_id,e.kind,e.data FROM outbox o
+                        JOIN events e ON e.character=o.character AND e.id=o.event_id
+                        WHERE o.character=? AND e.suppressed=0
+                        AND o.status NOT IN ('sent','simulated')''', (cid,)).fetchall():
+                    event = {'kind': row['kind'], 'data': json.loads(row['data'])}
+                    if not self.should_announce(p['settings'], event):
+                        rebuild = True
+                        self.db.execute("DELETE FROM outbox WHERE character=? AND event_id=? "
+                                        "AND status NOT IN ('sent','simulated')", (cid, row['event_id']))
             # Purge disabled categories and hidden event data, including already delivered history.
-            if old and json.loads(old['settings']) != p['settings']:
+            if scrub:
                 for row in self.db.execute('SELECT * FROM events WHERE character=?', (cid,)).fetchall():
                     if row['suppressed']:
                         continue
@@ -319,6 +479,7 @@ class Store:
                     (SELECT 1 FROM outbox_batches b JOIN outbox o ON o.id=b.delivery
                      WHERE b.owner=upload_receipts.owner AND b.batch=upload_receipts.batch AND o.status='pending')''',
                     (now - 604800,))
+            queued = {'status': 'pending', 'attempts': 0, 'message_id': None}
             for event in p['events']:
                 eid = 'introduction' if event['kind'] == 'introduction' else event['id']
                 claim = self.level_claim(event['data']) if event['kind'] == 'level' else None
@@ -327,11 +488,15 @@ class Store:
                     continue
                 inserted = self.db.execute('INSERT OR IGNORE INTO events(character,id,kind,at,received,data) VALUES(?,?,?,?,?,?)',
                     (cid, eid, event['kind'], event['at'], now, json.dumps(event['data']))).rowcount
+                announce = inserted and self.should_announce(p['settings'], event)
                 if inserted:
-                    new_bytes += len(json.dumps(event).encode('utf-8'))
+                    # Charged by what is stored: the row and its archive entry (#2).
+                    new_bytes += sqlite_bytes(cid, eid, event) + archived_bytes(event_entry(
+                        eid, event['at'], now, event['data'], p['identity']['client'],
+                        queued if announce else None))
                     if claim:
                         self.db.execute('INSERT INTO level_claims VALUES(?,?)', (cid, claim))
-                if inserted and self.should_announce(p['settings'], event):
+                if announce:
                     cursor = self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)', (cid, eid))
                     if batch:
                         self.db.execute('INSERT INTO outbox_batches VALUES(?,?,?)',
@@ -348,21 +513,35 @@ class Store:
                         (cid,eid,'status',p['exported_at'],now,json.dumps(status_event['data']))).rowcount
                     if added:
                         accepted += 1
-                        new_bytes += 160
+                        new_bytes += sqlite_bytes(cid, eid, status_event) + archived_bytes(event_entry(
+                            eid, p['exported_at'], now, status_event['data'],
+                            p['identity']['client'], queued))
                         cursor = self.db.execute('INSERT INTO outbox(character,event_id) VALUES(?,?)',(cid,eid))
                         self.db.execute('INSERT INTO outbox_batches VALUES(?,?,?)',(cursor.lastrowid,owner,batch))
+            rebuild |= accepted > 0
             if batch:
                 # A newer complete export also absorbs any older unsent backlog for
                 # this character, including legacy per-event and incomplete batches.
                 self.db.execute("""INSERT OR REPLACE INTO outbox_batches(delivery,owner,batch)
                     SELECT id,?,? FROM outbox WHERE character=? AND status='pending'""", (owner, batch, cid))
-                self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? AND status='pending'", (cid,))
-                self.db.execute("UPDATE weekly_parts SET status='discarded' WHERE character=? AND status='pending'", (cid,))
+                rebuild |= self.db.execute(
+                    "UPDATE digest_parts SET status='discarded' WHERE character=? AND status='pending'",
+                    (cid,)).rowcount > 0
+                rebuild |= self.db.execute(
+                    "UPDATE weekly_parts SET status='discarded' WHERE character=? AND status='pending'",
+                    (cid,)).rowcount > 0
+            if rebuild and not row_written:
+                # New events in an unchanged export (e.g. a later part of a batch) still
+                # move the upload time; only an upload that changes nothing leaves it.
+                self.db.execute('UPDATE characters SET uploaded=? WHERE id=?', (now, cid))
             # A retry costs no storage budget. Disabled-sharing uploads can always scrub
             # retained data even after the owner's daily growth budget has been exhausted.
             if p['settings']['enabled']:
-                new_bytes += len(json.dumps({k: p[k] for k in
-                    ('identity', 'snapshot', 'settings', 'exported_at')}).encode('utf-8')) if snapshot_added else 0
+                if snapshot_added:
+                    stored = {k: p[k] for k in ('identity', 'snapshot', 'settings', 'exported_at')}
+                    new_bytes += sqlite_bytes(cid, snapshot_id, stored) + archived_bytes(
+                        snapshot_entry(snapshot_id, p['exported_at'], now, p['snapshot'],
+                                       p['settings']))
                 limits.charge(self.db, [
                     ('characters:' + owner, limits.NEW_CHARACTERS_PER_OWNER_DAY, 86400,
                      int(old is None or takeover)),
@@ -383,10 +562,14 @@ class Store:
             not old_role or (old_role['source'] == 'addon' and old_role['role'] != role))
         if role_changed:
             set_role(self, owner, cid, role, source='addon', sync=False)
+        # Withdrawn data leaves the archive before the upload is answered, not soon after.
+        urgent = rebuild and (scrub or not p['settings']['enabled'])
         # A new label shows on every owner archive; a new main also demotes the siblings.
         if renamed or (role_changed and role == 'main'):
-            self.sync_owner_archives(owner)
-        else:
+            self.sync_owner_archives(owner, now=urgent)
+        elif urgent:
+            self.rewrite_archive(cid)
+        elif rebuild or role_changed:
             self.sync_archive(cid)
         return {'character_id': cid, 'accepted': accepted}
 
@@ -424,10 +607,11 @@ class Store:
                 self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (char['id'],))
                 self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=?", (char['id'],))
+        # Paused data leaves the archive before the pause is answered.
         if cid:
-            self.sync_archive(cid)
+            self.rewrite_archive(cid)
         else:
-            self.sync_owner_archives(owner)
+            self.sync_owner_archives(owner, now=True)
 
     def delete(self, owner):
         ids = [char['id'] for char in self.characters(owner)]
@@ -453,7 +637,7 @@ class Store:
                                (cid, owner)).fetchone() is not None
 
     def drop_archive(self, cid):
-        (self.archive_directory / f'{cid}.json').unlink(missing_ok=True)
+        self.archives.drop(cid)
 
     def character(self, cid):
         row = self.db.execute('SELECT * FROM characters WHERE id=?', (cid,)).fetchone()
@@ -521,12 +705,19 @@ class Store:
                  'characters': row['characters'], 'paused': bool(row['paused'])} for row in rows]
 
     def sync_archive(self, cid):
-        from .archive import write_character
-        write_character(self, cid)
+        """Bring a character's archive up to date: at once, or soon on the archive thread
+        while the service runs (#2)."""
+        self.archives.mark(cid)
 
-    def sync_owner_archives(self, owner):
+    def rewrite_archive(self, cid):
+        """Rebuild a character's archive at once, even while the archive thread runs: data
+        a change withdraws must leave the file before the change is answered."""
+        self.archives.mark(cid, now=True)
+
+    def sync_owner_archives(self, owner, now=False):
+        sync = self.rewrite_archive if now else self.sync_archive
         for char in self.characters(owner):
-            self.sync_archive(char['id'])
+            sync(char['id'])
 
     def sync_archives(self):
         for char in self.characters():

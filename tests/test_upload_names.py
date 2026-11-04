@@ -44,6 +44,7 @@ def display_name(store, owner):
 
 
 def archived_name(store, cid):
+    store.flush_archives()  # The running service writes archives on its archive thread.
     document = json.loads((store.archive_directory / f'{cid}.json').read_text(encoding='utf-8'))
     return document['character']['friend']['display_name']
 
@@ -75,10 +76,12 @@ async def test_conflicting_upload_does_not_persist_player_name_or_rewrite_archiv
     assert accepted.status == 200
     cid = (await accepted.json())['character_id']
     archive = store.archive_directory / f'{cid}.json'
+    store.flush_archives()
     before = archive.read_bytes()
     stale = group_payload(payload, player_name='Impersonated', exported_at=payload['exported_at'] - 60)
     assert (await client.post('/v1/upload', json=stale, headers=headers)).status == 409
     assert display_name(store, owner) == ('Thora', 'addon')
+    store.flush_archives()
     assert archive.read_bytes() == before
 
 

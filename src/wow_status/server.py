@@ -137,7 +137,6 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
                 raise ValueError('Group name collision: use a different database/name')
             with store.db:
                 store.db.execute("INSERT OR REPLACE INTO meta VALUES('active_group_name',?)", (name,))
-        store.sync_archives()
 
     @web.middleware
     async def errors(request, handler):
@@ -161,6 +160,17 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
 
     app = web.Application(client_max_size=256_000, middlewares=[errors])
 
+    async def background(app):
+        # While the service runs, SQLite work and archive rebuilds happen on the store and
+        # archive threads, so a large upload never stalls /health or the Discord bot (#2).
+        store.start_background()
+        # The one full rebuild at startup (new code or a renamed group), on the archive thread.
+        await store.call(store.sync_archives)
+        yield
+        await store.stop_background_from_loop()
+
+    app.cleanup_ctx.append(background)
+
     def client_ip(request):
         # Only an explicitly trusted local reverse proxy may supply this header.
         remote = request.remote or 'unknown'
@@ -172,9 +182,11 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
                 pass
         return remote
 
-    def throttle(request, operation, count, seconds):
-        key = store.digest(throttle_identity(client_ip(request)))
-        store.request_budget(operation + ':' + key, count, seconds)
+    def address_scope(request, operation):
+        return operation + ':' + store.digest(throttle_identity(client_ip(request)))
+
+    async def throttle(request, operation, count, seconds):
+        await store.call(store.request_budget, address_scope(request, operation), count, seconds)
 
     def authenticated_budget(owner, operation):
         count = limits.PRIVACY_PER_MINUTE if operation == 'privacy' else limits.UPLOADS_PER_MINUTE
@@ -186,14 +198,14 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
                                   **discord_state(discord)})
 
     async def redeem(request):
-        throttle(request, 'link', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
+        await throttle(request, 'link', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
         body = await request.json()
         if not isinstance(body, dict):
             raise ValidationError('Expected an object')
         code = body.get('code')
         if not isinstance(code, str) or len(code) > 100:
             raise ValidationError('Invalid code')
-        return web.json_response({'token': store.redeem(code)},
+        return web.json_response({'token': await store.call(store.redeem, code)},
                                  headers={'Cache-Control': 'no-store'})
 
     def correct_group(request):
@@ -201,7 +213,7 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
         return group is not None and hmac.compare_digest(value.encode(), group.encode())
 
     async def enroll_group(request):
-        throttle(request, 'enroll', limits.ENROLLMENTS_PER_IP_HOUR, 3600)
+        await throttle(request, 'enroll', limits.ENROLLMENTS_PER_IP_HOUR, 3600)
         if not correct_group(request):
             raise web.HTTPForbidden()
         body = await request.json()
@@ -212,69 +224,90 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
         owner = 'group:' + secrets.token_urlsafe(12)
         player = body.get('player_name') or ('Friend ' + owner[-6:])
         string(player, 'player name', 40)
-        store.request_budget('enroll:group', limits.ENROLLMENTS_PER_GROUP_DAY, 86400)
-        token = store.redeem(store.create_link(owner))
-        remember(store, owner, player, source='addon' if body.get('player_name') else 'unavailable')
-        return web.json_response({'token': token, 'owner': owner},
+
+        def enroll():
+            store.request_budget('enroll:group', limits.ENROLLMENTS_PER_GROUP_DAY, 86400)
+            token = store.redeem(store.create_link(owner))
+            remember(store, owner, player, source='addon' if body.get('player_name') else 'unavailable')
+            return token
+        return web.json_response({'token': await store.call(enroll), 'owner': owner},
                                  headers={'Cache-Control': 'no-store'})
 
-    def authenticate(request):
+    async def authenticate(request, operation):
+        """The installation owner and token, with the owner's request budget charged."""
         header = request.headers.get('Authorization', '')
         if not header.startswith('Bearer ') or len(header) > 200:
-            throttle(request, 'invalid-auth', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
+            await throttle(request, 'invalid-auth', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
             raise web.HTTPUnauthorized()
         if group is not None and not correct_group(request):
             raise web.HTTPForbidden()
-        owner = store.owner(header[7:])
+
+        failures = address_scope(request, 'invalid-auth')
+
+        def lookup():
+            owner = store.owner(header[7:])
+            if owner is None:
+                store.request_budget(failures, limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
+            else:
+                authenticated_budget(owner, operation)
+            return owner
+        owner = await store.call(lookup)
         if owner is None:
-            throttle(request, 'invalid-auth', limits.AUTH_FAILURES_PER_IP_MINUTE, 60)
             raise web.HTTPUnauthorized()
         return owner, header[7:]
 
     async def privacy(request):
         if group is None:
             raise web.HTTPNotFound()
-        owner, token = authenticate(request)
-        authenticated_budget(owner, 'privacy')
+        owner, token = await authenticate(request, 'privacy')
         body = await request.json()
-        if store.owner(token) != owner:
-            raise web.HTTPUnauthorized()
         action = body.get('action') if isinstance(body, dict) else None
-        if action == 'pause':
-            store.pause(owner)
-            with store.db:
-                store.db.execute('INSERT OR IGNORE INTO group_pauses VALUES(?)', (owner,))
-        elif action == 'resume':
-            with store.db:
-                store.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
-        elif action == 'delete':
-            store.delete(owner)
-        else:
-            raise ValidationError('Invalid privacy action')
+
+        def apply():
+            # Re-checked in the same store call as the change, so a credential revoked
+            # while the body arrived can't act.
+            if store.owner(token) != owner:
+                raise web.HTTPUnauthorized()
+            if action == 'pause':
+                store.pause(owner)
+                with store.db:
+                    store.db.execute('INSERT OR IGNORE INTO group_pauses VALUES(?)', (owner,))
+            elif action == 'resume':
+                with store.db:
+                    store.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
+            elif action == 'delete':
+                store.delete(owner)
+            else:
+                raise ValidationError('Invalid privacy action')
+        await store.call(apply)
         return web.json_response({'status': action})
 
     async def ingest(request):
-        owner, token = authenticate(request)
-        authenticated_budget(owner, 'upload')
+        owner, token = await authenticate(request, 'upload')
         payload = await request.json()
-        if store.owner(token) != owner:
-            raise web.HTTPUnauthorized()
-        label = None
-        if group is not None:
-            if not isinstance(payload, dict) or payload.get('group_id') != group:
-                raise ValidationError('Wrong group')
-            if name is not None and canonical_group(payload.get('group_name', name)) != canonical_group(name):
-                raise web.HTTPForbidden()
-            if store.paused(owner):
-                raise web.HTTPForbidden()
-            if 'player_name' in payload:
-                player = payload['player_name']
-                if not isinstance(player, str):
-                    raise ValidationError('Invalid player name')
-                # Stored by ingest only once the whole upload is accepted (#10).
-                label = ((string(player, 'player name', 40), 'addon') if player
-                         else ('Friend ' + owner[-6:], 'unavailable'))
-        return web.json_response(store.ingest(owner, payload, name=label))
+
+        def upload():
+            # One store call from the credential check to the stored upload, so a pause,
+            # deletion or revocation is either fully before it or fully after it.
+            if store.owner(token) != owner:
+                raise web.HTTPUnauthorized()
+            label = None
+            if group is not None:
+                if not isinstance(payload, dict) or payload.get('group_id') != group:
+                    raise ValidationError('Wrong group')
+                if name is not None and canonical_group(payload.get('group_name', name)) != canonical_group(name):
+                    raise web.HTTPForbidden()
+                if store.paused(owner):
+                    raise web.HTTPForbidden()
+                if 'player_name' in payload:
+                    player = payload['player_name']
+                    if not isinstance(player, str):
+                        raise ValidationError('Invalid player name')
+                    # Stored by ingest only once the whole upload is accepted (#10).
+                    label = ((string(player, 'player name', 40), 'addon') if player
+                             else ('Friend ' + owner[-6:], 'unavailable'))
+            return store.ingest(owner, payload, name=label)
+        return web.json_response(await store.call(upload))
 
     app.router.add_get('/health', health)
     app.router.add_post('/v1/link', redeem)
