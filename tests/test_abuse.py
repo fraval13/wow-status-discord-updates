@@ -258,8 +258,12 @@ def test_fit_lines_keeps_whole_lines_so_spoilers_stay_closed():
     assert fit_lines([], 10) == ''
 
 
-def test_fit_lines_cuts_a_single_oversized_line_instead_of_dropping_it():
-    assert fit_lines(['a' * 9 + '\\*', 'b'], 10) == 'a' * 9
+def test_fit_lines_never_cuts_a_line_and_always_reports_left_out_lines():
+    spoiler = '**A** · shared a discovery: ||' + 's' * 80 + '||'
+    assert fit_lines([spoiler, 'b'], 60) == '2 entries too long to show.'
+    # The first line fits alone but not beside the note, so only the note is shown.
+    assert fit_lines(['x' * 95, 'y' * 10], 100) == '2 entries too long to show.'
+    assert fit_lines(['x' * 70, 'y' * 40], 100) == 'x' * 70 + '\n…and 1 more not shown.'
 
 
 def test_guard_check_keeps_a_character_before_a_user_typed_zero_width_space():
