@@ -85,6 +85,7 @@ local function queue(kind, data, fixed, targetGroups)
     WoWStatusJournal.recordLocal(event)
     snapshot()
     WoWStatusPopups.broadcast(current, event)
+    WoWStatusScreenshots.event(event, current.settings)
     return event
 end
 
@@ -147,7 +148,7 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, 1130)
+        panel:SetSize(600, WoWStatusScreenshots.available() and 1270 or 1130)
         panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
         panel.background=panel:CreateTexture(nil,"BACKGROUND")
         panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
@@ -192,8 +193,17 @@ local function showPanel(host)
         for i,key in ipairs(fields) do
             checkbox(key,names[key] or key,(i-1)%2==0 and 24 or 310,-780-math.floor((i-1)/2)*42,"fields")
         end
-        button(panel,"History / graph",24,-1072,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
-        panel.close=button(panel,"Close",424,-1072,130,function() panel:Hide() end)
+        local bottom=-1072
+        -- Clients without Screenshot() never show these options.
+        if WoWStatusScreenshots.available() then
+            section("Screenshots",-1072)
+            checkbox("level","Screenshot on level up",24,-1108,"screenshots")
+            checkbox("dungeon","Screenshot on first dungeon clear",310,-1108,"screenshots")
+            checkbox("hide_ui","Hide interface in screenshots",24,-1150,"screenshots")
+            bottom=-1212
+        end
+        button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
+        panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
@@ -395,6 +405,7 @@ local function initialize()
     current = WoWStatusDB.characters[key]
     current.identity = identity
     WoWStatusLoot.defaults(current.settings)
+    WoWStatusScreenshots.defaults(current.settings)
     for _, character in pairs(WoWStatusDB.characters) do
         claimSecret(character)
         if not WoWStatusFeatures.discord then
@@ -620,6 +631,9 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "discover" or command == "dungeon" or command == "lfg" then
         say("Manual announcements have been removed. Milestones are detected automatically.")
     elseif command == "previews" then openSettings("previews")
+    elseif command == "screenshot" then
+        if not WoWStatusScreenshots.available() then say("Screenshots are not available in this client.")
+        elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
     elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
     elseif command == "sync" then say("Activity syncs automatically when group members log in.")
     elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
