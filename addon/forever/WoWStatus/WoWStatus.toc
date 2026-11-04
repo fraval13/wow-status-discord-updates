@@ -15,6 +15,7 @@ Progress.lua
 History.lua
 HistoryUI.lua
 Groups.lua
+Share.lua
 Flavour.lua
 Presentation.lua
 Popups.lua

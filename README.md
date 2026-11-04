@@ -38,6 +38,10 @@ a death once when the player releases their spirit.
    your friends. Groups are saved account-wide; character preferences are separate.
 3. Click the minimap book to open **Activity log**, or use `/wstatus activity`.
    Right-click the book for Options; drag it to move it around the minimap.
+4. To invite a friend who does not have the addon yet, right-click their name and
+   choose **Share WoW Status** (clients with the modern menu), or type
+   `/wstatus share <name>`. It whispers the download link, at most once per person
+   per hour, and is never sent automatically.
 
 ## Announcements
 

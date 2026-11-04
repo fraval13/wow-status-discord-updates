@@ -452,6 +452,7 @@ local function initialize()
     end
     WoWStatusGroups.init(WoWStatusDB, function() return current end, say)
     WoWStatusPopups.init(WoWStatusDB, function() return current end, say)
+    WoWStatusShare.init(WoWStatusDB, say)
     H.init(current)
     WoWStatusJournal.prepare(WoWStatusDB)
     H.scrub(current)
@@ -635,6 +636,7 @@ SlashCmdList.WOWSTATUS = function(message)
         if not WoWStatusScreenshots.available() then say("Screenshots are not available in this client.")
         elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
     elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
+    elseif command == "share" then WoWStatusShare.send(rest)
     elseif command == "sync" then say("Activity syncs automatically when group members log in.")
     elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
     elseif command == "popup" then
