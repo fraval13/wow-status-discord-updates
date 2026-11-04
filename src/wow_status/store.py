@@ -176,7 +176,11 @@ class Store:
                               (self.digest(token),)).fetchone()
         return row['owner'] if row else None
 
-    def ingest(self, owner, payload):
+    def ingest(self, owner, payload, name=None):
+        """Store one upload. ``name`` is an optional ``(display_name, source)`` owner label,
+        written in the upload's transaction: a rejected upload, or one for a new character
+        that stores nothing, leaves it unchanged."""
+        from .people import set_role, store_name
         p = validate(payload)
         cid = self.character_id(p['identity'])
         now = int(time.time())
@@ -188,6 +192,8 @@ class Store:
                 raise Conflict('Character already belongs to another linked user')
             if old and p['exported_at'] < old['exported']:
                 raise Conflict('Stale export rejected; export current settings with /reload')
+            # Any later rejection inside this transaction rolls the label back too.
+            renamed = name is not None and store_name(self.db, owner, *name)
             self.db.execute('''INSERT INTO characters(id,owner,identity,settings,snapshot,exported,uploaded) VALUES(?,?,?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET identity=excluded.identity,
                 settings=excluded.settings,snapshot=excluded.snapshot,
@@ -311,17 +317,22 @@ class Store:
                     ('bytes:' + owner, limits.NEW_BYTES_PER_OWNER_DAY, 86400, new_bytes),
                     ('bytes:group', limits.NEW_BYTES_PER_GROUP_DAY, 86400, new_bytes),
                 ], now)
-        from .people import set_role
         role = p['settings'].get('character_role')
         old_role = self.db.execute('SELECT source,role FROM character_labels WHERE character=?',
                                    (cid,)).fetchone()
         discord_main = self.db.execute("SELECT 1 FROM character_labels l JOIN characters c "
             "ON c.id=l.character WHERE c.owner=? AND l.source='discord' AND l.role='main'",
             (owner,)).fetchone()
-        if role and not discord_main and (not old_role or old_role['source'] == 'addon'):
-            if not old_role or old_role['role'] != role:
-                set_role(self, owner, cid, role, source='addon')
-        self.sync_archive(cid)
+        # validate() always sets a role; the addon may only change its own label.
+        role_changed = not discord_main and (
+            not old_role or (old_role['source'] == 'addon' and old_role['role'] != role))
+        if role_changed:
+            set_role(self, owner, cid, role, source='addon', sync=False)
+        # A new label shows on every owner archive; a new main also demotes the siblings.
+        if renamed or (role_changed and role == 'main'):
+            self.sync_owner_archives(owner)
+        else:
+            self.sync_archive(cid)
         return {'character_id': cid, 'accepted': accepted}
 
     def characters(self, owner=None):
@@ -358,8 +369,10 @@ class Store:
                 self.db.execute("UPDATE digest_parts SET status='discarded' WHERE character=? "
                                 "AND status IN ('pending','uncertain','failed')", (char['id'],))
                 self.db.execute("UPDATE events SET data='{}',suppressed=1 WHERE character=?", (char['id'],))
-
-        self.sync_archives()
+        if cid:
+            self.sync_archive(cid)
+        else:
+            self.sync_owner_archives(owner)
 
     def delete(self, owner):
         ids = [char['id'] for char in self.characters(owner)]
@@ -376,6 +389,10 @@ class Store:
     def sync_archive(self, cid):
         from .archive import write_character
         write_character(self, cid)
+
+    def sync_owner_archives(self, owner):
+        for char in self.characters(owner):
+            self.sync_archive(char['id'])
 
     def sync_archives(self):
         for char in self.characters():

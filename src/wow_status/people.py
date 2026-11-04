@@ -2,18 +2,24 @@
 from .schema import ValidationError, string
 
 
-def remember(store, owner, display_name, source='discord'):
+def store_name(db, owner, display_name, source='discord'):
+    """Write a label inside the caller's open transaction; return whether it changed."""
     owner = string(str(owner), 'Discord owner', 120)
     display_name = string(display_name, 'Discord display name', 80)
-    old = store.db.execute('SELECT display_name,source FROM people WHERE owner=?', (owner,)).fetchone()
+    old = db.execute('SELECT display_name,source FROM people WHERE owner=?', (owner,)).fetchone()
     if old and old['display_name'] == display_name and old['source'] == source:
-        return
+        return False
+    db.execute('INSERT INTO people(owner,display_name,source) VALUES(?,?,?) '
+               'ON CONFLICT(owner) DO UPDATE SET display_name=excluded.display_name,source=excluded.source',
+               (owner, display_name, source))
+    return True
+
+
+def remember(store, owner, display_name, source='discord'):
     with store.db:
-        store.db.execute('INSERT INTO people(owner,display_name,source) VALUES(?,?,?) '
-                         'ON CONFLICT(owner) DO UPDATE SET display_name=excluded.display_name,source=excluded.source',
-                         (owner, display_name, source))
-    for char in store.characters(owner):
-        store.sync_archive(char['id'])
+        changed = store_name(store.db, owner, display_name, source)
+    if changed:
+        store.sync_owner_archives(owner)
 
 
 def nickname(store, owner, name=None):
@@ -24,8 +30,7 @@ def nickname(store, owner, name=None):
         store.db.execute('INSERT OR IGNORE INTO people(owner,display_name) VALUES(?,?)',
                          (owner, 'Linked friend'))
         store.db.execute('UPDATE people SET nickname=? WHERE owner=?', (name, owner))
-    for char in store.characters(owner):
-        store.sync_archive(char['id'])
+    store.sync_owner_archives(owner)
 
 
 def person(store, owner):
@@ -40,7 +45,7 @@ def character_role(store, cid):
     return row['role'] if row else 'alt'
 
 
-def set_role(store, owner, cid, role, source='discord'):
+def set_role(store, owner, cid, role, source='discord', sync=True):
     if role not in ('main', 'alt'):
         raise ValidationError('Role must be main or alt')
     row = store.db.execute('SELECT owner FROM characters WHERE id=?', (cid,)).fetchone()
@@ -52,8 +57,8 @@ def set_role(store, owner, cid, role, source='discord'):
                              '(SELECT id FROM characters WHERE owner=?)', (owner,))
         store.db.execute('INSERT INTO character_labels VALUES(?,?,?) ON CONFLICT(character) '
                          'DO UPDATE SET role=excluded.role,source=excluded.source', (cid, role, source))
-    for char in store.characters(owner):
-        store.sync_archive(char['id'])
+    if sync:
+        store.sync_owner_archives(owner)
 
 
 def decorate(store, char):
