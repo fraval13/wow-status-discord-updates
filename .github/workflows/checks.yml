@@ -25,6 +25,8 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m pip install -e ".[dev]"
+      - name: Check every addon TOC declares the pyproject version
+        run: python scripts/sync_version.py --check
       - run: python -m pytest -q
         env:
           # Fail on any text I/O that falls back to the locale encoding (cp1252 on
