@@ -19,3 +19,5 @@ credentials.json
 upload-state.json
 private-export/
 *-characters/
+.DS_Store
+WTF/

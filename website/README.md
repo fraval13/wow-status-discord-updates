@@ -12,8 +12,12 @@ python -m http.server 4173 --directory dist/homepage --bind 127.0.0.1
 ```
 
 The output is `dist/homepage/`. All four ZIPs contain the top-level `WoWStatus`
-folder expected by WoW; every TOC-listed file is checked. Addon files always come
-from the specified committed Git revision. Uncommitted addon edits are excluded.
+folder expected by WoW and hold only the TOC, the files it lists and
+`Textures/*.tga`; any other committed file (for example `.DS_Store` or `WTF/`) is
+left out, and a TOC-listed file that is not committed fails the build. The build
+also fails unless all four TOC versions equal the `pyproject.toml` version. Addon
+files always come from the specified committed Git revision. Uncommitted addon
+edits are excluded.
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 
