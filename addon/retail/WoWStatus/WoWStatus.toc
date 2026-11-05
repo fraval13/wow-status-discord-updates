@@ -2,7 +2,7 @@
 ## Title: WoW Status — Retail
 ## Notes: Retail adapter authored from client API docs. In-game validation pending.
 ## Author: fraval13
-## Version: 1.2.0
+## Version: 1.3.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Retail/Mainline only; verify installed build metadata
 Safe.lua
