@@ -32,6 +32,35 @@ local function state()
     return db.roster
 end
 
+-- Race, sex and class of a member whose list never arrived (older versions), from
+-- the GUID their channel roster entry carries: the game's own lookup, the same one
+-- its unit menus use. Saved per name, so it still shows after they log off. The
+-- game does not give a level this way.
+local MAX_IDENTIFIED = 200
+local function identify(name)
+    local roster, k = state(), key(name)
+    if not k then return nil end
+    roster.identified = type(roster.identified) == "table" and roster.identified or {}
+    local guid = WoWStatusPopups.guidFor and WoWStatusPopups.guidFor(name)
+    if guid and GetPlayerInfoByGUID then
+        local ok, _, class, _, race, sex = pcall(GetPlayerInfoByGUID, guid)
+        class, race, sex = ok and S.string(class), ok and S.string(race), ok and S.number(sex)
+        if class and CLASSES[class] and race and race:match("^[A-Za-z]+$") and (sex == 2 or sex == 3) then
+            if not roster.identified[k] then
+                local count, oldest, oldestAt = 0, nil, math.huge
+                for id, item in pairs(roster.identified) do
+                    count = count + 1; if (item.at or 0) < oldestAt then oldest, oldestAt = id, item.at or 0 end
+                end
+                if count >= MAX_IDENTIFIED and oldest then roster.identified[oldest] = nil end
+            end
+            roster.identified[k] = {class=class, race=race, sex=sex, at=time()}
+        end
+    end
+    local item = roster.identified[k]
+    return type(item) == "table" and item or nil
+end
+R.identify = identify
+
 -- Public facts about the logged-in character, saved for the list.
 function R.observe(character)
     if not character then return end
@@ -296,6 +325,13 @@ function R.groups()
         -- WoW Forever: first-name-only characters come from older versions; your
         -- current character stays even before its full name is known.
         if not WoWStatusPopups.fullName(character.name) and not (self and character.current) then return end
+        if not self and not (character.race and character.class) then
+            local known = identify(character.name)
+            if known then
+                character.race, character.sex, character.class = character.race or known.race,
+                    character.sex or known.sex, character.class or known.class
+            end
+        end
         local groupKey = S.lowerASCII(title)
         local entry = merged[groupKey]
         if not entry then entry = {title=title, rows={}}; merged[groupKey] = entry; table.insert(order, entry) end

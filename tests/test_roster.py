@@ -153,3 +153,34 @@ def test_a_first_name_entry_shows_as_its_one_known_full_name():
     names = [r.name for g in thora.eval('WoWStatusRoster.groups()').values() for r in g.rows.values()]
     assert 'Mira Stone-TestRealm' in names and 'Mira-TestRealm' not in names
     assert names.count('Mira Stone-TestRealm') == 1
+
+
+def test_members_without_a_list_are_identified_from_their_roster_guid():
+    # Live check: Forever's channel roster gives GUIDs, and GetPlayerInfoByGUID knows them.
+    thora = person('Thora', 'Ada')
+    thora.execute('''
+        local group=next(character().group_ids)
+        __peers={"x","y"}
+        C_ChatInfo.GetChannelRosterInfo=function(_, i)
+            local list={{"Thora",UnitGUID("player")},{"Bob","Player-1-0000BOB"}}
+            local item=list[i]
+            if item then return item[1],false,false,item[2] end
+        end
+        function GetPlayerInfoByGUID(guid)
+            if guid=="Player-1-0000BOB" then return "Hunter","HUNTER","Night Elf","NightElf",2,"Bob","" end
+        end
+        WoWStatusPopups.peers(group)
+        for _=1,3 do WoWStatusPopups.tick() end
+        WoWStatusJournal.received({sender="Bob-TestRealm",nonce="1-1-aaaa",kind="level",level=5,at=time(),group_id=group})
+        local function bob()
+            for _,g in ipairs(WoWStatusRoster.groups()) do for _,r in ipairs(g.rows) do
+                if r.name=="Bob-TestRealm" then return r end
+            end end
+        end
+        local row=bob()
+        assert(row.class=="HUNTER" and row.race=="NightElf" and row.sex==2 and row.level==nil)
+        -- Still known after the GUID lookup stops answering (logged off, cache cleared).
+        function GetPlayerInfoByGUID() return nil end
+        row=bob()
+        assert(row.class=="HUNTER" and row.race=="NightElf")
+    ''')

@@ -12,6 +12,8 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local ADDON_NAME = (...) or "WoWStatus" -- client-supplied folder/TOC name, not the comm prefix
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
+-- GUIDs that channel rosters gave for members, by sender key (bounded).
+local rosterGuids,rosterGuidCount={},0
 local rosterBusy=false
 -- Received updates from a sender not yet in the group's roster wait here while
 -- the roster loads. One sender may hold only a few queued or waiting updates.
@@ -104,6 +106,11 @@ function P.fullName(name)
     if not A.full_names then return true end
     local short = S.string(name) and name:match("^([^-]+)")
     return short ~= nil and S.trim(short):find(" ", 1, true) ~= nil
+end
+-- The GUID a channel roster gave for this member, if any.
+function P.guidFor(name)
+    local key=P.senderKey(name)
+    return key and rosterGuids[key] or nil
 end
 -- A character's name and realm as other players see them: "Name-Realm".
 -- WoW Forever's UnitName gives only a first name ("Edith") while chat and
@@ -244,6 +251,9 @@ local function readRoster(index,count)
         local target=S.string(name);local key=target and P.senderKey(target)
         if key then
             read=read+1
+            if S.string(guid) and not P.isSelf(target,guid) and not rosterGuids[key] and rosterGuidCount<512 then
+                rosterGuids[key]=S.string(guid);rosterGuidCount=rosterGuidCount+1
+            end
             if P.isSelf(target,guid) then
                 if S.string(guid) then learnName(target);learnt=true end
             elseif not seen[key] then
