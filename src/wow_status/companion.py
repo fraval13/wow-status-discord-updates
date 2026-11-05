@@ -11,7 +11,7 @@ from urllib.parse import urlparse
 import aiohttp
 
 from .savedvariables import MAX_BYTES, ParseError, parse
-from .schema import ValidationError, integer, string, validate
+from .schema import MAX_CLOCK_OFFSET, ValidationError, integer, realm_now, string, validate
 
 
 def endpoint(url):
@@ -117,6 +117,8 @@ def exports(path):
             raise ValidationError('Invalid addon events')
         if not all(isinstance(event, dict) for event in events.values()):
             raise ValidationError('Invalid addon event')
+        # The addon's stamps are realm time; this PC's clock can differ from it.
+        clock_offset = integer(char.get('clock_offset', 0), 'clock offset', -MAX_CLOCK_OFFSET, MAX_CLOCK_OFFSET)
         since = char.get('discord_since', 0)
         if type(since) is not int or since:
             if type(char.get('exported_at')) is not int:
@@ -137,7 +139,8 @@ def exports(path):
         # The persistent local history can exceed the rolling buffer/API batch size.
         for offset in range(0, max(1, len(records)), 100):
             batch = records[offset:offset + 100]
-            result = validate(dict(payload, events=batch))
+            result = validate(dict(payload, events=batch), now=realm_now(clock_offset))
+            result['_clock_offset'] = clock_offset
             if 'group_ids' in char and char.get('legacy_upload') is not True:
                 from .group_routing import memberships
                 result['_groups'] = memberships(char['group_ids'], result['exported_at'])

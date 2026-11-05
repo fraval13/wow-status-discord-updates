@@ -22,6 +22,10 @@ local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 60, 32
 -- While a changed roster reloads, members from the last complete read still
 -- count, but only for this long after that read.
 local LAST_ROSTER_SECONDS = 120
+-- Freshness of a live update, in realm time (issue #7): the sender drops it from
+-- its queue after LIVE_WINDOW seconds, and receivers accept stamps at most
+-- LIVE_WINDOW seconds old or LIVE_AHEAD seconds ahead (see late()).
+local LIVE_WINDOW, LIVE_AHEAD = 120, 300
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -371,11 +375,14 @@ end
 local function noteReceive(state, c, now, offset)
     prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now, offset=offset}
 end
--- Packet timestamps outside the freshness window are dropped, but recorded so
--- /wstatus popup status can say why (issue #7).
+-- Packet timestamps outside the freshness window are dropped. A group member's
+-- (or trusted legacy sender's) drop is recorded, so /wstatus popup status can
+-- say why (issue #7); anyone else's never replaces that diagnostic.
 local function late(c, now)
-    local reason = S.outside(c.at, 120, 300)
-    if reason then noteReceive("rejected_" .. reason, c, now, c.at - S.now()) end
+    local reason = S.outside(c.at, LIVE_WINDOW, LIVE_AHEAD)
+    if reason and (c.group == "legacy" or P.isPeer(c.group, c.key)) then
+        noteReceive("rejected_" .. reason, c, now, c.at - S.now())
+    end
     return reason ~= nil
 end
 -- Store a validated update from a known peer (or a trusted legacy sender): log
@@ -494,7 +501,7 @@ function P.receive(text, sender, channel)
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) then return false end
-        if late({sender=sender, kind=kind, at=at}, now) then return false end
+        if late({sender=sender, key=key, group=group, kind=kind, at=at}, now) then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
         local lootInfo
@@ -530,7 +537,7 @@ function P.receive(text, sender, channel)
     if client ~= A.client_id then return false end
     local level, at, now = tonumber(levelText), tonumber(atText), time()
     if not at or not nonce or #nonce > 64 then return false end
-    if late({sender=sender, at=at}, now) then return false end
+    if late({sender=sender, key=key, group=group, at=at}, now) then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
     return admit({sender=sender, key=key, group=group, level=level, at=at, nonce=nonce}, now)
 end
@@ -771,7 +778,7 @@ local function tick()
     end
     if #outgoing == 0 or now - lastAttempt < 1 then return end
     local item, character = outgoing[1], getCharacter()
-    if not canShare(character, item.event) or S.now() - item.at > 120
+    if not canShare(character, item.event) or S.now() - item.at > LIVE_WINDOW
         or (item.group_id and not WoWStatusGroups.contains(character, item.group_id)) then
         table.remove(outgoing, 1)
         status("cancelled_or_expired", item.event)
@@ -907,9 +914,11 @@ function P.showActivity()
     if WoWStatusJournal then WoWStatusJournal.show() end
 end
 
--- "185 s behind realm time" for a difference of -185 seconds.
+-- "185 s behind realm time" for a difference of -185 seconds. Without realm
+-- time, stamps were checked against this PC's clock.
 local function realmOffset(seconds)
-    return math.abs(seconds).." s "..(seconds<0 and "behind" or "ahead of").." realm time"
+    return math.abs(seconds).." s "..(seconds<0 and "behind" or "ahead of")
+        ..(S.realmTime() and " realm time" or " this PC's clock")
 end
 function P.command(text)
     if not prefs then return end

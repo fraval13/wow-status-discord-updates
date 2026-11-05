@@ -200,3 +200,46 @@ def test_level_history_stays_one_segment_whatever_the_pc_clock(skew):
     assert points[len(points)]['kind'] == 'level'
     assert points[len(points)]['at'] == REALM + 10
     assert lua.eval('character().history.tracking.observed_until') == REALM + 20
+
+
+def test_exports_carry_realm_times_and_this_pcs_clock_offset():
+    """The companion on the same PC checks these against its clock minus the offset."""
+    lua = pc('Thora', 600)
+    clock(lua, 10)
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    assert lua.eval('character().exported_at') == REALM + 10
+    assert lua.eval('character().clock_offset') == 600
+    assert lua.eval('character().progress.started_at') <= REALM + 10
+    assert lua.eval('next(character().group_ids) and select(2, next(character().group_ids)).joined_at') == REALM
+
+
+@pytest.mark.parametrize('skew', [0, -900])
+def test_an_old_peers_first_is_announced_when_both_pcs_are_equally_wrong(skew):
+    old, receiver = pc('Mira', skew, realm=False), pc('Thora', skew)
+    clock(old, 10)
+    clock(receiver, 10)
+    old.eval('fire')('PLAYER_DEAD')
+    deliver_popup(old, receiver)
+    headings = []
+    for at in (11, 18):
+        clock(receiver, at)
+        receiver.eval('WoWStatusPopups.tick')()
+        headings.append(receiver.eval('WoWStatusLevelPopup.heading.text'))
+    assert headings == ['A FRIEND HAS FALLEN', 'A NEW FIRST!']
+
+
+def test_a_non_members_stale_packet_does_not_replace_the_diagnostic():
+    sender, receiver = pc('Thora'), pc('Mira')
+    level_up(sender, receiver)
+    group = receiver.eval('next(character().group_ids)')[0]
+    client = receiver.eval('WoWStatusAdapter.client_id')
+    stale = f'WSTATUS2 {client} LEVEL 5 {REALM - 1000} 1-1'
+    assert not receiver.eval('WoWStatusPopups.receive')(stale, 'Stranger-TestRealm', 'WStatus' + group)
+    assert receiver.eval('WoWStatusDB.popups.last_receive.sender') == 'Thora-TestRealm'
+    assert last_receive(receiver) in ('queued', 'displayed')
+
+
+def test_without_realm_time_a_drop_is_measured_on_this_pcs_clock():
+    old, receiver = pc('Thora', -180, realm=False), pc('Mira', realm=False)
+    level_up(old, receiver)
+    assert said(status_lines(receiver), 'rejected_stale (stamped 180 s behind this PC\'s clock)')

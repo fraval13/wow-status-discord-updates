@@ -123,8 +123,9 @@ function F.update()
         local previous = data.holders[medal.key]
         if e and previous ~= e.id then
             data.holders[medal.key] = e.id
+            -- Recent by realm time, or by this PC's clock for an older peer's stamp.
             if not quiet and previous == nil and e.origin == "live"
-                and WoWStatusSafe.now() - e.at <= ANNOUNCE_WITHIN and WoWStatusPopups.notice then
+                and not S.outside(e.at, ANNOUNCE_WITHIN, math.huge) and WoWStatusPopups.notice then
                 WoWStatusPopups.notice({sender=e.sender, kind="first", text=medal.title .. "!",
                     flavour="A new record on the Records page."})
             end

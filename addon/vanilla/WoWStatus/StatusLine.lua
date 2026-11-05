@@ -41,7 +41,8 @@ function L.latest()
             local text = e.kind == "level" and S.number(e.level) and (name .. " hit " .. e.level)
                 or (name .. ": " .. tostring(e.text or ""))
             if #text > 48 then text = text:sub(1, 45) .. "..." end
-            return text:gsub("|", "||") .. " (" .. age(math.max(0, WoWStatusSafe.now() - (e.at or WoWStatusSafe.now()))) .. ")"
+            local now = S.now()
+            return text:gsub("|", "||") .. " (" .. age(math.max(0, now - (e.at or now))) .. ")"
         end
     end
 end

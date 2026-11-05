@@ -189,7 +189,9 @@ sides used their own PC clock (`time()`), so two PCs whose clocks differed by
 more than two minutes silently dropped each other's live updates. The sender's
 queue limit (120 seconds) and the login sync checks use realm time as well, and
 so do saved event, log, recap, export and group-join times. Short local timers
-keep the PC clock.
+keep the PC clock. Each export also saves `clock_offset` (this PC's clock minus
+realm time), and the companion on the same PC checks the export's stamps against
+its clock minus that offset.
 
 Older clients still stamp their PC clock. Their updates count when the stamp fits
 realm time or this PC's clock, so anything accepted before is still accepted.

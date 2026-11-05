@@ -39,7 +39,9 @@ end
 
 local function snapshot()
     if not current then return end
+    -- The companion compares these realm-time stamps with its PC clock.
     current.exported_at = S.now()
+    current.clock_offset = time() - current.exported_at
     if current.settings.enabled then current.enrolled = true end
     current.player_name = WoWStatusDB.player_name or ""
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
@@ -407,7 +409,7 @@ local function initialize()
     local first = not WoWStatusDB.characters[key]
     WoWStatusDB.characters[key] = WoWStatusDB.characters[key] or {
         identity = identity, settings = defaults(), snapshot = {}, events = {}, sequence = 0,
-        epoch = tostring(time()) .. "-" .. tostring(math.random(100000, 999999)),
+        epoch = tostring(S.now()) .. "-" .. tostring(math.random(100000, 999999)),
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity

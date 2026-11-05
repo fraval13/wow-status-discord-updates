@@ -120,7 +120,7 @@ local function render()
     local data = state() or {}
     page.status:SetText(O.ownStatus())
     local since = data.since
-    if WoWStatusGuide and WoWStatusGuide.touring() then since = WoWStatusSafe.now() - 86400 end
+    if WoWStatusGuide and WoWStatusGuide.touring() then since = S.now() - 86400 end
     local summary = O.summary(WoWStatusJournal.displayEntries(), since)
     page.heading:SetText(since and ("Since you were last here (" .. WoWStatusHistory.oslo(since) .. ")")
         or "Since you were last here")
@@ -175,7 +175,7 @@ frame:SetScript("OnEvent", function(_, event, _, reloading)
     local data = state()
     if not data then return end
     if event == "PLAYER_LOGOUT" then
-        data.last_logout = WoWStatusSafe.now()
+        data.last_logout = S.now()
     elseif not started then
         started = true -- Once per load; zone changes fire this event again.
         if reloading ~= true and type(data.last_logout) == "number" then data.since = data.last_logout end

@@ -278,7 +278,7 @@ local function liveEntry(item)
     return {id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
         text=trim(item.level and ("Reached level "..item.level.."!") or item.text or "",160),
         quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,flavour=item.flavour,
-        at=item.at or item.received_at or S.now(),groups=groups,origin="live"}
+        at=item.at or S.now(),groups=groups,origin="live"}
 end
 -- Logs a live update. Returns true when it is new to the log, which includes
 -- replacing a relay's claim on its ID that has other content.

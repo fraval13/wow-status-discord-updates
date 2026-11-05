@@ -122,7 +122,10 @@ class GroupUploader:
                     continue
                 known[target] = {'joined_at': selected[target]['joined_at']}
                 atomic_json(self.state, self.cache)
-                minimum = max(route.get('min_joined_at', 0), payload.get('_discord_since', 0))
+                # min_joined_at is this PC's clock; the addon's times are realm time.
+                joined = route.get('min_joined_at', 0)
+                joined = joined - payload.get('_clock_offset', 0) if joined else 0
+                minimum = max(joined, payload.get('_discord_since', 0))
                 if payload['exported_at'] < minimum:
                     self.status(connection='Run /reload to export current data after resuming this group.')
                     continue

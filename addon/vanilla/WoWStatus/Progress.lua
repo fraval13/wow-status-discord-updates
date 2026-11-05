@@ -13,8 +13,9 @@ local knownProfessions = {
 }
 local function stats(character)
     if not character.progress then
-        local started = tonumber((character.epoch or ""):match("^(%d+)")) or time()
-        if started < 1 or started > time() then started = time() end
+        local now = S.now()
+        local started = tonumber((character.epoch or ""):match("^(%d+)")) or now
+        if started < 1 or started > now then started = now end
         local deaths = 0
         for _, event in ipairs(character.history and character.history.events or {}) do
             if event.kind == "death" then deaths = deaths + 1 end
@@ -22,7 +23,7 @@ local function stats(character)
         character.progress = {started_at=started, deaths=deaths, quest_ids={}}
     end
     local value = character.progress
-    value.started_at, value.deaths, value.quest_ids = value.started_at or time(), value.deaths or 0, value.quest_ids or {}
+    value.started_at, value.deaths, value.quest_ids = value.started_at or S.now(), value.deaths or 0, value.quest_ids or {}
     return value
 end
 local function readProfessions()
