@@ -819,6 +819,60 @@ local function entryID(item)
     return id and WoWStatusJournal.contains(id) and id or nil
 end
 
+-- Reaction whispers offered on a friend's notification: a real chat whisper,
+-- sent only when you click, at most once per notification.
+local POSITIVE = {profession=true, dungeon=true, raid=true, mount=true, epicmount=true, reputation=true,
+    unlock=true, pvp=true, quest=true, zone=true, loot=true, first=true}
+function P.reactions(item)
+    if type(item) ~= "table" or not S.string(item.sender) then return {} end
+    -- Sample previews have nobody to whisper; record notices name a real friend.
+    if item.preview and item.key ~= "local-notice" then return {} end
+    if P.isSelf(item.sender) or not P.senderKey(item.sender) then return {} end
+    if item.level then return {"GZ!"} end
+    if item.kind == "death" then return {"F", "Git Good"} end
+    if item.kind == "introduction" then return {"Welcome!"} end
+    if POSITIVE[item.kind] then return {"Congrats!"} end
+    return {}
+end
+function P.react(item, text)
+    if type(item) ~= "table" or item.reacted then return false end
+    local send = A.chatSender and A.chatSender()
+    if not send or A.chatRestricted() then return false end
+    item.reacted = text
+    return pcall(send, text, "WHISPER", nil, item.sender) == true
+end
+local function reactionButtons()
+    local item = toast.item
+    local list = item and not item.reacted and P.reactions(item) or {}
+    local x = -12
+    for i = #toast.reactions, 1, -1 do toast.reactions[i]:Hide() end
+    for i = #list, 1, -1 do
+        local button = toast.reactions[i]
+        if not button then
+            button = CreateFrame("Button", nil, toast, "UIPanelButtonTemplate")
+            button:SetSize(86, 24)
+            button:SetScript("OnClick", function(self)
+                local shown = toast.item
+                if shown and P.react(shown, self.reaction) then
+                    toast.detail:SetText("You whispered “" .. self.reaction .. "”"); toast.detail:Show()
+                end
+                reactionButtons()
+            end)
+            toast.reactions[i] = button
+        end
+        button.reaction = list[i]
+        button:SetText(list[i])
+        button:ClearAllPoints(); button:SetPoint("TOPRIGHT", x, -10)
+        x = x - 90
+        button:Show()
+    end
+    -- Short headings ("LEVEL UP!") sit beside the buttons.
+    toast.heading:SetWidth(#list > 0 and (438 + x + 12) or 438)
+end
+-- Whether the mouse is over the visible notification (or one of its buttons).
+function P.hovered()
+    return toast ~= nil and toast:IsShown() and MouseIsOver ~= nil and MouseIsOver(toast) == true
+end
 local function show(item, now)
     if not toast then
         toast = CreateFrame("Frame", "WoWStatusLevelPopup", UIParent)
@@ -878,8 +932,14 @@ local function show(item, now)
         toast.handle:SetPoint("BOTTOMLEFT", toast, "TOPLEFT"); toast.handle:SetSize(560, 10)
         toast.handle:SetColorTexture(1, .82, .25, .8)
         toast.handle:SetShown(prefs.popup_unlocked == true)
+        toast.reactions = {}
         toast:SetScript("OnUpdate", function(self, elapsed)
             if self.dragging then return end -- Hold still and stay visible while being moved.
+            -- While the mouse is over it (or its buttons), it stays and does not count down.
+            if P.hovered() and (self.age or 0) > .22 then
+                self.age = math.min(self.age, 1); self:SetAlpha(1); anchor(self, 0)
+                return
+            end
             self.age = (self.age or 0) + elapsed
             local entrance = math.min(1, self.age / .22)
             local fade = math.max(0, math.min(1, (6 - self.age) / .5))
@@ -916,6 +976,7 @@ local function show(item, now)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
+    reactionButtons()
     toast.age = 0
     toast:SetAlpha(0)
     toast:Show()
@@ -991,6 +1052,7 @@ local function tick()
             if toast then toast:Hide() end
         end
     else
+        if active and P.hovered() then active.hide_at = math.max(active.hide_at, now + 1) end
         if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
         if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
             local item = table.remove(incoming, 1)

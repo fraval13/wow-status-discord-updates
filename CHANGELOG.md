@@ -12,6 +12,8 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- Notifications have reaction buttons that whisper the friend: GZ!, F or Git Good, Congrats! and Welcome!
+- A notification stays on screen while your mouse is over it
 - Friends show with their player name too, like Unshaved Brittlebeard (Frank), in popups, the log and the overview
 
 ## 1.10.0
