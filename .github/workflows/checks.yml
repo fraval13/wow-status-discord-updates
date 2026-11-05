@@ -4,6 +4,11 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+    inputs:
+      windows:
+        description: Test on Windows too (about 15 minutes)
+        type: boolean
+        default: false
 permissions:
   contents: read
 # Third-party actions are pinned to a full commit SHA (the comment names its tag), and
@@ -42,9 +47,13 @@ jobs:
   validate:
     needs: release
     if: always() && !cancelled() && (needs.release.result == 'success' || needs.release.result == 'skipped')
+    # Windows takes about 15 minutes, mostly the two test runs. Pull requests test on
+    # both systems; the Windows check does not block merging, so it can be skipped
+    # there. A main release already passed it in its pull request, so it tests on
+    # Ubuntu only and deploys sooner. A manual run tests on Windows when asked to.
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: ${{ fromJSON((github.event_name == 'pull_request' || inputs.windows) && '["ubuntu-latest","windows-latest"]' || '["ubuntu-latest"]') }}
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -82,14 +91,15 @@ jobs:
           "$release/.venv/bin/python" -c 'import wow_status.cli'
       - name: Check every addon TOC declares the pyproject version
         run: python scripts/sync_version.py --check
-      - run: python -m pytest -q
+      # The slowest tests are listed, so a slow runner (Windows) shows where time goes.
+      - run: python -m pytest -q --durations=15
         env:
           # Fail on any text I/O that falls back to the locale encoding (cp1252 on
           # Windows), including in scripts the tests start as subprocesses.
           PYTHONWARNDEFAULTENCODING: '1'
           PYTHONWARNINGS: error::EncodingWarning
       - name: Run the tests again under Lua 5.1, the version every WoW client runs
-        run: python -m pytest -q --lua=5.1
+        run: python -m pytest -q --lua=5.1 --durations=15
         env:
           PYTHONWARNDEFAULTENCODING: '1'
           PYTHONWARNINGS: error::EncodingWarning
