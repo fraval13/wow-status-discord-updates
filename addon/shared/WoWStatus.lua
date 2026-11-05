@@ -363,6 +363,8 @@ openSettings = function(mode)
     if mode=="discord" and not WoWStatusFeatures.discord then mode=nil end
     registerSettings()
     local category = mode == "previews" and previewsCategory or mode == "discord" and discordCategory or (mode == "groups" and groupsCategory or settingsCategory)
+    -- Blizzard's Settings panel is restricted in combat; our own frames are not.
+    if S.call(InCombatLockdown) == true then category = nil end
     if category and category.GetID and Settings and Settings.OpenToCategory then
         local ok=pcall(function() Settings.OpenToCategory(category:GetID()) end)
         if not ok then showPanel() end
