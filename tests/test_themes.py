@@ -8,21 +8,34 @@ function UnitFactionGroup() return __faction end
 '''
 
 
-def test_default_is_the_original_night_look_at_full_size():
+def test_default_is_the_solid_brown_achievement_look_at_full_size():
     lua = make_lua(THEMES)
     lua.execute('''
         WoWStatusJournal.show()
         local c = WoWStatusMainFrame.background.colour
-        assert(c[1] == .025 and c[3] == .065)
+        assert(c[1] == .16 and c[2] == .1 and c[4] == 1)
         assert(WoWStatusMainFrame.scale == 1)
-        assert(WoWStatusTheme.label() == "Theme: Night · size 100%")
+        assert(WoWStatusTheme.label() == "Theme: Achievement · size 100%")
     ''')
+
+
+def test_the_old_default_moves_once_and_chosen_themes_stay():
+    lua = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="night"}}\n')
+    lua.execute('''
+        assert(WoWStatusTheme.settings().name == "achievement")
+        WoWStatusTheme.next()
+        assert(WoWStatusTheme.settings().name == "night")
+        assert(WoWStatusTheme.settings().name == "night") -- Night chosen again stays.
+    ''')
+    chosen = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="journal"}}\n')
+    assert chosen.eval('WoWStatusTheme.settings().name') == 'journal'
 
 
 def test_theme_and_size_apply_at_once_and_are_saved_account_wide():
     lua = make_lua(THEMES)
     lua.execute('''
         WoWStatusJournal.show()
+        assert(WoWStatusTheme.next() == "night")
         assert(WoWStatusTheme.next() == "journal")
         local c = WoWStatusMainFrame.background.colour
         assert(c[1] == .2 and c[2] == .14)
@@ -30,6 +43,7 @@ def test_theme_and_size_apply_at_once_and_are_saved_account_wide():
         assert(WoWStatusMainFrame.background.colour[3] == .24)    -- Alliance blue
         __faction = "Horde"; WoWStatusTheme.apply()
         assert(WoWStatusMainFrame.background.colour[1] == .24)    -- Horde red
+        assert(WoWStatusTheme.next() == "achievement")
         assert(WoWStatusTheme.next() == "night")
         for _ = 1, 5 do WoWStatusTheme.resize(WoWStatusTheme.STEP) end
         assert(WoWStatusMainFrame.scale == 1.2)
@@ -43,14 +57,14 @@ def test_saved_values_are_validated():
     lua = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="neon", scale=7, popups="yes"}}\n')
     lua.execute('''
         local value = WoWStatusTheme.settings()
-        assert(value.name == "night" and value.scale == 1.2 and value.popups == false)
+        assert(value.name == "achievement" and value.scale == 1.2 and value.popups == false)
     ''')
 
 
 def test_popups_follow_the_theme_only_when_chosen():
     lua = make_lua(THEMES)
     lua.execute('''
-        WoWStatusTheme.next(); WoWStatusTheme.resize(.2)
+        WoWStatusTheme.next(); WoWStatusTheme.next(); WoWStatusTheme.resize(.2) -- Journal
         WoWStatusPopups.preview("zone"); WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
         assert(toast.scale == 1 and toast.bg.colour[1] == .025)
@@ -66,6 +80,8 @@ def test_options_controls():
     lua.execute('''
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
+        panel.themeNext.OnClick(panel.themeNext)
+        assert(panel.theme.text == "Theme: Night · size 100%")
         panel.themeNext.OnClick(panel.themeNext)
         assert(panel.theme.text == "Theme: Journal · size 100%")
         panel.larger.OnClick(panel.larger)

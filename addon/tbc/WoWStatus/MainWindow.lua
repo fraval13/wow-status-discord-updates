@@ -66,6 +66,13 @@ local function create()
     local background = window:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints(); background:SetColorTexture(.025, .035, .065, .98)
     window.background = background
+    -- The game's gold dialog border around the window, as on its own windows.
+    local border = CreateFrame("Frame", nil, window, BackdropTemplateMixin and "BackdropTemplate" or nil)
+    border:SetPoint("TOPLEFT", -6, 6); border:SetPoint("BOTTOMRIGHT", 6, -6)
+    if border.SetBackdrop then
+        pcall(border.SetBackdrop, border, {edgeFile="Interface\\DialogFrame\\UI-DialogBox-Border", edgeSize=32})
+    end
+    window.border = border
     window.title = window:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     window.title:SetPoint("TOPLEFT", 24, -20); window.title:SetText("WoW Status")
     window.content = CreateFrame("Frame", nil, window)

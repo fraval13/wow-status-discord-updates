@@ -4,8 +4,10 @@
 -- stay readable on every theme. Night is the original look.
 WoWStatusTheme = {}
 local T, S = WoWStatusTheme, WoWStatusSafe
-T.ORDER = {"night", "journal", "faction"}
-T.NAMES = {night="Night", journal="Journal", faction="Faction"}
+-- Achievement, the default since 1.15, is a solid dark brown like Retail's
+-- achievement window, drawn with plain colour so every client shows it.
+T.ORDER = {"achievement", "night", "journal", "faction"}
+T.NAMES = {achievement="Achievement", night="Night", journal="Journal", faction="Faction"}
 T.MIN, T.MAX, T.STEP = .8, 1.2, .1
 -- Notification size in percent, separate from the window size.
 T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
@@ -15,7 +17,12 @@ local function settings()
     if type(WoWStatusDB) ~= "table" then return {name="night", scale=1, popups=false} end
     local value = type(WoWStatusDB.theme) == "table" and WoWStatusDB.theme or {}
     WoWStatusDB.theme = value
-    if not T.NAMES[value.name] then value.name = "night" end
+    -- The old default (Night) moves once to the new default; chosen themes stay.
+    if not value.achievement_default then
+        if value.name == nil or value.name == "night" then value.name = "achievement" end
+        value.achievement_default = true
+    end
+    if not T.NAMES[value.name] then value.name = "achievement" end
     local scale = S.number(value.scale)
     value.scale = scale and math.max(T.MIN, math.min(T.MAX, math.floor(scale * 10 + .5) / 10)) or 1
     value.popups = value.popups == true
@@ -28,6 +35,7 @@ T.settings = settings
 -- Background colour {r, g, b, a} for the chosen theme.
 function T.colour(alpha)
     local name = settings().name
+    if name == "achievement" then return .16, .1, .045, alpha and math.max(alpha, .98) or 1 end -- solid dark brown
     if name == "journal" then return .2, .14, .07, alpha or .97 end   -- warm parchment brown
     if name == "faction" then
         local faction = S.stringCall(UnitFactionGroup, "player")
