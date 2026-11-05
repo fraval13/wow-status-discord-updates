@@ -320,12 +320,15 @@ end
 -- throttled); "offline" (the target logged off); or "failed". SendAddonMessage
 -- returns an Enum.SendAddonMessageResult on newer clients and a boolean on older
 -- ones; the deprecated global wrapper returns the code second, so the last value
--- counts.
+-- that is not nil counts.
 local RESULT = {Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8, AddOnMessageLockdown = 11, TargetOffline = 12}
 function P.sendResult(ok, ...)
     if not ok then return "failed" end
-    local count, result = select("#", ...), nil
-    if count > 0 then result = S.value((select(count, ...))) end -- Keep a false.
+    local result
+    for i = select("#", ...), 1, -1 do
+        local value = select(i, ...)
+        if value ~= nil then result = S.value(value); break end
+    end
     if type(result) ~= "number" then return result == false and "uncertain" or "sent" end
     local codes = type(Enum) == "table" and type(Enum.SendAddonMessageResult) == "table" and Enum.SendAddonMessageResult or {}
     local function is(name) return result == (codes[name] or RESULT[name]) end
@@ -336,14 +339,18 @@ end
 -- Seconds to wait before sending item again after result, or nil to move on.
 -- A throttle is always retried, after 2, 4, 8, then every 16 s while throttles
 -- on the queue's prefix (counted in state) continue. An older client's false is
--- retried once, after 2 s, without counting as a throttle: it may be one, but
--- a client that always says false must not stall the queue.
+-- retried once, after 2 s, without counting as a throttle. If that retry says
+-- false too, false is final on this queue from then on, so a client that always
+-- says false is not slowed down.
 function P.retryWait(result, item, state)
     if result == "throttled" then
         state.throttles = (state.throttles or 0) + 1
         return math.min(2 ^ state.throttles, 16)
     end
-    if result == "uncertain" and not item.unsure then item.unsure = true; return 2 end
+    if result == "uncertain" then
+        if not item.unsure and not state.falseIsFinal then item.unsure = true; return 2 end
+        if item.unsure then state.falseIsFinal = true end
+    end
     item.unsure, state.throttles = nil, 0
     return nil
 end
@@ -481,6 +488,17 @@ local function memberKeys(group)
 end
 function P.isPeer(group, key)
     return key ~= nil and memberKeys(group)[key] == true
+end
+-- Whether a complete roster read taken since the given time lacks this peer,
+-- and it was not heard in the channel lately either: it has left. A channel over
+-- 64 members is read only in part, so its roster proves nothing.
+local function departed(group, target, since)
+    local cached, key = rosterCache[group], P.senderKey(target)
+    if not key or not cached or cached.at < since or cached.count > 64 then return false end
+    for _, name in ipairs(withKnown(group, cached.peers)) do
+        if P.senderKey(name) == key then return false end
+    end
+    return true
 end
 -- Rosters load asynchronously, so a member who joined moments ago can be
 -- missing: their updates wait here, in arrival order, instead of being dropped.
@@ -834,11 +852,13 @@ local function tick()
         if not item.targets then
             local targets = P.peers(item.group_id)
             if #targets == 0 then status("waiting_for_group_peers", item.event); return end
-            item.targets, item.target = targets, 1
+            item.targets, item.target, item.since, item.checked = targets, 1, now, now
+        elseif now - item.checked >= 10 then
+            item.checked = now; P.peers(item.group_id) -- Refreshes the roster read when it changed.
         end
         -- The list is taken at the first send and can be minutes old by the
-        -- last: skip a peer who has left the group's channel since.
-        while not P.isPeer(item.group_id, P.senderKey(item.targets[item.target])) do
+        -- last: skip a peer that a newer complete roster read no longer lists.
+        while departed(item.group_id, item.targets[item.target], item.since) do
             if item.target == #item.targets then table.remove(outgoing, 1); return end
             item.target = item.target + 1
         end
@@ -865,7 +885,10 @@ local function tick()
     elseif result == "offline" then status("peer_offline", item.event, args[4])
     else
         status("blocked_or_uncertain", item.event, args[4])
-        notify("In-game update blocked/uncertain; see /wstatus popup status.")
+        if not item.warned then
+            item.warned = true -- Once per update, not once per peer.
+            notify("In-game update blocked/uncertain; see /wstatus popup status.")
+        end
     end
 end
 
@@ -942,16 +965,17 @@ function P.broadcast(character, event)
         text = (modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
     end
     if #text > 220 then return end
-    local groups = WoWStatusGroups.selected(character)
+    local groups, full = WoWStatusGroups.selected(character), false
     for id in pairs(groups) do
-        if #outgoing < 32 and event.group_ids and event.group_ids[id] then
-            table.insert(outgoing, {message = text, at = event.at, event = event, group_id = id})
+        if event.group_ids and event.group_ids[id] then
+            if #outgoing < 32 then table.insert(outgoing, {message = text, at = event.at, event = event, group_id = id})
+            else full = true end
         end
     end
     if not next(groups) and prefs.legacy_channel then
         table.insert(outgoing, {message = text, at = event.at, event = event})
     end
-    status(#outgoing > 0 and "queued" or "no_group_selected", event)
+    status(full and "send_queue_full" or #outgoing > 0 and "queued" or "no_group_selected", event)
     P.tick()
 end
 

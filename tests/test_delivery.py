@@ -165,6 +165,16 @@ def test_failed_whisper_moves_on_and_an_older_clients_false_is_tried_twice():
     assert [p['target'] for p in older.eval('__sent').values()] == ['Peer01-TestRealm', 'Peer02-TestRealm']
 
 
+def test_a_client_whose_false_is_never_a_throttle_stops_retrying():
+    lua = actor('Thora')
+    lua.execute(LIMITS + '__results={false,false,false,false}')
+    peers(lua, 4)
+    level_up(lua, 2)
+    run(lua, 11, 40)
+    # Peer00's retry says false again, so later falses are taken as final.
+    assert popup_attempts(lua) == [('Peer00', 10), ('Peer00', 12), ('Peer01', 13), ('Peer02', 14), ('Peer03', 15)]
+
+
 def test_a_false_after_throttles_is_still_retried_and_waits_only_two_seconds():
     lua = actor('Thora')
     lua.execute(LIMITS + '__results={3,3,false}')
@@ -176,27 +186,61 @@ def test_a_false_after_throttles_is_still_retried_and_waits_only_two_seconds():
     assert [p['target'] for p in lua.eval('__sent').values()] == ['Peer00-TestRealm', 'Peer01-TestRealm']
 
 
-def test_offline_peer_is_skipped_quietly_and_a_departed_peer_is_not_whispered():
+def test_offline_peer_is_skipped_quietly():
     lua = actor('Thora')
     lua.execute(LIMITS + '__results={12}')
     peers(lua, 3)
     level_up(lua, 2)
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'peer_offline'
     assert lua.eval('WoWStatusDB.popups.last_send.target') == 'Peer00-TestRealm'
-    # Peer01 leaves the group's channel after the list was taken.
-    lua.execute('__peers={"Peer00-TestRealm","Peer02-TestRealm"}')
     run(lua, 11, 40)
-    assert popup_attempts(lua) == [('Peer00', 10), ('Peer02', 11)]
-    assert not any('blocked' in line for line in lua.eval('__chat').values())
+    assert popup_attempts(lua) == [('Peer00', 10), ('Peer01', 11), ('Peer02', 12)]
+    assert lua.eval('#__chat') == 0
+
+
+def test_a_peer_who_left_the_channel_is_not_whispered_but_a_quiet_one_is():
+    lua = actor('Thora')
+    lua.execute(LIMITS)
+    peers(lua, 15)
+    level_up(lua, 2)
+    # Peer12 leaves the group's channel after the list was taken. The roster is
+    # read again within 10 s, before the sender reaches Peer12.
+    lua.execute('table.remove(__peers, 13)')
+    run(lua, 11, 40)
+    targets = [target for target, _ in popup_attempts(lua)]
+    assert targets == [f'Peer{i:02d}' for i in range(15) if i != 12]
+    # Without a roster read to go by, nobody is skipped: a friend last heard in
+    # the channel over five minutes ago still gets the update.
+    quiet = actor('Thora')
+    quiet.execute(LIMITS + 'GetNumDisplayChannels=nil;__throttleAll=true')
+    for name in ('Loud-TestRealm', 'Quiet-TestRealm'):
+        quiet.eval('WoWStatusPopups.notePeer')(group_of(quiet), name)
+    level_up(quiet, 2)
+    run(quiet, 11, 320)
+    quiet.execute('__throttleAll=false')
+    run(quiet, 320, 340)
+    assert [target for target, at in popup_attempts(quiet) if at >= 320] == ['Loud', 'Quiet']
+
+
+def test_blocked_whispers_say_so_once_per_update():
+    lua = actor('Thora')
+    lua.execute(LIMITS + '__results={9,9,9}')
+    peers(lua, 3)
+    level_up(lua, 2)
+    run(lua, 11, 40)
+    assert len(popup_attempts(lua)) == 3
+    assert sum('update blocked/uncertain' in line for line in lua.eval('__chat').values()) == 1
 
 
 def test_a_full_send_queue_is_reported():
     lua = actor('Thora', 'alpha\nbeta\ngamma')
     lua.execute(LIMITS)
     peers(lua, 20)
-    for level in range(2, 13):
-        level_up(lua, level)   # 11 updates to 3 groups: the queue holds 32.
+    for level in range(2, 12):
+        level_up(lua, level)   # 10 updates to 3 groups: 30 queued.
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'queued'
+    level_up(lua, 12)   # Room for two of its three groups.
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'send_queue_full'
     level_up(lua, 13)
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'send_queue_full'
 
@@ -245,6 +289,7 @@ def test_sender_stops_when_receivers_would_reject_the_update():
     ((True, 9), 'failed'),
     ((True, 12), 'offline'),
     # The deprecated global wrapper returns a boolean first and the code second.
+    ((True, False, None), 'uncertain'),
     ((True, True, 0), 'sent'),
     ((True, False, 3), 'throttled'),
     ((True, False, 9), 'failed'),
