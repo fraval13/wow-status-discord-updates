@@ -29,7 +29,8 @@ def relay(victim, sender, record, start=11, via=None, group=None):
 
     def send(text):
         victim.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', f'J2 {group} {text}', 'WHISPER', sender)
-    send(f'H hello-{start} {client}')
+    # A real login hello names the sender's login time (issue #4).
+    send(f'H {1793000000 + start}-1 {client}')
     token = None
     for step in range(30):
         clock(victim, start + step)

@@ -9,7 +9,16 @@ local warned,lastWarning={},nil
 local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
 local pumpJobs
+-- CAP bounds this account's own entries and, separately, received entries (#4).
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
+-- Catch-up one member can deliver per login session: at most RELAY_CAP entries
+-- fetched from it, at most SENDER_CAP of them naming one other member (#4).
+local RELAY_CAP, SENDER_CAP = 300, 100
+-- A hello is a login (or group-change) nonce "<time>-<serial>". It is honored only
+-- within HELLO_WINDOW seconds of that time, either way, and at most once per
+-- HELLO_INTERVAL for one member in one group (#4).
+local HELLO_WINDOW, HELLO_INTERVAL = 900, 600
+local budgets = {}
 -- The accused name is last and may contain spaces: WoW Forever names can ("Mr Exadi").
 local WITNESS = "^([%w%-]+) (%d+) (.+)$"
 local panel, refresh
@@ -92,17 +101,22 @@ end
 local function rebuild()
     index,digests={},{}
     table.sort(db.journal.entries,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
-    local private=0
+    -- Own and received entries are capped separately, newest kept, so received
+    -- traffic can never evict this account's own history (#4).
+    local private,own,received=0,0,0
     local kept,seen={},{}
     for _, e in ipairs(db.journal.entries) do
         if not seen[e.id] then
             seen[e.id]=true
-            if e.owner and not next(e.groups or {}) then private=private+1 end
-            if not (e.owner and not next(e.groups or {}) and private>1000) then kept[#kept+1]=e end
+            local localOnly=e.owner and not next(e.groups or {})
+            if localOnly then private=private+1 end
+            if not (localOnly and private>1000) then
+                if e.owner then own=own+1 else received=received+1 end
+                if (e.owner and own or received)<=CAP then kept[#kept+1]=e end
+            end
         end
     end
     db.journal.entries=kept
-    while #db.journal.entries>CAP do table.remove(db.journal.entries) end
     for _, e in ipairs(db.journal.entries) do index[e.id]=e;digests[digest(e.id)]=e end
 end
 -- t is full, or a live packet's cut of it: a prefix of full followed by "...".
@@ -425,13 +439,20 @@ local function requestPage(group,target,offset,pages,retries)
     requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
+-- What one member (by sender key) has delivered by catch-up this session.
+local function budget(key)
+    local b=budgets[key]
+    if not b then b={fetched=0,claims={}};budgets[key]=b end
+    return b
+end
 local function advance(t)
     local r=requests[t]
     if not r or not r.nextOffset or next(r.pending) then return end
     requests[t]=nil
     local key=r.group..":"..r.key
     cursors[key]=r.more and r.nextOffset or 0
-    if r.more and r.pages<math.ceil(CAP/PAGE) then requestPage(r.group,r.target,r.nextOffset,r.pages+1,r.retries)
+    if r.more and r.pages<math.ceil(CAP/PAGE) and budget(r.key).fetched<RELAY_CAP then
+        requestPage(r.group,r.target,r.nextOffset,r.pages+1,r.retries)
     elseif pumpJobs then pumpJobs() end
 end
 local function enqueueJob(group,target,retries)
@@ -491,8 +512,12 @@ function J.receive(message,sender,distribution)
     if op=="H" then
         if body~=WoWStatusAdapter.client_id then return false end
         local helloKey=group..":"..key
-        if seenHello[helloKey]==t then return true end
-        seenHello[helloKey]=t;enqueueJob(group,sender);return true
+        local last=seenHello[helloKey]
+        if last and last.nonce==t then return true end
+        -- Only a login or group-change hello schedules a pull, and only so often (#4).
+        local at=tonumber(t:match("^(%d+)%-%d+$"))
+        if not at or math.abs(at-time())>HELLO_WINDOW or (last and time()-last.at<HELLO_INTERVAL) then return false end
+        seenHello[helloKey]={nonce=t,at=time()};enqueueJob(group,sender);return true
     end
     if op=="Q" then
         local offset,cutoff,mask=body:match("^(%d+) (%d+) ([0-7])$")
@@ -526,6 +551,7 @@ function J.receive(message,sender,distribution)
         offset=tonumber(offset)
         if not offset or offset<r.offset or offset>r.offset+PAGE then return false end
         local wanted,seen,n={}, {}, 0
+        local spent=budget(key)
         if list~="-" then
             for d in list:gmatch("[^,]+") do
                 n=n+1
@@ -533,12 +559,15 @@ function J.receive(message,sender,distribution)
                 seen[d]=true
                 local existing=digests[d]
                 -- Also fetch the author's own copy of an entry only a relay vouched for.
-                if not existing or not existing.groups[group]
-                    or (relayed(existing) and P.senderKey(existing.sender)==key) then wanted[#wanted+1]=d end
+                -- Past this member's share for the session, fetch nothing more (#4).
+                if (not existing or not existing.groups[group]
+                    or (relayed(existing) and P.senderKey(existing.sender)==key))
+                    and spent.fetched+#wanted<RELAY_CAP then wanted[#wanted+1]=d end
             end
         end
         r.inventory=true;r.nextOffset=offset;r.more=more=="1"
         if r.more and offset<=r.offset then return false end
+        spent.fetched=spent.fetched+#wanted
         for _, d in ipairs(wanted) do r.pending[d]=true end
         if #wanted>0 then queue(group,sender,"G "..t.." "..table.concat(wanted,",")) end
         advance(t);return true
@@ -583,6 +612,16 @@ function J.receive(message,sender,distribution)
         if not e then if problem=="invalid" then J.reportInvalid(group,sender) end;return false end
         if digest(e.id)~=d then J.reportInvalid(group,sender);return false end
         if e.at<r.cutoff then return false end
+        -- A member vouches for at most SENDER_CAP entries naming one other member
+        -- per session; its own entries count only toward RELAY_CAP (#4).
+        local claimed,claims=P.senderKey(e.sender),budget(key).claims
+        if claimed~=key then
+            if (claims[claimed] or 0)>=SENDER_CAP then
+                r.pending[d]=nil;r.parts[d]=nil;r.via[d]=nil;advance(t)
+                return false
+            end
+            claims[claimed]=(claims[claimed] or 0)+1
+        end
         -- Forwarded identities are claims by the relay, not authenticated origins.
         -- via: who the sender says it got the entry from (the sender itself if it
         -- does not say). relay: the sender, checked by the game, when that differs.
@@ -606,6 +645,8 @@ function J.tick()
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
     for k,at in pairs(rates) do if now-at>120 then rates[k]=nil end end
+    -- Past this, a remembered hello's nonce is outside the window anyway.
+    for k,h in pairs(seenHello) do if now-h.at>2*HELLO_WINDOW then seenHello[k]=nil end end
     -- Log sync is not held for combat: addon whispers are not combat-protected,
     -- and WoW Forever can report a UI lockdown outside combat, which stopped sync.
     -- Real messaging restrictions are still checked through chatRestricted().
@@ -638,7 +679,7 @@ function J.init(database,character)
     for slot=1,19 do equipment[slot]=WoWStatusAdapter.equipment(slot) end
     for _, p in ipairs(character.progress and character.progress.professions or {}) do professionRanks[p.name]=p.skill end
     lastSend=0;loginNonce=token()
-    jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
+    jobs,queuedJobs,contacted,hellos,seenHello,budgets={},{},{},{},{},{}
     local kept={}
     for _,e in ipairs(db.journal.entries) do if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e) then e.groups=e.groups or {};kept[#kept+1]=e end end
     db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=time()+60

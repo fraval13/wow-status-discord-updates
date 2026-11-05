@@ -91,8 +91,12 @@ polling after the login exchange completes. Recovery adds quiet log cards rather
 than replaying old popups, and duplicate IDs do not create duplicate entries.
 
 Someone with a saved copy must be online. Sync covers up to seven days after your
-group join time, bounded by the retained log: 2,000 entries, including at most
-1,000 private activity entries. Realm/faction/whisper restrictions still apply.
+group join time, bounded by the retained log: 2,000 of your own entries (at most
+1,000 of them private activity) and, separately, 2,000 received entries, so
+received entries never push out your own. Each login session takes at most 300
+caught-up entries from one member, at most 100 of them about any one other
+member; the rest come from other members or the next login. Realm/faction/whisper
+restrictions still apply.
 Friends should update to the same release for login sync and armor metadata.
 
 ## Development
