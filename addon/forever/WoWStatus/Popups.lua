@@ -372,16 +372,17 @@ local function queuedFrom(key, event)
     end
     return count
 end
-local function noteReceive(state, c, now, offset)
-    prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now, offset=offset}
+local function noteReceive(state, c, now)
+    prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now}
 end
--- Packet timestamps outside the freshness window are dropped. A group member's
--- (or trusted legacy sender's) drop is recorded, so /wstatus popup status can
--- say why (issue #7); anyone else's never replaces that diagnostic.
+-- Packet timestamps outside the freshness window are dropped. The latest drop
+-- is kept apart from last_receive, so /wstatus popup status can say why (issue
+-- #7) even before the sender's roster entry loads, and no sender can hide the
+-- last real update behind a drop.
 local function late(c, now)
     local reason = S.outside(c.at, LIVE_WINDOW, LIVE_AHEAD)
-    if reason and (c.group == "legacy" or P.isPeer(c.group, c.key)) then
-        noteReceive("rejected_" .. reason, c, now, c.at - S.now())
+    if reason then
+        prefs.last_dropped = {state="rejected_"..reason, sender=c.sender, kind=c.kind or "level", at=now, offset=c.at-S.now()}
     end
     return reason ~= nil
 end
@@ -501,7 +502,7 @@ function P.receive(text, sender, channel)
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) then return false end
-        if late({sender=sender, key=key, group=group, kind=kind, at=at}, now) then return false end
+        if late({sender=sender, kind=kind, at=at}, now) then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
         local lootInfo
@@ -537,7 +538,7 @@ function P.receive(text, sender, channel)
     if client ~= A.client_id then return false end
     local level, at, now = tonumber(levelText), tonumber(atText), time()
     if not at or not nonce or #nonce > 64 then return false end
-    if late({sender=sender, key=key, group=group, at=at}, now) then return false end
+    if late({sender=sender, at=at}, now) then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
     return admit({sender=sender, key=key, group=group, level=level, at=at, nonce=nonce}, now)
 end
@@ -982,13 +983,17 @@ function P.command(text)
         notify("Last broadcast: " .. (prefs.last_send and prefs.last_send.state or "none")
             ..(prefs.last_send and prefs.last_send.target and (" to "..prefs.last_send.target) or ""))
         local received=prefs.last_receive
-        local stamped=received and type(received.offset)=="number" and (" (stamped "..realmOffset(received.offset)..")") or ""
-        notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state..stamped) or "none")
+        notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state) or "none")
             .."; popup queue="..#incoming.."; awaiting roster="..#unverified.."; in combat="..tostring(combat() and true or false))
-        local realmNow=S.realmTime()
-        notify("Clock: "..(not realmNow and "realm time unavailable; using this PC's clock"
-            or math.abs(time()-realmNow)<=1 and "this PC matches realm time"
-            or ("this PC is "..realmOffset(time()-realmNow)))..".")
+        local dropped=prefs.last_dropped
+        if type(dropped)=="table" and type(dropped.offset)=="number" then
+            notify("Last dropped: "..tostring(dropped.kind).." from "..tostring(dropped.sender).." — "..tostring(dropped.state)
+                .." (stamped "..realmOffset(dropped.offset)..")")
+        end
+        local offset=S.clockOffset()
+        notify("Clock: "..(not offset and "realm time unavailable; using this PC's clock"
+            or math.abs(offset)<=1 and "this PC matches realm time"
+            or ("this PC is "..realmOffset(offset)))..".")
     else
         notify("Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME")
         notify("Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status.")

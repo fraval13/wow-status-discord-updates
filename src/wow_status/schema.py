@@ -45,8 +45,9 @@ def integer(value, name, low, high):
     return value
 
 
-# How far a PC's clock may be from realm time in an export's clock_offset.
-MAX_CLOCK_OFFSET = 31 * 86400
+# Bounds an export's clock_offset to the 32-bit time range: a PC clock reset to
+# an old date is far off but still valid.
+MAX_CLOCK_OFFSET = 2 ** 32
 
 
 def realm_now(clock_offset=0):

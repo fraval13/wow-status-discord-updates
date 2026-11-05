@@ -57,7 +57,7 @@ local function apply(character, force)
     character.group_ids = selected
     character.legacy_upload = false
     character.player_name = database.player_name or ""
-    character.exported_at = S.now()
+    S.stampExport(character)
 end
 function G.init(db, getter, reporter)
     database, getCharacter, report = db, getter, reporter

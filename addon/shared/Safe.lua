@@ -66,6 +66,16 @@ end
 function S.now()
     return S.realmTime() or time()
 end
+-- This PC's clock minus realm time, in seconds; nil without realm time.
+function S.clockOffset()
+    local realm = S.realmTime()
+    return realm and time() - realm or nil
+end
+-- Stamps a character's export time. The companion on this PC checks the
+-- realm-time stamps against its own clock minus clock_offset.
+function S.stampExport(character)
+    character.exported_at, character.clock_offset = S.now(), S.clockOffset() or 0
+end
 -- Checks a peer's timestamp against [now - past, now + ahead]. Updated clients
 -- stamp realm time; older ones stamp their PC clock, so a stamp that fits this
 -- PC's clock still counts (it did before). Returns nil when the stamp fits,

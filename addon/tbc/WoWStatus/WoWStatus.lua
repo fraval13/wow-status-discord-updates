@@ -39,9 +39,7 @@ end
 
 local function snapshot()
     if not current then return end
-    -- The companion compares these realm-time stamps with its PC clock.
-    current.exported_at = S.now()
-    current.clock_offset = time() - current.exported_at
+    S.stampExport(current)
     if current.settings.enabled then current.enrolled = true end
     current.player_name = WoWStatusDB.player_name or ""
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
@@ -635,7 +633,7 @@ SlashCmdList.WOWSTATUS = function(message)
         if rest == "legacy" then
             current.group_ids = {}
             current.legacy_upload = true
-            current.exported_at = S.now()
+            S.stampExport(current)
             WoWStatusPopups.groupsChanged()
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
         else openSettings("groups") end

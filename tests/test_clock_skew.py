@@ -42,6 +42,10 @@ def last_receive(lua):
     return lua.eval('WoWStatusDB.popups.last_receive.state')
 
 
+def last_dropped(lua):
+    return lua.eval('WoWStatusDB.popups.last_dropped and WoWStatusDB.popups.last_dropped.state')
+
+
 def level_up(sender, receiver, at=10):
     clock(sender, at)
     clock(receiver, at)
@@ -121,9 +125,9 @@ def test_status_explains_an_update_dropped_for_its_timestamp(kind):
         old.eval('fire')('PLAYER_DEAD')
     deliver_popup(old, receiver)
     assert receiver.eval('#WoWStatusJournal.entries()') == 0
-    assert last_receive(receiver) == 'rejected_stale'
+    assert last_dropped(receiver) == 'rejected_stale'
     lines = status_lines(receiver)
-    assert said(lines, f'Last received: {kind} from Thora-TestRealm — rejected_stale '
+    assert said(lines, f'Last dropped: {kind} from Thora-TestRealm — rejected_stale '
                 '(stamped 180 s behind realm time)')
     assert said(lines, 'Clock: this PC matches realm time.')
 
@@ -131,7 +135,7 @@ def test_status_explains_an_update_dropped_for_its_timestamp(kind):
 def test_status_explains_a_future_timestamp_and_this_pcs_clock():
     old, receiver = pc('Thora', 400, realm=False), pc('Mira', -95)
     level_up(old, receiver)
-    assert last_receive(receiver) == 'rejected_future'
+    assert last_dropped(receiver) == 'rejected_future'
     lines = status_lines(receiver)
     assert said(lines, 'rejected_future (stamped 400 s ahead of realm time)')
     assert said(lines, 'Clock: this PC is 95 s behind realm time.')
@@ -213,6 +217,21 @@ def test_exports_carry_realm_times_and_this_pcs_clock_offset():
     assert lua.eval('next(character().group_ids) and select(2, next(character().group_ids)).joined_at') == REALM
 
 
+def test_every_characters_export_carries_the_current_clock_offset():
+    """Group saves re-stamp alts' exports too; their offset must match that stamp."""
+    lua = pc('Thora', -600)
+    clock(lua, 30)
+    lua.execute('''
+        local alt = {identity={guid="Player-123-Alt", name="Altie", realm="TestRealm", client=character().identity.client},
+            settings=character().settings, group_ids={}, clock_offset=999}
+        WoWStatusDB.characters["alt"] = alt
+    ''')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
+    assert lua.eval('WoWStatusDB.characters["alt"].exported_at') == REALM + 30
+    assert lua.eval('WoWStatusDB.characters["alt"].clock_offset') == -600
+    assert lua.eval('character().clock_offset') == -600
+
+
 @pytest.mark.parametrize('skew', [0, -900])
 def test_an_old_peers_first_is_announced_when_both_pcs_are_equally_wrong(skew):
     old, receiver = pc('Mira', skew, realm=False), pc('Thora', skew)
@@ -228,15 +247,21 @@ def test_an_old_peers_first_is_announced_when_both_pcs_are_equally_wrong(skew):
     assert headings == ['A FRIEND HAS FALLEN', 'A NEW FIRST!']
 
 
-def test_a_non_members_stale_packet_does_not_replace_the_diagnostic():
+def test_a_drop_is_shown_before_the_senders_roster_entry_loads_and_keeps_the_last_update():
+    """Drops are kept apart from last_receive, and are recorded without a roster read."""
     sender, receiver = pc('Thora'), pc('Mira')
     level_up(sender, receiver)
     group = receiver.eval('next(character().group_ids)')[0]
     client = receiver.eval('WoWStatusAdapter.client_id')
+    receiver.execute('__rosterReads=0; local peers=WoWStatusPopups.peers; '
+                     'WoWStatusPopups.peers=function(...) __rosterReads=__rosterReads+1; return peers(...) end')
     stale = f'WSTATUS2 {client} LEVEL 5 {REALM - 1000} 1-1'
-    assert not receiver.eval('WoWStatusPopups.receive')(stale, 'Stranger-TestRealm', 'WStatus' + group)
+    assert not receiver.eval('WoWStatusPopups.receive')(stale, 'Eldrin-TestRealm', 'WStatus' + group)
+    assert receiver.eval('__rosterReads') == 0
     assert receiver.eval('WoWStatusDB.popups.last_receive.sender') == 'Thora-TestRealm'
     assert last_receive(receiver) in ('queued', 'displayed')
+    lines = status_lines(receiver)
+    assert said(lines, 'Last dropped: level from Eldrin-TestRealm — rejected_stale (stamped 1010 s behind realm time)')
 
 
 def test_without_realm_time_a_drop_is_measured_on_this_pcs_clock():

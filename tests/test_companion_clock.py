@@ -45,11 +45,17 @@ def test_without_a_clock_offset_the_pc_clock_is_used_as_before(tmp_path, monkeyp
     assert list(exports(saved(tmp_path)))[0]['_clock_offset'] == 0
 
 
-@pytest.mark.parametrize('value', ['"-600"', '-600.5', str(32 * 86400)])
+@pytest.mark.parametrize('value', ['"-600"', '-600.5', str(2 ** 33)])
 def test_a_malformed_clock_offset_is_rejected(tmp_path, monkeypatch, value):
     pc_clock(monkeypatch, REALM)
     with pytest.raises(ValidationError, match='clock offset'):
         list(exports(saved(tmp_path, f' clock_offset = {value},')))
+
+
+def test_a_pc_clock_months_behind_still_exports(tmp_path, monkeypatch):
+    behind = 40 * 86400
+    pc_clock(monkeypatch, REALM - behind)
+    assert list(exports(saved(tmp_path, f' clock_offset = {-behind},')))[0]['exported_at'] == REALM
 
 
 def test_group_scoping_on_a_slow_pc_uses_the_clock_offset(payload, clone, monkeypatch):

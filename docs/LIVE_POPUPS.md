@@ -197,8 +197,9 @@ Older clients still stamp their PC clock. Their updates count when the stamp fit
 realm time or this PC's clock, so anything accepted before is still accepted.
 
 A dropped stamp shows in `/wstatus popup status` as `rejected_stale` or
-`rejected_future`, with how far it was from realm time, and a `Clock:` line says
-how far this PC's clock is from realm time. To test: set one PC's clock three
-minutes ahead (without automatic time sync) and send a level-up or milestone both
-ways; both popups should show. `/run print(time()-GetServerTime())` should print
+`rejected_future` on a `Last dropped:` line, with how far it was from realm time.
+It is kept apart from `Last received:`, so it shows even when the sender's roster
+entry has not loaded yet. A `Clock:` line says how far this PC's clock is from
+realm time. To test: set one PC's clock three minutes ahead (without automatic
+time sync) and send a level-up or milestone both ways; both popups should show. `/run print(time()-GetServerTime())` should print
 about 180 on that PC and about 0 on the other.
