@@ -45,7 +45,19 @@ def integer(value, name, low, high):
     return value
 
 
-def validate(payload):
+# Bounds an export's clock_offset to the 32-bit time range: a PC clock reset to
+# an old date is far off but still valid.
+MAX_CLOCK_OFFSET = 2 ** 32
+
+
+def realm_now(clock_offset=0):
+    """This machine's estimate of realm time. The addon stamps realm time (issue #7)
+    and exports how far the PC clock is from it; the server's own clock is realm time."""
+    return int(time.time()) - clock_offset
+
+
+def validate(payload, now=None):
+    """now: realm time on the machine that validates (realm_now); the clock by default."""
     if (not isinstance(payload, dict) or type(payload.get('version')) is not int
             or payload['version'] != 1):
         raise ValidationError('Unsupported payload version')
@@ -109,7 +121,7 @@ def validate(payload):
     clean['settings']['level_interval'] = integer(settings.get('level_interval', 10),
                                                  'level_interval', 1, 100)
     clean['exported_at'] = integer(payload.get('exported_at'), 'exported_at',
-                                    1, int(time.time()) + 300)
+                                    1, (realm_now() if now is None else now) + 300)
     snapshot = payload.get('snapshot', {})
     if not isinstance(snapshot, dict):
         raise ValidationError('Invalid snapshot')

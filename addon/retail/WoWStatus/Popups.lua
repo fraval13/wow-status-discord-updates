@@ -22,6 +22,10 @@ local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 60, 32
 -- While a changed roster reloads, members from the last complete read still
 -- count, but only for this long after that read.
 local LAST_ROSTER_SECONDS = 120
+-- Freshness of a live update, in realm time (issue #7): the sender drops it from
+-- its queue after LIVE_WINDOW seconds, and receivers accept stamps at most
+-- LIVE_WINDOW seconds old or LIVE_AHEAD seconds ahead (see late()).
+local LIVE_WINDOW, LIVE_AHEAD = 120, 300
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -371,6 +375,18 @@ end
 local function noteReceive(state, c, now)
     prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now}
 end
+-- Packet timestamps outside the freshness window are dropped. The latest drop
+-- is kept apart from last_receive, so /wstatus popup status can say why (issue
+-- #7) even before the sender's roster entry loads, and no sender can hide the
+-- last real update behind a drop.
+local function late(sender, kind, at, now)
+    local reason, realm = S.outside(at, LIVE_WINDOW, LIVE_AHEAD)
+    if reason then
+        prefs.last_dropped = {state="rejected_"..reason, sender=sender, kind=kind or "level", at=now,
+            offset=at-realm, pc_clock=S.realmTime()==nil or nil}
+    end
+    return reason ~= nil
+end
 -- Store a validated update from a known peer (or a trusted legacy sender): log
 -- it, then queue its popup unless the log already had it.
 local function commit(c, now)
@@ -486,7 +502,8 @@ function P.receive(text, sender, channel)
         local allowed = {introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
-            or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
+            or (not raw and #encoded % 2 ~= 0) then return false end
+        if late(sender, kind, at, now) then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
         local lootInfo
@@ -521,7 +538,8 @@ function P.receive(text, sender, channel)
     end
     if client ~= A.client_id then return false end
     local level, at, now = tonumber(levelText), tonumber(atText), time()
-    if not at or not nonce or #nonce > 64 or at < now - 120 or at > now + 300 then return false end
+    if not at or not nonce or #nonce > 64 then return false end
+    if late(sender, nil, at, now) then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
     return admit({sender=sender, key=key, group=group, level=level, at=at, nonce=nonce}, now)
 end
@@ -762,7 +780,7 @@ local function tick()
     end
     if #outgoing == 0 or now - lastAttempt < 1 then return end
     local item, character = outgoing[1], getCharacter()
-    if not canShare(character, item.event) or now - item.at > 120
+    if not canShare(character, item.event) or S.now() - item.at > LIVE_WINDOW
         or (item.group_id and not WoWStatusGroups.contains(character, item.group_id)) then
         table.remove(outgoing, 1)
         status("cancelled_or_expired", item.event)
@@ -898,6 +916,12 @@ function P.showActivity()
     if WoWStatusJournal then WoWStatusJournal.show() end
 end
 
+-- "185 s behind realm time" for a difference of -185 seconds; pcClock: it was
+-- measured on this PC's clock, without realm time.
+local function realmOffset(seconds, pcClock)
+    return math.abs(seconds).." s "..(seconds<0 and "behind" or "ahead of")
+        ..(pcClock and " this PC's clock" or " realm time")
+end
 function P.command(text)
     if not prefs then return end
     local command, rest = text:match(S.SPLIT_WORD)
@@ -962,6 +986,22 @@ function P.command(text)
         local received=prefs.last_receive
         notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state) or "none")
             .."; popup queue="..#incoming.."; awaiting roster="..#unverified.."; in combat="..tostring(combat() and true or false))
+        local dropped=prefs.last_dropped
+        if type(dropped)=="table" and type(dropped.offset)=="number" and type(dropped.at)=="number" then
+            local ago=math.max(0,time()-dropped.at)
+            notify("Last dropped: "..tostring(dropped.kind).." from "..tostring(dropped.sender).." — "..tostring(dropped.state)
+                .." (stamped "..realmOffset(dropped.offset,dropped.pc_clock)..", "
+                ..(ago<120 and (ago.." s") or (math.floor(ago/60).." min")).." ago)")
+        end
+        local offset=S.clockOffset()
+        -- Within a minute of a whole number of half hours: a time zone mix-up, on
+        -- this PC or in the game's realm clock (#25 checks GetServerTime).
+        local halves=offset and math.floor((math.abs(offset)+60)/1800)
+        local zone=halves and halves>=1 and math.abs(math.abs(offset)-halves*1800)<=60
+        notify("Clock: "..(not offset and "realm time unavailable; using this PC's clock"
+            or math.abs(offset)<=1 and "this PC matches realm time"
+            or ("this PC is "..realmOffset(offset)))
+            ..(zone and " (check the PC's time zone)" or "")..".")
     else
         notify("Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME")
         notify("Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status.")

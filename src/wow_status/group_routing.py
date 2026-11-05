@@ -5,7 +5,7 @@ import re
 from functools import lru_cache
 from importlib.resources import files
 
-from .schema import ValidationError, integer, validate
+from .schema import ValidationError, integer, realm_now, validate
 
 GROUP_ID = re.compile(r'[a-f0-9]{22}\Z')
 
@@ -63,12 +63,18 @@ def memberships(raw, exported_at):
     return result
 
 
+def _public(payload):
+    """Validates the uploadable part of a companion payload on this PC's realm-time estimate."""
+    return validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}),
+                    now=realm_now(payload.get('_clock_offset', 0)))
+
+
 def for_group(payload, target, minimum=0):
     """Only selected, post-join events; never include the routing list on the wire."""
     selected = payload.get('_groups', {})
     member = selected[target]
     since = max(member['joined_at'], minimum)
-    result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
+    result = _public(payload)
     if result['snapshot'].get('playtime_recorded_at', since) < since:
         result['snapshot'].pop('playtime_recorded_at', None)
     result['group_id'] = group_id(target)
@@ -104,7 +110,7 @@ def for_group(payload, target, minimum=0):
 
 
 def withdrawal(payload, target):
-    result = validate(copy.deepcopy({key: value for key, value in payload.items() if not key.startswith('_')}))
+    result = _public(payload)
     result['group_id'] = group_id(target)
     result['settings']['enabled'] = False
     result['settings']['introduction_confirmed'] = False

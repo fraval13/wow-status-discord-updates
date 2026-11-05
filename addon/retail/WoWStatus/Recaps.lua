@@ -14,7 +14,7 @@ local function count(n, one, many) return n == 1 and one or (n == 2 and many == 
 local function level() return S.number(WoWStatusAdapter.level and WoWStatusAdapter.level()) end
 
 local function start(startLevel)
-    character.session = {started=time(), last=time(), start_level=startLevel or level(), counts={}, dungeons={}}
+    character.session = {started=S.now(), last=S.now(), start_level=startLevel or level(), counts={}, dungeons={}}
     return character.session
 end
 
@@ -51,7 +51,7 @@ function R.text(session, name, at)
         end
     end
     if #parts == 0 then return nil end
-    return prefix(at or session.last or time()) .. ": " .. name .. " " .. table.concat(parts, ", ") .. "."
+    return prefix(at or session.last or S.now()) .. ": " .. name .. " " .. table.concat(parts, ", ") .. "."
 end
 
 -- Write the recap (if anything happened) and end the session.
@@ -73,7 +73,7 @@ function R.note(event)
     if event.kind == "introduction" then return end
     local data = event.data or {}
     local session = character.session or start(event.kind == "level" and S.number(data.level) and data.level - 1 or nil)
-    session.last = time()
+    session.last = S.now()
     session.counts[event.kind] = (session.counts[event.kind] or 0) + 1
     if event.kind == "level" and S.number(data.level) then
         session.top_level = math.max(session.top_level or 0, data.level)
@@ -83,16 +83,16 @@ function R.note(event)
 end
 
 function R.activity()
-    if character and character.session then character.session.last = time() end
+    if character and character.session then character.session.last = S.now() end
 end
 
 function R.tick()
     local session = character and character.session
-    if session and not session.ended_at and time() - (session.last or time()) >= R.IDLE then R.close(session.last) end
+    if session and not session.ended_at and S.now() - (session.last or S.now()) >= R.IDLE then R.close(session.last) end
 end
 
 function R.logout()
-    if character and character.session then character.session.ended_at = time() end
+    if character and character.session then character.session.ended_at = S.now() end
 end
 
 -- At login: a session that ended more than a minute ago gets its recap now;
@@ -102,7 +102,7 @@ function R.init(current)
     local session = character.session
     if type(session) ~= "table" then character.session = nil; session = nil end
     if session and session.ended_at then
-        if time() - session.ended_at > R.RELOAD then R.close(session.ended_at)
+        if S.now() - session.ended_at > R.RELOAD then R.close(session.ended_at)
         else session.ended_at = nil end
     end
     if not character.session then start() end

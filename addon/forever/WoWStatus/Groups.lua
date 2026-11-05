@@ -44,10 +44,12 @@ function G.historySince(id)
 end
 local function apply(character, force)
     if character.legacy_upload and not force then return end
-    local previous, selected = character.group_ids or {}, {}
+    local previous, selected, now = character.group_ids or {}, {}, S.now()
     for id, label in pairs(database.account_groups) do
-        selected[id] = previous[id] or {joined_at = time(), label = label}
+        selected[id] = previous[id] or {joined_at = now, label = label}
         selected[id].label = label
+        -- A join time ahead of realm time was saved on a fast PC clock (issue #7).
+        if type(selected[id].joined_at) == "number" and selected[id].joined_at > now then selected[id].joined_at = now end
         if not previous[id] and character.settings.enabled
             and character.settings.fields.level and character.settings.collection.level then
             selected[id].baseline_level = character == getCharacter() and WoWStatusAdapter.level()
@@ -57,7 +59,7 @@ local function apply(character, force)
     character.group_ids = selected
     character.legacy_upload = false
     character.player_name = database.player_name or ""
-    character.exported_at = time()
+    S.stampExport(character)
 end
 function G.init(db, getter, reporter)
     database, getCharacter, report = db, getter, reporter
@@ -85,7 +87,7 @@ function G.init(db, getter, reporter)
             end
         end
     end
-    local joined = {}
+    local joined, now = {}, S.now()
     for id in pairs(database.account_groups) do
         local at = database.account_group_joined_at and database.account_group_joined_at[id]
         if not at then
@@ -93,11 +95,12 @@ function G.init(db, getter, reporter)
             for _, character in pairs(database.characters) do
                 local member = character.group_ids and character.group_ids[id]
                 if member and type(member.joined_at)=="number" then
-                    at = math.min(at or time(), member.joined_at)
+                    at = math.min(at or S.now(), member.joined_at)
                 end
             end
         end
-        joined[id] = at or time()
+        -- A join time ahead of realm time was saved on a fast PC clock (issue #7).
+        joined[id] = type(at) == "number" and math.min(at, now) or now
     end
     database.account_group_joined_at = joined
     for _, character in pairs(database.characters) do apply(character) end
@@ -120,7 +123,7 @@ local function update(text, playerName)
     if #playerName > 40 or playerName:find(S.CONTROL_OR_PIPE) then return false, "Use a name of up to 40 characters." end
     local joined = {}
     for id in pairs(selected) do
-        joined[id] = database.account_group_joined_at[id] or time()
+        joined[id] = database.account_group_joined_at[id] or S.now()
     end
     database.account_group_joined_at = joined
     database.account_groups = {}

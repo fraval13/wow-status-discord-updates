@@ -58,7 +58,7 @@ local function groupMember(group)
 end
 local function groupSince(group)
     local member=groupMember(group)
-    return member and (WoWStatusGroups.historySince(group) or member.joined_at) or time()
+    return member and (WoWStatusGroups.historySince(group) or member.joined_at) or S.now()
 end
 local function peer(group,sender)
     return P.isPeer(group,P.senderKey(sender))
@@ -87,11 +87,12 @@ local function permitted(entry)
     if fields[entry.kind] and not owner.settings.fields[fields[entry.kind]] then return false end
     return true
 end
-local function relayable(entry,group)
+-- now: realm time, read once by callers that check the whole log.
+local function relayable(entry,group,now)
     if entry.kind=="loot" and not (entry.text or ""):match("^Equipped ") then return false end
     if entry.legacy or entry.client~=WoWStatusAdapter.client_id or not sharedKinds[entry.kind] or not entry.groups or not entry.groups[group] or not permitted(entry) then return false end
     local member=groupMember(group)
-    if not member or entry.at<groupSince(group) or entry.at<time()-AGE then return false end
+    if not member or entry.at<groupSince(group) or entry.at<(now or S.now())-AGE then return false end
     if entry.owner then
         local owner
         for _, c in pairs(db.characters) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
@@ -102,8 +103,8 @@ local function relayable(entry,group)
 end
 -- Never offer a text that updated peers would reject and report as invalid.
 -- Privacy pruning keeps using relayable, so this never drops a group scope.
-local function offerable(entry,group)
-    return relayable(entry,group) and J.validText(entry.kind,entry.text,entry.level)
+local function offerable(entry,group,now)
+    return relayable(entry,group,now) and J.validText(entry.kind,entry.text,entry.level)
 end
 local function rebuild()
     index,digests={},{}
@@ -248,7 +249,7 @@ function J.observe(kind,text,info)
     if kind~="equipment" and not current.settings.collection[category] then return end
     current.journal_sequence=(current.journal_sequence or 0)+1
     add({id="local:"..current.identity.client..":"..current.identity.guid..":"..current.epoch..":"..current.journal_sequence,
-        client=current.identity.client,sender=ownName(),owner=current.identity.guid,kind=kind,at=time(),
+        client=current.identity.client,sender=ownName(),owner=current.identity.guid,kind=kind,at=S.now(),
         text=trim(text,160),quality=info and info.quality,class_id=info and info.class_id,equip_loc=info and info.equip_loc,item_id=info and info.item_id,groups={},origin="mine"})
 end
 function J.equipment(slot,item)
@@ -278,7 +279,7 @@ local function liveEntry(item)
     return {id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
         text=trim(item.level and ("Reached level "..item.level.."!") or item.text or "",160),
         quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,flavour=item.flavour,
-        at=item.at or item.received_at or time(),groups=groups,origin="live"}
+        at=item.at or S.now(),groups=groups,origin="live"}
 end
 -- Logs a live update. Returns true when it is new to the log, which includes
 -- replacing a relay's claim on its ID that has other content.
@@ -304,10 +305,10 @@ function J.groupsChanged()
 end
 function J.privacyChanged()
     if not db then return end
-    local kept={}
+    local kept,now={},S.now()
     for _, e in ipairs(db.journal.entries) do
         if permitted(e) then
-            if e.owner then for g in pairs(e.groups) do if not relayable(e,g) then e.groups[g]=nil end end end
+            if e.owner then for g in pairs(e.groups) do if not relayable(e,g,now) then e.groups[g]=nil end end end
             table.insert(kept,e)
         end
     end
@@ -338,7 +339,7 @@ local function unpackEntry(text)
     if client~=WoWStatusAdapter.client_id or not sharedKinds[kind] then return nil end
     if #id>220 or #sender>120 or not P.senderKey(sender) or not at or at~=math.floor(at)
         or #detail>160 or detail:find(S.CONTROL_OR_PIPE) then return nil,"invalid" end
-    if at<time()-AGE or at>time()+300 then return nil end
+    if S.outside(at,AGE,300) then return nil end
     local prefix=client..":"..P.senderKey(sender)..":"
     if id:sub(1,#prefix)~=prefix or not id:sub(#prefix+1):match("^[%w%-]+$") or #id-#prefix>64 then return nil,"invalid" end
     if kind=="level" then
@@ -440,7 +441,7 @@ function J.reportInvalid(group,sender)
     -- Attribute the actual whisper sender, never the author claimed in a relay.
     if not warning(group,sender,ownName()) then return false end
     local now=time()
-    local body="W "..token().." "..WoWStatusAdapter.client_id.." "..now.." "..sender
+    local body="W "..token().." "..WoWStatusAdapter.client_id.." "..S.now().." "..sender
     for i,target in ipairs(P.peers(group)) do
         if i>64 then break end
         queue(group,target,body,nil,now+120)
@@ -455,7 +456,9 @@ local function requestPage(group,target,offset,pages,retries)
     local t=token()
     local member=groupMember(group)
     if not member then return end
-    local cutoff=math.max(groupSince(group),time()-AGE)
+    -- Never ahead of realm time: a responder drops cutoffs over 300 s ahead.
+    local now=S.now()
+    local cutoff=math.min(math.max(groupSince(group),now-AGE),now)
     requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
@@ -541,7 +544,7 @@ function J.receive(message,sender,distribution)
     if op=="W" then
         local client,at,accused=body:match(WITNESS)
         at=tonumber(at)
-        if client~=WoWStatusAdapter.client_id or not at or at<time()-120 or at>time()+30
+        if client~=WoWStatusAdapter.client_id or not at or S.outside(at,120,30)
             or not P.senderKey(accused) or (P.senderKey(accused)~=P.senderKey(ownName()) and not peer(group,accused)) then return false end
         -- Another member's report, not verified guilt. Never rebroadcast reports.
         return warning(group,accused,sender)
@@ -564,7 +567,7 @@ function J.receive(message,sender,distribution)
         local offset,cutoff,mask=body:match("^(%d+) (%d+) ([0-7])$")
         offset,cutoff,mask=tonumber(offset),tonumber(cutoff),tonumber(mask)
         -- Own and received entries are capped separately, so up to 2*CAP are offered.
-        if not offset or offset>2*CAP or not cutoff or cutoff>time()+300 then return false end
+        if not offset or offset>2*CAP or not cutoff or S.outside(cutoff,math.huge,300) then return false end
         local rateKey=group..":"..key
         if rates[rateKey] and time()-rates[rateKey]<2 then return false end
         rates[rateKey]=time()
@@ -572,12 +575,13 @@ function J.receive(message,sender,distribution)
             if session.group==group and session.key==key then sessions[sessionKey]=nil end
         end
         local n=0;for _ in pairs(sessions) do n=n+1 end;if n>=32 then return false end
-        cutoff=math.max(cutoff,time()-AGE,groupSince(group))
+        local now=S.now()
+        cutoff=math.max(cutoff,now-AGE,groupSince(group))
         local eligible={}
         for _,e in ipairs(db.journal.entries) do
             local weight=({[3]=1,[4]=2,[5]=4})[e.quality]
             local wanted=e.kind~="loot" or (weight and math.floor(mask/weight)%2==1)
-            if wanted and e.at>=cutoff and offerable(e,group) then eligible[#eligible+1]=e end
+            if wanted and e.at>=cutoff and offerable(e,group,now) then eligible[#eligible+1]=e end
         end
         local offer,list={},{}
         for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digestFor(eligible[i]);offer[d]=eligible[i].id;list[#list+1]=d end
