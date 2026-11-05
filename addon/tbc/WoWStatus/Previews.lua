@@ -100,8 +100,6 @@ function P.show(host)
         local function applySize()
             local ok=WoWStatusTheme.setPopupSize(panel.popupSize:GetText())
             panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
-    panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
-    panel.languageSwitch:SetText(WoWStatusLocale.lang()=="nn" and "English" or "Nynorsk")
             panel.popupSize:ClearFocus()
             -- A sample at the new size; an out-of-range value keeps the old one.
             if ok then WoWStatusPopups.preview("level") end
@@ -111,14 +109,20 @@ function P.show(host)
         panel.popupSizeApply=button(panel,"Apply",380,-options-340,90,applySize)
         -- Language (optional Nynorsk). Built windows change after a reload.
         panel.language=text(panel,"",24,-options-390,250)
-        panel.languageSwitch=button(panel,"",290,-options-384,130,function()
+        panel.languageSwitch=button(panel,"",290,-options-384,150,function()
             WoWStatusLocale.set(WoWStatusLocale.lang()=="nn" and "en" or "nn")
-            panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
-            panel.languageSwitch:SetText(WoWStatusLocale.lang()=="nn" and "English" or "Nynorsk")
+            panel.refreshLanguage()
             panel.reload:Show()
         end)
-        panel.reload=button(panel,"Reload",430,-options-384,100,function() if ReloadUI then ReloadUI() end end)
+        panel.reload=button(panel,"",450,-options-384,130,function() if ReloadUI then ReloadUI() end end)
         panel.reload:Hide()
+        -- The switch names its target in that language, so each reader finds it.
+        function panel.refreshLanguage()
+            local nn=WoWStatusLocale.lang()=="nn"
+            panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
+            panel.languageSwitch:SetText(nn and "Switch to English" or "Bytt til nynorsk")
+            panel.reload:SetText(WoWStatusLocale.T("Reload to apply"))
+        end
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
@@ -126,6 +130,7 @@ function P.show(host)
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
+    panel.refreshLanguage()
     panel.theme:SetText(WoWStatusTheme.label())
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)

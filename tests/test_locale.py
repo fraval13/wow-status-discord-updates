@@ -93,3 +93,17 @@ def test_every_translated_text_has_a_nynorsk_entry():
             if text not in SAME and t(text) == text:
                 missing.append(f'{path.name}: {text}')
     assert missing == []
+
+
+def test_the_language_switch_is_labelled_when_the_settings_open():
+    # Live report: the switch was an empty button until clicked.
+    lua = make_lua()
+    lua.execute('''
+        WoWStatusPreviews.show()
+        local panel = WoWStatusNotificationPreviews
+        assert(panel.languageSwitch.text == "Bytt til nynorsk" and panel.language.text == "Language: English")
+        assert(not panel.reload.visible)
+        panel.languageSwitch.OnClick(panel.languageSwitch)
+        assert(WoWStatusLocale.lang() == "nn" and panel.languageSwitch.text == "Switch to English")
+        assert(panel.language.text == "Språk: Nynorsk" and panel.reload.visible and panel.reload.text == "Last på nytt")
+    ''')

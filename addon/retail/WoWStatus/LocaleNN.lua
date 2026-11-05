@@ -185,7 +185,7 @@ W.add({
     ["now"] = "no", ["hit"] = "nådde", ["Left-click: Activity log"] = "Venstreklikk: Aktivitetslogg",
     ["Right-click: Options"] = "Høgreklikk: Innstillingar", ["Drag to move"] = "Dra for å flytte",
     -- Language and What's new
-    ["Language:"] = "Språk:", ["Reload"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
+    ["Language:"] = "Språk:", ["Reload"] = "Last på nytt", ["Reload to apply"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
     ["Use /wstatus language nn for Nynorsk or /wstatus language en for English."] =
         "Bruk /wstatus language nn for nynorsk eller /wstatus language en for engelsk.",
     -- Notifications
