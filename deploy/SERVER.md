@@ -65,6 +65,22 @@ reverting on `main`. Nonempty GitHub settings
 update the server's private config; omitted settings preserve existing private
 values, avoiding accidental credential deletion on later deployments.
 
+## Keeping production level with main
+
+`deploy_gate.py` lets only the tip of `main` deploy, so an older commit never
+publishes over a newer one. That keeps deploys ordered but does not catch up by
+itself: while merges land faster than a run takes, every run stands aside, and if
+the last commit's checks fail, nothing is left to publish the site.
+
+The **Deploy convergence** workflow closes that gap. After each pipeline finishes
+(and hourly as a backstop) it compares the tip of `main` with the `addon_revision`
+the live site serves, and dispatches one more run for the tip when that is what it
+takes. A tip whose own run failed is reported as a warning and never re-dispatched,
+so a broken commit cannot make it loop; push a fix and the next run converges.
+
+Its decision logic is `scripts/deploy_convergence.py`, which is pure and unit
+tested; the workflow gathers the facts and acts on the verdict.
+
 ## Network access and home testing
 
 The public companion address is **https://wow.frankvalde.com**. Its DNS A record
