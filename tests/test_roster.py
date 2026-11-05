@@ -243,3 +243,24 @@ def test_cards_end_with_level_and_total_deaths():
         assert(cards["Mira-TestRealm"]=="Level 1 · 3 deaths", cards["Mira-TestRealm"])
         assert(cards["Thora-TestRealm"]=="Level 1 · 1 death", cards["Thora-TestRealm"])
     ''')
+
+
+def test_silent_members_seen_in_the_group_are_listed_and_remembered():
+    # Live report: members on old versions with nothing in the log were missing.
+    thora = person('Thora', 'Ada')
+    thora.execute('''
+        __peers={"Thora-TestRealm","Silent-TestRealm"}
+        local function silent()
+            for _,g in ipairs(WoWStatusRoster.groups()) do for _,r in ipairs(g.rows) do
+                if r.name=="Silent-TestRealm" then return g.title, r end
+            end end
+        end
+        local title,row=silent()
+        assert(title=="Not announced (1 character)" and row.status=="online")
+        -- After logging off they stay listed, as last seen.
+        __peers={"Thora-TestRealm"}
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+        for _=1,3 do WoWStatusPopups.tick() end
+        title,row=silent()
+        assert(row and row.status:find("last seen",1,true), row and row.status)
+    ''')

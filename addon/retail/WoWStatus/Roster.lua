@@ -142,11 +142,36 @@ local function enqueue(group, target)
     for _, line in ipairs(ownLines(group)) do table.insert(outgoing, {target=target, text=line}) end
 end
 
+-- Members seen in a group's channel roster, saved so everyone in the group is
+-- listed: also members on older versions that never send a usable list and
+-- have nothing in the log (their join was announced long ago, or never).
+local MAX_SEEN = 200
+local function noteSeen(group, name)
+    local k = key(name)
+    if not k or not WoWStatusPopups.fullName(name) or WoWStatusPopups.isSelf(name) then return end
+    local roster = state()
+    roster.seen = type(roster.seen) == "table" and roster.seen or {}
+    local item = roster.seen[k]
+    if not item then
+        local count, oldest, oldestAt = 0, nil, math.huge
+        for id, other in pairs(roster.seen) do
+            count = count + 1; if (other.at or 0) < oldestAt then oldest, oldestAt = id, other.at or 0 end
+        end
+        if count >= MAX_SEEN and oldest then roster.seen[oldest] = nil end
+        item = {groups={}}
+        roster.seen[k] = item
+    end
+    item.name, item.at = name, time()
+    item.groups = type(item.groups) == "table" and item.groups or {}
+    item.groups[group] = true
+end
+R.noteSeen = noteSeen
+
 -- Send to group members not yet told this session (also after a change).
 function R.scan()
     if not db or not current then return end
     for group in pairs(WoWStatusGroups.selected(current)) do
-        for _, peer in ipairs(WoWStatusPopups.peers(group)) do enqueue(group, peer) end
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do noteSeen(group, peer); enqueue(group, peer) end
     end
 end
 
@@ -320,7 +345,10 @@ function R.groups()
         if k and selected[group] then shared[k] = shared[k] or {}; shared[k][group] = true end
     end
     for group in pairs(selected) do
-        for _, peer in ipairs(WoWStatusPopups.peers(group)) do local k = key(peer); if k then online[k] = true; share(k, group) end end
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+            local k = key(peer)
+            if k then online[k] = true; share(k, group); noteSeen(group, peer) end
+        end
     end
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local k = key(e.sender)
@@ -419,6 +447,16 @@ function R.groups()
             for group in pairs(e.groups or {}) do groups[group] = true end
             add("Not announced", {name=resolve(e.sender), at=e.at, groups=groups}, nil,
                 "older version or list sharing off")
+        end
+    end
+    -- Members seen in a group roster with neither a list nor log entries.
+    for k, item in pairs(type(state().seen) == "table" and state().seen or {}) do
+        local groups = {}
+        for group in pairs(type(item.groups) == "table" and item.groups or {}) do
+            if selected[group] then groups[group] = true end
+        end
+        if not known[k] and S.string(item.name) and next(groups) then
+            add("Not announced", {name=item.name, at=item.at, groups=groups}, nil, "older version or list sharing off")
         end
     end
     for _, entry in ipairs(order) do
