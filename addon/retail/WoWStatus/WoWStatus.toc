@@ -6,6 +6,8 @@
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Retail/Mainline only; verify installed build metadata
 Safe.lua
+Locale.lua
+LocaleNN.lua
 Features.lua
 CaseFold.lua
 Retail.lua

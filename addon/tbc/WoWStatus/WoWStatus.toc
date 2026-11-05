@@ -6,6 +6,8 @@
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Burning Crusade Classic Anniversary 2.5.x only
 Safe.lua
+Locale.lua
+LocaleNN.lua
 Features.lua
 CaseFold.lua
 TBC.lua

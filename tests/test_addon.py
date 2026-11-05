@@ -157,6 +157,8 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
     runtime.execute((root / 'Safe.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Locale.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'LocaleNN.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Features.lua').read_text(encoding='utf-8'))
     if discord_feature is not None:
         runtime.globals().WoWStatusFeatures['discord'] = discord_feature

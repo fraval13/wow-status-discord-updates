@@ -7,6 +7,8 @@
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Forever/Camelot only; verify installed build metadata
 Safe.lua
+Locale.lua
+LocaleNN.lua
 Features.lua
 CaseFold.lua
 Forever.lua
