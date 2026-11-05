@@ -157,8 +157,8 @@ are in combat is not queued.
 
 An update is whispered to each peer of each group it belongs to, one whisper a
 second. Three level-ups shared with three groups of 20 are 180 whispers, about
-three minutes. Each update keeps going until it is 10 minutes old, and receivers
-accept updates up to 10 minutes old, so every peer gets it. Before this, an update
+three minutes. Each update keeps going until it is 10 minutes old in realm time,
+and receivers accept updates up to 10 minutes old, so every peer gets it. Before this, an update
 was dropped after two minutes, part-way through its list. Older clients still
 accept only two minutes, so a friend on an older version can miss a late whisper;
 the next login sync still brings it into their log. The list of peers is taken
@@ -218,10 +218,10 @@ by B`.
 
 Updates are stamped with realm time (`GetServerTime()`), the same clock on every
 member's PC, and received stamps are checked against it: a live update counts
-when it is at most 120 seconds old and at most 300 seconds ahead. Before, both
+when it is at most 10 minutes old and at most 300 seconds ahead. Before, both
 sides used their own PC clock (`time()`), so two PCs whose clocks differed by
 more than two minutes silently dropped each other's live updates. The sender's
-queue limit (120 seconds) and the login sync checks use realm time as well, and
+queue limit (10 minutes) and the login sync checks use realm time as well, and
 so do saved event, log, recap, export and group-join times. Short local timers
 keep the PC clock. Each export also saves `clock_offset` (this PC's clock minus
 realm time), and the companion on the same PC checks the export's stamps against
@@ -236,6 +236,6 @@ A dropped stamp shows in `/wstatus popup status` as `rejected_stale` or
 `rejected_future` on a `Last dropped:` line, with how far it was from realm time
 and how long ago it happened. It is kept apart from `Last received:`, so it shows even when the sender's roster
 entry has not loaded yet. A `Clock:` line says how far this PC's clock is from
-realm time. To test: set one PC's clock three minutes ahead (without automatic
-time sync) and send a level-up or milestone both ways; both popups should show. `/run print(time()-GetServerTime())` should print
-about 180 on that PC and about 0 on the other.
+realm time. To test: set one PC's clock 15 minutes ahead (without automatic
+time sync), more than the 10-minute window, and send a level-up or milestone both ways; both popups should show. `/run print(time()-GetServerTime())` should print
+about 900 on that PC and about 0 on the other.

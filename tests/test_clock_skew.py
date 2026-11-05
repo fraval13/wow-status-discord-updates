@@ -77,24 +77,24 @@ def test_live_updates_use_realm_time_whatever_the_pc_clocks_say(sender_skew, rec
 
 
 def test_a_fast_pc_clock_does_not_expire_its_own_queued_update():
-    """The send queue's 120 s limit is measured in realm time, like the stamp."""
+    """The send queue's 600 s limit (#9) is measured in realm time, like the stamp."""
     sender = pc('Thora', skew=180, peers=[])
     clock(sender, 10)
     sender.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert sender.eval('WoWStatusDB.popups.last_send.state') == 'waiting_for_group_peers'
     sender.execute('__peers={"Mira-TestRealm"}')
-    clock(sender, 10 + 119)
+    clock(sender, 10 + 599)
     sender.eval('WoWStatusPopups.tick')()
     assert sender.eval('WoWStatusDB.popups.last_send.state') == 'attempted_no_receipt'
     assert ' LEVEL 2 ' in sender.eval('__sent[#__sent].text')
 
 
-def test_a_queued_update_still_expires_after_120_realm_seconds():
+def test_a_queued_update_still_expires_after_600_realm_seconds():
     sender = pc('Thora', skew=-180, peers=[])
     clock(sender, 10)
     sender.eval('fire')('PLAYER_LEVEL_UP', 2)
     sender.execute('__peers={"Mira-TestRealm"}')
-    clock(sender, 10 + 121)
+    clock(sender, 10 + 601)
     sender.eval('WoWStatusPopups.tick')()
     assert sender.eval('WoWStatusDB.popups.last_send.state') == 'cancelled_or_expired'
     assert sender.eval('#__sent') == 0
@@ -116,7 +116,7 @@ def test_old_peer_packets_are_still_accepted(old_skew, receiver_skew):
 
 @pytest.mark.parametrize('kind', ['level', 'death'])
 def test_status_explains_an_update_dropped_for_its_timestamp(kind):
-    old, receiver = pc('Thora', -180, realm=False), pc('Mira')
+    old, receiver = pc('Thora', -700, realm=False), pc('Mira')
     clock(old, 10)
     clock(receiver, 10)
     if kind == 'level':
@@ -128,7 +128,7 @@ def test_status_explains_an_update_dropped_for_its_timestamp(kind):
     assert last_dropped(receiver) == 'rejected_stale'
     lines = status_lines(receiver)
     assert said(lines, f'Last dropped: {kind} from Thora-TestRealm — rejected_stale '
-                '(stamped 180 s behind realm time, 0 s ago)')
+                '(stamped 700 s behind realm time, 0 s ago)')
     assert said(lines, 'Clock: this PC matches realm time.')
 
 
@@ -265,9 +265,9 @@ def test_a_drop_is_shown_before_the_senders_roster_entry_loads_and_keeps_the_las
 
 
 def test_without_realm_time_a_drop_is_measured_on_this_pcs_clock():
-    old, receiver = pc('Thora', -180, realm=False), pc('Mira', realm=False)
+    old, receiver = pc('Thora', -700, realm=False), pc('Mira', realm=False)
     level_up(old, receiver)
-    assert said(status_lines(receiver), 'rejected_stale (stamped 180 s behind this PC\'s clock, 0 s ago)')
+    assert said(status_lines(receiver), 'rejected_stale (stamped 700 s behind this PC\'s clock, 0 s ago)')
     clock(receiver, 10 + 600)
     assert said(status_lines(receiver), "this PC's clock, 10 min ago)")
 
