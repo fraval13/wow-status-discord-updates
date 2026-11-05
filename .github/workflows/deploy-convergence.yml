@@ -1,0 +1,70 @@
+name: Deploy convergence
+
+# `deploy_gate.py` stops an older commit from deploying over a newer one, so a run
+# whose commit is no longer the tip of `main` skips its deploy. That keeps deploys in
+# order but never catches up on its own: while merges land faster than a run takes,
+# every run stands aside, and if the final commit's checks fail, the site can stay
+# many commits behind with nothing left to publish it.
+#
+# After each pipeline finishes, this checks what production actually serves and
+# dispatches one more run for the tip when that is what it takes. A tip whose own run
+# failed is reported, never re-dispatched, so this cannot loop on a broken commit.
+# The schedule is a backstop for the case where the last pipeline never completed.
+on:
+  workflow_run:
+    workflows: ['Checks and addon packages']
+    types: [completed]
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+concurrency:
+  group: deploy-convergence
+  cancel-in-progress: false
+
+jobs:
+  converge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts/deploy_convergence.py
+          sparse-checkout-cone-mode: false
+      - name: Collect the tip, what production serves, and the runs for main
+        id: facts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tip="$(git ls-remote --exit-code "https://github.com/${GITHUB_REPOSITORY}.git" \
+            refs/heads/main | awk '$2 == "refs/heads/main" { print $1 }')"
+          test -n "$tip"
+          echo "tip=$tip" >> "$GITHUB_OUTPUT"
+          # A site that is down or serving no manifest leaves this empty, which reads
+          # as "behind" rather than failing the check.
+          deployed="$(curl -fsS --max-time 30 \
+            https://wow.frankvalde.com/downloads/release.json \
+            | python3 -c 'import json,sys; print(json.load(sys.stdin).get("addon_revision",""))' \
+            || echo '')"
+          echo "deployed=$deployed" >> "$GITHUB_OUTPUT"
+          gh api --paginate \
+            "repos/${GITHUB_REPOSITORY}/actions/workflows/checks.yml/runs?branch=main&per_page=30" \
+            > runs.json
+      - name: Decide whether production needs another run
+        id: decide
+        run: |
+          python3 scripts/deploy_convergence.py \
+            --tip '${{ steps.facts.outputs.tip }}' \
+            --deployed '${{ steps.facts.outputs.deployed }}' \
+            --runs runs.json
+      - name: Dispatch one run for the tip of main
+        if: steps.decide.outputs.verdict == 'dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run checks.yml --repo "$GITHUB_REPOSITORY" --ref main
+          echo "::notice title=Deploying main::${{ steps.decide.outputs.reason }}"
