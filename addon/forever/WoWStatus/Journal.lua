@@ -620,6 +620,18 @@ function J.show()
     if not db then return end
     WoWStatusMainWindow.show("activity")
 end
+-- Open the Activity page scrolled to one entry (used by the Overview links).
+function J.focus(id)
+    if not db or not index[id] then return false end
+    WoWStatusMainWindow.show("activity")
+    panel.filter="all"
+    for i,e in ipairs(visibleEntries()) do
+        if e.id==id then panel.scroll:SetVerticalScroll((i-1)*132);render();return true end
+    end
+    panel.scroll:SetVerticalScroll(0);render()
+    return false
+end
+function J.visible(entry) return db~=nil and permitted(entry) end
 local frame=CreateFrame("Frame")
 frame:RegisterEvent("CHAT_MSG_ADDON")
 frame:SetScript("OnEvent",function(_,_,prefix,message,distribution,sender)
