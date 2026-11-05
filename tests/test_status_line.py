@@ -125,3 +125,27 @@ def test_options_page_controls_the_status_line():
         widgets.hide_instance:SetChecked(true); widgets.hide_instance.OnClick(widgets.hide_instance)
         assert(WoWStatusDB.status_line.hide_instance == true)
     ''')
+
+
+def test_you_are_never_your_own_peer_when_the_roster_names_your_realm_differently():
+    # WoW Forever: GetNormalizedRealmName gives an internal realm name, so a roster
+    # entry for you need not match "<name>-<normalized realm>" (#25 live report).
+    lua = actor('Thora')
+    lua.execute('''
+        local group=next(character().group_ids)
+        __peers={"Thora-Realm1PvE","A-Realm1PvE"}
+        WoWStatusPopups.peers(group)
+        for _=1,3 do WoWStatusPopups.tick() end
+        local peers=WoWStatusPopups.peers(group)
+        assert(#peers==1 and peers[1]=="A-Realm1PvE")
+        assert(WoWStatusPopups.onlineCount()==1)
+        -- With a GUID from the roster, that decides.
+        C_ChatInfo.GetChannelRosterInfo=function(_, i)
+            local list={{"Somebody",UnitGUID("player")},{"Thora","Player-999"}}
+            return list[i][1],false,false,list[i][2]
+        end
+        assert(WoWStatusPopups.isSelf("Somebody",UnitGUID("player")))
+        assert(not WoWStatusPopups.isSelf("Thora","Player-999"))
+        WoWStatusPopups.notePeer(group,"Thora-Realm1PvE")
+        assert(WoWStatusPopups.onlineCount()==1)
+    ''')

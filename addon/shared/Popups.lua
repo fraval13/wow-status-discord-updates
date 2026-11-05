@@ -47,6 +47,22 @@ local function realm()
     local value = A.realmName()
     return value and S.stripSpace(value) or ""
 end
+-- Whether a name (and the GUID a roster gives) is this character. The realm in
+-- a name need not match GetNormalizedRealmName: WoW Forever names its realm
+-- internally ("CAMWOWEU5Realm1PvE"), so a full-name comparison alone kept you in
+-- your own roster, whispered you ("No player named ...") and counted you online.
+function P.isSelf(name, guid)
+    local own = S.stringCall(UnitGUID, "player")
+    guid = S.string(guid)
+    if guid and own then return guid == own end
+    name = S.string(name)
+    if not name then return false end
+    if P.senderKey(name) == P.senderKey((A.playerName() or "") .. "-" .. realm()) then return true end
+    local player = A.playerName()
+    local short = name:match("^([^-]+)")
+    return player ~= nil and short ~= nil
+        and S.lowerASCII(S.stripSpace(short)) == S.lowerASCII(S.stripSpace(player))
+end
 function P.senderKey(sender)
     sender = S.string(sender)
     if type(sender) ~= "string" or #sender == 0 or #sender > 120 or sender:find(S.CONTROL_OR_PIPE) then return nil end
@@ -136,12 +152,12 @@ end
 local function readRoster(index,count)
     local getter=C_ChatInfo and C_ChatInfo.GetChannelRosterInfo or GetChannelRosterInfo
     local result,seen,read={}, {},0
-    local own=P.senderKey((A.playerName() or "").."-"..realm())
     for i=1,math.min(count,64) do
-        local target=S.string(S.call(getter,index,i));local key=target and P.senderKey(target)
+        local name,_,_,guid=S.call(getter,index,i)
+        local target=S.string(name);local key=target and P.senderKey(target)
         if key then
             read=read+1
-            if key~=own and not seen[key] then seen[key]=true;result[#result+1]=target end
+            if not P.isSelf(target,guid) and not seen[key] then seen[key]=true;result[#result+1]=target end
         end
     end
     return result,count>0 and read>=math.min(count,64)
@@ -175,8 +191,7 @@ end
 function P.notePeer(group,target)
     if not group or not WoWStatusGroups.contains(getCharacter(),group) then return end
     local key=P.senderKey(target)
-    local own=P.senderKey((A.playerName() or "").."-"..realm())
-    if not key or key==own then return end
+    if not key or P.isSelf(target) then return end
     knownPeers[group]=knownPeers[group] or {}
     local count,oldest,oldestAt=0,nil,math.huge
     for k,item in pairs(knownPeers[group]) do
@@ -581,8 +596,7 @@ function P.receive(text, sender, channel)
     local group = channels()[channel:lower()]
     if not group then return false end
     local key = P.senderKey(sender)
-    local selfKey = P.senderKey((A.playerName() or "") .. "-" .. realm())
-    if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
+    if not key or P.isSelf(sender) or (group == "legacy" and not prefs.trusted[key]) then return false end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
     local raw, automatic, armor, extended = false, false, false, false
     if not client then
