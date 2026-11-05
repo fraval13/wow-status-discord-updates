@@ -70,8 +70,14 @@ local function create()
     window.title:SetPoint("TOPLEFT", 24, -20); window.title:SetText("WoW Status")
     window.content = CreateFrame("Frame", nil, window)
     window.content:SetPoint("TOPLEFT", 0, -86); window.content:SetSize(M.WIDTH, M.CONTENT_HEIGHT)
-    local close = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
-    close:SetPoint("BOTTOMRIGHT", -24, 16); close:SetSize(130, 30); close:SetText("Close")
+    -- The game's own close X, top right as on its windows; a plain "X" button if
+    -- a client lacks the template.
+    local ok, close = pcall(CreateFrame, "Button", nil, window, "UIPanelCloseButton")
+    if not ok or not close then
+        close = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
+        close:SetSize(28, 28); close:SetText("X")
+    end
+    close:SetPoint("TOPRIGHT", -6, -6)
     close:SetScript("OnClick", function() window:Hide() end)
     window.close = close
     for index, key in ipairs(order) do addTab(pages[key], index) end

@@ -12,6 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- The WoW Status window closes with an X in the top right corner
 - Characters page: friends on older versions get their portrait, race and class from the game instead of a question mark
 
 ## 1.9.0

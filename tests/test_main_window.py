@@ -89,3 +89,17 @@ def test_unknown_page_command_still_opens_options():
     lua = make_lua(WINDOW)
     lua.execute('SlashCmdList.WOWSTATUS("nonsense")')
     assert lua.eval('WoWStatusMainFrame') is None
+
+
+def test_close_is_an_x_in_the_top_right_corner():
+    lua = make_lua()
+    lua.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        local plain = methods.SetPoint
+        function methods:SetPoint(point, ...) self.anchor = self.anchor or point; return plain(self, point, ...) end
+        WoWStatusMainWindow.show("activity")
+        local close = WoWStatusMainFrame.close
+        assert(close.template == "UIPanelCloseButton" and close.anchor == "TOPRIGHT")
+        close.OnClick(close)
+        assert(not WoWStatusMainFrame:IsShown())
+    ''')
