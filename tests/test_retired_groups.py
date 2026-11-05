@@ -106,7 +106,6 @@ def test_backend_refuses_retired_destinations_and_credentials(retired, store, pa
 
 def test_all_editions_and_backend_use_the_same_retired_fingerprints():
     expected = routing.RETIRED_GROUP_FINGERPRINTS
-    assert len(expected) == 2
     for edition in ('shared', 'vanilla', 'forever', 'tbc', 'retail'):
         root = ROOT / 'addon' / edition
         path = root / ('Groups.lua' if edition == 'shared' else 'WoWStatus/Groups.lua')
@@ -127,3 +126,13 @@ def test_rendered_private_routing_file_is_not_world_readable(tmp_path):
     assert module.main(['--groups-config', str(groups), '--output', str(output)]) is None
     if os.name != 'nt':
         assert stat.S_IMODE(output.stat().st_mode) == 0o600
+
+
+def test_a_previously_retired_notice_is_dropped_when_nothing_is_retired():
+    lua = make_lua()
+    lua.execute('''
+        WoWStatusDB.retired_groups_removed = true
+        WoWStatusGroups.init(WoWStatusDB, function() return character() end, function() end)
+        assert(WoWStatusDB.retired_groups_removed == nil)
+        assert(WoWStatusGroups.update("A group friends already use", ""))
+    ''')
