@@ -8,11 +8,15 @@ from importlib.resources import files
 from .schema import ValidationError, integer, realm_now, validate
 
 GROUP_ID = re.compile(r'[a-f0-9]{22}\Z')
+# One-way fingerprints, never the exposed names or routing credentials.
+RETIRED_GROUP_FINGERPRINTS = frozenset(('24c342969ae82dd2944b5e', '4b4fd8f2e7ca0e8a816306'))
 
 
 def group_id(value):
     if not isinstance(value, str) or not GROUP_ID.fullmatch(value):
         raise ValidationError('Invalid internal group key')
+    if retired_group_id(value):
+        raise ValidationError('This exposed group was retired; use its private replacement')
     return value
 
 
@@ -22,6 +26,8 @@ def group_label(value):
     value = value.strip(' \t\r\n\v\f')
     if not value or len(value) > 80 or any(ord(c) < 32 or ord(c) == 127 for c in value):
         raise ValidationError('Use a group name of 1–80 printable characters')
+    if retired_group_id(value.lower()):
+        raise ValidationError('This exposed group was retired; use its private replacement')
     return value
 
 
@@ -34,15 +40,23 @@ def canonical_group(value):
     return ''.join(_folds().get(char, char) for char in group_label(value))
 
 
-def group_key(value):
-    """Portable Lua/Python routing key. Case-insensitive UTF-8; not a password hash."""
-    value = canonical_group(value)
+def _hash_group_bytes(value):
     a, b, c = 5381, 2166136261, 104729
-    for byte in value.encode('utf-8'):
+    for byte in value:
         a = (a * 33 + byte) % 4294967296
         b = (b * 65599 + byte) % 4294967296
         c = (c * 131 + byte) % 4294967296
     return f'{a:08x}{b:08x}{c % 16777216:06x}'
+
+
+def group_key(value):
+    """Portable Lua/Python routing key. Case-insensitive UTF-8; not a password hash."""
+    return _hash_group_bytes(canonical_group(value).encode('utf-8'))
+
+
+def retired_group_id(value):
+    return (isinstance(value, str) and bool(GROUP_ID.fullmatch(value))
+            and _hash_group_bytes(value.encode('ascii')) in RETIRED_GROUP_FINGERPRINTS)
 
 
 def memberships(raw, exported_at):

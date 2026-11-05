@@ -127,7 +127,8 @@ def switch(data, release, revision, old_config, caddyfile, base, caddy):
         point(current, target)
         switched = True
         shutil.copyfile(candidate, caddy)
-        caddy.chmod(0o644)
+        # copyfile preserves the live file's owner/group/mode; never widen access
+        # to private routing credentials (the operator installs it root:caddy 0640).
         subprocess.run(['systemctl', 'reload', 'caddy'], check=True)
         subprocess.run(['systemctl', 'is-active', '--quiet', 'caddy'], check=True)
     except BaseException:

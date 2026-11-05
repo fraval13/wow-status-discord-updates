@@ -238,7 +238,8 @@ cd /opt/wow-character-status/current
 .venv/bin/python -B deploy/render_caddyfile.py --output /etc/caddy/Caddyfile.next
 caddy validate --config /etc/caddy/Caddyfile.next --adapter caddyfile
 cp -p /etc/caddy/Caddyfile /etc/caddy/Caddyfile.before-$(date -u +%Y%m%dT%H%M%SZ)
-mv /etc/caddy/Caddyfile.next /etc/caddy/Caddyfile && systemctl reload caddy
+install -o root -g caddy -m 0640 /etc/caddy/Caddyfile.next /etc/caddy/Caddyfile
+systemctl reload caddy
 ```
 
 `deploy/publish_homepage.py` renders the same routes from the server's `groups.json`
@@ -351,6 +352,16 @@ approval.
 
 ## Rotating a group name
 
+The two previously exposed production names were rotated on 5 November 2026.
+The old public routes are revoked and their units disabled; original databases
+and a consistent pre-cutover backup are retained under root-only access. The
+current receiver and private `groups.json` are installed. Active gateway routing
+is root:caddy 0640, and group configuration is root-only 0600. Replacement names
+were handed to the owner in a private local file, never GitHub or screenshots.
+New addon versions retire the known compromised memberships automatically; group
+members obtain the new names privately and join when next playing.
+
+
 Removing a name from the repository does not make it secret again: earlier names and
 keys stay in Git history, issue text and old Actions logs. Choosing a new name is the
 fix. In-game sharing needs no server change: it moves as soon as members replace the
@@ -373,7 +384,9 @@ name in `/wstatus groups`. For the companion service, as root:
 6. Deploy: push to `main`, or use **Re-run all jobs** on the run for the tip of
    `main`. The receiver writes `group-c.env`, then starts and health-checks the new service.
 7. Render, check and install the Caddyfile (see [network access](#network-access-and-home-testing)).
-   The old route then returns 404.
+   The old route then returns 404. Keep the active Caddyfile owned by root:caddy
+   with mode 0640: its paths contain private routing credentials. Rendered candidates
+   are mode 0600; manual homepage publishing preserves the live file permissions.
 8. Stop the old service with `systemctl disable --now wow-character-status@OLD`, then
    back up or delete `/var/lib/wow-character-OLD` and `/etc/wow-character-status/OLD.env`.
 9. Members replace the old group with the new name in `/wstatus groups`.

@@ -4,22 +4,38 @@ local G, S = WoWStatusGroups, WoWStatusSafe
 local getCharacter, database, report, panel
 local MAX_GROUPS = 8
 
+-- One-way fingerprints of publicly exposed, retired routing IDs. These are
+-- not usable group names or route keys. Never put the underlying values here.
+local RETIRED = {
+    ["24c342969ae82dd2944b5e"]=true,
+    ["4b4fd8f2e7ca0e8a816306"]=true,
+}
+G.RETIRED_MESSAGE="This exposed group is retired. Ask its owner privately for the replacement name."
+local function hash(text)
+    local a,b,c=5381,2166136261,104729
+    for i=1,#text do
+        local byte=text:byte(i)
+        a=(a*33+byte)%4294967296
+        b=(b*65599+byte)%4294967296
+        c=(c*131+byte)%4294967296
+    end
+    return string.format("%08x%08x%06x",a,b,c%16777216)
+end
+function G.retired(id)
+    return type(id)=="string" and #id==22 and id:match("^[a-f0-9]+$")~=nil and RETIRED[hash(id)]==true
+end
 function G.valid(id)
-    return type(id) == "string" and #id == 22 and id:match("^[a-f0-9]+$") ~= nil
+    return type(id)=="string" and #id==22 and id:match("^[a-f0-9]+$")~=nil and not G.retired(id)
 end
 function G.key(text)
     text = S.trim(text)
     local _, characters = text:gsub("[^\128-\191]", "")
     if text == "" or characters > 80 or text:find(S.CONTROL) then return nil end
-    local a, b, c = 5381, 2166136261, 104729
-    local canonical = WoWStatusCaseFold(text)
-    for i = 1, #canonical do
-        local byte = canonical:byte(i)
-        a = (a * 33 + byte) % 4294967296
-        b = (b * 65599 + byte) % 4294967296
-        c = (c * 131 + byte) % 4294967296
-    end
-    return string.format("%08x%08x%06x", a, b, c % 16777216), text
+    local canonical=WoWStatusCaseFold(text)
+    if G.retired(canonical) then return nil,nil,G.RETIRED_MESSAGE end
+    local id=hash(canonical)
+    if G.retired(id) then return nil,nil,G.RETIRED_MESSAGE end
+    return id,text
 end
 local CHANNEL_PREFIX = "WStatus"
 function G.channel(id) return CHANNEL_PREFIX .. id end
@@ -63,6 +79,7 @@ local function apply(character, force)
 end
 function G.init(db, getter, reporter)
     database, getCharacter, report = db, getter, reporter
+    local removed=false
     if not database.account_groups then
         -- Preserve existing selections, merging old character lists deterministically.
         database.account_groups = {}
@@ -76,7 +93,8 @@ function G.init(db, getter, reporter)
             table.sort(ids)
             for _, id in ipairs(ids) do
                 local member = old[id]
-                if not database.account_groups[id] then
+                if G.retired(id) then removed=true;S.call(LeaveChannelByName,G.channel(id))
+                elseif not database.account_groups[id] then
                     if count < MAX_GROUPS then
                         database.account_groups[id] = member.label
                         count = count + 1
@@ -86,6 +104,34 @@ function G.init(db, getter, reporter)
                 end
             end
         end
+    end
+    for id in pairs(database.account_groups) do
+        if G.retired(id) then
+            database.account_groups[id]=nil;removed=true
+            S.call(LeaveChannelByName,G.channel(id))
+        end
+    end
+    -- A legacy companion choice skips ordinary account propagation. Retirement
+    -- still applies to every saved character, including those legacy selections.
+    for _,saved in pairs(database.characters) do
+        for id in pairs(saved.group_ids or {}) do
+            if G.retired(id) then
+                saved.group_ids[id]=nil;removed=true
+                S.call(LeaveChannelByName,G.channel(id))
+            end
+        end
+    end
+    local channels=database.popups and database.popups.joined_channels
+    if type(channels)=="table" then
+        for name in pairs(channels) do
+            if type(name)=="string" and name:sub(1,7):lower()=="wstatus" and G.retired(name:sub(8):lower()) then
+                S.call(LeaveChannelByName,name);channels[name]=nil;removed=true
+            end
+        end
+    end
+    if removed then
+        database.retired_groups_removed=true
+        if not database.retired_group_notice then report(G.RETIRED_MESSAGE);database.retired_group_notice=true end
     end
     local joined, now = {}, S.now()
     for id in pairs(database.account_groups) do
@@ -108,8 +154,8 @@ end
 local function update(text, playerName)
     local selected, count = {}, 0
     for label in text:gmatch("[^\r\n]+") do
-        local id, cleaned = G.key(label)
-        if not id then return false, "Use a non-empty group name of up to 80 characters, one per line." end
+        local id, cleaned, reason = G.key(label)
+        if not id then return false, reason or "Use a non-empty group name of up to 80 characters, one per line." end
         if selected[id] and WoWStatusCaseFold(selected[id].label) ~= WoWStatusCaseFold(cleaned) then
             return false, "These group names collide; choose a different name."
         end
@@ -129,6 +175,7 @@ local function update(text, playerName)
     database.account_groups = {}
     for id, member in pairs(selected) do database.account_groups[id] = member.label end
     database.player_name = playerName
+    database.retired_groups_removed=nil
     for _, saved in pairs(database.characters) do apply(saved, true) end
     if WoWStatusPopups then WoWStatusPopups.groupsChanged() end
     if G.announce then G.announce() end
@@ -209,9 +256,9 @@ function G.show(host)
         label("Use the same ID as your friends.\nAdding or removing a group saves for all your characters.", -182)
         panel.input = input(-234, 80)
         local function add()
-            local id, cleaned = G.key(panel.input:GetText())
+            local id, cleaned, reason = G.key(panel.input:GetText())
             if not id then
-                panel.status:SetText("Enter one group ID of up to 80 characters.")
+                panel.status:SetText(reason or "Enter one group ID of up to 80 characters.")
                 return
             end
             if database.account_groups[id] then
@@ -280,7 +327,7 @@ function G.show(host)
     if host then panel:SetScript("OnDragStart", nil)
     else panel:SetScript("OnDragStart", panel.StartMoving) end
     panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
-    panel.status:SetText("")
+    panel.status:SetText(database.retired_groups_removed and G.RETIRED_MESSAGE or "")
     panel.name:SetText(database.player_name or "")
     panel.input:SetText("")
     renderGroups()

@@ -628,3 +628,10 @@ def test_a_publish_keeps_only_recent_releases_and_caddyfile_backups(server, tmp_
     assert result['pruned_releases'] == len(old) + 1 - keep - 1
     backups = sorted(path.name for path in server['base'].glob('Caddyfile.before-*'))
     assert backups == [f'Caddyfile.before-{name}' for name in newest]
+
+
+def test_publish_keeps_private_caddy_permissions(server, tmp_path):
+    server['caddy'].chmod(0o640)
+    sent = payload(tmp_path)
+    install(server, sent)
+    assert stat.S_IMODE(server['caddy'].stat().st_mode) == 0o640
