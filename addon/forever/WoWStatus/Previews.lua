@@ -11,14 +11,15 @@ local examples = {
     {"reputation", "Reputation promotion"}, {"unlock", "Major class unlock"},
     {"pvp", "PvP rank promotion"},
 }
+local T = WoWStatusLocale.T
 local function text(parent, value, x, y, width)
     local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-    label:SetPoint("TOPLEFT",x,y); label:SetWidth(width or 550); label:SetJustifyH("LEFT"); label:SetText(value)
+    label:SetPoint("TOPLEFT",x,y); label:SetWidth(width or 550); label:SetJustifyH("LEFT"); label:SetText(T(value))
     return label
 end
 local function button(parent, value, x, y, width, fn)
     local widget=CreateFrame("Button",nil,parent,"UIPanelButtonTemplate")
-    widget:SetPoint("TOPLEFT",x,y); widget:SetSize(width,30); widget:SetText(value); widget:SetScript("OnClick",fn)
+    widget:SetPoint("TOPLEFT",x,y); widget:SetSize(width,30); widget:SetText(T(value)); widget:SetScript("OnClick",fn)
     return widget
 end
 local function background(frame)
@@ -50,7 +51,7 @@ function P.show(host)
             if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
         end
         local options = 150 + #visible * 42
-        local footer = options + 424
+        local footer = options + 468
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
@@ -99,6 +100,8 @@ function P.show(host)
         local function applySize()
             local ok=WoWStatusTheme.setPopupSize(panel.popupSize:GetText())
             panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
+    panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
+    panel.languageSwitch:SetText(WoWStatusLocale.lang()=="nn" and "English" or "Nynorsk")
             panel.popupSize:ClearFocus()
             -- A sample at the new size; an out-of-range value keeps the old one.
             if ok then WoWStatusPopups.preview("level") end
@@ -106,6 +109,16 @@ function P.show(host)
         panel.popupSize:SetScript("OnEnterPressed",applySize)
         panel.popupSize:SetScript("OnEscapePressed",function(self) self:SetText(tostring(WoWStatusTheme.popupSize()));self:ClearFocus() end)
         panel.popupSizeApply=button(panel,"Apply",380,-options-340,90,applySize)
+        -- Language (optional Nynorsk). Built windows change after a reload.
+        panel.language=text(panel,"",24,-options-390,250)
+        panel.languageSwitch=button(panel,"",290,-options-384,130,function()
+            WoWStatusLocale.set(WoWStatusLocale.lang()=="nn" and "en" or "nn")
+            panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
+            panel.languageSwitch:SetText(WoWStatusLocale.lang()=="nn" and "English" or "Nynorsk")
+            panel.reload:Show()
+        end)
+        panel.reload=button(panel,"Reload",430,-options-384,100,function() if ReloadUI then ReloadUI() end end)
+        panel.reload:Hide()
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()

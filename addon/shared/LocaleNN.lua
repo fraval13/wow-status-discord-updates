@@ -43,6 +43,179 @@ W.add({
     ["Joined the group"] = "Vart med i gruppa",
     ["First mount ride recorded!"] = "Første ridetur er registrert!",
     ["Shared an update"] = "Delte ei oppdatering",
+    -- Main window and Activity
+    ["Overview"] = "Oversikt", ["Activity"] = "Aktivitet", ["Records"] = "Rekordar", ["Characters"] = "Figurar",
+    [" (sample tour, nothing here is real)"] = " (prøvetur, ingenting her er ekte)",
+    ["Showing:"] = "Viser:", ["From your achievements (date only)"] = "Frå bragdene dine (berre dato)",
+    ["Your activity"] = "Di aktivitet", ["Caught up via"] = "Henta via", ["a group member"] = "eit gruppemedlem",
+    ["passed on by"] = "vidaresendt av", ["Saved group update"] = "Lagra gruppeoppdatering",
+    ["Live group update"] = "Direkte gruppeoppdatering", ["No activity yet"] = "Ingen aktivitet enno",
+    ["Event ID:"] = "Hending-ID:",
+    -- Characters page
+    ["Not announced"] = "Ikkje kunngjort", ["Unnamed player"] = "Namnlaus spelar", ["you"] = "deg",
+    ["character"] = "figur", ["characters"] = "figurar", ["Sync now"] = "Synk no", ["Sync (%d s)"] = "Synk (%d s)",
+    ["Your characters"] = "Figurane dine", ["Other"] = "Andre",
+    ["Nobody else seen in this group yet."] = "Ingen andre er sett i denne gruppa enno.",
+    ["older version"] = "eldre versjon", ["older version or list sharing off"] = "eldre versjon eller listedeling av",
+    ["Never met"] = "Aldri møtt", ["offline"] = "fråkopla", ["XP %d%%"] = "XP %d %%", ["Level %d"] = "Nivå %d",
+    ["1 death"] = "1 dødsfall", ["%d deaths"] = "%d dødsfall", ["Groups:"] = "Grupper:",
+    ["Click to see this character's activity."] = "Klikk for å sjå aktiviteten til figuren.",
+    ["No characters yet."] = "Ingen figurar enno.", ["Share my character list"] = "Del figurlista mi",
+    ["Hide this character from the list"] = "Gøym denne figuren frå lista",
+    ["Sync with everyone online"] = "Synk med alle som er pålogga",
+    ["Sends your character list, asks for theirs and catches up the activity log. Once a minute."] =
+        "Sender figurlista di, ber om deira og hentar inn aktivitetsloggen. Éin gong i minuttet.",
+    -- Classes
+    ["Warrior"] = "Krigar", ["Paladin"] = "Paladin", ["Hunter"] = "Jeger", ["Rogue"] = "Tjuv", ["Priest"] = "Prest",
+    ["Shaman"] = "Sjaman", ["Mage"] = "Magikar", ["Warlock"] = "Heksemeister", ["Druid"] = "Druide",
+    ["Deathknight"] = "Dødsriddar", ["Monk"] = "Munk", ["Demonhunter"] = "Demonjeger", ["Evoker"] = "Påkallar",
+    -- Races
+    ["Human"] = "Menneske", ["Dwarf"] = "Dverg", ["Night Elf"] = "Nattalv", ["Gnome"] = "Gnom", ["Orc"] = "Ork",
+    ["Scourge"] = "Udaud", ["Undead"] = "Udaud", ["Tauren"] = "Tauren", ["Troll"] = "Troll", ["Blood Elf"] = "Blodalv",
+    ["Draenei"] = "Draenei", ["Goblin"] = "Goblin", ["Worgen"] = "Varulv", ["Pandaren"] = "Pandaren",
+    ["Void Elf"] = "Tomromsalv", ["Nightborne"] = "Nattfødd", ["Dracthyr"] = "Dracthyr",
+    -- Groups window
+    ["More than 8 old groups found. Review your account group list."] = "Fann meir enn 8 gamle grupper. Sjå over gruppelista di.",
+    ["Your groups — all characters on this account"] = "Gruppene dine — alle figurane på denne kontoen",
+    ["Your name (optional)"] = "Namnet ditt (valfritt)", ["Save name"] = "Lagre namn", ["Group ID"] = "Gruppe-ID",
+    ["Use the same ID as your friends.\nAdding or removing a group saves for all your characters."] =
+        "Bruk same ID som venene dine.\nNår du legg til eller fjernar ei gruppe, gjeld det alle figurane dine.",
+    ["That group is already in your list."] = "Den gruppa er alt i lista di.",
+    ["You can add up to 8 groups. Remove one before adding another."] = "Du kan ha opptil 8 grupper. Fjern ei før du legg til ei ny.",
+    ["Add"] = "Legg til", ["Remove"] = "Fjern", ["Close"] = "Lukk", ["Groups"] = "Grupper",
+    ["No groups selected. Enter a group ID above and click Add."] = "Ingen grupper valde. Skriv ein gruppe-ID over og klikk Legg til.",
+    ["These group names collide; choose a different name."] = "Desse gruppenamna kolliderer; vel eit anna namn.",
+    ["Choose at most 8 group IDs."] = "Vel høgst 8 gruppe-ID-ar.",
+    ["Use a name of up to 40 characters."] = "Bruk eit namn på høgst 40 teikn.",
+    ["Groups saved for all characters."] = "Gruppene er lagra for alle figurane.",
+    ["Enter one group ID of up to 80 characters."] = "Skriv éin gruppe-ID på høgst 80 teikn.",
+    ["Use a non-empty group name of up to 80 characters, one per line."] = "Bruk eit gruppenamn på høgst 80 teikn, eitt per linje.",
+    ["This exposed group is retired. Ask its owner privately for the replacement name."] =
+        "Denne offentleggjorde gruppa er pensjonert. Spør eigaren privat om det nye namnet.",
+    -- Setup guide
+    ["Skip"] = "Hopp over", ["Back"] = "Tilbake", ["Next"] = "Neste", ["Done"] = "Ferdig", ["Step %d of %d"] = "Steg %d av %d",
+    ["Welcome to WoW Status"] = "Velkomen til WoW Status",
+    ["WoW Status shares your milestones with friends inside the game: level-ups, first dungeon clears, new professions and more. They appear as popups and in a shared activity log. Everyone only needs this addon."] =
+        "WoW Status deler måla dine med vener inne i spelet: nye nivå, første fangehol, nye yrke og meir. Dei dukkar opp som varsel og i ein felles aktivitetslogg. Alle treng berre dette tillegget.",
+    ["Choose or join a group"] = "Lag eller bli med i ei gruppe",
+    ["Pick a group ID and give the same ID to your friends. Everyone with the same ID shares updates. Groups are saved for your whole account."] =
+        "Vel ein gruppe-ID og gje same ID til venene dine. Alle med same ID deler oppdateringar. Gruppene blir lagra for heile kontoen.",
+    ["Open Groups"] = "Opne Grupper", ["Choose your announcements"] = "Vel kva du vil kunngjere",
+    ["Decide which milestones you share: levels, deaths, first zone visits, professions, dungeon clears and more. You can change this at any time."] =
+        "Bestem kva mål du deler: nivå, dødsfall, første besøk i område, yrke, fangehol og meir. Du kan endre dette når som helst.",
+    ["Open announcement options"] = "Opne kunngjeringsval", ["You're all set"] = "No er du klar",
+    ["Click the minimap book to open the WoW Status window. Want to see what it looks like with friends? Show me around fills it with sample adventurers. Sample data is never saved or sent."] =
+        "Klikk på boka ved minikartet for å opne WoW Status-vindauget. Vil du sjå korleis det ser ut med vener? Vis meg rundt fyller det med eksempel-eventyrarar. Eksempeldata blir aldri lagra eller sende.",
+    ["Show me around"] = "Vis meg rundt",
+    -- History window
+    ["History"] = "Historikk", ["All / levels"] = "Alle / nivå", ["Previous page"] = "Førre side",
+    ["Next page"] = "Neste side", ["Refresh"] = "Oppdater", ["Event logs"] = "Hendingslogg",
+    ["Level graph"] = "Nivågraf", ["Level times"] = "Nivåtider", ["Character details"] = "Figurdetaljar",
+    -- Notification settings
+    ["Notification previews"] = "Førehandsvising av varsel", ["Choose a notification to preview it."] = "Vel eit varsel for å sjå korleis det ser ut.",
+    ["Setup guide"] = "Oppsettsrettleiing", ["Unlock popup position"] = "Lås opp plasseringa av varsla",
+    ["Reset popup position"] = "Tilbakestill plasseringa", ["Big banners for big moments"] = "Store banner for store augneblinkar",
+    ["Next theme"] = "Neste tema", ["Smaller"] = "Mindre", ["Larger"] = "Større",
+    ["Use the theme and size for popups too"] = "Bruk temaet og storleiken på varsla òg", ["Apply"] = "Bruk",
+    ["Show the group status line"] = "Vis statuslinja for gruppa", ["Attach it under the quest tracker"] = "Fest henne under oppdragslista",
+    ["Hide the status line in combat"] = "Gøym statuslinja i kamp", ["Hide the status line in dungeons and raids"] = "Gøym statuslinja i fangehol og raid",
+    ["Level up"] = "Nytt nivå", ["First armor equip"] = "Første rustning på", ["Death"] = "Dødsfall",
+    ["New location"] = "Ny stad", ["100 quests achievement"] = "100 oppdrag", ["Learn a profession"] = "Lær eit yrke",
+    ["Profession title promotion"] = "Ny yrkestittel", ["Reputation promotion"] = "Nytt omdøme-steg",
+    ["Major class unlock"] = "Stor klasseevne", ["PvP rank promotion"] = "Ny PvP-grad",
+    ["PREVIEW — example character"] = "FØREHANDSVISING — eksempelfigur",
+    -- Main settings page
+    ["Set the same group ID as your friends to start sharing."] = "Bruk same gruppe-ID som venene dine for å byrje å dele.",
+    ["Activity log"] = "Aktivitetslogg", ["Preview toasts"] = "Førehandsvis varsel", ["Share my progress"] = "Del framgangen min",
+    ["Announcements"] = "Kunngjeringar", ["Share my session recaps"] = "Del øktsamandraga mine",
+    ["First-time equipment"] = "Utstyr første gong", ["Announce first armor equips"] = "Kunngjer første rustning",
+    ["Rare equipment"] = "Sjeldan utstyr", ["Epic equipment"] = "Episk utstyr", ["Legendary equipment"] = "Legendarisk utstyr",
+    ["Screenshots"] = "Skjermbilete", ["Screenshot on level up"] = "Skjermbilete ved nytt nivå",
+    ["Screenshot on first dungeon clear"] = "Skjermbilete ved første fangehol", ["Hide interface in screenshots"] = "Gøym grensesnittet på skjermbileta",
+    ["History / graph"] = "Historikk / graf", ["Deaths"] = "Dødsfall", ["First zone visit"] = "Første besøk i eit område",
+    ["Every 100 quests"] = "Kvart 100. oppdrag", ["Profession milestones"] = "Yrkesmål", ["Dungeon / raid milestones"] = "Fangehol- og raidmål",
+    ["Mount milestones"] = "Ridedyrmål", ["Reputation rank"] = "Omdøme-steg", ["Class ability unlock"] = "Ny klasseevne",
+    ["PvP rank"] = "PvP-grad", ["Honor level"] = "Ærenivå",
+    ["Level and XP"] = "Nivå og XP", ["Class"] = "Klasse", ["Race and male/female"] = "Rase og kjønn", ["Faction"] = "Fraksjon",
+    ["Guild"] = "Laug", ["Equipment"] = "Utstyr", ["Location"] = "Stad", ["Played time"] = "Speletid", ["Professions"] = "Yrke",
+    ["Total deaths"] = "Dødsfall totalt", ["Completed quests"] = "Fullførte oppdrag",
+    -- Chat messages
+    ["Notification queue is full; wait for previews to finish."] = "Varselkøen er full; vent til førehandsvisingane er ferdige.",
+    ["In-game update blocked/uncertain; see /wstatus popup status."] = "Oppdateringa vart blokkert eller er usikker; sjå /wstatus popup status.",
+    ["Usage: /wstatus share <character name>"] = "Bruk: /wstatus share <figurnamn>",
+    ["Chat is restricted right now; try again later."] = "Chatten er avgrensa no; prøv igjen seinare.",
+    ["Whispers are not available in this client."] = "Kviskring er ikkje tilgjengeleg i denne klienten.",
+    ["Recent buffer is full; older events remain in History."] = "Bufferen er full; eldre hendingar ligg att i Historikk.",
+    ["Character is not ready."] = "Figuren er ikkje klar.", ["Unsupported saved data version."] = "Ukjend versjon av lagra data.",
+    ["Waiting for readable player identity. Collection will retry after loading/combat."] =
+        "Ventar på at spelaridentiteten kan lesast. Prøver igjen etter lasting eller kamp.",
+    ["Set the same group ID as your friends in Options > AddOns > WoW Status."] = "Bruk same gruppe-ID som venene dine i Innstillingar > AddOns > WoW Status.",
+    ["Milestone choices are on the main WoW Status page."] = "Måla vel du på hovudsida til WoW Status.",
+    ["Manual announcements have been removed. Milestones are detected automatically."] = "Manuelle kunngjeringar er fjerna. Måla blir oppdaga automatisk.",
+    ["Screenshots are not available in this client."] = "Skjermbilete er ikkje tilgjengeleg i denne klienten.",
+    ["A screenshot is already being taken."] = "Det blir alt teke eit skjermbilete.",
+    ["Minimap button distance reset."] = "Avstanden til minikartknappen er tilbakestilt.",
+    ["Activity syncs automatically when group members log in."] = "Aktiviteten blir synka automatisk når gruppemedlemer loggar inn.",
+    ["Sharing paused."] = "Delinga er sett på pause.", ["Filter updated."] = "Filteret er oppdatert.", ["Invalid filter value."] = "Ugyldig filterverdi.",
+    ["Enable profession sharing first. Names are player-entered, not verified skill ranks."] =
+        "Slå på yrkesdeling først. Namna er skrivne av spelaren, ikkje stadfesta ferdigheitsnivå.",
+    ["Shared profession labels updated. /reload to export."] = "Delte yrkesnamn er oppdaterte. /reload for å eksportere.",
+    -- /wstatus popup messages
+    ["Group membership automatically enables updates. Remove a group in /wstatus groups to leave it."] =
+        "Gruppemedlemskap slår på oppdateringar automatisk. Fjern ei gruppe i /wstatus groups for å forlate henne.",
+    ["Popup reception enabled for your selected group IDs. Use /wstatus groups to choose them."] =
+        "Mottak av varsel er slått på for dei valde gruppe-ID-ane dine. Bruk /wstatus groups for å velje dei.",
+    ["Popup reception and broadcasts are off."] = "Mottak og sending av varsel er slått av.",
+    ["Group IDs control popup channels. Edit /wstatus groups instead."] = "Gruppe-ID-ane styrer varselkanalane. Endre /wstatus groups i staden.",
+    ["Use trust Character-Realm [optional friend label]."] = "Bruk trust Figur-Rike [valfritt vennenamn].",
+    ["Trust list is full."] = "Lista over klarerte er full.",
+    ["Join a group first, or use /wstatus popup on for a local preview."] =
+        "Bli med i ei gruppe først, eller bruk /wstatus popup on for ei lokal førehandsvising.",
+    ["Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME"] =
+        "Varselkommandoar: on | off | send on/off | sound on/off | channel WStatusNAMN",
+    ["Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status."] =
+        "Klarering: trust Figur-Rike [vennenamn] | untrust Figur-Rike. Test: test. Feilsøking: status.",
+    ["Synthetic level 10 event requested; requires sharing, level field and level storage."] =
+        "Testhending for nivå 10 er bede om; krev deling, nivåfelt og nivålagring.",
+    ["Player: Alex (example)\nRace: Human · Male\nFaction: Alliance\nLevel: 33\nXP progress: 37.5% (15,000 / 40,000)\nTotal deaths: 15\nCompleted quests: 236\nLocation: Stranglethorn Vale\nTailoring: 185 / 225\nEnchanting: 150 / 225\n\nExample values only. Death totals are tracked from installation;\nolder deaths are unavailable on Classic Era."] =
+        "Spelar: Alex (eksempel)\nRase: Menneske · Mann\nFraksjon: Alliance\nNivå: 33\nXP-framgang: 37,5 % (15 000 / 40 000)\nDødsfall totalt: 15\nFullførte oppdrag: 236\nStad: Stranglethorn Vale\nTailoring: 185 / 225\nEnchanting: 150 / 225\n\nBerre eksempelverdiar. Dødsfall blir talde frå installasjonen;\neldre dødsfall er ikkje tilgjengelege i Classic Era.",
+    ["Legacy single-service upload selected. Only use with your own configured /link credentials."] =
+        "Gammal enkeltteneste-opplasting er vald. Bruk berre med dine eigne /link-innloggingsdata.",
+    -- Status line and minimap
+    ["now"] = "no", ["hit"] = "nådde", ["Left-click: Activity log"] = "Venstreklikk: Aktivitetslogg",
+    ["Right-click: Options"] = "Høgreklikk: Innstillingar", ["Drag to move"] = "Dra for å flytte",
+    -- Language and What's new
+    ["Language:"] = "Språk:", ["Reload"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
+    ["Use /wstatus language nn for Nynorsk or /wstatus language en for English."] =
+        "Bruk /wstatus language nn for nynorsk eller /wstatus language en for engelsk.",
+    -- Notifications
+    ["Congrats!"] = "Gratulerer!", ["Welcome!"] = "Velkomen!", ["You whispered"] = "Du kviskra",
+    -- Records
+    ["Firsts in"] = "Rekordar i", ["Join a group to compete for records with your friends."] =
+        "Bli med i ei gruppe for å kjempe om rekordar med venene dine.",
+    ["before WoW Status, by"] = "før WoW Status, seinast", ["nobody yet"] = "ingen enno",
+    ["No recaps yet. One is written after each play session."] = "Ingen samandrag enno. Eitt blir skrive etter kvar speleøkt.",
+    ["Session recaps"] = "Øktsamandrag", ["A new record in"] = "Ein ny rekord i",
+    ["First in the group to die"] = "Først i gruppa til å døy", ["First in the group to die!"] = "Først i gruppa til å døy!",
+    ["First dungeon clear"] = "Første fangehol rydda", ["First dungeon clear!"] = "Første fangehol rydda!",
+    ["First mount"] = "Første ridedyr", ["First mount!"] = "Første ridedyr!",
+    ["First raid boss"] = "Første raidsjef", ["First raid boss!"] = "Første raidsjef!",
+    ["First epic mount"] = "Første episke ridedyr", ["First epic mount!"] = "Første episke ridedyr!",
+    ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
+    ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
+    -- Overview
+    ["Your status is not available right now."] = "Statusen din er ikkje tilgjengeleg no.",
+    ["You are level %d"] = "Du er på nivå %d", ["maximum level"] = "høgaste nivå",
+    [" · %d%% of the way to level %d"] = " · %d %% av vegen til nivå %d", ["Maximum level"] = "Høgaste nivå",
+    ["%d%% to level %d"] = "%d %% til nivå %d", ["Deaths:"] = "Dødsfall:", ["Quests:"] = "Oppdrag:",
+    ["Join a group in Options to share with friends."] = "Bli med i ei gruppe under Innstillingar for å dele med vener.",
+    ["online"] = "pålogga", ["group"] = "gruppe", ["groups"] = "grupper",
+    ["Nobody else is online right now."] = "Ingen andre er pålogga no.",
+    ["Since you were last here"] = "Sidan du var her sist",
+    ["This summary starts after your next logout."] = "Samandraget startar etter at du loggar ut neste gong.",
+    ["Nothing new from your group since you were last here."] = "Ikkje noko nytt frå gruppa di sidan du var her sist.",
+    ["Your group"] = "Gruppa di", ["Latest records"] = "Nyaste rekordar",
+    ["No records yet. The first to reach a milestone in your group earns it."] = "Ingen rekordar enno. Den første i gruppa som når eit mål, får han.", ["All"] = "Alle", ["Mine"] = "Mine", ["Friends"] = "Vener", ["Show all"] = "Vis alle",
     -- Popup headings
     ["LEVEL UP!"] = "NYTT NIVÅ!", ["FIRST EQUIP!"] = "FØRSTE GONG PÅ!",
     ["A FRIEND HAS FALLEN"] = "EIN VEN HAR FALLE", ["ON THE MOVE"] = "PÅ FARTEN",
@@ -84,6 +257,26 @@ W.add({
     {"^Equipped (.+)$", "Tok på %1"},
     {"^Looted (.+)$", "Plyndra %1"},
     {"^Tracking started at level (%d+)$", "Sporinga starta på nivå %1"},
+    {"^First to reach level (%d+)(!?)$", "Først til nivå %1%2"},
+    {"^Enjoy (.+)!$", "Kos deg i %1!"},
+    {"^Language: (%a+)%. Type /reload to change every window%.$", function(name)
+        return "Språk: " .. (name == "English" and "engelsk" or "nynorsk") .. ". Skriv /reload for å endre alle vindauga."
+    end},
+    {"^Theme: (%a+) · size (%d+)%%$", function(name, size)
+        local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
+        return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " %"
+    end},
+    {"^Notification size %((%d+)–(%d+)%%%)$", "Varselstorleik (%1–%2 %%)"},
+    {"^Notification size: (%d+)%%%.$", "Varselstorleik: %1 %%."},
+    {"^You already shared WoW Status with (.+) in the last hour%.$", "Du har alt delt WoW Status med %1 den siste timen."},
+    {"^The whisper to (.+) could not be sent%.$", "Kviskringa til %1 kunne ikkje sendast."},
+    {"^Shared the WoW Status link with (.+)%.$", "Delte WoW Status-lenkja med %1."},
+    {"^Minimap button distance set to (.+)%.$", "Avstanden til minikartknappen er sett til %1."},
+    {"^This addon folder targets (.+)%. Collection is disabled on this client%.$", "Denne tilleggsmappa er for %1. Innsamlinga er slått av i denne klienten."},
+    {"^last seen (%d+)m ago$", "sist sett for %1 min sidan"},
+    {"^last seen (%d+)h ago$", "sist sett for %1 t sidan"},
+    {"^last seen (%d+)d ago$", "sist sett for %1 d sidan"},
+    {"^v(%d+%.%d+%.%d+)$", "v%1"},
     -- Overview facts ("Since you were last here")
     {"^reached level (%d+)$", "nådde nivå %1"},
     {"^gained (%d+) levels %(now (%d+)%)$", "gjekk opp %1 nivå (no %2)"},

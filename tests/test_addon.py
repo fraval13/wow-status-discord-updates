@@ -171,6 +171,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Share.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Flavour.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'FlavourNN.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Theme.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'MainWindow.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Overview.lua').read_text(encoding='utf-8'))

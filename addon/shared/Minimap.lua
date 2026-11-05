@@ -87,9 +87,10 @@ function M.init(database)
     button:SetScript("OnEnter",function(self)
         if GameTooltip then
             GameTooltip:SetOwner(self,"ANCHOR_LEFT");GameTooltip:SetText("WoW Status")
-            GameTooltip:AddLine("Left-click: Activity log",1,1,1)
-            GameTooltip:AddLine("Right-click: Options",1,1,1)
-            GameTooltip:AddLine("Drag to move",.7,.7,.7);GameTooltip:Show()
+            local T=WoWStatusLocale.T
+            GameTooltip:AddLine(T("Left-click: Activity log"),1,1,1)
+            GameTooltip:AddLine(T("Right-click: Options"),1,1,1)
+            GameTooltip:AddLine(T("Drag to move"),.7,.7,.7);GameTooltip:Show()
         end
     end)
     button:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)

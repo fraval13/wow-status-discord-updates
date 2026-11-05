@@ -9,8 +9,10 @@ local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
 
+local T = WoWStatusLocale.T
+-- Every chat message of the addon (also other modules' notices) passes here.
 local function say(message)
-    DEFAULT_CHAT_FRAME:AddMessage("|cff66ccffWoW Status:|r " .. message)
+    DEFAULT_CHAT_FRAME:AddMessage("|cff66ccffWoW Status:|r " .. T(message))
 end
 
 local function defaults()
@@ -131,7 +133,7 @@ local function button(parent, text, x, y, width, fn)
     local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     b:SetPoint("TOPLEFT", x, y)
     b:SetSize(width, 26)
-    b:SetText(text)
+    b:SetText(T(text))
     b:SetScript("OnClick", fn)
     return b
 end
@@ -141,7 +143,7 @@ local function label(parent, text, x, y, width)
     t:SetPoint("TOPLEFT", x, y)
     t:SetWidth(width or 560)
     t:SetJustifyH("LEFT")
-    t:SetText(text)
+    t:SetText(T(text))
     return t
 end
 
@@ -687,6 +689,13 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "test" then
         queue("level", {level = 10, synthetic = true})
         say("Synthetic level 10 event requested; requires sharing, level field and level storage.")
+    elseif command == "language" then
+        local lang = rest:lower()
+        if WoWStatusLocale.set(lang) then
+            say("Language: " .. WoWStatusLocale.LANGUAGES[lang] .. ". Type /reload to change every window.")
+        else
+            say("Use /wstatus language nn for Nynorsk or /wstatus language en for English.")
+        end
     elseif command == "popupsize" then
         if WoWStatusTheme.setPopupSize(rest) then
             say("Notification size: " .. WoWStatusTheme.popupSize() .. "%.")

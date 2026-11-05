@@ -53,6 +53,15 @@ a death once when the player releases their spirit.
    `/wstatus share <name>`. It whispers the download link, at most once per person
    per hour, and is never sent automatically.
 
+## Language
+
+WoW Status is in English by default. Nynorsk is optional: choose it under
+**Preview toasts → Language** in the settings, or type `/wstatus language nn`
+(`/wstatus language en` switches back), then `/reload`. Windows, notifications, the
+log, records and all 1,300 captions change; what players send each other stays
+English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
+and the release notes stay English.
+
 ## Announcements
 
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed

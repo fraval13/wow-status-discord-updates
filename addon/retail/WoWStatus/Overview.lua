@@ -4,6 +4,7 @@
 -- /reload in WoWStatusDB.overview.
 WoWStatusOverview = {}
 local O, S = WoWStatusOverview, WoWStatusSafe
+local T, TF = WoWStatusLocale.T, WoWStatusLocale.F
 local MAX_LINES = 40
 local SINCE_MIN, SINCE_MAX = 90, 232
 local page
@@ -95,14 +96,14 @@ end
 
 function O.ownStatus()
     local level = S.number(S.call(UnitLevel, "player"))
-    if not level then return "Your status is not available right now." end
-    local text = "You are level " .. level
+    if not level then return T("Your status is not available right now.") end
+    local text = TF("You are level %d", level)
     local maximum = WoWStatusAdapter and WoWStatusAdapter.max_level
     local xp, xpMax = S.number(S.call(UnitXP, "player")), S.number(S.call(UnitXPMax, "player"))
     if maximum and level >= maximum then
-        text = text .. " (maximum level)"
+        text = text .. " (" .. T("maximum level") .. ")"
     elseif xp and xpMax and xpMax > 0 and xp >= 0 and xp <= xpMax then
-        text = text .. string.format(" · %d%% of the way to level %d", math.floor(xp / xpMax * 100), level + 1)
+        text = text .. TF(" · %d%% of the way to level %d", math.floor(xp / xpMax * 100), level + 1)
     end
     return text .. "."
 end
@@ -136,14 +137,14 @@ local function renderYou()
     you.info:SetText(table.concat({race or "", className or "", zone and ("· " .. zone) or ""}, " "))
     local xp, xpMax = S.number(S.call(UnitXP, "player")), S.number(S.call(UnitXPMax, "player"))
     local maximum = WoWStatusAdapter.max_level
-    if level and maximum and level >= maximum then you.xp:SetProgress(1, "Maximum level")
+    if level and maximum and level >= maximum then you.xp:SetProgress(1, T("Maximum level"))
     elseif xp and xpMax and xpMax > 0 then
-        you.xp:SetProgress(xp / xpMax, math.floor(xp / xpMax * 100) .. "% to level " .. ((level or 0) + 1))
+        you.xp:SetProgress(xp / xpMax, TF("%d%% to level %d", math.floor(xp / xpMax * 100), (level or 0) + 1))
     else you.xp:SetProgress(nil) end
     local snapshot = character and character.snapshot or {}
     local facts = {}
-    if S.number(snapshot.deaths_lifetime or snapshot.deaths) then table.insert(facts, "Deaths: " .. (snapshot.deaths_lifetime or snapshot.deaths)) end
-    if S.number(snapshot.quests_completed) then table.insert(facts, "Quests: " .. snapshot.quests_completed) end
+    if S.number(snapshot.deaths_lifetime or snapshot.deaths) then table.insert(facts, T("Deaths:") .. " " .. (snapshot.deaths_lifetime or snapshot.deaths)) end
+    if S.number(snapshot.quests_completed) then table.insert(facts, T("Quests:") .. " " .. snapshot.quests_completed) end
     you.stats:SetText(table.concat(facts, "   "))
 end
 
@@ -163,10 +164,10 @@ local function renderGroup()
     end
     table.sort(names)
     local count = WoWStatusPopups.onlineCount()
-    group.count:SetText(groups == 0 and "Join a group in Options to share with friends."
-        or ("|cff40ff40" .. count .. "|r online · " .. groups .. (groups == 1 and " group" or " groups")))
+    group.count:SetText(groups == 0 and T("Join a group in Options to share with friends.")
+        or ("|cff40ff40" .. count .. "|r " .. T("online") .. " · " .. groups .. " " .. T(groups == 1 and "group" or "groups")))
     -- Everyone online, scrolling when the box is full.
-    group.names:SetText(#names > 0 and table.concat(names, "\n") or (groups > 0 and "Nobody else is online right now." or ""))
+    group.names:SetText(#names > 0 and table.concat(names, "\n") or (groups > 0 and T("Nobody else is online right now.") or ""))
     group.list:SetHeight(math.max(1, (S.number(group.names:GetStringHeight()) or 0) + 4))
 end
 
@@ -187,7 +188,7 @@ local function renderRecords()
         local item = won[i]
         if item then
             row.icon:SetIcon(WoWStatusFirsts.medalIcon(item.medal))
-            row.text:SetText("|cffffd100" .. item.medal.title .. "|r — "
+            row.text:SetText("|cffffd100" .. T(item.medal.title) .. "|r — "
                 .. ((item.entry.sender or "?"):match("^[^-]+") or "?"):gsub("|", "||")
                 .. "  |cff9d9d9d" .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
             row:Show()
@@ -207,13 +208,13 @@ local function render()
     local since = data.since
     if WoWStatusGuide and WoWStatusGuide.touring() then since = S.now() - 86400 end
     local summary = O.summary(WoWStatusJournal.displayEntries(), since)
-    page.heading:SetText(since and ("Since you were last here (" .. WoWStatusHistory.oslo(since) .. ")")
-        or "Since you were last here")
+    page.heading:SetText(since and (T("Since you were last here") .. " (" .. WoWStatusHistory.oslo(since) .. ")")
+        or T("Since you were last here"))
     local rows = {}
     for _, player in ipairs(summary) do
         table.insert(rows, {text="|cffffd100" .. player.player .. "|r"})
         for _, fact in ipairs(player.facts) do
-            table.insert(rows, {text="   • " .. fact.text, id=fact.id})
+            table.insert(rows, {text="   • " .. T(fact.text), id=fact.id})
         end
     end
     if #rows > MAX_LINES then
@@ -221,8 +222,8 @@ local function render()
         for i = #rows, MAX_LINES, -1 do rows[i] = nil end
         rows[MAX_LINES] = {text="…and " .. hidden .. " more lines in the Activity tab."}
     end
-    page.empty:SetText(not since and "This summary starts after your next logout."
-        or "Nothing new from your group since you were last here.")
+    page.empty:SetText(not since and T("This summary starts after your next logout.")
+        or T("Nothing new from your group since you were last here."))
     page.empty:SetShown(#rows == 0)
     for i, row in ipairs(rows) do
         local widget = page.list.lines[i] or line(page.list, i)
@@ -254,7 +255,7 @@ local function build(parent)
     you.stats = UI.text(you, "GameFontHighlightSmall", 12, -110, 326)
     -- Your group
     local group = UI.box(page, 336, 136); group:SetPoint("TOPLEFT", 386, -4); page.group = group
-    UI.header(group, "Your group", 12, -10, 312)
+    UI.header(group, T("Your group"), 12, -10, 312)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
     group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
     group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 70)
@@ -273,7 +274,7 @@ local function build(parent)
     -- Latest records
     -- Directly under "Since you were last here", which sizes to its lines.
     local records = UI.box(page, 698, 124); records:SetPoint("TOPLEFT", since, "BOTTOMLEFT", 0, -8); page.records = records
-    UI.header(records, "Latest records", 12, -10, 674)
+    UI.header(records, T("Latest records"), 12, -10, 674)
     records.rows = {}
     for i = 1, 3 do
         local row = CreateFrame("Frame", nil, records); row:SetSize(674, 26); row:SetPoint("TOPLEFT", 12, -32 - (i - 1) * 28)
@@ -282,7 +283,7 @@ local function build(parent)
         records.rows[i] = row
     end
     records.empty = UI.text(records, "GameFontDisable", 12, -38, 674)
-    records.empty:SetText("No records yet. The first to reach a milestone in your group earns it.")
+    records.empty:SetText(T("No records yet. The first to reach a milestone in your group earns it."))
     return page
 end
 

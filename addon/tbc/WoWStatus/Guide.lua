@@ -34,19 +34,21 @@ end
 
 local function render()
     local data = STEPS[step]
-    frame.title:SetText(data.title)
-    frame.body:SetText(data.text)
-    frame.progress:SetText("Step " .. step .. " of " .. #STEPS)
+    local T = WoWStatusLocale.T
+    frame.title:SetText(T(data.title))
+    frame.body:SetText(T(data.text))
+    frame.progress:SetText(WoWStatusLocale.F("Step %d of %d", step, #STEPS))
     frame.action:SetShown(data.action ~= nil)
-    if data.action then frame.action:SetText(data.action[1]) end
+    if data.action then frame.action:SetText(T(data.action[1])) end
     frame.back:SetShown(step > 1)
-    frame.next:SetText(step == #STEPS and "Done" or "Next")
+    frame.next:SetText(WoWStatusLocale.T(step == #STEPS and "Done" or "Next"))
     frame.skip:SetShown(step < #STEPS)
 end
 
+local T = WoWStatusLocale.T
 local function button(text, x, width, fn)
     local widget = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
-    widget:SetPoint("BOTTOMLEFT", x, 18); widget:SetSize(width, 28); widget:SetText(text)
+    widget:SetPoint("BOTTOMLEFT", x, 18); widget:SetSize(width, 28); widget:SetText(T(text))
     widget:SetScript("OnClick", fn)
     return widget
 end

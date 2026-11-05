@@ -1,6 +1,7 @@
 -- Account-wide group choices, with per-character join times and history boundaries.
 WoWStatusGroups = {}
 local G, S = WoWStatusGroups, WoWStatusSafe
+local T = WoWStatusLocale.T
 local getCharacter, database, report, panel
 local MAX_GROUPS = 8
 
@@ -202,7 +203,7 @@ local function groupList()
 end
 local function renderGroups()
     local groups = groupList()
-    panel.count:SetText("Groups (" .. #groups .. " / " .. MAX_GROUPS .. ")")
+    panel.count:SetText(T("Groups") .. " (" .. #groups .. " / " .. MAX_GROUPS .. ")")
     panel.empty:SetShown(#groups == 0)
     for i, row in ipairs(panel.rows) do
         local group = groups[i]
@@ -216,7 +217,7 @@ local function saveList(groups)
     local labels = {}
     for _, group in ipairs(groups) do table.insert(labels, group.label) end
     local ok, message = update(table.concat(labels, "\n"), panel.name:GetText())
-    panel.status:SetText(message)
+    panel.status:SetText(T(message))
     report(message)
     if ok then renderGroups() end
     return ok
@@ -233,13 +234,13 @@ function G.show(host)
         local function label(text, y, width)
             local f = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
             f:SetPoint("TOPLEFT", 24, y); f:SetWidth(width or 570)
-            f:SetJustifyH("LEFT"); f:SetText(text)
+            f:SetJustifyH("LEFT"); f:SetText(T(text))
             return f
         end
         local function button(parent, text, x, y, width, action)
             local widget = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
             widget:SetPoint("TOPLEFT", x, y); widget:SetSize(width, 28)
-            widget:SetText(text); widget:SetScript("OnClick", action)
+            widget:SetText(T(text)); widget:SetScript("OnClick", action)
             return widget
         end
         local function input(y, limit)
@@ -262,7 +263,7 @@ function G.show(host)
         -- A refusal is shown under the input and in chat: in Options the page
         -- scrolls, so a message lower down could go unseen.
         local function refuse(message)
-            panel.status:SetText(message)
+            panel.status:SetText(T(message))
             report(message)
         end
         local function add()
@@ -338,7 +339,7 @@ function G.show(host)
     if host then panel:SetScript("OnDragStart", nil)
     else panel:SetScript("OnDragStart", panel.StartMoving) end
     panel:SetScript("OnDragStop", panel.StopMovingOrSizing)
-    panel.status:SetText(database.retired_groups_removed and G.RETIRED_MESSAGE or "")
+    panel.status:SetText(database.retired_groups_removed and T(G.RETIRED_MESSAGE) or "")
     panel.name:SetText(database.player_name or "")
     panel.input:SetText("")
     renderGroups()

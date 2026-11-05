@@ -2,6 +2,7 @@
 -- No server, remote code, executable serialization or arbitrary chat input.
 WoWStatusJournal = {}
 local J, S, P = WoWStatusJournal, WoWStatusSafe, WoWStatusPopups
+local T = WoWStatusLocale.T
 local db, current, index, digests = nil,nil,{},{}
 local requests, sessions, sendQueue, cursors, rates = {},{},{},{},{}
 local serial,lastSend=0,0
@@ -892,7 +893,7 @@ local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
     panel.empty:SetShown(#list==0)
-    panel.showing:SetText(panel.filter=="character" and ("Showing: |cffffd100"..(panel.characterName or "?"):gsub("|","||").."|r") or "")
+    panel.showing:SetText(panel.filter=="character" and (T("Showing:").." |cffffd100"..(panel.characterName or "?"):gsub("|","||").."|r") or "")
     panel.showAll:SetShown(panel.filter=="character")
     panel.child:SetHeight(math.max(360,#list*132))
     local first=math.floor(panel.scroll:GetVerticalScroll()/132)+1
@@ -902,12 +903,13 @@ local function render()
             row:ClearAllPoints();row:SetPoint("TOPLEFT",0,-(i-1)*132)
             local texture,r,g,b,heading=WoWStatusPresentation.theme(e)
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
-            row.heading:SetText(heading)
+            row.heading:SetText(T(heading))
             local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
                 and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
-            row.message:SetText(who:gsub("|","||").." — "..e.text:gsub("|","||"))
-            local scope=e.imported=="achievement" and "From your achievements (date only)" or e.owner and "Your activity" or (e.origin=="catchup" and "Caught up via "..(e.via or "a group member")..(e.relay and ", passed on by "..e.relay or "")
-                or e.origin=="legacy" and "Saved group update" or "Live group update")
+            row.message:SetText(who:gsub("|","||").." — "..T(e.text):gsub("|","||"))
+            local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
+                or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
+                or e.origin=="legacy" and T("Saved group update") or T("Live group update"))
             row.flavour:SetText(WoWStatusFlavour.text(e))
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
@@ -934,7 +936,7 @@ local function build(parent)
     panel.scroll:SetPoint("TOPLEFT",24,-4);panel.scroll:SetSize(710,470)
     panel.child=CreateFrame("Frame",nil,panel.scroll);panel.child:SetSize(686,420);panel.scroll:SetScrollChild(panel.child)
     panel.empty=label(panel.child,"GameFontHighlightLarge",24,-180,620)
-    panel.empty:SetJustifyH("CENTER");panel.empty:SetText("No activity yet")
+    panel.empty:SetJustifyH("CENTER");panel.empty:SetText(T("No activity yet"))
     panel.rows={};panel.filter="all"
     for i=1,6 do
         local row=WoWStatusUI.box(panel.child,680,124)
@@ -947,7 +949,7 @@ local function build(parent)
             if GameTooltip and self.entry then
                 GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
                 GameTooltip:AddLine(self.entry.text,1,1,1,true)
-                GameTooltip:AddLine("Event ID: "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
+                GameTooltip:AddLine(T("Event ID:").." "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
             end
         end)
         row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
@@ -959,13 +961,13 @@ local function build(parent)
     else panel.scroll:SetScript("OnVerticalScroll",render) end
     local buttons={{"All","all"},{"Mine","mine"},{"Friends","friends"}}
     for i,b in ipairs(buttons) do
-        local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-490);widget:SetSize(160,30);widget:SetText(b[1])
+        local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-490);widget:SetSize(160,30);widget:SetText(T(b[1]))
         widget:SetScript("OnClick",function() panel.filter=b[2];panel.scroll:SetVerticalScroll(0);render() end)
     end
     -- Set by clicking a character on the Characters page.
     panel.showing=label(panel,"GameFontHighlight",24,-528,420)
     panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
-    panel.showAll:SetText("Show all");panel.showAll:Hide()
+    panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
     panel.showAll:SetScript("OnClick",function() panel.filter="all";panel.scroll:SetVerticalScroll(0);render() end)
     return panel
 end

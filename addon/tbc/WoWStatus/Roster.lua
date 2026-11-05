@@ -9,6 +9,20 @@
 -- validated fields. Nothing is sent when sharing the list is turned off.
 WoWStatusRoster = {}
 local R, S = WoWStatusRoster, WoWStatusSafe
+local T, TF = WoWStatusLocale.T, WoWStatusLocale.F
+-- A heading as shown: names stay, the English parts are translated.
+local function shownTitle(title)
+    if WoWStatusLocale.lang() == "en" then return title end
+    title = title:gsub("^Not announced", T("Not announced")):gsub("^Unnamed player", T("Unnamed player"))
+    title = title:gsub(" %(you%)", " (" .. T("you") .. ")")
+    title = title:gsub("%((%d+) characters?%)", function(n) return "(" .. n .. " " .. T(n == "1" and "character" or "characters") .. ")" end)
+    return title
+end
+-- "NightElf" as "Night Elf", or its Nynorsk name.
+local function shownRace(race)
+    local spaced = race:gsub("(%l)(%u)", "%1 %2")
+    return T(spaced)
+end
 local PREFIX = "WoWStatusChr"
 local MAX_PLAYERS, MAX_CHARACTERS = 64, 20
 local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=true, DEATHKNIGHT=true, SHAMAN=true,
@@ -290,7 +304,7 @@ local function updateSyncButton()
     elseif wait == 0 and button.Enable then button:Enable()
     elseif button.Disable then button:Disable() end
     button.ready = wait == 0
-    page.sync:SetText(wait == 0 and "Sync now" or ("Sync (" .. wait .. " s)"))
+    page.sync:SetText(wait == 0 and T("Sync now") or TF("Sync (%d s)", wait))
 end
 -- Everyone online in your groups: your list again, a request for theirs, and a
 -- log catch-up as at login. Once a minute.
@@ -641,7 +655,7 @@ local function card(index)
         UI.tint(self, true)
         if GameTooltip and self.character then
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(self.character.name)
-            GameTooltip:AddLine("Click to see this character's activity.", 1, 1, 1, true); GameTooltip:Show()
+            GameTooltip:AddLine(T("Click to see this character's activity."), 1, 1, 1, true); GameTooltip:Show()
         end
     end)
     c:SetScript("OnLeave", function(self) UI.tint(self, false); if GameTooltip then GameTooltip:Hide() end end)
@@ -728,9 +742,9 @@ function R.render()
         b.key = part.key
         b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
         b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-        local summary = part.characters and ("   |cff9d9d9d" .. part.characters .. (part.characters == 1 and " character" or " characters")
-            .. ", " .. part.online .. " online|r") or ""
-        b.text:SetText(part.title:gsub("|", "||") .. summary)
+        local summary = part.characters and ("   |cff9d9d9d" .. part.characters .. " " .. T(part.characters == 1 and "character" or "characters")
+            .. ", " .. part.online .. " " .. T("online") .. "|r") or ""
+        b.text:SetText(T(part.title):gsub("|", "||") .. summary)
         b:Show()
         y = y + SECTION
         if not closed then
@@ -738,7 +752,7 @@ function R.render()
                 headers = headers + 1
                 local h = page.headers[headers] or header(headers)
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
-                h.text:SetText("|cff9d9d9dNobody else seen in this group yet.|r"); h:Show()
+                h.text:SetText("|cff9d9d9d" .. T("Nobody else seen in this group yet.") .. "|r"); h:Show()
                 y = y + HEADER
             end
             for _, group in ipairs(part.entries) do
@@ -746,7 +760,7 @@ function R.render()
                 local h = page.headers[headers] or header(headers)
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
                 -- The version note stays small and grey beside the title.
-                h.text:SetText(group.title:gsub("|", "||") .. (group.note and ("   |cff808080" .. group.note .. "|r") or "")); h:Show()
+                h.text:SetText(shownTitle(group.title):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
                 y = y + HEADER
                 for _, character in ipairs(group.rows) do
                     if index >= 200 then break end
@@ -758,21 +772,21 @@ function R.render()
                     local colour = UI.classColour(character.class)
                     c.name:SetText(colour and (colour .. name .. "|r") or name)
                     c.badge:SetLevel(character.level); c.badge:SetShown(character.level ~= nil)
-                    local class = character.class and (character.class:sub(1, 1) .. character.class:sub(2):lower()) or "Never met"
-                    c.class:SetText(character.race and (character.race .. " " .. class) or class)
+                    local class = character.class and T(character.class:sub(1, 1) .. character.class:sub(2):lower()) or T("Never met")
+                    c.class:SetText(character.race and (shownRace(character.race) .. " " .. class) or class)
                     local online = character.status == "online"
                     c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
-                    c.status:SetText(character.status)
+                    c.status:SetText(T(character.status))
                     local xp = S.number(character.xp)
-                    c.xp:SetProgress(xp and xp / 1000, xp and ("XP " .. math.floor(xp / 10) .. "%"))
+                    c.xp:SetProgress(xp and xp / 1000, xp and TF("XP %d%%", math.floor(xp / 10)))
                     -- Level and total deaths at the end of the card.
                     local facts = {}
-                    if character.level then table.insert(facts, "Level " .. character.level) end
+                    if character.level then table.insert(facts, TF("Level %d", character.level)) end
                     local died = S.number(character.deaths)
-                    if died then table.insert(facts, died == 1 and "1 death" or (died .. " deaths")) end
+                    if died then table.insert(facts, died == 1 and T("1 death") or TF("%d deaths", died)) end
                     c.latest:SetText(table.concat(facts, " · "))
                     local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
-                    c.groups:SetText(groups ~= "" and ("|cff9d9d9dGroups:|r " .. groups:gsub("|", "||")) or "")
+                    c.groups:SetText(groups ~= "" and ("|cff9d9d9d" .. T("Groups:") .. "|r " .. groups:gsub("|", "||")) or "")
                     c.text = c.name -- Older callers read a row's text.
                     c.kind, c.character = "character", character
                     UI.tint(c, false)
@@ -798,24 +812,24 @@ local function build(parent)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines, page.headers, page.sections = {}, {}, {}
     page.scroll:SetScrollChild(page.list)
     page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    page.empty:SetPoint("TOPLEFT", 24, -12); page.empty:SetText("No characters yet.")
+    page.empty:SetPoint("TOPLEFT", 24, -12); page.empty:SetText(T("No characters yet."))
     page.share = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
     page.share:SetPoint("TOPLEFT", 24, -486); page.share:SetSize(32, 32)
     local shareLabel = page.share:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText("Share my character list")
+    shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText(T("Share my character list"))
     page.share:SetScript("OnClick", function(self) R.setSharing(self:GetChecked() and true or false) end)
     page.hide = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
     page.hide:SetPoint("TOPLEFT", 330, -486); page.hide:SetSize(32, 32)
     local hideLabel = page.hide:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    hideLabel:SetPoint("TOPLEFT", 38, -8); hideLabel:SetText("Hide this character from the list")
+    hideLabel:SetPoint("TOPLEFT", 38, -8); hideLabel:SetText(T("Hide this character from the list"))
     page.hide:SetScript("OnClick", function(self) R.setHidden(current, self:GetChecked() and true or false) end)
     page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
     page.sync:SetScript("OnClick", function() R.syncNow() end)
     page.sync:SetScript("OnEnter", function(self)
         if GameTooltip then
-            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText("Sync with everyone online")
-            GameTooltip:AddLine("Sends your character list, asks for theirs and catches up the activity log. Once a minute.", 1, 1, 1, true)
+            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Sync with everyone online"))
+            GameTooltip:AddLine(T("Sends your character list, asks for theirs and catches up the activity log. Once a minute."), 1, 1, 1, true)
             GameTooltip:Show()
         end
     end)

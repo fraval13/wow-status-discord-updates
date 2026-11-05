@@ -6,6 +6,7 @@
 -- entries recovered by login sync update the Records page quietly.
 WoWStatusFirsts = {}
 local F, S = WoWStatusFirsts, WoWStatusSafe
+local T, TF = WoWStatusLocale.T, WoWStatusLocale.F
 local ANNOUNCE_WITHIN = 600
 local page
 
@@ -155,8 +156,8 @@ local function render()
     local chosen = selectedGroup(groups)
     local top = tabs(groups, chosen)
     page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -8 - top)
-    page.heading:SetText(chosen and ("Firsts in " .. chosen.label:gsub("|", "||"))
-        or "Join a group to compete for records with your friends.")
+    page.heading:SetText(chosen and (T("Firsts in") .. " " .. chosen.label:gsub("|", "||"))
+        or T("Join a group to compete for records with your friends."))
     page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -36 - top)
     page.scroll:SetHeight(494 - top)
     page.group = chosen and chosen.id
@@ -167,11 +168,11 @@ local function render()
         c:ClearAllPoints(); c:SetPoint("TOPLEFT", column * (CARD_W + GAP), -line * (CARD_H + GAP))
         local e = result[medal.key]
         c.icon:SetIcon(medalIcon(medal), e == nil)
-        c.title:SetText(medal.title)
+        c.title:SetText(T(medal.title))
         local when = e and WoWStatusHistory.oslo(e.at):sub(1, 16)
         -- Reached before WoW Status tracked it: the date is "by then".
-        if e and e.milestone and not e.exact then when = "before WoW Status, by " .. when:sub(1, 10) end
-        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or "nobody yet"
+        if e and e.milestone and not e.exact then when = T("before WoW Status, by") .. " " .. when:sub(1, 10) end
+        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or T("nobody yet")
         c.holder:SetText(e and holder or ("|cff808080" .. holder .. "|r"))
         UI.tint(c, e ~= nil)
         c.text = medal.title .. " — " .. holder -- Plain summary of the card.
@@ -183,14 +184,14 @@ local function render()
     local lines = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if e.kind == "recap" and #lines < 10 and WoWStatusJournal.visible(e) then
-            table.insert(lines, "|cffffd100" .. WoWStatusHistory.oslo(e.at):sub(1, 16) .. "|r  " .. e.text:gsub("|", "||"))
+            table.insert(lines, "|cffffd100" .. WoWStatusHistory.oslo(e.at):sub(1, 16) .. "|r  " .. T(e.text):gsub("|", "||"))
         end
     end
-    if #lines == 0 then table.insert(lines, "No recaps yet. One is written after each play session.") end
+    if #lines == 0 then table.insert(lines, T("No recaps yet. One is written after each play session.")) end
     local box = page.recapBox
     if not box then
         box = UI.box(page.list, 2 * CARD_W + GAP, 40); page.recapBox = box
-        box.title = UI.header(box, "Session recaps", 12, -10, 2 * CARD_W + GAP - 24)
+        box.title = UI.header(box, T("Session recaps"), 12, -10, 2 * CARD_W + GAP - 24)
         page.recaps = {}
     end
     box:ClearAllPoints(); box:SetPoint("TOPLEFT", 0, -(medalsHeight + 6))
@@ -241,7 +242,7 @@ function F.update()
                     and not S.outside(e.at, ANNOUNCE_WITHIN, math.huge) and WoWStatusPopups.notice then
                     announced[seen] = true
                     WoWStatusPopups.notice({sender=e.sender, kind="first", text=medal.title .. "!",
-                        flavour="A new record in " .. group.label:gsub("|", "||") .. "."})
+                        flavour=T("A new record in") .. " " .. group.label:gsub("|", "||") .. "."})
                 end
             end
         end

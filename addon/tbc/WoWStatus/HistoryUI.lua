@@ -5,19 +5,20 @@ local panel, getCharacter
 local mode, page, category = "logs", 1, "all"
 local PAGE_SIZE = 75
 
+local T = WoWStatusLocale.T
 local function label(parent, text, x, y, width)
     local font = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     font:SetPoint("TOPLEFT", x, y)
     font:SetWidth(width)
     font:SetJustifyH("LEFT")
-    font:SetText(text)
+    font:SetText(T(text))
     return font
 end
 local function button(parent, text, x, y, width, fn)
     local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     b:SetPoint("TOPLEFT", x, y)
     b:SetSize(width, 25)
-    b:SetText(text)
+    b:SetText(T(text))
     b:SetScript("OnClick", fn)
     return b
 end

@@ -26,8 +26,9 @@ function L.tracker()
     end
 end
 
+local T = WoWStatusLocale.T
 local function age(seconds)
-    if seconds < 60 then return "now" end
+    if seconds < 60 then return T("now") end
     if seconds < 3600 then return math.floor(seconds / 60) .. "m" end
     if seconds < 86400 then return math.floor(seconds / 3600) .. "h" end
     return math.floor(seconds / 86400) .. "d"
@@ -39,8 +40,8 @@ function L.latest()
         if type(e) == "table" and not e.owner and WoWStatusJournal.visible(e) and e.kind ~= "introduction" then
             local name = WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender)
                 or tostring(e.sender or "?"):match("^[^-]+") or "?"
-            local text = e.kind == "level" and S.number(e.level) and (name .. " hit " .. e.level)
-                or (name .. ": " .. tostring(e.text or ""))
+            local text = e.kind == "level" and S.number(e.level) and (name .. " " .. T("hit") .. " " .. e.level)
+                or (name .. ": " .. T(tostring(e.text or "")))
             if #text > 48 then text = text:sub(1, 45) .. "..." end
             local now = S.now()
             return text:gsub("|", "||") .. " (" .. age(math.max(0, now - (e.at or now))) .. ")"
@@ -49,7 +50,7 @@ function L.latest()
 end
 
 function L.text()
-    local parts = {"WoW Status", WoWStatusPopups.onlineCount() .. " online"}
+    local parts = {"WoW Status", WoWStatusPopups.onlineCount() .. " " .. T("online")}
     local latest = L.latest()
     if latest then table.insert(parts, latest) end
     return table.concat(parts, " · ")

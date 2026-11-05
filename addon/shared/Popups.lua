@@ -2,6 +2,7 @@
 WoWStatusPopups = {}
 local P = WoWStatusPopups
 local A, S = WoWStatusAdapter, WoWStatusSafe
+local T = WoWStatusLocale.T
 local prefs, getCharacter, notify, toast, active
 local incoming, outgoing = {}, {}
 local lastDisplay, nextSend = 0, 0
@@ -867,7 +868,8 @@ function P.react(item, text)
     local send = A.chatSender and A.chatSender()
     if not send or A.chatRestricted() then return false end
     item.reacted = text
-    return pcall(send, text, "WHISPER", nil, item.sender) == true
+    -- Whispered in your chosen language ("Gratulerer!"); GZ!, F and Git Good stay.
+    return pcall(send, T(text), "WHISPER", nil, item.sender) == true
 end
 local function reactionButtons()
     local item = toast.item
@@ -882,14 +884,14 @@ local function reactionButtons()
             button:SetScript("OnClick", function(self)
                 local shown = toast.item
                 if shown and P.react(shown, self.reaction) then
-                    toast.detail:SetText("You whispered “" .. self.reaction .. "”"); toast.detail:Show()
+                    toast.detail:SetText(T("You whispered") .. " “" .. T(self.reaction) .. "”"); toast.detail:Show()
                 end
                 reactionButtons()
             end)
             toast.reactions[i] = button
         end
         button.reaction = list[i]
-        button:SetText(list[i])
+        button:SetText(T(list[i]))
         -- Wide enough for its text ("Enjoy Stranglethorn Vale!"), never narrower than 86.
         local label = button.GetFontString and button:GetFontString()
         local width = label and label.GetStringWidth and S.number(label:GetStringWidth())
@@ -999,11 +1001,12 @@ local function show(item, now)
     toast.icon:SetTexture(texture)
     toast.glow:SetVertexColor(r,g,b)
     toast.accent:SetColorTexture(r,g,b,1)
-    toast.heading:SetTextColor(r,g,b); toast.heading:SetText(heading)
+    toast.heading:SetTextColor(r,g,b); toast.heading:SetText(T(heading))
     toast.message:SetHeight(42)
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
+    detail = T(detail)
     toast.message:SetText(name .. ((item.level or item.kind=="guard") and " " or " — ") .. detail)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)

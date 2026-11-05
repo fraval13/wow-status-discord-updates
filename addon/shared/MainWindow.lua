@@ -7,6 +7,7 @@
 -- differ between the four clients.
 WoWStatusMainWindow = {}
 local M = WoWStatusMainWindow
+local T = WoWStatusLocale.T
 local pages, order, window, active = {}, {}, nil, nil
 M.WIDTH, M.HEIGHT, M.CONTENT_HEIGHT = 780, 680, 540
 local TAB_WIDTH, TAB_GAP = 130, 8
@@ -24,7 +25,7 @@ function M.active() return window and window:IsShown() and active or nil end
 local function addTab(page, index)
     local tab = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
     tab:SetPoint("TOPLEFT", 24 + (index - 1) * (TAB_WIDTH + TAB_GAP), -52)
-    tab:SetSize(TAB_WIDTH, 26); tab:SetText(page.title)
+    tab:SetSize(TAB_WIDTH, 26); tab:SetText(T(page.title))
     tab:SetScript("OnClick", function() M.show(page.key) end)
     page.tab = tab
 end
@@ -109,7 +110,7 @@ function M.show(key)
     active = key
     saved().page = key
     local tour = WoWStatusGuide and WoWStatusGuide.touring() and " (sample tour, nothing here is real)" or ""
-    window.title:SetText("WoW Status — " .. page.title .. tour)
+    window.title:SetText("WoW Status — " .. T(page.title) .. (tour ~= "" and T(tour) or ""))
     if page.frame then page.frame:Show() end
     if page.refresh then page.refresh(page.frame) end
     window:Show()

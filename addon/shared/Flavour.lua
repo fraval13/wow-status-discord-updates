@@ -1359,20 +1359,50 @@ local function category(item)
     if item.kind=="profession" and (item.text or ""):match("^Learned ") then return "profession_learned" end
     return item.kind
 end
+-- Positions in the bank this item may draw from (death: general lines and its class).
 local function choices(item,kind)
-    if kind~="death" then return banks[kind] end
-    local class=playerClass(item)
+    local bank=banks[kind]
+    if not bank then return nil end
     local pool={}
-    for _,line in ipairs(banks.death) do
-        local tag,copy=line:match("^%[([A-Z]+)%] (.+)$")
-        if tag=="ANY" or tag==class then pool[#pool+1]=copy end
+    if kind~="death" then
+        for i=1,#bank do pool[i]=i end
+        return pool
+    end
+    local class=playerClass(item)
+    for i,line in ipairs(bank) do
+        local tag=line:match("^%[([A-Z]+)%] ")
+        if tag=="ANY" or tag==class then pool[#pool+1]=i end
     end
     return pool
+end
+-- A caption line in the chosen language (Nynorsk lines share the English order).
+local function line(kind,pos)
+    local nn=WoWStatusLocale and WoWStatusLocale.lang()=="nn" and WoWStatusFlavourNN and WoWStatusFlavourNN[kind]
+    local text=(nn and nn[pos]) or (banks[kind] and banks[kind][pos])
+    return text and (text:gsub("^%[[A-Z]+%] ","")) or ""
+end
+F.line=line
+-- English caption text -> {kind, pos}, for items saved before positions were kept.
+local reverse
+local function lookup(text)
+    if not reverse then
+        reverse={}
+        for kind,bank in pairs(banks) do
+            for pos,entry in ipairs(bank) do reverse[(entry:gsub("^%[[A-Z]+%] ",""))]={kind,pos} end
+        end
+    end
+    return reverse[text]
 end
 local previous={}
 function F.text(item)
     if type(item)~="table" then return "" end
-    if item.flavour then return item.flavour end
+    if item.flavour_kind and item.flavour_pos then return line(item.flavour_kind,item.flavour_pos) end
+    if item.flavour then
+        -- An older saved caption: find its line, so it follows the chosen language.
+        local found=lookup(item.flavour)
+        if found then item.flavour_kind,item.flavour_pos=found[1],found[2]; return line(found[1],found[2]) end
+        return WoWStatusLocale and WoWStatusLocale.T(item.flavour) or item.flavour
+    end
     local kind=category(item)
     local pool=choices(item,kind)
     if not pool or #pool==0 then return "" end
@@ -1393,6 +1423,9 @@ function F.text(item)
         if #pool>1 and previous[kind]==pool[index] then index=index%#pool+1 end
         previous[kind]=pool[index]
     end
-    item.flavour=pool[index]
-    return item.flavour
+    local pos=pool[index]
+    -- The English text stays saved too, for older versions reading this log.
+    item.flavour_kind,item.flavour_pos=kind,pos
+    item.flavour=(banks[kind][pos]:gsub("^%[[A-Z]+%] ",""))
+    return line(kind,pos)
 end
