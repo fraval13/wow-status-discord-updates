@@ -125,11 +125,16 @@ work. With unrelated edits present, copy only task-owned files or use an isolate
 worktree. Add new Lua files to each edition's TOC before consumers and update any
 explicit test-harness load lists (`test_addon.py`, `test_forever.py`).
 
-Versions: feature pull requests must NOT change the version. Several agents work
-on separate issues at once, so per-feature bumps would conflict and pick the same
-number. A release is its own small pull request that only changes the version
-(see `scripts/sync_version.py` below) and adds release notes. Merging it
-publishes the new number.
+Versions: feature pull requests must NOT change the version. On each main push,
+`checks.yml` first runs `scripts/prepare_release.py` in a trusted job. It increments
+`project.version` by one minor version (resetting the patch to zero), promotes `## Unreleased` notes (or uses the public
+commit title), synchronizes four TOCs and all What's New data, and commits/pushes
+the prepared release. Validation and deployment check out that exact returned
+revision. GITHUB_TOKEN pushes do not recursively trigger another run. Retries and
+manual dispatches reuse a prepared release; an intentional version bump is also
+retained. Never force-push a release or bypass the current-main deployment gate.
+Add player-facing notes under `## Unreleased` in feature PRs. The first automatic
+release after the owner's 5 November request is expected to be 0.15.0.
 
 `requirements.txt` pins, by version and SHA-256, every package the server's
 receiver installs (runtime dependencies plus the build backend). After changing
