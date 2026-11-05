@@ -124,7 +124,7 @@ function F.update()
         if e and previous ~= e.id then
             data.holders[medal.key] = e.id
             if not quiet and previous == nil and e.origin == "live"
-                and time() - e.at <= ANNOUNCE_WITHIN and WoWStatusPopups.notice then
+                and WoWStatusSafe.now() - e.at <= ANNOUNCE_WITHIN and WoWStatusPopups.notice then
                 WoWStatusPopups.notice({sender=e.sender, kind="first", text=medal.title .. "!",
                     flavour="A new record on the Records page."})
             end

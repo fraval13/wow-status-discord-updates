@@ -179,3 +179,24 @@ else on the next hop. When B saw it live or wrote it, the card says just
 before. To test: B catches up an entry from A (B was offline when it happened),
 then C catches it up from B alone. C's log should say `Caught up via A, passed on
 by B`.
+
+## Timestamps and PC clocks
+
+Updates are stamped with realm time (`GetServerTime()`), the same clock on every
+member's PC, and received stamps are checked against it: a live update counts
+when it is at most 120 seconds old and at most 300 seconds ahead. Before, both
+sides used their own PC clock (`time()`), so two PCs whose clocks differed by
+more than two minutes silently dropped each other's live updates. The sender's
+queue limit (120 seconds) and the login sync checks use realm time as well, and
+so do saved event, log, recap, export and group-join times. Short local timers
+keep the PC clock.
+
+Older clients still stamp their PC clock. Their updates count when the stamp fits
+realm time or this PC's clock, so anything accepted before is still accepted.
+
+A dropped stamp shows in `/wstatus popup status` as `rejected_stale` or
+`rejected_future`, with how far it was from realm time, and a `Clock:` line says
+how far this PC's clock is from realm time. To test: set one PC's clock three
+minutes ahead (without automatic time sync) and send a level-up or milestone both
+ways; both popups should show. `/run print(time()-GetServerTime())` should print
+about 180 on that PC and about 0 on the other.

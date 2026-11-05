@@ -90,7 +90,7 @@ end
 
 -- Sample adventurers for the tour. Built fresh each time, never stored.
 local function samples()
-    local now = time()
+    local now = WoWStatusSafe.now()
     local function entry(n, sender, kind, ago, fields)
         local e = {id="sample:" .. n, sender=sender, kind=kind, at=now - ago, groups={}, origin="live", sample=true}
         for key, value in pairs(fields) do e[key] = value end

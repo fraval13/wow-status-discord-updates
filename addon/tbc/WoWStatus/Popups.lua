@@ -368,8 +368,15 @@ local function queuedFrom(key, event)
     end
     return count
 end
-local function noteReceive(state, c, now)
-    prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now}
+local function noteReceive(state, c, now, offset)
+    prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now, offset=offset}
+end
+-- Packet timestamps outside the freshness window are dropped, but recorded so
+-- /wstatus popup status can say why (issue #7).
+local function late(c, now)
+    local reason = S.outside(c.at, 120, 300)
+    if reason then noteReceive("rejected_" .. reason, c, now, c.at - S.now()) end
+    return reason ~= nil
 end
 -- Store a validated update from a known peer (or a trusted legacy sender): log
 -- it, then queue its popup unless the log already had it.
@@ -486,7 +493,8 @@ function P.receive(text, sender, channel)
         local allowed = {introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
-            or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
+            or (not raw and #encoded % 2 ~= 0) then return false end
+        if late({sender=sender, kind=kind, at=at}, now) then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
         local lootInfo
@@ -521,7 +529,8 @@ function P.receive(text, sender, channel)
     end
     if client ~= A.client_id then return false end
     local level, at, now = tonumber(levelText), tonumber(atText), time()
-    if not at or not nonce or #nonce > 64 or at < now - 120 or at > now + 300 then return false end
+    if not at or not nonce or #nonce > 64 then return false end
+    if late({sender=sender, at=at}, now) then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
     return admit({sender=sender, key=key, group=group, level=level, at=at, nonce=nonce}, now)
 end
@@ -762,7 +771,7 @@ local function tick()
     end
     if #outgoing == 0 or now - lastAttempt < 1 then return end
     local item, character = outgoing[1], getCharacter()
-    if not canShare(character, item.event) or now - item.at > 120
+    if not canShare(character, item.event) or S.now() - item.at > 120
         or (item.group_id and not WoWStatusGroups.contains(character, item.group_id)) then
         table.remove(outgoing, 1)
         status("cancelled_or_expired", item.event)
@@ -898,6 +907,10 @@ function P.showActivity()
     if WoWStatusJournal then WoWStatusJournal.show() end
 end
 
+-- "185 s behind realm time" for a difference of -185 seconds.
+local function realmOffset(seconds)
+    return math.abs(seconds).." s "..(seconds<0 and "behind" or "ahead of").." realm time"
+end
 function P.command(text)
     if not prefs then return end
     local command, rest = text:match(S.SPLIT_WORD)
@@ -960,8 +973,13 @@ function P.command(text)
         notify("Last broadcast: " .. (prefs.last_send and prefs.last_send.state or "none")
             ..(prefs.last_send and prefs.last_send.target and (" to "..prefs.last_send.target) or ""))
         local received=prefs.last_receive
-        notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state) or "none")
+        local stamped=received and type(received.offset)=="number" and (" (stamped "..realmOffset(received.offset)..")") or ""
+        notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state..stamped) or "none")
             .."; popup queue="..#incoming.."; awaiting roster="..#unverified.."; in combat="..tostring(combat() and true or false))
+        local realmNow=S.realmTime()
+        notify("Clock: "..(not realmNow and "realm time unavailable; using this PC's clock"
+            or math.abs(time()-realmNow)<=1 and "this PC matches realm time"
+            or ("this PC is "..realmOffset(time()-realmNow)))..".")
     else
         notify("Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME")
         notify("Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status.")

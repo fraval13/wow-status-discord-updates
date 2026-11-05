@@ -39,7 +39,7 @@ end
 
 local function snapshot()
     if not current then return end
-    current.exported_at = time()
+    current.exported_at = S.now()
     if current.settings.enabled then current.enrolled = true end
     current.player_name = WoWStatusDB.player_name or ""
     current.snapshot = current.settings.enabled and A.snapshot(current.settings.fields) or {}
@@ -78,7 +78,7 @@ local function queue(kind, data, fixed, targetGroups)
     end
     data = H.copy(data or {})
     if current.settings.fields.zone then data.zone = A.zone() end
-    local event = {id = id, kind = kind, at = time(), data = data,
+    local event = {id = id, kind = kind, at = S.now(), data = data,
         group_ids = H.copy(targetGroups or current.group_ids or {})}
     -- Only events that can be sent or logged for the group need a packet nonce.
     if WoWStatusJournal.shared(kind) and not data.synthetic then event.nonce = WoWStatusPopups.newNonce(current) end
@@ -116,7 +116,7 @@ local function scrub()
     current.events = retained
     H.scrub(current)
     local level = A.level()
-    if level then H.sync(current, level, time()) end
+    if level then H.sync(current, level, S.now()) end
     WoWStatusPopups.privacyChanged()
     WoWStatusJournal.privacyChanged()
     if not current.settings.enabled or not current.settings.fields.playtime then
@@ -248,7 +248,7 @@ local function showDiscord(host)
                 local target = group and current.settings[group] or current.settings
                 target[key] = self:GetChecked() and true or false
                 if key == "discord_enabled" and target[key] then
-                    current.discord_enrolled, current.discord_since = true, time()
+                    current.discord_enrolled, current.discord_since = true, S.now()
                 end
                 current.settings.discord_delivery = "summary"
                 snapshot()
@@ -422,7 +422,7 @@ local function initialize()
         elseif character.discord_hidden_opt_in~=nil then
             character.settings.discord_enabled=character.discord_hidden_opt_in
             character.discord_enrolled=character.discord_hidden_enrolled or false;character.discord_hidden_enrolled=nil
-            if character.discord_hidden_opt_in then character.discord_since=time();character.discord_enrolled=true end
+            if character.discord_hidden_opt_in then character.discord_since=S.now();character.discord_enrolled=true end
             character.discord_hidden_opt_in=nil
         end
     end
@@ -485,7 +485,7 @@ local function initialize()
         end
     end
     local level = A.level()
-    if level then H.sync(current, level, time()) end
+    if level then H.sync(current, level, S.now()) end
     WoWStatusProgress.initZones(current,A.zone())
     snapshot()
     current.last_zone = A.zone()
@@ -527,7 +527,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if not current then initialize()
         elseif event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_ENTERING_WORLD" then
             local level = A.level()
-            if level then H.sync(current, level, time()) end
+            if level then H.sync(current, level, S.now()) end
             snapshot()
         end
         return
@@ -603,7 +603,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
             local total, thisLevel = ...
             total, thisLevel = S.number(total), S.number(thisLevel)
             local level = A.level()
-            if total and total >= 0 then playtime, playtimeRecordedAt = total, time() end
+            if total and total >= 0 then playtime, playtimeRecordedAt = total, S.now() end
             if total and thisLevel and level and thisLevel >= 0 and total >= thisLevel then
                 local boundary = total - thisLevel
                 local previous = current.played_boundary
@@ -633,7 +633,7 @@ SlashCmdList.WOWSTATUS = function(message)
         if rest == "legacy" then
             current.group_ids = {}
             current.legacy_upload = true
-            current.exported_at = time()
+            current.exported_at = S.now()
             WoWStatusPopups.groupsChanged()
             say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
         else openSettings("groups") end

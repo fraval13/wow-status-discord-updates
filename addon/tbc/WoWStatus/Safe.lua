@@ -55,3 +55,23 @@ end
 function S.stringCall(fn, ...)
     return S.string(S.call(fn, ...))
 end
+-- Realm time (issue #7). time() reads this PC's clock, which can be minutes
+-- off; GetServerTime() is the realm's clock, the same on every member's PC.
+-- Stamp everything stored or shared with it, and compare those stamps with it.
+-- time() stays for short local intervals. Falls back to time() without the API.
+function S.realmTime()
+    local realm = S.number(S.call(GetServerTime))
+    return realm and realm > 0 and math.floor(realm) or nil
+end
+function S.now()
+    return S.realmTime() or time()
+end
+-- Checks a peer's timestamp against [now - past, now + ahead]. Updated clients
+-- stamp realm time; older ones stamp their PC clock, so a stamp that fits this
+-- PC's clock still counts (it did before). Returns nil when the stamp fits,
+-- otherwise "stale" or "future" as judged by realm time.
+function S.outside(at, past, ahead)
+    local realm, pc = S.now(), time()
+    if (at >= realm - past and at <= realm + ahead) or (at >= pc - past and at <= pc + ahead) then return nil end
+    return at < realm - past and "stale" or "future"
+end
