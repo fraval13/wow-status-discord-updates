@@ -5,6 +5,7 @@ import importlib.util
 import io
 import json
 import shutil
+import socket
 import subprocess
 import sys
 import warnings
@@ -287,10 +288,23 @@ def test_deploy_passes_the_local_manifest_to_the_verifier():
     workflow = (ROOT/'.github/workflows/checks.yml').read_text(encoding='utf-8')
     # The deploy job is the last job; its own steps must build dist/homepage, then verify with it.
     deploy = workflow[workflow.index('\n  deploy:\n'):]
-    build = deploy.index('run: python scripts/build_homepage.py --addon-ref HEAD\n')
+    build = deploy.index('run: python3 scripts/build_homepage.py --addon-ref HEAD\n')
     verify = deploy.index('scripts/verify_homepage.py')
     assert build < verify
     assert '--manifest dist/homepage/downloads/release.json' in deploy[verify:].split('\n      - ')[0]
+
+
+def test_an_unreachable_site_exits_with_its_own_status(built_site):
+    """The deploy job rolls back on a wrong answer from the site, never on no answer (issue #27)."""
+    with socket.socket() as probe:  # a local port nothing listens on
+        probe.bind(('127.0.0.1', 0))
+        port = probe.getsockname()[1]
+    revision = json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))['addon_revision']
+    result = subprocess.run([sys.executable, str(ROOT/'scripts/verify_homepage.py'), '--url', f'http://127.0.0.1:{port}',
+                             '--revision', revision, '--manifest', str(built_site/'downloads/release.json'),
+                             '--attempts', '1'], capture_output=True, text=True, encoding='utf-8')
+    assert result.returncode == verifier_module().UNREACHABLE == 3
+    assert 'Connection' in result.stderr or 'URLError' in result.stderr
 
 
 def test_command_line_requires_a_manifest_of_the_same_revision(built_site):

@@ -30,8 +30,9 @@ jobs:
   converge:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           sparse-checkout: scripts/deploy_convergence.py
           sparse-checkout-cone-mode: false
       - name: Collect the tip, what production serves, and the runs for main

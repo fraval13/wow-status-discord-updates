@@ -30,6 +30,7 @@ import tempfile
 from pathlib import Path
 
 import render_caddyfile
+from install_homepage import BASE as SITE
 
 PRIVATE_GROUPS = render_caddyfile.GROUPS.as_posix()
 DEPLOY = Path(__file__).resolve().parent
@@ -175,6 +176,9 @@ def main(argv=None):
             return
         if live_routes != new_routes:
             parser.error(refusal)
+        # Where the site points now: the install refuses if a pipeline deploy moves it before then.
+        live_site = subprocess.run([*ssh, 'readlink -- ' + shlex.quote((SITE / 'current').as_posix())],
+                                   capture_output=True).stdout.decode('utf-8').strip()
         release = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S%fZ')
         remote_path = f'/tmp/wow-homepage-{release}.tar.gz'
         upload = temporary / 'upload.tar.gz'
@@ -183,7 +187,7 @@ def main(argv=None):
                 package.add(path, arcname=name, recursive=False)
         settings = {'payload': remote_path, 'release': release, 'revision': revision,
                     'archive_sha256': hashlib.sha256(upload.read_bytes()).hexdigest(),
-                    'caddy_sha256': hashlib.sha256(old_config).hexdigest(), 'caddyfile': caddyfile}
+                    'caddy_sha256': hashlib.sha256(old_config).hexdigest(), 'caddyfile': caddyfile, 'site': live_site}
         # The rendered Caddyfile travels on the SSH stdin, never through the world-readable /tmp
         # upload. ascii() is a valid literal for any text and keeps the script ASCII.
         script = ((REPOSITORY / 'deploy/install_homepage.py').read_text(encoding='utf-8')  # the checked copy

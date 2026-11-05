@@ -29,9 +29,60 @@ The deploy job transfers tracked source plus private configuration through pinne
 SSH. The receiver rejects unsafe archive paths/links, builds a fresh venv as the
 build user, seals the release read-only, activates it, restarts only the two project
 services and checks both local health endpoints. Failed activation restores the
-preceding release. SQLite databases and managed JSON archives stay in persistent
-per-group directories. Release archives containing private configuration are never
-published as artifacts; configuration is removed before installing the code.
+preceding release and its configuration, and deletes the failed release. SQLite
+databases and managed JSON archives stay in persistent per-group directories.
+Release archives containing private configuration are never published as
+artifacts; configuration is removed before installing the code.
+
+Hardening from issue #27:
+
+- **Pinned actions, no stored token.** Every action in the workflows is pinned to a
+  full commit SHA (the trailing comment names its tag; update both together), and
+  every checkout sets `persist-credentials: false`. The deploy job runs no action
+  besides checkout: it uses the runner image's own `python3`, because only
+  standard-library scripts run there and they handle the deploy key and bot tokens.
+- **A `production` environment.** The deploy job names it. GitHub creates it on first
+  use with no rules, so the job keeps reading the repository secrets until you
+  change that (see [what to do after merging](#after-merging-issue-27)).
+- **Hash-locked dependencies.** The receiver installs `requirements.txt` with
+  `pip --require-hashes --only-binary :all:`, then builds the project with
+  `--no-deps --no-build-isolation --no-index`, so every package it installs, the
+  build backend included, is pinned by version and SHA-256 and no unpinned tool
+  runs. After changing dependencies in `pyproject.toml`, run
+  `python scripts/lock_requirements.py` (needs [uv](https://docs.astral.sh/uv/));
+  `--upgrade` moves every pin to the newest allowed version. CI installs the lock
+  the receiver's way and runs `pip check`, and its tests run on the locked versions.
+- **Pruning.** After a successful activation the receiver keeps the newest five
+  releases (the live one among them), plus the one it replaced (the rollback target)
+  and whichever one the homepage serves when those are older. Leftover `.incoming-*`
+  folders from an interrupted run go too. Folders not named `<revision>-<time>` are
+  never touched. A failed release is deleted at once.
+- **One lock for both publishers.** The receiver and `deploy/install_homepage.py`
+  hold `/opt/wow-character-status/deployment.lock` while they work, so a manual
+  homepage publish and a pipeline deploy never switch `current` at the same time.
+  Each waits up to ten minutes for the other. The publisher reads where `current`
+  points when it inspects the host, and the install refuses if a deploy moved it
+  since, so a manual publish never replaces a newer site.
+- **Rollback when the public check fails.** If **Verify live homepage and all addon
+  downloads** fails after a deploy, the next step sends the receiver
+  `wow-status-rollback <commit>` instead of an archive. The receiver acts only if
+  that commit's release and homepage are still live and the release and homepage
+  it replaced are still installed: it rewrites the env files for the earlier
+  revision, switches back, restarts and health-checks the services, then switches
+  the homepage back. It changes nothing when a manual publish replaced the homepage
+  since, because that alone explains the failed check. If the earlier release is
+  not healthy, or the homepage can't be switched, the failed release stays live.
+  Instances that deploy started for the first time are stopped and disabled, as a
+  failed deploy does. Redeploying the live revision keeps the earlier rollback
+  target. No rollback is tried when the site could not be reached at all (the
+  verifier exits with status 3), since a rollback would not fix that. A refusal's
+  reason is printed in the log. The job stays red either way, and
+  **Deploy convergence** never re-dispatches a failed tip, so production stays on
+  the earlier release until the next push.
+- **Public file modes.** `install_homepage.py` resets file and folder modes after
+  extracting (`0644`, folders `0755`) and creates folders under `umask 022`, so a
+  build made under `umask 077` is still readable by Caddy (issue #19). The pipeline
+  receiver ignores archive modes and sets them itself, as it did before.
 
 GitHub repository settings already have the dedicated `WOW_STATUS_SSH_KEY` and
 `WOW_STATUS_KNOWN_HOSTS` secrets and `WOW_STATUS_SSH_HOST` variable. These contain no
@@ -247,11 +298,13 @@ journalctl -u wow-character-status@INSTANCE --since "1 hour ago" --no-pager | ta
 df -h /var/lib /opt; df -i /var/lib /opt         # ENOSPC, "database or disk is full"
 fuser -v /var/lib/wow-character-INSTANCE/service.sqlite3.lock   # "Another process is using this database"
 find /var/lib/wow-character-INSTANCE ! -user wow-character-INSTANCE -ls   # files a root tool created
-ls /opt/wow-character-status/releases | wc -l    # every deploy, failed ones too, leaves a release
+ls /opt/wow-character-status/releases | wc -l    # releases the receiver has kept (see Pipeline)
 ```
 
 Fix ownership with `chown -R wow-character-INSTANCE: /var/lib/wow-character-INSTANCE`
-after stopping the service. Old releases other than `current` can be deleted.
+after stopping the service. The receiver prunes old releases itself; a receiver
+installed before issue #27 kept every release, failed ones too, and any of those
+other than `current` can be deleted by hand.
 
 Do not print environment files or config.json while inspecting logs. For backups,
 stop only these project services and copy their complete state directories, or use
@@ -260,6 +313,36 @@ access its database. Secrets and data do not belong in Git.
 
 Game behavior remains unverified until the actual game clients are exercised
 at home. Remote mocked tests and HTTP health checks establish narrower guarantees.
+
+## After merging issue #27
+
+The workflow side works at once. The server side needs the new receiver, which only
+root can install (application deploys never replace privileged scripts):
+
+```sh
+cd /opt/wow-character-status/current   # once the first deploy of this revision is live
+install -o root -g root -m 0755 deploy/install_release.py /usr/local/sbin/wow-character-status-deploy
+```
+
+Until then the old receiver keeps deploying as before, with these limits:
+
+- It installs dependencies from the version ranges, not from `requirements.txt`.
+- It never prunes releases or deletes failed ones.
+- It does not wait for the lock: a deploy that starts while a manual homepage
+  publish holds it fails at once (the publish itself does wait for a deploy).
+- It cannot roll back. After a failed public check the rollback step fails with a
+  "Not rolled back" error that names this section; the new release stays live.
+
+The new receiver's first deploy builds the venv from the lock with wheels only. If a
+package had no wheel for the server's Python, that deploy would fail before
+activation and leave the running release untouched; the Actions log shows pip's error.
+
+Optional: in **Settings > Environments > production**, set **Deployment branches and
+tags** to `main` only, then move `WOW_STATUS_SSH_KEY`, `WOW_STATUS_KNOWN_HOSTS` and
+`WOW_STATUS_DISCORD_CONFIG` (and the `WOW_STATUS_SSH_HOST` variable) from the
+repository into the environment. Then only jobs that name the environment, on `main`,
+can read them. Do not add required reviewers unless every deploy should wait for an
+approval.
 
 ## Rotating a group name
 

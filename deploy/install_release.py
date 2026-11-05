@@ -28,6 +28,19 @@ CONFIG = Path('/etc/wow-character-status')
 HOMEPAGE = Path('/srv/wow-status-homepage')
 LIMIT = 64 * 1024 * 1024
 GROUPS_FILE = CONFIG / 'groups.json'
+# Pins every package the server installs by version and SHA-256 (scripts/lock_requirements.py).
+LOCKFILE = 'requirements.txt'
+# A release folder is <revision>-<activation time in ns>.
+RELEASE = re.compile(r'([0-9a-f]{40})-([0-9]+)')
+# Newest releases kept, the live one among them; the rollback target and the homepage's
+# release are kept even when older.
+KEEP_RELEASES = 5
+# The last activation and what preceded it, so a failed public check can roll it back.
+STATE = 'last-deployment.json'
+# Sent by the deploy job instead of a release archive when the public site fails verification.
+ROLLBACK_REQUEST = re.compile(rb'wow-status-rollback ([0-9a-f]{40})\n?')
+# How long a deployment waits for a manual homepage publish (deploy/install_homepage.py).
+LOCK_WAIT = 600
 # Becomes systemd instance wow-character-status@<instance>, account wow-character-<instance>
 # (at most 32 characters) and /var/lib/wow-character-<instance>.
 INSTANCE = re.compile(r'[a-z][a-z0-9-]{0,17}')
@@ -39,6 +52,10 @@ RESERVED = {'build', 'deploy'}
 GROUP_NAME = re.compile(r'[A-Za-z0-9](?:[A-Za-z0-9 ._-]{0,78}[A-Za-z0-9._-])?')
 DISCORD = {'bot_token': re.compile(r'[A-Za-z0-9._=-]+'), 'guild_id': re.compile(r'[0-9]{1,30}'),
            'channel_id': re.compile(r'[0-9]{1,30}')}
+
+
+class Refused(Exception):
+    """A refusal whose fixed message is safe for the public Actions log (no names or secrets)."""
 
 
 def discord_value(key, value):
@@ -208,39 +225,164 @@ def prepare_homepage(stage, revision):
     return target
 
 
+def point(link, target):
+    """Atomically make the symlink link point at target (as deploy/install_homepage.py does)."""
+    swap = link.with_name(f'.{link.name}-{os.getpid()}')
+    swap.unlink(missing_ok=True)
+    swap.symlink_to(target)
+    swap.replace(link)
+
+
 def switch_homepage(target):
     HOMEPAGE.mkdir(mode=0o755, parents=True, exist_ok=True)
     HOMEPAGE.chmod(0o755)  # The receiver's private umask must not hide public files.
-    swap = HOMEPAGE / '.next'
-    swap.unlink(missing_ok=True)
-    swap.symlink_to(target)
-    swap.replace(HOMEPAGE / 'current')
+    point(HOMEPAGE / 'current', target)
 
 
-def main():
-    # Linux-only modules, imported here so tests can load the helpers above anywhere.
+def live(link):
+    """The resolved target of the symlink link, or None when it is missing or dangling."""
+    return link.resolve() if link.exists() else None
+
+
+def wait_for_lock(path, wait):
+    """Hold an exclusive lock on path, waiting up to `wait` seconds; return the open file.
+
+    deploy/install_homepage.py takes the same lock, so a manual homepage publish and a
+    pipeline deployment never switch the homepage's `current` symlink at the same time.
+    """
     import fcntl
+    handle = path.open('ab')
+    deadline = time.monotonic() + wait
+    waiting = False
+    while True:
+        try:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            return handle
+        except BlockingIOError:
+            if time.monotonic() >= deadline:
+                handle.close()
+                raise Refused('Another deployment or homepage publish is still running; nothing was changed') from None
+            if not waiting:
+                print('Waiting for another deployment or homepage publish to finish.', file=sys.stderr)
+                waiting = True
+            time.sleep(1)
+
+
+def snapshot_config(groups):
+    """The private files a deployment rewrites, to restore after a failure (None: absent)."""
+    names = ['config.json', GROUPS_FILE.name, *(f'{instance}.env' for instance in groups)]
+    return {name: (CONFIG / name).read_bytes() if (CONFIG / name).exists() else None for name in names}
+
+
+def restore_config(snapshot):
+    for name, value in snapshot.items():
+        path = CONFIG / name
+        if value is None:
+            path.unlink(missing_ok=True)
+        else:
+            path.write_bytes(value)
+            path.chmod(0o600)
+
+
+def write_config(groups, merged, revision):
+    for instance, group in groups.items():
+        write_private(CONFIG / f'{instance}.env', service_environment(instance, group, merged.get(instance, {}), revision))
+    write_private(CONFIG / 'config.json', json.dumps(merged))
+
+
+def start(groups, revision, check=True):
+    """Restart every group service; True once all report revision within about 20 seconds."""
+    for instance in groups:
+        systemctl('restart', instance, check=check)
+    for _ in range(20):
+        if all(healthy(group['port'], revision) for group in groups.values()):
+            return True
+        time.sleep(1)
+    return False
+
+
+def install_dependencies(candidate):
+    """Build the release's venv as the build user from hash-pinned packages only (issue #27).
+
+    requirements.txt pins every runtime package and setuptools by version and SHA-256,
+    and only wheels are accepted, so no unpinned build tool runs. The project itself is
+    then built from the release with no index and no build isolation: nothing is fetched.
+    """
+    build = ('runuser', '-u', 'wow-character-build', '--')
+    run(*build, '/usr/bin/python3', '-m', 'venv', str(candidate / '.venv'))
+    pip = (*build, str(candidate / '.venv/bin/python'), '-m', 'pip', 'install', '--disable-pip-version-check',
+           '--no-input')
+    run(*pip, '--require-hashes', '--only-binary', ':all:', '-r', str(candidate / LOCKFILE))
+    run(*pip, '--no-deps', '--no-build-isolation', '--no-index', str(candidate))
+
+
+def prune(releases, keep, protect):
+    """Delete all but the newest `keep` releases and leftover stages; return how many went.
+
+    A release that a path in `protect` lies in (the running one, the rollback target and
+    whatever the homepage serves) is always kept. So are entries named any other way.
+    """
+    found = sorted(((int(match.group(2)), path) for path in releases.iterdir()
+                    if (match := RELEASE.fullmatch(path.name)) and path.is_dir() and not path.is_symlink()),
+                   reverse=True)
+    removed = 0
+    for _, path in found[keep:]:
+        if not any(kept.is_relative_to(path) for kept in protect):
+            shutil.rmtree(path)
+            removed += 1
+    for path in releases.glob('.incoming-*'):  # left behind by a receiver that was killed
+        if path.is_dir() and not path.is_symlink():
+            shutil.rmtree(path)
+    return removed
+
+
+def read_state():
+    try:
+        return json.loads((BASE / STATE).read_text(encoding='utf-8'))
+    except FileNotFoundError:
+        return None
+
+
+def record(revision, candidate, previous, previous_homepage, added):
+    """After an activation: remember what a rollback returns to, then prune old releases.
+
+    A redeploy of the live revision (say "Re-run all jobs" after a refused rollback)
+    keeps the earlier rollback target, so a rollback never "returns" to the same code.
+    `added` names the instances this deploy started for the first time. Neither step
+    may fail the deployment, which is live and healthy by now.
+    """
+    try:
+        state = read_state()
+        if previous is not None and previous.name.startswith(revision):
+            same = state is not None and state.get('revision') == revision
+            previous = (BASE / 'releases').resolve() / state['previous'] if same and state.get('previous') else None
+            previous_homepage = Path(state['previous_homepage']) if same and state.get('previous_homepage') else None
+            added = sorted(set(added) | set(state.get('added', []))) if same else added
+        write_private(BASE / STATE, json.dumps({
+            'revision': revision, 'release': candidate.name,
+            'previous': previous.name if previous else None,
+            'previous_homepage': str(previous_homepage) if previous_homepage else None,
+            'added': sorted(added)}))
+        protect = {candidate, *filter(None, [previous, previous_homepage, live(HOMEPAGE / 'current')])}
+        removed = prune((BASE / 'releases').resolve(), KEEP_RELEASES, protect)
+        if removed:
+            print(f'Removed {removed} old release(s).')
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f'Could not record the rollback target or prune old releases ({type(error).__name__}).',
+              file=sys.stderr)
+
+
+def deploy(raw, groups, migrated):
     import pwd
-    if os.geteuid() != 0:
-        raise SystemExit('Receiver requires the dedicated sudo rule')
-    os.umask(0o077)
-    deployment_lock = (BASE / 'deployment.lock').open('ab')
-    fcntl.flock(deployment_lock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    groups, migrated = load_groups()
-    if migrated:
-        print(f'No groups.json yet: using {len(groups)} existing service env files.', file=sys.stderr)
-    raw = sys.stdin.buffer.read(LIMIT + 1)
-    if len(raw) > LIMIT:
-        raise ValueError('Release archive is too large')
-    releases = BASE / 'releases'
+    # Resolved, like the symlink targets it is compared with before anything is deleted.
+    releases = (BASE / 'releases').resolve()
     stage = Path(tempfile.mkdtemp(prefix='.incoming-', dir=releases))
-    old_target = (BASE / 'current').resolve() if (BASE / 'current').exists() else None
-    old_homepage = (HOMEPAGE / 'current').resolve() if (HOMEPAGE / 'current').exists() else None
-    old_config = {name: (CONFIG / name).read_bytes() if (CONFIG / name).exists() else None
-                  for name in ['config.json', 'groups.json', *(f'{instance}.env' for instance in groups)]}
+    current = BASE / 'current'
+    old_target = live(current)
+    old_homepage = live(HOMEPAGE / 'current')
+    old_config = snapshot_config(groups)
     config_written = False
     activated = False
-    homepage_activated = False
     candidate = None
     try:
         with tarfile.open(fileobj=io.BytesIO(raw), mode='r:') as archive:
@@ -282,55 +424,25 @@ def main():
         candidate = releases / (revision + '-' + str(time.time_ns()))
         stage.rename(candidate)
         # Build tools and project code run as a separate unprivileged account, never as root.
-        run('runuser', '-u', 'wow-character-build', '--', '/usr/bin/python3', '-m', 'venv', str(candidate / '.venv'))
-        run('runuser', '-u', 'wow-character-build', '--', str(candidate / '.venv/bin/python'),
-            '-m', 'pip', 'install', '--disable-pip-version-check', str(candidate))
+        install_dependencies(candidate)
         root_readonly_tree(candidate)
         config_written = True
-        for instance, group in groups.items():
-            write_private(CONFIG / f'{instance}.env', service_environment(instance, group, merged[instance], revision))
-        write_private(CONFIG / 'config.json', json.dumps(merged))
+        write_config(groups, merged, revision)
         if migrated:
-            write_private(GROUPS_FILE, json.dumps(groups, indent=2) + '\n')
-        swap = BASE / 'next'
-        swap.unlink(missing_ok=True)
-        swap.symlink_to(candidate)
-        swap.replace(BASE / 'current')
+            write_private(CONFIG / GROUPS_FILE.name, json.dumps(groups, indent=2) + '\n')
+        point(current, candidate)
         activated = True
+        if not start(groups, revision):
+            raise RuntimeError('New release did not become healthy')
         for instance in groups:
-            systemctl('restart', instance)
-        for _ in range(20):
-            if all(healthy(group['port'], revision) for group in groups.values()):
-                for instance in groups:
-                    systemctl('enable', instance)
-                switch_homepage(candidate / 'public-homepage')
-                homepage_activated = True
-                # No instance labels or group names: this output reaches the public Actions log.
-                print('Activated', revision, f'for {len(groups)} group services and the homepage;',
-                      'all local health endpoints passed.')
-                return
-            time.sleep(1)
-        raise RuntimeError('New release did not become healthy')
+            systemctl('enable', instance)
+        switch_homepage(candidate / 'public-homepage')  # last: nothing after it can fail the deploy
     except Exception:
-        if homepage_activated:
-            if old_homepage:
-                switch_homepage(old_homepage)
-            else:
-                (HOMEPAGE / 'current').unlink(missing_ok=True)
         if config_written and old_target:
             # Also before activation: the old release must keep running with its own config.
-            for name, value in old_config.items():
-                path = CONFIG / name
-                if value is None:
-                    path.unlink(missing_ok=True)
-                else:
-                    path.write_bytes(value)
-                    path.chmod(0o600)
+            restore_config(old_config)
         if activated and old_target:
-            rollback = BASE / 'rollback'
-            rollback.unlink(missing_ok=True)
-            rollback.symlink_to(old_target)
-            rollback.replace(BASE / 'current')
+            point(current, old_target)
             for instance in groups:
                 if old_config[f'{instance}.env'] is not None:
                     systemctl('restart', instance, check=False)
@@ -342,15 +454,108 @@ def main():
             for instance in groups:
                 systemctl('stop', instance, check=False)
             print('Initial activation failed; project services stopped.', file=sys.stderr)
+        if candidate is not None and live(current) != candidate:
+            shutil.rmtree(candidate, ignore_errors=True)  # a failed candidate never lingers with its venv
         raise
     finally:
         if stage.exists():
             shutil.rmtree(stage)
+    added = [instance for instance in groups if old_config[f'{instance}.env'] is None]
+    record(revision, candidate, old_target, old_homepage, added)  # before any output that could fail
+    # No instance labels or group names: this output reaches the public Actions log.
+    print('Activated', revision, f'for {len(groups)} group services and the homepage;',
+          'all local health endpoints passed.')
 
 
-if __name__ == '__main__':
+def roll_back(revision, groups):
+    """Return production to the release before `revision`, while `revision` is still live.
+
+    The deploy job asks for this when the public site fails verification after this
+    receiver activated `revision` (issue #27). It refuses, changing nothing, unless the
+    last activation recorded was `revision`, that release and its homepage are still
+    live, and the release and homepage it replaced are still installed. A homepage that
+    a manual publish replaced since explains the failed check by itself. Instances
+    that deployment started for the first time are stopped, as a failed deploy does.
+    """
+    current, homepage = BASE / 'current', HOMEPAGE / 'current'
+    releases = (BASE / 'releases').resolve()
+    state = read_state()
+    if state is None:
+        raise Refused('No recorded deployment to roll back; nothing was changed')
+    failed = releases / state['release']
+    if state.get('revision') != revision or not RELEASE.fullmatch(failed.name) or live(current) != failed:
+        raise Refused('The live release is not the one to roll back; nothing was changed')
+    if live(homepage) != failed / 'public-homepage':
+        raise Refused('A manual publish replaced the homepage since this deployment; nothing was changed')
+    previous = releases / (state.get('previous') or '')
+    match = RELEASE.fullmatch(previous.name)
+    if not match or match.group(1) == revision or not (previous / '.venv/bin/python').is_file():
+        raise Refused('No earlier release to roll back to; nothing was changed')
+    earlier = [Path(state['previous_homepage'])] if state.get('previous_homepage') else []
+    old_homepage = next((path for path in [*earlier, previous / 'public-homepage'] if path.is_dir()), None)
+    if old_homepage is None:
+        raise Refused('No earlier homepage to roll back to; nothing was changed')
+    old_revision = match.group(1)
+    added = [instance for instance in state.get('added', []) if instance in groups]
+    kept = {instance: group for instance, group in groups.items() if instance not in added}
+    merged = json.loads((CONFIG / 'config.json').read_text(encoding='utf-8'))
+    snapshot = snapshot_config(groups)
+    try:
+        write_config(kept, merged, old_revision)
+        point(current, previous)
+        if not start(kept, old_revision):
+            raise RuntimeError('The earlier release did not become healthy')
+        switch_homepage(old_homepage)
+    except Exception:
+        restore_config(snapshot)
+        point(current, failed)
+        switch_homepage(failed / 'public-homepage')
+        if start(groups, revision, check=False):
+            print('Rollback failed; the release that failed verification is live and healthy again.',
+                  file=sys.stderr)
+        else:
+            print('Rollback failed, and the group services did not become healthy again; check them '
+                  'on the server (deploy/SERVER.md).', file=sys.stderr)
+        raise
+    for instance in added:  # the earlier release never ran these
+        systemctl('stop', instance, check=False)
+        systemctl('disable', instance, check=False)
+        (CONFIG / f'{instance}.env').unlink(missing_ok=True)
+    try:
+        (BASE / STATE).unlink()
+    except OSError as error:  # production is rolled back; only a repeat request could act on it
+        print(f'Could not remove {STATE} ({type(error).__name__}).', file=sys.stderr)
+    print('Rolled back', revision, 'to', old_revision, f'for {len(kept)} group services and the homepage.')
+
+
+def main():
+    if os.geteuid() != 0:
+        raise SystemExit('Receiver requires the dedicated sudo rule')
+    os.umask(0o077)
+    # The whole request first: the runner's upload must not stall while this waits for the lock.
+    raw = sys.stdin.buffer.read(LIMIT + 1)
+    if len(raw) > LIMIT:
+        raise ValueError('Release archive is too large')
+    with wait_for_lock(BASE / 'deployment.lock', LOCK_WAIT):
+        groups, migrated = load_groups(CONFIG)
+        if migrated:
+            print(f'No groups.json yet: using {len(groups)} existing service env files.', file=sys.stderr)
+        request = ROLLBACK_REQUEST.fullmatch(raw)
+        if request:
+            roll_back(request.group(1).decode('ascii'), groups)
+        else:
+            deploy(raw, groups, migrated)
+
+
+def entry():
     try:
         main()
+    except Refused as exc:
+        raise SystemExit(f'Deployment refused: {exc}') from None
     except Exception as exc:
         # Never print config contents, credentials or request bodies.
         raise SystemExit(f'Deployment failed ({type(exc).__name__}).') from None
+
+
+if __name__ == '__main__':
+    entry()

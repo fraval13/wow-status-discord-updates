@@ -2,6 +2,10 @@
 
 The live site is compared with the release.json this machine just built, never only
 with the manifest the site itself serves: a tampered site could regenerate that.
+
+Exits with UNREACHABLE (3) when the last attempt could not reach the site at all
+(DNS, connection, TLS or timeout), so the deploy job rolls back only when the site
+answered with the wrong content (issue #27).
 """
 import argparse
 import functools
@@ -11,7 +15,10 @@ import io
 import json
 import re
 import stat
+import sys
 import time
+import traceback
+import urllib.error
 import urllib.request
 import zipfile
 from html.parser import HTMLParser
@@ -19,6 +26,7 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
+UNREACHABLE = 3
 MAX_BYTES = 32 * 1024 * 1024
 FOLDER = 'WoWStatus/'
 
@@ -191,7 +199,11 @@ if __name__ == '__main__':
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break
-        except (OSError, ValueError, KeyError, zipfile.BadZipFile):
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile) as error:
             if attempt == args.attempts - 1:
+                # An HTTP error status is an answer from the site; anything else never reached it.
+                if isinstance(error, OSError) and not isinstance(error, urllib.error.HTTPError):
+                    traceback.print_exc()
+                    sys.exit(UNREACHABLE)
                 raise
             time.sleep(args.delay)
