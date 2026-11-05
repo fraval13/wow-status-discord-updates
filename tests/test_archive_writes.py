@@ -64,7 +64,7 @@ def test_noop_retry_does_not_rewrite_whole_history(tmp_path, monkeypatch):
     written = []
     original = archive_module.atomic_json
     monkeypatch.setattr(archive_module, 'atomic_json',
-                        lambda path, data: (original(path, data), written.append(Path(path).stat().st_size)))
+                        lambda path, data, **options: (original(path, data, **options), written.append(Path(path).stat().st_size)))
     assert store.ingest('group:a', payload(now - 1000 + 19))['accepted'] == 0
     assert sum(written) <= 256_000, f'retry rewrote {sum(written):,} archive bytes'
 
@@ -146,7 +146,7 @@ async def test_archives_are_rebuilt_once_at_startup(tmp_path, monkeypatch):
     original_sync, original_write = Store.sync_archives, archive_module.atomic_json
     monkeypatch.setattr(Store, 'sync_archives', lambda self: (syncs.append(1), original_sync(self)))
     monkeypatch.setattr(archive_module, 'atomic_json',
-                        lambda path, data: (written.append(Path(path).name), original_write(path, data)))
+                        lambda path, data, **options: (written.append(Path(path).name), original_write(path, data, **options)))
     store = Store(path)
     client = TestClient(TestServer(create_app(store, GROUP, NAME)))
     await client.start_server()
@@ -413,8 +413,8 @@ def test_an_older_rebuild_never_overwrites_a_newer_one(store, monkeypatch):
     written = []
     original = archive_module.atomic_json
     monkeypatch.setattr(archive_module, 'atomic_json',
-                        lambda path, data: (written.append(data['profile']['current']),
-                                            original(path, data)))
+                        lambda path, data, **options: (written.append(data['profile']['current']),
+                                            original(path, data, **options)))
     store.start_background()
     try:
         store.sync_archive(cid)
@@ -436,8 +436,8 @@ def test_a_rebuild_is_written_even_when_a_newer_mark_waits(store, monkeypatch):
     written = []
     original = archive_module.atomic_json
     monkeypatch.setattr(archive_module, 'atomic_json',
-                        lambda path, data: (written.append(len(data['activity']['zones'])),
-                                            original(path, data)))
+                        lambda path, data, **options: (written.append(len(data['activity']['zones'])),
+                                            original(path, data, **options)))
     store.start_background()
     try:
         store.sync_archive(cid)
@@ -554,6 +554,14 @@ def test_archives_reach_the_disk_before_they_replace_the_old_file(tmp_path, monk
     assert calls == [('fsync', size), ('replace', 'credentials.tmp', 'credentials.json')]
 
 
+def test_service_archives_skip_the_sync_because_startup_rebuilds_them(store, monkeypatch):
+    import wow_status.companion as companion
+    synced = []
+    monkeypatch.setattr(companion.os, 'fsync', lambda fd: synced.append(fd))
+    cid = store.ingest('owner', payload(int(time.time()) - 10))['character_id']
+    assert archived(store, cid) and synced == []
+
+
 def test_a_failed_rewrite_of_withdrawn_data_is_tried_again(store, monkeypatch):
     now = int(time.time())
     cid = store.ingest('owner', payload(now - 10, zones(0, now, 2)))['character_id']
@@ -561,11 +569,11 @@ def test_a_failed_rewrite_of_withdrawn_data_is_tried_again(store, monkeypatch):
     original = archive_module.atomic_json
     failures = []
 
-    def disk_full(path, data):
+    def disk_full(path, data, **options):
         if not failures:
             failures.append(path)
             raise OSError('disk full')
-        original(path, data)
+        original(path, data, **options)
 
     monkeypatch.setattr(archive_module, 'atomic_json', disk_full)
     narrower = payload(now - 5)

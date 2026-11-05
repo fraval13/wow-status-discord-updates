@@ -91,6 +91,32 @@ def test_a_batch_resumed_after_its_rows_expired_still_completes(store, payload, 
     assert 'expired' not in statuses(store)
 
 
+def test_a_resumed_batch_brings_back_every_characters_rows(store, payload, clone):
+    # One companion export spans every character in the SavedVariables file.
+    def part(guid, number, level):
+        p = summary(payload, clone, 'a' * 64, number, 3, level)
+        p['identity']['guid'] = guid
+        return p
+    store.ingest('owner', part('Player-alpha', 1, 11))
+    store.ingest('owner', part('Player-bravo', 2, 12))
+    age_receipts(store, WEEK_AND_A_DAY)
+    assert store.expire_incomplete_batches() > 0
+    store.ingest('owner', part('Player-charlie', 3, 13))  # Only the missing part.
+    events = {item['event_id'] for item in store.summary_items(store.pending())}
+    assert {'level-11', 'level-12', 'level-13'} <= events
+    assert 'expired' not in statuses(store)
+
+
+def test_a_repeated_part_leaves_expired_rows_set_aside(store, payload, clone):
+    # It refreshes no receipt, so the next check would only expire them again.
+    first = summary(payload, clone, 'a' * 64, 1, 3, 11)
+    store.ingest('owner', first)
+    age_receipts(store, WEEK_AND_A_DAY)
+    assert store.expire_incomplete_batches() > 0
+    store.ingest('owner', first)
+    assert set(statuses(store)) == {'expired'} and store.expire_incomplete_batches() == 0
+
+
 def test_a_newer_export_brings_expired_announcements_back(store, payload, clone):
     store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 3, 11))
     age_receipts(store, WEEK_AND_A_DAY)
@@ -188,3 +214,13 @@ def test_pending_work_does_not_grow_with_sent_or_expired_rows(store, payload, cl
             assert count <= 2 * baseline[ready][0] + 20, (ready, count, baseline[ready])
     finally:
         large.close()
+
+
+def test_a_requeue_never_brings_back_a_row_that_left_the_queue(store, payload):
+    # The bot requeues the rows it read before a network await; meanwhile a filter
+    # change may have discarded them (#26).
+    store.ingest('owner', payload)
+    item = store.pending()
+    store.set_community_setting('immediate_mode', 'daily_only')
+    store.deliver_many([item], 'pending', delay=600)
+    assert set(statuses(store)) == {'discarded'}

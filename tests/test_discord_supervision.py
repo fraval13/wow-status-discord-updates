@@ -431,8 +431,15 @@ def test_report_without_routes_says_so_and_passes(monkeypatch, capsys, config, e
 
 
 async def deliver_until(client, done, seconds=5):
-    """Run the real delivery loop until ``done()``, then stop it; fails if it ended early."""
-    task = asyncio.create_task(client.deliver())
+    """Run the supervised delivery loop until ``done()``, then stop it. Backoff pauses
+    are recorded with the /health state during each, instead of slept."""
+    pauses = []
+
+    async def sleep(delay):
+        pauses.append((delay, client.state()))
+        await asyncio.sleep(0)
+
+    task = asyncio.create_task(client.keep_delivering(sleep=sleep))
     try:
         deadline = asyncio.get_running_loop().time() + seconds
         while not done() and asyncio.get_running_loop().time() < deadline:
@@ -446,6 +453,7 @@ async def deliver_until(client, done, seconds=5):
         except asyncio.CancelledError:
             pass
         await client.close()
+    return pauses
 
 
 def delivering_bot(store, monkeypatch, send):
@@ -453,22 +461,25 @@ def delivering_bot(store, monkeypatch, send):
     channel = SimpleNamespace(guild=SimpleNamespace(id=1), send=send)
     client.wait_until_ready = AsyncMock()
     client.get_channel = lambda _: channel
+    monkeypatch.setattr(client, 'is_ready', lambda: True)
+    client.online = True
     return client, channel
 
 
-async def test_one_unformattable_delivery_waits_while_the_next_is_sent(store, payload,
-                                                                      monkeypatch, caplog):
-    """#26: the per-delivery catch-all. Without it the loop restarts and picks the same
-    delivery again, so one bad row would stop every post."""
+RETRYING = {'discord': 'delivery_retrying'}
+
+
+async def test_one_unformattable_delivery_is_set_aside_and_the_next_is_sent(store, payload,
+                                                                           monkeypatch, caplog):
+    """#26: without setting it aside, the restarted loop picked the same delivery again,
+    so one bad row stopped every post."""
     store.ingest('owner', payload)  # The introduction, then the level-10 announcement.
     bad, good = [row[0] for row in store.db.execute('SELECT id FROM outbox ORDER BY id')]
     original = discord_bot.announcement_message
-    errors = []
 
     def message(store_, item, emojis):
         if item['delivery_id'] == bad:
             raise KeyError('formatting bug')
-        errors.append(client.delivery_error)  # Shown on /health while it waits.
         return original(store_, item, emojis)
 
     monkeypatch.setattr(discord_bot, 'announcement_message', message)
@@ -476,28 +487,32 @@ async def test_one_unformattable_delivery_waits_while_the_next_is_sent(store, pa
                                      AsyncMock(return_value=SimpleNamespace(id=789)))
     before = time.time()
     with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
-        await deliver_until(client, lambda: outbox_status(store, good) == 'sent')
-    # Never claimed, so never posted: still queued, behind the rest, and no cooldown or
-    # attempt was spent on it. A fix to the formatting posts it without operator work.
+        pauses = await deliver_until(client, lambda: outbox_status(store, good) == 'sent')
+    # Never claimed, so never posted: still queued behind the rest, with no attempt or
+    # cooldown spent. Once the formatting is fixed it posts without operator work.
     status, attempts, next_try = store.db.execute(
         'SELECT status,attempts,next_try FROM outbox WHERE id=?', (bad,)).fetchone()
     assert status == 'pending' and attempts == 0
     assert next_try >= before + discord_bot.UNEXPECTED_RETRY_SECONDS
     channel.send.assert_awaited_once()
+    # The supervisor logged it, showed it on /health and backed off once.
+    assert pauses == [(30, dict(RETRYING, discord_error='KeyError'))]
     assert [r.exc_info[0] for r in caplog.records if r.exc_info] == [KeyError]
-    assert errors == ['KeyError'] and client.delivery_error is None  # Cleared by the post.
+    assert client.state() == {'discord': 'ready'}
 
 
-async def test_an_unexpected_error_during_the_send_marks_it_uncertain(store, payload,
-                                                                      monkeypatch):
-    # aiohttp's ServerDisconnectedError is no OSError, so no other handler takes it.
+async def test_an_unexpected_error_during_the_send_backs_off_and_marks_it_uncertain(
+        store, payload, monkeypatch):
+    # aiohttp's ServerDisconnectedError is no OSError, so no handler knows it. The
+    # message may have gone out, so the supervisor's recovery decides, after a backoff
+    # that keeps a lasting fault from marking the whole queue in seconds.
     store.ingest('owner', payload)
     first = store.pending()['delivery_id']
     client, channel = delivering_bot(store, monkeypatch,
                                      AsyncMock(side_effect=aiohttp.ServerDisconnectedError()))
-    await deliver_until(client, lambda: outbox_status(store, first) == 'uncertain')
+    pauses = await deliver_until(client, lambda: outbox_status(store, first) == 'uncertain')
     channel.send.assert_awaited_once()
-    assert client.delivery_error == 'ServerDisconnectedError'
+    assert pauses[0] == (30, dict(RETRYING, discord_error='ServerDisconnectedError'))
 
 
 async def test_a_post_whose_record_fails_is_never_marked_unsent(store, payload, monkeypatch):
@@ -510,14 +525,14 @@ async def test_a_post_whose_record_fails_is_never_marked_unsent(store, payload, 
 
     def deliver_many(items, status, **kwargs):
         if status == 'sent':
-            raise RuntimeError('archive rebuild failed')
+            raise OSError('archive rebuild failed')  # A known error, even so.
         return original(items, status, **kwargs)
 
     monkeypatch.setattr(store, 'deliver_many', deliver_many)
     try:
-        with pytest.raises(RuntimeError):  # To keep_delivering, which logs and restarts.
+        with pytest.raises(OSError):  # To keep_delivering, which logs and restarts.
             await client.deliver()
-        assert outbox_status(store, first) == 'sending'  # Not overwritten as unsent.
+        assert outbox_status(store, first) == 'sending'  # Not overwritten.
         await client.recover_sends()  # What keep_delivering does before the restart.
         assert outbox_status(store, first) == 'uncertain'
     finally:
@@ -547,48 +562,52 @@ class FakeReports:
 RETRY = discord_bot.UNEXPECTED_RETRY_SECONDS
 
 
-@pytest.mark.parametrize('stage,expected', [('claim', ('pending', RETRY)),
-                                            ('send', ('uncertain', 0))])
+@pytest.mark.parametrize('error,stage,expected,raised', [
+    (RuntimeError('formatting bug'), 'claim', [('pending', RETRY)], True),
+    (RuntimeError('unexpected'), 'send', [], True),  # Left sending, for the supervisor.
+    (asyncio.TimeoutError(), 'claim', [('pending', 60)], False),  # Nothing was sent.
+    (asyncio.TimeoutError(), 'send', [('uncertain', 0)], False),
+])
 @pytest.mark.parametrize('kind', ['recap', 'standings'])
-async def test_one_bad_recap_or_report_does_not_stop_delivery(store, monkeypatch, caplog,
-                                                              kind, stage, expected):
-    """Recaps and reports are posted from the same loop, so they get the same catch-all."""
-    send = AsyncMock(side_effect=RuntimeError('unexpected') if stage == 'send' else None)
+async def test_recaps_and_reports_are_set_aside_like_announcements(store, monkeypatch, kind,
+                                                                   error, stage, expected,
+                                                                   raised):
+    send = AsyncMock(side_effect=error if stage == 'send' else None)
     client, _ = delivering_bot(store, monkeypatch, send)
     reports = FakeReports()
 
     def claim(*args):
         if stage == 'claim':
-            raise RuntimeError('formatting bug')
+            raise error
         return {'key': 'day', 'text': 'Recap'} if kind == 'recap' else [{'content': 'Report'}]
 
+    if kind == 'recap':
+        monkeypatch.setattr(client, 'claim_recap', claim)
+        post = client.deliver_recap(reports)
+    else:
+        monkeypatch.setattr(client, 'standings', reports)
+        monkeypatch.setattr(client, 'claim_standings', claim)
+        post = client.deliver_standings()
     try:
-        with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
-            if kind == 'recap':
-                monkeypatch.setattr(client, 'claim_recap', claim)
-                await client.deliver_recap(reports)
-            else:
-                monkeypatch.setattr(client, 'standings', reports)
-                monkeypatch.setattr(client, 'claim_standings', claim)
-                await client.deliver_standings()
+        if raised:
+            with pytest.raises(type(error)):
+                await post
+        else:
+            await post
     finally:
         await client.close()
-    assert reports.states == [expected]
-    assert [r.exc_info[0] for r in caplog.records if r.exc_info] == [RuntimeError]
-    assert client.delivery_error == 'RuntimeError'
+    assert reports.states == expected
 
 
-async def test_a_recap_that_cannot_render_pauses_only_that_kind(store, payload, monkeypatch,
-                                                                caplog):
-    """Recaps are rendered while they are read, before there is a row to mark."""
+async def test_a_recap_that_cannot_render_pauses_only_that_kind(store, payload, monkeypatch):
+    """Recaps are rendered while they are read, before there is a row to set aside."""
     store.ingest('owner', payload)
     client, channel = delivering_bot(store, monkeypatch,
                                      AsyncMock(return_value=SimpleNamespace(id=789)))
     broken = FakeReports(broken=KeyError('bad digest'))
     monkeypatch.setattr(client, 'recaps', broken)
     first = store.pending()['delivery_id']
-    with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
-        # The loop reads recaps before announcements, every tick while idle.
-        await deliver_until(client, lambda: outbox_status(store, first) == 'sent')
-    assert broken.reads == 1 and broken.states == []  # Paused, not read on every tick.
-    assert [r.exc_info[0] for r in caplog.records if r.exc_info] == [KeyError]
+    # The loop reads recaps before announcements, so without the pause it never got past.
+    pauses = await deliver_until(client, lambda: outbox_status(store, first) == 'sent')
+    assert broken.reads == 1 and broken.states == []
+    assert pauses == [(30, dict(RETRYING, discord_error='KeyError'))]

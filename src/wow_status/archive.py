@@ -253,7 +253,10 @@ class ArchiveWriter:
                     return
                 self._written[cid] = sequence
             if document is not None:
-                atomic_json(self.path(cid), document)
+                # Not synced: the service rebuilds every archive from SQLite when it
+                # starts, so a crash can't leave a damaged one for long, and a sync here
+                # would hold up the store thread's privacy rewrites (#26).
+                atomic_json(self.path(cid), document, durable=False)
 
     def _retry_due(self):
         """Under _state: mark the failed rebuilds that are due again, and return how many

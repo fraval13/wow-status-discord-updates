@@ -346,7 +346,7 @@ class Store:
         now = int(time.time())
         # Whether the archive needs a rebuild: an upload that changes nothing writes
         # nothing, so a retry costs no archive rewrite (#2).
-        rebuild = False
+        rebuild, revived_elsewhere = False, set()
         with self.db:
             # Read and write in one write transaction, even if another connection writes.
             self.db.execute('BEGIN IMMEDIATE')
@@ -531,12 +531,21 @@ class Store:
                         self.db.execute('INSERT INTO outbox_batches VALUES(?,?,?)',(cursor.lastrowid,owner,batch))
             rebuild |= accepted > 0
             if batch:
+                if receipt_added:
+                    # Announcements set aside while an export stalled (#26) come back with
+                    # the character's next export, and with the stalled batch's missing
+                    # parts whichever character they belong to. A repeated part, which
+                    # refreshes no receipt, leaves them set aside.
+                    revived = self.db.execute('''SELECT id,character FROM outbox
+                        WHERE status='expired' AND (character=? OR id IN
+                        (SELECT delivery FROM outbox_batches WHERE owner=? AND batch=?))''',
+                        (cid, owner, batch)).fetchall()
+                    self.db.executemany("UPDATE outbox SET status='pending' WHERE id=?",
+                                        [(row['id'],) for row in revived])
+                    rebuild |= any(row['character'] == cid for row in revived)
+                    revived_elsewhere = {row['character'] for row in revived} - {cid}
                 # A newer complete export also absorbs any older unsent backlog for
-                # this character, including legacy per-event and incomplete batches, and
-                # announcements that expired while an export stalled (#26).
-                rebuild |= self.db.execute(
-                    "UPDATE outbox SET status='pending' WHERE character=? AND status='expired'",
-                    (cid,)).rowcount > 0
+                # this character, including legacy per-event and incomplete batches.
                 self.db.execute("""INSERT OR REPLACE INTO outbox_batches(delivery,owner,batch)
                     SELECT id,?,? FROM outbox WHERE character=? AND status='pending'""", (owner, batch, cid))
                 rebuild |= self.db.execute(
@@ -586,6 +595,8 @@ class Store:
             self.rewrite_archive(cid)
         elif rebuild or role_changed:
             self.sync_archive(cid)
+        for other in revived_elsewhere:
+            self.sync_archive(other)  # Archives show each delivery's status.
         return {'character_id': cid, 'accepted': accepted}
 
     def characters(self, owner=None):
@@ -746,13 +757,19 @@ class Store:
         included, queues them again. Returns how many announcements expired."""
         now = time.time() if now is None else now
         with self.db:
-            rows = self.db.execute('''SELECT o.id,o.character FROM outbox o
-                JOIN outbox_batches b ON b.delivery=o.id
-                JOIN (SELECT owner,batch FROM upload_receipts GROUP BY owner,batch
-                      HAVING COUNT(*) < MAX(total) AND MAX(received) < ?) r
-                  ON r.owner=b.owner AND r.batch=b.batch
-                WHERE o.status='pending' ''', (now - INCOMPLETE_BATCH_SECONDS,)).fetchall()
-            self.db.executemany("UPDATE outbox SET status='expired' WHERE id=?",
+            # Only the receipts of batches that still have queued rows are counted.
+            rows = self.db.execute('''WITH queued AS (
+                    SELECT DISTINCT b.owner,b.batch FROM outbox o
+                    JOIN outbox_batches b ON b.delivery=o.id WHERE o.status='pending'),
+                stalled AS (
+                    SELECT r.owner,r.batch FROM queued q JOIN upload_receipts r
+                    ON r.owner=q.owner AND r.batch=q.batch GROUP BY r.owner,r.batch
+                    HAVING COUNT(*) < MAX(r.total) AND MAX(r.received) < ?)
+                SELECT o.id,o.character FROM stalled s
+                JOIN outbox_batches b ON b.owner=s.owner AND b.batch=s.batch
+                JOIN outbox o ON o.id=b.delivery WHERE o.status='pending' ''',
+                (now - INCOMPLETE_BATCH_SECONDS,)).fetchall()
+            self.db.executemany("UPDATE outbox SET status='expired' WHERE id=? AND status='pending'",
                                 [(row['id'],) for row in rows])
         for cid in {row['character'] for row in rows}:
             self.sync_archive(cid)  # Archives show each delivery's status.
@@ -809,9 +826,12 @@ class Store:
                 for cid in {item['id'] for item in items}:
                     self.reserve_post(cid)
             for item in items:
+                # Only rows still queued or being sent: a row discarded, expired or
+                # resolved meanwhile keeps its state (#26).
                 self.db.execute("""UPDATE outbox SET status=?,next_try=?,message_id=?,attempts=attempts+?
-                    WHERE id=?""", (status, time.time()+delay, message_id, int(status == 'sending'),
-                                    item['delivery_id']))
+                    WHERE id=? AND status IN ('pending','sending')""",
+                    (status, time.time()+delay, message_id, int(status == 'sending'),
+                     item['delivery_id']))
         for cid in {item['id'] for item in items}:
             self.sync_archive(cid)
 

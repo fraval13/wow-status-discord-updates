@@ -1,4 +1,6 @@
 """One service or operator per database, one uploader per state file (#26)."""
+import errno
+import io
 import subprocess
 import sys
 import textwrap
@@ -56,3 +58,15 @@ def test_a_holder_that_raises_still_releases_the_lock(tmp_path):
             raise RuntimeError('upload failed')
     with FileLock(path):
         pass
+
+
+def test_a_real_io_error_is_not_reported_as_another_process(tmp_path, monkeypatch):
+    class FullDisk(io.BytesIO):
+        def write(self, data):
+            raise OSError(errno.ENOSPC, 'No space left on device')
+
+    lock = FileLock(tmp_path / 'service.sqlite3')
+    monkeypatch.setattr(type(lock.path), 'open', lambda self, mode: FullDisk())
+    with pytest.raises(OSError, match='No space left'):
+        lock.__enter__()
+    assert lock.stream is None
