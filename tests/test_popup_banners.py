@@ -1,5 +1,5 @@
 """Big banners, clickable popups and a movable popup position (#61)."""
-from test_journal import actor, clock, deliver_popup
+from test_journal import actor, clock, deliver_popup, join_roster
 
 DRAG = '''
     local methods = getmetatable(WoWStatusLevelPopup).__index
@@ -40,6 +40,7 @@ def test_ordinary_levels_and_disabled_option_keep_the_normal_popup():
 
 def test_big_banners_still_queue_one_at_a_time():
     own, friend = actor('Mira'), actor('Thora')
+    join_roster(friend, 'Mira-TestRealm')  # Popups come only from group members (#8).
     clock(own, 10)
     clock(friend, 10)
     for level, at in ((20, 10), (30, 20)):
