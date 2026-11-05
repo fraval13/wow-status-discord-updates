@@ -18,6 +18,7 @@ Share.lua
 Flavour.lua
 MainWindow.lua
 Overview.lua
+Guide.lua
 Presentation.lua
 Popups.lua
 Journal.lua

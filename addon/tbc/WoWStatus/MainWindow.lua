@@ -93,7 +93,8 @@ function M.show(key)
     if not page.frame and page.build then page.frame = page.build(window.content) end
     active = key
     saved().page = key
-    window.title:SetText("WoW Status — " .. page.title)
+    local tour = WoWStatusGuide and WoWStatusGuide.touring() and " (sample tour, nothing here is real)" or ""
+    window.title:SetText("WoW Status — " .. page.title .. tour)
     if page.frame then page.frame:Show() end
     if page.refresh then page.refresh(page.frame) end
     window:Show()

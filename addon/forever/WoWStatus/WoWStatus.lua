@@ -389,6 +389,7 @@ local function initialize()
     if not WoWStatusDB then
         WoWStatusDB = {version = 1, characters = {}}
         WoWStatusWhatsNew.fresh(WoWStatusDB)
+        WoWStatusDB.guide_pending = true
     end
     if WoWStatusDB.version ~= 1 then say("Unsupported saved data version."); return end
     local identity = A.identity()
@@ -496,7 +497,9 @@ local function initialize()
     if current.settings.enabled then
         if current.settings.fields.playtime then A.requestPlaytime() end
     end
-    if first then
+    if WoWStatusGuide.check() then
+        -- A brand-new account gets the setup guide instead of the Options page.
+    elseif first then
         say("Set the same group ID as your friends in Options > AddOns > WoW Status.")
         openSettings()
     end
@@ -644,6 +647,8 @@ SlashCmdList.WOWSTATUS = function(message)
         elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
     elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
     elseif command == "share" then WoWStatusShare.send(rest)
+    elseif command == "guide" then WoWStatusGuide.show()
+    elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()
     elseif command == "sync" then say("Activity syncs automatically when group members log in.")
     elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()

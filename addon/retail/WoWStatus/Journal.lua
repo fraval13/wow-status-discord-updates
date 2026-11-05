@@ -551,10 +551,15 @@ end
 local function label(parent,font,x,y,width)
     local f=parent:CreateFontString(nil,"OVERLAY",font);f:SetPoint("TOPLEFT",x,y);f:SetWidth(width);f:SetJustifyH("LEFT");return f
 end
+-- The tour (#64) shows sample entries instead of the real log, display only.
+function J.displayEntries()
+    local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
+    return samples or J.entries()
+end
 local function visibleEntries()
     local list={}
-    for _,e in ipairs(J.entries()) do
-        if permitted(e) and (panel.filter=="all" or (panel.filter=="mine")==not not e.owner) then list[#list+1]=e end
+    for _,e in ipairs(J.displayEntries()) do
+        if (e.sample or permitted(e)) and (panel.filter=="all" or (panel.filter=="mine")==not not e.owner) then list[#list+1]=e end
     end
     return list
 end
@@ -645,7 +650,7 @@ function J.focus(id)
     panel.scroll:SetVerticalScroll(0);render()
     return false
 end
-function J.visible(entry) return db~=nil and permitted(entry) end
+function J.visible(entry) return db~=nil and (entry.sample==true or permitted(entry)) end
 -- A private recap of one of your sessions: never sent or relayed (not a shared kind).
 function J.recordRecap(character,at,text,flavour)
     if not db or type(text)~="string" or text=="" then return false end

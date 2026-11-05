@@ -117,6 +117,7 @@ function character()
     for _, c in pairs(WoWStatusDB.characters) do return c end
 end
 function clickSharing()
+    if not WoWStatusSetup then SlashCmdList.WOWSTATUS("") end -- A new account opens the setup guide instead.
     local c=WoWStatusSetup.checks[1].widget
     c:SetChecked(true)
     c.OnClick(c)
@@ -129,7 +130,7 @@ end
 '''
 
 
-def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
+def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
@@ -150,6 +151,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
     runtime.execute((root / 'Flavour.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'MainWindow.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Overview.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Guide.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Presentation.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Journal.lua').read_text(encoding='utf-8'))
@@ -164,6 +166,16 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
     runtime.execute((root / 'Milestones.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
     runtime.eval('fire')('PLAYER_LOGIN')
+    # Most tests start like an existing account: no setup guide, Options opened
+    # on the character's first login as before the guide existed.
+    if not guide:
+        runtime.execute('''
+            if WoWStatusDB and WoWStatusDB.guide_pending then
+                WoWStatusDB.guide_pending = nil
+                if WoWStatusGuideFrame then WoWStatusGuideFrame:Hide() end
+                SlashCmdList.WOWSTATUS("")
+            end
+        ''')
     # Most tests isolate other events from the automatic group-join announcement.
     if not join_announcements:
         runtime.execute('WoWStatusGroups.announce=nil')
