@@ -65,7 +65,7 @@ be checked against Git and the environment rather than assumed permanently true.
 
 ## Current release and open handoff (1 November 2026)
 
-- All four editions are version **0.14.12**; project version is in `pyproject.toml`.
+- All four editions are version **0.14.13**; project version is in `pyproject.toml`.
   The packaged addon revision is in the live `downloads/release.json`.
 - Latest completed feature: random flavour captions below popup facts and on
   activity-log cards. Event identity selects a varied line; its local saved copy

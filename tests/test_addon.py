@@ -1245,3 +1245,50 @@ def test_spirit_release_does_not_recount_the_same_death(lua):
     lua.eval('fire')('PLAYER_UNGHOST')
     lua.eval('fire')('PLAYER_DEAD')
     assert lua.eval('character().snapshot.deaths') == 2
+
+
+def test_group_updates_are_sent_while_in_combat(lua):
+    # Combat holds only what is shown; holding sends let updates expire unsent.
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.execute('__combat=true')
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    lua.execute('WoWStatusPopups.tick()')
+    assert lua.eval('#__sent') == 1
+    assert lua.eval('__sent[1].kind') == 'WHISPER'
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'attempted_no_receipt'
+
+
+def _group_death(lua, sender='Eldrin-TestRealm'):
+    from wow_status.group_routing import group_key
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    channel = 'WStatus' + group_key('navsquad')
+    assert lua.eval('WoWStatusPopups.receive')(
+        'WSTATUS3 classic-era death 1793000000 death1 44696564', sender, channel)
+
+
+def test_popup_shows_when_player_is_out_of_combat_despite_ui_lockdown(lua):
+    # WoW Forever can report a UI lockdown outside combat; the player's own state wins.
+    lua.execute('__combat=true; function UnitAffectingCombat() return false end')
+    _group_death(lua)
+    lua.execute('WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
+
+
+def test_popup_waits_while_the_player_is_fighting(lua):
+    lua.execute('__fighting=true; function UnitAffectingCombat() return __fighting end')
+    _group_death(lua)
+    lua.execute('WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup') is None or lua.eval('WoWStatusLevelPopup:IsShown()') is not True
+    lua.execute('__fighting=false; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
+
+
+def test_names_with_spaces_are_peers_for_sending_and_receiving(lua):
+    # WoW Forever character names can contain spaces ("Mr Exadi").
+    lua.execute('__peers={"Mr Exadi-TestRealm"}')
+    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    assert lua.eval('__sent[1].target') == 'Mr Exadi-TestRealm'
+    _group_death(lua, 'Mr Exadi-TestRealm')
+    lua.execute('WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup:IsShown()') is True

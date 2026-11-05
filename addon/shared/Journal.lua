@@ -10,7 +10,8 @@ local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
 local pumpJobs
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
-local WITNESS = "^([%w%-]+) (%d+) (" .. S.NONSPACE .. "+)$"
+-- The accused name is last and may contain spaces: WoW Forever names can ("Mr Exadi").
+local WITNESS = "^([%w%-]+) (%d+) (.+)$"
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
@@ -293,7 +294,7 @@ local function warning(group,accused,reporter)
 end
 function J.reportInvalid(group,sender)
     sender=S.string(sender)
-    if not db or not sender or not P.senderKey(sender) or sender:find(S.SPACE)
+    if not db or not sender or not P.senderKey(sender)
         or not groupMember(group) or not peer(group,sender) then return false end
     -- Attribute the actual whisper sender, never the author claimed in a relay.
     if not warning(group,sender,ownName()) then return false end
@@ -480,8 +481,10 @@ function J.tick()
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
     for k,at in pairs(rates) do if now-at>120 then rates[k]=nil end end
+    -- Log sync is not held for combat: addon whispers are not combat-protected,
+    -- and WoW Forever can report a UI lockdown outside combat, which stopped sync.
+    -- Real messaging restrictions are still checked through chatRestricted().
     J.sync()
-    if InCombatLockdown and InCombatLockdown() then return end
     local clock=GetTime and GetTime() or now
     if clock-lastSend<.5 or #sendQueue==0 or WoWStatusAdapter.chatRestricted() then return end
     local item=sendQueue[1]
