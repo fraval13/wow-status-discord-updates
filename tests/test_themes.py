@@ -75,3 +75,43 @@ def test_options_controls():
         panel.themePopups:SetChecked(true); panel.themePopups.OnClick(panel.themePopups)
         assert(WoWStatusDB.theme.popups == true)
     ''')
+
+
+def test_notification_size_is_a_percentage_with_100_as_default():
+    lua = make_lua(THEMES)
+    lua.execute('''
+        assert(WoWStatusTheme.popupSize() == 100)
+        WoWStatusPopups.preview("zone"); WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        assert(toast.scale == 1)
+        assert(WoWStatusTheme.setPopupSize(150))
+        assert(math.abs(toast.scale - 1.5) < 1e-9 and WoWStatusDB.theme.popup_size == 150)
+        -- With the window size applied to popups too, the two multiply.
+        WoWStatusTheme.resize(.2); WoWStatusTheme.setPopups(true)
+        assert(math.abs(toast.scale - 1.8) < 1e-9)
+        WoWStatusTheme.setPopups(false)
+        -- Out of range or not a number: refused, the old size stays.
+        assert(not WoWStatusTheme.setPopupSize(49) and not WoWStatusTheme.setPopupSize(201))
+        assert(not WoWStatusTheme.setPopupSize("big") and WoWStatusTheme.popupSize() == 150)
+        assert(WoWStatusTheme.setPopupSize(" 80 ") == false or WoWStatusTheme.popupSize() == 80)
+        -- Saved values are kept in range.
+        WoWStatusDB.theme.popup_size = 999
+        assert(WoWStatusTheme.popupSize() == 200)
+    ''')
+
+
+def test_notification_size_from_the_options_box_and_the_command():
+    lua = make_lua(THEMES)
+    lua.execute('''
+        WoWStatusPreviews.show()
+        local panel = WoWStatusNotificationPreviews
+        assert(panel.popupSize:GetText() == "100")
+        panel.popupSize:SetText("125"); panel.popupSize.OnEnterPressed(panel.popupSize)
+        assert(WoWStatusTheme.popupSize() == 125 and panel.popupSize:GetText() == "125")
+        panel.popupSize:SetText("500"); panel.popupSizeApply.OnClick(panel.popupSizeApply)
+        assert(WoWStatusTheme.popupSize() == 125 and panel.popupSize:GetText() == "125")
+        SlashCmdList.WOWSTATUS("popupsize 90")
+        assert(WoWStatusTheme.popupSize() == 90)
+        SlashCmdList.WOWSTATUS("popupsize")
+        assert(WoWStatusTheme.popupSize() == 90)
+    ''')

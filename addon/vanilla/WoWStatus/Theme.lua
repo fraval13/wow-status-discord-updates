@@ -7,6 +7,8 @@ local T, S = WoWStatusTheme, WoWStatusSafe
 T.ORDER = {"night", "journal", "faction"}
 T.NAMES = {night="Night", journal="Journal", faction="Faction"}
 T.MIN, T.MAX, T.STEP = .8, 1.2, .1
+-- Notification size in percent, separate from the window size.
+T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
 local windows = {}
 
 local function settings()
@@ -17,6 +19,8 @@ local function settings()
     local scale = S.number(value.scale)
     value.scale = scale and math.max(T.MIN, math.min(T.MAX, math.floor(scale * 10 + .5) / 10)) or 1
     value.popups = value.popups == true
+    local size = S.number(value.popup_size)
+    value.popup_size = size and math.max(T.POPUP_MIN, math.min(T.POPUP_MAX, math.floor(size + .5))) or T.POPUP_DEFAULT
     return value
 end
 T.settings = settings
@@ -39,10 +43,21 @@ function T.attach(frame, background, popup)
     T.apply()
 end
 
+-- Window scale; for notifications, their own size times the window size when
+-- "Use the theme and size for popups too" is on.
 function T.scale(popup)
     local value = settings()
-    if popup and not value.popups then return 1 end
-    return value.scale
+    if not popup then return value.scale end
+    return (value.popups and value.scale or 1) * value.popup_size / 100
+end
+function T.popupSize() return settings().popup_size end
+-- Sets the notification size from a percentage; false for a value out of range.
+function T.setPopupSize(percent)
+    percent = tonumber(percent)
+    if not percent or percent ~= percent or percent < T.POPUP_MIN or percent > T.POPUP_MAX then return false end
+    settings().popup_size = math.floor(percent + .5)
+    T.apply()
+    return true
 end
 
 function T.apply()

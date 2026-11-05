@@ -915,17 +915,6 @@ local function show(item, now)
     end
 end
 
--- Reports are ephemeral: never record, relay through history, or award progress.
-function P.guardWarning(group, accused, reporter)
-    if not receiving() or not canShare(getCharacter()) or #incoming>=128
-        or not WoWStatusGroups.contains(getCharacter(),group)
-        or not P.senderKey(accused) or not P.senderKey(reporter) then return false end
-    table.insert(incoming,{sender=accused,key=P.senderKey(accused),kind="guard",group_id=group,
-        text="is a really bad boy, shame on you!",received_at=time(),
-        flavour="Invalid log data reported by "..reporter.."."})
-    P.tick()
-    return true
-end
 
 -- A local-only notice (for example a new First). Never logged, sent or opened in the log.
 -- Notices wait for the next tick, so they follow the update that caused them.

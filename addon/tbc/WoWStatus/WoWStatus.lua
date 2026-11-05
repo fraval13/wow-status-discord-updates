@@ -685,6 +685,14 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "test" then
         queue("level", {level = 10, synthetic = true})
         say("Synthetic level 10 event requested; requires sharing, level field and level storage.")
+    elseif command == "popupsize" then
+        if WoWStatusTheme.setPopupSize(rest) then
+            say("Notification size: " .. WoWStatusTheme.popupSize() .. "%.")
+            WoWStatusPopups.preview("level")
+        else
+            say("Notification size is now " .. WoWStatusTheme.popupSize() .. "%. Use /wstatus popupsize "
+                .. WoWStatusTheme.POPUP_MIN .. "-" .. WoWStatusTheme.POPUP_MAX .. " (100 is the default).")
+        end
     elseif command == "interval" or command == "quality" then
         local number = tonumber(rest)
         local upper = command == "interval" and 100 or 5

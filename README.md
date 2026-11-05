@@ -92,12 +92,9 @@ Recovery stays quiet, with the usual log bounds.
 Dungeon completion requires a supported game completion signal; unsupported
 clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
 
-Malformed log data can trigger a group warning naming its direct sender:
-**"<character> is a really bad boy, shame on you!"** The popup identifies the
-reporter, is rate-limited, and is never saved as activity or replayed through
-history. This is a report about invalid data, not proof of cheating; a peer-only
-addon cannot verify every plausible milestone. All recipients need 0.14.10 to
-display these warnings. See [warning behavior and limits](docs/LOG_GUARD.md).
+Malformed log data is rejected silently and never enters the activity log. The
+group warning popup that earlier versions showed for it was removed after false
+alarms in live play. See [invalid log data](docs/LOG_GUARD.md).
 
 ## Activity log and login sync
 

@@ -174,24 +174,6 @@ def test_a_joiners_cutoff_is_never_ahead_of_realm_time():
     assert cutoff <= REALM + 19
 
 
-def test_invalid_data_reports_from_a_fast_pc_are_accepted():
-    """A W report's stamp has a 30 s future limit; realm time keeps it."""
-    reporter = pc('Thora', 60, peers=['Thora', 'Eldrin', 'Mira'])
-    friend = pc('Mira', 0, peers=['Thora', 'Eldrin', 'Mira'])
-    group = reporter.eval('next(character().group_ids)')[0]
-    client = reporter.eval('WoWStatusAdapter.client_id')
-    attack = f'WSTATUS4 {client} death {REALM} forged Arbitrary injected text'
-    assert not reporter.eval('WoWStatusPopups.receive')(attack, 'Eldrin-TestRealm', 'WStatus' + group)
-    for step in range(1, 21):
-        clock(reporter, step)
-        reporter.eval('WoWStatusJournal.tick')()
-    report = next(p['text'] for p in reporter.eval('__sent').values()
-                  if p['prefix'] == 'WoWStatusLog' and ' W ' in p['text'] and p['target'] == 'Mira-TestRealm')
-    clock(friend, 20)
-    friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', report, 'WHISPER', 'Thora-TestRealm')
-    assert 'Eldrin is a really bad boy' in friend.eval('WoWStatusLevelPopup.message:GetText()')
-
-
 @pytest.mark.parametrize('skew', [-180, 180])
 def test_level_history_stays_one_segment_whatever_the_pc_clock(skew):
     """Level-ups and the level checks between them are both stamped in realm time."""

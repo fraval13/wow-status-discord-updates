@@ -64,10 +64,8 @@ def test_each_kind_accepts_only_its_template(kind, version, valid, forged):
     assert lua.eval('#WoWStatusDB.popups.activity') == 0
     assert receive(packet(valid, 'real'), 'Eldrin-TestRealm', CHANNEL)
     assert lua.eval('WoWStatusDB.popups.activity[1].text') == valid
-    # Forged text from a member raises the existing invalid-data warning first.
+    # Forged text is dropped without a warning; only the valid update shows.
     lua.execute('__combat=false; WoWStatusPopups.tick()')
-    assert popup_text(lua) == 'Eldrin is a really bad boy, shame on you!'
-    lua.execute('function time() return 1793000007 end; WoWStatusPopups.tick()')
     assert popup_text(lua) == f'Eldrin — {valid}'
 
 

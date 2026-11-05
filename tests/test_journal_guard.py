@@ -37,7 +37,8 @@ def pump(lua, start=1, duration=20):
 
 
 @pytest.mark.parametrize('edition', ['vanilla', 'forever', 'tbc', 'retail'])
-def test_invalid_live_entry_warns_group_once_without_logging_or_echo(edition):
+def test_invalid_live_entry_is_dropped_without_a_warning(edition):
+    # The "is a really bad boy" warning was removed after false alarms in live play.
     own, friend = member(edition=edition), member('Mira', edition)
     channel = 'WStatus' + group(own)
     client = own.eval('WoWStatusAdapter.client_id')
@@ -47,23 +48,15 @@ def test_invalid_live_entry_warns_group_once_without_logging_or_echo(edition):
         assert not receive(attack, 'Eldrin-TestRealm', channel)
     assert own.eval('#WoWStatusJournal.entries()') == 0
     assert own.eval('#character().events') == 0
-    assert own.eval('WoWStatusLevelPopup.message:GetText()') == (
-        'Eldrin is a really bad boy, shame on you!')
-    assert 'Thora-TestRealm' in own.eval('WoWStatusLevelPopup.detail:GetText()')
+    own.eval('WoWStatusPopups.tick')()
+    assert own.eval('WoWStatusLevelPopup') is None
     pump(own)
-    reports = warning_packets(own)
-    assert {p['target'] for p in reports} == {'Eldrin-TestRealm', 'Mira-TestRealm'}
-    assert len(reports) == 2
-    for packet in reports:
-        assert len(packet['text'].encode()) <= 243
-        if packet['target'] == 'Mira-TestRealm':
-            for _ in range(20):
-                friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', packet['text'],
-                                   'WHISPER', 'Thora-TestRealm')
-    assert 'Eldrin is a really bad boy' in friend.eval('WoWStatusLevelPopup.message:GetText()')
-    assert friend.eval('#WoWStatusJournal.entries()') == 0
-    pump(friend)
-    assert warning_packets(friend) == []
+    assert warning_packets(own) == []
+    # A report from an older version is ignored.
+    report = f'J2 {group(friend)} W a {client} 1793000000 Eldrin-TestRealm'
+    assert not friend.eval('WoWStatusJournal.receive')(report, 'Thora-TestRealm', 'WHISPER')
+    friend.eval('WoWStatusPopups.tick')()
+    assert friend.eval('WoWStatusLevelPopup') is None
 
 
 def digest(text):
@@ -97,21 +90,22 @@ def offer_entry(lua, *, claimed='Mira-TestRealm', level='999', detail='Injected 
 
 
 @pytest.mark.parametrize('edition', ['vanilla', 'forever', 'tbc', 'retail'])
-def test_bad_catchup_attributes_direct_relay_not_forged_author(edition):
+def test_bad_catchup_is_dropped_without_a_warning(edition):
     lua = member(edition=edition)
     assert not offer_entry(lua)
     assert lua.eval('#WoWStatusJournal.entries()') == 0
-    assert 'Eldrin is a really bad boy' in lua.eval('WoWStatusLevelPopup.message:GetText()')
+    lua.eval('WoWStatusPopups.tick')()
+    assert lua.eval('WoWStatusLevelPopup') is None
     pump(lua, start=6)
-    assert warning_packets(lua)
-    assert all(p['text'].endswith('Eldrin-TestRealm') for p in warning_packets(lua))
+    assert warning_packets(lua) == []
 
 
 def test_valid_level_cannot_smuggle_free_text_through_catchup():
     lua = member()
     assert not offer_entry(lua, level='30', detail='Unrelated announcement')
     assert lua.eval('#WoWStatusJournal.entries()') == 0
-    assert 'Eldrin is a really bad boy' in lua.eval('WoWStatusLevelPopup.message:GetText()')
+    lua.eval('WoWStatusPopups.tick')()
+    assert lua.eval('WoWStatusLevelPopup') is None
 
 
 def test_normal_drops_and_untrusted_reports_never_trigger_public_warning():
@@ -136,25 +130,10 @@ def test_normal_drops_and_untrusted_reports_never_trigger_public_warning():
     assert warning_packets(lua) == []
 
 
-def test_warning_limits_pause_expiry_and_group_removal():
+def test_invalid_data_is_never_reported_to_the_group():
     lua = member()
     g = group(lua)
     report = lua.eval('WoWStatusJournal.reportInvalid')
-    assert report(g, 'Eldrin-TestRealm')
-    assert not report(g, 'Mira-TestRealm')  # Global limit, even for another sender.
-    clock(lua, 61)
-    assert not report(g, 'Eldrin-TestRealm')  # Ten-minute per-sender limit.
-    assert report(g, 'Mira-TestRealm')
-    lua.execute('__restricted=true')
-    pump(lua, start=62, duration=130)
-    lua.execute('__restricted=false')
-    pump(lua, start=192)
-    assert warning_packets(lua) == []  # Both warnings expired during lockdown.
-    lua.execute('character().settings.enabled=false')
-    clock(lua, 700)
     assert not report(g, 'Eldrin-TestRealm')
-    lua.execute('character().settings.enabled=true')
-    assert report(g, 'Eldrin-TestRealm')
-    lua.eval('WoWStatusGroups.update')('', '')
-    pump(lua, start=701)
+    pump(lua)
     assert warning_packets(lua) == []

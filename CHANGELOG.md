@@ -10,6 +10,12 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Choose the notification size as a percentage in the notification settings (100% is the default)
+- Zones you had already explored before installing are no longer announced as first visits
+- The "is a really bad boy" warning is gone; invalid data is still ignored quietly
+
 ## 1.8.0
 
 - New look: bordered cards, round level badges and XP bars on the Characters, Records, Activity and Overview pages

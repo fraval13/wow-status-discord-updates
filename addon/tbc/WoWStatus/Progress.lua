@@ -221,6 +221,42 @@ end
 
 -- Per-character first recorded visits. Seed older observations to avoid upgrade
 -- spam, and silently baseline the login zone rather than announcing a reload.
+-- Map exploration remembers the areas of each zone a character uncovered, also
+-- before the addon was installed. Zones with uncovered areas count as visited,
+-- so they are not announced as first visits. Cities and other zones without
+-- areas to uncover give no answer and are announced as before.
+local function exploredCount(mapID)
+    if not C_MapExplorationInfo or not C_MapExplorationInfo.GetExploredMapTextures then return nil end
+    local list=S.value(S.call(C_MapExplorationInfo.GetExploredMapTextures,mapID))
+    return type(list)=="table" and #list or nil
+end
+local ZONE_TYPE=3 -- Enum.UIMapType.Zone
+function P.exploredZones()
+    local names={}
+    if not C_Map or not C_Map.GetMapInfo or not C_MapExplorationInfo or not C_MapExplorationInfo.GetExploredMapTextures then
+        return names
+    end
+    local zoneType=S.number(Enum and Enum.UIMapType and Enum.UIMapType.Zone) or ZONE_TYPE
+    for id=1,3000 do
+        local info=S.value(S.call(C_Map.GetMapInfo,id))
+        local name=type(info)=="table" and S.value(info.mapType)==zoneType and S.string(info.name)
+        if name and not names[name] then
+            local count=exploredCount(id)
+            if count and count>0 then names[name]=true end
+        end
+    end
+    return names
+end
+-- Whether the zone you are in was uncovered before this visit: two or more
+-- areas, as arriving uncovers at most the one you enter.
+local function exploredBefore(zone)
+    if not C_Map or not C_Map.GetBestMapForUnit or not C_Map.GetMapInfo then return false end
+    local id=S.number(S.call(C_Map.GetBestMapForUnit,"player"))
+    local info=id and S.value(S.call(C_Map.GetMapInfo,id))
+    if type(info)~="table" or S.string(info.name)~=zone then return false end
+    local count=exploredCount(id)
+    return count~=nil and count>=2
+end
 function P.initZones(character,zone)
     if not character.visited_zones then
         character.visited_zones={}
@@ -231,7 +267,11 @@ function P.initZones(character,zone)
         local previous=S.string(character.snapshot and character.snapshot.zone)
         if previous then character.visited_zones[previous]=true end
     end
-    if zone and character.settings.fields.zone and character.settings.collection.zone then character.visited_zones[zone]=true end
+    if character.settings.fields.zone and character.settings.collection.zone then
+        -- Zones uncovered before installation (or while sharing was off) are not new.
+        for name in pairs(P.exploredZones()) do character.visited_zones[name]=true end
+        if zone then character.visited_zones[zone]=true end
+    end
 end
 function P.visitZone(character,zone)
     zone=S.string(zone)
@@ -240,5 +280,5 @@ function P.visitZone(character,zone)
     if not character.visited_zones then P.initZones(character,nil) end
     if character.visited_zones[zone] then return false end
     character.visited_zones[zone]=true
-    return true
+    return not exploredBefore(zone)
 end

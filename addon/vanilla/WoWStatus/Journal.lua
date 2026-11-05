@@ -12,7 +12,6 @@ local serial,lastSend=0,0
 -- after a pause (#9).
 local ALLOWANCE=10
 local allowance,allowanceAt,holdUntil,pacing=ALLOWANCE,0,0,{}
-local warned,lastWarning={},nil
 local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
 local pumpJobs
@@ -26,8 +25,6 @@ local RELAY_CAP, SENDER_CAP = 300, 100
 -- any running pull from that member to end (#4).
 local HELLO_INTERVAL = 600
 local budgets = {}
--- The accused name is last and may contain spaces: WoW Forever names can ("Mr Exadi").
-local WITNESS = "^([%w%-]+) (%d+) (.+)$"
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
@@ -527,31 +524,10 @@ function J.validText(kind,detail,level)
     end
     return false
 end
-local function warning(group,accused,reporter)
-    if not current.settings.enabled or not P.canShare(current) then return false end
-    local now=time()
-    local key=group..":"..P.senderKey(accused)
-    if (lastWarning and now-lastWarning<60) or (warned[key] and now-warned[key]<600) then return false end
-    local count=0
-    for k,at in pairs(warned) do if now-at>=600 then warned[k]=nil else count=count+1 end end
-    if count>=128 or not P.guardWarning(group,accused,reporter) then return false end
-    warned[key],lastWarning=now,now
-    return true
-end
-function J.reportInvalid(group,sender)
-    sender=S.string(sender)
-    if not db or not sender or not P.senderKey(sender)
-        or not groupMember(group) or not peer(group,sender) then return false end
-    -- Attribute the actual whisper sender, never the author claimed in a relay.
-    if not warning(group,sender,ownName()) then return false end
-    local now=time()
-    local body="W "..token().." "..WoWStatusAdapter.client_id.." "..S.now().." "..sender
-    for i,target in ipairs(P.peers(group)) do
-        if i>64 then break end
-        queue(group,target,body,nil,now+120)
-    end
-    return true
-end
+-- Invalid log data is dropped without a word. The "is a really bad boy" warning
+-- popup and its group report ("W") were removed: different versions validate a
+-- few texts differently, and the warning wrongly accused players in live play.
+function J.reportInvalid() return false end
 local function lootMask()
     local rarities=current.settings.loot_rarities or {rare=true,epic=true,legendary=true}
     return (rarities.rare and 1 or 0)+(rarities.epic and 2 or 0)+(rarities.legendary and 4 or 0)
@@ -645,14 +621,8 @@ function J.receive(message,sender,distribution)
     local group,op,t,body=message:match("^J2 ([a-f0-9]+) (%u) ([%w%-]+) (.*)$")
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
-    if op=="W" then
-        local client,at,accused=body:match(WITNESS)
-        at=tonumber(at)
-        if client~=WoWStatusAdapter.client_id or not at or S.outside(at,120,30)
-            or not P.senderKey(accused) or (P.senderKey(accused)~=P.senderKey(ownName()) and not peer(group,accused)) then return false end
-        -- Another member's report, not verified guilt. Never rebroadcast reports.
-        return warning(group,accused,sender)
-    end
+    -- Reports from older versions are ignored; nothing is shown for them.
+    if op=="W" then return false end
     if op=="H" then
         if body~=WoWStatusAdapter.client_id then return false end
         local helloKey=group..":"..key

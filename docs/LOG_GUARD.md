@@ -1,3 +1,16 @@
+# Invalid log data
+
+**Since 1.9.0 the warning popup described below is removed.** Invalid incoming
+data is still rejected before it enters the activity log, but nothing is shown
+or sent: no popup, and no `J2 W` report to the group. Reports from older
+versions are ignored. The owner asked for this after a friend received the
+warning without doing anything wrong: versions can validate a few texts
+differently, so a mixed group produced false accusations.
+
+The rest of this page documents the removed 0.14.10 behaviour, for history.
+
+---
+
 # Invalid-log warnings — 0.14.10
 
 Invalid incoming data is rejected before entering the activity log. Selected

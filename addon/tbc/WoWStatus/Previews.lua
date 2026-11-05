@@ -50,7 +50,7 @@ function P.show(host)
             if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
         end
         local options = 150 + #visible * 42
-        local footer = options + 380
+        local footer = options + 424
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
@@ -89,12 +89,30 @@ function P.show(host)
         panel.larger=button(panel,"Larger",514,-options-256,50,function() WoWStatusTheme.resize(WoWStatusTheme.STEP);refreshTheme() end)
         panel.themePopups=check("Use the theme and size for popups too",-options-298,function() return WoWStatusTheme.settings().popups end,
             WoWStatusTheme.setPopups)
+        -- Notification size in percent (complaints that toasts were too big or small).
+        text(panel,("Notification size (%d–%d%%)"):format(WoWStatusTheme.POPUP_MIN,WoWStatusTheme.POPUP_MAX),24,-options-346,250)
+        panel.popupSize=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+        panel.popupSize:SetPoint("TOPLEFT",290,-options-340);panel.popupSize:SetSize(60,30)
+        panel.popupSize:SetAutoFocus(false);panel.popupSize:SetMaxLetters(3)
+        if panel.popupSize.SetNumeric then panel.popupSize:SetNumeric(true) end
+        text(panel,"%",354,-options-346,20)
+        local function applySize()
+            local ok=WoWStatusTheme.setPopupSize(panel.popupSize:GetText())
+            panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
+            panel.popupSize:ClearFocus()
+            -- A sample at the new size; an out-of-range value keeps the old one.
+            if ok then WoWStatusPopups.preview("level") end
+        end
+        panel.popupSize:SetScript("OnEnterPressed",applySize)
+        panel.popupSize:SetScript("OnEscapePressed",function(self) self:SetText(tostring(WoWStatusTheme.popupSize()));self:ClearFocus() end)
+        panel.popupSizeApply=button(panel,"Apply",380,-options-340,90,applySize)
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
     for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.themePopups:SetChecked(panel.themePopups.get())
+    panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.theme:SetText(WoWStatusTheme.label())
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
