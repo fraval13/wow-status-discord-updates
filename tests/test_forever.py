@@ -266,3 +266,24 @@ def test_forever_sends_its_character_list_only_with_the_full_name():
         local sent=lists()
         assert(#sent>=1 and sent[1]:find("Thora_Stone-TestRealm",1,true), tostring(sent[1]))
     ''')
+
+
+def test_forever_learns_its_full_name_from_its_guid_at_login():
+    # Live check: GetPlayerInfoByGUID(UnitGUID("player")) gave "Edith Aateigen"
+    # where UnitName gave "Edith"; lists no longer wait for a channel roster read.
+    lua = forever_runtime(extra='''
+        function UnitRace() return "Human","Human" end function UnitSex() return 3 end
+        function GetPlayerInfoByGUID(guid)
+            if guid == UnitGUID("player") then return "Paladin","PALADIN","Human","Human",3,__guidName,"" end
+        end
+        __guidName = "Thora Stone"
+    ''')
+    lua.eval('fire')('PLAYER_LOGIN')
+    lua.execute('''
+        assert(character().chat_name == "Thora Stone")
+        assert(WoWStatusPopups.characterName(character()) == "Thora Stone-TestRealm")
+        -- Anything that is not a longer form of the game's own name is ignored.
+        character().chat_name = nil
+        __guidName = "Someone Else"
+        assert(not WoWStatusPopups.learnOwnName() and character().chat_name == nil)
+    ''')

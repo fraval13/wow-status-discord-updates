@@ -507,6 +507,7 @@ local function initialize()
     WoWStatusMilestones.init(current, queue)
     WoWStatusRecaps.init(current,queue)
     WoWStatusRoster.init(WoWStatusDB, current)
+    WoWStatusPopups.learnOwnName()
     registerSettings()
     if current.settings.enabled then
         if current.settings.fields.playtime then A.requestPlaytime() end
@@ -538,6 +539,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_REGEN_ENABLED" then
         if not current then initialize()
         elseif event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_ENTERING_WORLD" then
+            if event == "PLAYER_ENTERING_WORLD" then WoWStatusPopups.learnOwnName() end
             local level = A.level()
             if level then H.sync(current, level, S.now()) end
             snapshot()

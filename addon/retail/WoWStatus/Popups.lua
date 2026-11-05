@@ -140,6 +140,23 @@ local function learnName(name)
     -- A list sent before this had only the first name, which members drop: send again.
     if WoWStatusRoster and WoWStatusRoster.changed then WoWStatusRoster.changed() end
 end
+-- This character's full chat name straight from the game's GUID lookup, which
+-- in the live Forever client gives "Edith Aateigen" where UnitName gives "Edith".
+-- Learnt at login, so the character list goes out at once instead of waiting for
+-- a complete channel roster read (which some clients never managed).
+function P.learnOwnName()
+    if not GetPlayerInfoByGUID then return false end
+    local guid = S.stringCall(UnitGUID, "player")
+    if not guid then return false end
+    local ok, _, _, _, _, _, name = pcall(GetPlayerInfoByGUID, guid)
+    name = ok and S.string(name)
+    if not name or name:find(S.CONTROL_OR_PIPE) or #name > 48 then return false end
+    -- Only a longer form of the game's own name: never someone else's.
+    local first = A.playerName()
+    if first and S.lowerASCII(name):sub(1, #first) ~= S.lowerASCII(first) then return false end
+    learnName(name)
+    return true
+end
 -- Whether a name (and the GUID a roster gives) is this character. The realm in
 -- a name need not match GetNormalizedRealmName: WoW Forever names its realm
 -- internally ("CAMWOWEU5Realm1PvE"), so a full-name comparison alone kept you in
