@@ -991,9 +991,13 @@ function P.command(text)
                 .." (stamped "..realmOffset(dropped.offset)..")")
         end
         local offset=S.clockOffset()
+        -- About a whole number of hours off: a time zone mix-up, on this PC or in
+        -- the game's realm clock (#25 checks GetServerTime in each edition).
+        local zone=offset and math.abs(offset)>=1800 and (offset+60)%1800<=120
         notify("Clock: "..(not offset and "realm time unavailable; using this PC's clock"
             or math.abs(offset)<=1 and "this PC matches realm time"
-            or ("this PC is "..realmOffset(offset)))..".")
+            or ("this PC is "..realmOffset(offset)))
+            ..(zone and " (whole hours: check the PC's time zone)" or "")..".")
     else
         notify("Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME")
         notify("Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status.")

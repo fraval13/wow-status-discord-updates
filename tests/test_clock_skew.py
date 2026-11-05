@@ -268,3 +268,9 @@ def test_without_realm_time_a_drop_is_measured_on_this_pcs_clock():
     old, receiver = pc('Thora', -180, realm=False), pc('Mira', realm=False)
     level_up(old, receiver)
     assert said(status_lines(receiver), 'rejected_stale (stamped 180 s behind this PC\'s clock)')
+
+
+@pytest.mark.parametrize('skew,hint', [(3600, True), (-7230, True), (-5400, True), (900, False), (2700, False)])
+def test_status_hints_at_a_time_zone_mix_up(skew, hint):
+    lines = status_lines(pc('Mira', skew))
+    assert said(lines, 'Clock: this PC is ') and said(lines, "check the PC's time zone") == hint
