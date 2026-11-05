@@ -10,7 +10,14 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.8.0
+
+- New look: bordered cards, round level badges and XP bars on the Characters, Records, Activity and Overview pages
+- Click a character to see only that character's activity
+- Character cards show each friend's XP progress and the groups you share with them
+- The Overview shows your own status, who is online in your group and the latest records
+
+## 1.7.0
 
 - WoW Forever: characters and log entries with only a first name, left by older versions, are removed
 - No more "No player named ... is currently playing" messages from the addon's own whispers
