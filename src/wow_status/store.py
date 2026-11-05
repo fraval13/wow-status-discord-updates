@@ -11,7 +11,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from . import limits
+from . import journal_relay, limits
 from .archive import ArchiveWriter, archived_bytes, event_entry, snapshot_entry
 from .schema import STATUS_FIELDS, ValidationError, should_announce, validate
 
@@ -146,6 +146,7 @@ class Store:
             PRIMARY KEY(day,timezone,character),
             FOREIGN KEY(day,timezone) REFERENCES digests(day,timezone) ON DELETE CASCADE);
         ''')
+        self.db.executescript(journal_relay.SCHEMA)
         if 'source' not in {row['name'] for row in self.db.execute('PRAGMA table_info(people)')}:
             self.db.execute("ALTER TABLE people ADD COLUMN source TEXT NOT NULL DEFAULT 'discord'")
         self.recover_interrupted_sends()
@@ -652,6 +653,7 @@ class Store:
             self.db.execute('DELETE FROM people WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM group_pauses WHERE owner=?', (owner,))
             self.db.execute('DELETE FROM former_owners WHERE owner=?', (owner,))
+            self.db.execute('DELETE FROM journal_entries WHERE uploader=?', (owner,))
             self.db.executemany('DELETE FROM former_owners WHERE character=?', [(cid,) for cid in ids])
         for cid in ids:
             self.drop_archive(cid)

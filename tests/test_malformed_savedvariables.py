@@ -88,9 +88,9 @@ def test_missing_file_points_at_the_path(tmp_path):
 def test_any_parse_error_is_contained(tmp_path, monkeypatch, error):
     def broken(path):
         raise error('boom')
-        yield  # pragma: no cover
 
-    monkeypatch.setattr(companion, 'exports', broken)
+    # Reading goes through load(); any error there must stay contained.
+    monkeypatch.setattr(companion, 'load', broken)
     path = write(tmp_path, 'WoWStatus.lua', FIXTURE)
     assert asyncio.run(upload([path], None, None, once=True, dry_run=True)) is False
 
@@ -319,9 +319,8 @@ def test_bad_timestamps_are_dropped_the_same_way_with_or_without_opt_in_time(tmp
 def test_unexpected_errors_show_where_but_not_the_message(tmp_path, monkeypatch, capsys):
     def broken(path):
         raise KeyError(path.read_text(encoding='utf-8'))
-        yield  # pragma: no cover
 
-    monkeypatch.setattr(companion, 'exports', broken)
+    monkeypatch.setattr(companion, 'load', broken)
     asyncio.run(upload([write(tmp_path, 'WoWStatus.lua', FIXTURE)], None, None, once=True, dry_run=True))
     output = capsys.readouterr().out
     assert 'Skipped unreadable SavedVariables (KeyError); will retry later.' in output

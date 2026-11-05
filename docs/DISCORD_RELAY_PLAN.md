@@ -48,8 +48,15 @@ and [fictional example](daily-status-example.md).
 ## Implementation status
 
 The daily cumulative group-state report is implemented and delivered from the
-service (see [the report rules](DAILY_STATUS_REPORT.md)). The companion still
-exports only opted-in character history; it does not yet upload the shared
-journal, and dated peer checkpoints are still missing, so the report covers only
-directly uploaded observations. The existing addon switch continues to disable
-the old exports; the relay remains a separate path with that switch off.
+service (see [the report rules](DAILY_STATUS_REPORT.md)). Since #49 the companion
+also uploads the shared journal: for every group an opted-in character already has
+upload credentials for, the account log's level and death entries shared with that
+group (friends' included) go to `POST /groups/<route>/v1/journal`, newest 500,
+with original event IDs and times. The service keeps them in `journal_entries`,
+deduplicated per group database and client edition whichever companion uploads
+first. The report uses them as dated checkpoints (never lowering values) and lists
+characters seen only this way with source `shared_journal`. A character that
+uploads directly but is paused is withheld, including peers' entries about it.
+Deleting an installation removes the entries it uploaded. Death totals come only
+from entries that carry `Total deaths: N`. The existing addon switch continues to
+disable the old exports; the relay remains a separate path with that switch off.
