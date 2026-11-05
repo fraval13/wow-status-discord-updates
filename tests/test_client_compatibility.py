@@ -84,6 +84,9 @@ def test_dungeon_uses_documented_third_return_and_requires_public_complete_roste
 
 @pytest.mark.parametrize('edition', ['forever', 'retail'])
 def test_modern_restrictions_delay_delivery_and_login_sync_remains_two_way_and_quiet(edition):
+    # Forever holds sends only for chat lockdown; its "outgoing restricted" flag is
+    # true in the open world of the live client while sending works (#25).
+    flag = '__restricted' if edition == 'forever' else '__outgoingRestricted'
     clients = {name: client_runtime(edition, name, extra=f'''
         function UnitGUID() return "Player-{name}" end
         __outgoingRestricted=true
@@ -97,21 +100,23 @@ def test_modern_restrictions_delay_delivery_and_login_sync_remains_two_way_and_q
             __peers={"Thora-TestRealm","Eldrin-TestRealm"}
         ''')
     own, friend = clients.values()
+    for lua in clients.values():
+        lua.execute(f'{flag}=true')
     own.eval('fire')('PLAYER_LEVEL_UP', 30)
     assert own.eval('#__sent') == 0
     assert own.eval('WoWStatusDB.popups.last_send.state') == 'chat_restricted'
-    own.execute('__outgoingRestricted=false;WoWStatusPopups.tick()')
+    own.execute(f'{flag}=false;WoWStatusPopups.tick()')
     assert own.eval('WoWStatusDB.popups.last_send.state') == 'attempted_no_receipt'
     packet = own.eval('__sent[1].text')
     friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert friend.eval('WoWStatusLevelPopup.message:GetText()').endswith('level 30!')
     for lua in clients.values():
         clock(lua, 10)
-        lua.execute('__outgoingRestricted=true')
+        lua.execute(f'{flag}=true')
     own.eval('fire')('PLAYER_LEVEL_UP', 31)
     friend.eval('fire')('PLAYER_LEVEL_UP', 32)
     for lua in clients.values():
-        lua.execute('__outgoingRestricted=false')
+        lua.execute(f'{flag}=false')
     mesh(clients, start=11, duration=50, reorder=True)
     ids = []
     for lua in clients.values():

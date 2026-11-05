@@ -152,17 +152,26 @@ def test_forever_professions_use_namespaced_skill_api_without_classic_globals(fo
     ''')
 
 
-def test_forever_respects_realm_addon_message_restrictions(forever_lua):
+def test_forever_sends_unless_chat_is_in_lockdown(forever_lua):
+    # Live Forever client (#25): "outgoing addon chat restricted" is true in the open
+    # world while lockdown is false and messages work, so only lockdown holds sends.
     lua=forever_lua
     lua.execute('''
         C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return true end
-        assert(WoWStatusAdapter.chatRestricted())
-        C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return __secret end
-        assert(WoWStatusAdapter.chatRestricted())
-        C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return false end
         assert(not WoWStatusAdapter.chatRestricted())
         __restricted=true
         assert(WoWStatusAdapter.chatRestricted())
+        C_ChatInfo.InChatMessagingLockdown=function() return __secret end
+        assert(WoWStatusAdapter.chatRestricted())
+    ''')
+
+
+def test_a_lockdown_answer_from_the_game_is_retried_not_forced(forever_lua):
+    lua=forever_lua
+    lua.execute('''
+        Enum=Enum or {}
+        Enum.SendAddonMessageResult={Success=0,AddOnMessageLockdown=11}
+        assert(WoWStatusPopups.sendResult(true,11)=="throttled")
     ''')
 
 
