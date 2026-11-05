@@ -20,5 +20,6 @@ Popups.lua
 Journal.lua
 Minimap.lua
 Previews.lua
+Screenshots.lua
 Milestones.lua
 WoWStatus.lua

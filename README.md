@@ -46,6 +46,11 @@ quests, new professions and profession title promotions, first dungeon clears, f
 reputation ranks, major class unlocks and PvP ranks. **Preview toasts** opens local
 samples. Notifications queue one at a time for six seconds each.
 
+**Screenshots** (per character, all off by default) can take a picture about one
+second after your own level-up or first dungeon clear, optionally with the interface
+hidden (never in combat, where a normal screenshot is taken). Pictures stay in WoW's
+`Screenshots` folder and are never uploaded. `/wstatus screenshot` takes one by hand.
+
 **Announce first armor equips** has separate **Rare equipment**, **Epic equipment** and
 **Legendary equipment** choices, all enabled by default. Only equippable items in
 WoW's Armor class qualify, including armor, cloaks, shields and jewelry. Weapons,
