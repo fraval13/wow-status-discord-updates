@@ -6,7 +6,7 @@ from test_retail import retail_runtime
 
 from wow_status.group_routing import group_key
 
-CHANNEL = 'WStatus' + group_key('navsquad')
+CHANNEL = 'WStatus' + group_key('dawnwatch')
 
 
 def hexed(text):
@@ -18,7 +18,7 @@ def popup_text(lua):
 
 
 def joined(lua):
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     return lua
 
 
@@ -73,7 +73,7 @@ def test_each_kind_accepts_only_its_template(kind, version, valid, forged):
 
 def test_retail_pvp_accepts_only_honor_levels_in_range():
     lua = retail_runtime()
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.execute('__combat=true')
     receive = lua.eval('WoWStatusPopups.receive')
     for i, text in enumerate(['Promoted to Sergeant', 'Reached honor level 0', 'Reached honor level 012',
@@ -169,7 +169,7 @@ def test_member_who_just_joined_is_shown_once_the_roster_lists_them():
 
 def test_member_who_replaced_another_waits_for_the_roster_cache_to_expire():
     lua = joined(make_lua())
-    assert list(lua.eval('WoWStatusPopups.peers')(group_key('navsquad')).values()) == ['Eldrin-TestRealm']
+    assert list(lua.eval('WoWStatusPopups.peers')(group_key('dawnwatch')).values()) == ['Eldrin-TestRealm']
     lua.execute('__peers={"Mira-TestRealm"}')  # Eldrin left and Mira joined: same count, cache still fresh.
     assert not lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 5 1793000000 mira-5',
                                                    'Mira-TestRealm', CHANNEL)
@@ -190,7 +190,7 @@ ASYNC_ROSTER = '''
 
 def test_known_member_is_not_held_while_a_changed_roster_reloads():
     lua = joined(make_lua(STUBS + ASYNC_ROSTER))
-    group = group_key('navsquad')
+    group = group_key('dawnwatch')
     assert list(lua.eval('WoWStatusPopups.peers')(group).values()) == ['Eldrin-TestRealm']
     # Mira logs in: the member count changes and the new roster is still loading.
     lua.execute('table.insert(__peers,"Mira-TestRealm"); __ready=false')
@@ -208,7 +208,7 @@ def test_known_member_is_not_held_while_a_changed_roster_reloads():
 
 def test_last_complete_roster_counts_only_for_two_minutes():
     lua = joined(make_lua(STUBS + ASYNC_ROSTER))
-    group = group_key('navsquad')
+    group = group_key('dawnwatch')
     assert list(lua.eval('WoWStatusPopups.peers')(group).values()) == ['Eldrin-TestRealm']
     # Eldrin is removed and two others join; the new roster never finishes loading.
     lua.execute('__peers={"Mira-TestRealm","Kael-TestRealm"}; __ready=false')
@@ -282,7 +282,7 @@ def test_updates_waiting_for_the_roster_count_toward_the_sender_cap():
 
 def test_a_held_update_from_two_shared_groups_counts_once_toward_the_cap():
     lua = make_lua(STUBS.replace('__peers = {"Eldrin-TestRealm"}', '__peers = {}'))
-    lua.eval('WoWStatusGroups.update')('navsquad\nother-group', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch\nother-group', '')
     receive = lua.eval('WoWStatusPopups.receive')
     for level in range(2, 6):
         for channel in (CHANNEL, 'WStatus' + group_key('other-group')):
