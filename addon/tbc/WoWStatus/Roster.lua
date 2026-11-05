@@ -15,6 +15,8 @@ local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=tru
     MAGE=true, WARLOCK=true, MONK=true, DRUID=true, DEMONHUNTER=true, EVOKER=true}
 local db, current, page
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
+local lastXp, xpSent = 0, nil
+local XP_INTERVAL = 300
 
 local function key(name) return WoWStatusPopups.senderKey(name) end
 
@@ -35,8 +37,13 @@ function R.observe(character)
     if not character then return end
     local _, race = S.call(UnitRace, "player")
     local _, class = S.call(UnitClass, "player")
+    local level = WoWStatusAdapter.level()
+    local xp, maximum = S.number(S.call(UnitXP, "player")), S.number(S.call(UnitXPMax, "player"))
+    -- Progress through the level in thousandths; none at the maximum level.
+    local permille = xp and maximum and maximum > 0 and xp >= 0 and xp <= maximum
+        and not (level and level >= (WoWStatusAdapter.max_level or 999)) and math.min(999, math.floor(xp / maximum * 1000)) or nil
     character.roster_info = {race=S.string(race), sex=S.number(S.call(UnitSex, "player")), class=S.string(class),
-        level=WoWStatusAdapter.level(), at=time()}
+        level=level, xp=permille, at=time()}
 end
 
 local function playerName()
@@ -56,6 +63,8 @@ local function ownLines(group)
             -- Character names cannot contain "_", so it stands for a space here.
             local name = (WoWStatusPopups.characterName(c):gsub(" ", "_"))
             table.insert(lines, table.concat({"C", group, roster.id, playerName() or "-", name, info.race, info.sex, info.class, info.level}, " "))
+            -- XP progress goes in its own line, which older versions ignore.
+            if S.number(info.xp) then table.insert(lines, table.concat({"P", group, roster.id, name, info.xp}, " ")) end
         end
     end
     table.sort(lines)
@@ -109,6 +118,20 @@ function R.tick()
     if not db or not current then return end
     local now = GetTime and GetTime() or time()
     if now - lastScan >= 30 then lastScan = now; R.scan() end
+    -- XP moves between level-ups: tell members at most every five minutes.
+    local info = current.roster_info
+    if now - lastXp >= XP_INTERVAL then
+        lastXp = now
+        if info and S.number(info.xp) and info.xp ~= xpSent and state().share and not current.hide_from_list then
+            xpSent = info.xp
+            local name = (WoWStatusPopups.characterName(current):gsub(" ", "_"))
+            for group in pairs(WoWStatusGroups.selected(current)) do
+                for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                    table.insert(outgoing, {target=peer, text=table.concat({"P", group, state().id, name, info.xp}, " ")})
+                end
+            end
+        end
+    end
     if #outgoing == 0 or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
     local item = table.remove(outgoing, 1)
     local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
@@ -141,6 +164,18 @@ function R.receive(message, sender, distribution)
     if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false end
     local players = state().players
     if op == "X" and #words == 3 then players[pid] = nil; R.render(); return true end
+    if op == "P" and #words == 5 then
+        local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
+        local permille = tonumber(words[5])
+        local player = players[pid]
+        if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player or not permille
+            or permille ~= math.floor(permille) or permille < 0 or permille > 999 then return false end
+        local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
+        if not character then return false end
+        character.xp = permille
+        R.render()
+        return true
+    end
     if op ~= "C" or #words ~= 9 then return false end
     local name = words[4]
     if #name > 24 or name:find(S.CONTROL_OR_PIPE) then return false end
@@ -157,6 +192,9 @@ function R.receive(message, sender, distribution)
         players[pid] = player
     end
     player.name, player.at = name ~= "-" and name or nil, time()
+    -- Which of this account's groups the list arrived through (never other groups).
+    player.groups = type(player.groups) == "table" and player.groups or {}
+    player.groups[group] = true
     local characterKey = key(character.name)
     if not characterKey then return false end
     if not player.characters[characterKey] then
@@ -208,9 +246,13 @@ end
 
 -- Groups for the Characters page: {title, rows={{name, race, sex, class, level, status, latest}}}.
 function R.groups()
-    local online, latest, lastSeen = {}, {}, {}
-    for group in pairs(WoWStatusGroups.selected(current)) do
-        for _, peer in ipairs(WoWStatusPopups.peers(group)) do local k = key(peer); if k then online[k] = true end end
+    local online, latest, lastSeen, shared = {}, {}, {}, {}
+    local selected = WoWStatusGroups.selected(current)
+    local function share(k, group)
+        if k and selected[group] then shared[k] = shared[k] or {}; shared[k][group] = true end
+    end
+    for group in pairs(selected) do
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do local k = key(peer); if k then online[k] = true; share(k, group) end end
     end
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local k = key(e.sender)
@@ -247,7 +289,7 @@ function R.groups()
     local function add(title, character, self)
         if not self then
             character = {name=resolve(character.name), race=character.race, sex=character.sex,
-                class=character.class, level=character.level, at=character.at}
+                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
         end
@@ -262,24 +304,36 @@ function R.groups()
         known[k] = true
         local status = self and (k == key(WoWStatusPopups.characterName(current)) and "online" or "offline")
             or (online[k] and "online") or ("last seen " .. ago(math.max(lastSeen[k] or 0, character.at or 0)))
+        -- Shared groups, by this account's own labels for them.
+        local labels = {}
+        for group in pairs(shared[k] or character.groups or {}) do
+            local member = selected[group]
+            if member then table.insert(labels, member.label or group) end
+        end
+        table.sort(labels)
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
-            level=character.level, status=status, latest=latest[k]})
+            level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id then
             add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
-                race=info.race, sex=info.sex, class=info.class, level=info.level, at=info.at,
+                race=info.race, sex=info.sex, class=info.class, level=info.level, xp=info.xp, at=info.at,
                 current=c == current}, true)
         end
     end
     for _, player in pairs(state().players) do
-        for _, character in pairs(player.characters) do add(player.name or "Unnamed player", character) end
+        for _, character in pairs(player.characters) do
+            add(player.name or "Unnamed player", {name=character.name, race=character.race, sex=character.sex,
+                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups})
+        end
     end
     -- Senders in the log that never announced a list.
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if not e.owner and e.sender and key(e.sender) and not known[key(e.sender)] then
-            add("Not announced", {name=resolve(e.sender), at=e.at})
+            local groups = {}
+            for group in pairs(e.groups or {}) do groups[group] = true end
+            add("Not announced", {name=resolve(e.sender), at=e.at, groups=groups})
         end
     end
     for _, entry in ipairs(order) do
@@ -289,45 +343,82 @@ function R.groups()
     return order
 end
 
-local function row(index)
-    local line = CreateFrame("Frame", nil, page.list)
-    line:SetSize(680, 30)
-    line.portrait = line:CreateTexture(nil, "ARTWORK"); line.portrait:SetPoint("TOPLEFT", 16, -2); line.portrait:SetSize(26, 26)
-    line.text = line:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    line.text:SetPoint("TOPLEFT", 50, -8); line.text:SetWidth(620); line.text:SetJustifyH("LEFT")
-    page.lines[index] = line
-    return line
+-- Characters page: one bordered card per character under each player's header.
+local UI = WoWStatusUI
+local CARD, HEADER, GAP = 58, 26, 6
+local function header(index)
+    local h = CreateFrame("Frame", nil, page.list)
+    h:SetSize(680, HEADER)
+    h.text = UI.header(h, "", 0, -4, 680)
+    page.headers[index] = h
+    return h
+end
+local function card(index)
+    local c = UI.box(page.list, 680, CARD, "Button")
+    c.portrait = c:CreateTexture(nil, "ARTWORK"); c.portrait:SetPoint("TOPLEFT", 10, -9); c.portrait:SetSize(40, 40)
+    c.badge = UI.levelBadge(c, 24); c.badge:SetPoint("TOPLEFT", 34, -30)
+    c.name = UI.text(c, "GameFontNormalLarge", 66, -8, 300)
+    c.dot = c:CreateTexture(nil, "OVERLAY"); c.dot:SetPoint("TOPLEFT", 66, -32); c.dot:SetSize(14, 14)
+    c.status = UI.text(c, "GameFontHighlightSmall", 82, -33, 200)
+    c.xp = UI.xpBar(c, 230, 10); c.xp:SetPoint("TOPLEFT", 66, -46)
+    c.class = UI.text(c, "GameFontHighlight", 380, -10, 280, "RIGHT")
+    c.latest = UI.text(c, "GameFontDisableSmall", 380, -30, 280, "RIGHT")
+    c.groups = UI.text(c, "GameFontHighlightSmall", 380, -44, 280, "RIGHT")
+    -- Clicking a character shows its entries on the Activity page.
+    c:SetScript("OnClick", function(self)
+        if self.character and WoWStatusJournal.showCharacter then WoWStatusJournal.showCharacter(self.character.name) end
+    end)
+    c:SetScript("OnEnter", function(self)
+        UI.tint(self, true)
+        if GameTooltip and self.character then
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(self.character.name)
+            GameTooltip:AddLine("Click to see this character's activity.", 1, 1, 1, true); GameTooltip:Show()
+        end
+    end)
+    c:SetScript("OnLeave", function(self) UI.tint(self, false); if GameTooltip then GameTooltip:Hide() end end)
+    page.lines[index] = c
+    return c
 end
 
 function R.render()
     if not page or not page.IsShown or not page:IsShown() then return end
-    local index = 0
+    local index, headers, y = 0, 0, 0
     for _, group in ipairs(R.groups()) do
-        index = index + 1
-        local header = page.lines[index] or row(index)
-        header:ClearAllPoints(); header:SetPoint("TOPLEFT", 0, -(index - 1) * 32)
-        header.portrait:Hide(); header.text:SetPoint("TOPLEFT", 0, -8)
-        header.text:SetText("|cffffd100" .. group.title:gsub("|", "||") .. "|r"); header.kind = "header"; header:Show()
+        headers = headers + 1
+        local h = page.headers[headers] or header(headers)
+        h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y)
+        h.text:SetText(group.title:gsub("|", "||")); h:Show()
+        y = y + HEADER
         for _, character in ipairs(group.rows) do
             if index >= 200 then break end
             index = index + 1
-            local line = page.lines[index] or row(index)
-            line:ClearAllPoints(); line:SetPoint("TOPLEFT", 0, -(index - 1) * 32)
-            line.text:SetPoint("TOPLEFT", 50, -8); line.portrait:Show()
-            line.portraitKind = R.portrait(line.portrait, character.name, character.race, character.sex)
-            local colour = RAID_CLASS_COLORS and character.class and RAID_CLASS_COLORS[character.class]
+            local c = page.lines[index] or card(index)
+            c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -y)
+            c.portraitKind = R.portrait(c.portrait, character.name, character.race, character.sex)
             local name = (character.name:match("^[^-]+") or character.name):gsub("|", "||")
-            if colour and colour.colorStr then name = "|c" .. colour.colorStr .. name .. "|r" end
-            local class = character.class and (character.class:sub(1, 1) .. character.class:sub(2):lower()) or "?"
-            local level = character.level and (class .. " " .. character.level) or "never met"
-            line.text:SetText(name .. "   " .. level .. "   " .. character.status
-                .. (character.latest and ("   · " .. character.latest:gsub("|", "||")) or ""))
-            line.kind, line.character = "character", character
-            line:Show()
+            local colour = UI.classColour(character.class)
+            c.name:SetText(colour and (colour .. name .. "|r") or name)
+            c.badge:SetLevel(character.level); c.badge:SetShown(character.level ~= nil)
+            local class = character.class and (character.class:sub(1, 1) .. character.class:sub(2):lower()) or "Never met"
+            c.class:SetText(character.race and (character.race .. " " .. class) or class)
+            local online = character.status == "online"
+            c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
+            c.status:SetText(character.status)
+            local xp = S.number(character.xp)
+            c.xp:SetProgress(xp and xp / 1000, xp and ("XP " .. math.floor(xp / 10) .. "%"))
+            c.latest:SetText(character.latest and character.latest:gsub("|", "||") or "")
+            local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
+            c.groups:SetText(groups ~= "" and ("|cff9d9d9dGroups:|r " .. groups:gsub("|", "||")) or "")
+            c.text = c.name -- Older callers read a row's text.
+            c.kind, c.character = "character", character
+            UI.tint(c, false)
+            c:Show()
+            y = y + CARD + GAP
         end
     end
     for i = index + 1, #page.lines do page.lines[i]:Hide() end
-    page.list:SetHeight(math.max(1, index) * 32)
+    for i = headers + 1, #page.headers do page.headers[i]:Hide() end
+    page.list:SetHeight(math.max(1, y))
     page.empty:SetShown(index == 0)
     page.count = index
 end
@@ -336,7 +427,7 @@ local function build(parent)
     page = CreateFrame("Frame", "WoWStatusCharactersPage", parent); page:SetAllPoints(parent)
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 24, -4); page.scroll:SetSize(710, 470)
-    page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines = {}
+    page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines, page.headers = {}, {}
     page.scroll:SetScrollChild(page.list)
     page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     page.empty:SetPoint("TOPLEFT", 24, -12); page.empty:SetText("No characters yet.")
@@ -364,16 +455,24 @@ function R.init(database, character)
     db, current = database, character
     state()
     R.observe(character)
-    outgoing, sentTo, lastScan = {}, {}, 0
+    -- The list sent at login already carries this XP.
+    outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
+    xpSent = character and character.roster_info and character.roster_info.xp
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register, PREFIX) end
 end
 
 local frame = CreateFrame("Frame")
-for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP"}) do pcall(frame.RegisterEvent, frame, event) end
+for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE"}) do pcall(frame.RegisterEvent, frame, event) end
 frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sender)
-    if event == "PLAYER_LEVEL_UP" then
-        if current and current.roster_info then current.roster_info.level = S.number(prefix) or current.roster_info.level end
+    if event == "PLAYER_LEVEL_UP" or event == "PLAYER_XP_UPDATE" then
+        if not current then return end
+        R.observe(current)
+        if event == "PLAYER_LEVEL_UP" then
+            current.roster_info.level = S.number(prefix) or current.roster_info.level
+            R.changed() -- Members get the new level now, not at the next login.
+        end
+        R.render()
         return
     end
     if S.string(prefix) == PREFIX then R.receive(S.string(message), S.string(sender), S.string(distribution)) end

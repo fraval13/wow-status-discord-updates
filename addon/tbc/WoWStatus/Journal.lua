@@ -899,9 +899,11 @@ local function visibleEntries()
     local list={}
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
     for _,e in ipairs(J.displayEntries()) do
-        if (e.sample or permitted(e)) and (panel.filter=="all" or (panel.filter=="mine")==not not e.owner) then list[#list+1]=e end
+        local wanted=panel.filter=="all" or (panel.filter=="character" and P.senderKey(e.sender)==panel.character)
+            or (panel.filter~="character" and (panel.filter=="mine")==not not e.owner)
+        if (e.sample or permitted(e)) and wanted then list[#list+1]=e end
     end
-    if not samples and panel.filter~="friends" then
+    if not samples and (panel.filter=="all" or panel.filter=="mine") then
         for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
         table.sort(list,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
     end
@@ -911,6 +913,8 @@ local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
     panel.empty:SetShown(#list==0)
+    panel.showing:SetText(panel.filter=="character" and ("Showing: |cffffd100"..(panel.characterName or "?"):gsub("|","||").."|r") or "")
+    panel.showAll:SetShown(panel.filter=="character")
     panel.child:SetHeight(math.max(360,#list*132))
     local first=math.floor(panel.scroll:GetVerticalScroll()/132)+1
     for slot,row in ipairs(panel.rows) do
@@ -952,10 +956,9 @@ local function build(parent)
     panel.empty:SetJustifyH("CENTER");panel.empty:SetText("No activity yet")
     panel.rows={};panel.filter="all"
     for i=1,6 do
-        local row=CreateFrame("Frame",nil,panel.child);row:SetSize(680,124)
-        local background=row:CreateTexture(nil,"BACKGROUND");background:SetAllPoints();background:SetColorTexture(.04,.05,.08,.98)
-        row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT");row.accent:SetSize(680,3)
-        row.icon=row:CreateTexture(nil,"ARTWORK");row.icon:SetPoint("TOPLEFT",14,-22);row.icon:SetSize(56,56)
+        local row=WoWStatusUI.box(panel.child,680,124)
+        row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT",4,-4);row.accent:SetSize(672,2)
+        row.iconFrame=WoWStatusUI.icon(row,60);row.iconFrame:SetPoint("TOPLEFT",12,-20);row.icon=row.iconFrame.texture
         row.heading=label(row,"GameFontNormalLarge",88,-12,570)
         row.message=label(row,"GameFontHighlightLarge",88,-36,570);row.message:SetHeight(42)
         row:EnableMouse(true)
@@ -978,6 +981,11 @@ local function build(parent)
         local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-490);widget:SetSize(160,30);widget:SetText(b[1])
         widget:SetScript("OnClick",function() panel.filter=b[2];panel.scroll:SetVerticalScroll(0);render() end)
     end
+    -- Set by clicking a character on the Characters page.
+    panel.showing=label(panel,"GameFontHighlight",24,-528,420)
+    panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
+    panel.showAll:SetText("Show all");panel.showAll:Hide()
+    panel.showAll:SetScript("OnClick",function() panel.filter="all";panel.scroll:SetVerticalScroll(0);render() end)
     return panel
 end
 -- The log is the Activity page of the main window (#57).
@@ -985,6 +993,14 @@ WoWStatusMainWindow.register("activity","Activity",build,function() render() end
 function J.show()
     if not db then return end
     WoWStatusMainWindow.show("activity")
+end
+-- Open the Activity page showing only one character's entries.
+function J.showCharacter(name)
+    if not db or not P.senderKey(name) then return false end
+    WoWStatusMainWindow.show("activity")
+    panel.filter,panel.character,panel.characterName="character",P.senderKey(name),name:match("^[^-]+") or name
+    panel.scroll:SetVerticalScroll(0);render()
+    return true
 end
 -- Open the Activity page scrolled to one entry (used by the Overview links).
 function J.focus(id)

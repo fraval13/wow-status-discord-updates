@@ -50,9 +50,10 @@ def test_characters_are_announced_once_per_member_and_grouped_by_player():
     titles = [groups[i].title for i in range(1, len(groups) + 1)]
     assert 'Frank (1 character)' in titles and 'Ada (you) (1 character)' in titles
     thora.eval('SlashCmdList.WOWSTATUS')('characters')
-    text = '\n'.join(thora.eval(f'WoWStatusCharactersPage.lines[{i}].text.text')
-                     for i in range(1, thora.eval('WoWStatusCharactersPage.count') + 1))
-    assert '|cffc79c6eMira|r   Warrior 1   online' in text
+    cards = [thora.eval(f'WoWStatusCharactersPage.lines[{i}]') for i in range(1, thora.eval('WoWStatusCharactersPage.count') + 1)]
+    mira_card = next(c for c in cards if c.name.text == '|cffc79c6eMira|r')
+    assert mira_card.badge.text.text == '1' and mira_card['class'].text == 'Dwarf Warrior'
+    assert mira_card.status.text == 'online'
 
 
 def test_accounts_with_the_same_player_name_are_merged():

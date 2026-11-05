@@ -107,18 +107,99 @@ end
 
 local function line(parent, index)
     local row = CreateFrame("Button", nil, parent)
-    row:SetSize(680, 22)
+    row:SetSize(640, 22)
     row.text = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    row.text:SetPoint("TOPLEFT", 0, 0); row.text:SetWidth(680); row.text:SetJustifyH("LEFT")
+    row.text:SetPoint("TOPLEFT", 0, 0); row.text:SetWidth(640); row.text:SetJustifyH("LEFT")
     row:SetScript("OnClick", function(self) if self.id then WoWStatusJournal.focus(self.id) end end)
     parent.lines[index] = row
     return row
+end
+
+-- The "You" box: portrait, level, XP and a few counts from your own snapshot.
+local function renderYou()
+    local UI, you = WoWStatusUI, page.you
+    local character = WoWStatusPopups.character and WoWStatusPopups.character()
+    if SetPortraitTexture then pcall(SetPortraitTexture, you.portrait, "player") end
+    local level = S.number(S.call(UnitLevel, "player"))
+    you.badge:SetLevel(level)
+    local _, class = S.call(UnitClass, "player")
+    local name = character and WoWStatusPopups.characterName(character):match("^[^-]+")
+        or S.stringCall(UnitName, "player") or "You"
+    local colour = UI.classColour(S.string(class))
+    local safe = (name:gsub("|", "||"))
+    you.name:SetText(colour and (colour .. safe .. "|r") or safe)
+    local race = S.stringCall(UnitRace, "player")
+    local zone = WoWStatusAdapter.zone and WoWStatusAdapter.zone()
+    local className = S.stringCall(UnitClass, "player")
+    you.info:SetText(table.concat({race or "", className or "", zone and ("· " .. zone) or ""}, " "))
+    local xp, xpMax = S.number(S.call(UnitXP, "player")), S.number(S.call(UnitXPMax, "player"))
+    local maximum = WoWStatusAdapter.max_level
+    if level and maximum and level >= maximum then you.xp:SetProgress(1, "Maximum level")
+    elseif xp and xpMax and xpMax > 0 then
+        you.xp:SetProgress(xp / xpMax, math.floor(xp / xpMax * 100) .. "% to level " .. ((level or 0) + 1))
+    else you.xp:SetProgress(nil) end
+    local snapshot = character and character.snapshot or {}
+    local facts = {}
+    if S.number(snapshot.deaths_lifetime or snapshot.deaths) then table.insert(facts, "Deaths: " .. (snapshot.deaths_lifetime or snapshot.deaths)) end
+    if S.number(snapshot.quests_completed) then table.insert(facts, "Quests: " .. snapshot.quests_completed) end
+    you.stats:SetText(table.concat(facts, "   "))
+end
+
+-- The "Your group" box: who is online now.
+local function renderGroup()
+    local group, names, seen = page.group, {}, {}
+    local character = WoWStatusPopups.character and WoWStatusPopups.character()
+    local groups = 0
+    for id in pairs(WoWStatusGroups.selected(character)) do
+        groups = groups + 1
+        for _, peer in ipairs(WoWStatusPopups.peers(id)) do
+            local key = WoWStatusPopups.senderKey(peer)
+            if key and not seen[key] and WoWStatusPopups.fullName(peer) then
+                seen[key] = true; table.insert(names, ((peer:match("^[^-]+") or peer):gsub("|", "||")))
+            end
+        end
+    end
+    table.sort(names)
+    local count = WoWStatusPopups.onlineCount()
+    group.count:SetText(groups == 0 and "Join a group in Options to share with friends."
+        or ("|cff40ff40" .. count .. "|r online · " .. groups .. (groups == 1 and " group" or " groups")))
+    local shown = {}
+    for i = 1, math.min(#names, 4) do shown[i] = names[i] end
+    if #names > 4 then table.insert(shown, "and " .. (#names - 4) .. " more") end
+    group.names:SetText(#shown > 0 and table.concat(shown, "\n") or (groups > 0 and "Nobody else is online right now." or ""))
+end
+
+-- The "Latest records" box: the three newest Firsts medals.
+local function renderRecords()
+    local box, won = page.records, {}
+    if WoWStatusFirsts and WoWStatusFirsts.compute then
+        local result, medals = WoWStatusFirsts.compute(WoWStatusJournal.entries())
+        for _, medal in ipairs(medals) do
+            if result[medal.key] then table.insert(won, {medal=medal, entry=result[medal.key]}) end
+        end
+    end
+    table.sort(won, function(a, b) return a.entry.at > b.entry.at end)
+    for i, row in ipairs(box.rows) do
+        local item = won[i]
+        if item then
+            row.icon:SetIcon(WoWStatusFirsts.medalIcon(item.medal))
+            row.text:SetText("|cffffd100" .. item.medal.title .. "|r — "
+                .. ((item.entry.sender or "?"):match("^[^-]+") or "?"):gsub("|", "||")
+                .. "  |cff9d9d9d" .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
+            row:Show()
+        else row:Hide() end
+    end
+    box.empty:SetShown(#won == 0)
 end
 
 local function render()
     if not page then return end
     local data = state() or {}
     page.status:SetText(O.ownStatus())
+    for _, part in ipairs({renderYou, renderGroup, renderRecords}) do
+        local ok, problem = pcall(part)
+        if not ok then page.problem = problem end -- One box failing must not blank the page.
+    end
     local since = data.since
     if WoWStatusGuide and WoWStatusGuide.touring() then since = S.now() - 86400 end
     local summary = O.summary(WoWStatusJournal.displayEntries(), since)
@@ -150,18 +231,43 @@ end
 O.render = render
 
 local function build(parent)
+    local UI = WoWStatusUI
     page = CreateFrame("Frame", "WoWStatusOverviewPage", parent); page:SetAllPoints(parent)
-    page.status = page:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-    page.status:SetPoint("TOPLEFT", 24, -4); page.status:SetWidth(720); page.status:SetJustifyH("LEFT")
-    page.heading = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    page.heading:SetPoint("TOPLEFT", 24, -44); page.heading:SetWidth(720); page.heading:SetJustifyH("LEFT")
-    page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
-    page.scroll:SetPoint("TOPLEFT", 24, -76); page.scroll:SetSize(710, 450)
-    page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, MAX_LINES * 24)
+    -- You
+    local you = UI.box(page, 350, 136); you:SetPoint("TOPLEFT", 24, -4); page.you = you
+    you.portrait = you:CreateTexture(nil, "ARTWORK"); you.portrait:SetPoint("TOPLEFT", 12, -12); you.portrait:SetSize(56, 56)
+    you.badge = UI.levelBadge(you, 28); you.badge:SetPoint("TOPLEFT", 46, -48)
+    you.name = UI.text(you, "GameFontNormalLarge", 84, -12, 256)
+    you.info = UI.text(you, "GameFontHighlightSmall", 84, -36, 256)
+    you.xp = UI.xpBar(you, 250, 12); you.xp:SetPoint("TOPLEFT", 84, -56)
+    page.status = UI.text(you, "GameFontHighlightSmall", 12, -86, 326)
+    you.stats = UI.text(you, "GameFontHighlightSmall", 12, -110, 326)
+    -- Your group
+    local group = UI.box(page, 336, 136); group:SetPoint("TOPLEFT", 386, -4); page.group = group
+    UI.header(group, "Your group", 12, -10, 312)
+    group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
+    group.names = UI.text(group, "GameFontHighlightSmall", 12, -56, 312)
+    -- Since you were last here
+    local since = UI.box(page, 698, 232); since:SetPoint("TOPLEFT", 24, -148); page.since = since
+    page.heading = UI.text(since, "GameFontNormalLarge", 12, -10, 674)
+    page.scroll = CreateFrame("ScrollFrame", nil, since, "UIPanelScrollFrameTemplate")
+    page.scroll:SetPoint("TOPLEFT", 12, -38); page.scroll:SetSize(650, 184)
+    page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(640, MAX_LINES * 24)
     page.list.lines = {}
     page.scroll:SetScrollChild(page.list)
-    page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    page.empty:SetPoint("TOPLEFT", 24, -84); page.empty:SetWidth(720); page.empty:SetJustifyH("LEFT")
+    page.empty = UI.text(since, "GameFontHighlight", 12, -44, 674)
+    -- Latest records
+    local records = UI.box(page, 698, 124); records:SetPoint("TOPLEFT", 24, -392); page.records = records
+    UI.header(records, "Latest records", 12, -10, 674)
+    records.rows = {}
+    for i = 1, 3 do
+        local row = CreateFrame("Frame", nil, records); row:SetSize(674, 26); row:SetPoint("TOPLEFT", 12, -32 - (i - 1) * 28)
+        row.icon = UI.icon(row, 24); row.icon:SetPoint("TOPLEFT", 0, 0)
+        row.text = UI.text(row, "GameFontHighlight", 32, -5, 640)
+        records.rows[i] = row
+    end
+    records.empty = UI.text(records, "GameFontDisable", 12, -38, 674)
+    records.empty:SetText("No records yet. The first to reach a milestone in your group earns it.")
     return page
 end
 

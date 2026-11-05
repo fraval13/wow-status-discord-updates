@@ -76,44 +76,71 @@ local function state()
     return WoWStatusDB.firsts
 end
 
+-- Icon for a medal, from the same vocabulary as popups and the activity log.
+local MEDAL_ITEMS = {death={kind="death"}, dungeon={kind="dungeon"}, mount={kind="mount"}, raid={kind="raid"},
+    epicmount={kind="epicmount"}, epic={kind="loot", quality=4}, artisan={kind="profession", text="Tailoring: Artisan"}}
+local function medalIcon(medal)
+    local item = medal.key:match("^level:") and {kind="level", level=10} or MEDAL_ITEMS[medal.key] or {kind="first"}
+    return (WoWStatusPresentation.theme(item))
+end
+
+local CARD_W, CARD_H, GAP = 336, 56, 8
+local function card(index)
+    local UI = WoWStatusUI
+    local c = UI.box(page.list, CARD_W, CARD_H)
+    c.icon = UI.icon(c, 40); c.icon:SetPoint("TOPLEFT", 8, -8)
+    c.title = UI.text(c, "GameFontNormal", 56, -10, 270)
+    c.holder = UI.text(c, "GameFontHighlightSmall", 56, -32, 270)
+    page.rows[index] = c
+    return c
+end
+
 local function render()
     if not page then return end
+    local UI = WoWStatusUI
     local result, medals = F.compute(WoWStatusJournal.entries())
     for i, medal in ipairs(medals) do
-        local row = page.rows[i]
-        if not row then
-            row = page.list:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-            row:SetPoint("TOPLEFT", 0, -(i - 1) * 24); row:SetWidth(680); row:SetJustifyH("LEFT")
-            page.rows[i] = row
-        end
+        local c = page.rows[i] or card(i)
+        local column, line = (i - 1) % 2, math.floor((i - 1) / 2)
+        c:ClearAllPoints(); c:SetPoint("TOPLEFT", column * (CARD_W + GAP), -line * (CARD_H + GAP))
         local e = result[medal.key]
-        row:SetText("|cffffd100" .. medal.title .. "|r — " .. (e and (name(e.sender):gsub("|", "||")
-            .. " · " .. WoWStatusHistory.oslo(e.at)) or "nobody yet"))
-        row:Show()
+        c.icon:SetIcon(medalIcon(medal), e == nil)
+        c.title:SetText(medal.title)
+        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(e.at):sub(1, 16)) or "nobody yet"
+        c.holder:SetText(e and holder or ("|cff808080" .. holder .. "|r"))
+        UI.tint(c, e ~= nil)
+        c.text = medal.title .. " — " .. holder -- Plain summary of the card.
+        c:Show()
     end
-    -- Session recaps (#66): your newest ones below the medals.
-    local lines = {"", "|cffffd100Session recaps|r"}
+    for i = #medals + 1, #page.rows do page.rows[i]:Hide() end
+    local medalsHeight = math.ceil(#medals / 2) * (CARD_H + GAP)
+    -- Session recaps (#66): your newest ones in their own box below the medals.
+    local lines = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
-        if e.kind == "recap" and #lines < 12 and WoWStatusJournal.visible(e) then
-            table.insert(lines, WoWStatusHistory.oslo(e.at):sub(1, 16) .. "  " .. e.text:gsub("|", "||"))
+        if e.kind == "recap" and #lines < 10 and WoWStatusJournal.visible(e) then
+            table.insert(lines, "|cffffd100" .. WoWStatusHistory.oslo(e.at):sub(1, 16) .. "|r  " .. e.text:gsub("|", "||"))
         end
     end
-    if #lines == 2 then table.insert(lines, "No recaps yet. One is written after each play session.") end
-    page.recaps = page.recaps or {}
+    if #lines == 0 then table.insert(lines, "No recaps yet. One is written after each play session.") end
+    local box = page.recapBox
+    if not box then
+        box = UI.box(page.list, 2 * CARD_W + GAP, 40); page.recapBox = box
+        box.title = UI.header(box, "Session recaps", 12, -10, 2 * CARD_W + GAP - 24)
+        page.recaps = {}
+    end
+    box:ClearAllPoints(); box:SetPoint("TOPLEFT", 0, -(medalsHeight + 6))
     for i, text in ipairs(lines) do
         local row = page.recaps[i]
-        if not row then
-            row = page.list:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-            row:SetWidth(680); row:SetJustifyH("LEFT")
-            page.recaps[i] = row
-        end
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(#medals + i - 1) * 24)
+        if not row then row = UI.text(box, "GameFontHighlight", 12, 0, 2 * CARD_W - 20); page.recaps[i] = row end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 12, -14 - i * 22)
         row:SetText(text); row:Show()
     end
     for i = #lines + 1, #page.recaps do page.recaps[i]:Hide() end
-    page.list:SetHeight((#medals + #lines) * 24)
+    box:SetHeight(40 + #lines * 22)
+    page.list:SetHeight(medalsHeight + 52 + #lines * 22)
 end
 F.render = render
+F.medalIcon = medalIcon
 
 -- Called after the log changes. Announces only medals newly won by a live entry.
 function F.update()
@@ -141,9 +168,9 @@ end
 function F.buildRecords(parent)
     page = CreateFrame("Frame", "WoWStatusRecordsPage", parent); page:SetAllPoints(parent)
     page.heading = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    page.heading:SetPoint("TOPLEFT", 24, -4); page.heading:SetText("Firsts and session recaps")
+    page.heading:SetPoint("TOPLEFT", 24, -4); page.heading:SetText("Firsts in your group")
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
-    page.scroll:SetPoint("TOPLEFT", 24, -36); page.scroll:SetSize(710, 490)
+    page.scroll:SetPoint("TOPLEFT", 24, -32); page.scroll:SetSize(710, 494)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)
     page.scroll:SetScrollChild(page.list)
     page.rows = {}
