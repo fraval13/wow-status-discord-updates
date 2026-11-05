@@ -4,7 +4,8 @@ local P = WoWStatusPopups
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local prefs, getCharacter, notify, toast, active
 local incoming, outgoing = {}, {}
-local lastDisplay, nextSend, throttles = 0, 0, 0
+local lastDisplay, nextSend = 0, 0
+local pacing = {} -- Throttles in a row on this prefix: see P.retryWait.
 local joinedByAddon, syncPending = {}, false
 local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
@@ -26,8 +27,8 @@ local LAST_ROSTER_SECONDS = 120
 -- stamps at most LIVE_WINDOW seconds old or LIVE_AHEAD seconds ahead (see
 -- late()), and the sender keeps delivering an update to every peer until then:
 -- one whisper a second, so three updates to three groups of 20 take three
--- minutes. prefs.seen keeps an update just as long, so a replay inside the
--- window is still a duplicate. Clients before #9 accept only two minutes.
+-- minutes. prefs.seen keeps an update for both together, so a replay the window
+-- accepts is still a duplicate. Clients before #9 accept only two minutes.
 local LIVE_WINDOW, LIVE_AHEAD = 600, 300
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
@@ -306,19 +307,21 @@ local function syncGroups()
         end
     end
 end
-local function status(state, event)
-    prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil}
+local function status(state, event, target)
+    prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil, target = target}
 end
 local function clear()
-    incoming, outgoing, unverified, active, lastVerify, throttles = {}, {}, {}, nil, nil, 0
+    incoming, outgoing, unverified, active, lastVerify = {}, {}, {}, nil, nil
+    nextSend, pacing = 0, {}
     if toast then toast:Hide() end
 end
 -- Classifies a pcall of a send: "sent"; "throttled" (the game asks to wait, so
 -- retry later); "uncertain" (an older client's false, which can also mean
--- throttled); or "failed". SendAddonMessage returns an
--- Enum.SendAddonMessageResult on newer clients and a boolean on older ones; the
--- deprecated global wrapper returns the code second, so the last value counts.
-local RESULT = {Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8, AddOnMessageLockdown = 11}
+-- throttled); "offline" (the target logged off); or "failed". SendAddonMessage
+-- returns an Enum.SendAddonMessageResult on newer clients and a boolean on older
+-- ones; the deprecated global wrapper returns the code second, so the last value
+-- counts.
+local RESULT = {Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8, AddOnMessageLockdown = 11, TargetOffline = 12}
 function P.sendResult(ok, ...)
     if not ok then return "failed" end
     local count, result = select("#", ...), nil
@@ -328,19 +331,26 @@ function P.sendResult(ok, ...)
     local function is(name) return result == (codes[name] or RESULT[name]) end
     if is("Success") then return "sent" end
     if is("AddonMessageThrottle") or is("ChannelThrottle") or is("AddOnMessageLockdown") then return "throttled" end
-    return "failed"
+    return is("TargetOffline") and "offline" or "failed"
 end
--- Whether to send the same message to the same target again: always after a
--- throttle, and twice after an older client's false, which may be one too.
-function P.retryable(result, retries)
-    return result == "throttled" or (result == "uncertain" and (retries or 0) < 2)
+-- Seconds to wait before sending item again after result, or nil to move on.
+-- A throttle is always retried, after 2, 4, 8, then every 16 s while throttles
+-- on the queue's prefix (counted in state) continue. An older client's false is
+-- retried once, after 2 s, without counting as a throttle: it may be one, but
+-- a client that always says false must not stall the queue.
+function P.retryWait(result, item, state)
+    if result == "throttled" then
+        state.throttles = (state.throttles or 0) + 1
+        return math.min(2 ^ state.throttles, 16)
+    end
+    if result == "uncertain" and not item.unsure then item.unsure = true; return 2 end
+    item.unsure, state.throttles = nil, 0
+    return nil
 end
--- Seconds to wait after the nth throttled send in a row: 2, 4, 8, then 16.
-function P.backoff(count) return math.min(2 ^ count, 16) end
 local function pruneSeen(now)
     local count, oldest, oldestAt = 0, nil, math.huge
     for key, at in pairs(prefs.seen) do
-        if type(at) ~= "number" or now - at > LIVE_WINDOW or at > now + 300 then prefs.seen[key] = nil
+        if type(at) ~= "number" or now - at > LIVE_WINDOW + LIVE_AHEAD or at > now + LIVE_AHEAD then prefs.seen[key] = nil
         else
             count = count + 1
             if at < oldestAt then oldest, oldestAt = key, at end
@@ -826,6 +836,12 @@ local function tick()
             if #targets == 0 then status("waiting_for_group_peers", item.event); return end
             item.targets, item.target = targets, 1
         end
+        -- The list is taken at the first send and can be minutes old by the
+        -- last: skip a peer who has left the group's channel since.
+        while not P.isPeer(item.group_id, P.senderKey(item.targets[item.target])) do
+            if item.target == #item.targets then table.remove(outgoing, 1); return end
+            item.target = item.target + 1
+        end
         args = {ADDON_PREFIX, item.group_id .. " " .. item.message, "WHISPER", item.targets[item.target]}
     else
         send = A.chatSender()
@@ -834,21 +850,23 @@ local function tick()
     end
     local unpackArgs = unpack or table.unpack
     local result = P.sendResult(pcall(send, unpackArgs(args, 1, 4)))
-    -- A throttled whisper is sent again to the same target, after a growing
-    -- pause; only a send that went out or failed moves on to the next target.
-    if P.retryable(result, item.retries) then
-        item.retries, throttles = (item.retries or 0) + 1, throttles + 1
-        nextSend = now + P.backoff(throttles)
-        status(result .. "_retrying", item.event)
-        prefs.last_send.target = args[4]
+    -- A throttled whisper goes to the same target again after a pause; only a
+    -- send that went out or failed moves on to the next target.
+    local wait = P.retryWait(result, item, pacing)
+    if wait then
+        nextSend = now + wait
+        status(result .. "_retrying", item.event, args[4])
         return
     end
-    item.retries, throttles, nextSend = 0, 0, now + 1
+    nextSend = now + 1
     if item.targets and item.target < #item.targets then item.target = item.target + 1
     else table.remove(outgoing, 1) end
-    status(result == "sent" and "attempted_no_receipt" or "blocked_or_uncertain", item.event)
-    prefs.last_send.target = args[4]
-    if result ~= "sent" then notify("In-game update blocked/uncertain; see /wstatus popup status.") end
+    if result == "sent" then status("attempted_no_receipt", item.event, args[4])
+    elseif result == "offline" then status("peer_offline", item.event, args[4])
+    else
+        status("blocked_or_uncertain", item.event, args[4])
+        notify("In-game update blocked/uncertain; see /wstatus popup status.")
+    end
 end
 
 local ticking = false
@@ -884,7 +902,9 @@ end
 P.canShare = canShare
 P.eventText = eventText
 function P.broadcast(character, event)
-    if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
+    if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic then return end
+    -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
+    if #outgoing >= 32 then status("send_queue_full", event); return end
     local nonce = P.eventNonce(event)
     if not nonce then return end
     local text

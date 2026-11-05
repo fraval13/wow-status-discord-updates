@@ -17,12 +17,13 @@ BASE = 1793000000
 # forces the next results (0 = go through as normal). A throttled message is
 # not delivered: it never reaches __sent, so mesh() never passes it on.
 LIMITS = '''
-Enum={SendAddonMessageResult={Success=0,AddonMessageThrottle=3,GeneralError=9}}
+Enum={SendAddonMessageResult={Success=0,AddonMessageThrottle=3,GeneralError=9,TargetOffline=12}}
 __instance=false;__allowance=10;__regen=1;__allowances={};__throttled=0;__attempts={};__results={}
+__chat={};DEFAULT_CHAT_FRAME={AddMessage=function(_,text) table.insert(__chat,text) end}
 function IsInInstance() return __instance,__instance and "party" or "none" end
 local deliver=C_ChatInfo.SendAddonMessage
 C_ChatInfo.SendAddonMessage=function(prefix,text,kind,target)
-    table.insert(__attempts,{prefix=prefix,target=target,at=__mono})
+    table.insert(__attempts,{prefix=prefix,target=target,text=text,at=__mono})
     local forced=table.remove(__results,1)
     if forced==nil and __throttleAll then forced=3 end
     if forced~=nil and forced~=0 then return forced end
@@ -145,7 +146,7 @@ def test_throttled_whisper_is_sent_again_to_the_same_peer():
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'attempted_no_receipt'
 
 
-def test_failed_whisper_moves_on_and_an_older_clients_false_is_tried_three_times():
+def test_failed_whisper_moves_on_and_an_older_clients_false_is_tried_twice():
     failed = actor('Thora')
     failed.execute(LIMITS + '__results={9}')
     peers(failed, 3)
@@ -155,13 +156,65 @@ def test_failed_whisper_moves_on_and_an_older_clients_false_is_tried_three_times
     assert popup_attempts(failed) == [('Peer00', 10), ('Peer01', 11), ('Peer02', 12)]
 
     older = actor('Thora')
-    older.execute(LIMITS + '__results={false,false,false}')
+    older.execute(LIMITS + '__results={false,false}')
     peers(older, 3)
     level_up(older, 2)
     assert older.eval('WoWStatusDB.popups.last_send.state') == 'uncertain_retrying'
     run(older, 11, 40)
-    assert popup_attempts(older) == [('Peer00', 10), ('Peer00', 12), ('Peer00', 16), ('Peer01', 17), ('Peer02', 18)]
+    assert popup_attempts(older) == [('Peer00', 10), ('Peer00', 12), ('Peer01', 13), ('Peer02', 14)]
     assert [p['target'] for p in older.eval('__sent').values()] == ['Peer01-TestRealm', 'Peer02-TestRealm']
+
+
+def test_a_false_after_throttles_is_still_retried_and_waits_only_two_seconds():
+    lua = actor('Thora')
+    lua.execute(LIMITS + '__results={3,3,false}')
+    peers(lua, 2)
+    level_up(lua, 2)
+    run(lua, 11, 40)
+    # Throttles wait 2 s and 4 s; the false waits 2 s, then the retry goes through.
+    assert popup_attempts(lua) == [('Peer00', 10), ('Peer00', 12), ('Peer00', 16), ('Peer00', 18), ('Peer01', 19)]
+    assert [p['target'] for p in lua.eval('__sent').values()] == ['Peer00-TestRealm', 'Peer01-TestRealm']
+
+
+def test_offline_peer_is_skipped_quietly_and_a_departed_peer_is_not_whispered():
+    lua = actor('Thora')
+    lua.execute(LIMITS + '__results={12}')
+    peers(lua, 3)
+    level_up(lua, 2)
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'peer_offline'
+    assert lua.eval('WoWStatusDB.popups.last_send.target') == 'Peer00-TestRealm'
+    # Peer01 leaves the group's channel after the list was taken.
+    lua.execute('__peers={"Peer00-TestRealm","Peer02-TestRealm"}')
+    run(lua, 11, 40)
+    assert popup_attempts(lua) == [('Peer00', 10), ('Peer02', 11)]
+    assert not any('blocked' in line for line in lua.eval('__chat').values())
+
+
+def test_a_full_send_queue_is_reported():
+    lua = actor('Thora', 'alpha\nbeta\ngamma')
+    lua.execute(LIMITS)
+    peers(lua, 20)
+    for level in range(2, 13):
+        level_up(lua, level)   # 11 updates to 3 groups: the queue holds 32.
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'queued'
+    level_up(lua, 13)
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'send_queue_full'
+
+
+def test_a_replay_is_a_duplicate_for_as_long_as_it_is_accepted():
+    """A stamp up to 300 s ahead is accepted until 600 s after it: 900 s from now."""
+    lua = actor('Mira')
+    channel = lua.eval('__channelNames[1]')
+    receive = lua.eval('WoWStatusPopups.receive')
+    clock(lua, 1000)
+    ahead = f'WSTATUS4 classic-era mount {BASE + 1300} m-ahead First mount: Brown Horse'
+    assert receive(ahead, 'Eldrin-TestRealm', channel) is True
+    clock(lua, 1000 + 601)   # Another update prunes what is no longer needed.
+    assert receive(f'WSTATUS2 classic-era LEVEL 5 {BASE + 1601} n-1', 'Eldrin-TestRealm', channel) is True
+    assert lua.eval('WoWStatusDB.popups.seen["eldrin-testrealm:m-ahead"]') == BASE + 1000
+    clock(lua, 1000 + 901)
+    assert receive(f'WSTATUS2 classic-era LEVEL 6 {BASE + 1901} n-2', 'Eldrin-TestRealm', channel) is True
+    assert lua.eval('WoWStatusDB.popups.seen["eldrin-testrealm:m-ahead"]') is None
 
 
 def test_sender_stops_when_receivers_would_reject_the_update():
@@ -190,7 +243,7 @@ def test_sender_stops_when_receivers_would_reject_the_update():
     ((True, 8), 'throttled'),
     ((True, 11), 'throttled'),
     ((True, 9), 'failed'),
-    ((True, 12), 'failed'),
+    ((True, 12), 'offline'),
     # The deprecated global wrapper returns a boolean first and the code second.
     ((True, True, 0), 'sent'),
     ((True, False, 3), 'throttled'),
@@ -238,3 +291,19 @@ def test_throttled_log_packets_are_sent_again_not_lost():
     server, newcomer = log_sync('__instance=true;__allowance=3;__regen=0.5', 300)
     assert server.eval('__throttled') > 0
     assert newcomer.eval('#WoWStatusJournal.entries()') == 40
+
+
+def test_a_query_that_timed_out_while_queued_is_not_sent():
+    """Its request is retried with a new query; the stale one would waste the allowance."""
+    server, newcomer = seeded('Eldrin', 5), actor('Mira')
+    for lua in (server, newcomer):
+        lua.execute(LIMITS)
+    newcomer.execute('__throttleAll=true')
+    clients = {'Eldrin': server, 'Mira': newcomer}
+    mesh(clients, start=11, duration=320)   # The first query waits more than 300 s.
+    newcomer.execute('__throttleAll=false')
+    mesh(clients, start=331, duration=60)
+    assert newcomer.eval('#WoWStatusJournal.entries()') == 5
+    queries = [a['text'].split(' ')[3] for a in newcomer.eval('__attempts').values()
+               if a['prefix'] == 'WoWStatusLog' and a['text'].split(' ')[2] == 'Q']
+    assert len(set(queries)) == 1   # Only the retry's token was ever tried.

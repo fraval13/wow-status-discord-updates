@@ -11,7 +11,7 @@ local serial,lastSend=0,0
 -- the result: a throttled packet stays first in the queue and is sent again
 -- after a pause (#9).
 local ALLOWANCE=10
-local allowance,allowanceAt,holdUntil,throttles=ALLOWANCE,0,0,0
+local allowance,allowanceAt,holdUntil,pacing=ALLOWANCE,0,0,{}
 local warned,lastWarning={},nil
 local jobs,queuedJobs,contacted,hellos,seenHello={},{},{},{},{}
 local loginUntil,loginNonce=0,nil
@@ -720,19 +720,17 @@ function J.tick()
     local item=sendQueue[1]
     local queryKey=item.group..":"..P.senderKey(item.target)
     if item.query and lastQuery[queryKey] and clock-lastQuery[queryKey]<2.1 then return end
+    -- A query whose request already timed out is not sent: its retry is queued.
     local drop=(item.expires and (now>item.expires or not current.settings.enabled))
+        or (item.query and not requests[item.query])
         or not groupMember(item.group) or not peer(item.group,item.target)
         or (item.entry and (index[item.entry.id]~=item.entry or not offerable(item.entry,item.group)))
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if drop or not send then table.remove(sendQueue,1);return end
     lastSend,allowance=clock,math.max(0,allowance-1)
     local result=P.sendResult(pcall(send,PREFIX,item.text,"WHISPER",item.target))
-    if P.retryable(result,item.retries) then
-        item.retries,throttles=(item.retries or 0)+1,throttles+1
-        allowance,holdUntil=0,clock+P.backoff(throttles)
-        return
-    end
-    throttles=0
+    local wait=P.retryWait(result,item,pacing)
+    if wait then allowance,holdUntil=0,clock+wait;return end
     table.remove(sendQueue,1)
     if item.query then
         lastQuery[queryKey]=clock
@@ -747,7 +745,7 @@ function J.init(database,character)
     equipment,professionRanks,lastQuery={},{},{}
     for slot=1,19 do equipment[slot]=WoWStatusAdapter.equipment(slot) end
     for _, p in ipairs(character.progress and character.progress.professions or {}) do professionRanks[p.name]=p.skill end
-    lastSend,allowance,allowanceAt,holdUntil,throttles=0,ALLOWANCE,0,0,0;loginNonce=token()
+    lastSend,allowance,allowanceAt,holdUntil,pacing=0,ALLOWANCE,0,0,{};loginNonce=token()
     jobs,queuedJobs,contacted,hellos,seenHello,budgets={},{},{},{},{},{}
     local kept={}
     for _,e in ipairs(db.journal.entries) do if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e) then e.groups=e.groups or {};kept[#kept+1]=e end end

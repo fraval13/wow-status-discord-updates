@@ -161,7 +161,10 @@ three minutes. Each update keeps going until it is 10 minutes old, and receivers
 accept updates up to 10 minutes old, so every peer gets it. Before this, an update
 was dropped after two minutes, part-way through its list. Older clients still
 accept only two minutes, so a friend on an older version can miss a late whisper;
-the next login sync still brings it into their log.
+the next login sync still brings it into their log. A peer who left the group's
+channel since the update started is skipped, and one the game reports offline is
+skipped quietly (`peer_offline`). At most 32 updates wait to be sent; past that
+`/wstatus popup status` shows `send_queue_full` and login sync recovers the rest.
 
 The game allows each addon prefix 10 messages, regained at 1 a second, and
 answers a send past that with a throttle result. Whispers outside instances are
@@ -170,8 +173,9 @@ after 2, 4, 8, then every 16 seconds, instead of moving on to the next peer.
 `/wstatus popup status` shows `throttled_retrying` meanwhile, and how many updates
 are still sending. Login sync waits for that allowance inside an instance (up to
 10 messages at once, then one a second) and resends a throttled packet the same
-way. Outside instances it keeps its usual pace. An older client's plain `false` is
-tried three times, since it can also mean throttled.
+way. Outside instances it keeps its usual pace. An older client's plain `false` can
+also mean throttled, so it is tried once more after 2 seconds
+(`uncertain_retrying`).
 
 To test (#25): inside a dungeon, have a friend log in after you have a few hundred
 log entries, and check their log fills completely. With as many friends online as
