@@ -23,6 +23,31 @@ import up to 500 recent own
 history events and the retained received-activity cache for local browsing. These
 older entries are not newly advertised to peers.
 
+## History from before installation
+
+The game keeps no log of earlier level-ups or deaths that an addon can read, and an
+addon cannot read files on disk. What it can recover depends on the client:
+
+- **Every edition:** when a character is first seen above level 1, the Activity
+  page (All and Mine) shows **Tracking started at level N** at the installation
+  date. For an older installation the level comes from the earliest recorded
+  level-up or observation. The marker is display-only, never logged or shared.
+- **Retail, and Forever if its client has achievements:** the level achievements
+  (Level 10, 20 … 80, 85, 90) store the date they were earned. Those this
+  character earned at or below the starting level are added to your own log as
+  level cards marked *From your achievements (date only)*. They are not sent,
+  offered in sync, announced or counted for Firsts medals, because friends' logs
+  do not have them. An achievement whose name does not contain its level, or that
+  another warband character earned, is skipped.
+- **Retail, and Forever if its client has statistics:** the "Total deaths"
+  statistic gives the lifetime count, so a death announcement says the real total.
+  A statistic below the deaths already counted is ignored.
+- **Classic Era and TBC Anniversary** have no achievements or statistics: levels
+  and deaths are counted from installation only.
+
+Level achievements earned before the 9.0 level squish keep their old numbers.
+These APIs are checked only with mocks; confirm them in a live client.
+
 ## Catching up without a server
 
 Every new announcement has a stable ID derived from client edition, normalized

@@ -278,6 +278,70 @@ function J.professions(observed)
         professionRanks[p.name]=p.skill
     end
 end
+-- Level achievements that store the date they were earned. The level is
+-- checked against the achievement's name, so a wrong or renamed ID is skipped.
+local LEVEL_ACHIEVEMENTS={{6,10},{7,20},{8,30},{9,40},{10,50},{11,60},{12,70},{13,80},{4826,85},{6193,90}}
+local function achievementDate(month,day,year)
+    month,day,year=S.number(month),S.number(day),S.number(year)
+    if not (month and day and year) or month<1 or month>12 or day<1 or day>31 then return nil end
+    if year<100 then year=2000+year end
+    if year<2004 then return nil end
+    local ok,at=pcall(time,{year=year,month=month,day=day,hour=12})
+    at=ok and S.number(at)
+    if not at or at>S.now()+86400 then return nil end
+    return at
+end
+local function ownLevel(character,level)
+    for _, e in ipairs(db.journal.entries) do
+        if e.owner==character.identity.guid and e.client==character.identity.client and e.kind=="level" and not e.imported
+            and S.number(e.level)==level then return true end
+    end
+    for _, event in ipairs(character.history and character.history.events or {}) do
+        if event.kind=="level" and event.data and event.data.level==level then return true end
+    end
+    return false
+end
+-- History from before installation: the level where tracking began (shown on
+-- the Activity page, not logged) and, where the client has achievements, dated
+-- level-ups up to that level. These stay in this account's log only: never
+-- sent, offered to peers, announced or counted for medals.
+function J.backfill(character,level)
+    if not db or character~=current or not S.number(level) then return end
+    local identity=character.identity
+    local sender=ownName()
+    if type(character.tracking_start)~="table" then
+        local started=character.progress and character.progress.started_at or S.now()
+        local lowest=level
+        for _, event in ipairs(character.history and character.history.events or {}) do
+            local reached=event.kind=="level" and not (event.data and event.data.synthetic) and S.number(event.data and event.data.level)
+            if reached and reached-1<lowest then lowest=math.max(1,reached-1) end
+        end
+        for _, point in ipairs(character.history and character.history.tracking.points or {}) do
+            if S.number(point.level) and point.level<lowest then lowest=point.level end
+        end
+        -- One second earlier, so the marker sorts before the first tracked entry.
+        character.tracking_start={level=lowest,at=started-1}
+    end
+    local start=character.tracking_start
+    if not GetAchievementInfo or not character.settings.enabled or not character.settings.fields.level
+        or not character.settings.collection.level then return end
+    for _, item in ipairs(LEVEL_ACHIEVEMENTS) do
+        local id,reached=item[1],item[2]
+        if reached<=start.level and not ownLevel(character,reached) then
+            local ok,_,name,_,completed,month,day,year,_,_,_,_,_,mine=pcall(GetAchievementInfo,id)
+            name=ok and S.string(name)
+            if name and S.value(completed)==true and S.value(mine)~=false
+                and (" "..name.." "):find("[^%d]"..reached.."[^%d]") then
+                local at=achievementDate(month,day,year)
+                if at then
+                    add({id="achievement:"..identity.client..":"..identity.guid..":"..id,client=identity.client,sender=sender,
+                        owner=identity.guid,kind="level",level=reached,at=at,text="Reached level "..reached.."!",
+                        groups={},origin="mine",imported="achievement"})
+                end
+            end
+        end
+    end
+end
 local function liveEntry(item)
     local id=J.eventID(item.sender,item.nonce)
     if not id then return nil end
@@ -782,10 +846,30 @@ function J.displayEntries()
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
     return samples or J.entries()
 end
+-- Display-only rows marking where each of this account's characters on this
+-- client began tracking, when that was after level 1.
+local function trackingMarkers()
+    local list={}
+    for _, c in pairs(db.characters or {}) do
+        local start=c.tracking_start
+        if type(start)=="table" and S.number(start.level) and start.level>1 and S.number(start.at)
+            and c.identity.client==WoWStatusAdapter.client_id and c.settings.enabled then
+            list[#list+1]={id="tracking:"..c.identity.client..":"..c.identity.guid,client=c.identity.client,
+                sender=c.identity.name.."-"..S.stripSpace(c.identity.realm),owner=c.identity.guid,kind="tracking",
+                at=start.at,text="Tracking started at level "..start.level,groups={},origin="mine"}
+        end
+    end
+    return list
+end
 local function visibleEntries()
     local list={}
+    local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
     for _,e in ipairs(J.displayEntries()) do
         if (e.sample or permitted(e)) and (panel.filter=="all" or (panel.filter=="mine")==not not e.owner) then list[#list+1]=e end
+    end
+    if not samples and panel.filter~="friends" then
+        for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
+        table.sort(list,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
     end
     return list
 end
@@ -803,10 +887,12 @@ local function render()
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(heading)
             row.message:SetText(((e.sender:match("^[^-]+") or e.sender):gsub("|","||")).." — "..e.text:gsub("|","||"))
-            local scope=e.owner and "Your activity" or (e.origin=="catchup" and "Caught up via "..(e.via or "a group member")..(e.relay and ", passed on by "..e.relay or "")
+            local scope=e.imported=="achievement" and "From your achievements (date only)" or e.owner and "Your activity" or (e.origin=="catchup" and "Caught up via "..(e.via or "a group member")..(e.relay and ", passed on by "..e.relay or "")
                 or e.origin=="legacy" and "Saved group update" or "Live group update")
             row.flavour:SetText(WoWStatusFlavour.text(e))
-            row.detail:SetText(WoWStatusHistory.oslo(e.at).." · "..scope)
+            local when=WoWStatusHistory.oslo(e.at)
+            if e.imported then when=when:sub(1,10) end
+            row.detail:SetText(when.." · "..scope)
             row.event_id=e.id;row.entry=e;row:Show()
         else row.event_id=nil;row:Hide() end
     end

@@ -43,7 +43,8 @@ end
 function F.compute(entries)
     local sorted = {}
     for _, e in ipairs(entries or {}) do
-        if type(e) == "table" and type(e.at) == "number" and type(e.id) == "string"
+        -- Imported pre-installation history is local only, so peers' logs would disagree.
+        if type(e) == "table" and type(e.at) == "number" and type(e.id) == "string" and not e.imported
             and (not WoWStatusJournal.visible or WoWStatusJournal.visible(e)) then
             table.insert(sorted, e)
         end

@@ -493,6 +493,8 @@ local function initialize()
     end
     local level = A.level()
     if level then H.sync(current, level, S.now()) end
+    WoWStatusProgress.initDeaths(current)
+    if level then WoWStatusJournal.backfill(current, level) end
     WoWStatusProgress.initZones(current,A.zone())
     snapshot()
     current.last_zone = A.zone()
@@ -580,7 +582,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
         snapshot()
     elseif event == "PLAYER_DEAD" then
         if current.settings.enabled and current.settings.collection.death and WoWStatusProgress.death(current) then
-            queue("death", current.settings.fields.deaths and {total_deaths=current.progress.deaths} or {})
+            queue("death", current.settings.fields.deaths and {total_deaths=WoWStatusProgress.totalDeaths(current)} or {})
         end
     elseif event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then
         -- PLAYER_ALIVE also fires on spirit release, while the player is still a ghost.
