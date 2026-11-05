@@ -13,7 +13,10 @@ The project is <https://www.curseforge.com/wow/addons/wow-status> (project ID
 
 Remaining one-time step for the owner:
 
-1. In CurseForge author settings, open **API Tokens** and create a token.
+1. In CurseForge author settings, open **API Tokens**
+   (<https://www.curseforge.com/account/api-tokens>) and create a token. A Core
+   API key from console.curseforge.com is a different key and is refused as
+   "malformed" (HTTP 400).
 2. Store it as the GitHub Actions secret `CURSEFORGE_API_TOKEN`, for example with
    `gh secret set CURSEFORGE_API_TOKEN` (it prompts for the value).
 3. Upload the current release: **Actions → Checks and addon packages → Run

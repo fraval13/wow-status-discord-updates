@@ -24,6 +24,7 @@ import sys
 import uuid
 import zipfile
 from pathlib import Path
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 API = 'https://wow.curseforge.com'
@@ -97,14 +98,48 @@ def multipart(metadata: dict, filename: str, payload: bytes) -> tuple[bytes, str
     return b''.join(parts), f'multipart/form-data; boundary={boundary}'
 
 
-def call(request: Request, opener=urlopen):
-    with opener(request, timeout=120) as response:
-        return json.loads(response.read().decode('utf-8'))
+class UploadError(Exception):
+    pass
+
+
+HINTS = {
+    400: 'A "malformed" token is not an upload token: create one under API Tokens in your '
+         'CurseForge author account (not a Core API key from console.curseforge.com).',
+    401: 'The CURSEFORGE_API_TOKEN secret is empty or was not sent.',
+    403: 'The token was refused: it may be revoked, or belong to an account without '
+         'upload rights on this project.',
+    404: 'Check CURSEFORGE_PROJECT_ID: no such project, or it is not a WoW project.',
+}
+
+
+def call(request: Request, opener=urlopen, token: str = ''):
+    """JSON from CurseForge, or UploadError with its own message. CurseForge repeats a
+    malformed token in its message, so the token is removed from anything reported."""
+    try:
+        with opener(request, timeout=120) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except HTTPError as error:
+        try:
+            detail = json.loads(error.read().decode('utf-8', 'replace')).get('errorMessage', '')
+        except (ValueError, AttributeError, OSError):
+            detail = ''
+        message = f'HTTP {error.code}' + (f': {detail}' if detail else '')
+        if error.code in HINTS:
+            message += ' ' + HINTS[error.code]
+    except URLError as error:
+        message = f'CurseForge could not be reached: {error.reason}'
+    if token:
+        message = message.replace(token, '[token]')
+    raise UploadError(message)
 
 
 def upload(downloads: Path, project_id: str, token: str, changelog: str, opener=urlopen) -> int:
     headers = {'X-Api-Token': token, 'User-Agent': 'wow-status-release'}
-    versions = call(Request(f'{API}/api/game/versions', headers=headers), opener)
+    try:
+        versions = call(Request(f'{API}/api/game/versions', headers=headers), opener, token)
+    except UploadError as error:
+        print(f'::error::Reading CurseForge game versions failed: {error}')
+        return 1
     uploaded, failed = [], []
     for edition, label in EDITIONS:
         archive = downloads / f'WoWStatus-{edition}.zip'
@@ -132,8 +167,8 @@ def upload(downloads: Path, project_id: str, token: str, changelog: str, opener=
         request = Request(f'{API}/api/projects/{project_id}/upload-file', data=body, method='POST',
                           headers={**headers, 'Content-Type': content_type})
         try:
-            result = call(request, opener)
-        except Exception as error:  # Report every edition, then fail.
+            result = call(request, opener, token)
+        except UploadError as error:  # Report every edition, then fail.
             print(f'::error::{label} upload failed: {error}')
             failed.append(edition)
             continue

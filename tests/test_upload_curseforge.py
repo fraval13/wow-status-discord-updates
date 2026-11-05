@@ -36,7 +36,7 @@ class FakeServer:
         metadata = json.loads(body.split(b'Content-Type: application/json\r\n\r\n', 1)[1].split(b'\r\n--', 1)[0])
         filename = body.split(b'filename="', 1)[1].split(b'"', 1)[0].decode('utf-8')
         if filename in self.fail:
-            raise OSError('HTTP Error 400')
+            raise cf.HTTPError(request.full_url, 500, 'Server Error', {}, io.BytesIO(b'{"errorMessage":"Internal error"}'))
         self.uploads.append((filename, metadata))
         return io.BytesIO(json.dumps({'id': len(self.uploads)}).encode('utf-8'))
 
@@ -100,3 +100,20 @@ def test_project_id_must_be_numeric(monkeypatch, project):
     monkeypatch.setenv('CURSEFORGE_API_TOKEN', 'secret-token')
     monkeypatch.setenv('CURSEFORGE_PROJECT_ID', project)
     assert cf.main([]) == 1
+
+
+def test_a_malformed_token_is_reported_without_the_token(tmp_path, capsys):
+    def opener(request, timeout):
+        body = json.dumps({'errorCode': 3, 'errorMessage': 'API token is malformed. Token provided: secret-token.'})
+        raise cf.HTTPError(request.full_url, 400, 'Bad Request', {}, io.BytesIO(body.encode('utf-8')))
+    assert cf.upload(build(tmp_path), '1234', 'secret-token', CHANGELOG, opener) == 1
+    out = capsys.readouterr().out
+    assert 'HTTP 400: API token is malformed' in out and 'API Tokens' in out
+    assert 'secret-token' not in out and '[token]' in out
+
+
+def test_an_unreachable_server_is_reported(tmp_path, capsys):
+    def opener(request, timeout):
+        raise cf.URLError('no route')
+    assert cf.upload(build(tmp_path), '1234', 'secret-token', CHANGELOG, opener) == 1
+    assert 'could not be reached: no route' in capsys.readouterr().out
