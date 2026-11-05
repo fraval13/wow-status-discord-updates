@@ -9,7 +9,8 @@ from .schema import ValidationError, integer, realm_now, validate
 
 GROUP_ID = re.compile(r'[a-f0-9]{22}\Z')
 # One-way fingerprints, never the exposed names or routing credentials.
-RETIRED_GROUP_FINGERPRINTS = frozenset(('24c342969ae82dd2944b5e', '4b4fd8f2e7ca0e8a816306'))
+# Empty: the owner kept the groups players use; the two retired in 0.16.0 work again.
+RETIRED_GROUP_FINGERPRINTS = frozenset()
 
 
 def group_id(value):

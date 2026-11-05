@@ -4,11 +4,10 @@ local G, S = WoWStatusGroups, WoWStatusSafe
 local getCharacter, database, report, panel
 local MAX_GROUPS = 8
 
--- One-way fingerprints of publicly exposed, retired routing IDs. These are
--- not usable group names or route keys. Never put the underlying values here.
+-- One-way fingerprints of retired routing IDs. These are not usable group
+-- names or route keys. Never put the underlying values here. Empty: the owner
+-- chose to keep the groups players use (the two retired in 0.16.0 work again).
 local RETIRED = {
-    ["24c342969ae82dd2944b5e"]=true,
-    ["4b4fd8f2e7ca0e8a816306"]=true,
 }
 G.RETIRED_MESSAGE="This exposed group is retired. Ask its owner privately for the replacement name."
 local function hash(text)
@@ -129,6 +128,8 @@ function G.init(db, getter, reporter)
             end
         end
     end
+    -- Nothing is retired any more: drop the notice an earlier version saved.
+    if not next(RETIRED) then database.retired_groups_removed=nil end
     if removed then
         database.retired_groups_removed=true
         if not database.retired_group_notice then report(G.RETIRED_MESSAGE);database.retired_group_notice=true end
@@ -255,19 +256,25 @@ function G.show(host)
         label("Group ID", -146)
         label("Use the same ID as your friends.\nAdding or removing a group saves for all your characters.", -182)
         panel.input = input(-234, 80)
+        -- A refusal is shown under the input and in chat: in Options the page
+        -- scrolls, so a message lower down could go unseen.
+        local function refuse(message)
+            panel.status:SetText(message)
+            report(message)
+        end
         local function add()
             local id, cleaned, reason = G.key(panel.input:GetText())
             if not id then
-                panel.status:SetText(reason or "Enter one group ID of up to 80 characters.")
+                refuse(reason or "Enter one group ID of up to 80 characters.")
                 return
             end
-            if database.account_groups[id] then
-                panel.status:SetText("That group is already in your list.")
+            if (database.account_groups or {})[id] then
+                refuse("That group is already in your list.")
                 return
             end
             local groups = groupList()
             if #groups >= MAX_GROUPS then
-                panel.status:SetText("You can add up to 8 groups. Remove one before adding another.")
+                refuse("You can add up to 8 groups. Remove one before adding another.")
                 return
             end
             table.insert(groups, {id = id, label = cleaned})
@@ -278,12 +285,14 @@ function G.show(host)
         end
         panel.add = button(panel, "Add", 454, -234, 120, add)
         panel.input:SetScript("OnEnterPressed", add)
-        panel.count = label("", -280)
-        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -318)
+        panel.status = label("", -270)
+        panel.status:SetTextColor(1, .82, .25)
+        panel.count = label("", -306)
+        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -344)
         panel.rows = {}
         for i = 1, MAX_GROUPS do
             local row = CreateFrame("Frame", nil, panel)
-            row:SetPoint("TOPLEFT", 24, -312 - (i - 1) * 36)
+            row:SetPoint("TOPLEFT", 24, -338 - (i - 1) * 36)
             row:SetSize(550, 32)
             row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
             row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(410)
@@ -306,7 +315,6 @@ function G.show(host)
             end)
             table.insert(panel.rows, row)
         end
-        panel.status = label("", -618)
         panel.close = button(panel, "Close", 454, -670, 120, function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
