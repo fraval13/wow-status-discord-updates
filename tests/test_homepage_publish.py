@@ -124,6 +124,14 @@ def test_the_builder_refuses_to_replace_a_folder_that_is_not_a_build(repo, tmp_p
     assert sorted(path.name for path in tmp_path.iterdir()) == ['notes', 'repo']
 
 
+@pytest.mark.parametrize('revision', ['a' * 40, 'b' * 64])  # SHA-1 and SHA-256 repositories
+def test_an_earlier_build_is_recognised_by_its_index_and_manifest(tmp_path, revision):
+    write(tmp_path / 'downloads/release.json', json.dumps({'addon_revision': revision, 'editions': {}}).encode())
+    assert not builder.earlier_build(tmp_path)
+    write(tmp_path / 'index.html', b'<!doctype html>')
+    assert builder.earlier_build(tmp_path)
+
+
 def test_the_builder_cli_refuses_a_symlinked_output(repo, tmp_path):
     site = build(repo, tmp_path / 'releases/live')
     link = tmp_path / 'dist/homepage'
@@ -153,7 +161,8 @@ def test_a_failed_swap_never_loses_the_earlier_build(repo, tmp_path, monkeypatch
         return rename(self, target)
 
     monkeypatch.setattr(Path, 'rename', rename_unless_locked)
-    with pytest.raises((ValueError, PermissionError), match='close any program' if 'aside' in locked else 'in use'):
+    message = 'close any program' if 'aside' in locked else 'it is in' if 'restore' in locked else 'in use'
+    with pytest.raises((ValueError, PermissionError), match=message):
         build(repo, site)
     if 'restore' in locked:  # the earlier build waits beside the output instead of being deleted
         [aside] = site.parent.iterdir()
@@ -290,6 +299,24 @@ def test_publish_refuses_anything_but_a_fresh_build(repo, tmp_path, publisher, h
     else:
         (site / 'index.html').write_bytes((site / 'index.html').read_bytes().replace(b'</body>', b'<p>x</p></body>'))
     assert message in refused(publisher, site, tmp_path, host, capsys)
+
+
+def test_publish_ignores_file_manager_files_it_never_uploads(repo, tmp_path, publisher, host):
+    site = build(repo, tmp_path / 'dist/homepage')
+    for name in ('.DS_Store', 'downloads/Thumbs.db', 'assets/desktop.ini'):
+        write(site / name, b'\0')
+    publish(publisher, site, tmp_path)
+    with tarfile.open(fileobj=io.BytesIO(host['upload'])) as package:
+        assert not any(Path(name).name in publisher.DESKTOP_FILES for name in package.getnames())
+
+
+def test_a_dry_run_also_renders_the_committed_template(repo, tmp_path, publisher, host, capsys):
+    write(repo / TEMPLATE, (repo / TEMPLATE).read_bytes() + b'# uncommitted\n')
+    config = tmp_path / 'groups.json'
+    config.write_text(json.dumps(GROUPS), encoding='utf-8')
+    publisher.main(['--host', 'root@example.test', '--dry-run', '--groups-config', str(config)])
+    printed = capsys.readouterr().out
+    assert 'uncommitted' not in printed and 'Dry run: nothing was uploaded or changed.' in printed
 
 
 def test_publish_renders_the_caddyfile_from_the_committed_template(repo, tmp_path, publisher, host):
@@ -458,6 +485,33 @@ def test_a_failed_validation_or_reload_restores_the_previous_site(server, tmp_pa
     reloads = [command[1] for command in server['commands'] if command[0] == 'systemctl']
     # The failed reload, then the rollback's, which also starts Caddy if it stopped.
     assert reloads == (['reload', 'reload-or-restart'] if failing[0] == 'systemctl' else [])
+
+
+def test_a_first_publish_creates_folders_caddy_can_read(server, tmp_path):
+    shutil.rmtree(server['base'])
+    umask = os.umask(0o077)
+    try:
+        install(server, payload(tmp_path))
+    finally:
+        os.umask(umask)
+    for folder in (server['base'], server['base'] / 'releases'):
+        assert stat.S_IMODE(folder.stat().st_mode) == 0o755
+
+
+def test_a_failed_switch_leaves_no_swap_link(server, tmp_path):
+    sent = payload(tmp_path)
+    replace = os.replace
+
+    def refuse(source, target):
+        if Path(target).name == 'current':
+            raise OSError('current is busy')
+        return replace(source, target)
+
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(os, 'replace', refuse)
+        with pytest.raises(OSError, match='current is busy'):
+            install(server, sent)
+    unchanged(server, sent)
 
 
 def test_a_first_publish_that_fails_after_the_switch_leaves_no_site(server, tmp_path):

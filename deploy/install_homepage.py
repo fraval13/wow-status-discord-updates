@@ -35,7 +35,11 @@ def point(link, target):
     swap = link.with_name(f'.{link.name}-{os.getpid()}')
     swap.unlink(missing_ok=True)
     swap.symlink_to(target)
-    os.replace(swap, link)
+    try:
+        os.replace(swap, link)
+    except BaseException:
+        swap.unlink(missing_ok=True)
+        raise
 
 
 def public_tree(path):
@@ -96,6 +100,8 @@ def switch(data, release, revision, old_config, caddyfile, base, caddy):
 
 def install(payload, release, revision, archive_sha256, caddy_sha256, caddyfile, base=BASE, caddy=CADDY):
     archive = Path(payload)
+    # Folders this run creates, such as a first releases/, must be readable by Caddy.
+    umask = os.umask(0o022)
     try:
         old_config = caddy.read_bytes()
         if hashlib.sha256(old_config).hexdigest() != caddy_sha256:
@@ -106,3 +112,4 @@ def install(payload, release, revision, archive_sha256, caddy_sha256, caddyfile,
         return switch(data, release, revision, old_config, caddyfile, base, caddy)
     finally:
         archive.unlink(missing_ok=True)
+        os.umask(umask)

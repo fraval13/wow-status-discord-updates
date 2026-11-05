@@ -36,12 +36,18 @@ DEPLOY = Path(__file__).resolve().parent
 REPOSITORY = DEPLOY.parent
 TEMPLATE = 'deploy/Caddyfile.production.template'
 # What a publish reads from the working tree and ships: the website and the builder
-# that copies it, and what renders the Caddyfile or runs on the server as root.
-# Everything else comes from Git. The builder never copies these two website files.
+# that copies it, the Caddyfile template and renderer, and the script that runs on the
+# server as root. Everything else the build reads comes from Git; group keys are
+# checked against the live routes instead. The builder never copies these two website files.
 PUBLISH_INPUTS = ('website', ':(exclude)website/README.md', ':(exclude)website/ARTWORK.md',
                   'scripts/build_homepage.py', 'scripts/whats_new.py', TEMPLATE,
                   'deploy/render_caddyfile.py', 'deploy/install_homepage.py')
 REBUILD = 'Rebuild with python scripts/build_homepage.py and publish again.'
+# Written by file managers into any folder they show; the upload is the fresh build, never these.
+DESKTOP_FILES = {'.DS_Store', 'Thumbs.db', 'desktop.ini'}
+# A dropped connection fails within about a minute instead of hanging.
+CONNECTION = ['-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=20',
+              '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=4']
 
 
 def git(*args):
@@ -88,7 +94,8 @@ def check_build(directory, revision, fresh):
             raise ValueError(f'downloads/{archive.name} does not match its checksum in release.json. {REBUILD}')
     with contextlib.redirect_stdout(io.StringIO()):
         builder.build(REPOSITORY, fresh, revision)
-    built, expected = files(directory), files(fresh)
+    built = {name: path for name, path in files(directory).items() if path.name not in DESKTOP_FILES}
+    expected = files(fresh)
     problems = [(label, names) for label, names in [
         ('stale or extra', sorted(built.keys() - expected.keys())),
         ('missing', sorted(expected.keys() - built.keys())),
@@ -136,8 +143,7 @@ def main(argv=None):
                 site = check_build(args.directory.resolve(), revision, temporary / 'homepage')
             except ValueError as error:
                 parser.error(str(error))
-        ssh = ['ssh', '-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
-               '-o', 'ConnectTimeout=20', args.host]
+        ssh = ['ssh', *CONNECTION, args.host]
         old_config = subprocess.check_output([*ssh, 'cat /etc/caddy/Caddyfile'])
         # Refuse an unrelated host/config rather than replacing another site's setup.
         if b'wow.frankvalde.com {' not in old_config or b'handle_path /groups/' not in old_config:
@@ -176,8 +182,7 @@ def main(argv=None):
         script = ((DEPLOY / 'install_homepage.py').read_text(encoding='utf-8')
                   + f'\nSETTINGS = {ascii(settings)}\nprint(json.dumps(install(**SETTINGS)))\n')
         try:
-            subprocess.run(['scp', '-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
-                            str(upload), f'{args.host}:{remote_path}'], check=True)
+            subprocess.run(['scp', *CONNECTION, str(upload), f'{args.host}:{remote_path}'], check=True)
             subprocess.run([*ssh, 'python3 -'], input=script.encode('utf-8'), check=True)
         except Exception:
             # The server deletes the upload itself; this covers a broken copy or connection.

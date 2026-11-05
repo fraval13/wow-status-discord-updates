@@ -43,7 +43,8 @@ checks the build folder and refuses to publish when:
   files: publishing reads them from the working tree;
 - a ZIP does not match its size and SHA-256 in `release.json`;
 - any file is stale, missing or different compared with a fresh build it makes
-  itself. It uploads that fresh build.
+  itself. It uploads that fresh build, so file-manager files such as `.DS_Store`
+  in the folder are ignored.
 
 The Caddyfile is rendered from the committed `deploy/Caddyfile.production.template`.
 On the server, `deploy/install_homepage.py` checks the upload's SHA-256 and the live

@@ -84,7 +84,7 @@ def earlier_build(folder):
     except (OSError, ValueError):
         return False
     return ((folder / 'index.html').is_file() and isinstance(manifest, dict)
-            and re.fullmatch('[0-9a-f]{40}', str(manifest.get('addon_revision'))) is not None
+            and re.fullmatch('[0-9a-f]{40}|[0-9a-f]{64}', str(manifest.get('addon_revision'))) is not None
             and isinstance(manifest.get('editions'), dict))
 
 
@@ -110,10 +110,15 @@ def replace_output(staging, output):
     try:
         staging.rename(output)
     except BaseException:
-        (aside / 'build').rename(output)  # if even this fails, the earlier build stays in aside
+        try:
+            (aside / 'build').rename(output)
+        except OSError as error:
+            raise ValueError(f'Could not put the earlier build back ({error}); it is in {aside / "build"}') from error
         aside.rmdir()
         raise
     shutil.rmtree(aside, ignore_errors=True)
+    if aside.exists():
+        print(f'Could not delete the earlier build in {aside}; delete it by hand', file=sys.stderr)
 
 
 def write_site(root, output, revision, editions, version, notes):
