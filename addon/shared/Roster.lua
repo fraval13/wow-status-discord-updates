@@ -27,7 +27,7 @@ local PREFIX = "WoWStatusChr"
 local MAX_PLAYERS, MAX_CHARACTERS = 64, 20
 local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=true, DEATHKNIGHT=true, SHAMAN=true,
     MAGE=true, WARLOCK=true, MONK=true, DRUID=true, DEMONHUNTER=true, EVOKER=true}
-local db, current, page
+local db, current, page, report
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
 local lastXp, xpSent = 0, nil
 -- The Sync button: usable once a minute; list requests answered once a minute per member.
@@ -85,6 +85,38 @@ function R.milestoneHolders(group, level)
         end
     end
     return list
+end
+
+-- A friend running a newer version than this one: told once per version and
+-- session in chat, and shown on the Overview. The game cannot reach CurseForge,
+-- so it points to the homepage, which has a release at once.
+local announcedVersions = {}
+local function versionParts(text)
+    local a, b, c = tostring(text or ""):match("^(%d+)%.(%d+)%.(%d+)$")
+    return a and {tonumber(a), tonumber(b), tonumber(c)} or nil
+end
+function R.isNewer(version, than)
+    local x, y = versionParts(version), versionParts(than)
+    if not x or not y then return false end
+    for i = 1, 3 do if x[i] ~= y[i] then return x[i] > y[i] end end
+    return false
+end
+-- The newest version seen among friends, if newer than this one.
+function R.newerVersion()
+    local own, best = WoWStatusPopups.runtimeVersion, nil
+    for _, player in pairs(db and state().players or {}) do
+        local version = S.string(player.version)
+        if version and R.isNewer(version, own) and (not best or R.isNewer(version, best)) then best = version end
+    end
+    return best
+end
+function R.checkNewer(version)
+    local own = WoWStatusPopups.runtimeVersion
+    if not R.isNewer(version, own) or announcedVersions[version] or not report then return false end
+    announcedVersions[version] = true
+    report("WoW Status " .. version .. " " .. T("is available") .. " (" .. T("you have") .. " " .. own .. "). "
+        .. T("Get it at wow.frankvalde.com; the CurseForge app can take a few hours."))
+    return true
 end
 
 -- The player name a friend chose (Options > Groups > "Your name"), from the
@@ -396,6 +428,7 @@ function R.receive(message, sender, distribution)
         local version, player = words[4], players[pid]
         if not player or #version > 16 or not version:match("^%d+%.%d+%.%d+$") then return false end
         player.version = version
+        R.checkNewer(version)
         R.render()
         return true
     end
@@ -860,8 +893,8 @@ local function rekey(map)
     for k, item in pairs(merged) do map[k] = item end
 end
 
-function R.init(database, character)
-    db, current = database, character
+function R.init(database, character, reporter)
+    db, current, report = database, character, reporter
     local roster = state()
     if WoWStatusAdapter.full_names and not roster.realmless then
         for _, player in pairs(roster.players) do rekey(player.characters) end

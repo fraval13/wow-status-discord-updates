@@ -508,7 +508,7 @@ local function initialize()
     if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
     WoWStatusMilestones.init(current, queue)
     WoWStatusRecaps.init(current,queue)
-    WoWStatusRoster.init(WoWStatusDB, current)
+    WoWStatusRoster.init(WoWStatusDB, current, say)
     WoWStatusPopups.learnOwnName()
     registerSettings()
     if current.settings.enabled then

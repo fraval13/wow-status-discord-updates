@@ -203,6 +203,11 @@ W.add({
     ["First epic mount"] = "Første episke ridedyr", ["First epic mount!"] = "Første episke ridedyr!",
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
+    -- New version notice
+    ["is available"] = "er tilgjengeleg", ["you have"] = "du har",
+    ["Get it at wow.frankvalde.com; the CurseForge app can take a few hours."] =
+        "Hent han på wow.frankvalde.com; CurseForge-appen kan bruke nokre timar.",
+    ["Update available:"] = "Ny versjon tilgjengeleg:",
     -- Activity filters
     ["Type:"] = "Type:", ["Person:"] = "Person:", ["Level-ups"] = "Nye nivå", ["Deaths"] = "Dødsfall", ["Zones"] = "Område",
     ["Quests"] = "Oppdrag", ["Dungeons and raids"] = "Fangehol og raid", ["Mounts"] = "Ridedyr", ["Armor"] = "Rustning",

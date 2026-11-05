@@ -327,3 +327,24 @@ def test_characters_page_has_collapsible_sections_per_group():
         dawn.OnClick(dawn)
         assert(not WoWStatusRoster.collapsed(dawn.key) and WoWStatusCharactersPage.count == 3)
     ''')
+
+
+def test_a_newer_friend_version_is_announced_once():
+    mira, thora = pair()
+    mira.execute('WoWStatusPopups.runtimeVersion = "1.17.0"')
+    thora.execute('''
+        WoWStatusPopups.runtimeVersion = "1.16.0"
+        __chat = {}
+        DEFAULT_CHAT_FRAME = {AddMessage = function(_, text) table.insert(__chat, text) end}
+    ''')
+    pump(mira, thora)
+    thora.execute('''
+        local found = 0
+        for _, text in ipairs(__chat) do if text:find("1.17.0 is available", 1, true) then found = found + 1 end end
+        assert(found == 1, found)
+        assert(WoWStatusRoster.newerVersion() == "1.17.0")
+        assert(WoWStatusRoster.isNewer("1.10.0", "1.9.0") and not WoWStatusRoster.isNewer("1.9.0", "1.10.0"))
+        assert(not WoWStatusRoster.checkNewer("1.17.0")) -- once per version and session
+        WoWStatusMainWindow.show("overview")
+        assert(WoWStatusOverviewPage.you.update.text:find("1.17.0", 1, true))
+    ''')
