@@ -27,6 +27,9 @@ EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 # (editor files, a WTF/ folder, notes) stays out of the public ZIP.
 # Dot files such as macOS ._Logo.tga resource forks never match.
 ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE),)
+# Website notes that never ship, and file-manager files (Finder, Explorer) anywhere in website/.
+NOT_SHIPPED = ('README.md', 'ARTWORK.md')
+DESKTOP_FILES = ('.DS_Store', 'Thumbs.db', 'desktop.ini')
 
 
 def git(root, *args):
@@ -124,11 +127,11 @@ def replace_output(staging, output):
 def write_site(root, output, revision, editions, version, notes):
     """Write the website and the four ZIPs into the new, empty folder output."""
     for source in (root / 'website').iterdir():
-        if source.name in {'README.md', 'ARTWORK.md'}:
+        if source.name in NOT_SHIPPED or source.name in DESKTOP_FILES:
             continue
         destination = output / source.name
         if source.is_dir():
-            shutil.copytree(source, destination)
+            shutil.copytree(source, destination, ignore=shutil.ignore_patterns(*DESKTOP_FILES))
         else:
             shutil.copy2(source, destination)
     downloads = output / 'downloads'

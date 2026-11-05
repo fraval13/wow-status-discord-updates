@@ -37,10 +37,12 @@ This requires ordinary authorized SSH access (for the current session, use
 checks the build folder and refuses to publish when:
 
 - `downloads/release.json` names another revision than the checkout's `HEAD`;
-- `website/` (apart from its `README.md` and `ARTWORK.md`), the builder
-  (`scripts/build_homepage.py`, `scripts/whats_new.py`), the Caddyfile template or
-  renderer, or `deploy/install_homepage.py` has uncommitted, untracked or ignored
-  files: publishing reads them from the working tree;
+- `website/` (apart from its `README.md`, `ARTWORK.md` and file-manager files such
+  as `.DS_Store`, which the build never copies), the builder
+  (`scripts/build_homepage.py`, `scripts/whats_new.py`), `deploy/render_caddyfile.py`
+  or `deploy/install_homepage.py` has uncommitted, untracked or ignored files, or
+  files marked assume-unchanged or skip-worktree: publishing reads them from the
+  working tree;
 - a ZIP does not match its size and SHA-256 in `release.json`;
 - any file is stale, missing or different compared with a fresh build it makes
   itself. It uploads that fresh build, so file-manager files such as `.DS_Store`

@@ -204,7 +204,7 @@ def host(monkeypatch):
         if command[-1] == 'python3 -':
             host['script'] = kwargs['input'].decode('utf-8')
         if command[0] in host['fail'] or command[-1] in host['fail']:
-            raise subprocess.CalledProcessError(1, command)
+            raise host.get('error', subprocess.CalledProcessError(1, command))
         return subprocess.CompletedProcess(command, 0, b'', b'')
 
     monkeypatch.setattr(subprocess, 'check_output', check_output)
@@ -244,6 +244,8 @@ def test_publish_uploads_a_checked_fresh_build_of_head(repo, tmp_path, publisher
     # The server receives exactly install_homepage.install's arguments, and only ASCII.
     inspect.signature(importlib.import_module('install_homepage').install).bind(**sent)
     assert host['script'].isascii()
+    # The server script sent is the copy whose cleanliness was checked.
+    assert host['script'].startswith((repo / 'deploy/install_homepage.py').read_text(encoding='utf-8'))
 
 
 def test_publish_refuses_a_build_of_another_revision(repo, tmp_path, publisher, host, capsys):
@@ -252,23 +254,31 @@ def test_publish_refuses_a_build_of_another_revision(repo, tmp_path, publisher, 
     assert 'was built for revision' in refused(publisher, site, tmp_path, host, capsys)
 
 
-@pytest.mark.parametrize('change', ['modified', 'untracked', 'ignored', 'builder', 'template', 'server code'])
+@pytest.mark.parametrize('change', ['modified', 'untracked', 'ignored', 'builder', 'renderer', 'server code'])
 def test_publish_refuses_uncommitted_inputs(repo, tmp_path, publisher, host, capsys, change):
     if change == 'modified':
         write(repo / 'website/style.css', (repo / 'website/style.css').read_bytes() + b'\n/* draft */\n')
     elif change == 'untracked':
         write(repo / 'website/assets/draft.png', b'\x89PNG')
     elif change == 'ignored':
-        (repo / '.gitignore').write_text('.DS_Store\n', encoding='utf-8')
+        (repo / '.gitignore').write_text('*.bak\n', encoding='utf-8')
         commit(repo, {})
-        write(repo / 'website/.DS_Store', b'\0\0\0\1Bud1')
+        write(repo / 'website/style.css.bak', b'/* old */')
     else:
-        name = {'builder': 'scripts/build_homepage.py', 'template': TEMPLATE,
+        name = {'builder': 'scripts/build_homepage.py', 'renderer': 'deploy/render_caddyfile.py',
                 'server code': 'deploy/install_homepage.py'}[change]
         write(repo / name, (repo / name).read_bytes() + b'\n# draft\n')
     # Built from the changed tree, so the folder holds exactly what the change would ship.
     site = build(repo, tmp_path / 'dist/homepage')
     assert 'Uncommitted or untracked publish input' in refused(publisher, site, tmp_path, host, capsys)
+
+
+@pytest.mark.parametrize('mark', ['--assume-unchanged', '--skip-worktree'])
+def test_publish_refuses_inputs_git_status_cannot_see(repo, tmp_path, publisher, host, capsys, mark):
+    git(repo, 'update-index', mark, 'website/style.css')
+    write(repo / 'website/style.css', (repo / 'website/style.css').read_bytes() + b'\n/* hidden draft */\n')
+    site = build(repo, tmp_path / 'dist/homepage')
+    assert 'assume-unchanged or skip-worktree' in refused(publisher, site, tmp_path, host, capsys)
 
 
 def test_publish_ignores_website_notes_the_build_never_copies(repo, tmp_path, publisher, host):
@@ -301,13 +311,18 @@ def test_publish_refuses_anything_but_a_fresh_build(repo, tmp_path, publisher, h
     assert message in refused(publisher, site, tmp_path, host, capsys)
 
 
-def test_publish_ignores_file_manager_files_it_never_uploads(repo, tmp_path, publisher, host):
+def test_file_manager_files_never_ship_or_block_a_publish(repo, tmp_path, publisher, host):
+    (repo / '.gitignore').write_text('.DS_Store\n', encoding='utf-8')
+    commit(repo, {'website/assets/Thumbs.db': b'\0'})  # even a committed one stays out
+    write(repo / 'website/.DS_Store', b'\0')  # Finder writes these into the source folder too
+    write(repo / 'website/assets/.DS_Store', b'\0')
     site = build(repo, tmp_path / 'dist/homepage')
+    assert not any(name.rsplit('/', 1)[-1] in builder.DESKTOP_FILES for name in snapshot(site))
     for name in ('.DS_Store', 'downloads/Thumbs.db', 'assets/desktop.ini'):
         write(site / name, b'\0')
     publish(publisher, site, tmp_path)
     with tarfile.open(fileobj=io.BytesIO(host['upload'])) as package:
-        assert not any(Path(name).name in publisher.DESKTOP_FILES for name in package.getnames())
+        assert not any(Path(name).name in builder.DESKTOP_FILES for name in package.getnames())
 
 
 def test_a_dry_run_also_renders_the_committed_template(repo, tmp_path, publisher, host, capsys):
@@ -322,6 +337,7 @@ def test_a_dry_run_also_renders_the_committed_template(repo, tmp_path, publisher
 def test_publish_renders_the_caddyfile_from_the_committed_template(repo, tmp_path, publisher, host):
     template = (repo / TEMPLATE).read_text(encoding='utf-8')
     commit(repo, {TEMPLATE: (template + '# committed \U0001f600\n').encode('utf-8')})  # any text, even outside the BMP
+    write(repo / TEMPLATE, (template + '# uncommitted\n').encode('utf-8'))  # a draft neither blocks nor ships
     site = build(repo, tmp_path / 'dist/homepage')
     publish(publisher, site, tmp_path)
     renderer = importlib.import_module('render_caddyfile')
@@ -329,11 +345,13 @@ def test_publish_renders_the_caddyfile_from_the_committed_template(repo, tmp_pat
     assert host['script'].isascii()
 
 
-@pytest.mark.parametrize('failing', ['scp', 'python3 -'])
-def test_a_failed_upload_or_install_removes_the_uploaded_archive(repo, tmp_path, publisher, host, failing):
+@pytest.mark.parametrize('failing, error', [('scp', None), ('python3 -', None), ('scp', KeyboardInterrupt())])
+def test_a_failed_upload_or_install_removes_the_uploaded_archive(repo, tmp_path, publisher, host, failing, error):
     site = build(repo, tmp_path / 'dist/homepage')
     host['fail'] = (failing,)
-    with pytest.raises(subprocess.CalledProcessError):
+    if error is not None:  # Ctrl-C during the upload
+        host['error'] = error
+    with pytest.raises(KeyboardInterrupt if error else subprocess.CalledProcessError):
         publish(publisher, site, tmp_path)
     remote = next(command for command in host['calls'] if command[0] == 'scp')[-1].split(':', 1)[1]
     assert remote.startswith('/tmp/wow-homepage-')

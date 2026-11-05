@@ -36,15 +36,12 @@ DEPLOY = Path(__file__).resolve().parent
 REPOSITORY = DEPLOY.parent
 TEMPLATE = 'deploy/Caddyfile.production.template'
 # What a publish reads from the working tree and ships: the website and the builder
-# that copies it, the Caddyfile template and renderer, and the script that runs on the
-# server as root. Everything else the build reads comes from Git; group keys are
-# checked against the live routes instead. The builder never copies these two website files.
-PUBLISH_INPUTS = ('website', ':(exclude)website/README.md', ':(exclude)website/ARTWORK.md',
-                  'scripts/build_homepage.py', 'scripts/whats_new.py', TEMPLATE,
-                  'deploy/render_caddyfile.py', 'deploy/install_homepage.py')
+# that copies it, the Caddyfile renderer, and the script that runs on the server as
+# root. The build reads everything else from Git, the template comes from Git too, and
+# group keys are checked against the live routes instead.
+PUBLISH_INPUTS = ('website', 'scripts/build_homepage.py', 'scripts/whats_new.py', 'deploy/render_caddyfile.py',
+                  'deploy/install_homepage.py')
 REBUILD = 'Rebuild with python scripts/build_homepage.py and publish again.'
-# Written by file managers into any folder they show; the upload is the fresh build, never these.
-DESKTOP_FILES = {'.DS_Store', 'Thumbs.db', 'desktop.ini'}
 # A dropped connection fails within about a minute instead of hanging.
 CONNECTION = ['-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', '-o', 'ConnectTimeout=20',
               '-o', 'ServerAliveInterval=15', '-o', 'ServerAliveCountMax=4']
@@ -78,13 +75,22 @@ def check_build(directory, revision, fresh):
     if release.get('addon_revision') != revision:
         raise ValueError(f'{directory} was built for revision {release.get("addon_revision")}, but this '
                          f'checkout is at {revision}. {REBUILD}')
+    builder = load_builder()
+    # Website files the builder never copies can't change what ships.
+    pathspec = [*PUBLISH_INPUTS, *(f':(exclude)website/{name}' for name in builder.NOT_SHIPPED),
+                *(f':(exclude,glob)website/**/{name}' for name in builder.DESKTOP_FILES)]
     status = git('status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--ignored',
-                 '--', *PUBLISH_INPUTS).decode('utf-8')
+                 '--', *pathspec).decode('utf-8')
     uncommitted = [entry[3:] for entry in status.split('\0') if entry]
+    # git status can't see edits to files marked assume-unchanged (lowercase tag) or skip-worktree (S).
+    hidden = [line[2:] for line in git('ls-files', '-v', '-z', '--', *pathspec).decode('utf-8').split('\0')
+              if line and (line[0].islower() or line[0] == 'S')]
+    if hidden:
+        raise ValueError(f'Marked assume-unchanged or skip-worktree, so Git can\'t vouch for it: {", ".join(hidden)}. '
+                         'Clear the mark (git update-index --no-assume-unchanged --no-skip-worktree) and publish again.')
     if uncommitted:
         raise ValueError(f'Uncommitted or untracked publish input: {", ".join(uncommitted)}. Publishing would '
                          'ship it, but the revision does not hold it. Commit or remove it, rebuild and publish again.')
-    builder = load_builder()
     editions = release.get('editions') if isinstance(release.get('editions'), dict) else {}
     for edition in builder.EDITIONS:
         item = editions.get(edition) if isinstance(editions.get(edition), dict) else {}
@@ -94,7 +100,8 @@ def check_build(directory, revision, fresh):
             raise ValueError(f'downloads/{archive.name} does not match its checksum in release.json. {REBUILD}')
     with contextlib.redirect_stdout(io.StringIO()):
         builder.build(REPOSITORY, fresh, revision)
-    built = {name: path for name, path in files(directory).items() if path.name not in DESKTOP_FILES}
+    # A file manager may have written these into the folder; the upload is the fresh build, never these.
+    built = {name: path for name, path in files(directory).items() if path.name not in builder.DESKTOP_FILES}
     expected = files(fresh)
     problems = [(label, names) for label, names in [
         ('stale or extra', sorted(built.keys() - expected.keys())),
@@ -179,13 +186,14 @@ def main(argv=None):
                     'caddy_sha256': hashlib.sha256(old_config).hexdigest(), 'caddyfile': caddyfile}
         # The rendered Caddyfile travels on the SSH stdin, never through the world-readable /tmp
         # upload. ascii() is a valid literal for any text and keeps the script ASCII.
-        script = ((DEPLOY / 'install_homepage.py').read_text(encoding='utf-8')
+        script = ((REPOSITORY / 'deploy/install_homepage.py').read_text(encoding='utf-8')  # the checked copy
                   + f'\nSETTINGS = {ascii(settings)}\nprint(json.dumps(install(**SETTINGS)))\n')
         try:
             subprocess.run(['scp', *CONNECTION, str(upload), f'{args.host}:{remote_path}'], check=True)
             subprocess.run([*ssh, 'python3 -'], input=script.encode('utf-8'), check=True)
-        except Exception:
-            # The server deletes the upload itself; this covers a broken copy or connection.
+        except BaseException:
+            # The server deletes the upload itself; this covers a broken copy or connection, and
+            # Ctrl-C. The timeouts keep this short even when the host is unreachable.
             # Best effort: a failure here must not hide the original error.
             with contextlib.suppress(OSError, subprocess.SubprocessError):
                 subprocess.run([*ssh, 'rm -f -- ' + shlex.quote(remote_path)], check=False, timeout=60)

@@ -212,7 +212,7 @@ python scripts/verify_homepage.py --url https://wow.frankvalde.com \
 ```
 
 Before contacting the host, the publisher refuses a build of another revision,
-uncommitted or untracked `website/`, builder, Caddyfile template/renderer or
+uncommitted or untracked `website/`, builder, Caddyfile renderer or
 `deploy/install_homepage.py` files, a ZIP that does not match its
 `release.json` checksum, and any stale, missing or changed file compared with a
 fresh build it makes itself; it uploads that fresh build (issue #19). It renders the
