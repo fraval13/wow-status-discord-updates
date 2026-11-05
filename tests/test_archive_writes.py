@@ -536,7 +536,6 @@ def test_archives_reach_the_disk_before_they_replace_the_old_file(tmp_path, monk
 
     import wow_status.companion as companion
     data = {'name': 'Þóra', 'events': [{'id': i} for i in range(50)]}
-    size = len(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True).encode('utf-8'))
     calls, fsync, replace = [], os.fsync, os.replace
 
     def recording_fsync(fd):
@@ -550,7 +549,8 @@ def test_archives_reach_the_disk_before_they_replace_the_old_file(tmp_path, monk
     monkeypatch.setattr(companion.os, 'fsync', recording_fsync)
     monkeypatch.setattr(companion.os, 'replace', recording_replace)
     companion.atomic_json(tmp_path / 'credentials.json', data)
-    # The whole text is flushed and synced first, then renamed over the old file.
+    # The whole text (with Windows line endings there) is synced, then renamed.
+    size = (tmp_path / 'credentials.json').stat().st_size
     assert calls == [('fsync', size), ('replace', 'credentials.tmp', 'credentials.json')]
 
 

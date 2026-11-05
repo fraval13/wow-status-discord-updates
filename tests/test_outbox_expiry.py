@@ -65,21 +65,67 @@ def test_complete_batches_and_per_event_deliveries_never_expire(store, payload, 
     assert set(statuses(store)) == {'pending'}
 
 
-def test_the_bot_expires_stale_batches_and_their_receipts_go_next(store, payload, clone,
-                                                                    monkeypatch):
+def test_the_delivery_loop_expires_stale_batches(store, payload, clone):
     from wow_status.discord_bot import StatusBot
     store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 10000, 11))
     age_receipts(store, WEEK_AND_A_DAY)
     StatusBot(store, 1, 2).schedule()  # Runs every 30 s in the delivery loop.
-    assert set(statuses(store)) == {'expired'} and receipts(store, 'a' * 64) == 1
-    # The next upload's receipt cleanup no longer sees a pending row holding them.
+    assert set(statuses(store)) == {'expired'}
+
+
+def test_a_batch_resumed_after_its_rows_expired_still_completes(store, payload, clone):
+    store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 3, 11))
+    age_receipts(store, WEEK_AND_A_DAY)
+    assert store.expire_incomplete_batches() > 0
+    # Another member's upload runs the receipt cleanup: expired rows keep theirs.
+    other = summary(payload, clone, 'b' * 64, 1, 1, 30)
+    other['identity']['guid'] = 'Player-other'
+    store.ingest('other-owner', other)
+    assert receipts(store, 'a' * 64) == 1
+    store.deliver_many(store.summary_items(store.pending()), 'sent')
+    # The client comes back and sends the parts it still had: part 1 is not resent.
+    for part in (2, 3):
+        store.ingest('owner', summary(payload, clone, 'a' * 64, part, 3, 10 + part))
+    items = store.summary_items(store.pending())
+    assert {item['event_id'] for item in items} >= {'level-11', 'level-12', 'level-13'}
+    assert 'expired' not in statuses(store)
+
+
+def test_a_newer_export_brings_expired_announcements_back(store, payload, clone):
+    store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 3, 11))
+    age_receipts(store, WEEK_AND_A_DAY)
+    assert store.expire_incomplete_batches() > 0
     later = summary(payload, clone, 'b' * 64, 1, 1, 12)
     later['exported_at'] += 1
     store.ingest('owner', later)
-    assert receipts(store, 'a' * 64) == 0 and receipts(store, 'b' * 64) == 1
-    # The newer export takes over only unsent rows; expired ones stay expired.
-    assert 'expired' in statuses(store)
-    assert {item['event_id'] for item in store.summary_items(store.pending())} == {'level-12'}
+    # Posted with the newer export, as they were before expiry existed.
+    items = store.summary_items(store.pending())
+    assert {item['event_id'] for item in items} >= {'level-11', 'level-12'}
+    store.deliver_many(items, 'sent')
+    # Nothing links to the stalled batch now, so the next upload drops its receipt.
+    newest = summary(payload, clone, 'c' * 64, 1, 1, 13)
+    newest['exported_at'] += 2
+    store.ingest('owner', newest)
+    assert receipts(store, 'a' * 64) == 0 and receipts(store, 'c' * 64) == 1
+
+
+def test_retrying_an_expired_announcement_posts_it_on_its_own(store, payload, clone):
+    store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 3, 11))
+    age_receipts(store, WEEK_AND_A_DAY)
+    store.expire_incomplete_batches()
+    row = store.db.execute("SELECT o.id FROM outbox o WHERE o.event_id='level-11'").fetchone()[0]
+    store.delivery(row, 'pending')  # wow-status resolve <id> retry
+    assert store.expire_incomplete_batches() == 0  # Not set aside again.
+    item = store.pending()
+    assert item['delivery_id'] == row and store.summary_items(item) == [item]
+
+
+def test_community_filters_also_discard_expired_announcements(store, payload, clone):
+    store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 3, 11))
+    age_receipts(store, WEEK_AND_A_DAY)
+    store.expire_incomplete_batches()
+    store.set_community_setting('immediate_mode', 'daily_only')
+    assert set(statuses(store)) == {'discarded'}
 
 
 def steps(store, ready_only):

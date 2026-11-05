@@ -17,11 +17,9 @@ from .weekly import WeeklyRecaps
 
 log = logging.getLogger(__name__)
 
-
-def unexpected(exc):
-    """Log a failure no handler expected, with its traceback, before delivery moves on."""
-    log.exception('Discord delivery failed (%s); continuing with the next one',
-                  failure_name(exc))
+# An unsent post that failed in a way no handler expected is tried again after this
+# long, while the rest of the queue goes ahead (#26).
+UNEXPECTED_RETRY_SECONDS = DISCORD_RETRY_MAX
 
 
 class CommunityTree(app_commands.CommandTree):
@@ -54,6 +52,7 @@ class StatusBot(discord.Client):
         self.tree = CommunityTree(self)
         self.worker = None
         self.delivery_error = None
+        self.paused = {}  # Report kind -> when to try it again after a failure to render.
         self.online = False
         self.register_commands()
 
@@ -302,19 +301,45 @@ class StatusBot(discord.Client):
         self.standings.prepare()
 
     def claim(self, delivery_id, emojis):
-        """Re-read a delivery and mark it as sending, in one store call, so no upload or
-        privacy change lands between the check and the mark; then build its message."""
+        """Re-read a delivery, build its message and mark it as sending, in one store call,
+        so no upload or privacy change lands between the check and the mark."""
         current = self.store.pending(ready_only=True)
         if current is None or current['delivery_id'] != delivery_id:
             return None
         items = self.store.summary_items(current)
         if not items:
             return None
-        # Built before the mark, so a formatting failure never leaves rows marked as sending.
+        # Built before the mark, so a formatting failure leaves the rows unsent, not sending.
         content = (upload_summary(items, emojis) if current['settings'].get('discord_delivery') == 'summary'
                    else announcement_message(self.store, current, emojis))
         self.store.deliver_many(items, 'sending')
         return items, content
+
+    def unexpected(self, exc, what):
+        """Log a failure no handler expected, with its traceback; /health shows it until
+        a post succeeds."""
+        self.delivery_error = failure_name(exc)
+        log.exception('Discord %s failed (%s); continuing with the next post', what,
+                      self.delivery_error)
+
+    def failure(self, exc, claimed, what):
+        """How a failed post is recorded: its delivery status and the retry delay."""
+        if isinstance(exc, discord.Forbidden):
+            log.error('Discord denied channel access for the %s; fix permissions then '
+                      'resolve it', what)
+            return 'failed', 0
+        if isinstance(exc, discord.HTTPException):
+            if exc.status == 429:
+                return 'pending', 60
+            return ('uncertain' if exc.status >= 500 else 'failed'), 0
+        if isinstance(exc, (OSError, asyncio.TimeoutError)):
+            return 'uncertain', 0
+        # Anything else, such as a formatting bug or a network error that is no OSError,
+        # costs this post only. Restarting the worker would pick the same post again, so
+        # one bad row would stop every post (#26). Unsent, it waits behind the others;
+        # claimed, it may have posted and is left for review.
+        self.unexpected(exc, what)
+        return ('uncertain', 0) if claimed else ('pending', UNEXPECTED_RETRY_SECONDS)
 
     async def deliver(self):
         await self.wait_until_ready()
@@ -337,9 +362,9 @@ class StatusBot(discord.Client):
                 await asyncio.sleep(2)
                 continue
             delivery_id = item['delivery_id']
-            items, claimed = [item], None
+            items = await call(self.store.summary_items, item)
+            claimed, posted = None, False
             try:
-                items = await call(self.store.summary_items, item)
                 channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
                 if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
                     await call(self.store.deliver_many, items, 'failed')
@@ -351,27 +376,28 @@ class StatusBot(discord.Client):
                     continue
                 items, content = claimed
                 message = await channel.send(**content, allowed_mentions=discord.AllowedMentions.none())
+                posted = True
                 await call(self.store.deliver_many, items, 'sent', message_id=str(message.id))
-            except discord.Forbidden:
-                await call(self.store.deliver_many, items, 'failed')
-                log.error('Discord denied channel access; fix permissions then resolve the delivery')
-            except discord.HTTPException as exc:
-                if exc.status == 429:
-                    await call(self.store.deliver_many, items, 'pending', delay=60)
-                else:
-                    await call(self.store.deliver_many, items,
-                               'uncertain' if exc.status >= 500 else 'failed')
-            except (OSError, asyncio.TimeoutError):
-                await call(self.store.deliver_many, items, 'uncertain')
+                self.delivery_error = None
             except Exception as exc:
-                # Anything else, such as a formatting bug or an unexpected network error,
-                # costs this delivery only. Without this the worker would restart and pick
-                # the same delivery again, so one bad row would stop every post (#26). Once
-                # claimed, the message may have posted.
-                unexpected(exc)
-                await call(self.store.deliver_many, items,
-                           'failed' if claimed is None else 'uncertain')
+                if posted:
+                    raise  # Only recording it failed: the supervisor recovers the send.
+                status, delay = self.failure(exc, claimed is not None, 'announcement')
+                await call(self.store.deliver_many, items, status, delay=delay)
             await asyncio.sleep(1)
+
+    async def queued(self, reports, what):
+        """The next recap or status report to post, or None. Recaps are rendered here, so
+        a failure pauses that kind of report for a while instead of stopping every post
+        (#26); without its key there is no row to mark."""
+        if time.monotonic() < self.paused.get(reports, 0):
+            return None
+        try:
+            return await self.store.call(reports.pending)
+        except Exception as exc:
+            self.unexpected(exc, what)
+            self.paused[reports] = time.monotonic() + UNEXPECTED_RETRY_SECONDS
+            return None
 
     def claim_recap(self, recaps, key):
         """Refresh a recap after awaits and mark it as sending, in one store call: data
@@ -388,33 +414,29 @@ class StatusBot(discord.Client):
         if not await call(self.store.can_post):
             return
         recaps = recaps or self.recaps
-        item = await call(recaps.pending)
+        item = await self.queued(recaps, 'recap')
         if item is None:
             return
-        key, current = item['key'], None
+        key, current, posted = item['key'], None, False
         try:
             channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
             if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
                 await call(recaps.delivery, key, 'failed')
                 return
+            prefix = emoji('recap', self.custom_emojis()) + ' '  # Before the claim, as in claim().
             current = await call(self.claim_recap, recaps, key)
             if current is None:
                 return
-            message = await channel.send(emoji('recap', self.custom_emojis()) + ' ' + current['text'],
+            message = await channel.send(prefix + current['text'],
                                          allowed_mentions=discord.AllowedMentions.none())
+            posted = True
             await call(recaps.delivery, key, 'sent', str(message.id))
-        except discord.Forbidden:
-            await call(recaps.delivery, key, 'failed')
-        except discord.HTTPException as exc:
-            if exc.status == 429:
-                await call(recaps.delivery, key, 'pending', delay=60)
-            else:
-                await call(recaps.delivery, key, 'uncertain' if exc.status >= 500 else 'failed')
-        except (OSError, asyncio.TimeoutError):
-            await call(recaps.delivery, key, 'uncertain')
-        except Exception as exc:  # As in deliver(): one bad recap must not stop every post.
-            unexpected(exc)
-            await call(recaps.delivery, key, 'failed' if current is None else 'uncertain')
+            self.delivery_error = None
+        except Exception as exc:
+            if posted:
+                raise  # Only recording it failed: the supervisor recovers the send.
+            status, delay = self.failure(exc, current is not None, 'recap')
+            await call(recaps.delivery, key, status, delay=delay)
 
     def claim_standings(self, key, emojis):
         """Re-read the report and mark it as sending, in one store call, so a withdrawal
@@ -435,10 +457,10 @@ class StatusBot(discord.Client):
         call = self.store.call
         if not await call(self.store.can_post):
             return
-        item = await call(self.standings.pending)
+        item = await self.queued(self.standings, 'daily status report')
         if item is None:
             return
-        key, pages = item['key'], None
+        key, pages, posted = item['key'], None, False
         try:
             channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
             if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
@@ -453,20 +475,14 @@ class StatusBot(discord.Client):
             for page in pages:
                 message = await channel.send(**page, allowed_mentions=discord.AllowedMentions.none())
                 sent.append(str(message.id))
+            posted = True
             await call(self.standings.delivery, key, 'sent', sent)
-        except discord.Forbidden:
-            await call(self.standings.delivery, key, 'failed')
-            log.error('Discord denied channel access for the daily status report')
-        except discord.HTTPException as exc:
-            if exc.status == 429:
-                await call(self.standings.delivery, key, 'pending', delay=60)
-            else:
-                await call(self.standings.delivery, key, 'uncertain' if exc.status >= 500 else 'failed')
-        except (OSError, asyncio.TimeoutError):
-            await call(self.standings.delivery, key, 'uncertain')
-        except Exception as exc:  # As in deliver(): one bad report must not stop every post.
-            unexpected(exc)
-            await call(self.standings.delivery, key, 'failed' if pages is None else 'uncertain')
+            self.delivery_error = None
+        except Exception as exc:
+            if posted:
+                raise  # Only recording it failed: the supervisor recovers the send.
+            status, delay = self.failure(exc, pages is not None, 'daily status report')
+            await call(self.standings.delivery, key, status, delay=delay)
 
 
 def session(store, guild_id, channel_id, token):

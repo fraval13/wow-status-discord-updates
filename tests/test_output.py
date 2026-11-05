@@ -147,7 +147,8 @@ def test_status_card_title_fits_discords_256_character_limit():
     from wow_status.output import upload_summary
     item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text(encoding='utf-8'))
     icon = '<:wow_warlock:' + '1' * 20 + '>'
-    for name in ('*' * 120, '@' * 120, 'a' * 119 + '*'):
+    # The last name is cut inside an escape pair, at an odd offset.
+    for name in ('*' * 120, '@' * 120, 'a' + '*' * 119):
         item['identity']['name'] = name
         card = upload_summary([item], {'wow_warlock': icon}, preview=True)['embeds'][0]
         assert len(card.title) <= 256 and card.title.startswith(icon + ' ')
