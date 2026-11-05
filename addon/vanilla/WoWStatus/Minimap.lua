@@ -2,6 +2,44 @@
 WoWStatusMinimap = {}
 local M,button,db=WoWStatusMinimap
 local S=WoWStatusSafe
+local place
+M.MIN_OFFSET,M.MAX_OFFSET=-40,80
+-- Extra distance from the map's edge. Players can adjust it with
+-- /wstatus minimap <number> where a client reports an unexpected map size (#85).
+local function offset(default)
+    local value=S.number(db and db.minimap_offset)
+    if value and value>=M.MIN_OFFSET and value<=M.MAX_OFFSET then return value end
+    return default
+end
+local function size(frame)
+    if type(frame)~="table" or not frame.GetWidth then return nil end
+    local width,height=S.number(S.call(frame.GetWidth,frame)),S.number(S.call(frame.GetHeight,frame))
+    local scale=frame.GetEffectiveScale and S.number(S.call(frame.GetEffectiveScale,frame))
+    return width,height,scale
+end
+-- One chat line with what is needed to diagnose a misplaced button.
+function M.report()
+    local function text(name,frame)
+        local width,height,scale=size(frame)
+        if not width then return name.."=missing" end
+        return string.format("%s=%.0fx%.0f@%.2f",name,width,height or 0,scale or 0)
+    end
+    return WoWStatusAdapter.client_id.." · "..text("Minimap",Minimap).." · "..text("MinimapCluster",MinimapCluster)
+        .." · "..text("MinimapBackdrop",MinimapBackdrop).." · "..text("MinimapCompassTexture",MinimapCompassTexture)
+        .." · offset="..tostring(S.number(db and db.minimap_offset) or "default")
+        .." · angle="..tostring(S.number(db and db.minimap_angle) or 225)
+end
+function M.setOffset(value)
+    if not db then return false end
+    if value==nil then db.minimap_offset=nil
+    else
+        value=S.number(value)
+        if not value or value~=math.floor(value) or value<M.MIN_OFFSET or value>M.MAX_OFFSET then return false end
+        db.minimap_offset=value
+    end
+    if place then place() end
+    return true
+end
 function M.init(database)
     db=database
     if button or not Minimap then return end
@@ -12,16 +50,16 @@ function M.init(database)
     icon:SetTexture("Interface\\AddOns\\WoWStatus\\Textures\\Logo")
     local border=button:CreateTexture(nil,"OVERLAY");border:SetPoint("TOPLEFT");border:SetSize(54,54)
     border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-    local function place()
+    place=function()
         local angle=math.rad(S.number(db.minimap_angle) or 225)
-        local radiusX,radiusY=80,80
+        local radiusX,radiusY=70+offset(10),70+offset(10)
         if WoWStatusAdapter.client_id=="retail" or WoWStatusAdapter.client_id=="forever" then
             -- Mainline minimaps are larger than Classic's. Work in the map's
             -- own coordinates so inherited UI/Edit Mode scaling stays correct.
             local width=S.number(S.call(Minimap.GetWidth,Minimap))
             local height=S.number(S.call(Minimap.GetHeight,Minimap))
             if width and height and width>0 and height>0 then
-                radiusX,radiusY=width/2+10,height/2+10
+                radiusX,radiusY=width/2+offset(10),height/2+offset(10)
             end
         end
         button:ClearAllPoints();button:SetPoint("CENTER",Minimap,"CENTER",math.cos(angle)*radiusX,math.sin(angle)*radiusY)
