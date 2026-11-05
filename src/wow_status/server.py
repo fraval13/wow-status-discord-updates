@@ -9,7 +9,7 @@ import time
 
 from aiohttp import web
 
-from . import limits
+from . import journal_relay, limits
 from .group_routing import canonical_group, group_key, group_label
 from .group_routing import group_id as validate_group_id
 from .people import remember
@@ -309,11 +309,29 @@ def create_app(store, group=None, name=None, trust_proxy=False, discord=None):
             return store.ingest(owner, payload, name=label)
         return web.json_response(await store.call(upload))
 
+    async def journal(request):
+        # The shared-journal relay (#49) exists only for group destinations.
+        if group is None:
+            raise web.HTTPNotFound()
+        owner, token = await authenticate(request, 'upload')
+        payload = await request.json()
+
+        def upload():
+            if store.owner(token) != owner:
+                raise web.HTTPUnauthorized()
+            if not isinstance(payload, dict) or payload.get('group_id') != group:
+                raise ValidationError('Wrong group')
+            if store.paused(owner):
+                raise web.HTTPForbidden()
+            return journal_relay.ingest(store, owner, payload)
+        return web.json_response(await store.call(upload))
+
     app.router.add_get('/health', health)
     app.router.add_post('/v1/link', redeem)
     app.router.add_post('/v1/group-enroll', enroll_group)
     app.router.add_post('/v1/privacy', privacy)
     app.router.add_post('/v1/upload', ingest)
+    app.router.add_post('/v1/journal', journal)
     return app
 
 

@@ -82,7 +82,8 @@ def _after(item, since):
     return type(at) is int and at >= since
 
 
-def exports(path):
+def load(path):
+    """The parsed SavedVariables table and its raw bytes."""
     with Path(path).open('rb') as stream:
         raw = stream.read(MAX_BYTES + 1)
     if len(raw) > MAX_BYTES:
@@ -90,6 +91,48 @@ def exports(path):
     db = parse(raw.decode('utf-8-sig'))
     if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
         raise ValidationError('Unsupported addon data')
+    return db, raw
+
+
+JOURNAL_KINDS = ('level', 'death')
+JOURNAL_LIMIT = 500
+
+
+def journal_entries(db, target, client):
+    """Level/death entries of the account log shared with one group (#49), newest first.
+
+    Includes friends' entries the game delivered for that group. Original event IDs
+    and times are kept; the server deduplicates them per group and client.
+    """
+    journal = db.get('journal')
+    entries = journal.get('entries') if isinstance(journal, dict) else None
+    if isinstance(entries, dict):
+        entries = list(entries.values())
+    found = []
+    for entry in entries if isinstance(entries, list) else []:
+        if not isinstance(entry, dict) or entry.get('kind') not in JOURNAL_KINDS or entry.get('legacy'):
+            continue
+        groups = entry.get('groups')
+        if not isinstance(groups, dict) or groups.get(target) is not True or entry.get('client') != client:
+            continue
+        if not isinstance(entry.get('id'), str) or not isinstance(entry.get('sender'), str) or type(entry.get('at')) is not int:
+            continue
+        item = {'id': entry['id'], 'sender': entry['sender'], 'kind': entry['kind'], 'at': entry['at']}
+        if entry['kind'] == 'level' and type(entry.get('level')) is int:
+            item['level'] = entry['level']
+        elif entry['kind'] == 'death' and isinstance(entry.get('text'), str):
+            item['text'] = entry['text'][:60]
+        found.append(item)
+    found.sort(key=lambda item: (item['at'], item['id']), reverse=True)
+    return found[:JOURNAL_LIMIT]
+
+
+def exports(path):
+    db, raw = load(path)
+    yield from export_db(db, raw)
+
+
+def export_db(db, raw):
     batches = []
     batch_id = hashlib.sha256(raw).hexdigest()
     for char in db['characters'].values():
@@ -223,7 +266,8 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                 group_uploader.failed = False
             for path in paths:
                 try:
-                    payloads = list(exports(path))
+                    db, raw = load(path)
+                    payloads = list(export_db(db, raw))
                 except Exception as exc:
                     # One missing, unreadable or malformed file must never stop the upload loop.
                     # Only our own fixed validation messages are logged, never file content.
@@ -288,6 +332,8 @@ async def upload(paths, credentials, state, once=False, dry_run=False, interval=
                         print(f'Uploaded selected character data at {int(time.time())}.')
                         status(connection='Connected; latest exported data uploaded',
                                last_upload=int(time.time()))
+                    if group_uploader and not dry_run and not await group_uploader.upload_journal(db, payloads):
+                        failed = True
                 except (OSError, ValueError, aiohttp.ClientError, asyncio.TimeoutError) as exc:
                     print(f'Upload deferred ({type(exc).__name__}); will retry from SavedVariables.')
                     failed = True

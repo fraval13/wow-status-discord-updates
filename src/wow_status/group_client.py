@@ -151,6 +151,58 @@ class GroupUploader:
         return not self.failed
 
 
+    async def upload_journal(self, db, payloads):
+        """Upload the shared journal (#49) to each group an opted-in character routes to.
+
+        Only groups that already have upload credentials are used: the journal never
+        enrolls on its own. A service without the relay (HTTP 404) is skipped quietly.
+        """
+        import hashlib
+
+        from .companion import journal_entries
+        targets = {}
+        for payload in payloads:
+            if payload.get('_discord_opt_out') or not payload['settings'].get('enabled'):
+                continue
+            for target in payload.get('_groups', {}):
+                targets.setdefault(target, payload['identity']['client'])
+        ok = True
+        for target, client in sorted(targets.items()):
+            route = self.config.get('groups', {}).get(target)
+            if not route or not route.get('token') or route.get('blocked'):
+                continue
+            entries = journal_entries(db, target, client)
+            if not entries:
+                continue
+            body = {'group_id': target, 'client': client, 'entries': entries}
+            fingerprint = hashlib.sha256(json.dumps(body, sort_keys=True).encode()).hexdigest()
+            cache_key = hashlib.sha256(('journal:' + target + ':' + route['token']).encode()).hexdigest()
+            if self.cache.get(cache_key) == fingerprint or route.get('retry_upload_at', 0) > time.time():
+                continue
+            try:
+                async with self.session.post(route['url'] + '/v1/journal', json=body,
+                    headers={'Authorization': 'Bearer ' + route['token'], 'X-WoW-Group': target},
+                    allow_redirects=False) as response:
+                    if response.status == 404:
+                        continue  # The service predates the relay.
+                    if response.status == 429:
+                        from .companion import retry_seconds
+                        route['retry_upload_at'] = time.time() + retry_seconds(response)
+                        atomic_json(self.credentials, self.config)
+                    if response.status != 200:
+                        self.status(connection=f'Shared log upload rejected (HTTP {response.status}); it will retry.')
+                        ok = False
+                        continue
+                    await response.read()
+            except (OSError, aiohttp.ClientError, asyncio.TimeoutError):
+                self.status(connection='Shared log upload is deferred; it will retry.')
+                ok = False
+                continue
+            self.cache[cache_key] = fingerprint
+            atomic_json(self.state, self.cache)
+        return ok
+
+
 async def privacy_action(credentials, target, action):
     import aiohttp
     path = Path(credentials)
