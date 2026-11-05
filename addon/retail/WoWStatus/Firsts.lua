@@ -56,6 +56,16 @@ function F.compute(entries)
     return result, medals
 end
 
+-- Whether an entry can change the Records page: a possible medal holder or a
+-- session recap. The log recounts the medals only when such an entry comes or
+-- goes, so a long catch-up doesn't redo the whole-log sort per entry (#4).
+function F.matters(e)
+    if type(e) ~= "table" then return false end
+    if e.kind == "recap" then return true end
+    for _, medal in ipairs(F.medals()) do if medal.match(e) then return true end end
+    return false
+end
+
 local function state()
     if type(WoWStatusDB) ~= "table" then return nil end
     if type(WoWStatusDB.firsts) ~= "table" then WoWStatusDB.firsts = {} end

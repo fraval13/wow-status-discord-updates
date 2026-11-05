@@ -66,6 +66,28 @@ pull directions. Paginated sessions resume through the retained cache, with at
 most two active pulls, rate-limited packets and one bounded timeout retry. This
 is not a server mailbox: unavailable or evicted copies cannot be reconstructed.
 
+Catch-up is bounded per member, so one member can't flood the log:
+
+- A new hello from a member starts a pull at most once per 10 minutes (of game
+  uptime, so changing the PC clock doesn't matter) in one group. Hellos within
+  that time wait; one pull starts once the 10 minutes are up and any running
+  pull from that member has ended, from its newest entries. A repeated hello is
+  still quietly accepted, and a hello held back by a chat lockdown still counts
+  when it arrives.
+- In one login session, a client fetches at most 300 new entries from one
+  member, and keeps at most 100 new entries naming any one other member as the
+  sender. A member's own entries count only toward the 300. Fetching an entry
+  again (for a second shared group, a retry, or the author's own copy that
+  replaces a relay's claim) costs nothing and continues after the share is used.
+  Other members, or the next login, provide the rest. One pull reads at most
+  about 2,000 entries of a member's list, newest first; older ones would not
+  outlast this log's own cap for received entries.
+- Own entries and received entries are capped separately (2,000 each), so
+  received traffic never evicts your own history.
+
+To test: after a long absence in a busy group, log in with several members online
+and check the log fills from all of them while your own cards stay.
+
 The log prefix now uses J2, including armor metadata and requester rarity masks;
 armor popups use WSTATUS6. Updated friends are required. Original stable event
 IDs, group scope, timestamps and quiet duplicate handling are preserved. Relayed

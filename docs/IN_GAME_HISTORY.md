@@ -13,9 +13,11 @@ privately, respecting character collection/profile choices. They do not create
 friend notifications or enter peer sync. Previews and synthetic tests are excluded.
 This records supported addon activity, not every action, chat message or keypress.
 
-SavedVariables preserve the log on reload/logout. Up to 2,000 entries are kept,
-with a separate 1,000-entry ceiling for private activity so it cannot consume the
-entire shared-announcement cache. Rare/epic/legendary armor filters also apply to saved and synced loot; unknown
+SavedVariables preserve the log on reload/logout. Up to 2,000 of your own entries
+are kept, with a separate 1,000-entry ceiling for private activity so it cannot
+consume the entire shared-announcement cache. Received entries (live and caught
+up) have their own 2,000-entry cap, so however much arrives from others it never
+evicts your own history. Rare/epic/legendary armor filters also apply to saved and synced loot; unknown
 old loot is excluded unless its item metadata can be recovered. New installations
 import up to 500 recent own
 history events and the retained received-activity cache for local browsing. These

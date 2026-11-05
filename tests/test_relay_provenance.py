@@ -23,31 +23,53 @@ def group_of(lua):
     return lua.eval('function() for id in pairs(character().group_ids) do return id end end')()
 
 
+def send_entry(send, token, record):
+    """Send one record as the D parts of a catch-up transfer."""
+    encoded, d = pack(record).encode().hex(), digest(record[0])
+    chunks = [encoded[i:i + 140] for i in range(0, len(encoded), 140)]
+    for part, chunk in enumerate(chunks, 1):
+        send(f'D {token} {d} {part}/{len(chunks)} {chunk}')
+
+
 def relay(victim, sender, record, start=11, via=None, group=None):
     """Drive the normal H/Q/I/D catch-up exchange from a modified client."""
     group, client = group or group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    # Packets go through the frame's CHAT_MSG_ADDON handler; this records what
+    # J.receive returned, so a refused packet can't pass silently.
+    victim.execute("""
+        if not __receiveWrapped then
+            local receive=WoWStatusJournal.receive
+            function WoWStatusJournal.receive(...) __received=receive(...);return __received end
+            __receiveWrapped=true
+        end
+    """)
 
     def send(text):
+        victim.execute('__received=nil')
         victim.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', f'J2 {group} {text}', 'WHISPER', sender)
-    send(f'H hello-{start} {client}')
+        return victim.eval('__received')
+    # Only a query sent after this hello counts: with a stale token every later
+    # packet would be refused and the caller's checks would pass without testing.
+    before = victim.eval('#__sent')
+    clock(victim, start)
+    send(f'H {1793000000 + start}-1 {client}')
     token = None
     for step in range(30):
         clock(victim, start + step)
         victim.eval('WoWStatusJournal.tick')()
-        for i in range(1, victim.eval('#__sent') + 1):
+        for i in range(before + 1, victim.eval('#__sent') + 1):
             packet = victim.eval(f'__sent[{i}]')
             match = re.match(rf'J2 {group} Q (\S+) ', packet['text'])
             if packet['target'] == sender and match:
                 token = match.group(1)
         if token:
             break
-    encoded, d = pack(record).encode().hex(), digest(record[0])
-    send(f'I {token} 1 0 {d}')
+    assert token, f'{sender} was never queried'
+    d = digest(record[0])
+    assert send(f'I {token} 1 0 {d}'), 'inventory refused'
     if via:
         send(f'V {token} {d} {via}')
-    chunks = [encoded[i:i + 140] for i in range(0, len(encoded), 140)]
-    for part, chunk in enumerate(chunks, 1):
-        send(f'D {token} {d} {part}/{len(chunks)} {chunk}')
+    send_entry(send, token, record)
     return token, d
 
 
@@ -148,8 +170,8 @@ def test_live_packet_replaces_a_relay_only_entry():
     assert (entries[0]['id'], entries[0]['kind'], entries[0]['text']) == (guessed, 'level', 'Reached level 2!')
     assert entries[0]['origin'] == 'live' and entries[0]['via'] is None
     assert popup_text(victim) == 'Thora reached level 2!'
-    # A later relay can't swap it back.
-    preclaim(victim, guessed, sender='Mallory-TestRealm', start=60)
+    # A later relay can't swap it back (after the 10-minute hello rate, #4).
+    preclaim(victim, guessed, sender='Mallory-TestRealm', start=700)
     assert kinds_from(victim, 'Thora-TestRealm') == ['level']
 
 
