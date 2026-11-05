@@ -87,11 +87,12 @@ local function permitted(entry)
     if fields[entry.kind] and not owner.settings.fields[fields[entry.kind]] then return false end
     return true
 end
-local function relayable(entry,group)
+-- now: realm time, read once by callers that check the whole log.
+local function relayable(entry,group,now)
     if entry.kind=="loot" and not (entry.text or ""):match("^Equipped ") then return false end
     if entry.legacy or entry.client~=WoWStatusAdapter.client_id or not sharedKinds[entry.kind] or not entry.groups or not entry.groups[group] or not permitted(entry) then return false end
     local member=groupMember(group)
-    if not member or entry.at<groupSince(group) or entry.at<S.now()-AGE then return false end
+    if not member or entry.at<groupSince(group) or entry.at<(now or S.now())-AGE then return false end
     if entry.owner then
         local owner
         for _, c in pairs(db.characters) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
@@ -102,8 +103,8 @@ local function relayable(entry,group)
 end
 -- Never offer a text that updated peers would reject and report as invalid.
 -- Privacy pruning keeps using relayable, so this never drops a group scope.
-local function offerable(entry,group)
-    return relayable(entry,group) and J.validText(entry.kind,entry.text,entry.level)
+local function offerable(entry,group,now)
+    return relayable(entry,group,now) and J.validText(entry.kind,entry.text,entry.level)
 end
 local function rebuild()
     index,digests={},{}
@@ -304,10 +305,10 @@ function J.groupsChanged()
 end
 function J.privacyChanged()
     if not db then return end
-    local kept={}
+    local kept,now={},S.now()
     for _, e in ipairs(db.journal.entries) do
         if permitted(e) then
-            if e.owner then for g in pairs(e.groups) do if not relayable(e,g) then e.groups[g]=nil end end end
+            if e.owner then for g in pairs(e.groups) do if not relayable(e,g,now) then e.groups[g]=nil end end end
             table.insert(kept,e)
         end
     end
@@ -573,12 +574,13 @@ function J.receive(message,sender,distribution)
             if session.group==group and session.key==key then sessions[sessionKey]=nil end
         end
         local n=0;for _ in pairs(sessions) do n=n+1 end;if n>=32 then return false end
-        cutoff=math.max(cutoff,S.now()-AGE,groupSince(group))
+        local now=S.now()
+        cutoff=math.max(cutoff,now-AGE,groupSince(group))
         local eligible={}
         for _,e in ipairs(db.journal.entries) do
             local weight=({[3]=1,[4]=2,[5]=4})[e.quality]
             local wanted=e.kind~="loot" or (weight and math.floor(mask/weight)%2==1)
-            if wanted and e.at>=cutoff and offerable(e,group) then eligible[#eligible+1]=e end
+            if wanted and e.at>=cutoff and offerable(e,group,now) then eligible[#eligible+1]=e end
         end
         local offer,list={},{}
         for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digestFor(eligible[i]);offer[d]=eligible[i].id;list[#list+1]=d end
