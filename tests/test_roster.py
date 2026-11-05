@@ -184,3 +184,23 @@ def test_members_without_a_list_are_identified_from_their_roster_guid():
         row=bob()
         assert(row.class=="HUNTER" and row.race=="NightElf")
     ''')
+
+
+def test_friends_show_as_character_and_player_name():
+    mira, thora = pair()  # Mira's player chose the name "Frank".
+    pump(mira, thora)
+    thora.execute('''
+        assert(WoWStatusRoster.displayName("Mira-TestRealm") == "Mira (Frank)")
+        assert(WoWStatusRoster.displayName("Bob-TestRealm") == "Bob")
+        local group=next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-aaaa",kind="death",text="Died",at=time(),group_id=group})
+        WoWStatusJournal.show()
+        assert(WoWStatusActivityLog.rows[1].message.text:find("Mira (Frank) — ",1,true))
+        assert(WoWStatusStatusLine.latest():find("Mira (Frank)",1,true))
+        WoWStatusPopups.notice({sender="Mira-TestRealm",kind="first",text="First in the group to die!"})
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup.message:GetText():find("Mira (Frank) — ",1,true))
+        -- A player name that only repeats the first name adds nothing.
+        for _, p in pairs(WoWStatusDB.roster.players) do p.name = "mira" end
+        assert(WoWStatusRoster.displayName("Mira-TestRealm") == "Mira")
+    ''')

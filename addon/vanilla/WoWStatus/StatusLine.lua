@@ -37,7 +37,8 @@ end
 function L.latest()
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if type(e) == "table" and not e.owner and WoWStatusJournal.visible(e) and e.kind ~= "introduction" then
-            local name = tostring(e.sender or "?"):match("^[^-]+") or "?"
+            local name = WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender)
+                or tostring(e.sender or "?"):match("^[^-]+") or "?"
             local text = e.kind == "level" and S.number(e.level) and (name .. " hit " .. e.level)
                 or (name .. ": " .. tostring(e.text or ""))
             if #text > 48 then text = text:sub(1, 45) .. "..." end

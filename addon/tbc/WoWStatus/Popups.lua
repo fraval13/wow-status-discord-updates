@@ -891,6 +891,8 @@ local function show(item, now)
     end
     local alias = not item.preview and prefs.trusted[item.key]
     local name = item.sender:match("^[^-]+") or item.sender
+    -- Medal notices name a real friend; preview names never match a friend's list.
+    if WoWStatusRoster and WoWStatusRoster.displayName then name = WoWStatusRoster.displayName(item.sender) end
     if type(alias) == "string" and alias ~= "" then name = alias .. "’s " .. name end
     name = name:gsub("|", "||")
     local texture, r, g, b, heading = WoWStatusPresentation.theme(item)

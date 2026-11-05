@@ -32,6 +32,27 @@ local function state()
     return db.roster
 end
 
+-- The player name a friend chose (Options > Groups > "Your name"), from the
+-- character lists they announced; nil when unknown or for this account.
+function R.playerOf(sender)
+    local k = db and key(sender)
+    if not k then return nil end
+    for _, player in pairs(state().players) do
+        if player.characters[k] and S.string(player.name) then return player.name end
+    end
+    return nil
+end
+-- "Unshaved Brittlebeard (Frank)": the character as the game names it, and the
+-- player behind it when they chose a name that adds something.
+function R.displayName(sender)
+    local short = tostring(sender or "?"):match("^[^-]+") or tostring(sender or "?")
+    local player = R.playerOf(sender)
+    if not player then return short end
+    local first = S.lowerASCII(short:match("^(" .. S.NONSPACE .. "+)") or short)
+    if S.lowerASCII(player) == S.lowerASCII(short) or S.lowerASCII(player) == first then return short end
+    return short .. " (" .. player .. ")"
+end
+
 -- Race, sex and class of a member whose list never arrived (older versions), from
 -- the GUID their channel roster entry carries: the game's own lookup, the same one
 -- its unit menus use. Saved per name, so it still shows after they log off. The

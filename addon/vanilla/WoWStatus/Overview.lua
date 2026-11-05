@@ -27,7 +27,8 @@ function O.summary(entries, since)
             local key = name(e.sender)
             local p = players[key]
             if not p then
-                p = {player=key, kinds={}, at=e.at}
+                local shown = WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender) or key
+                p = {player=shown, kinds={}, at=e.at}
                 players[key] = p; table.insert(order, p)
             end
             local kind = p.kinds[e.kind]
