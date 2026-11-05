@@ -273,3 +273,35 @@ def test_a_new_player_name_reaches_online_members_at_once():
     pump(mira, thora, start=300)
     titles = [g.title for g in thora.eval('WoWStatusRoster.groups()').values()]
     assert 'Frankie (1 character)' in titles and 'Frank (1 character)' not in titles
+
+
+def test_sync_button_refreshes_lists_both_ways_once_a_minute():
+    mira, thora = pair()
+    pump(mira, thora)
+    # Mira's name changed without a resend (an older version did that).
+    mira.execute('WoWStatusDB.player_name = "Frankie"')
+    thora.execute('__mono = 400')
+    assert thora.eval('WoWStatusRoster.syncNow()')
+    requests = pump(thora, mira, start=401)
+    assert any(line.startswith('R ') for line in requests)
+    pump(mira, thora, start=500)
+    titles = [g.title for g in thora.eval('WoWStatusRoster.groups()').values()]
+    assert 'Frankie (1 character)' in titles
+    # The log catch-up started too: a hello went out.
+    for step in range(1, 10):
+        clock(thora, 600 + step)
+        thora.eval('WoWStatusJournal.tick')()
+    assert any(p['prefix'] == 'WoWStatusLog' and ' H ' in p['text'] for p in thora.eval('__sent').values())
+    thora.execute('''
+        SlashCmdList.WOWSTATUS("characters")
+        local button = WoWStatusCharactersPage.sync
+        __mono = 430
+        assert(not WoWStatusRoster.syncNow())
+        WoWStatusRoster.tick()
+        assert(button.ready == false and button.text:find("s)", 1, true))
+        __mono = 461
+        WoWStatusRoster.tick()
+        assert(button.ready == true and button.text == "Sync now")
+        button.OnClick(button)
+        assert(button.ready == false)
+    ''')

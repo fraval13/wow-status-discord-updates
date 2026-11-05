@@ -59,7 +59,7 @@ Online group members exchange small inventories, request missing entries and
 reassemble bounded addon-whisper fragments. Peers can forward retained copies,
 so the original author need not be online. At login, the arriving client greets every available group member and both sides
 request missing entries automatically. An already-online peer also pulls from
-the arriving client. There is no manual button or periodic polling. Known IDs are skipped. Recovery
+the arriving client. There is no periodic polling; the **Sync now** button on the Characters page repeats the login exchange on request, at most once a minute. Known IDs are skipped. Recovery
 is quiet: it adds log cards and never replays old popup queues. A later live copy
 of a recovered ID also does not replay its toast.
 

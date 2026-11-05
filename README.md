@@ -104,8 +104,10 @@ achievements appear. Detailed personal equipment and profession activity stays p
 
 At login, the addon greets available group members and both sides automatically
 exchange missing announcement IDs. An already-online friend also recovers saved
-entries from the arriving player. There is no manual catch-up button or periodic
-polling after the login exchange completes. Recovery adds quiet log cards rather
+entries from the arriving player. There is no periodic polling after the login
+exchange completes. **Sync now** on the Characters page repeats it on request (once a
+minute): it resends your character list, asks for everyone else's and catches up the
+log, still limited to one catch-up per member every ten minutes. Recovery adds quiet log cards rather
 than replaying old popups, and duplicate IDs do not create duplicate entries.
 
 Someone with a saved copy must be online. Sync covers up to seven days after your

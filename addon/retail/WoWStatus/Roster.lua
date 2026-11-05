@@ -16,6 +16,9 @@ local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=tru
 local db, current, page
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
 local lastXp, xpSent = 0, nil
+-- The Sync button: usable once a minute; list requests answered once a minute per member.
+R.SYNC_COOLDOWN = 60
+local syncedAt, answered = nil, {}
 local XP_INTERVAL = 300
 
 local function key(name) return WoWStatusPopups.senderKey(name) end
@@ -190,6 +193,37 @@ function R.changed()
     R.scan()
 end
 
+-- Seconds until the Sync button can be used again (0 when ready).
+function R.syncWait()
+    local now = GetTime and GetTime() or time()
+    return syncedAt and math.max(0, math.ceil(R.SYNC_COOLDOWN - (now - syncedAt))) or 0
+end
+local function updateSyncButton()
+    if not page or not page.sync then return end
+    local wait = R.syncWait()
+    local button = page.sync
+    if button.SetEnabled then button:SetEnabled(wait == 0)
+    elseif wait == 0 and button.Enable then button:Enable()
+    elseif button.Disable then button:Disable() end
+    button.ready = wait == 0
+    page.sync:SetText(wait == 0 and "Sync now" or ("Sync (" .. wait .. " s)"))
+end
+-- Everyone online in your groups: your list again, a request for theirs, and a
+-- log catch-up as at login. Once a minute.
+function R.syncNow()
+    if not db or not current or R.syncWait() > 0 then return false end
+    syncedAt = GetTime and GetTime() or time()
+    R.changed()
+    for group in pairs(WoWStatusGroups.selected(current)) do
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+            table.insert(outgoing, {target=peer, text="R " .. group .. " " .. state().id})
+        end
+    end
+    if WoWStatusJournal.syncNow then WoWStatusJournal.syncNow() end
+    updateSyncButton()
+    return true
+end
+
 function R.setSharing(enabled)
     state().share = enabled == true
     R.changed()
@@ -202,6 +236,7 @@ end
 
 function R.tick()
     if not db or not current then return end
+    if page and page.sync and page:IsShown() then updateSyncButton() end
     local now = GetTime and GetTime() or time()
     if now - lastScan >= 30 then lastScan = now; R.scan() end
     -- XP moves between level-ups: tell members at most every five minutes.
@@ -250,6 +285,15 @@ function R.receive(message, sender, distribution)
     if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false end
     local players = state().players
     if op == "X" and #words == 3 then players[pid] = nil; R.render(); return true end
+    -- "R": a member asks for this account's list again (their Sync button).
+    if op == "R" and #words == 3 then
+        local k, now = key(sender), time()
+        if not k or (answered[k] and now - answered[k] < R.SYNC_COOLDOWN) then return false end
+        answered[k] = now
+        if sentTo[group] then sentTo[group][k] = nil end
+        enqueue(group, sender)
+        return true
+    end
     if op == "V" and #words == 4 then
         local version, player = words[4], players[pid]
         if not player or #version > 16 or not version:match("^%d+%.%d+%.%d+$") then return false end
@@ -570,6 +614,17 @@ local function build(parent)
     local hideLabel = page.hide:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     hideLabel:SetPoint("TOPLEFT", 38, -8); hideLabel:SetText("Hide this character from the list")
     page.hide:SetScript("OnClick", function(self) R.setHidden(current, self:GetChecked() and true or false) end)
+    page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+    page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
+    page.sync:SetScript("OnClick", function() R.syncNow() end)
+    page.sync:SetScript("OnEnter", function(self)
+        if GameTooltip then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText("Sync with everyone online")
+            GameTooltip:AddLine("Sends your character list, asks for theirs and catches up the activity log. Once a minute.", 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    end)
+    page.sync:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     return page
 end
 
@@ -577,6 +632,7 @@ WoWStatusMainWindow.register("characters", "Characters", build, function()
     if not page then return end
     page.share:SetChecked(state().share)
     page.hide:SetChecked(current and current.hide_from_list == true)
+    updateSyncButton()
     R.render()
 end)
 

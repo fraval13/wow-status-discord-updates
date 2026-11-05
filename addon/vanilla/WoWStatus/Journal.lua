@@ -588,6 +588,14 @@ pumpJobs=function()
 end
 -- Discovery is bounded to login/group-setup time. A login hello also makes an
 -- already-online peer pull from the arriving client's saved copy, in reverse.
+-- The Sync button: greet everyone online again, as at login, with a new nonce.
+-- Members still start a pull at most once per HELLO_INTERVAL (#4).
+function J.syncNow()
+    if not db then return false end
+    contacted,loginUntil,loginNonce={},time()+60,token()
+    J.sync()
+    return true
+end
 function J.sync()
     if not db then return end
     if time()<=loginUntil then
