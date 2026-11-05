@@ -103,3 +103,11 @@ def test_main_warns_but_succeeds_on_a_blocked_tip(tmp_path, capsys):
     assert converge.main(['--tip', TIP, '--deployed', OLD, '--runs', str(runs)]) == 0
     out = capsys.readouterr().out
     assert '::warning' in out and 'blocked' in out
+
+
+def test_paginated_gh_output_with_several_documents_is_read_in_order():
+    first = {'total_count': 3, 'workflow_runs': [{'id': 3}, {'id': 2}]}
+    second = {'total_count': 3, 'workflow_runs': [{'id': 1}]}
+    assert converge.load_runs(json.dumps(first) + json.dumps(second) + '\n') == [{'id': 3}, {'id': 2}, {'id': 1}]
+    assert converge.load_runs(json.dumps([{'id': 9}])) == [{'id': 9}]
+    assert converge.load_runs('') == []
