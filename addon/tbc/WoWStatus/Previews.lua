@@ -50,7 +50,7 @@ function P.show(host)
             if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
         end
         local options = 150 + #visible * 42
-        local footer = options + 330
+        local footer = options + 380
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
@@ -81,11 +81,21 @@ function P.show(host)
             panel.line[key]=check(entry[2],-options-84-(i-1)*42,function() return WoWStatusStatusLine.settings()[key] end,
                 function(value) WoWStatusStatusLine.set(key,value) end)
         end
+        -- Window theme and size (#60). Account-wide, applied at once.
+        panel.theme=text(panel,WoWStatusTheme.label(),24,-options-262,300)
+        local function refreshTheme() panel.theme:SetText(WoWStatusTheme.label()) end
+        panel.themeNext=button(panel,"Next theme",330,-options-256,120,function() WoWStatusTheme.next();refreshTheme() end)
+        panel.smaller=button(panel,"Smaller",460,-options-256,50,function() WoWStatusTheme.resize(-WoWStatusTheme.STEP);refreshTheme() end)
+        panel.larger=button(panel,"Larger",514,-options-256,50,function() WoWStatusTheme.resize(WoWStatusTheme.STEP);refreshTheme() end)
+        panel.themePopups=check("Use the theme and size for popups too",-options-298,function() return WoWStatusTheme.settings().popups end,
+            WoWStatusTheme.setPopups)
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
     for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
+    panel.themePopups:SetChecked(panel.themePopups.get())
+    panel.theme:SetText(WoWStatusTheme.label())
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)
