@@ -17,6 +17,7 @@ function WoWStatusPresentation.theme(item)
         unlock={"INV_Misc_Book_07",.6,.4,1,"CLASS ABILITY UNLOCKED!"},
         pvp={"Achievement_PVP_A_01",1,.35,.2,"PVP PROMOTION!"},
         first={"INV_Misc_Coin_01",1,.85,.3,"A NEW FIRST!"},
+        recap={"INV_Misc_Book_09",.8,.7,.5,"SESSION RECAP"},
     }
     themes.questprogress={"INV_Misc_Book_09",1,.8,.2,"QUEST COMPLETED"}
     themes.equipment={"INV_Chest_Plate04",.3,.7,1,"EQUIPMENT"}

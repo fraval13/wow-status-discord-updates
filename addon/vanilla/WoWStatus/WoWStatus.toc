@@ -25,6 +25,7 @@ Journal.lua
 WhatsNewData.lua
 WhatsNew.lua
 Firsts.lua
+Recaps.lua
 Minimap.lua
 StatusLine.lua
 Previews.lua
