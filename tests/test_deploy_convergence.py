@@ -103,3 +103,19 @@ def test_main_warns_but_succeeds_on_a_blocked_tip(tmp_path, capsys):
     assert converge.main(['--tip', TIP, '--deployed', OLD, '--runs', str(runs)]) == 0
     out = capsys.readouterr().out
     assert '::warning' in out and 'blocked' in out
+
+
+def test_concatenated_pages_report_the_paginate_cause(tmp_path, capsys):
+    """`gh api --paginate` emits one object per page; that is not valid JSON."""
+    runs = tmp_path / 'runs.json'
+    page = json.dumps({'workflow_runs': [run(TIP)]})
+    runs.write_text(page + page, encoding='utf-8')
+    assert converge.main(['--tip', TIP, '--deployed', OLD, '--runs', str(runs)]) == 2
+    assert '--paginate' in capsys.readouterr().err
+
+
+def test_a_payload_that_is_not_a_list_of_runs_is_refused(tmp_path, capsys):
+    runs = tmp_path / 'runs.json'
+    runs.write_text(json.dumps({'workflow_runs': {'oops': True}}), encoding='utf-8')
+    assert converge.main(['--tip', TIP, '--deployed', OLD, '--runs', str(runs)]) == 2
+    assert 'expected a list' in capsys.readouterr().err

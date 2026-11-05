@@ -75,8 +75,21 @@ def main(argv=None):
                         help='JSON file of the workflow runs for main, newest first.')
     args = parser.parse_args(argv)
     with open(args.runs, encoding='utf-8') as handle:
-        payload = json.load(handle)
+        text = handle.read()
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError as error:
+        # `gh api --paginate` writes one JSON object per page, which together are not
+        # valid JSON. Say so, because the raw decoder error does not point at the cause.
+        print(f'error: {args.runs} is not one JSON document ({error}). Fetch a single '
+              'page: `gh api ".../runs?branch=main&per_page=30"` without --paginate.',
+              file=sys.stderr)
+        return 2
     runs = payload.get('workflow_runs', payload) if isinstance(payload, dict) else payload
+    if not isinstance(runs, list):
+        print(f'error: expected a list of runs in {args.runs}, got {type(runs).__name__}',
+              file=sys.stderr)
+        return 2
     try:
         verdict, reason = decide(args.tip, args.deployed, runs)
     except ValueError as error:

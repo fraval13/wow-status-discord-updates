@@ -51,9 +51,10 @@ jobs:
             | python3 -c 'import json,sys; print(json.load(sys.stdin).get("addon_revision",""))' \
             || echo '')"
           echo "deployed=$deployed" >> "$GITHUB_OUTPUT"
-          gh api --paginate \
+          gh api \
             "repos/${GITHUB_REPOSITORY}/actions/workflows/checks.yml/runs?branch=main&per_page=30" \
             > runs.json
+          python3 -c 'import json,sys; json.load(open("runs.json"))'
       - name: Decide whether production needs another run
         id: decide
         run: |
