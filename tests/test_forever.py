@@ -24,7 +24,7 @@ def forever_runtime(name='Thora', extra=''):
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
     for name in ('Safe.lua', 'Features.lua', 'CaseFold.lua', 'Forever.lua', 'Loot.lua', 'Progress.lua', 'History.lua', 'HistoryUI.lua',
-                 'Groups.lua', 'Share.lua', 'Flavour.lua', 'Presentation.lua', 'Popups.lua', 'Journal.lua', 'WhatsNewData.lua', 'WhatsNew.lua', 'Minimap.lua', 'Previews.lua', 'Screenshots.lua', 'Milestones.lua', 'WoWStatus.lua'):
+                 'Groups.lua', 'Share.lua', 'Flavour.lua', 'MainWindow.lua', 'Presentation.lua', 'Popups.lua', 'Journal.lua', 'WhatsNewData.lua', 'WhatsNew.lua', 'Minimap.lua', 'Previews.lua', 'Screenshots.lua', 'Milestones.lua', 'WoWStatus.lua'):
         runtime.execute((root / name).read_text(encoding='utf-8'))
     return runtime
 

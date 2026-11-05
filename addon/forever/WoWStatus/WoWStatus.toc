@@ -17,6 +17,7 @@ HistoryUI.lua
 Groups.lua
 Share.lua
 Flavour.lua
+MainWindow.lua
 Presentation.lua
 Popups.lua
 Journal.lua
