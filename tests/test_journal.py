@@ -2,7 +2,7 @@
 from test_addon import STUBS, make_lua
 
 
-def actor(name, group='navsquad'):
+def actor(name, group='dawnwatch'):
     stubs = STUBS.replace('return "Thora" end', f'return "{name}" end').replace('return "Player-123-0001" end', f'return "Player-123-{name}" end')
     stubs += '''
         __now=1793000000;__mono=0
@@ -116,7 +116,7 @@ def test_join_boundary_and_unrelated_group_prevent_history_leaks():
     late = actor('Mira')
     clock(late, 20)
     late.eval('WoWStatusGroups.update')('', '')
-    late.eval('WoWStatusGroups.update')('navsquad', '')
+    late.eval('WoWStatusGroups.update')('dawnwatch', '')
     mesh({'Thora': own, 'Mira': late}, start=21, duration=25)
     assert late.eval('#WoWStatusJournal.entries()') == 0
     outsider = actor('Eldrin', 'unrelated')
@@ -230,8 +230,8 @@ def test_a_relay_cannot_restore_own_revoked_data():
 
 def test_same_id_live_in_two_groups_preserves_scope_without_duplicate_toasts():
     own, friend = actor('Thora'), actor('Mira')
-    own.eval('WoWStatusGroups.update')('navsquad\nother-group', '')
-    friend.eval('WoWStatusGroups.update')('navsquad\nother-group', '')
+    own.eval('WoWStatusGroups.update')('dawnwatch\nother-group', '')
+    friend.eval('WoWStatusGroups.update')('dawnwatch\nother-group', '')
     clock(own, 10)
     clock(friend, 10)
     own.eval('fire')('PLAYER_LEVEL_UP', 2)
@@ -319,6 +319,6 @@ def test_legacy_account_membership_migrates_earliest_character_boundary():
         WoWStatusGroups.update("","")
         assert(WoWStatusGroups.historySince(group)==nil)
         __now=__now+100
-        WoWStatusGroups.update("navsquad","")
+        WoWStatusGroups.update("dawnwatch","")
         assert(WoWStatusGroups.historySince(group)==time())
     ''')

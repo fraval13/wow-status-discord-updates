@@ -11,8 +11,10 @@ be checked against Git and the environment rather than assumed permanently true.
   and enter the same group ID. Do not require a desktop client or server for it.
 - Discord/uploader/backend code is retained but hidden and disabled in the addon
   by `addon/shared/Features.lua` (`discord = false`). Keep it hidden unless the
-  owner asks to restore it. The owner's optional groups are `navsquad` and
-  `ronkalot`; do not remove their existing service routes.
+  owner asks to restore it. The owner's two optional production groups are
+  configured only on the server (`/etc/wow-character-status/groups.json`); do not
+  remove their service routes. A group name is a shared secret (issue #1): never
+  write a real group name or route key into the repository, issues, PRs or logs.
 - Groups are account-wide; character preferences remain per character. Joining
   a group enables its ordinary sending/receiving without redundant opt-ins.
 - Notifications queue, show one at a time, and can be dismissed by clicking.
@@ -60,7 +62,8 @@ be checked against Git and the environment rather than assumed permanently true.
   `release.json` (`--manifest`) and checks each ZIP's entries against its TOC.
   `scripts/deploy_gate.py` lets a run deploy only while its commit is the tip of
   `main`, so an older run never deploys over a newer one.
-- `deploy/SERVER.md`: current dedicated server deployment architecture.
+- `deploy/SERVER.md`: current dedicated server deployment architecture, the private
+  group configuration, and how to render the Caddyfile and rotate a group name.
   `deploy/README.md` also contains historical single-instance setup instructions.
 
 ## Current release and open handoff (1 November 2026)
@@ -206,8 +209,10 @@ python scripts/verify_homepage.py --url https://wow.frankvalde.com \
   --manifest dist/homepage/downloads/release.json
 ```
 
-The publisher validates Caddy, atomically switches the static-site symlink and
-reloads Caddy, retaining previous releases for rollback. Website-only publishing
+The publisher renders the Caddyfile's group routes from the server's private
+`groups.json` (`--dry-run` shows the Caddy diff and changes nothing), validates
+Caddy, atomically switches the static-site symlink and reloads Caddy, retaining
+previous releases for rollback. Website-only publishing
 does not require restarting companion services. Verify public assets/downloads
 and existing group health routes after deployment. Do not touch unrelated
 `wow-forever-news` or `wow-forever-qa` services.
@@ -215,10 +220,9 @@ and existing group health routes after deployment. Do not touch unrelated
 - Website root: `/srv/wow-status-homepage/current`.
 - Python app releases: `/opt/wow-character-status/releases/`.
 - Private configuration: `/etc/wow-character-status/` (do not expose).
-- `ronkalot`: `wow-character-status@ronkalot`, localhost 18081,
-  `/groups/19e32befc180a1cfdea5c3/`.
-- `navsquad`: `wow-character-status@navsquad`, localhost 18082,
-  `/groups/466f79683c7465bc3a5ba0/`.
+- Group services: `wow-character-status@<instance>`, one localhost port each
+  (18081 and 18082), routed from `/groups/<route key>/`. Instances, names and keys
+  live only in the private `groups.json`; see `deploy/SERVER.md`.
 - Unknown `/groups/` URLs must remain 404. Keep persistent per-group databases and
   archives separate. Do not restart bots or send messages for a static-site task.
 

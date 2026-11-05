@@ -258,9 +258,9 @@ def test_malformed_discord_since_is_rejected(tmp_path, value):
 def _rich_db():
     db = parse(FIXTURE)
     char = next(iter(db['characters'].values()))
-    key = group_key('navsquad')
+    key = group_key('dawnwatch')
     db['player_name'] = 'Aron'
-    char.update(discord_since=1792999999, group_ids={key: {'label': 'navsquad', 'joined_at': 1792999999}},
+    char.update(discord_since=1792999999, group_ids={key: {'label': 'dawnwatch', 'joined_at': 1792999999}},
                 history={'events': {1: {'id': 'level-10', 'kind': 'level', 'at': 1793000000,
                                         'data': {'level': 10}, 'group_ids': {key: True}}},
                          'tracking': {'points': {1: {'kind': 'level', 'level': 10, 'at': 1793000000,
@@ -272,7 +272,7 @@ def _rich_db():
 
 def test_rich_db_exports_group_routing(monkeypatch):
     [batch] = _exports_of(monkeypatch, _rich_db())
-    assert batch['_event_targets'] == {'level-10': [group_key('navsquad')]}
+    assert batch['_event_targets'] == {'level-10': [group_key('dawnwatch')]}
     assert batch['_discord_since'] == 1792999999 and batch['tracking']['points']
 
 

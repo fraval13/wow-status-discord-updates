@@ -12,11 +12,13 @@ from wow_status.output import daily_status_preview, upload_summary
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--send', action='store_true', help='Post one preview character status to Discord')
-    parser.add_argument('--group', default='navsquad')
+    parser.add_argument('--group', help='With --send: the group instance in the private server config.json')
     parser.add_argument('--class-name', choices=['Warlock', 'Warrior', 'Paladin'], default='Warlock')
     parser.add_argument('--daily-status', action='store_true', help='Use the fictional daily group standings example')
     parser.add_argument('--config', default='/etc/wow-character-status/config.json')
     args = parser.parse_args()
+    if args.send and not args.group:
+        parser.error('--send needs --group, the instance label from the private server configuration')
     item = json.loads((Path(__file__).resolve().parents[1] / 'tests/fixtures/status_preview.json').read_text(encoding='utf-8'))
     item['identity']['name'] = 'Preview' + args.class_name.lower()
     item['snapshot'].update({'class': args.class_name, 'class_id': args.class_name.upper()})

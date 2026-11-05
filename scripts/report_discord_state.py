@@ -2,17 +2,17 @@
 
 Ingestion stays healthy while Discord is down, so the deploy itself passes; this
 step keeps a revoked token or a removed bot visible on the workflow run instead.
-Group routes are read from the Caddy config that serves them.
+Group route keys are private (issue #1), so they come from the optional "route" of
+each instance in the WOW_STATUS_DISCORD_CONFIG secret; warnings name the instance.
 """
 import argparse
-import ast
 import json
+import os
 import re
 import time
 import urllib.request
-from pathlib import Path
 
-DEPLOY = Path(__file__).resolve().parent.parent / 'deploy'
+ROUTE = re.compile(r'[0-9a-f]{22}')
 SETTLED = ('ready', 'disabled')
 # States that can still change within this step's polling window.
 TRANSIENT = ('starting', 'reconnecting', 'health check failed')
@@ -20,25 +20,24 @@ MOVED = 'serving another revision'
 MAX_BYTES = 64 * 1024
 
 
-def group_routes(caddyfile):
-    """(path prefix, local port) for every group route in the Caddy config; the port
-    is None when a group's block has no local upstream."""
-    routes = []
-    for block in re.split(r'(?=handle_path )', caddyfile):
-        prefix = re.match(r'handle_path (/groups/[0-9a-f]+)/\*', block)
-        if prefix:
-            port = re.search(r'reverse_proxy 127\.0\.0\.1:(\d+)', block)
-            routes.append((prefix.group(1), port.group(1) if port else None))
-    return routes
-
-
-def group_names(receiver):
-    """Port -> group name, from the receiver's GROUPS table."""
-    for node in ast.parse(receiver).body:
-        if isinstance(node, ast.Assign) and any(getattr(t, 'id', None) == 'GROUPS'
-                                                for t in node.targets):
-            return {str(port): name for name, port in ast.literal_eval(node.value).items()}
-    return {}
+def configured_routes(raw):
+    """(path prefix, instance) for each instance with a route in the Discord secret, and
+    how many instances have none. Never echoes the secret: it is malformed or not."""
+    try:
+        config = json.loads(raw) if raw and raw.strip() else {}
+    except ValueError:
+        config = None
+    if not isinstance(config, dict) or not all(isinstance(v, dict) for v in config.values()):
+        raise ValueError('WOW_STATUS_DISCORD_CONFIG is not a JSON object of instances')
+    routes, missing = [], 0
+    for instance, values in sorted(config.items()):
+        route = values.get('route')
+        if isinstance(route, str) and ROUTE.fullmatch(route):
+            print('::add-mask::' + route)  # a route key alone admits someone to the group
+            routes.append(('/groups/' + route, clean(instance)))
+        else:
+            missing += 1
+    return routes, missing
 
 
 def read(url):
@@ -103,25 +102,28 @@ def main():
     parser.add_argument('--url', required=True)
     parser.add_argument('--revision', required=True)
     args = parser.parse_args()
-    routes = group_routes((DEPLOY / 'Caddyfile.production').read_text(encoding='utf-8'))
-    names = group_names((DEPLOY / 'install_release.py').read_text(encoding='utf-8'))
-    unreadable = [prefix for prefix, port in routes if port is None]
-    routes = [(prefix, port) for prefix, port in routes if port is not None]
-    warnings = [f'{prefix}: no local upstream found in deploy/Caddyfile.production, not checked'
-                for prefix in unreadable]
-    notices = []
+    warnings, notices = [], []
+    try:
+        routes, missing = configured_routes(os.environ.get('WOW_STATUS_DISCORD_CONFIG', ''))
+    except ValueError as exc:
+        routes, missing = [], 0
+        warnings.append(str(exc) + ', so no bot was checked')
+    if missing:
+        notices.append(f'{missing} instance(s) in WOW_STATUS_DISCORD_CONFIG have no "route", '
+                       'so their bots were not checked (deploy/SERVER.md)')
     if routes:
+        names = {instance: instance for _, instance in routes}
         warnings += report(args.url, routes, args.revision, names, notices=notices)
-    elif not unreadable:
-        warnings.append('no group routes found in deploy/Caddyfile.production, '
-                        'so no bot was checked')
+    elif not warnings and not missing:
+        notices.append('no group routes in WOW_STATUS_DISCORD_CONFIG, so no bot was checked '
+                       '(deploy/SERVER.md)')
     for warning in warnings:
         print('::warning title=Discord bot not connected::' + command_text(
             f'{warning}. Ingestion is running; see "Discord bot not connected" in '
             'deploy/SERVER.md.'))
     for notice in notices:
         print('::notice title=Discord bot not checked::' + command_text(notice) + '.')
-    if not warnings:
+    if routes and not warnings:
         print(f'Discord bots settled for {len(routes)} group(s).')
 
 

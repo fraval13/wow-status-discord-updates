@@ -102,12 +102,9 @@ jobs:
         run: python scripts/build_homepage.py --addon-ref HEAD
       - name: Prepare private deployment archive
         env:
-          RONKALOT_DISCORD_BOT_TOKEN: ${{ secrets.RONKALOT_DISCORD_BOT_TOKEN }}
-          RONKALOT_DISCORD_GUILD_ID: ${{ vars.RONKALOT_DISCORD_GUILD_ID }}
-          RONKALOT_DISCORD_CHANNEL_ID: ${{ vars.RONKALOT_DISCORD_CHANNEL_ID }}
-          NAVSQUAD_DISCORD_BOT_TOKEN: ${{ secrets.NAVSQUAD_DISCORD_BOT_TOKEN }}
-          NAVSQUAD_DISCORD_GUILD_ID: ${{ vars.NAVSQUAD_DISCORD_GUILD_ID }}
-          NAVSQUAD_DISCORD_CHANNEL_ID: ${{ vars.NAVSQUAD_DISCORD_CHANNEL_ID }}
+          # One JSON secret keyed by the server's private group instances, so no group
+          # name appears here. Unset keeps the server's Discord settings (deploy/SERVER.md).
+          WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
         run: python deploy/make_release.py "$RUNNER_TEMP/wow-character-release.tar"
       - name: Deploy using restricted project key
         env:
@@ -141,4 +138,6 @@ jobs:
         continue-on-error: true
         env:
           RELEASE_REVISION: ${{ github.sha }}
+          # Route keys are private; each instance's optional "route" says which to check.
+          WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
         run: python scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"

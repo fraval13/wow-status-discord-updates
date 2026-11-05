@@ -84,9 +84,9 @@ def left(lua):
 
 def test_removing_a_group_after_reload_leaves_its_channel():
     lua = make_lua(CHANNEL_STUBS)
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     assert joined(lua, channel)
     reload_popups(lua)
     assert joined(lua, channel)   # still a member, so init leaves nothing
@@ -96,9 +96,9 @@ def test_removing_a_group_after_reload_leaves_its_channel():
 
 def test_removing_a_group_without_reload_still_leaves_its_channel():
     lua = make_lua(CHANNEL_STUBS)
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     lua.eval('WoWStatusGroups.update')('', '')
     assert not joined(lua, channel)
     assert lua.eval('savedChannelCount()') == 0
@@ -108,12 +108,12 @@ def test_only_the_removed_group_channel_is_left_and_unrelated_channels_stay():
     lua = make_lua(CHANNEL_STUBS)
     for name in UNRELATED:
         lua.eval('JoinTemporaryChannel')(name)
-    lua.eval('WoWStatusGroups.update')('navsquad-test\nronkalot-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test\nemberhold-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    removed, kept = group_channel(lua, 'navsquad-test'), group_channel(lua, 'ronkalot-test')
+    removed, kept = group_channel(lua, 'dawnwatch-test'), group_channel(lua, 'emberhold-test')
     assert joined(lua, removed) and joined(lua, kept)
     reload_popups(lua)
-    lua.eval('WoWStatusGroups.update')('ronkalot-test', '')
+    lua.eval('WoWStatusGroups.update')('emberhold-test', '')
     assert not joined(lua, removed)
     assert joined(lua, kept)
     for name in UNRELATED:
@@ -125,22 +125,22 @@ def test_leaving_all_groups_never_leaves_unrelated_channels():
     lua = make_lua(CHANNEL_STUBS)
     for name in UNRELATED:
         lua.eval('JoinTemporaryChannel')(name)
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
     reload_popups(lua)
     lua.eval('WoWStatusGroups.update')('', '')
     lua.eval('WoWStatusPopups.tick')()
     for name in UNRELATED:
         assert joined(lua, name), name
-    assert left(lua) == [group_channel(lua, 'navsquad-test').lower()]
+    assert left(lua) == [group_channel(lua, 'dawnwatch-test').lower()]
 
 
 def test_a_group_channel_the_player_joined_first_is_not_left():
     # The addon only leaves what it joined; a channel already joined by hand stays theirs.
     lua = make_lua(CHANNEL_STUBS)
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     lua.eval('JoinTemporaryChannel')(channel)
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
     reload_popups(lua)
     lua.eval('WoWStatusGroups.update')('', '')
@@ -172,21 +172,21 @@ def relog(lua):
 
 def test_entries_from_an_earlier_session_never_leave_a_channel_joined_by_hand():
     lua = make_lua(CHANNEL_STUBS)
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     lua.execute(f'WoWStatusDB.popups.joined_channels = {{["{channel.lower()}"] = true}}')
     relog(lua)
     assert lua.eval('savedChannelCount()') == 0
     lua.eval('JoinTemporaryChannel')(channel)
-    lua.eval('WoWStatusGroups.update')('ronkalot-test', '')
+    lua.eval('WoWStatusGroups.update')('emberhold-test', '')
     assert joined(lua, channel)
     assert left(lua) == []
 
 
 def test_relog_rejoins_and_records_current_groups_so_removal_still_leaves():
     lua = make_lua(CHANNEL_STUBS)
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     relog(lua)
     assert joined(lua, channel)   # the addon joined it again at login
     reload_popups(lua)
@@ -197,9 +197,9 @@ def test_relog_rejoins_and_records_current_groups_so_removal_still_leaves():
 def test_a_join_still_pending_when_its_group_is_removed_is_still_left():
     lua = make_lua(CHANNEL_STUBS)
     lua.execute('__pending = {}; JoinTemporaryChannel = function(name) table.insert(__pending, name) end')
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     assert not joined(lua, channel)   # the server has not confirmed the join yet
     lua.eval('WoWStatusGroups.update')('', '')
     assert left(lua) == [channel.lower()]
@@ -208,9 +208,9 @@ def test_a_join_still_pending_when_its_group_is_removed_is_still_left():
 
 def test_without_get_channel_name_saved_channels_are_kept_and_left():
     lua = make_lua(CHANNEL_STUBS)
-    lua.eval('WoWStatusGroups.update')('navsquad-test', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch-test', '')
     lua.eval('WoWStatusPopups.tick')()
-    channel = group_channel(lua, 'navsquad-test')
+    channel = group_channel(lua, 'dawnwatch-test')
     lua.execute('GetChannelName = nil')
     reload_popups(lua)
     lua.eval('WoWStatusGroups.update')('', '')

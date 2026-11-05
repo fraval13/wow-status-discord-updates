@@ -21,3 +21,6 @@ private-export/
 *-characters/
 .DS_Store
 WTF/
+# Private deployment configuration and rendered gateway (deploy/SERVER.md)
+groups.json
+/deploy/Caddyfile.production

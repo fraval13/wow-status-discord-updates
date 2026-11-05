@@ -169,13 +169,13 @@ def test_automatic_dungeon_roundtrip_and_legacy_manual_packets_are_rejected():
     sender = make_lua(STUBS + '''
         function GetInstanceInfo() return "The Deadmines","party",1,"Normal",5,false,false,36 end
     ''')
-    sender.eval('WoWStatusGroups.update')('navsquad', '')
+    sender.eval('WoWStatusGroups.update')('dawnwatch', '')
     sender.eval('fire')('LFG_COMPLETION_REWARD')
     packet = sender.eval('__sent[1].text')
     assert len(packet.encode()) <= 243
     assert 'WSTATUS5' in packet and '36 The Deadmines' in packet
     receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
-    receiver.eval('WoWStatusGroups.update')('navsquad', '')
+    receiver.eval('WoWStatusGroups.update')('dawnwatch', '')
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
     assert 'First clear: The Deadmines' in receiver.eval('WoWStatusLevelPopup.message:GetText()')
     assert receiver.eval('WoWStatusDB.popups.activity[1].automatic') is True

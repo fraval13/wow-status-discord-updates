@@ -55,7 +55,7 @@ def test_retail_targets_12x_and_level_90_and_rejects_other_editions():
 def test_retail_level_and_first_equip_roundtrip_have_separate_identity():
     own,friend=retail_runtime(),retail_runtime('Eldrin')
     for lua in (own,friend):
-        lua.eval('WoWStatusGroups.update')('navsquad','')
+        lua.eval('WoWStatusGroups.update')('dawnwatch','')
     own.eval('fire')('PLAYER_LEVEL_UP',90)
     packet=own.eval('__sent[1].text')
     assert 'WSTATUS2 retail LEVEL 90' in packet

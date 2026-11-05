@@ -1,20 +1,14 @@
-# Installed at /etc/caddy/Caddyfile on 193.243.189.202.
-# Root maintenance installs/validates/reloads this; application releases do not.
+# Production gateway, installed at /etc/caddy/Caddyfile on 193.243.189.202.
+# Group names are shared secrets, so their routes are not in Git:
+# deploy/render_caddyfile.py renders this template with one route per group from
+# the server's private /etc/wow-character-status/groups.json. Never commit the result.
+# Root maintenance installs/validates/reloads it; application releases do not.
 # No access logs: URLs and request credentials must not be recorded.
 wow.frankvalde.com {
     request_body {
         max_size 256000
     }
-    handle_path /groups/19e32befc180a1cfdea5c3/* {
-        reverse_proxy 127.0.0.1:18081 {
-            header_up X-WoW-Client-IP {http.request.remote.host}
-        }
-    }
-    handle_path /groups/466f79683c7465bc3a5ba0/* {
-        reverse_proxy 127.0.0.1:18082 {
-            header_up X-WoW-Client-IP {http.request.remote.host}
-        }
-    }
+    # GROUP ROUTES
     handle /groups/* {
         respond "Unknown group" 404
     }

@@ -113,7 +113,7 @@ def test_unknown_values_sort_after_known_ones_and_are_never_zero(store, payload,
     standings = GroupStatusReports(store)
     standings.prepare(datetime.fromtimestamp(cutoff + 60, ZONE))
     rows = standings.pending()['rows']
-    pages = daily_status_message(rows, cutoff, 'ronkalot')
+    pages = daily_status_message(rows, cutoff, 'emberhold')
     deaths = next(embed for embed in pages[0]['embeds'] if 'Recorded deaths' in embed.title)
     assert 'deaths not recorded' in deaths.description
     assert '0 deaths' not in deaths.description
@@ -137,7 +137,7 @@ def test_every_character_survives_continuation_into_further_embeds(store, payloa
     standings.prepare(datetime.fromtimestamp(cutoff + 60, ZONE))
     rows = standings.pending()['rows']
     assert len(rows) == 60
-    pages = daily_status_message(rows, cutoff, 'ronkalot')
+    pages = daily_status_message(rows, cutoff, 'emberhold')
     text = '\n'.join(embed.description or '' for page in pages for embed in page['embeds'])
     for index in range(60):
         assert f'Hero{index:02d}' in text
@@ -155,7 +155,7 @@ def test_repeated_names_are_disambiguated_by_realm_and_edition(store, payload, c
     standings = GroupStatusReports(store)
     standings.prepare(datetime.fromtimestamp(cutoff + 60, ZONE))
     rows = standings.pending()['rows']
-    pages = daily_status_message(rows, cutoff, 'ronkalot')
+    pages = daily_status_message(rows, cutoff, 'emberhold')
     levels = next(embed for embed in pages[0]['embeds'] if 'Levels' in embed.title)
     assert 'Other Realm' in levels.description
     assert 'Test Realm' in levels.description
@@ -176,7 +176,7 @@ def test_stale_observations_are_marked_rather_than_presented_as_current(store, p
     store.ingest('owner', yesterday_payload(payload, day - timedelta(days=9), level=12, deaths=3))
     row = state(store, store.character_id(payload['identity']), cutoff)
     assert row['stale'] is True
-    pages = daily_status_message([row], cutoff, 'ronkalot')
+    pages = daily_status_message([row], cutoff, 'emberhold')
     levels = next(embed for embed in pages[0]['embeds'] if 'Levels' in embed.title)
     assert 'last seen' in levels.description
 
@@ -215,7 +215,7 @@ def test_names_are_escaped_and_cut_without_a_dangling_escape(store, payload, clo
     standings = GroupStatusReports(store)
     standings.prepare(datetime.fromtimestamp(cutoff + 60, ZONE))
     rows = standings.pending()['rows']
-    pages = daily_status_message(rows, cutoff, 'ronkalot')
+    pages = daily_status_message(rows, cutoff, 'emberhold')
     for page in pages:
         for embed in page['embeds']:
             text = embed.description or ''
@@ -239,7 +239,7 @@ def test_header_states_the_cutoff_without_a_padded_day(store, payload):
     standings = GroupStatusReports(store)
     standings.prepare(datetime.fromtimestamp(cutoff + 60, ZONE))
     rows = standings.pending()['rows']
-    header = daily_status_message(rows, cutoff, 'ronkalot')[0]['embeds'][0]
+    header = daily_status_message(rows, cutoff, 'emberhold')[0]['embeds'][0]
     moment = datetime.fromtimestamp(cutoff, ZONE)
     assert f'{moment.day} {moment.strftime("%B %Y")}' in header.description
     assert 'Europe/Oslo' in header.description
