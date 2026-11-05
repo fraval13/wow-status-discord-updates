@@ -119,7 +119,7 @@ function M.scanMount(baseline, event)
                 end
             end
             value.mount_count=count
-            return
+            if #ids>0 then return end
         end
     end
     -- Classic clients without a collection API can prove a ride, not acquisition.
@@ -127,6 +127,55 @@ function M.scanMount(baseline, event)
         value.mount_done=true
         if not baseline then emit("mount", {text="First mount ride recorded!", source="observed_ride"}) end
     end
+end
+-- Classic epic mount items expose quality and the Mount item subclass. Record
+-- acquisition, not spell learning: Era mounts remain usable inventory items.
+-- Baseline every bag item ID even when its item information is still loading,
+-- so a late cache reply cannot announce a mount already owned at login.
+function M.scanEpicMount(baseline)
+    local value=state()
+    if value.epic_mount_done or WoWStatusAdapter.client_id=="retail" then return end
+    local itemInfo=C_Item and C_Item.GetItemInfo or GetItemInfo
+    local slots=C_Container and C_Container.GetContainerNumSlots or GetContainerNumSlots
+    local itemID=C_Container and C_Container.GetContainerItemID or GetContainerItemID
+    if not itemInfo or not slots or not itemID then return end
+    if not value.mount_inventory_ready then baseline=true;value.mount_inventory_ready=true end
+    if baseline or type(value.mount_baseline_items)~="table" then value.mount_baseline_items={} end
+    for bag=0,4 do
+        local count=S.number(S.call(slots,bag)) or 0
+        for slot=1,math.min(count,40) do
+            local id=S.number(S.call(itemID,bag,slot))
+            if id then
+                local key=tostring(id)
+                if baseline then value.mount_baseline_items[key]=true end
+                local ok,name,_,quality,_,_,_,_,_,_,_,_,class,subclass=pcall(itemInfo,id)
+                name=clean(name,80)
+                if ok and name and S.number(quality)==4 and S.number(class)==15 and S.number(subclass)==5 then
+                    value.epic_mount_done=true
+                    local existing=value.mount_baseline_items[key]
+                    value.mount_baseline_items=nil
+                    if not baseline and not existing then
+                        emit("epicmount",{text="First epic mount: "..name,source="game_api"})
+                    end
+                    return
+                end
+            end
+        end
+    end
+end
+function M.checkRaid(event, ...)
+    if event~="ENCOUNTER_END" then return end
+    local encounter,name,_,_,success=...
+    encounter,name=S.number(encounter),clean(name,80)
+    if not encounter or encounter<1 or encounter>1000000000 or encounter~=math.floor(encounter)
+        or not name or S.number(success)~=1 then return end
+    local _,kind=S.call(GetInstanceInfo)
+    if S.string(kind)~="raid" then return end
+    local value=state();value.raids=value.raids or {}
+    local key=tostring(encounter)
+    if value.raids[key] then return end
+    value.raids[key]=true
+    emit("raid",{text="First raid boss: "..name,source="game_api",encounter_id=encounter})
 end
 local function instance()
     if not GetInstanceInfo then return nil end
@@ -172,7 +221,7 @@ function M.init(current, callback)
             if name then value.automatic_dungeons[name:lower()]=true end
         end
     end
-    M.scanUnlocks(true); M.scanReputation(true); M.scanPvp(true); M.scanMount(true)
+    M.scanUnlocks(true); M.scanReputation(true); M.scanPvp(true); M.scanMount(true); M.scanEpicMount(true)
 end
 function M.event(event,...)
     if not character then return end
@@ -181,13 +230,14 @@ function M.event(event,...)
     elseif event=="UPDATE_FACTION" then M.scanReputation(baseline);if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
     elseif event=="MAJOR_FACTION_RENOWN_LEVEL_CHANGED" then if WoWStatusAdapter.pvpRank then M.scanPvp(baseline) end
     elseif event=="PLAYER_PVP_RANK_CHANGED" or event=="HONOR_XP_UPDATE" then M.scanPvp(baseline)
-    elseif event=="SPELLS_CHANGED" or event=="LEARNED_SPELL_IN_TAB" then M.scanUnlocks(baseline)
-    elseif event=="NEW_MOUNT_ADDED" or event=="COMPANION_LEARNED" or event=="PLAYER_MOUNT_DISPLAY_CHANGED" then M.scanMount(baseline,event)
-    elseif not baseline and (event=="LFG_COMPLETION_REWARD" or event=="ENCOUNTER_END" or event=="BOSS_KILL") then M.checkDungeon(event,...) end
+    elseif event=="SPELLS_CHANGED" or event=="LEARNED_SPELL_IN_TAB" then M.scanUnlocks(baseline);M.scanEpicMount(baseline)
+    elseif event=="BAG_UPDATE_DELAYED" or event=="GET_ITEM_INFO_RECEIVED" then M.scanEpicMount(baseline)
+    elseif event=="NEW_MOUNT_ADDED" or event=="COMPANION_LEARNED" or event=="PLAYER_MOUNT_DISPLAY_CHANGED" then M.scanMount(baseline,event);M.scanEpicMount(baseline)
+    elseif not baseline and (event=="LFG_COMPLETION_REWARD" or event=="ENCOUNTER_END" or event=="BOSS_KILL") then M.checkDungeon(event,...);M.checkRaid(event,...) end
 end
 local frame=CreateFrame("Frame")
 for _, event in ipairs({"UPDATE_FACTION","HONOR_LEVEL_UPDATE","MAJOR_FACTION_RENOWN_LEVEL_CHANGED","PLAYER_PVP_RANK_CHANGED","HONOR_XP_UPDATE","SPELLS_CHANGED","LEARNED_SPELL_IN_TAB",
-    "NEW_MOUNT_ADDED","COMPANION_LEARNED","PLAYER_MOUNT_DISPLAY_CHANGED","LFG_COMPLETION_REWARD","ENCOUNTER_END","BOSS_KILL"}) do
+    "GET_ITEM_INFO_RECEIVED","BAG_UPDATE_DELAYED","NEW_MOUNT_ADDED","COMPANION_LEARNED","PLAYER_MOUNT_DISPLAY_CHANGED","LFG_COMPLETION_REWARD","ENCOUNTER_END","BOSS_KILL"}) do
     if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event) then
         pcall(frame.RegisterEvent,frame,event)
     end

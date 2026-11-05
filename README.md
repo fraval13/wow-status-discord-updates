@@ -54,7 +54,7 @@ a death once when the player releases their spirit.
 ## Announcements
 
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed
-quests, new professions and profession title promotions, first dungeon clears, first mount,
+quests, new professions and profession title promotions, first dungeon clears, first raid boss kills, first mount,
 reputation ranks, major class unlocks and PvP ranks. **Preview toasts** opens local
 samples. Notifications queue one at a time for six seconds each.
 
@@ -74,6 +74,19 @@ and recovered equipment announcements.
 
 Joining a group automatically announces once per character per group and appears
 in the log as **Joined the WoW Status group**. There are no free-text announcements or manual dungeon reports.
+Successful raid encounters are recorded once per encounter ID. Raid milestones and
+first epic mounts receive large banners and Firsts medals. Epic mounts are detected
+conservatively on Classic-family clients: the addon must observe a new epic mount item in
+your bags. Existing inventory establishes a quiet baseline, including items whose
+information loads later. Class-quest mounts without items may be missed. Retail mounts scale with riding skill, so this detector stays
+disabled there. The Dungeon / raid and Mount settings control these categories.
+
+Session recaps stay private by default. Enable **Share my session recaps** for a
+compact summary of your own recorded milestones, with fixed phrases and counts.
+It respects your current announcement and character-detail choices. Friends need
+a version supporting recap sharing to see it; older clients ignore the new events.
+Recovery stays quiet, with the usual log bounds.
+
 Dungeon completion requires a supported game completion signal; unsupported
 clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
 

@@ -66,7 +66,9 @@ local function readProfessions()
                 end
             end
         end
-    elseif GetNumSkillLines and GetSkillLineInfo then
+    end
+    local classic=WoWStatusAdapter.client_id=="classic-era" or WoWStatusAdapter.client_id=="tbc-anniversary"
+    if #result==0 and GetNumSkillLines and GetSkillLineInfo and (classic or not GetProfessions) then
         local count = S.number(S.call(GetNumSkillLines))
         if not count then return nil end
         local collapsed = false
@@ -81,7 +83,7 @@ local function readProfessions()
             end
         end
         if #result == 0 and collapsed then return nil end
-    else return nil end
+    elseif not GetProfessions and not (C_SkillInfo and C_SkillInfo.GetSkillLineInfoByID) then return nil end
     table.sort(result, function(a,b) return a.name < b.name end)
     return result, complete
 end

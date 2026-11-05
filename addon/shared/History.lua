@@ -43,7 +43,7 @@ local function allowed(character, event)
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     if event.kind=="loot" and not WoWStatusLoot.allowed(character.settings,WoWStatusLoot.eventInfo(event.data)) then return false end
     local settings = character.settings
-    if not settings.enabled or not settings.collection[event.kind] then return false end
+    if not settings.enabled or not settings.collection[({raid="dungeon",epicmount="mount"})[event.kind] or event.kind] then return false end
     if event.kind == "level" and not settings.fields.level then return false end
     if event.kind == "equipment" and not settings.fields.gear then return false end
     if event.kind == "zone" and not settings.fields.zone then return false end

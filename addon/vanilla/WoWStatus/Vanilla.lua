@@ -56,6 +56,8 @@ function A.item(link)
     return S.string(name) and S.string(fullLink), S.number(quality)
 end
 function A.chatRestricted()
+    if C_ChatInfo and C_ChatInfo.AreOutgoingAddonChatMessagesRestricted
+        and S.call(C_ChatInfo.AreOutgoingAddonChatMessagesRestricted)~=false then return true end
     if C_ChatInfo and C_ChatInfo.InChatMessagingLockdown then
         local locked = S.call(C_ChatInfo.InChatMessagingLockdown)
         return locked ~= false

@@ -91,8 +91,9 @@ local function canShare(character, event)
     if not event then return true end
     if event.kind == "discovery" or event.kind == "lfg" then return false end
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
-    if not character.settings.collection[event.kind] then return false end
-    if character.settings.in_game and character.settings.in_game[event.kind] == false then return false end
+    local category=({raid="dungeon",epicmount="mount"})[event.kind] or event.kind
+    if not character.settings.collection[category] then return false end
+    if character.settings.in_game and character.settings.in_game[category] == false then return false end
     if event.kind == "level" and not character.settings.fields.level then return false end
     if event.kind == "zone" and not character.settings.fields.zone then return false end
     if event.kind == "equipment" then return false end
@@ -145,10 +146,22 @@ local function readRoster(index,count)
     end
     return result,count>0 and read>=math.min(count,64)
 end
+-- Blizzard's channel list owns selection; the old getter is not present on
+-- every client. Track native selection calls, including the user's changes.
+local rosterSelection
+if hooksecurefunc and SetSelectedDisplayChannel then
+    pcall(hooksecurefunc,"SetSelectedDisplayChannel",function(index) rosterSelection=S.number(index) end)
+end
+local function selectedChannel()
+    local selected=S.number(S.call(GetSelectedDisplayChannel)) or rosterSelection
+    if selected then return selected end
+    local list=ChannelFrame and S.call(ChannelFrame.GetList,ChannelFrame)
+    return list and S.number(S.call(list.GetSelectedChannelIDAndSupportsText,list))
+end
 local function releaseRoster()
     local request=pendingRoster;pendingRoster=nil
     if request and request.previous and request.previous~=request.index
-        and S.number(S.call(GetSelectedDisplayChannel))==request.index then S.call(SetSelectedDisplayChannel,request.previous) end
+        and selectedChannel()==request.index then S.call(SetSelectedDisplayChannel,request.previous) end
 end
 local function advanceRoster()
     if not pendingRoster then return end
@@ -221,8 +234,8 @@ function P.peers(group)
             end
             if not pendingRoster and (not rosterRequested[group] or time()-rosterRequested[group]>=5) then
                 rosterRequested[group]=time()
-                pendingRoster={group=group,index=index,at=time(),previous=S.number(S.call(GetSelectedDisplayChannel))}
-                S.call(SetSelectedDisplayChannel,index);advanceRoster()
+                pendingRoster={group=group,index=index,at=time(),previous=selectedChannel()}
+                S.call(SetSelectedDisplayChannel,index);rosterSelection=index;advanceRoster()
             end
             cached=rosterCache[group];rosterBusy=false
             return withKnown(group,cached and cached.count==members and cached.peers or {})
@@ -554,7 +567,11 @@ function P.receive(text, sender, channel)
     local selfKey = P.senderKey((A.playerName() or "") .. "-" .. realm())
     if not key or key == selfKey or (group == "legacy" and not prefs.trusted[key]) then return false end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
-    local raw, automatic, armor = false, false, false
+    local raw, automatic, armor, extended = false, false, false, false
+    if not client then
+        client,kind,atText,nonce,encoded=text:match("^WSTATUS8 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
+        raw,extended=client~=nil,client~=nil
+    end
     if not client then
         client,kind,atText,nonce,encoded = text:match("^WSTATUS4 ([%w%-]+) (%a+) (%d+) ([%w%-]+) (.+)$")
         raw = client ~= nil
@@ -568,7 +585,8 @@ function P.receive(text, sender, channel)
         raw,armor=client~=nil,client~=nil
     end
     if client then
-        local allowed = {introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
+        local allowed = {raid=true,epicmount=true,recap=true,introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
+        if extended~=(kind=="raid" or kind=="epicmount" or kind=="recap") then return false end
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) then return false end
@@ -614,9 +632,10 @@ function P.receive(text, sender, channel)
 end
 
 -- Big banners (#61): max level and every 10th level get a larger toast.
--- First raid clears and epic mounts are not detected by the addon yet.
+-- Successful first raid encounters and proven Classic epic mounts also qualify.
 function P.bigMoment(item)
     if not prefs or prefs.big_banners == false then return false end
+    if item.kind=="raid" or item.kind=="epicmount" then return true end
     local level = S.number(item.level)
     return level ~= nil and level > 0 and (level % 10 == 0 or level == A.max_level)
 end
@@ -735,7 +754,7 @@ local function show(item, now)
     name = name:gsub("|", "||")
     local texture, r, g, b, heading = WoWStatusPresentation.theme(item)
     local big = P.bigMoment(item)
-    if big then
+    if big and item.level then
         local level = S.number(item.level)
         heading = level == A.max_level and "MAXIMUM LEVEL!" or ("LEVEL " .. level .. "!")
     end
@@ -930,7 +949,8 @@ end
 
 local function eventText(event)
     local data = event.data or {}
-    if event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
+    if event.kind=="raid" or event.kind=="epicmount" or event.kind=="recap"
+        or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
         or event.kind == "unlock" or event.kind == "pvp" then return data.text end
     if event.kind == "introduction" then return "Joined the WoW Status group" end
     if event.kind == "quest" then
@@ -976,7 +996,8 @@ function P.broadcast(character, event)
         if not detail then return end
         detail = S.stripEscapes(detail):gsub(S.CONTROL_OR_PIPE, " ")
         if not detail:find("[^ ]") then return end
-        local modern = event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
+        local extended=event.kind=="raid" or event.kind=="epicmount" or event.kind=="recap"
+        local modern = extended or event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48
         if #detail > limit then
@@ -987,7 +1008,7 @@ function P.broadcast(character, event)
             status("invalid_text", event); return
         end
         local encoded = modern and detail or detail:gsub(".", function(char) return string.format("%02x", char:byte()) end)
-        text = (modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
+        text = (extended and "WSTATUS8 " or modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
     end
     if #text > 220 then return end
     -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
