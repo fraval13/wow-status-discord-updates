@@ -1329,3 +1329,31 @@ def test_names_with_spaces_are_peers_for_sending_and_receiving(lua):
     _group_death(lua, 'Mr Exadi-TestRealm')
     lua.execute('WoWStatusPopups.tick()')
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
+
+
+def test_settings_command_in_combat_uses_standalone_panels(lua):
+    # Blizzard's Settings panel is restricted in combat (issue #25).
+    lua.execute('''
+        __opened = nil
+        Settings = {
+            RegisterCanvasLayoutCategory = function(page, name)
+                return {page=page,name=name,GetID=function(self) return self.name end}
+            end,
+            RegisterCanvasLayoutSubcategory = function(parent, page, name)
+                return Settings.RegisterCanvasLayoutCategory(page, name)
+            end,
+            RegisterAddOnCategory = function() end,
+            OpenToCategory = function(id) __opened = id end,
+        }
+        fire("ADDON_LOADED", "Blizzard_Settings")
+        __combat = true
+        SlashCmdList.WOWSTATUS("")
+        assert(__opened == nil)
+        assert(WoWStatusSetup:IsShown() and WoWStatusSetup:GetParent() == UIParent)
+        SlashCmdList.WOWSTATUS("groups")
+        assert(__opened == nil)
+        assert(WoWStatusGroupWindow:IsShown() and WoWStatusGroupWindow:GetParent() == UIParent)
+        __combat = false
+        SlashCmdList.WOWSTATUS("groups")
+        assert(__opened == "Groups")
+    ''')
