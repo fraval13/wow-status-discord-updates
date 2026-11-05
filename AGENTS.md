@@ -58,7 +58,9 @@ be checked against Git and the environment rather than assumed permanently true.
   equal the `pyproject.toml` version. Each build replaces its output folder as a
   whole, so no file of an earlier build survives.
 - `.github/workflows/checks.yml`: Linux/Windows checks, packaging, deployment and
-  public verification on `main` pushes; also supports manual dispatch. Actions are
+  public verification on `main` pushes; also supports manual dispatch. Pull requests
+  test on Ubuntu and Windows; `main` releases test on Ubuntu only (their code passed
+  Windows in its pull request), and a manual run has a "Test on Windows" switch. Actions are
   pinned by commit SHA, checkouts keep no token, and a failed public verification
   asks the receiver to roll back (issue #27; details in `deploy/SERVER.md`).
   `scripts/verify_homepage.py` compares the live site with the locally built

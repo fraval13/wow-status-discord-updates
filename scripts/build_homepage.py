@@ -36,6 +36,34 @@ def git(root, *args):
     return subprocess.check_output(['git', '-C', str(root), *args])
 
 
+def git_files(root, revision, paths):
+    """Read many committed files with one `git cat-file --batch` process.
+
+    One `git show` per file meant over a hundred processes per build, which is slow
+    where starting a process is expensive (Windows).
+    """
+    specs = []
+    for path in paths:
+        if '\n' in path or '\r' in path:
+            raise ValueError(f'Unsupported file name: {path!r}')
+        specs.append(f'{revision}:{path}\n'.encode('utf-8'))
+    output = subprocess.run(['git', '-C', str(root), 'cat-file', '--batch'], input=b''.join(specs),
+                            stdout=subprocess.PIPE, check=True).stdout
+    contents, position = {}, 0
+    for path in paths:
+        end = output.index(b'\n', position)
+        header = output[position:end].split(b' ')
+        if len(header) != 3 or header[1] != b'blob':
+            raise ValueError(f'{path} is not a file in {revision}')
+        size = int(header[2])
+        start = end + 1
+        contents[path] = output[start:start + size]
+        if output[start + size:start + size + 1] != b'\n':
+            raise ValueError(f'Malformed git output for {path}')
+        position = start + size + 1
+    return contents
+
+
 def package_files(toc, tracked):
     """Return what ships for one edition: its TOC, every file the TOC lists and allowlisted assets.
 
@@ -140,13 +168,14 @@ def write_site(root, output, revision, editions, version, notes):
     for edition, (files, edition_version) in editions.items():
         folder = f'addon/{edition}/WoWStatus/'
         archive = downloads / f'WoWStatus-{edition}.zip'
+        contents = git_files(root, revision, [folder + file for file in files])
         with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
             for file in files:
                 # Stable timestamps keep repeated builds byte-identical.
                 info = zipfile.ZipInfo(f'WoWStatus/{file}', date_time=(2026, 1, 1, 0, 0, 0))
                 info.compress_type = zipfile.ZIP_DEFLATED
                 info.external_attr = 0o100644 << 16
-                package.writestr(info, git(root, 'show', f'{revision}:{folder}{file}'))
+                package.writestr(info, contents[folder + file])
         with zipfile.ZipFile(archive) as package:
             if package.testzip() is not None:
                 raise ValueError(f'Broken archive: {archive}')
