@@ -4,7 +4,8 @@ local P = WoWStatusPopups
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local prefs, getCharacter, notify, toast, active
 local incoming, outgoing = {}, {}
-local lastDisplay, lastAttempt = 0, 0
+local lastDisplay, nextSend = 0, 0
+local pacing = {} -- Throttles in a row on this prefix: see P.retryWait.
 local joinedByAddon, syncPending = {}, false
 local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
@@ -22,10 +23,13 @@ local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 60, 32
 -- While a changed roster reloads, members from the last complete read still
 -- count, but only for this long after that read.
 local LAST_ROSTER_SECONDS = 120
--- Freshness of a live update, in realm time (issue #7): the sender drops it from
--- its queue after LIVE_WINDOW seconds, and receivers accept stamps at most
--- LIVE_WINDOW seconds old or LIVE_AHEAD seconds ahead (see late()).
-local LIVE_WINDOW, LIVE_AHEAD = 120, 300
+-- Freshness of a live update, in realm time (issues #7 and #9): receivers accept
+-- stamps at most LIVE_WINDOW seconds old or LIVE_AHEAD seconds ahead (see
+-- late()), and the sender keeps delivering an update to every peer until then:
+-- one whisper a second, so three updates to three groups of 20 take three
+-- minutes. prefs.seen keeps an update for both together, so a replay the window
+-- accepts is still a duplicate. Clients before #9 accept only two minutes.
+local LIVE_WINDOW, LIVE_AHEAD = 600, 300
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -303,23 +307,64 @@ local function syncGroups()
         end
     end
 end
-local function status(state, event)
-    prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil}
+local function status(state, event, target)
+    prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil, target = target}
 end
 local function clear()
     incoming, outgoing, unverified, active, lastVerify = {}, {}, {}, nil, nil
+    nextSend, pacing = 0, {}
     if toast then toast:Hide() end
+end
+-- Classifies a pcall of a send: "sent"; "throttled" (the game asks to wait, so
+-- retry later); "uncertain" (an older client's false, which can also mean
+-- throttled); "offline" (the target logged off); or "failed". SendAddonMessage
+-- returns an Enum.SendAddonMessageResult on newer clients and a boolean on older
+-- ones; the deprecated global wrapper returns the code second, so the last value
+-- that is not nil counts.
+local RESULT = {Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8, AddOnMessageLockdown = 11, TargetOffline = 12}
+function P.sendResult(ok, ...)
+    if not ok then return "failed" end
+    local result
+    for i = select("#", ...), 1, -1 do
+        local value = select(i, ...)
+        if value ~= nil then result = S.value(value); break end
+    end
+    if type(result) ~= "number" then return result == false and "uncertain" or "sent" end
+    local codes = type(Enum) == "table" and type(Enum.SendAddonMessageResult) == "table" and Enum.SendAddonMessageResult or {}
+    local function is(name) return result == (codes[name] or RESULT[name]) end
+    if is("Success") then return "sent" end
+    if is("AddonMessageThrottle") or is("ChannelThrottle") or is("AddOnMessageLockdown") then return "throttled" end
+    return is("TargetOffline") and "offline" or "failed"
+end
+-- Seconds to wait before sending item again after result, or nil to move on.
+-- A throttle is always retried, after 2, 4, 8, then every 16 s while throttles
+-- on the queue's prefix (counted in state) continue. An older client's false is
+-- retried once, after 2 s, without counting as a throttle. If that retry says
+-- false too, false is final on this queue for the next minute, so a client that
+-- always says false is barely slowed down, and one whose false is a long
+-- throttle still gets retries again after that.
+function P.retryWait(result, item, state, now)
+    if result == "throttled" then
+        state.throttles = (state.throttles or 0) + 1
+        return math.min(2 ^ state.throttles, 16)
+    end
+    if result == "uncertain" then
+        if not item.unsure and now >= (state.falseFinalUntil or 0) then item.unsure = true; return 2 end
+        if item.unsure then state.falseFinalUntil = now + 60 end
+    end
+    item.unsure, state.throttles = nil, 0
+    return nil
 end
 local function pruneSeen(now)
     local count, oldest, oldestAt = 0, nil, math.huge
     for key, at in pairs(prefs.seen) do
-        if type(at) ~= "number" or now - at > 600 or at > now + 300 then prefs.seen[key] = nil
+        if type(at) ~= "number" or now - at > LIVE_WINDOW + LIVE_AHEAD or at > now + LIVE_AHEAD then prefs.seen[key] = nil
         else
             count = count + 1
             if at < oldestAt then oldest, oldestAt = key, at end
         end
     end
-    if count >= 256 and oldest then prefs.seen[oldest] = nil end
+    if count >= 512 and oldest then prefs.seen[oldest] = nil end
 
 end
 
@@ -444,6 +489,30 @@ local function memberKeys(group)
 end
 function P.isPeer(group, key)
     return key ~= nil and memberKeys(group)[key] == true
+end
+-- Whether the group channel's member count differs from the last complete
+-- roster read, or there is none. Only then is reading the roster again worth it:
+-- a read selects the channel in the chat UI for a moment.
+local function rosterChanged(group)
+    local cached = rosterCache[group]
+    if not cached or not GetNumDisplayChannels or not GetChannelDisplayInfo then return true end
+    local count = S.number(S.call(GetNumDisplayChannels)) or 0
+    for index = 1, math.min(count, 128) do
+        local name, members = displayInfo(index)
+        if name and name:lower() == WoWStatusGroups.channel(group):lower() then return members ~= cached.count end
+    end
+    return false
+end
+-- Whether a complete roster read taken since the given time lacks this peer,
+-- and it was not heard in the channel lately either: it has left. A channel over
+-- 64 members is read only in part, so its roster proves nothing.
+local function departed(group, target, since)
+    local cached, key = rosterCache[group], P.senderKey(target)
+    if not key or not cached or cached.at < since or cached.count > 64 then return false end
+    for _, name in ipairs(withKnown(group, cached.peers)) do
+        if P.senderKey(name) == key then return false end
+    end
+    return true
 end
 -- Rosters load asynchronously, so a member who joined moments ago can be
 -- missing: their updates wait here, in arrival order, instead of being dropped.
@@ -778,8 +847,10 @@ local function tick()
                 or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
         end
     end
-    if #outgoing == 0 or now - lastAttempt < 1 then return end
+    if #outgoing == 0 or now < nextSend then return end
     local item, character = outgoing[1], getCharacter()
+    -- Every target is tried until receivers would drop the packet as stale,
+    -- however many whispers are queued ahead of it (#9).
     if not canShare(character, item.event) or S.now() - item.at > LIVE_WINDOW
         or (item.group_id and not WoWStatusGroups.contains(character, item.group_id)) then
         table.remove(outgoing, 1)
@@ -795,7 +866,28 @@ local function tick()
         if not item.targets then
             local targets = P.peers(item.group_id)
             if #targets == 0 then status("waiting_for_group_peers", item.event); return end
-            item.targets, item.target = targets, 1
+            item.targets, item.target, item.since, item.checked = targets, 1, now, now
+        elseif now - item.checked >= 10 then
+            -- The list is taken at the first send and can be minutes old by the
+            -- last, or partial while the roster was loading: when the member
+            -- count changes, read the roster again and add peers not yet listed.
+            item.checked = now
+            if rosterChanged(item.group_id) then
+                local listed = {}
+                for _, name in ipairs(item.targets) do listed[P.senderKey(name) or name] = true end
+                for _, name in ipairs(P.peers(item.group_id)) do
+                    local key = P.senderKey(name)
+                    if key and not listed[key] and #item.targets < 64 then listed[key] = true; item.targets[#item.targets + 1] = name end
+                end
+            end
+        end
+        -- Skip a peer that a newer complete roster read no longer lists.
+        while departed(item.group_id, item.targets[item.target], item.since) do
+            item.unsure = nil -- A pending retry was for that peer.
+            if item.target == #item.targets then
+                table.remove(outgoing, 1); status("remaining_peers_left", item.event); return
+            end
+            item.target = item.target + 1
         end
         args = {ADDON_PREFIX, item.group_id .. " " .. item.message, "WHISPER", item.targets[item.target]}
     else
@@ -803,19 +895,28 @@ local function tick()
         if not send then status("unsupported_api", item.event); return end
         args = {item.message, "CHANNEL", nil, tostring(joined(item.group_id))}
     end
-    lastAttempt = now
     local unpackArgs = unpack or table.unpack
-    local ok, result = pcall(send, unpackArgs(args, 1, 4))
-    result = S.value(result)
+    local result = P.sendResult(pcall(send, unpackArgs(args, 1, 4)))
+    -- A throttled whisper goes to the same target again after a pause; only a
+    -- send that went out or failed moves on to the next target.
+    local wait = P.retryWait(result, item, pacing, now)
+    if wait then
+        nextSend = now + wait
+        status(result .. "_retrying", item.event, args[4])
+        return
+    end
+    nextSend = now + 1
     if item.targets and item.target < #item.targets then item.target = item.target + 1
     else table.remove(outgoing, 1) end
-    local accepted = ok and result ~= false
-    if type(result) == "number" then
-        accepted = ok and Enum and Enum.SendAddonMessageResult and result == Enum.SendAddonMessageResult.Success
+    if result == "sent" then status("attempted_no_receipt", item.event, args[4])
+    elseif result == "offline" then status("peer_offline", item.event, args[4])
+    else
+        status("blocked_or_uncertain", item.event, args[4])
+        if not item.warned then
+            item.warned = true -- Once per update, not once per peer.
+            notify("In-game update blocked/uncertain; see /wstatus popup status.")
+        end
     end
-    status(accepted and "attempted_no_receipt" or "blocked_or_uncertain", item.event)
-    prefs.last_send.target=args[4]
-    if not accepted then notify("In-game update blocked/uncertain; see /wstatus popup status.") end
 end
 
 local ticking = false
@@ -851,7 +952,7 @@ end
 P.canShare = canShare
 P.eventText = eventText
 function P.broadcast(character, event)
-    if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic or #outgoing >= 32 then return end
+    if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic then return end
     local nonce = P.eventNonce(event)
     if not nonce then return end
     local text
@@ -889,16 +990,16 @@ function P.broadcast(character, event)
         text = (modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
     end
     if #text > 220 then return end
-    local groups = WoWStatusGroups.selected(character)
+    -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
+    local groups, full = WoWStatusGroups.selected(character), false
+    local function enqueue(item)
+        if #outgoing < 32 then table.insert(outgoing, item) else full = true end
+    end
     for id in pairs(groups) do
-        if #outgoing < 32 and event.group_ids and event.group_ids[id] then
-            table.insert(outgoing, {message = text, at = event.at, event = event, group_id = id})
-        end
+        if event.group_ids and event.group_ids[id] then enqueue({message = text, at = event.at, event = event, group_id = id}) end
     end
-    if not next(groups) and prefs.legacy_channel then
-        table.insert(outgoing, {message = text, at = event.at, event = event})
-    end
-    status(#outgoing > 0 and "queued" or "no_group_selected", event)
+    if not next(groups) and prefs.legacy_channel then enqueue({message = text, at = event.at, event = event}) end
+    status(full and "send_queue_full" or #outgoing > 0 and "queued" or "no_group_selected", event)
     P.tick()
 end
 
@@ -937,7 +1038,7 @@ function P.command(text)
         notify("Popup reception and broadcasts are off.")
     elseif command == "send" and (rest == "on" or rest == "off") then
         prefs.broadcast = rest == "on"
-        if not prefs.broadcast then outgoing = {} end
+        if not prefs.broadcast then outgoing, nextSend, pacing = {}, 0, {} end
         notify(prefs.broadcast and "Broadcasts enabled for shared characters with level collection. Group updates use addon whispers; both players must be reachable in WoW."
             or "Popup broadcasts disabled.")
     elseif command == "sound" and (rest == "on" or rest == "off") then
@@ -982,7 +1083,8 @@ function P.command(text)
             if #peers>0 then notify("Peer names: "..table.concat(peers,", ")) end
         end
         notify("Last broadcast: " .. (prefs.last_send and prefs.last_send.state or "none")
-            ..(prefs.last_send and prefs.last_send.target and (" to "..prefs.last_send.target) or ""))
+            ..(prefs.last_send and prefs.last_send.target and (" to "..prefs.last_send.target) or "")
+            .."; updates still sending="..#outgoing)
         local received=prefs.last_receive
         notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state) or "none")
             .."; popup queue="..#incoming.."; awaiting roster="..#unverified.."; in combat="..tostring(combat() and true or false))
