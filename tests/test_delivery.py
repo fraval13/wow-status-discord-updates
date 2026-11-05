@@ -24,6 +24,7 @@ function IsInInstance() return __instance,__instance and "party" or "none" end
 local deliver=C_ChatInfo.SendAddonMessage
 C_ChatInfo.SendAddonMessage=function(prefix,text,kind,target)
     table.insert(__attempts,{prefix=prefix,target=target,text=text,at=__mono})
+    if __falseAt and __falseAt[__mono] then return false end
     local forced=table.remove(__results,1)
     if forced==nil and __throttleAll then forced=3 end
     if forced~=nil and forced~=0 then return forced end
@@ -205,10 +206,11 @@ def test_a_peer_who_left_the_channel_is_not_whispered_but_a_quiet_one_is():
     level_up(lua, 2)
     # Peer12 leaves the group's channel after the list was taken. The roster is
     # read again within 10 s, before the sender reaches Peer12.
-    lua.execute('table.remove(__peers, 13)')
+    lua.execute('table.remove(__peers, 15) table.remove(__peers, 13)')   # Peer14 too, the last.
     run(lua, 11, 40)
     targets = [target for target, _ in popup_attempts(lua)]
-    assert targets == [f'Peer{i:02d}' for i in range(15) if i != 12]
+    assert targets == [f'Peer{i:02d}' for i in range(15) if i not in (12, 14)]
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'remaining_peers_left'
     # Without a roster read to go by, nobody is skipped: a friend last heard in
     # the channel over five minutes ago still gets the update.
     quiet = actor('Thora')
@@ -219,7 +221,31 @@ def test_a_peer_who_left_the_channel_is_not_whispered_but_a_quiet_one_is():
     run(quiet, 11, 320)
     quiet.execute('__throttleAll=false')
     run(quiet, 320, 340)
-    assert [target for target, at in popup_attempts(quiet) if at >= 320] == ['Loud', 'Quiet']
+    assert sorted(target for target, at in popup_attempts(quiet) if at >= 320) == ['Loud', 'Quiet']
+
+
+def test_peers_who_arrive_while_an_update_is_sending_get_it_too():
+    """Also covers a list taken while the roster was still loading."""
+    lua = actor('Thora')
+    lua.execute(LIMITS)
+    peers(lua, 15)
+    level_up(lua, 2)
+    lua.execute('table.insert(__peers,"Late01-TestRealm") table.insert(__peers,"Late02-TestRealm")')
+    run(lua, 11, 40)
+    assert [target for target, _ in popup_attempts(lua)] == [f'Peer{i:02d}' for i in range(15)] + ['Late01', 'Late02']
+
+
+def test_a_final_false_is_retried_again_after_a_minute():
+    lua = actor('Thora')
+    lua.execute(LIMITS + '__falseAt={[10]=true,[12]=true,[13]=true,[75]=true}')
+    peers(lua, 3)
+    level_up(lua, 2)
+    run(lua, 11, 40)
+    # Peer00's retry says false again, so Peer01's false is not retried.
+    assert popup_attempts(lua) == [('Peer00', 10), ('Peer00', 12), ('Peer01', 13), ('Peer02', 14)]
+    level_up(lua, 3, at=75)
+    run(lua, 76, 90)
+    assert popup_attempts(lua)[4:] == [('Peer00', 75), ('Peer00', 77), ('Peer01', 78), ('Peer02', 79)]
 
 
 def test_blocked_whispers_say_so_once_per_update():

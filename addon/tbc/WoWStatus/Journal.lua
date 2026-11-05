@@ -729,7 +729,7 @@ function J.tick()
     if drop or not send then table.remove(sendQueue,1);return end
     lastSend,allowance=clock,math.max(0,allowance-1)
     local result=P.sendResult(pcall(send,PREFIX,item.text,"WHISPER",item.target))
-    local wait=P.retryWait(result,item,pacing)
+    local wait=P.retryWait(result,item,pacing,clock)
     if wait then allowance,holdUntil=0,clock+wait;return end
     table.remove(sendQueue,1)
     if item.query then

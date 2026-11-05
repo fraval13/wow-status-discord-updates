@@ -340,16 +340,17 @@ end
 -- A throttle is always retried, after 2, 4, 8, then every 16 s while throttles
 -- on the queue's prefix (counted in state) continue. An older client's false is
 -- retried once, after 2 s, without counting as a throttle. If that retry says
--- false too, false is final on this queue from then on, so a client that always
--- says false is not slowed down.
-function P.retryWait(result, item, state)
+-- false too, false is final on this queue for the next minute, so a client that
+-- always says false is barely slowed down, and one whose false is a long
+-- throttle still gets retries again after that.
+function P.retryWait(result, item, state, now)
     if result == "throttled" then
         state.throttles = (state.throttles or 0) + 1
         return math.min(2 ^ state.throttles, 16)
     end
     if result == "uncertain" then
-        if not item.unsure and not state.falseIsFinal then item.unsure = true; return 2 end
-        if item.unsure then state.falseIsFinal = true end
+        if not item.unsure and now >= (state.falseFinalUntil or 0) then item.unsure = true; return 2 end
+        if item.unsure then state.falseFinalUntil = now + 60 end
     end
     item.unsure, state.throttles = nil, 0
     return nil
@@ -363,7 +364,7 @@ local function pruneSeen(now)
             if at < oldestAt then oldest, oldestAt = key, at end
         end
     end
-    if count >= 256 and oldest then prefs.seen[oldest] = nil end
+    if count >= 512 and oldest then prefs.seen[oldest] = nil end
 
 end
 
@@ -488,6 +489,19 @@ local function memberKeys(group)
 end
 function P.isPeer(group, key)
     return key ~= nil and memberKeys(group)[key] == true
+end
+-- Whether the group channel's member count differs from the last complete
+-- roster read, or there is none. Only then is reading the roster again worth it:
+-- a read selects the channel in the chat UI for a moment.
+local function rosterChanged(group)
+    local cached = rosterCache[group]
+    if not cached or not GetNumDisplayChannels or not GetChannelDisplayInfo then return true end
+    local count = S.number(S.call(GetNumDisplayChannels)) or 0
+    for index = 1, math.min(count, 128) do
+        local name, members = displayInfo(index)
+        if name and name:lower() == WoWStatusGroups.channel(group):lower() then return members ~= cached.count end
+    end
+    return false
 end
 -- Whether a complete roster read taken since the given time lacks this peer,
 -- and it was not heard in the channel lately either: it has left. A channel over
@@ -854,12 +868,25 @@ local function tick()
             if #targets == 0 then status("waiting_for_group_peers", item.event); return end
             item.targets, item.target, item.since, item.checked = targets, 1, now, now
         elseif now - item.checked >= 10 then
-            item.checked = now; P.peers(item.group_id) -- Refreshes the roster read when it changed.
+            -- The list is taken at the first send and can be minutes old by the
+            -- last, or partial while the roster was loading: when the member
+            -- count changes, read the roster again and add peers not yet listed.
+            item.checked = now
+            if rosterChanged(item.group_id) then
+                local listed = {}
+                for _, name in ipairs(item.targets) do listed[P.senderKey(name) or name] = true end
+                for _, name in ipairs(P.peers(item.group_id)) do
+                    local key = P.senderKey(name)
+                    if key and not listed[key] and #item.targets < 64 then listed[key] = true; item.targets[#item.targets + 1] = name end
+                end
+            end
         end
-        -- The list is taken at the first send and can be minutes old by the
-        -- last: skip a peer that a newer complete roster read no longer lists.
+        -- Skip a peer that a newer complete roster read no longer lists.
         while departed(item.group_id, item.targets[item.target], item.since) do
-            if item.target == #item.targets then table.remove(outgoing, 1); return end
+            item.unsure = nil -- A pending retry was for that peer.
+            if item.target == #item.targets then
+                table.remove(outgoing, 1); status("remaining_peers_left", item.event); return
+            end
             item.target = item.target + 1
         end
         args = {ADDON_PREFIX, item.group_id .. " " .. item.message, "WHISPER", item.targets[item.target]}
@@ -872,7 +899,7 @@ local function tick()
     local result = P.sendResult(pcall(send, unpackArgs(args, 1, 4)))
     -- A throttled whisper goes to the same target again after a pause; only a
     -- send that went out or failed moves on to the next target.
-    local wait = P.retryWait(result, item, pacing)
+    local wait = P.retryWait(result, item, pacing, now)
     if wait then
         nextSend = now + wait
         status(result .. "_retrying", item.event, args[4])
@@ -926,8 +953,6 @@ P.canShare = canShare
 P.eventText = eventText
 function P.broadcast(character, event)
     if not event or event.kind == "session" or event.kind == "equipment" or not canShare(character, event) or event.data.synthetic then return end
-    -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
-    if #outgoing >= 32 then status("send_queue_full", event); return end
     local nonce = P.eventNonce(event)
     if not nonce then return end
     local text
@@ -965,16 +990,15 @@ function P.broadcast(character, event)
         text = (modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
     end
     if #text > 220 then return end
+    -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
     local groups, full = WoWStatusGroups.selected(character), false
+    local function enqueue(item)
+        if #outgoing < 32 then table.insert(outgoing, item) else full = true end
+    end
     for id in pairs(groups) do
-        if event.group_ids and event.group_ids[id] then
-            if #outgoing < 32 then table.insert(outgoing, {message = text, at = event.at, event = event, group_id = id})
-            else full = true end
-        end
+        if event.group_ids and event.group_ids[id] then enqueue({message = text, at = event.at, event = event, group_id = id}) end
     end
-    if not next(groups) and prefs.legacy_channel then
-        table.insert(outgoing, {message = text, at = event.at, event = event})
-    end
+    if not next(groups) and prefs.legacy_channel then enqueue({message = text, at = event.at, event = event}) end
     status(full and "send_queue_full" or #outgoing > 0 and "queued" or "no_group_selected", event)
     P.tick()
 end
@@ -1014,7 +1038,7 @@ function P.command(text)
         notify("Popup reception and broadcasts are off.")
     elseif command == "send" and (rest == "on" or rest == "off") then
         prefs.broadcast = rest == "on"
-        if not prefs.broadcast then outgoing = {} end
+        if not prefs.broadcast then outgoing, nextSend, pacing = {}, 0, {} end
         notify(prefs.broadcast and "Broadcasts enabled for shared characters with level collection. Group updates use addon whispers; both players must be reachable in WoW."
             or "Popup broadcasts disabled.")
     elseif command == "sound" and (rest == "on" or rest == "off") then
