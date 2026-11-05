@@ -105,6 +105,7 @@ function P.observe(character, fields)
     end
     if fields.deaths then
         result.deaths, result.deaths_since = value.deaths, value.started_at
+        if value.death_base then result.deaths_lifetime = P.totalDeaths(character) end
     end
     if fields.quests then
         local completed, modern
@@ -135,6 +136,31 @@ function P.observe(character, fields)
         result.professions = value.professions or character.professions
     end
     return result
+end
+-- Clients with statistics (Retail; Forever if its client has them) count deaths
+-- from before installation. Statistic 60 is "Total deaths". Classic Era and TBC
+-- have no statistics, so their totals stay "since installation".
+function P.lifetimeDeaths()
+    if not GetStatistic then return nil end
+    local raw = S.call(GetStatistic, 60)
+    local total = tonumber(S.string(raw) or S.number(raw))
+    if total and total >= 0 and total < 2000000000 and total == math.floor(total) then return total end
+    return nil
+end
+-- Called at login: the statistic then plus deaths counted afterwards gives the
+-- lifetime total without depending on when the game updates the statistic.
+-- A statistic below the deaths already counted is not trusted.
+function P.initDeaths(character)
+    local value, lifetime = stats(character), P.lifetimeDeaths()
+    if lifetime and lifetime >= value.deaths then
+        value.death_base = {lifetime=lifetime, tracked=value.deaths}
+    else value.death_base = nil end
+end
+function P.totalDeaths(character)
+    local value = stats(character)
+    local base = value.death_base
+    if not base then return value.deaths end
+    return base.lifetime + math.max(0, value.deaths - base.tracked)
 end
 function P.death(character)
     local value = stats(character)
