@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.2.0
 
 - WoW Forever: updates, log sync and friend lists are sent again instead of waiting forever
 - The online count no longer includes group members who have logged off
