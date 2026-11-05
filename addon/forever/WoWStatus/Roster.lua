@@ -769,6 +769,39 @@ function R.sections()
     if #other.entries > 0 then table.insert(sections, other) end
     return sections
 end
+-- A group's leaderboard: this account's characters and every member listed in
+-- the group, with level, XP, total deaths (newest death announcement) and
+-- completed quests (newest quest milestone). Sorted by the caller.
+function R.leaderboard(group)
+    local quests = {}
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        local k = key(e.sender)
+        local n = e.kind == "quest" and tonumber(tostring(e.text or ""):match("^Completed (%d+) quests!$"))
+        if k and n and (not quests[k] or n > quests[k]) then quests[k] = n end
+    end
+    local list, seen = {}, {}
+    for _, section in ipairs(R.sections()) do
+        if section.key == "you" or section.key == group then
+            for _, entry in ipairs(section.entries) do
+                for _, row in ipairs(entry.rows) do
+                    local k = key(row.name)
+                    if k and not seen[k] then
+                        seen[k] = true
+                        local own = section.key == "you"
+                        local q = quests[k]
+                        if own and current and row.name == WoWStatusPopups.characterName(current) then
+                            q = S.number(current.snapshot and current.snapshot.quests_completed) or q
+                        end
+                        table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
+                            deaths=S.number(row.deaths), quests=q, online=row.status == "online", own=own})
+                    end
+                end
+            end
+        end
+    end
+    return list
+end
+
 -- Collapsed sections, saved account-wide by section key.
 function R.collapsed(key)
     local roster = state()

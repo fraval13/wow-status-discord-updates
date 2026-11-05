@@ -149,12 +149,83 @@ local function tabs(groups, chosen)
     return math.ceil(#groups / 5) * 28
 end
 
+-- The Leaderboard view: everyone in the group, sorted by level, deaths or quests.
+local SORTS = {{"level", "Level"}, {"deaths", "Deaths"}, {"quests", "Quests"}}
+local function sorted(list, by)
+    table.sort(list, function(a, b)
+        local x, y = a[by] or -1, b[by] or -1
+        if x ~= y then return x > y end
+        if by == "level" and (a.xp or -1) ~= (b.xp or -1) then return (a.xp or -1) > (b.xp or -1) end
+        return a.name < b.name
+    end)
+    return list
+end
+local function boardRow(index)
+    local UI = WoWStatusUI
+    local row = CreateFrame("Frame", nil, page.list)
+    row:SetSize(680, 26)
+    row.bg = row:CreateTexture(nil, "BACKGROUND"); row.bg:SetAllPoints()
+    row.rank = UI.text(row, "GameFontNormal", 8, -6, 30)
+    row.name = UI.text(row, "GameFontHighlight", 44, -6, 260)
+    row.level = UI.text(row, "GameFontHighlight", 310, -6, 130)
+    row.deaths = UI.text(row, "GameFontHighlight", 450, -6, 100, "RIGHT")
+    row.quests = UI.text(row, "GameFontHighlight", 560, -6, 110, "RIGHT")
+    page.board[index] = row
+    return row
+end
+local function renderBoard(chosen)
+    local data, UI = state() or {}, WoWStatusUI
+    local by = data.sort or "level"
+    local list = chosen and sorted(WoWStatusRoster.leaderboard(chosen.id), by) or {}
+    page.board = page.board or {}
+    for i, entry in ipairs(list) do
+        local row = page.board[i] or boardRow(i)
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * 28)
+        row.bg:SetColorTexture(1, .82, 0, entry.own and .12 or (i % 2 == 0 and .04 or 0))
+        row.rank:SetText(i .. ".")
+        local name = (entry.name:match("^[^-]+") or entry.name):gsub("|", "||")
+        local colour = UI.classColour(entry.class)
+        row.name:SetText((entry.online and "|cff40ff40•|r " or "  ") .. (colour and (colour .. name .. "|r") or name))
+        row.level:SetText(entry.level and (TF("Level %d", entry.level) .. (entry.xp and (" (" .. math.floor(entry.xp / 10) .. " %)") or "")) or "–")
+        row.deaths:SetText(entry.deaths and tostring(entry.deaths) or "–")
+        row.quests:SetText(entry.quests and tostring(entry.quests) or "–")
+        row:Show()
+    end
+    for i = #list + 1, #page.board do page.board[i]:Hide() end
+    page.boardHeader:SetShown(true)
+    page.list:SetHeight(math.max(1, #list * 28))
+    page.boardEmpty:SetShown(#list == 0)
+    page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or "Level"))
+end
+
 local function render()
     if not page then return end
     local UI = WoWStatusUI
     local groups = F.groups()
     local chosen = selectedGroup(groups)
     local top = tabs(groups, chosen)
+    -- Firsts or Leaderboard, remembered.
+    local data = state() or {}
+    local board = data.view == "leaderboard"
+    UI.call(page.viewFirsts, "SetEnabled", board); UI.call(page.viewBoard, "SetEnabled", not board)
+    page.viewFirsts:ClearAllPoints(); page.viewFirsts:SetPoint("TOPLEFT", 430, -4 - top)
+    page.viewBoard:ClearAllPoints(); page.viewBoard:SetPoint("TOPLEFT", 540, -4 - top)
+    page.sort:ClearAllPoints(); page.sort:SetPoint("TOPLEFT", 280, -4 - top)
+    page.sort:SetShown(board); page.boardHeader:SetShown(false); page.boardEmpty:SetShown(false)
+    if page.board then for _, row in ipairs(page.board) do row:Hide() end end
+    for _, row in ipairs(page.rows) do row:SetShown(not board) end
+    if page.recapBox then page.recapBox:SetShown(not board) end
+    if board then
+        page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -8 - top)
+        page.heading:SetText(chosen and (T("Leaderboard") .. " · " .. chosen.label:gsub("|", "||"))
+            or T("Join a group to compete for records with your friends."))
+        page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -38 - top)
+        page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -60 - top)
+        page.scroll:SetHeight(470 - top)
+        page.group = chosen and chosen.id
+        renderBoard(chosen)
+        return
+    end
     page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -8 - top)
     page.heading:SetText(chosen and (T("Firsts in") .. " " .. chosen.label:gsub("|", "||"))
         or T("Join a group to compete for records with your friends."))
@@ -260,6 +331,31 @@ function F.buildRecords(parent)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)
     page.scroll:SetScrollChild(page.list)
     page.rows = {}
+    local function button(label, width, fn)
+        local b = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+        b:SetSize(width, 24); b:SetText(T(label)); b:SetScript("OnClick", fn)
+        return b
+    end
+    page.viewFirsts = button("Firsts", 104, function() local d = state(); if d then d.view = "firsts" end; F.render() end)
+    page.viewBoard = button("Leaderboard", 120, function() local d = state(); if d then d.view = "leaderboard" end; F.render() end)
+    page.sort = button("", 140, function()
+        local d = state()
+        if not d then return end
+        local index = 1
+        for i, s in ipairs(SORTS) do if s[1] == (d.sort or "level") then index = i end end
+        d.sort = SORTS[index % #SORTS + 1][1]
+        F.render()
+    end)
+    local UI = WoWStatusUI
+    page.boardHeader = CreateFrame("Frame", nil, page); page.boardHeader:SetSize(680, 20)
+    UI.text(page.boardHeader, "GameFontNormal", 44, 0, 260):SetText(T("Character"))
+    UI.text(page.boardHeader, "GameFontNormal", 310, 0, 130):SetText(T("Level"))
+    UI.text(page.boardHeader, "GameFontNormal", 450, 0, 100, "RIGHT"):SetText(T("Deaths"))
+    UI.text(page.boardHeader, "GameFontNormal", 560, 0, 110, "RIGHT"):SetText(T("Quests"))
+    page.boardHeader:Hide()
+    page.boardEmpty = UI.text(page.list, "GameFontDisable", 0, -6, 660)
+    page.boardEmpty:SetText(T("Nobody in this group yet. Members appear when their character list arrives."))
+    page.boardEmpty:Hide()
     return page
 end
 

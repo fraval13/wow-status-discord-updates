@@ -203,6 +203,10 @@ W.add({
     ["First epic mount"] = "Første episke ridedyr", ["First epic mount!"] = "Første episke ridedyr!",
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
+    -- Leaderboard
+    ["Firsts"] = "Rekordar", ["Leaderboard"] = "Toppliste", ["Sort:"] = "Sorter:", ["Level"] = "Nivå",
+    ["Character"] = "Figur", ["Nobody in this group yet. Members appear when their character list arrives."] =
+        "Ingen i denne gruppa enno. Medlemer dukkar opp når figurlista deira kjem fram.",
     -- Death details
     ["killed by"] = "drepen av", ["Falling"] = "fall", ["Drowning"] = "drukning", ["Fatigue"] = "utmatting",
     ["Fire"] = "eld", ["Lava"] = "lava", ["Slime"] = "slim",

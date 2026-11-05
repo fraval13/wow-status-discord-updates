@@ -10,6 +10,14 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Leaderboard per group on the Records page: level, deaths and quests, with sorting
+- Deaths show where and what killed you, also for friends: Died · Duskwood · killed by Defias Pillager
+- Your log cards show who reacted with GZ!, F or Congrats!
+- Filter the activity log by type and by person
+- You are told when a friend runs a newer version of WoW Status
+
 ## 1.16.0
 
 - Optional Nynorsk: windows, notifications, the log, records and all captions, in settings or /wstatus language nn
