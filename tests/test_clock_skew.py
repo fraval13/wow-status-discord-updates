@@ -128,7 +128,7 @@ def test_status_explains_an_update_dropped_for_its_timestamp(kind):
     assert last_dropped(receiver) == 'rejected_stale'
     lines = status_lines(receiver)
     assert said(lines, f'Last dropped: {kind} from Thora-TestRealm — rejected_stale '
-                '(stamped 180 s behind realm time)')
+                '(stamped 180 s behind realm time, 0 s ago)')
     assert said(lines, 'Clock: this PC matches realm time.')
 
 
@@ -137,7 +137,7 @@ def test_status_explains_a_future_timestamp_and_this_pcs_clock():
     level_up(old, receiver)
     assert last_dropped(receiver) == 'rejected_future'
     lines = status_lines(receiver)
-    assert said(lines, 'rejected_future (stamped 400 s ahead of realm time)')
+    assert said(lines, 'rejected_future (stamped 400 s ahead of realm time, 0 s ago)')
     assert said(lines, 'Clock: this PC is 95 s behind realm time.')
 
 
@@ -261,16 +261,48 @@ def test_a_drop_is_shown_before_the_senders_roster_entry_loads_and_keeps_the_las
     assert receiver.eval('WoWStatusDB.popups.last_receive.sender') == 'Thora-TestRealm'
     assert last_receive(receiver) in ('queued', 'displayed')
     lines = status_lines(receiver)
-    assert said(lines, 'Last dropped: level from Eldrin-TestRealm — rejected_stale (stamped 1010 s behind realm time)')
+    assert said(lines, 'Last dropped: level from Eldrin-TestRealm — rejected_stale (stamped 1010 s behind realm time, 0 s ago)')
 
 
 def test_without_realm_time_a_drop_is_measured_on_this_pcs_clock():
     old, receiver = pc('Thora', -180, realm=False), pc('Mira', realm=False)
     level_up(old, receiver)
-    assert said(status_lines(receiver), 'rejected_stale (stamped 180 s behind this PC\'s clock)')
+    assert said(status_lines(receiver), 'rejected_stale (stamped 180 s behind this PC\'s clock, 0 s ago)')
+    clock(receiver, 10 + 600)
+    assert said(status_lines(receiver), "this PC's clock, 10 min ago)")
 
 
-@pytest.mark.parametrize('skew,hint', [(3600, True), (-7230, True), (-5400, True), (900, False), (2700, False)])
+@pytest.mark.parametrize('skew,hint', [(3600, True), (-7230, True), (-5400, True), (1750, True), (1850, True),
+                                       (900, False), (1700, False), (2700, False)])
 def test_status_hints_at_a_time_zone_mix_up(skew, hint):
     lines = status_lines(pc('Mira', skew))
     assert said(lines, 'Clock: this PC is ') and said(lines, "check the PC's time zone") == hint
+
+
+def test_a_moment_without_realm_time_keeps_the_last_known_offset():
+    """One missing GetServerTime answer must not stamp an event on the PC clock."""
+    sender = pc('Thora', -600, peers=['Mira'])
+    clock(sender, 5)
+    sender.eval('WoWStatusPopups.tick')()
+    sender.execute('local real=GetServerTime; GetServerTime=function() return 0 end; __restore=function() GetServerTime=real end')
+    clock(sender, 10)
+    sender.eval('fire')('PLAYER_LEVEL_UP', 2)
+    sender.eval('__restore')()
+    assert sender.eval('character().events[#character().events].at') == REALM + 10
+    assert sender.eval('WoWStatusDB.popups.last_send.state') == 'attempted_no_receipt'
+
+
+def test_a_join_time_saved_on_a_fast_pc_does_not_cost_new_entries_their_group():
+    """Joined on the old version with a PC 600 s fast, then updated and logged in again."""
+    lua = pc('Thora', 600)
+    lua.execute(f'''
+        for id in pairs(WoWStatusDB.account_group_joined_at) do WoWStatusDB.account_group_joined_at[id]={REALM + 600} end
+        for _, m in pairs(character().group_ids) do m.joined_at={REALM + 600} end
+        WoWStatusGroups.init(WoWStatusDB, character, function() end)
+    ''')
+    assert lua.eval('select(2, next(WoWStatusDB.account_group_joined_at))') == REALM
+    assert lua.eval('select(2, next(character().group_ids)).joined_at') == REALM
+    clock(lua, 10)
+    lua.eval('fire')('PLAYER_LEVEL_UP', 2)
+    lua.eval('fire')('PLAYER_LOGOUT')
+    assert lua.eval('next(WoWStatusJournal.entries()[1].groups)') is not None

@@ -457,7 +457,8 @@ local function requestPage(group,target,offset,pages,retries)
     local member=groupMember(group)
     if not member then return end
     -- Never ahead of realm time: a responder drops cutoffs over 300 s ahead.
-    local cutoff=math.min(math.max(groupSince(group),S.now()-AGE),S.now())
+    local now=S.now()
+    local cutoff=math.min(math.max(groupSince(group),now-AGE),now)
     requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
