@@ -60,6 +60,24 @@ def decide(tip, deployed, runs):
                        f'same way; production stays on {serving} until the tip is fixed')
 
 
+def load_runs(text):
+    """Runs from `gh api` output, newest first.
+
+    With --paginate, gh prints one JSON document per page back to back, so the
+    file can hold several objects; their workflow_runs are joined in page order.
+    """
+    decoder, runs, index = json.JSONDecoder(), [], 0
+    while True:
+        while index < len(text) and text[index].isspace():
+            index += 1
+        if index >= len(text):
+            return runs
+        payload, index = decoder.raw_decode(text, index)
+        if isinstance(payload, dict):
+            payload = payload.get('workflow_runs', [])
+        runs.extend(payload)
+
+
 def append_output(name, value):
     path = os.environ.get('GITHUB_OUTPUT')
     if path:
@@ -75,8 +93,7 @@ def main(argv=None):
                         help='JSON file of the workflow runs for main, newest first.')
     args = parser.parse_args(argv)
     with open(args.runs, encoding='utf-8') as handle:
-        payload = json.load(handle)
-    runs = payload.get('workflow_runs', payload) if isinstance(payload, dict) else payload
+        runs = load_runs(handle.read())
     try:
         verdict, reason = decide(args.tip, args.deployed, runs)
     except ValueError as error:
