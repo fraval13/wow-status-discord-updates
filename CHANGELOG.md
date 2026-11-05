@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.9.0
 
 - The log no longer gets a card for every profession skill point; learning and promotions still show
 - The First death record is now called First in the group to die, so it no longer looks like your first death
