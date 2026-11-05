@@ -26,7 +26,9 @@ function F.medals()
         table.insert(list, {key=key, title=title,
             match=function(e) return e.kind == wanted and (not extra or extra(e)) end})
     end
-    kind("death", "First death", "death")
+    -- A group record, not the character's first death: the death popup next to it
+    -- shows the lifetime total ("Total deaths: 33"), so the title must say "group".
+    kind("death", "First in the group to die", "death")
     kind("dungeon", "First dungeon clear", "dungeon")
     kind("mount", "First mount", "mount")
     kind("raid", "First raid boss", "raid")

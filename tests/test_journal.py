@@ -121,6 +121,8 @@ def test_private_actions_log_locally_but_never_sync_and_previews_do_not_log():
         fire("SKILL_LINES_CHANGED")
         __skill=76;fire("SKILL_LINES_CHANGED")
         WoWStatusPopups.preview("level")
+        -- A private entry made directly; single skill points are no longer logged.
+        WoWStatusJournal.observe("professionprogress","Alchemy: 76 / 150")
     ''')
     assert own.eval('#WoWStatusJournal.entries()') == 1
     assert own.eval('function() for _,e in ipairs(WoWStatusJournal.entries()) do if next(e.groups) then return false end end return true end')()
@@ -345,4 +347,24 @@ def test_legacy_account_membership_migrates_earliest_character_boundary():
         __now=__now+100
         WoWStatusGroups.update("dawnwatch","")
         assert(WoWStatusGroups.historySince(group)==time())
+    ''')
+
+
+def test_profession_skill_points_are_not_logged_and_old_ones_are_removed():
+    # Live report: the log filled with a card for every cooking point.
+    lua = actor('Thora')
+    lua.execute('''
+        __skill=75
+        function GetNumSkillLines() return 1 end
+        function GetSkillLineInfo() return "Cooking",nil,nil,__skill,0,0,150 end
+        fire("SKILL_LINES_CHANGED")
+        for i=76,90 do __skill=i;fire("SKILL_LINES_CHANGED") end
+        for _,e in ipairs(WoWStatusJournal.entries()) do assert(e.kind~="professionprogress") end
+        -- Cards logged by older versions disappear at the next load.
+        table.insert(WoWStatusDB.journal.entries,{id="local:old:1",kind="professionprogress",text="Cooking: 2 / 75",
+            at=time(),owner=character().identity.guid,client=character().identity.client,sender="Thora-TestRealm",groups={}})
+        WoWStatusDB.journal.profession_points_removed=nil
+        WoWStatusJournal.init(WoWStatusDB,character())
+        for _,e in ipairs(WoWStatusJournal.entries()) do assert(e.kind~="professionprogress") end
+        assert(WoWStatusDB.journal.profession_points_removed)
     ''')

@@ -26,7 +26,7 @@ local RELAY_CAP, SENDER_CAP = 300, 100
 local HELLO_INTERVAL = 600
 local budgets = {}
 local panel, refresh
-local equipment, professionRanks, lastQuery = {}, {}, {}
+local equipment, lastQuery = {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
     raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true}
 local fields={level="level",zone="zone",quest="quests",questprogress="quests",profession="professions",
@@ -271,15 +271,10 @@ function J.equipment(slot,item)
         equipment[slot]=item
     end
 end
-function J.professions(observed)
-    if not observed then return end
-    for _, p in ipairs(observed) do
-        if professionRanks[p.name] and p.skill>professionRanks[p.name] then
-            J.observe("professionprogress",p.name..": "..p.skill.." / "..p.max_skill)
-        end
-        professionRanks[p.name]=p.skill
-    end
-end
+-- Single profession skill points are not logged: a card for every point filled
+-- the log (cooking especially). Learning a profession and title promotions are
+-- still logged as milestones.
+function J.professions() end
 -- Level achievements that store the date they were earned. The level is
 -- checked against the achievement's name, so a wrong or renamed ID is skipped.
 local LEVEL_ACHIEVEMENTS={{6,10},{7,20},{8,30},{9,40},{10,50},{11,60},{12,70},{13,80},{4826,85},{6193,90}}
@@ -810,9 +805,8 @@ function J.init(database,character)
     db.journal=db.journal or {version=1,entries={}}
     index,digests={},{};requests,sessions,sendQueue,cursors,rates={},{},{},{},{}
     serial=db.journal.request_serial or 0
-    equipment,professionRanks,lastQuery={},{},{}
+    equipment,lastQuery={},{}
     for slot=1,19 do equipment[slot]=WoWStatusAdapter.equipment(slot) end
-    for _, p in ipairs(character.progress and character.progress.professions or {}) do professionRanks[p.name]=p.skill end
     lastSend,allowance,allowanceAt,holdUntil,pacing=0,ALLOWANCE,0,0,{};loginNonce=token()
     jobs,queuedJobs,contacted,hellos,seenHello,budgets={},{},{},{},{},{}
     local kept={}
@@ -821,6 +815,13 @@ function J.init(database,character)
             and (e.owner or P.fullName(e.sender)) then e.groups=e.groups or {};kept[#kept+1]=e end
     end
     db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=time()+60
+    -- Once: remove the skill-point cards earlier versions logged.
+    if not db.journal.profession_points_removed then
+        local cleaned={}
+        for _,e in ipairs(db.journal.entries) do if e.kind~="professionprogress" then cleaned[#cleaned+1]=e end end
+        db.journal.entries=cleaned;rebuild()
+        db.journal.profession_points_removed=true
+    end
     db.journal.migrated=db.journal.migrated or {}
     local migrationKey=character.identity.client..":"..character.identity.guid
     if not db.journal.migrated[migrationKey] then

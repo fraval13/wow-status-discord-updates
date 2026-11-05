@@ -58,7 +58,7 @@ def test_live_first_is_announced_once_after_its_update():
         friend.eval('WoWStatusPopups.tick')()
         headings.append(friend.eval('WoWStatusLevelPopup.heading.text'))
     assert headings == ['A FRIEND HAS FALLEN', 'A NEW FIRST!', 'A NEW FIRST!']
-    assert friend.eval('WoWStatusLevelPopup.message:GetText()') == 'Mira — First death!'
+    assert friend.eval('WoWStatusLevelPopup.message:GetText()') == 'Mira — First in the group to die!'
     # The sender gets no popup for their own First.
     assert own.eval('WoWStatusLevelPopup') is None
 

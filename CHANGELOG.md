@@ -12,6 +12,8 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- The log no longer gets a card for every profession skill point; learning and promotions still show
+- The First death record is now called First in the group to die, so it no longer looks like your first death
 - Choose the notification size as a percentage in the notification settings (100% is the default)
 - Zones you had already explored before installing are no longer announced as first visits
 - The "is a really bad boy" warning is gone; invalid data is still ignored quietly
