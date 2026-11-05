@@ -77,7 +77,12 @@ Delivery IDs are visible in `outbox`. Interrupted sends, network timeouts and
 Discord server errors become `uncertain` and require review. Known permissions
 and request errors become `failed`. Discord's library handles rate limits; a
 surfaced 429 is requeued. This prevents blind duplicate retries after an ambiguous
-send. Exactly-once delivery across a network failure is not guaranteed.
+send. Exactly-once delivery across a network failure is not guaranteed. Any other
+error costs only the delivery it happened in, and the next one goes ahead: the
+delivery becomes `failed` when it failed before sending (the journal has the
+traceback), or `uncertain` once its message may have been sent. A summary export
+whose remaining parts stop arriving for a week becomes `expired`; its events stay
+in the character's history.
 
 `/privacy action:pause` removes queued posts, hides profiles and revokes all of that
 member's upload credentials. The addon should also be paused. A send already in

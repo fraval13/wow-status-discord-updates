@@ -62,6 +62,11 @@ def atomic_json(path, data):
                 stream.write(''.join(batch))
                 batch, size = [], 0
         stream.write(''.join(batch))
+        # On disk before the rename. Otherwise a crash or power cut soon after can leave
+        # the name pointing at an empty or partial file, losing the archive or the
+        # credentials it replaced (#26). A lost rename only keeps the previous whole file.
+        stream.flush()
+        os.fsync(stream.fileno())
     os.replace(temp, path)
     if os.name != 'nt':
         path.chmod(0o600)

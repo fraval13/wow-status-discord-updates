@@ -15,6 +15,11 @@ from . import limits
 from .archive import ArchiveWriter, archived_bytes, event_entry, snapshot_entry
 from .schema import STATUS_FIELDS, ValidationError, should_announce, validate
 
+# An export whose last part arrived this long ago is never completed: its queued
+# announcements expire instead of waiting in pending() forever (#26). Upload receipts of
+# finished batches are kept as long, so an expired batch's receipts go next.
+INCOMPLETE_BATCH_SECONDS = 604800
+
 # Settings that decide which stored snapshot fields and event data may be kept.
 PRIVACY_FLAGS = ('enabled', 'introduction_confirmed')
 PRIVACY_SECTIONS = ('fields', 'collection', 'announcements')
@@ -108,6 +113,8 @@ class Store:
             delivery INTEGER PRIMARY KEY REFERENCES outbox(id) ON DELETE CASCADE,
             owner TEXT NOT NULL, batch TEXT NOT NULL);
         CREATE INDEX IF NOT EXISTS outbox_batch_lookup ON outbox_batches(owner,batch);
+        -- pending() reads only the unsent rows, in id order, not every message ever sent (#26).
+        CREATE INDEX IF NOT EXISTS outbox_status ON outbox(status);
         CREATE TABLE IF NOT EXISTS snapshots(
             id TEXT PRIMARY KEY, character TEXT NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
             exported INTEGER NOT NULL, uploaded INTEGER NOT NULL,
@@ -478,7 +485,7 @@ class Store:
                 self.db.execute('''DELETE FROM upload_receipts WHERE received<? AND NOT EXISTS
                     (SELECT 1 FROM outbox_batches b JOIN outbox o ON o.id=b.delivery
                      WHERE b.owner=upload_receipts.owner AND b.batch=upload_receipts.batch AND o.status='pending')''',
-                    (now - 604800,))
+                    (now - INCOMPLETE_BATCH_SECONDS,))
             queued = {'status': 'pending', 'attempts': 0, 'message_id': None}
             for event in p['events']:
                 eid = 'introduction' if event['kind'] == 'introduction' else event['id']
@@ -722,6 +729,26 @@ class Store:
     def sync_archives(self):
         for char in self.characters():
             self.sync_archive(char['id'])
+
+    def expire_incomplete_batches(self, now=None):
+        """Expire the queued announcements of exports whose missing parts stopped arriving
+        INCOMPLETE_BATCH_SECONDS ago, such as a client that crashed after part 1 of 10,000.
+        pending() would otherwise check them on every tick, forever (#26). Their events stay
+        in history; a newer export of the character already takes over its unsent rows.
+        Returns how many announcements expired."""
+        now = time.time() if now is None else now
+        with self.db:
+            rows = self.db.execute('''SELECT o.id,o.character FROM outbox o
+                JOIN outbox_batches b ON b.delivery=o.id
+                JOIN (SELECT owner,batch FROM upload_receipts GROUP BY owner,batch
+                      HAVING COUNT(*) < MAX(total) AND MAX(received) < ?) r
+                  ON r.owner=b.owner AND r.batch=b.batch
+                WHERE o.status='pending' ''', (now - INCOMPLETE_BATCH_SECONDS,)).fetchall()
+            self.db.executemany("UPDATE outbox SET status='expired' WHERE id=?",
+                                [(row['id'],) for row in rows])
+        for cid in {row['character'] for row in rows}:
+            self.sync_archive(cid)  # Archives show each delivery's status.
+        return len(rows)
 
     def pending(self, ready_only=False):
         if ready_only and not self.can_post():

@@ -282,7 +282,10 @@ def status_card(item, custom=None, preview=False):
         return custom.get('wow_' + name, fallback)
 
     class_icon = icon(token.lower(), CLASS_SYMBOLS.get(token, '👤'))
-    card = discord.Embed(title=f"{class_icon} {safe(identity['name'])}",
+    # Discord rejects an embed title over 256 characters, and with it the whole message:
+    # a 120-character name can escape to 240, and a custom emoji takes up to about 60 (#26).
+    name = safe(identity['name'], max(0, 255 - len(class_icon)))
+    card = discord.Embed(title=f'{class_icon} {name}',
                          colour=CLASS_COLOURS.get(token, 0x5865F2))
     card.description = ''
     details = [snap[key] for key in ('sex', 'race', 'class') if snap.get(key)]

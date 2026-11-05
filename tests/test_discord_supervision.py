@@ -7,6 +7,8 @@ import socket
 import urllib.request
 import warnings
 from pathlib import Path
+from types import SimpleNamespace
+from unittest.mock import AsyncMock
 
 import aiohttp
 import pytest
@@ -425,3 +427,106 @@ def test_report_without_routes_says_so_and_passes(monkeypatch, capsys, config, e
     module.main()
     output = capsys.readouterr().out
     assert output.startswith(expected) and 'not json' not in output
+
+
+async def deliver_until(client, done, seconds=5):
+    """Run the real delivery loop until ``done()``, then stop it; fails if it ended early."""
+    task = asyncio.create_task(client.deliver())
+    try:
+        deadline = asyncio.get_running_loop().time() + seconds
+        while not done() and asyncio.get_running_loop().time() < deadline:
+            assert not task.done(), 'the delivery loop ended'
+            await asyncio.sleep(0.01)
+        assert done() and not task.done()
+    finally:
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
+        await client.close()
+
+
+def delivering_bot(store, monkeypatch, send):
+    client = discord_bot.StatusBot(store, 1, 2)
+    channel = SimpleNamespace(guild=SimpleNamespace(id=1), send=send)
+    client.wait_until_ready = AsyncMock()
+    client.get_channel = lambda _: channel
+    return client, channel
+
+
+async def test_one_unformattable_delivery_fails_alone_and_the_next_is_sent(store, payload,
+                                                                         monkeypatch, caplog):
+    """#26: the per-delivery catch-all. Without it the loop restarts and picks the same
+    delivery again, so one bad row would stop every post."""
+    store.ingest('owner', payload)  # The introduction, then the level-10 announcement.
+    bad, good = [row[0] for row in store.db.execute('SELECT id FROM outbox ORDER BY id')]
+    original = discord_bot.announcement_message
+
+    def message(store_, item, emojis):
+        if item['delivery_id'] == bad:
+            raise KeyError('formatting bug')
+        return original(store_, item, emojis)
+
+    monkeypatch.setattr(discord_bot, 'announcement_message', message)
+    client, channel = delivering_bot(store, monkeypatch,
+                                     AsyncMock(return_value=SimpleNamespace(id=789)))
+    with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
+        await deliver_until(client, lambda: outbox_status(store, good) == 'sent')
+    # Never claimed, so never posted: failed, not uncertain, and no cooldown was spent.
+    assert outbox_status(store, bad) == 'failed'
+    channel.send.assert_awaited_once()
+    assert [r.exc_info[0] for r in caplog.records if r.exc_info] == [KeyError]
+
+
+async def test_an_unexpected_error_during_the_send_marks_it_uncertain(store, payload,
+                                                                      monkeypatch):
+    # aiohttp's ServerDisconnectedError is no OSError, so no other handler takes it.
+    store.ingest('owner', payload)
+    first = store.pending()['delivery_id']
+    client, channel = delivering_bot(store, monkeypatch,
+                                     AsyncMock(side_effect=aiohttp.ServerDisconnectedError()))
+    await deliver_until(client, lambda: outbox_status(store, first) == 'uncertain')
+    channel.send.assert_awaited_once()
+
+
+class FakeReports:
+    """One queued recap or status report, recording the delivery states it gets."""
+
+    def __init__(self):
+        self.states = []
+
+    def pending(self):
+        return {'key': 'day', 'text': 'Recap'} if not self.states else None
+
+    def delivery(self, key, status, *args, **kwargs):
+        self.states.append(status)
+
+
+@pytest.mark.parametrize('stage,expected', [('claim', 'failed'), ('send', 'uncertain')])
+@pytest.mark.parametrize('kind', ['recap', 'standings'])
+async def test_one_bad_recap_or_report_does_not_stop_delivery(store, monkeypatch, caplog,
+                                                              kind, stage, expected):
+    """Recaps and reports are posted from the same loop, so they get the same catch-all."""
+    send = AsyncMock(side_effect=RuntimeError('unexpected') if stage == 'send' else None)
+    client, _ = delivering_bot(store, monkeypatch, send)
+    reports = FakeReports()
+
+    def claim(*args):
+        if stage == 'claim':
+            raise RuntimeError('formatting bug')
+        return {'key': 'day', 'text': 'Recap'} if kind == 'recap' else [{'content': 'Report'}]
+
+    try:
+        with caplog.at_level(logging.ERROR, logger='wow_status.discord_bot'):
+            if kind == 'recap':
+                monkeypatch.setattr(client, 'claim_recap', claim)
+                await client.deliver_recap(reports)
+            else:
+                monkeypatch.setattr(client, 'standings', reports)
+                monkeypatch.setattr(client, 'claim_standings', claim)
+                await client.deliver_standings()
+    finally:
+        await client.close()
+    assert reports.states == [expected]
+    assert [r.exc_info[0] for r in caplog.records if r.exc_info] == [RuntimeError]

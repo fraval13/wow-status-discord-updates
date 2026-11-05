@@ -529,6 +529,31 @@ def test_archives_are_written_in_batches_with_the_same_text(tmp_path, monkeypatc
         assert (tmp_path / name).read_text(encoding='utf-8') == expected
 
 
+def test_archives_reach_the_disk_before_they_replace_the_old_file(tmp_path, monkeypatch):
+    # #26: without fsync before the rename, a crash could leave an empty archive or
+    # credentials file in place of the old one.
+    import os
+
+    import wow_status.companion as companion
+    data = {'name': 'Þóra', 'events': [{'id': i} for i in range(50)]}
+    size = len(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True).encode('utf-8'))
+    calls, fsync, replace = [], os.fsync, os.replace
+
+    def recording_fsync(fd):
+        calls.append(('fsync', os.fstat(fd).st_size))
+        fsync(fd)
+
+    def recording_replace(source, target):
+        calls.append(('replace', Path(source).name, Path(target).name))
+        replace(source, target)
+
+    monkeypatch.setattr(companion.os, 'fsync', recording_fsync)
+    monkeypatch.setattr(companion.os, 'replace', recording_replace)
+    companion.atomic_json(tmp_path / 'credentials.json', data)
+    # The whole text is flushed and synced first, then renamed over the old file.
+    assert calls == [('fsync', size), ('replace', 'credentials.tmp', 'credentials.json')]
+
+
 def test_a_failed_rewrite_of_withdrawn_data_is_tried_again(store, monkeypatch):
     now = int(time.time())
     cid = store.ingest('owner', payload(now - 10, zones(0, now, 2)))['character_id']
