@@ -10,6 +10,18 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## 0.14.13
+
+- New WoW Status window with tabs: Overview, Activity and more
+- Overview shows what your group did since you were last here
+- Big banners for every 10th level and maximum level
+- Click a popup to open it in the activity log; popups can be moved
+- Optional group status line under the quest tracker
+- Optional screenshots on level-up and first dungeon clear
+- Share WoW Status with a friend: /wstatus share <name>
+- This What's New page, shown once after each update (/wstatus news)
+- Updates and log sync keep running during combat
+
 ## 0.14.12
 
 - Retail and Forever minimap buttons sit in the right place
