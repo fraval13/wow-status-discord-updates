@@ -218,3 +218,26 @@ jobs:
           # Route keys are private; each instance's optional "route" says which to check.
           WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
         run: python3 scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"
+  curseforge:
+    # Publishes the release that `deploy` just verified on the homepage to CurseForge,
+    # one file per edition (scripts/upload_curseforge.py, docs/CURSEFORGE.md). Does
+    # nothing until the CURSEFORGE_PROJECT_ID variable is set. Re-running a successful
+    # upload uploads the files again, so re-run only after a failed upload.
+    needs: [deploy-gate, deploy]
+    if: needs.deploy.result == 'success' && vars.CURSEFORGE_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    concurrency:
+      group: character-status-curseforge
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          ref: ${{ needs.deploy-gate.outputs.revision }}
+      - name: Build addon packages for this release
+        run: python3 scripts/build_homepage.py --addon-ref HEAD
+      - name: Upload to CurseForge
+        env:
+          CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
+        run: python3 scripts/upload_curseforge.py --downloads dist/homepage/downloads

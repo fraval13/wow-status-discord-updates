@@ -65,6 +65,9 @@ be checked against Git and the environment rather than assumed permanently true.
   `release.json` (`--manifest`) and checks each ZIP's entries against its TOC.
   `scripts/deploy_gate.py` lets a run deploy only while its commit is the tip of
   `main`, so an older run never deploys over a newer one.
+  After a successful deploy, the `curseforge` job uploads the release's ZIPs with
+  `scripts/upload_curseforge.py`; it is skipped until the `CURSEFORGE_PROJECT_ID`
+  variable is set (setup and listing text in `docs/CURSEFORGE.md`).
 - `deploy/SERVER.md`: current dedicated server deployment architecture, the private
   group configuration, and how to render the Caddyfile and rotate a group name.
   `deploy/README.md` also contains historical single-instance setup instructions.

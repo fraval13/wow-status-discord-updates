@@ -135,4 +135,5 @@ in-game rendering and API availability still require checking.
 - [Activity log, history and timings](docs/IN_GAME_HISTORY.md)
 - [In-game acceptance tests](docs/LIVE_POPUPS.md)
 - [Forever and Retail compatibility check](docs/CLIENT_COMPATIBILITY.md)
+- [CurseForge listing and automatic uploads](docs/CURSEFORGE.md)
 - [Implementation status](docs/IMPLEMENTATION_STATUS.md)
