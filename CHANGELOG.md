@@ -12,6 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- A changed player name reaches friends who are online straight away
 - Everyone seen in your groups is listed on the Characters page, also friends on old versions
 - The first dungeon clear icon shows a skull instead of a black square
 - Character cards end with level and total deaths instead of the latest event

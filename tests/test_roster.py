@@ -264,3 +264,12 @@ def test_silent_members_seen_in_the_group_are_listed_and_remembered():
         title,row=silent()
         assert(row and row.status:find("last seen",1,true), row and row.status)
     ''')
+
+
+def test_a_new_player_name_reaches_online_members_at_once():
+    mira, thora = pair()
+    pump(mira, thora)
+    mira.eval('WoWStatusGroups.update')('dawnwatch', 'Frankie')
+    pump(mira, thora, start=300)
+    titles = [g.title for g in thora.eval('WoWStatusRoster.groups()').values()]
+    assert 'Frankie (1 character)' in titles and 'Frank (1 character)' not in titles

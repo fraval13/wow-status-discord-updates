@@ -175,11 +175,14 @@ local function update(text, playerName)
     database.account_group_joined_at = joined
     database.account_groups = {}
     for id, member in pairs(selected) do database.account_groups[id] = member.label end
+    local renamed = (database.player_name or "") ~= playerName
     database.player_name = playerName
     database.retired_groups_removed=nil
     for _, saved in pairs(database.characters) do apply(saved, true) end
     if WoWStatusPopups then WoWStatusPopups.groupsChanged() end
     if G.announce then G.announce() end
+    -- Members online now get the new name at once, not at the next login.
+    if renamed and WoWStatusRoster and WoWStatusRoster.changed then WoWStatusRoster.changed() end
     return true, "Groups saved for all characters."
 end
 G.update = update
