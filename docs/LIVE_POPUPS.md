@@ -153,6 +153,30 @@ quietly in the next login sync. To test: have a friend whose roster entry is
 visible send several milestones at once, and check that a fifth update while you
 are in combat is not queued.
 
+## Delivery in larger groups
+
+An update is whispered to each peer of each group it belongs to, one whisper a
+second. Three level-ups shared with three groups of 20 are 180 whispers, about
+three minutes. Each update keeps going until it is 10 minutes old, and receivers
+accept updates up to 10 minutes old, so every peer gets it. Before this, an update
+was dropped after two minutes, part-way through its list. Older clients still
+accept only two minutes, so a friend on an older version can miss a late whisper;
+the next login sync still brings it into their log.
+
+The game allows each addon prefix 10 messages, regained at 1 a second, and
+answers a send past that with a throttle result. Whispers outside instances are
+exempt. When a send is throttled, the same whisper goes to the same peer again
+after 2, 4, 8, then every 16 seconds, instead of moving on to the next peer.
+`/wstatus popup status` shows `throttled_retrying` meanwhile, and how many updates
+are still sending. Login sync waits for that allowance inside an instance (up to
+10 messages at once, then one a second) and resends a throttled packet the same
+way. Outside instances it keeps its usual pace. An older client's plain `false` is
+tried three times, since it can also mean throttled.
+
+To test (#25): inside a dungeon, have a friend log in after you have a few hundred
+log entries, and check their log fills completely. With as many friends online as
+you can gather, trigger several milestones at once and check every popup arrives.
+
 ## Relayed entries and event IDs
 
 A catch-up entry is a claim by the member who relayed it; only a live update's
