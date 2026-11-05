@@ -148,6 +148,29 @@ local function withKnown(group,roster)
     end
     return result
 end
+-- Group members online across all joined groups, without requesting a roster:
+-- the last complete roster read plus recently heard peers, or else the
+-- channel's member count without you. Used by the status line (#62).
+function P.character() return getCharacter and getCharacter() or nil end
+function P.onlineCount()
+    if not prefs or not getCharacter then return 0 end
+    local seen,count,fallback={},0,0
+    for group in pairs(WoWStatusGroups.selected(getCharacter())) do
+        local cached=rosterCache[group]
+        for _,name in ipairs(withKnown(group,cached and cached.peers)) do
+            local key=P.senderKey(name)
+            if key and not seen[key] then seen[key]=true;count=count+1 end
+        end
+        if not cached and GetNumDisplayChannels and GetChannelDisplayInfo then
+            local total=S.number(S.call(GetNumDisplayChannels)) or 0
+            for index=1,math.min(total,128) do
+                local name,members=displayInfo(index)
+                if name and name:lower()==WoWStatusGroups.channel(group):lower() then fallback=math.max(fallback,members-1) end
+            end
+        end
+    end
+    return math.max(count,fallback)
+end
 function P.peers(group)
     if not GetNumDisplayChannels or not GetChannelDisplayInfo then return withKnown(group,{}) end
     if rosterBusy then return withKnown(group,rosterCache[group] and rosterCache[group].peers) end

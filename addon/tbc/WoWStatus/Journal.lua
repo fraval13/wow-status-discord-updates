@@ -116,6 +116,7 @@ local function add(entry)
     WoWStatusFlavour.text(entry)
     table.insert(db.journal.entries,entry);rebuild()
     if refresh then refresh() end
+    if WoWStatusStatusLine then WoWStatusStatusLine.update() end
     return true
 end
 function J.prepare(database)

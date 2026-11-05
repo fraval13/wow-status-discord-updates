@@ -24,6 +24,7 @@ Journal.lua
 WhatsNewData.lua
 WhatsNew.lua
 Minimap.lua
+StatusLine.lua
 Previews.lua
 Screenshots.lua
 Milestones.lua
