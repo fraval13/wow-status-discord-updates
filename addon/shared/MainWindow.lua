@@ -65,6 +65,7 @@ local function create()
     end)
     local background = window:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints(); background:SetColorTexture(.025, .035, .065, .98)
+    window.background = background
     window.title = window:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     window.title:SetPoint("TOPLEFT", 24, -20); window.title:SetText("WoW Status")
     window.content = CreateFrame("Frame", nil, window)
@@ -76,6 +77,7 @@ local function create()
     for index, key in ipairs(order) do addTab(pages[key], index) end
     table.insert(UISpecialFrames, "WoWStatusMainFrame")
     restorePosition()
+    if WoWStatusTheme then WoWStatusTheme.attach(window, background) end
 end
 
 -- Open a page by key, or the last page used (Activity on first use).

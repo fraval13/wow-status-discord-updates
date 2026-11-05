@@ -16,6 +16,7 @@ HistoryUI.lua
 Groups.lua
 Share.lua
 Flavour.lua
+Theme.lua
 MainWindow.lua
 Overview.lua
 Guide.lua

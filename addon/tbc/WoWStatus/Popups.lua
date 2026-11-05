@@ -464,6 +464,12 @@ function P.resetPosition()
     prefs.popup_position = nil
     if toast then anchor(toast, 0) end
 end
+-- Re-apply the size of a visible toast after a theme change.
+function P.restyle()
+    if toast and toast:IsShown() then
+        toast:SetScale((toast.big and 1.35 or 1) * (WoWStatusTheme and WoWStatusTheme.scale(true) or 1))
+    end
+end
 function P.setBigBanners(value) if prefs then prefs.big_banners = value ~= false end end
 function P.options()
     return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or prefs.big_banners ~= false}
@@ -511,6 +517,8 @@ local function show(item, now)
         end)
         local bg = toast:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints(); bg:SetColorTexture(.025, .035, .065, .96)
+        toast.bg = bg
+        if WoWStatusTheme then WoWStatusTheme.attach(toast, bg, true) end
         toast.accent = toast:CreateTexture(nil, "OVERLAY")
         toast.accent:SetPoint("TOPLEFT"); toast.accent:SetSize(560, 3)
         toast.icon = toast:CreateTexture(nil, "ARTWORK")
@@ -553,7 +561,7 @@ local function show(item, now)
         local level = S.number(item.level)
         heading = level == A.max_level and "MAXIMUM LEVEL!" or ("LEVEL " .. level .. "!")
     end
-    toast:SetScale(big and 1.35 or 1)
+    toast:SetScale((big and 1.35 or 1) * (WoWStatusTheme and WoWStatusTheme.scale(true) or 1))
     toast.big, toast.item = big, item
     toast.handle:SetShown(prefs.popup_unlocked == true)
     toast.icon:SetTexture(texture)
