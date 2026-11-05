@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.10.0
 
 - The WoW Status window closes with an X in the top right corner
 - Characters page: friends on older versions get their portrait, race and class from the game instead of a question mark

@@ -3,7 +3,7 @@
 ## Notes: Forever adapter authored from client API docs. In-game validation pending.
 ## Author: fraval13
 ## IconTexture: Interface\AddOns\WoWStatus\Textures\Logo
-## Version: 1.9.0
+## Version: 1.10.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Forever/Camelot only; verify installed build metadata
 Safe.lua
