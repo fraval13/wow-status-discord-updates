@@ -1,5 +1,8 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.13.0", notes={
+        "WoW Forever: your full name is known at login, so friends get your character list right away",
+    }},
     {version="1.12.0", notes={
         "Level records count levels reached before WoW Status or before joining, so late joiners no longer take them",
         "Records are kept per group, with a tab for each group on the Records page",
@@ -19,9 +22,5 @@ WoWStatusWhatsNewData = {
         "Notifications have reaction buttons that whisper the friend: GZ!, F or Git Good, Congrats!, Welcome! and Enjoy <zone>!",
         "A notification stays on screen while your mouse is over it",
         "Friends show with their player name too, like Unshaved Brittlebeard (Frank), in popups, the log and the overview",
-    }},
-    {version="1.10.0", notes={
-        "The WoW Status window closes with an X in the top right corner",
-        "Characters page: friends on older versions get their portrait, race and class from the game instead of a question mark",
     }},
 }
