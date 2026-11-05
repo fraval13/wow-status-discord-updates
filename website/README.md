@@ -55,8 +55,9 @@ downloads in place; the receiver also retains the old symlink for rollback.
 The constant Caddy document-root path needs no reload for these later releases.
 
 Version text and sizes are filled automatically from the addon release metadata.
-When changing the addon, bump the TOC/project version as usual; do not edit version
-labels by hand on the website. The pipeline runs on pushed `main` commits or manual
+Feature changes keep the current version; a separate release pull request runs
+`python scripts/bump_version.py <version>` to update the TOCs and project version
+together. Do not edit version labels by hand on the website. The pipeline runs on pushed `main` commits or manual
 workflow dispatches. Local commits alone cannot trigger GitHub Actions.
 
 After deployment, the workflow fetches the live homepage, release manifest and

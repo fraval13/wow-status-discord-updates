@@ -78,8 +78,9 @@ be checked against Git and the environment rather than assumed permanently true.
   choices when different class information is available.
 - Latest verified static site release:
   `/srv/wow-status-homepage/releases/20261030T151554096730Z`.
-  Public homepage/downloads: https://wow.frankvalde.com/ . All four 0.14.9 ZIPs
-  were verified against their hashes, TOCs, links and exact source revision.
+  Public homepage/downloads: https://wow.frankvalde.com/ . Each `main` deploy
+  verifies the live ZIPs against their hashes, TOCs, links and exact source
+  revision; the deployed version is in the live `downloads/release.json`.
 - Last validation: 270 full tests; 161 addon tests also under Lua 5.1; Ruff and
   whitespace checks passed. Browser checks passed at widths 1440/820/390/320;
   random demo-caption checks passed locally and live. The new in-game layout
@@ -116,8 +117,14 @@ a new shared file first, and add a new edition-owned adapter file to `EDITIONS` 
 the script. Inspect pending changes first: it can also propagate unrelated branding
 work. With unrelated edits present, copy only task-owned files or use an isolated
 worktree. Add new Lua files to each edition's TOC before consumers and update any
-explicit test-harness load lists (`test_addon.py`, `test_forever.py`). Bump all four
-TOC versions and `pyproject.toml` together when releasing addon changes.
+explicit test-harness load lists (`test_addon.py`, `test_forever.py`).
+
+Versions: feature pull requests must NOT change the version. Several agents work
+on separate issues at once, so per-feature bumps would conflict and pick the same
+number. A release is its own small pull request that only runs
+`python scripts/bump_version.py <new-version>` (it rewrites `pyproject.toml` and
+all four TOCs together; `--check` reports them) and adds release notes. Merging
+it publishes the new number.
 
 Development setup and ordinary checks:
 
@@ -170,7 +177,7 @@ For a default build, ensure that output is fresh before generating it. Final
 ZIPs must contain top-level `WoWStatus/` and all TOC-listed files. All four versions
 must match. `downloads/release.json` records source revision and checksums; website
 version and size labels are generated, not maintained manually. Update meaningful
-release notes in `website/index.html` for an addon release.
+release notes in `website/index.html` in the release pull request.
 
 To change the version, edit `project.version` in `pyproject.toml` only, then run
 `python scripts/sync_version.py` to write it into all four addon TOCs. Do not edit
