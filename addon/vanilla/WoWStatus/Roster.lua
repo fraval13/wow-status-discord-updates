@@ -52,7 +52,9 @@ local function ownLines(group)
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
             and info.race and (info.sex == 2 or info.sex == 3) and CLASSES[info.class] and S.number(info.level) then
-            local name = WoWStatusPopups.characterName(c)
+            -- A message is split on spaces; WoW Forever names have one ("Edith Aateigen").
+            -- Character names cannot contain "_", so it stands for a space here.
+            local name = (WoWStatusPopups.characterName(c):gsub(" ", "_"))
             table.insert(lines, table.concat({"C", group, roster.id, playerName() or "-", name, info.race, info.sex, info.class, info.level}, " "))
         end
     end
@@ -140,6 +142,8 @@ function R.receive(message, sender, distribution)
     if #name > 24 or name:find(S.CONTROL_OR_PIPE) then return false end
     local character = valid(words, WoWStatusAdapter.max_level or 60)
     if not character then return false end
+    local short, realmPart = character.name:match("^([^%-]+)%-(.+)$")
+    character.name = short:gsub("_", " ") .. "-" .. realmPart
     local player = players[pid]
     if not player then
         local count, oldest, oldestAt = 0, nil, math.huge
@@ -158,6 +162,12 @@ function R.receive(message, sender, distribution)
     end
     character.at = time()
     player.characters[characterKey] = character
+    -- A full name replaces the first-name-only entry an older client announced.
+    local first = character.name:match("^([^ %-]+) [^%-]+%-")
+    if first then
+        local old = key(first .. "-" .. realmPart)
+        if old and old ~= characterKey then player.characters[old] = nil end
+    end
     R.render()
     return true
 end
@@ -203,8 +213,40 @@ function R.groups()
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
     end
+    -- First-name-only entries (older WoW Forever clients announced "Unshaved")
+    -- show as the one full name known for them ("Unshaved Brittlebeard").
+    local full = {}
+    local function note(name)
+        local first, rest = tostring(name or ""):match("^([^ %-]+) [^%-]+%-(.+)$")
+        if first then
+            local k = key(first .. "-" .. rest)
+            if k then
+                local seen = full[k]
+                if seen == nil then full[k] = name
+                elseif seen and key(seen) ~= key(name) then full[k] = false end -- Two people: don't guess.
+            end
+        end
+    end
+    for group in pairs(WoWStatusGroups.selected(current)) do
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do note(peer) end
+    end
+    for _, e in ipairs(WoWStatusJournal.entries()) do note(e.sender) end
+    for _, player in pairs(state().players) do
+        for _, character in pairs(player.characters) do note(character.name) end
+    end
+    for _, c in pairs(db.characters or {}) do note(WoWStatusPopups.characterName(c)) end
+    local function resolve(name)
+        local k = key(name)
+        return (k and full[k]) or name
+    end
     local merged, order, known = {}, {}, {}
     local function add(title, character, self)
+        if not self then
+            character = {name=resolve(character.name), race=character.race, sex=character.sex,
+                class=character.class, level=character.level, at=character.at}
+            -- This account's own characters are listed only under "(you)".
+            if WoWStatusPopups.isSelf(character.name) then return end
+        end
         local groupKey = S.lowerASCII(title)
         local entry = merged[groupKey]
         if not entry then entry = {title=title, rows={}}; merged[groupKey] = entry; table.insert(order, entry) end
@@ -229,7 +271,7 @@ function R.groups()
     -- Senders in the log that never announced a list.
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if not e.owner and e.sender and key(e.sender) and not known[key(e.sender)] then
-            add("Not announced", {name=e.sender, at=e.at})
+            add("Not announced", {name=resolve(e.sender), at=e.at})
         end
     end
     for _, entry in ipairs(order) do

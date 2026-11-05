@@ -131,3 +131,24 @@ def test_log_senders_without_a_list_show_as_never_met():
         assert(found and found.name == "Eldrin-TestRealm" and found.level == nil)
         assert(found.latest == "Reached level 8!")
     ''')
+
+
+def test_full_names_with_spaces_are_announced_and_replace_first_name_entries():
+    # WoW Forever: an older client announced "Mira"; the full name is "Mira Stone".
+    mira, thora = pair()
+    pump(mira, thora)
+    mira.execute('character().chat_name = "Mira Stone"')
+    mira.execute('WoWStatusRoster.changed()')
+    sent = pump(mira, thora, start=300)
+    assert sent and 'Mira_Stone-TestRealm' in sent[0]
+    names = [r.name for g in thora.eval('WoWStatusRoster.groups()').values() for r in g.rows.values()]
+    assert 'Mira Stone-TestRealm' in names and 'Mira-TestRealm' not in names
+
+
+def test_a_first_name_entry_shows_as_its_one_known_full_name():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('WoWStatusPopups.notePeer(next(character().group_ids), "Mira Stone-TestRealm")')
+    names = [r.name for g in thora.eval('WoWStatusRoster.groups()').values() for r in g.rows.values()]
+    assert 'Mira Stone-TestRealm' in names and 'Mira-TestRealm' not in names
+    assert names.count('Mira Stone-TestRealm') == 1

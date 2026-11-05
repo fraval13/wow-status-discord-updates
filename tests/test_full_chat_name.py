@@ -46,3 +46,30 @@ def test_full_chat_name_is_learnt_from_the_roster_and_own_entries_are_merged():
         fire("PLAYER_LEVEL_UP",6)
         assert(WoWStatusJournal.entries()[1].sender=="Thora Stone-TestRealm")
     ''')
+
+
+def test_without_guids_the_one_member_named_like_you_is_you():
+    lua = make_lua()
+    lua.execute('''
+        WoWStatusGroups.update("dawnwatch","")
+        local group=next(character().group_ids)
+        __peers={"Thora Stone","Eldrin"}
+        WoWStatusPopups.peers(group)
+        for _=1,3 do WoWStatusPopups.tick() end
+        assert(character().chat_name=="Thora Stone")
+        local peers=WoWStatusPopups.peers(group)
+        assert(#peers==1 and peers[1]=="Eldrin")
+    ''')
+
+
+def test_two_members_named_like_you_teach_nothing():
+    lua = make_lua()
+    lua.execute('''
+        WoWStatusGroups.update("dawnwatch","")
+        local group=next(character().group_ids)
+        __peers={"Thora Stone","Thora Vale","Eldrin"}
+        WoWStatusPopups.peers(group)
+        for _=1,3 do WoWStatusPopups.tick() end
+        assert(character().chat_name==nil)
+        assert(#WoWStatusPopups.peers(group)==3)
+    ''')

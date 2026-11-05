@@ -178,15 +178,29 @@ end
 local function readRoster(index,count)
     local getter=C_ChatInfo and C_ChatInfo.GetChannelRosterInfo or GetChannelRosterInfo
     local result,seen,read={}, {},0
+    local first=A.playerName()
+    first=first and not first:find(" ",1,true) and S.lowerASCII(first) or nil
+    local candidates,learnt={},false
     for i=1,math.min(count,64) do
         local name,_,_,guid=S.call(getter,index,i)
         local target=S.string(name);local key=target and P.senderKey(target)
         if key then
             read=read+1
             if P.isSelf(target,guid) then
-                if S.string(guid) then learnName(target) end
-            elseif not seen[key] then seen[key]=true;result[#result+1]=target end
+                if S.string(guid) then learnName(target);learnt=true end
+            elseif not seen[key] then
+                seen[key]=true;result[#result+1]=target
+                -- Without GUIDs: "Edith Aateigen" when the game calls this character "Edith".
+                local short=target:match("^([^-]+)")
+                if first and short and S.lowerASCII(short):sub(1,#first+1)==first.." " then candidates[#candidates+1]=target end
+            end
         end
+    end
+    -- Exactly one such member in a complete read is this character; two could be
+    -- anyone, so nothing is learnt then.
+    if not learnt and #candidates==1 and count>0 and read>=math.min(count,64) then
+        learnName(candidates[1])
+        for i,target in ipairs(result) do if target==candidates[1] then table.remove(result,i);break end end
     end
     return result,count>0 and read>=math.min(count,64)
 end

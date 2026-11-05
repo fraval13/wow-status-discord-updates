@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- WoW Forever: the character list uses full names, and first-name-only entries like Edith or Unshaved are gone
+
 ## 1.5.0
 
 - Report CurseForge errors clearly without echoing the token (#114)
