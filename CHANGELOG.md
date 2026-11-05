@@ -12,6 +12,8 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- Characters page: a section per group that you can open and close
+- A friend in several of your groups gets each update once instead of once per group
 - Overview: Your group lists everyone online with a scrollbar, and Since you were last here fits its lines
 
 ## 1.11.0

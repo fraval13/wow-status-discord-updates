@@ -451,20 +451,21 @@ function R.groups()
         local entry = merged[groupKey]
         if not entry then entry = {title=title, rows={}}; merged[groupKey] = entry; table.insert(order, entry) end
         entry.note = entry.note or note
+        entry.self = entry.self or self == true
         local k = key(character.name)
         if not k or known[k] then return end
         known[k] = true
         local status = self and (k == key(WoWStatusPopups.characterName(current)) and "online" or "offline")
             or (online[k] and "online") or ("last seen " .. ago(math.max(lastSeen[k] or 0, character.at or 0)))
         -- Shared groups, by this account's own labels for them.
-        local labels = {}
+        local labels, ids = {}, {}
         for group in pairs(shared[k] or character.groups or {}) do
             local member = selected[group]
-            if member then table.insert(labels, member.label or group) end
+            if member then table.insert(labels, member.label or group); ids[group] = true end
         end
         table.sort(labels)
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
-            level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels,
+            level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels, groupIds=ids,
             deaths=S.number(character.deaths) or deaths[k] or nil})
     end
     for _, c in pairs(db.characters or {}) do
@@ -504,6 +505,7 @@ function R.groups()
         end
     end
     for _, entry in ipairs(order) do
+        entry.name = entry.title
         entry.title = entry.title .. " (" .. #entry.rows .. (#entry.rows == 1 and " character)" or " characters)")
         table.sort(entry.rows, function(a, b) return (a.level or 0) > (b.level or 0) end)
     end
@@ -547,52 +549,145 @@ local function card(index)
     return c
 end
 
+local function counted(name, count)
+    return name .. " (" .. count .. (count == 1 and " character)" or " characters)")
+end
+-- The page's collapsible sections: your characters, one per group you are in
+-- (a friend in two of your groups is in both), and characters in none of them.
+-- Each section holds player entries as R.groups returns them.
+function R.sections()
+    local entries, sections = R.groups(), {}
+    local mine = {key="you", title="Your characters", entries={}}
+    for _, entry in ipairs(entries) do if entry.self then table.insert(mine.entries, entry) end end
+    if #mine.entries > 0 then table.insert(sections, mine) end
+    local list = {}
+    for id, member in pairs(WoWStatusGroups.selected(current)) do table.insert(list, {id=id, label=member.label or id}) end
+    table.sort(list, function(a, b) return S.lowerASCII(a.label) < S.lowerASCII(b.label) end)
+    local placed = {}
+    for _, group in ipairs(list) do
+        local section = {key=group.id, title=group.label, entries={}, characters=0, online=0}
+        for _, entry in ipairs(entries) do
+            if not entry.self then
+                local rows = {}
+                for _, row in ipairs(entry.rows) do
+                    if row.groupIds and row.groupIds[group.id] then
+                        table.insert(rows, row); placed[row] = true
+                        if row.status == "online" then section.online = section.online + 1 end
+                    end
+                end
+                if #rows > 0 then
+                    table.insert(section.entries, {title=counted(entry.name, #rows), name=entry.name, note=entry.note, rows=rows})
+                    section.characters = section.characters + #rows
+                end
+            end
+        end
+        table.insert(sections, section)
+    end
+    local other = {key="other", title="Other", entries={}}
+    for _, entry in ipairs(entries) do
+        if not entry.self then
+            local rows = {}
+            for _, row in ipairs(entry.rows) do if not placed[row] then table.insert(rows, row) end end
+            if #rows > 0 then table.insert(other.entries, {title=counted(entry.name, #rows), name=entry.name, note=entry.note, rows=rows}) end
+        end
+    end
+    if #other.entries > 0 then table.insert(sections, other) end
+    return sections
+end
+-- Collapsed sections, saved account-wide by section key.
+function R.collapsed(key)
+    local roster = state()
+    roster.collapsed = type(roster.collapsed) == "table" and roster.collapsed or {}
+    return roster.collapsed[key] == true
+end
+function R.toggle(key)
+    local roster = state()
+    roster.collapsed = type(roster.collapsed) == "table" and roster.collapsed or {}
+    roster.collapsed[key] = not roster.collapsed[key] or nil
+    R.render()
+end
+local SECTION = 30
+local function section(index)
+    local b = CreateFrame("Button", nil, page.list)
+    b:SetSize(680, SECTION - 4)
+    b.bg = b:CreateTexture(nil, "BACKGROUND"); b.bg:SetAllPoints(); b.bg:SetColorTexture(1, .82, 0, .08)
+    b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetPoint("TOPLEFT", 4, -5); b.icon:SetSize(16, 16)
+    b.text = UI.text(b, "GameFontNormalLarge", 26, -5, 640)
+    b:SetScript("OnClick", function(self) if self.key then R.toggle(self.key) end end)
+    page.sections[index] = b
+    return b
+end
+
 function R.render()
     if not page or not page.IsShown or not page:IsShown() then return end
-    local index, headers, y = 0, 0, 0
-    for _, group in ipairs(R.groups()) do
-        headers = headers + 1
-        local h = page.headers[headers] or header(headers)
-        h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y)
-        -- The version note stays small and grey beside the title.
-        h.text:SetText(group.title:gsub("|", "||") .. (group.note and ("   |cff808080" .. group.note .. "|r") or "")); h:Show()
-        y = y + HEADER
-        for _, character in ipairs(group.rows) do
-            if index >= 200 then break end
-            index = index + 1
-            local c = page.lines[index] or card(index)
-            c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -y)
-            c.portraitKind = R.portrait(c.portrait, character.name, character.race, character.sex)
-            local name = (character.name:match("^[^-]+") or character.name):gsub("|", "||")
-            local colour = UI.classColour(character.class)
-            c.name:SetText(colour and (colour .. name .. "|r") or name)
-            c.badge:SetLevel(character.level); c.badge:SetShown(character.level ~= nil)
-            local class = character.class and (character.class:sub(1, 1) .. character.class:sub(2):lower()) or "Never met"
-            c.class:SetText(character.race and (character.race .. " " .. class) or class)
-            local online = character.status == "online"
-            c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
-            c.status:SetText(character.status)
-            local xp = S.number(character.xp)
-            c.xp:SetProgress(xp and xp / 1000, xp and ("XP " .. math.floor(xp / 10) .. "%"))
-            -- Level and total deaths at the end of the card.
-            local facts = {}
-            if character.level then table.insert(facts, "Level " .. character.level) end
-            local died = S.number(character.deaths)
-            if died then table.insert(facts, died == 1 and "1 death" or (died .. " deaths")) end
-            c.latest:SetText(table.concat(facts, " · "))
-            local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
-            c.groups:SetText(groups ~= "" and ("|cff9d9d9dGroups:|r " .. groups:gsub("|", "||")) or "")
-            c.text = c.name -- Older callers read a row's text.
-            c.kind, c.character = "character", character
-            UI.tint(c, false)
-            c:Show()
-            y = y + CARD + GAP
+    local index, headers, sections, y = 0, 0, 0, 0
+    for _, part in ipairs(R.sections()) do
+        sections = sections + 1
+        local b = page.sections[sections] or section(sections)
+        local closed = R.collapsed(part.key)
+        b.key = part.key
+        b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
+        b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+        local summary = part.characters and ("   |cff9d9d9d" .. part.characters .. (part.characters == 1 and " character" or " characters")
+            .. ", " .. part.online .. " online|r") or ""
+        b.text:SetText(part.title:gsub("|", "||") .. summary)
+        b:Show()
+        y = y + SECTION
+        if not closed then
+            if #part.entries == 0 then
+                headers = headers + 1
+                local h = page.headers[headers] or header(headers)
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
+                h.text:SetText("|cff9d9d9dNobody else seen in this group yet.|r"); h:Show()
+                y = y + HEADER
+            end
+            for _, group in ipairs(part.entries) do
+                headers = headers + 1
+                local h = page.headers[headers] or header(headers)
+                h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
+                -- The version note stays small and grey beside the title.
+                h.text:SetText(group.title:gsub("|", "||") .. (group.note and ("   |cff808080" .. group.note .. "|r") or "")); h:Show()
+                y = y + HEADER
+                for _, character in ipairs(group.rows) do
+                    if index >= 200 then break end
+                    index = index + 1
+                    local c = page.lines[index] or card(index)
+                    c:ClearAllPoints(); c:SetPoint("TOPLEFT", 0, -y)
+                    c.portraitKind = R.portrait(c.portrait, character.name, character.race, character.sex)
+                    local name = (character.name:match("^[^-]+") or character.name):gsub("|", "||")
+                    local colour = UI.classColour(character.class)
+                    c.name:SetText(colour and (colour .. name .. "|r") or name)
+                    c.badge:SetLevel(character.level); c.badge:SetShown(character.level ~= nil)
+                    local class = character.class and (character.class:sub(1, 1) .. character.class:sub(2):lower()) or "Never met"
+                    c.class:SetText(character.race and (character.race .. " " .. class) or class)
+                    local online = character.status == "online"
+                    c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
+                    c.status:SetText(character.status)
+                    local xp = S.number(character.xp)
+                    c.xp:SetProgress(xp and xp / 1000, xp and ("XP " .. math.floor(xp / 10) .. "%"))
+                    -- Level and total deaths at the end of the card.
+                    local facts = {}
+                    if character.level then table.insert(facts, "Level " .. character.level) end
+                    local died = S.number(character.deaths)
+                    if died then table.insert(facts, died == 1 and "1 death" or (died .. " deaths")) end
+                    c.latest:SetText(table.concat(facts, " · "))
+                    local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
+                    c.groups:SetText(groups ~= "" and ("|cff9d9d9dGroups:|r " .. groups:gsub("|", "||")) or "")
+                    c.text = c.name -- Older callers read a row's text.
+                    c.kind, c.character = "character", character
+                    UI.tint(c, false)
+                    c:Show()
+                    y = y + CARD + GAP
+                end
+            end
         end
+        y = y + 4
     end
     for i = index + 1, #page.lines do page.lines[i]:Hide() end
     for i = headers + 1, #page.headers do page.headers[i]:Hide() end
+    for i = sections + 1, #page.sections do page.sections[i]:Hide() end
     page.list:SetHeight(math.max(1, y))
-    page.empty:SetShown(index == 0)
+    page.empty:SetShown(index == 0 and sections == 0)
     page.count = index
 end
 
@@ -600,7 +695,7 @@ local function build(parent)
     page = CreateFrame("Frame", "WoWStatusCharactersPage", parent); page:SetAllPoints(parent)
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 24, -4); page.scroll:SetSize(710, 470)
-    page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines, page.headers = {}, {}
+    page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines, page.headers, page.sections = {}, {}, {}
     page.scroll:SetScrollChild(page.list)
     page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     page.empty:SetPoint("TOPLEFT", 24, -12); page.empty:SetText("No characters yet.")

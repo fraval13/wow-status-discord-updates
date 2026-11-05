@@ -80,7 +80,9 @@ def test_simultaneous_updates_reach_every_peer():
         packet = lua.eval(f'__sent[{i}]')
         if packet['prefix'] == 'WoWStatus':
             delivered.setdefault(packet['text'], set()).add(packet['target'])
-    assert sorted(len(t) for t in delivered.values()) == [20] * 9   # fails: [1, 20, 20, 20, 20, 20, 20]
+    # Each update reaches all 20 peers once: a peer in all three groups is not
+    # whispered once per group (receivers would drop the copies anyway).
+    assert sorted(len(t) for t in delivered.values()) == [20] * 3   # fails: [1, 20, 20, 20, 20, 20, 20]
 
 
 @pytest.mark.parametrize('instance', [False, True])
@@ -93,14 +95,14 @@ def test_one_whisper_a_second_never_meets_the_prefix_allowance(instance):
         level_up(lua, level)
     run(lua, 11, 400)
     assert lua.eval('__throttled') == 0
-    assert len(popup_attempts(lua)) == 180
+    assert len(popup_attempts(lua)) == 60  # 3 updates x 20 peers, once each
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'attempted_no_receipt'
 
 
 def test_late_whisper_of_a_long_queue_is_accepted_by_its_peer():
-    """The 180th whisper leaves three minutes after the event; the peer still takes it."""
+    """The 135th whisper leaves over two minutes after the event; the peer still takes it."""
     sender = actor('Thora', 'alpha\nbeta\ngamma')
-    peers(sender, 20)
+    peers(sender, 45)
     for level in (2, 3, 4):
         level_up(sender, level)
     sent_at = {}
@@ -111,8 +113,8 @@ def test_late_whisper_of_a_long_queue_is_accepted_by_its_peer():
             sent_at[i] = second
     last = sender.eval(f'__sent[{len(sent_at)}]')
     assert sent_at[len(sent_at)] - 10 > 120   # Older clients would drop it as stale.
-    assert last['target'] == 'Peer19-TestRealm'
-    receiver = actor('Peer19', 'alpha\nbeta\ngamma')
+    assert last['target'] == 'Peer44-TestRealm'
+    receiver = actor('Peer44', 'alpha\nbeta\ngamma')
     receiver.execute('__peers={"Thora-TestRealm"}')
     clock(receiver, sent_at[len(sent_at)])
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', last['text'], 'WHISPER', 'Thora-TestRealm')

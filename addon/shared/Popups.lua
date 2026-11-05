@@ -12,6 +12,9 @@ local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
 local ADDON_NAME = (...) or "WoWStatus" -- client-supplied folder/TOC name, not the comm prefix
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
+-- Members each update already reached, by event (weak: never saved). A friend in
+-- two shared groups gets one whisper, not one per group; receivers also dedupe.
+local deliveredTo=setmetatable({}, {__mode="k"})
 -- GUIDs that channel rosters gave for members, by sender key (bounded).
 local rosterGuids,rosterGuidCount={},0
 local rosterBusy=false
@@ -1106,11 +1109,20 @@ local function tick()
                 end
             end
         end
-        -- Skip a peer that a newer complete roster read no longer lists.
-        while departed(item.group_id, item.targets[item.target], item.since) do
+        -- Skip a peer that a newer complete roster read no longer lists, or that this
+        -- update already reached through another shared group.
+        local function reached(target)
+            local delivered = item.event and deliveredTo[item.event]
+            return delivered ~= nil and delivered[P.senderKey(target) or ""] == true
+        end
+        while departed(item.group_id, item.targets[item.target], item.since) or reached(item.targets[item.target]) do
+            local gone = departed(item.group_id, item.targets[item.target], item.since)
             item.unsure = nil -- A pending retry was for that peer.
             if item.target == #item.targets then
-                table.remove(outgoing, 1); status("remaining_peers_left", item.event); return
+                table.remove(outgoing, 1)
+                -- Peers reached through another group leave the last status as it was.
+                if gone then status("remaining_peers_left", item.event) end
+                return
             end
             item.target = item.target + 1
         end
@@ -1134,6 +1146,10 @@ local function tick()
     nextSend = now + 1
     if item.targets and item.target < #item.targets then item.target = item.target + 1
     else table.remove(outgoing, 1) end
+    if result == "sent" and item.event and args[3] == "WHISPER" then
+        deliveredTo[item.event] = deliveredTo[item.event] or {}
+        deliveredTo[item.event][P.senderKey(args[4]) or ""] = true
+    end
     if result == "sent" then status("attempted_no_receipt", item.event, args[4])
     elseif result == "offline" then status("peer_offline", item.event, args[4])
     else

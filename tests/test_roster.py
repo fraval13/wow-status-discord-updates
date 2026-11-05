@@ -305,3 +305,25 @@ def test_sync_button_refreshes_lists_both_ways_once_a_minute():
         button.OnClick(button)
         assert(button.ready == false)
     ''')
+
+
+def test_characters_page_has_collapsible_sections_per_group():
+    mira, thora = pair()
+    for lua in (mira, thora):
+        lua.eval('WoWStatusGroups.update')('dawnwatch\nnightwatch', lua.eval('WoWStatusDB.player_name'))
+    pump(mira, thora)
+    sections = [(s.title, s.characters) for s in thora.eval('WoWStatusRoster.sections()').values()]
+    assert sections == [('Your characters', None), ('dawnwatch', 1), ('nightwatch', 1)]
+    thora.execute('''
+        SlashCmdList.WOWSTATUS("characters")
+        assert(WoWStatusCharactersPage.count == 3) -- You, and Mira in each of the two groups.
+        local dawn = WoWStatusCharactersPage.sections[2]
+        assert(dawn.text.text:find("dawnwatch", 1, true) and dawn.text.text:find("1 online", 1, true))
+        dawn.OnClick(dawn)
+        assert(WoWStatusRoster.collapsed(dawn.key) and WoWStatusCharactersPage.count == 2)
+        -- Saved: reopening keeps it closed.
+        WoWStatusMainWindow.show("overview"); WoWStatusMainWindow.show("characters")
+        assert(WoWStatusCharactersPage.count == 2)
+        dawn.OnClick(dawn)
+        assert(not WoWStatusRoster.collapsed(dawn.key) and WoWStatusCharactersPage.count == 3)
+    ''')
