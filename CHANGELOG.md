@@ -10,6 +10,14 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## 1.0.0
+
+- WoW Status 1.0 is out, and new versions are now also published on CurseForge
+- On Retail, the log now shows your earlier level-ups, dated from your level achievements
+- Death announcements on Retail show your lifetime death total instead of deaths since installing
+- The log now shows which level a character was at when you started using WoW Status
+- Typing /wstatus during combat opens the addon's own settings window
+
 ## 0.17.0
 
 - Recover history from before installation where the client allows it (#110)
