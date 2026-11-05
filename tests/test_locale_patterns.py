@@ -137,9 +137,9 @@ def test_popup_from_nordic_sender_is_received(lua, name):
 
 
 @pytest.mark.parametrize('detail, sent', [
-    ('Won |cffff0000a duel|r\\tin Ærlig', 'Won a duel in Ærlig'),
-    ('Won |Hitem:1|h[Ærlig Blade]|h |TInterface\\\\Icon:0|t', 'Won [Ærlig Blade] '),
-    ('Odd | pipe', 'Odd   pipe'),
+    ('Promoted to |cffff0000a duel|r\\tin Ærlig', 'Promoted to a duel in Ærlig'),
+    ('Promoted to |Hitem:1|h[Ærlig Blade]|h |TInterface\\\\Icon:0|t', 'Promoted to [Ærlig Blade] '),
+    ('Promoted to Odd | pipe', 'Promoted to Odd   pipe'),
 ])
 def test_outgoing_detail_strips_escapes_and_pipes_the_receiver_would_reject(lua, detail, sent):
     lua.eval('WoWStatusGroups.update')('dawnwatch', '')

@@ -1,0 +1,373 @@
+"""Popups show only addon-produced text from group peers, a few per sender (issue #8)."""
+import pytest
+from test_addon import FRIEND_STUBS, STUBS, make_lua
+from test_journal import actor, clock
+from test_retail import retail_runtime
+
+from wow_status.group_routing import group_key
+
+CHANNEL = 'WStatus' + group_key('dawnwatch')
+
+
+def hexed(text):
+    return text.encode('utf-8').hex()
+
+
+def popup_text(lua):
+    return lua.eval('WoWStatusLevelPopup and WoWStatusLevelPopup.message.text or ""')
+
+
+def joined(lua):
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
+    return lua
+
+
+def test_member_cannot_push_arbitrary_text_as_introduction():
+    # The issue's reproduction, verbatim.
+    receiver = actor('Mira')
+    clock(receiver, 10)
+    group = receiver.eval('function() for id in pairs(character().group_ids) do return id end end')()
+    client = receiver.eval('WoWStatusAdapter.client_id')
+    packet = f'{group} WSTATUS4 {client} introduction 1793000010 x-1 FREE GOLD - whisper me for 10k'
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Stranger-TestRealm')
+    shown = receiver.eval('WoWStatusLevelPopup and WoWStatusLevelPopup.message.text or ""')
+    assert 'FREE GOLD' not in shown
+
+
+# (kind, packet version, the text the addon itself produces, forged texts)
+TEMPLATES = [
+    ('mount', 4, 'First mount: Brown Horse',
+     ['FREE GOLD - whisper me for 10k', 'First mount:  ', 'First mount ride recorded! FREE GOLD']),
+    ('mount', 4, 'First mount ride recorded!', ['First mount']),
+    ('reputation', 4, 'Exalted with Ironforge',
+     ['FREE GOLD - whisper me for 10k', 'Friendly with Ironforge', 'Exalted with  ']),
+    ('unlock', 4, 'Unlocked Defensive Stance', ['FREE GOLD - whisper me for 10k', 'Unlocked ']),
+    ('pvp', 4, 'Promoted to Sergeant', ['FREE GOLD - whisper me for 10k', 'Reached honor level 5']),
+    ('zone', 3, 'Entered Stranglethorn Vale', ['FREE GOLD whisper me for 10k', 'Entered ']),
+    ('profession', 3, 'Learned Blacksmithing (Apprentice)', ['FREE GOLD whisper me', 'Learned  ']),
+    ('profession', 3, 'Tailoring: Expert (225 max)', ['Tailoring: FREE GOLD (225 max)', 'FREE: GOLD']),
+]
+
+
+@pytest.mark.parametrize('kind, version, valid, forged', TEMPLATES)
+def test_each_kind_accepts_only_its_template(kind, version, valid, forged):
+    lua = joined(make_lua())
+    lua.execute('__combat=true')  # Keep everything queued so the log shows what was accepted.
+    receive = lua.eval('WoWStatusPopups.receive')
+
+    def packet(text, nonce):
+        body = text if version == 4 else hexed(text)
+        return f'WSTATUS{version} classic-era {kind} 1793000000 {nonce} {body}'
+
+    for i, text in enumerate(forged):
+        assert not receive(packet(text, f'forged-{i}'), 'Eldrin-TestRealm', CHANNEL)
+    assert lua.eval('#WoWStatusDB.popups.activity') == 0
+    assert receive(packet(valid, 'real'), 'Eldrin-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.activity[1].text') == valid
+    # Forged text from a member raises the existing invalid-data warning first.
+    lua.execute('__combat=false; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Eldrin is a really bad boy, shame on you!'
+    lua.execute('function time() return 1793000007 end; WoWStatusPopups.tick()')
+    assert popup_text(lua) == f'Eldrin — {valid}'
+
+
+def test_retail_pvp_accepts_only_honor_levels_in_range():
+    lua = retail_runtime()
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
+    lua.execute('__combat=true')
+    receive = lua.eval('WoWStatusPopups.receive')
+    for i, text in enumerate(['Promoted to Sergeant', 'Reached honor level 0', 'Reached honor level 012',
+                              'Reached honor level 10001', 'Reached honor level 5 FREE GOLD']):
+        assert not receive(f'WSTATUS4 retail pvp 1793000000 bad-{i} {text}', 'Eldrin-TestRealm', CHANNEL)
+    assert receive('WSTATUS4 retail pvp 1793000000 good Reached honor level 101', 'Eldrin-TestRealm', CHANNEL)
+    assert lua.eval('#WoWStatusDB.popups.activity') == 1
+
+
+MILESTONE_STUBS = '''
+    __standing=5;__collected=false;__known={};__rank=0
+    C_Reputation={GetNumFactions=function() return 1 end,
+        GetFactionDataByIndex=function() return {name="Ironforge",reaction=__standing,factionID=47} end}
+    C_MountJournal={GetMountIDs=function() return {1} end,
+        GetMountInfoByID=function() return "Brown Horse",458,1,false,true,1,false,false,nil,false,__collected end}
+    function IsSpellKnown(id) return __known[id]==true end
+    function GetSpellInfo(id) return ({[71]="Defensive Stance",[2458]="Berserker Stance"})[id] end
+    function UnitPVPRank() return __rank end
+    function GetPVPRankInfo(rank) return rank>0 and "Sergeant" or "Unranked",rank end
+'''
+
+
+def test_milestones_from_a_real_sender_still_show():
+    sender = joined(make_lua(STUBS + MILESTONE_STUBS))
+    receiver = joined(make_lua(FRIEND_STUBS))
+    sender.execute('''
+        __standing=6;fire("UPDATE_FACTION")
+        __collected=true;fire("NEW_MOUNT_ADDED",1)
+        __known[71]=true;fire("SPELLS_CHANGED")
+        __rank=6;fire("PLAYER_PVP_RANK_CHANGED")
+        for i=1,8 do local now=1793000000+i; function time() return now end; WoWStatusPopups.tick() end
+    ''')
+    packets = [sender.eval(f'__sent[{i}].text') for i in range(1, sender.eval('#__sent') + 1)]
+    assert len(packets) == 4
+    for packet in packets:
+        receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    texts = [receiver.eval(f'WoWStatusDB.popups.activity[{i}].text') for i in range(1, 5)]
+    assert sorted(texts) == ['First mount: Brown Horse', 'Honored with Ironforge',
+                             'Promoted to Sergeant', 'Unlocked Defensive Stance']
+    assert receiver.eval('#WoWStatusJournal.entries()') == 4
+    assert popup_text(receiver).startswith('Thora — ')
+    assert receiver.eval('WoWStatusDB.popups.last_receive.state') == 'queued'
+
+
+def test_sender_does_not_send_text_receivers_would_reject():
+    lua = joined(make_lua())
+    lua.execute('''
+        local ids = {}
+        for id in pairs(character().group_ids) do ids[id] = true end
+        WoWStatusPopups.broadcast(character(), {id="pvp-1", kind="pvp", at=time(), group_ids=ids,
+            data={text="Won a duel"}})
+    ''')
+    assert lua.eval('#__sent') == 0
+    assert lua.eval('WoWStatusDB.popups.last_send.state') == 'invalid_text'
+
+
+def test_sender_outside_the_roster_is_held_then_rejected():
+    lua = joined(make_lua(STUBS.replace('__peers = {"Eldrin-TestRealm"}', '__peers = {}')))
+    receive = lua.eval('WoWStatusPopups.receive')
+    assert not receive('WSTATUS2 classic-era LEVEL 3 1793000000 stranger-3', 'Stranger-TestRealm', CHANNEL)
+    assert not receive(f'WSTATUS3 classic-era zone 1793000000 stranger-4 {hexed("Entered Elwynn Forest")}',
+                       'Stranger-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    assert lua.eval('#WoWStatusDB.popups.activity') == 0
+    assert lua.eval('#WoWStatusJournal.entries()') == 0
+    lua.execute('function time() return 1793000059 end; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    lua.execute('function time() return 1793000060 end; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'rejected_unknown_sender'
+    assert lua.eval('WoWStatusLevelPopup') is None
+    assert lua.eval('#WoWStatusDB.popups.activity') == 0
+    assert lua.eval('#WoWStatusJournal.entries()') == 0
+    assert lua.eval('WoWStatusDB.popups.level_claims["stranger-testrealm"]') is None
+
+
+def test_member_who_just_joined_is_shown_once_the_roster_lists_them():
+    lua = joined(make_lua())
+    receive = lua.eval('WoWStatusPopups.receive')
+    assert not receive('WSTATUS4 classic-era introduction 1793000000 new-1 Joined the WoW Status group',
+                       'Mira-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    lua.execute('WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup') is None
+    # The roster read completes a few seconds later and lists the new member.
+    lua.execute('''
+        table.insert(__peers,"Mira-TestRealm")
+        function time() return 1793000005 end
+        WoWStatusPopups.tick()
+    ''')
+    assert popup_text(lua) == 'Mira — Joined the WoW Status group'
+    assert lua.eval('#WoWStatusJournal.entries()') == 1
+
+
+def test_member_who_replaced_another_waits_for_the_roster_cache_to_expire():
+    lua = joined(make_lua())
+    assert list(lua.eval('WoWStatusPopups.peers')(group_key('dawnwatch')).values()) == ['Eldrin-TestRealm']
+    lua.execute('__peers={"Mira-TestRealm"}')  # Eldrin left and Mira joined: same count, cache still fresh.
+    assert not lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 5 1793000000 mira-5',
+                                                   'Mira-TestRealm', CHANNEL)
+    lua.execute('function time() return 1793000029 end; WoWStatusPopups.tick()')
+    assert lua.eval('WoWStatusLevelPopup') is None
+    lua.execute('function time() return 1793000030 end; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 5!'
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'displayed'
+
+
+ASYNC_ROSTER = '''
+    __ready=true
+    function GetSelectedDisplayChannel() return 1 end
+    function SetSelectedDisplayChannel() end
+    C_ChatInfo.GetChannelRosterInfo=function(_, i) if __ready then return __peers[i] end end
+'''
+
+
+def test_known_member_is_not_held_while_a_changed_roster_reloads():
+    lua = joined(make_lua(STUBS + ASYNC_ROSTER))
+    group = group_key('dawnwatch')
+    assert list(lua.eval('WoWStatusPopups.peers')(group).values()) == ['Eldrin-TestRealm']
+    # Mira logs in: the member count changes and the new roster is still loading.
+    lua.execute('table.insert(__peers,"Mira-TestRealm"); __ready=false')
+    assert len(lua.eval('WoWStatusPopups.peers')(group)) == 0
+    receive = lua.eval('WoWStatusPopups.receive')
+    assert receive('WSTATUS2 classic-era LEVEL 5 1793000000 eldrin-5', 'Eldrin-TestRealm', CHANNEL)
+    assert popup_text(lua) == 'Eldrin reached level 5!'
+    key = lua.eval('WoWStatusPopups.senderKey')
+    assert lua.eval('WoWStatusPopups.isPeer')(group, key('Eldrin-TestRealm'))  # Log sync agrees.
+    assert not receive('WSTATUS2 classic-era LEVEL 7 1793000000 mira-7', 'Mira-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    lua.execute('__ready=true; function time() return 1793000007 end; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 7!'
+
+
+def test_last_complete_roster_counts_only_for_two_minutes():
+    lua = joined(make_lua(STUBS + ASYNC_ROSTER))
+    group = group_key('dawnwatch')
+    assert list(lua.eval('WoWStatusPopups.peers')(group).values()) == ['Eldrin-TestRealm']
+    # Eldrin is removed and two others join; the new roster never finishes loading.
+    lua.execute('__peers={"Mira-TestRealm","Kael-TestRealm"}; __ready=false')
+    receive = lua.eval('WoWStatusPopups.receive')
+    lua.execute('function time() return 1793000119 end')
+    assert receive('WSTATUS2 classic-era LEVEL 5 1793000000 eldrin-5', 'Eldrin-TestRealm', CHANNEL)
+    lua.execute('function time() return 1793000120 end')
+    assert not receive('WSTATUS2 classic-era LEVEL 6 1793000000 eldrin-6', 'Eldrin-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    assert not lua.eval('WoWStatusPopups.isPeer')(group, lua.eval('WoWStatusPopups.senderKey')('Eldrin-TestRealm'))
+
+
+def test_held_updates_are_checked_against_the_roster_at_most_once_a_second():
+    lua = joined(make_lua(STUBS.replace('__peers = {"Eldrin-TestRealm"}', '__peers = {}')))
+    assert not lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 5 1793000000 mira-5',
+                                                   'Mira-TestRealm', CHANNEL)
+    lua.execute('''
+        __reads=0
+        local count=GetNumDisplayChannels
+        function GetNumDisplayChannels() __reads=__reads+1; return count() end
+        for _=1,4 do WoWStatusPopups.tick() end
+    ''')
+    assert lua.eval('__reads') == 1
+    lua.execute('function time() return 1793000001 end; for _=1,4 do WoWStatusPopups.tick() end')
+    assert lua.eval('__reads') == 2
+
+
+def test_updates_that_waited_for_the_roster_keep_their_order():
+    lua = joined(make_lua())
+    receive = lua.eval('WoWStatusPopups.receive')
+    lua.execute('__combat=true')
+    assert not receive('WSTATUS2 classic-era LEVEL 10 1793000000 mira-10', 'Mira-TestRealm', CHANNEL)
+    lua.execute('table.insert(__peers,"Mira-TestRealm")')
+    assert receive('WSTATUS2 classic-era LEVEL 11 1793000000 mira-11', 'Mira-TestRealm', CHANNEL)
+    lua.execute('__combat=false; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 10!'
+    lua.execute('function time() return 1793000007 end; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Mira reached level 11!'
+
+
+def test_one_sender_can_queue_only_four_updates():
+    lua = joined(make_lua(STUBS.replace('__peers = {"Eldrin-TestRealm"}',
+                                        '__peers = {"Eldrin-TestRealm","Mira-TestRealm"}')))
+    lua.execute('__combat=true')
+    receive = lua.eval('WoWStatusPopups.receive')
+    for level in range(2, 8):
+        accepted = receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 flood-{level}', 'Eldrin-TestRealm', CHANNEL)
+        assert accepted is (level < 6)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'sender_queue_full'
+    assert lua.eval('#WoWStatusDB.popups.activity') == 4
+    # Another member is unaffected, and a rejected level can still be shown later.
+    assert receive('WSTATUS2 classic-era LEVEL 9 1793000000 mira-9', 'Mira-TestRealm', CHANNEL)
+    lua.execute('__combat=false; WoWStatusPopups.tick()')
+    assert popup_text(lua) == 'Eldrin reached level 2!'
+    assert receive('WSTATUS2 classic-era LEVEL 7 1793000000 flood-7b', 'Eldrin-TestRealm', CHANNEL)
+
+
+def test_updates_waiting_for_the_roster_count_toward_the_sender_cap():
+    lua = joined(make_lua(STUBS.replace('__peers = {"Eldrin-TestRealm"}', '__peers = {}')))
+    receive = lua.eval('WoWStatusPopups.receive')
+    for level in range(2, 8):
+        receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 wait-{level}', 'Stranger-TestRealm', CHANNEL)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'sender_queue_full'
+    lua.execute('''
+        __peers={"Stranger-TestRealm"}
+        function time() return 1793000001 end
+        WoWStatusPopups.tick()
+    ''')
+    assert lua.eval('#WoWStatusDB.popups.activity') == 4
+
+
+def test_a_held_update_from_two_shared_groups_counts_once_toward_the_cap():
+    lua = make_lua(STUBS.replace('__peers = {"Eldrin-TestRealm"}', '__peers = {}'))
+    lua.eval('WoWStatusGroups.update')('dawnwatch\nother-group', '')
+    receive = lua.eval('WoWStatusPopups.receive')
+    for level in range(2, 6):
+        for channel in (CHANNEL, 'WStatus' + group_key('other-group')):
+            receive(f'WSTATUS2 classic-era LEVEL {level} 1793000000 mira-{level}', 'Mira-TestRealm', channel)
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
+    lua.execute('__peers={"Mira-TestRealm"}; function time() return 1793000001 end; WoWStatusPopups.tick()')
+    assert lua.eval('#WoWStatusDB.popups.activity') == 4
+    assert lua.eval('#WoWStatusJournal.entries()') == 4
+
+
+@pytest.mark.parametrize('kind, text', [
+    # What the sender's 48-byte cut leaves of long Russian rank-ups.
+    ('profession', 'Кузнечное дело: Journeyman (150 ...'),
+    ('profession', 'Инженерное дело: Journeyman (15...'),
+    ('profession', 'Инженерное дело: New profession...'),
+    ('profession', 'Ремесло кожевника: Journeyman...'),
+    ('profession', 'Tailoring: New profession rank (? max)'),
+    ('zone', 'Entered Les Tarides du Nord, très loin d’ici...'),
+    ('loot', 'Equipped Robe of the Archmage'),
+    ('loot', 'Looted Robe of the Archmage'),
+    ('dungeon', 'First clear: The Deadmines'),
+    ('quest', 'Completed 200 quests!'),
+    ('death', 'Total deaths: 3'),
+    ('introduction', 'Joined the WoW Status group'),
+])
+def test_valid_texts_include_cut_and_localized_forms(kind, text):
+    lua = make_lua()
+    assert lua.eval('WoWStatusJournal.validText')(kind, text) is True
+
+
+@pytest.mark.parametrize('kind, text', [
+    ('profession', 'Кузнечное дело: Journeyman (150 max) FREE GOLD'),
+    ('profession', 'FREE GOLD whisper me for 10k gold now...'),
+    ('profession', 'Tailoring: Grandmaster (450 max)'),
+    ('profession', 'Anything: ...'),
+    ('profession', 'Tailoring: Journ...'),
+    ('loot', 'Equipped '),
+    ('dungeon', 'First clear:'),
+    ('quest', 'Completed many quests!'),
+    ('mount', 'first mount: Brown Horse'),
+    ('discovery', 'Anything'),
+])
+def test_invalid_texts_are_rejected(kind, text):
+    lua = make_lua()
+    assert lua.eval('WoWStatusJournal.validText')(kind, text) is False
+
+
+def test_cut_russian_profession_rank_up_roundtrips():
+    sender = joined(make_lua(STUBS + '''
+        __cap=75
+        function GetSpellInfo(id) if id==4036 then return "Инженерное дело" end end
+        function GetNumSkillLines() return 1 end
+        function GetSkillLineInfo() return "Инженерное дело",false,false,1,0,0,__cap end
+    '''))
+    receiver = joined(make_lua(FRIEND_STUBS))
+    sender.execute('__cap=150;fire("SKILL_LINES_CHANGED")')
+    packet = sender.eval('__sent[1].text')
+    detail = bytes.fromhex(packet.rsplit(' ', 1)[1]).decode('utf-8')
+    assert detail.endswith('...') and len(detail.encode()) <= 48
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
+    assert popup_text(receiver) == 'Thora — ' + detail
+
+
+def test_own_text_that_peers_would_reject_is_logged_but_never_offered():
+    from test_journal import mesh
+    own, friend = actor('Thora'), actor('Mira')
+    clock(own, 10)
+    own.execute('''
+        local ids = {}
+        for id in pairs(character().group_ids) do ids[id] = true end
+        for i, zone in ipairs({"Elwynn Forest", "|TInterface\\\\Icons\\\\X:0|t"}) do
+            WoWStatusJournal.recordLocal({id="zone-"..i, kind="zone", at=time()-i, group_ids=ids, data={zone=zone}})
+            character().sequence = (character().sequence or 0) + 1
+        end
+    ''')
+    assert own.eval('#WoWStatusJournal.entries()') == 2
+    friend.eval('WoWStatusJournal.sync')()
+    mesh({'Thora': own, 'Mira': friend})
+    assert friend.eval('#WoWStatusJournal.entries()') == 1
+    assert friend.eval('WoWStatusJournal.entries()[1].text') == 'Entered Elwynn Forest'
+    assert friend.eval('WoWStatusLevelPopup') is None  # No invalid-data warning about Thora.
+    # Privacy pruning keeps its group scope: only offering skips it.
+    own.eval('WoWStatusJournal.privacyChanged')()
+    assert own.eval('''function()
+        for _, e in ipairs(WoWStatusJournal.entries()) do
+            if e.text ~= "Entered Elwynn Forest" then return next(e.groups) ~= nil end
+        end
+    end''')()

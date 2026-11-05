@@ -35,9 +35,24 @@ function GetChannelName(name)
     __channelNames[1] = name
     if __joined then return 8,name end return 0,nil
 end
-function GetNumDisplayChannels() return #__channelNames end
+-- Joined channels as the chat UI lists them: names already looked up, plus every
+-- selected group channel while __joined, since GetChannelName reports them joined.
+local function displayChannels()
+    local list, seen = {}, {}
+    local function add(name)
+        if name and not seen[name:lower()] then seen[name:lower()] = true; list[#list+1] = name end
+    end
+    for _, name in ipairs(__channelNames) do add(name) end
+    if __joined and WoWStatusGroups and WoWStatusDB and WoWStatusDB.characters then
+        for _, c in pairs(WoWStatusDB.characters) do
+            for id in pairs(c.group_ids or {}) do add(WoWStatusGroups.channel(id)) end
+        end
+    end
+    return list
+end
+function GetNumDisplayChannels() return #displayChannels() end
 function GetChannelDisplayInfo(index)
-    return __channelNames[index],false,false,8,#__peers
+    return displayChannels()[index],false,false,8,#__peers
 end
 C_ChatInfo = {
     InChatMessagingLockdown=function() return __restricted end,
@@ -128,6 +143,11 @@ function confirmIntro()
     end
 end
 '''
+
+
+# A second client, Eldrin, whose group channel roster lists Thora.
+FRIEND_STUBS = STUBS.replace('return "Thora" end', 'return "Eldrin" end').replace(
+    '__peers = {"Eldrin-TestRealm"}', '__peers = {"Thora-TestRealm"}')
 
 
 def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False):
@@ -769,7 +789,7 @@ def test_ingame_default_does_not_enable_discord(lua):
 
 def test_two_clients_share_level_updates_without_companion_or_discord():
     sender = make_lua()
-    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    receiver = make_lua(FRIEND_STUBS)
     for client in [sender, receiver]:
         client.eval('WoWStatusGroups.update')('dawnwatch', 'Friend')
     sender.eval('fire')('PLAYER_LEVEL_UP', 2)
@@ -792,7 +812,7 @@ def test_two_clients_share_level_updates_without_companion_or_discord():
 
 def test_generic_events_share_only_with_selected_groups_and_honor_privacy():
     sender = make_lua()
-    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    receiver = make_lua(FRIEND_STUBS)
     for client in [sender, receiver]:
         client.eval('WoWStatusGroups.update')('dawnwatch', '')
     sender.eval('fire')('PLAYER_DEAD')
@@ -864,7 +884,7 @@ def test_combat_queue_keeps_general_updates_separate_from_coalesced_levels(lua):
 
 def test_group_membership_ignores_stale_send_receive_flags_and_old_off_commands():
     sender = make_lua()
-    receiver = make_lua(STUBS.replace('return "Thora" end', 'return "Eldrin" end'))
+    receiver = make_lua(FRIEND_STUBS)
     for client in [sender, receiver]:
         client.eval('WoWStatusGroups.update')('dawnwatch', '')
         client.execute('''
@@ -1181,7 +1201,7 @@ def test_collapsed_skill_header_does_not_fabricate_profession_learning():
 
 def test_join_is_logged_shared_and_never_replayed_for_same_group():
     own = make_lua(join_announcements=True)
-    friend = make_lua(STUBS.replace('return "Thora" end','return "Eldrin" end'), join_announcements=True)
+    friend = make_lua(FRIEND_STUBS, join_announcements=True)
     for client in (own, friend):
         client.eval('WoWStatusGroups.update')('dawnwatch','')
     assert own.eval('#character().events') == 1
@@ -1237,7 +1257,7 @@ def test_equipped_baseline_and_delayed_item_unequipped_before_resolution():
 
 def test_first_equip_roundtrip_shows_equipped_text_not_looted():
     own = make_lua()
-    friend = make_lua(STUBS.replace('return "Thora" end','return "Eldrin" end'))
+    friend = make_lua(FRIEND_STUBS)
     for client in (own,friend):
         client.eval('WoWStatusGroups.update')('dawnwatch','')
     own.execute('__slot="|Hitem:123|h[Armor]|h";fire("PLAYER_EQUIPMENT_CHANGED",1)')

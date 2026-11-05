@@ -12,6 +12,16 @@ local ADDON_PREFIX = "WoWStatus"
 local ADDON_NAME = (...) or "WoWStatus" -- client-supplied folder/TOC name, not the comm prefix
 local rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil
 local rosterBusy=false
+-- Received updates from a sender not yet in the group's roster wait here while
+-- the roster loads. One sender may hold only a few queued or waiting updates.
+-- The roster cache is keyed on member count and kept for 30 seconds, so a member
+-- who replaced another at the same size appears only once it expires; a refresh
+-- can then take a few more 5-second request and read windows.
+local unverified, lastVerify = {}, nil
+local MAX_QUEUED_PER_SENDER, VERIFY_SECONDS, MAX_UNVERIFIED = 4, 60, 32
+-- While a changed roster reloads, members from the last complete read still
+-- count, but only for this long after that read.
+local LAST_ROSTER_SECONDS = 120
 -- Read the running version from this addon's TOC so status never drifts from releases.
 -- Retail removed the global GetAddOnMetadata; Classic clients may only have one of the two.
 local function metadataVersion(lookup)
@@ -241,6 +251,11 @@ function P.groupsChanged()
         end
     end
     incoming = kept
+    kept = {}
+    for _, item in ipairs(unverified) do
+        if WoWStatusGroups.contains(getCharacter(), item.group) then table.insert(kept, item) end
+    end
+    unverified = kept
     if active and not active.preview and not WoWStatusGroups.contains(getCharacter(), active.group_id) then
         active = nil
         if toast then toast:Hide() end
@@ -272,7 +287,7 @@ local function status(state, event)
     prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil}
 end
 local function clear()
-    incoming, outgoing, active = {}, {}, nil
+    incoming, outgoing, unverified, active, lastVerify = {}, {}, {}, nil, nil
     if toast then toast:Hide() end
 end
 local function pruneSeen(now)
@@ -324,6 +339,105 @@ local function invalidLogData(group,sender)
     if group~="legacy" and WoWStatusJournal then WoWStatusJournal.reportInvalid(group,sender) end
     return false
 end
+local function queuedFrom(key, event)
+    local count, held = 0, {[event or false] = true}
+    for _, item in ipairs(incoming) do
+        if item.key == key and not item.preview and item.kind ~= "guard" then count = count + 1 end
+    end
+    -- The same event can wait once per shared group; it counts once, and a
+    -- further copy of the given event adds nothing.
+    for _, item in ipairs(unverified) do
+        local event = item.level or item.nonce
+        if item.key == key and not held[event] then held[event] = true; count = count + 1 end
+    end
+    return count
+end
+local function noteReceive(state, c, now)
+    prefs.last_receive = {state=state, sender=c.sender, kind=c.kind or "level", at=now}
+end
+-- Store a validated update from a known peer (or a trusted legacy sender): log
+-- it, then queue its popup unless the log already had it.
+local function commit(c, now)
+    pruneSeen(now)
+    local item = {sender=c.sender, key=c.key, kind=c.kind, level=c.level, count=c.level and 1 or nil, text=c.text,
+        automatic=c.automatic, received_at=now, at=c.at, nonce=c.nonce, group_id=c.group~="legacy" and c.group or nil}
+    for k,v in pairs(c.loot or {}) do item[k]=v end
+    local duplicate = c.key .. ":" .. (c.level or c.nonce)
+    if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(c.sender,c.nonce)) then
+        WoWStatusJournal.received(item)
+        prefs.seen[duplicate]=now
+        noteReceive("already_in_log", c, now)
+        return false
+    end
+    local claims = c.level and prefs.level_claims[c.key]
+    if prefs.seen[duplicate] or (claims and claims.levels[c.level]) or #incoming >= 128 then return false end
+    if queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
+    prefs.seen[duplicate] = now
+    if c.level then
+        if not claims then
+            local count, oldest, oldestAt = 0, nil, math.huge
+            for senderKey, value in pairs(prefs.level_claims) do
+                count = count + 1
+                if value.at < oldestAt then oldest, oldestAt = senderKey, value.at end
+            end
+            if count >= 512 and oldest then prefs.level_claims[oldest] = nil end
+            claims = {levels = {}, at = now}
+            prefs.level_claims[c.key] = claims
+        end
+        claims.levels[c.level], claims.at = true, now
+    end
+    remember(item)
+    noteReceive("queued", c, now)
+    table.insert(incoming, item)
+    return true
+end
+-- Members of the group's channel: only they may show popups or sync the log.
+-- When the member count changes, P.peers lists nobody until the new roster
+-- loads, so members from a recent complete read also count: one login or
+-- logout must not hold everybody's popups.
+local function memberKeys(group)
+    local keys = {}
+    local current = P.peers(group)
+    local cached = rosterCache[group]
+    local recent = cached and time() - cached.at < LAST_ROSTER_SECONDS and cached.peers or {}
+    for _, list in ipairs({current, recent}) do
+        for _, name in ipairs(list) do local key = P.senderKey(name); if key then keys[key] = true end end
+    end
+    return keys
+end
+function P.isPeer(group, key)
+    return key ~= nil and memberKeys(group)[key] == true
+end
+-- Rosters load asynchronously, so a member who joined moments ago can be
+-- missing: their updates wait here, in arrival order, instead of being dropped.
+local function verifyPending(now, members)
+    if #unverified == 0 then return end
+    local waiting = unverified
+    members, unverified, lastVerify = members or {}, {}, now
+    for _, c in ipairs(waiting) do
+        if WoWStatusGroups.contains(getCharacter(), c.group) then
+            members[c.group] = members[c.group] or memberKeys(c.group)
+            if members[c.group][c.key] then commit(c, now)
+            elseif now < c.expires then table.insert(unverified, c)
+            else noteReceive("rejected_unknown_sender", c, now) end
+        end
+    end
+end
+local function admit(c, now)
+    local members = c.group ~= "legacy" and memberKeys(c.group)
+    if not members or members[c.key] then
+        verifyPending(now, members and {[c.group] = members}) -- Earlier updates that waited go first.
+        local queued = commit(c, now)
+        P.tick()
+        return queued
+    end
+    if queuedFrom(c.key, c.level or c.nonce) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
+    if #unverified >= MAX_UNVERIFIED then noteReceive("rejected_unknown_sender", c, now); return false end
+    c.expires = now + VERIFY_SECONDS
+    table.insert(unverified, c)
+    noteReceive("verifying_sender", c, now)
+    return false
+end
 function P.receive(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)
     if not receiving() or type(text) ~= "string" or #text > 220
@@ -354,7 +468,6 @@ function P.receive(text, sender, channel)
             or (not raw and #encoded % 2 ~= 0) or at < now - 120 or at > now + 300 then return false end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
-        if WoWStatusJournal and not WoWStatusJournal.validText(kind,detail) then return invalidLogData(group,sender) end
         local lootInfo
         if armor and kind~="loot" then return false end
         if kind=="loot" then
@@ -375,25 +488,10 @@ function P.receive(text, sender, channel)
         -- Ignore older addon versions' per-quest and per-skill spam.
         if kind == "quest" and not detail:match("^Completed %d+ quests!$") then return false end
         if kind == "profession" and detail:match(": %d+ / %d+") then return false end
-        pruneSeen(now)
-        local duplicate = key .. ":" .. nonce
-        if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(sender,nonce)) then
-            local duplicateItem={sender=sender,kind=kind,text=detail,at=at,nonce=nonce,group_id=group~="legacy" and group or nil}
-            if lootInfo then for k,v in pairs(lootInfo) do duplicateItem[k]=v end end
-            WoWStatusJournal.received(duplicateItem)
-            prefs.seen[duplicate]=now
-            prefs.last_receive={state="already_in_log",sender=sender,kind=kind,at=now};return false
-        end
-        if prefs.seen[duplicate] or #incoming >= 128 then return false end
-        prefs.seen[duplicate] = now
-        local item = {sender=sender, key=key, kind=kind, text=detail, automatic=automatic, received_at=now, at=at, nonce=nonce,
-            group_id=group ~= "legacy" and group or nil}
-        if lootInfo then for k,v in pairs(lootInfo) do item[k]=v end end
-        remember(item)
-        prefs.last_receive={state="queued",sender=sender,kind=kind,at=now}
-        table.insert(incoming, item)
-        P.tick()
-        return true
+        -- Check the text as it will be shown, after the loot and dungeon conversions.
+        if WoWStatusJournal and not WoWStatusJournal.validText(kind,detail) then return invalidLogData(group,sender) end
+        return admit({sender=sender, key=key, group=group, kind=kind, text=detail,
+            automatic=automatic, at=at, nonce=nonce, loot=lootInfo}, now)
     end
     local client, levelText, atText, nonce = text:match("^WSTATUS2 ([%w%-]+) LEVEL (%d+) (%d+) ([%w%-]+)$")
     if not client and A.client_id == "classic-era" then
@@ -404,35 +502,7 @@ function P.receive(text, sender, channel)
     local level, at, now = tonumber(levelText), tonumber(atText), time()
     if not at or not nonce or #nonce > 64 or at < now - 120 or at > now + 300 then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
-    pruneSeen(now)
-    local duplicateKey = key .. ":" .. level
-    local claims = prefs.level_claims[key]
-    if WoWStatusJournal and WoWStatusJournal.contains(WoWStatusJournal.eventID(sender,nonce)) then
-        WoWStatusJournal.received({sender=sender,kind="level",level=level,at=at,nonce=nonce,
-            group_id=group~="legacy" and group or nil})
-        prefs.seen[duplicateKey]=now
-        prefs.last_receive={state="already_in_log",sender=sender,kind="level",at=now};return false
-    end
-    if prefs.seen[duplicateKey] or (claims and claims.levels[level]) then return false end
-    if #incoming >= 128 then return false end
-    if not claims then
-        local count, oldest, oldestAt = 0, nil, math.huge
-        for senderKey, value in pairs(prefs.level_claims) do
-            count = count + 1
-            if value.at < oldestAt then oldest, oldestAt = senderKey, value.at end
-        end
-        if count >= 512 and oldest then prefs.level_claims[oldest] = nil end
-        claims = {levels = {}, at = now}
-        prefs.level_claims[key] = claims
-    end
-    claims.levels[level], claims.at = true, now
-    prefs.seen[duplicateKey] = now
-    table.insert(incoming, {sender = sender, key = key, level = level, received_at = now,
-        count = 1, at=at, nonce=nonce, group_id = group ~= "legacy" and group or nil})
-    prefs.last_receive={state="queued",sender=sender,kind="level",at=now}
-    remember({sender=sender, level=level, at=at, nonce=nonce, group_id=group ~= "legacy" and group or nil})
-    P.tick()
-    return true
+    return admit({sender=sender, key=key, group=group, level=level, at=at, nonce=nonce}, now)
 end
 
 -- Big banners (#61): max level and every 10th level get a larger toast.
@@ -641,12 +711,13 @@ local function tick()
     if not receiving() then
         local previews = {}
         for _, item in ipairs(incoming) do if item.preview then table.insert(previews,item) end end
-        incoming = previews
+        incoming, unverified = previews, {}
         if active and not active.preview then
             active = nil
             if toast then toast:Hide() end
         end
     end
+    if now ~= lastVerify then verifyPending(now) end -- At most once a second.
     if active and not active.preview and not (active.group_id
         and WoWStatusGroups.contains(getCharacter(), active.group_id)) and not prefs.trusted[active.key] then
         active = nil
@@ -770,6 +841,10 @@ function P.broadcast(character, event)
         if #detail > limit then
             detail = detail:sub(1, limit-3):gsub("[\194-\244][\128-\191]*$", "") .. "..."
         end
+        -- Never send a text that updated receivers would reject and report as invalid.
+        if WoWStatusJournal and not WoWStatusJournal.validText(event.kind, detail) then
+            status("invalid_text", event); return
+        end
         local encoded = modern and detail or detail:gsub(".", function(char) return string.format("%02x", char:byte()) end)
         text = (modern and "WSTATUS4 " or "WSTATUS3 ") .. A.client_id .. " " .. event.kind .. " " .. event.at .. " " .. nonce .. " " .. encoded
     end
@@ -864,7 +939,7 @@ function P.command(text)
             ..(prefs.last_send and prefs.last_send.target and (" to "..prefs.last_send.target) or ""))
         local received=prefs.last_receive
         notify("Last received: "..(received and (received.kind.." from "..received.sender.." — "..received.state) or "none")
-            .."; popup queue="..#incoming.."; in combat="..tostring(combat() and true or false))
+            .."; popup queue="..#incoming.."; awaiting roster="..#unverified.."; in combat="..tostring(combat() and true or false))
     else
         notify("Popup commands: on | off | send on/off | sound on/off | channel WStatusNAME")
         notify("Trust: trust Character-Realm [friend label] | untrust Character-Realm. Test: test. Diagnostics: status.")

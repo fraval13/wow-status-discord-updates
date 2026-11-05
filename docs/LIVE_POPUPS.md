@@ -103,3 +103,30 @@ zone announcements.
 Rogues track learning Poisons (spell 2842), replacing Pick Lock. Already-known
 Poisons and relearning remain silent. Clicking a toast still dismisses it, but
 the Click to dismiss footer is no longer shown.
+
+## Popup senders and texts
+
+A received update shows only when its sender is in the group's channel roster
+(or posted in the group channel recently), as log sync already required. While
+a roster whose member count changed reloads, members from the last complete
+roster read still count, for up to two minutes after that read; log sync uses
+the same membership. A member who joined moments ago can be missing from
+the cached roster, so their update waits up to 60 seconds, longer than the
+roster cache lasts; status shows `awaiting roster` and `verifying_sender`. After
+that it is dropped (`rejected_unknown_sender`). Legacy channels still use the
+trust list.
+
+Each kind must match the texts the addon itself produces: `Joined the WoW Status
+group`, `First mount: <name>` or `First mount ride recorded!`, `Honored/Revered/
+Exalted with <faction>`, `Unlocked <spell>`, `Promoted to <rank>` (Retail:
+`Reached honor level <n>`), `Entered <zone>`, `Learned <profession>`, a profession
+rank-up, `Equipped <item>`, `First clear: <dungeon>`, `Completed <n> quests!` and
+the death texts. Other texts are dropped and reported as invalid log data, as
+before. Names inside a template are the sender's own localized game names and
+cannot be checked on another client language.
+
+One sender can have at most four updates queued or waiting; more are dropped
+(`sender_queue_full`) until the queue drains. The log can still recover them
+quietly in the next login sync. To test: have a friend whose roster entry is
+visible send several milestones at once, and check that a fifth update while you
+are in combat is not queued.

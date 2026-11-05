@@ -45,9 +45,7 @@ local function groupSince(group)
     return member and (WoWStatusGroups.historySince(group) or member.joined_at) or time()
 end
 local function peer(group,sender)
-    local key=P.senderKey(sender)
-    for _, name in ipairs(P.peers(group)) do if P.senderKey(name)==key then return true end end
-    return false
+    return P.isPeer(group,P.senderKey(sender))
 end
 local function permitted(entry)
     if entry.kind=="questprogress" then return false end
@@ -85,6 +83,11 @@ local function relayable(entry,group)
         if entry.kind=="loot" and not WoWStatusLoot.allowed(owner.settings,entry) then return false end
     end
     return true
+end
+-- Never offer a text that updated peers would reject and report as invalid.
+-- Privacy pruning keeps using relayable, so this never drops a group scope.
+local function offerable(entry,group)
+    return relayable(entry,group) and J.validText(entry.kind,entry.text,entry.level)
 end
 local function rebuild()
     index,digests={},{}
@@ -283,13 +286,65 @@ end
 local function token()
     serial=serial+1;db.journal.request_serial=serial;return time().."-"..serial
 end
--- Fixed-format facts must not become arbitrary free-text announcements.
+-- A template's name slot carries the sender's own localized game name (zone,
+-- item, mount, faction, spell, PvP rank). A receiver on another client language
+-- cannot check it, so it only has to be non-blank.
+local function named(detail,prefix)
+    return detail:sub(1,#prefix)==prefix and detail:find(S.NONSPACE,#prefix+1)~=nil
+end
+local PROFESSION_RANKS={"Apprentice","Journeyman","Expert","Artisan","Master","New profession rank"}
+-- "<profession>: <rank> (<max> max)". A long localized profession name can push
+-- the suffix past the 48-byte packet limit; the sender then cuts it and appends
+-- "...", so a cut text only has to be a prefix of a valid suffix. The cut keeps at
+-- least 41 bytes (48 minus "..." minus one 4-byte character), so a short text
+-- ending in "..." was never cut.
+local function rankUp(detail)
+    local rest=detail:match("^"..S.NONSPACE..".-: (.+)$")
+    if not rest then return false end
+    local cut=#detail>=44 and detail:sub(-3)=="..." and rest:sub(1,-4)
+    for _,rank in ipairs(PROFESSION_RANKS) do
+        local head=rank.." ("
+        if rest:sub(1,#head)==head and rest:sub(#head+1):match("^[%d?]+ max%)$") then return true end
+        if cut then
+            if #cut<=#head then
+                if head:sub(1,#cut)==cut then return true end
+            elseif cut:sub(1,#head)==head then
+                local tail=cut:sub(#head+1)
+                if tail:match("^[%d?]*$") or tail:match("^[%d?]+ m?a?x?$") then return true end
+            end
+        end
+    end
+    return false
+end
+-- Fixed-format facts must not become arbitrary free-text announcements: every
+-- shared kind matches only the texts this addon itself produces (P.eventText,
+-- Milestones, the adapter's pvpText and the loot/dungeon packet conversions).
 -- Plausible forged gameplay cannot be authenticated by a peer-only addon.
 function J.validText(kind,detail,level)
-    if kind=="level" then return detail=="Reached level "..level.."!" end
+    if type(detail)~="string" then return false end
+    if kind=="level" then return detail=="Reached level "..tostring(level).."!" end
     if kind=="introduction" then return detail=="Joined the group" or detail=="Joined the WoW Status group" end
     if kind=="death" then return detail=="Died" or detail:match("^Total deaths: %d+$")~=nil end
-    return true
+    if kind=="quest" then return detail:match("^Completed %d+ quests!$")~=nil end
+    if kind=="zone" then return named(detail,"Entered ") end
+    if kind=="profession" then return named(detail,"Learned ") or rankUp(detail) end
+    -- Local logs also keep "Looted"; only "Equipped" is ever shared or shown.
+    if kind=="loot" then return named(detail,"Equipped ") or named(detail,"Looted ") end
+    if kind=="dungeon" then return named(detail,"First clear: ") end
+    if kind=="mount" then return detail=="First mount ride recorded!" or named(detail,"First mount: ") end
+    if kind=="reputation" then
+        return named(detail,"Honored with ") or named(detail,"Revered with ") or named(detail,"Exalted with ")
+    end
+    if kind=="unlock" then return named(detail,"Unlocked ") end
+    if kind=="pvp" then
+        -- Sender and receiver run the same edition, so the adapter decides the form.
+        if WoWStatusAdapter.pvpText then
+            local rank=tonumber(detail:match("^Reached honor level ([1-9]%d*)$"))
+            return rank~=nil and rank<=(WoWStatusAdapter.max_pvp_rank or 0)
+        end
+        return named(detail,"Promoted to ")
+    end
+    return false
 end
 local function warning(group,accused,reporter)
     if not current.settings.enabled or not P.canShare(current) then return false end
@@ -413,7 +468,7 @@ function J.receive(message,sender,distribution)
         for _,e in ipairs(db.journal.entries) do
             local weight=({[3]=1,[4]=2,[5]=4})[e.quality]
             local wanted=e.kind~="loot" or (weight and math.floor(mask/weight)%2==1)
-            if wanted and e.at>=cutoff and relayable(e,group) then eligible[#eligible+1]=e end
+            if wanted and e.at>=cutoff and offerable(e,group) then eligible[#eligible+1]=e end
         end
         local offer,list={},{}
         for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digest(eligible[i].id);offer[d]=eligible[i].id;list[#list+1]=d end
@@ -450,7 +505,7 @@ function J.receive(message,sender,distribution)
         session.used=true
         for _, d in ipairs(ids) do
             local e=index[session.offer[d]]
-            if e and relayable(e,group) then
+            if e and offerable(e,group) then
                 local encoded=pack(e):gsub(".",function(c) return string.format("%02x",c:byte()) end)
                 local total=math.ceil(#encoded/140)
                 for part=1,total do
@@ -503,7 +558,7 @@ function J.tick()
     table.remove(sendQueue,1)
     if item.expires and (now>item.expires or not current.settings.enabled) then return end
     if not groupMember(item.group) or not peer(item.group,item.target) then return end
-    if item.id and (not index[item.id] or not relayable(index[item.id],item.group)) then return end
+    if item.id and (not index[item.id] or not offerable(index[item.id],item.group)) then return end
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if send then
         lastSend=clock

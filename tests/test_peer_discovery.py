@@ -53,11 +53,12 @@ def test_a_whisper_alone_does_not_authorize_returning_group_history():
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert lua.eval('#__sent') == 0
     channel = 'WStatus'+group_id(lua)
-    assert lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 3 1793000000 friend-3', 'Eldrin-TestRealm', channel)
+    # Nor does it show a popup: the sender is in neither the roster nor group chat.
+    assert not lua.eval('WoWStatusPopups.receive')('WSTATUS2 classic-era LEVEL 3 1793000000 friend-3', 'Eldrin-TestRealm', channel)
     assert lua.eval('#__sent') == 0
     assert len(lua.eval('WoWStatusPopups.peers')(group_id(lua))) == 0
-    assert lua.eval('#WoWStatusJournal.entries()') == 2
-    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'displayed'
+    assert lua.eval('#WoWStatusJournal.entries()') == 1
+    assert lua.eval('WoWStatusDB.popups.last_receive.state') == 'verifying_sender'
 
 
 def test_unrelated_channel_and_invalid_packet_do_not_create_peers():
