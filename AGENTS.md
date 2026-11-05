@@ -58,7 +58,9 @@ be checked against Git and the environment rather than assumed permanently true.
   equal the `pyproject.toml` version. Each build replaces its output folder as a
   whole, so no file of an earlier build survives.
 - `.github/workflows/checks.yml`: Linux/Windows checks, packaging, deployment and
-  public verification on `main` pushes; also supports manual dispatch.
+  public verification on `main` pushes; also supports manual dispatch. Actions are
+  pinned by commit SHA, checkouts keep no token, and a failed public verification
+  asks the receiver to roll back (issue #27; details in `deploy/SERVER.md`).
   `scripts/verify_homepage.py` compares the live site with the locally built
   `release.json` (`--manifest`) and checks each ZIP's entries against its TOC.
   `scripts/deploy_gate.py` lets a run deploy only while its commit is the tip of
@@ -128,6 +130,11 @@ on separate issues at once, so per-feature bumps would conflict and pick the sam
 number. A release is its own small pull request that only changes the version
 (see `scripts/sync_version.py` below) and adds release notes. Merging it
 publishes the new number.
+
+`requirements.txt` pins, by version and SHA-256, every package the server's
+receiver installs (runtime dependencies plus the build backend). After changing
+dependencies in `pyproject.toml`, run `python scripts/lock_requirements.py` (needs
+`uv`); `tests/test_requirements_lock.py` fails while the two disagree.
 
 Release notes live in `CHANGELOG.md` (newest `## <version>` first; it must match
 `pyproject.toml`). After editing it run `python scripts/whats_new.py` and
@@ -220,8 +227,10 @@ Caddyfile's group routes from the committed template and the server's private
 `groups.json` (`--dry-run` shows the Caddy diff and changes nothing). On the server,
 `deploy/install_homepage.py` checks the upload's checksum, validates the candidate
 Caddyfile outside the web root, atomically switches the static-site symlink and
-reloads Caddy, retaining previous releases for rollback; a failure removes the
-partial release and the upload. Website-only publishing
+reloads Caddy, keeping the newest five releases for rollback; a failure removes the
+partial release and the upload. It holds the pipeline receiver's deployment lock
+throughout, so it waits while a pipeline deploy runs, and refuses if that deploy
+switched the site meanwhile. Website-only publishing
 does not require restarting companion services. Verify public assets/downloads
 and existing group health routes after deployment. Do not touch unrelated
 `wow-forever-news` or `wow-forever-qa` services.

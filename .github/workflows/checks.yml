@@ -6,6 +6,8 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Third-party actions are pinned to a full commit SHA (the comment names its tag), and
+# no checkout keeps the job's GitHub token in .git/config (issue #27).
 # Off `main`, a new push cancels the ref's older run. On `main` every run has its own
 # group, so validation is never queued or cancelled there; `deploy-gate` and the
 # `deploy` job's own concurrency group keep an older commit from deploying over a
@@ -20,11 +22,38 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      # The oldest supported Python, for the receiver mirror below: the server's venv uses its
+      # own python3, and the lock has entries only older versions install.
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        if: runner.os == 'Linux'
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.13'
+      # The locked versions last, replacing any the dev extras pulled in, so the tests run
+      # what the server installs; pip check then fails if a dev tool needs another version.
       - run: python -m pip install -e ".[dev]"
+      - run: |
+          python -m pip install --require-hashes --only-binary :all: -r requirements.txt
+      - run: python -m pip check
+      - name: Install the locked release exactly as the server's receiver does
+        if: runner.os == 'Linux'
+        # Same tracked files and pip steps as deploy/install_release.py, on Python 3.11;
+        # pip check fails when requirements.txt misses a dependency.
+        run: |
+          release="$RUNNER_TEMP/release"
+          mkdir "$release"
+          git archive HEAD | tar -x -C "$release"
+          python3.11 -m venv "$release/.venv"
+          pip=("$release/.venv/bin/python" -m pip install --disable-pip-version-check --no-input)
+          "${pip[@]}" --require-hashes --only-binary :all: -r "$release/requirements.txt"
+          "${pip[@]}" --no-deps --no-build-isolation --no-index "$release"
+          "$release/.venv/bin/python" -m pip check
+          "$release/.venv/bin/python" -c 'import wow_status.cli'
       - name: Check every addon TOC declares the pyproject version
         run: python scripts/sync_version.py --check
       - run: python -m pytest -q
@@ -52,11 +81,11 @@ jobs:
           for client in ('vanilla', 'forever', 'tbc', 'retail'):
               shutil.copyfile(f'dist/homepage/downloads/WoWStatus-{client}.zip', f'dist/WoWStatus-{client}.zip')
           shutil.make_archive('dist/WoWStatus-discord-emojis', 'zip', 'assets/discord-emojis')
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: WoWStatus-addons-${{ matrix.os }}
           path: dist/*.zip
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: WoWStatus-homepage-${{ matrix.os }}
           path: dist/homepage/
@@ -72,8 +101,9 @@ jobs:
       current: ${{ steps.gate.outputs.current }}
       attempt: ${{ github.run_attempt }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
+          persist-credentials: false
           sparse-checkout: scripts/deploy_gate.py
           sparse-checkout-cone-mode: false
       - id: gate
@@ -82,6 +112,11 @@ jobs:
     needs: deploy-gate
     if: needs.deploy-gate.outputs.current == 'true'
     runs-on: ubuntu-latest
+    # Deploy secrets can move into this environment and be limited to main there
+    # (deploy/SERVER.md); until then the job reads the repository secrets as before.
+    environment:
+      name: production
+      url: https://wow.frankvalde.com
     concurrency:
       # "Re-run failed jobs" reuses an earlier attempt's gate result, which may be
       # stale. Such a re-run gets a group of its own, so it can't cancel a newer
@@ -94,44 +129,55 @@ jobs:
         run: |
           echo '::error title=Use "Re-run all jobs"::"Re-run failed jobs" does not re-check that this commit is still the tip of main, so it cannot deploy. Use "Re-run all jobs" on the run for the current tip of main.'
           exit 1
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
-          python-version: '3.13'
+          persist-credentials: false
+      # No setup-python: this job holds the deploy key and bot tokens, so after checkout it
+      # runs only this commit's own standard-library scripts, on the runner image's python3.
       - name: Build homepage for this release
-        run: python scripts/build_homepage.py --addon-ref HEAD
+        run: python3 scripts/build_homepage.py --addon-ref HEAD
       - name: Prepare private deployment archive
         env:
           # One JSON secret keyed by the server's private group instances, so no group
           # name appears here. Unset keeps the server's Discord settings (deploy/SERVER.md).
           WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
-        run: python deploy/make_release.py "$RUNNER_TEMP/wow-character-release.tar"
+        run: python3 deploy/make_release.py "$RUNNER_TEMP/wow-character-release.tar"
       - name: Deploy using restricted project key
         env:
           DEPLOY_KEY: ${{ secrets.WOW_STATUS_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WOW_STATUS_KNOWN_HOSTS }}
           DEPLOY_HOST: ${{ vars.WOW_STATUS_SSH_HOST }}
-        shell: bash
-        run: |
-          set -euo pipefail
-          umask 077
-          key_file="$RUNNER_TEMP/wow-character-key"
-          host_file="$RUNNER_TEMP/wow-character-known-hosts"
-          trap 'rm -f "$key_file" "$host_file" "$RUNNER_TEMP/wow-character-release.tar"' EXIT
-          printf '%s\n' "$DEPLOY_KEY" > "$key_file"
-          printf '%s\n' "$KNOWN_HOSTS" > "$host_file"
-          ssh -T -o BatchMode=yes -o ConnectTimeout=20 -o StrictHostKeyChecking=yes \
-            -o UserKnownHostsFile="$host_file" -o IdentitiesOnly=yes -i "$key_file" \
-            "wow-character-deploy@$DEPLOY_HOST" < "$RUNNER_TEMP/wow-character-release.tar"
+        run: bash deploy/send_to_receiver.sh "$RUNNER_TEMP/wow-character-release.tar"
       - name: Verify live homepage and all addon downloads
+        id: verify
         env:
           RELEASE_REVISION: ${{ github.sha }}
         # Compare the live site with the release.json this job built, not only with the
-        # manifest the site serves, which a tampered site could regenerate.
-        run: >-
-          python scripts/verify_homepage.py --url https://wow.frankvalde.com
-          --revision "$RELEASE_REVISION" --manifest dist/homepage/downloads/release.json
-          --attempts 6
+        # manifest the site serves, which a tampered site could regenerate. Status 4 means
+        # the site answered with something other than this release; any other failure
+        # (unreachable site, verifier error) is one a rollback would not fix.
+        run: |
+          status=0
+          python3 scripts/verify_homepage.py --url https://wow.frankvalde.com \
+            --revision "$RELEASE_REVISION" --manifest dist/homepage/downloads/release.json \
+            --attempts 6 || status=$?
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          exit "$status"
+      - name: Roll back to the previous release
+        # The receiver restores the release (and homepage) it replaced, but only while this
+        # commit's release is still the live one. The job stays red either way.
+        if: failure() && steps.verify.outcome == 'failure' && steps.verify.outputs.status == '4'
+        env:
+          DEPLOY_KEY: ${{ secrets.WOW_STATUS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.WOW_STATUS_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.WOW_STATUS_SSH_HOST }}
+          RELEASE_REVISION: ${{ github.sha }}
+        run: |
+          printf 'wow-status-rollback %s\n' "$RELEASE_REVISION" > "$RUNNER_TEMP/wow-character-rollback"
+          if ! bash deploy/send_to_receiver.sh "$RUNNER_TEMP/wow-character-rollback"; then
+            echo '::error title=Not rolled back::The receiver did not roll back; its reason is in the log above. A receiver installed before issue #27 cannot roll back at all (deploy/SERVER.md).'
+            exit 1
+          fi
       - name: Report Discord bot state
         # Warns, never fails: ingestion stays up when Discord is down, so the deploy
         # passes and a revoked token or removed bot shows here instead.
@@ -140,4 +186,4 @@ jobs:
           RELEASE_REVISION: ${{ github.sha }}
           # Route keys are private; each instance's optional "route" says which to check.
           WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
-        run: python scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"
+        run: python3 scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"

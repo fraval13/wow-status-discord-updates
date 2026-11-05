@@ -5,6 +5,7 @@ import importlib
 import importlib.util
 import inspect
 import io
+import itertools
 import json
 import os
 import random
@@ -13,6 +14,7 @@ import stat
 import subprocess
 import sys
 import tarfile
+import types
 from pathlib import Path
 
 import pytest
@@ -201,6 +203,8 @@ def host(monkeypatch):
         host['calls'].append(command)
         if command[0] == 'scp':
             host['upload'] = Path(command[-2]).read_bytes()
+        if command[-1].startswith('readlink -- '):
+            return subprocess.CompletedProcess(command, 0, host.get('site', b''), b'')
         if command[-1] == 'python3 -':
             host['script'] = kwargs['input'].decode('utf-8')
         if command[0] in host['fail'] or command[-1] in host['fail']:
@@ -233,6 +237,7 @@ def settings(script):
 
 def test_publish_uploads_a_checked_fresh_build_of_head(repo, tmp_path, publisher, host):
     site = build(repo, tmp_path / 'dist/homepage')
+    host['site'] = b'/srv/wow-status-homepage/releases/20261101T000000000000Z\n'
     publish(publisher, site, tmp_path)
     with tarfile.open(fileobj=io.BytesIO(host['upload'])) as package:
         uploaded = {member.name: package.extractfile(member).read() for member in package.getmembers()}
@@ -241,6 +246,8 @@ def test_publish_uploads_a_checked_fresh_build_of_head(repo, tmp_path, publisher
     assert sent['revision'] == git(repo, 'rev-parse', 'HEAD').decode().strip()
     assert sent['archive_sha256'] == hashlib.sha256(host['upload']).hexdigest()
     assert sent['caddy_sha256'] == hashlib.sha256(host['caddy']).hexdigest()
+    assert sent['site'] == '/srv/wow-status-homepage/releases/20261101T000000000000Z'  # what install compares
+    assert ['readlink', '--', '/srv/wow-status-homepage/current'] == host['calls'][-3][-1].split()
     # The server receives exactly install_homepage.install's arguments, and only ASCII.
     inspect.signature(importlib.import_module('install_homepage').install).bind(**sent)
     assert host['script'].isascii()
@@ -384,12 +391,18 @@ def server(tmp_path, monkeypatch):
             raise subprocess.CalledProcessError(1, command)
         return subprocess.CompletedProcess(command, int(failed))
 
-    server_state = {'module': module, 'base': base, 'old': old, 'caddy': caddy, 'commands': commands, 'fail': []}
+    lock = tmp_path / 'opt/deployment.lock'  # the pipeline receiver's lock
+    lock.parent.mkdir()
+    server_state = {'module': module, 'base': base, 'old': old, 'caddy': caddy, 'commands': commands, 'fail': [],
+                    'lock': lock, 'on_sleep': None}
     monkeypatch.setattr(subprocess, 'run', run)
+    # Each look at the clock is a second later, so a lock that is never released times out.
+    monkeypatch.setattr(module, 'time', types.SimpleNamespace(
+        monotonic=itertools.count().__next__, sleep=lambda seconds: server_state['on_sleep'] and server_state['on_sleep']()))
     return server_state
 
 
-def payload(tmp_path, data=None, revision='a' * 40):
+def payload(tmp_path, data=None, revision='a' * 40, release='20261105T000000000000Z'):
     """An uploaded archive, and the settings the publisher would send with it."""
     if data is None:
         buffer = io.BytesIO()
@@ -401,15 +414,15 @@ def payload(tmp_path, data=None, revision='a' * 40):
                 info.size, info.mode = len(content), 0o600  # as a publisher with umask 077 packs them
                 package.addfile(info, io.BytesIO(content))
         data = buffer.getvalue()
-    upload = tmp_path / 'wow-homepage.tar.gz'
+    upload = tmp_path / f'wow-homepage-{release}.tar.gz'
     upload.write_bytes(data)
-    return {'payload': str(upload), 'release': '20261105T000000000000Z', 'revision': 'a' * 40,
+    return {'payload': str(upload), 'release': release, 'revision': 'a' * 40,
             'archive_sha256': hashlib.sha256(data).hexdigest(),
             'caddy_sha256': hashlib.sha256(b'old caddy\n').hexdigest(), 'caddyfile': 'new caddy \U0001f600\n'}
 
 
 def install(server, sent):
-    return server['module'].install(**sent, base=server['base'], caddy=server['caddy'])
+    return server['module'].install(**sent, base=server['base'], caddy=server['caddy'], lock=server['lock'])
 
 
 def unchanged(server, sent):
@@ -542,3 +555,76 @@ def test_a_first_publish_that_fails_after_the_switch_leaves_no_site(server, tmp_
     assert not (server['base'] / 'current').exists() and not (server['base'] / 'current').is_symlink()
     assert server['caddy'].read_bytes() == b'old caddy\n'
     assert list((server['base'] / 'releases').iterdir()) == []
+
+
+# Issue #27: the lock shared with the pipeline receiver, public modes and pruning.
+
+def test_install_waits_for_a_pipeline_deployment_to_release_the_lock(server, tmp_path, capsys, hold_lock):
+    holder = hold_lock(server['lock'])
+    server['on_sleep'] = holder.close  # the deployment finishes while the publish waits
+    sent = payload(tmp_path)
+    install(server, sent)
+    assert Path(os.readlink(server['base'] / 'current')).name == sent['release']
+    assert 'Waiting for a pipeline deployment' in capsys.readouterr().err
+
+
+def test_a_publish_that_waited_never_replaces_the_site_a_deployment_switched_to(server, tmp_path, hold_lock):
+    holder = hold_lock(server['lock'])
+    pipeline = server['base'].parent / 'opt/releases/newer/public-homepage'
+    pipeline.mkdir(parents=True)
+
+    def deployment_finishes():
+        server['module'].point(server['base'] / 'current', pipeline)
+        holder.close()
+
+    server['on_sleep'] = deployment_finishes
+    sent = payload(tmp_path)
+    with pytest.raises(RuntimeError, match='switched the site since this publish inspected it'):
+        install(server, sent)
+    assert Path(os.readlink(server['base'] / 'current')) == pipeline
+    assert server['caddy'].read_bytes() == b'old caddy\n'
+    assert sorted(path.name for path in (server['base'] / 'releases').iterdir()) == ['old']
+    assert not Path(sent['payload']).exists() and server['commands'] == []
+
+
+def test_install_refuses_a_site_moved_since_the_publisher_looked(server, tmp_path):
+    sent = payload(tmp_path)  # a pipeline deploy finished between inspection and install
+    with pytest.raises(RuntimeError, match='switched the site since this publish inspected it'):
+        install(server, {**sent, 'site': '/opt/wow-character-status/releases/newer/public-homepage'})
+    unchanged(server, sent)
+    assert server['commands'] == []
+
+
+def test_install_accepts_the_site_the_publisher_saw(server, tmp_path):
+    sent = payload(tmp_path)
+    install(server, {**sent, 'site': str(server['old'])})
+    assert Path(os.readlink(server['base'] / 'current')).name == sent['release']
+
+
+def test_install_that_cannot_get_the_lock_changes_nothing(server, tmp_path, monkeypatch, hold_lock):
+    holder = hold_lock(server['lock'])
+    monkeypatch.setattr(server['module'], 'LOCK_WAIT', 0)
+    sent = payload(tmp_path)
+    with pytest.raises(TimeoutError, match='pipeline deployment is still running'):
+        install(server, sent)
+    holder.close()
+    unchanged(server, sent)
+    assert server['commands'] == []
+
+
+def test_a_publish_keeps_only_recent_releases_and_caddyfile_backups(server, tmp_path):
+    releases = server['base'] / 'releases'
+    old = [f'202610{day:02}T000000000000Z' for day in range(1, 9)]  # oldest first
+    for name in old:
+        write(releases / name / 'index.html', name.encode())
+        write(server['base'] / f'Caddyfile.before-{name}', b'caddy')
+    (server['base'] / 'current').unlink()
+    (server['base'] / 'current').symlink_to(releases / old[1])  # live before this publish: kept
+    sent = payload(tmp_path)
+    result = install(server, sent)
+    keep = server['module'].KEEP_RELEASES
+    newest = sorted([*old, sent['release']])[-keep:]
+    assert sorted(path.name for path in releases.iterdir()) == sorted(['old', old[1], *newest])
+    assert result['pruned_releases'] == len(old) + 1 - keep - 1
+    backups = sorted(path.name for path in server['base'].glob('Caddyfile.before-*'))
+    assert backups == [f'Caddyfile.before-{name}' for name in newest]

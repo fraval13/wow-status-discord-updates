@@ -2,16 +2,26 @@
 
 The live site is compared with the release.json this machine just built, never only
 with the manifest the site itself serves: a tampered site could regenerate that.
+
+When the last attempt fails, the exit status says how, because the deploy job rolls
+back only for WRONG_CONTENT (issue #27): WRONG_CONTENT (4) when the site answered with
+something other than this release (an HTTP error status included), UNREACHABLE (3)
+when it never gave a complete answer (DNS, connection, TLS, timeout or a body cut
+short). Argument errors exit 2 and anything unexpected 1, and neither rolls back.
 """
 import argparse
 import functools
 import hashlib
+import http.client
 import importlib.util
 import io
 import json
 import re
 import stat
+import sys
 import time
+import traceback
+import urllib.error
 import urllib.request
 import zipfile
 from html.parser import HTMLParser
@@ -19,6 +29,8 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
+UNREACHABLE = 3
+WRONG_CONTENT = 4
 MAX_BYTES = 32 * 1024 * 1024
 FOLDER = 'WoWStatus/'
 
@@ -78,6 +90,8 @@ def read(url):
         data = response.read(MAX_BYTES + 1)
         if response.status != 200 or len(data) > MAX_BYTES:
             raise ValueError('Invalid or oversized public response')
+        if response.length:  # fewer bytes than the Content-Length promised: the connection was cut
+            raise http.client.IncompleteRead(data, response.length)
         return data
 
 
@@ -191,7 +205,12 @@ if __name__ == '__main__':
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break
-        except (OSError, ValueError, KeyError, zipfile.BadZipFile):
+        except (OSError, ValueError, KeyError, zipfile.BadZipFile, http.client.HTTPException) as error:
             if attempt == args.attempts - 1:
-                raise
+                traceback.print_exc()
+                # An HTTP error status is an answer from the site; any other OSError, or a
+                # response cut short (http.client.IncompleteRead), is not a complete one.
+                answered = (isinstance(error, urllib.error.HTTPError)
+                            or not isinstance(error, (OSError, http.client.HTTPException)))
+                sys.exit(WRONG_CONTENT if answered else UNREACHABLE)
             time.sleep(args.delay)

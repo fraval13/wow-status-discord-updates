@@ -54,8 +54,12 @@ Caddyfile, extracts the new static release with public read permissions, validat
 the candidate Caddyfile outside the web root, switches the symlink and gracefully
 reloads Caddy. A failure removes the partial release and the upload; one after the
 switch first restores the previous site and Caddyfile and restarts Caddy if it
-stopped. The previous
-configuration and release stay available for rollback. It reads the server's
+stopped. The previous configuration and release stay available for rollback; after
+a successful publish only the newest five static releases (the new one among them)
+and Caddyfile backups are kept, plus the release that was live before. The install
+holds the pipeline receiver's deployment lock, so it waits (up to ten minutes) while
+a pipeline deploy runs, and refuses if that deploy switched the site meanwhile. It
+reads the server's
 private `groups.json` to render the
 group routes (never the Discord settings) and refuses to change the live routes.
 `--dry-run` prints the Caddy change without uploading anything; that output holds
@@ -78,6 +82,9 @@ version against the incoming addon TOCs before activation. Once both application
 health checks pass, it switches the public symlink to the sealed release's
 `public-homepage/` directory. A failed build/health check leaves the old site and
 downloads in place; the receiver also retains the old symlink for rollback.
+If the public verification below fails, the deploy job asks the receiver to roll
+back to the preceding release and homepage, unless a manual publish replaced the
+homepage since (see `deploy/SERVER.md`).
 The constant Caddy document-root path needs no reload for these later releases.
 
 Version text and sizes are filled automatically from the addon release metadata.
