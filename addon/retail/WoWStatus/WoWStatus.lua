@@ -495,6 +495,7 @@ local function initialize()
     if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
     WoWStatusMilestones.init(current, queue)
     WoWStatusRecaps.init(current)
+    WoWStatusRoster.init(WoWStatusDB, current)
     registerSettings()
     if current.settings.enabled then
         if current.settings.fields.playtime then A.requestPlaytime() end
