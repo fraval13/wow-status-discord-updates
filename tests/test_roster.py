@@ -225,3 +225,21 @@ def test_each_player_heading_notes_their_addon_version():
     thora.eval('SlashCmdList.WOWSTATUS')('characters')
     assert 'older version' in thora.eval('WoWStatusCharactersPage.headers[1].text.text') or \
         'older version' in thora.eval('WoWStatusCharactersPage.headers[2].text.text')
+
+
+def test_cards_end_with_level_and_total_deaths():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        local group=next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-aaaa",kind="death",text="Total deaths: 2",at=time()-5,group_id=group})
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-2-bbbb",kind="death",text="Total deaths: 3",at=time(),group_id=group})
+        fire("PLAYER_DEAD")
+        SlashCmdList.WOWSTATUS("characters")
+        local cards={}
+        for i=1,WoWStatusCharactersPage.count do
+            local c=WoWStatusCharactersPage.lines[i]; cards[c.character.name]=c.latest.text
+        end
+        assert(cards["Mira-TestRealm"]=="Level 1 · 3 deaths", cards["Mira-TestRealm"])
+        assert(cards["Thora-TestRealm"]=="Level 1 · 1 death", cards["Thora-TestRealm"])
+    ''')

@@ -92,8 +92,11 @@ function R.observe(character)
     -- Progress through the level in thousandths; none at the maximum level.
     local permille = xp and maximum and maximum > 0 and xp >= 0 and xp <= maximum
         and not (level and level >= (WoWStatusAdapter.max_level or 999)) and math.min(999, math.floor(xp / maximum * 1000)) or nil
+    -- Total deaths, saved so other characters' cards keep their last known total.
+    local deaths = character.settings and character.settings.fields.deaths and WoWStatusProgress.totalDeaths
+        and S.number(WoWStatusProgress.totalDeaths(character)) or nil
     character.roster_info = {race=S.string(race), sex=S.number(S.call(UnitSex, "player")), class=S.string(class),
-        level=level, xp=permille, at=time()}
+        level=level, xp=permille, deaths=deaths, at=time()}
 end
 
 local function playerName()
@@ -311,7 +314,7 @@ end
 
 -- Groups for the Characters page: {title, rows={{name, race, sex, class, level, status, latest}}}.
 function R.groups()
-    local online, latest, lastSeen, shared = {}, {}, {}, {}
+    local online, latest, lastSeen, shared, deaths = {}, {}, {}, {}, {}
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
         if k and selected[group] then shared[k] = shared[k] or {}; shared[k][group] = true end
@@ -322,6 +325,10 @@ function R.groups()
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local k = key(e.sender)
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
+        -- A friend's total deaths, from their newest death announcement.
+        if k and deaths[k] == nil and e.kind == "death" then
+            deaths[k] = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$")) or false
+        end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
     end
     -- First-name-only entries (older WoW Forever clients announced "Unshaved")
@@ -385,7 +392,8 @@ function R.groups()
         end
         table.sort(labels)
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
-            level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels})
+            level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels,
+            deaths=S.number(character.deaths) or deaths[k] or nil})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
@@ -393,6 +401,7 @@ function R.groups()
             local own = WoWStatusPopups.runtimeVersion
             add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
                 race=info.race, sex=info.sex, class=info.class, level=info.level, xp=info.xp, at=info.at,
+                deaths=c == current and current.settings.fields.deaths and WoWStatusProgress.totalDeaths(current) or info.deaths,
                 current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
         end
     end
@@ -483,7 +492,12 @@ function R.render()
             c.status:SetText(character.status)
             local xp = S.number(character.xp)
             c.xp:SetProgress(xp and xp / 1000, xp and ("XP " .. math.floor(xp / 10) .. "%"))
-            c.latest:SetText(character.latest and character.latest:gsub("|", "||") or "")
+            -- Level and total deaths at the end of the card.
+            local facts = {}
+            if character.level then table.insert(facts, "Level " .. character.level) end
+            local died = S.number(character.deaths)
+            if died then table.insert(facts, died == 1 and "1 death" or (died .. " deaths")) end
+            c.latest:SetText(table.concat(facts, " · "))
             local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
             c.groups:SetText(groups ~= "" and ("|cff9d9d9dGroups:|r " .. groups:gsub("|", "||")) or "")
             c.text = c.name -- Older callers read a row's text.
