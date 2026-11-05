@@ -24,6 +24,7 @@ Popups.lua
 Journal.lua
 WhatsNewData.lua
 WhatsNew.lua
+Firsts.lua
 Minimap.lua
 StatusLine.lua
 Previews.lua

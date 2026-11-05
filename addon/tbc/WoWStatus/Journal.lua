@@ -117,6 +117,7 @@ local function add(entry)
     table.insert(db.journal.entries,entry);rebuild()
     if refresh then refresh() end
     if WoWStatusStatusLine then WoWStatusStatusLine.update() end
+    if WoWStatusFirsts then WoWStatusFirsts.update() end
     return true
 end
 function J.prepare(database)
@@ -537,6 +538,7 @@ function J.init(database,character)
     end
     local register=C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register,PREFIX) end
+    if WoWStatusFirsts then WoWStatusFirsts.update() end
 end
 local function label(parent,font,x,y,width)
     local f=parent:CreateFontString(nil,"OVERLAY",font);f:SetPoint("TOPLEFT",x,y);f:SetWidth(width);f:SetJustifyH("LEFT");return f

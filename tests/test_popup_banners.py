@@ -52,15 +52,15 @@ def test_big_banners_still_queue_one_at_a_time():
         if packet['prefix'] == 'WoWStatus':
             friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet['text'], 'WHISPER', 'Mira-TestRealm')
     assert friend.eval('#WoWStatusJournal.entries()') == 2
-    clock(friend, 11)
-    friend.eval('WoWStatusPopups.tick')()
-    first = friend.eval('WoWStatusLevelPopup.heading.text')
-    clock(friend, 12)
-    friend.eval('WoWStatusPopups.tick')()
-    assert friend.eval('WoWStatusLevelPopup.heading.text') == first
-    clock(friend, 18)
-    friend.eval('WoWStatusPopups.tick')()
-    assert {first, friend.eval('WoWStatusLevelPopup.heading.text')} == {'LEVEL 20!', 'LEVEL 30!'}
+    seen = []
+    for at in (11, 12, 18, 25, 32):
+        clock(friend, at)
+        friend.eval('WoWStatusPopups.tick')()
+        heading = friend.eval('WoWStatusLevelPopup.heading.text')
+        if not seen or seen[-1] != heading:
+            seen.append(heading)
+    # One at a time, in order; the level-20 First notice follows its level-up.
+    assert seen == ['LEVEL 20!', 'A NEW FIRST!', 'LEVEL 30!', 'A NEW FIRST!']
 
 
 def test_left_click_opens_the_log_entry_and_right_click_only_dismisses():
