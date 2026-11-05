@@ -184,6 +184,8 @@ end
 -- relay's claim with other content. False when it repeats a logged event or is refused.
 local function add(entry)
     if not db or not entry.id or not permitted(entry) then return false end
+    -- WoW Forever: an entry naming only a first name came from an older version.
+    if not entry.owner and not P.fullName(entry.sender) then return false end
     entry.groups=entry.groups or {}
     local old=index[entry.id]
     if old and relayed(old) and not relayed(entry) then
@@ -844,7 +846,10 @@ function J.init(database,character)
     lastSend,allowance,allowanceAt,holdUntil,pacing=0,ALLOWANCE,0,0,{};loginNonce=token()
     jobs,queuedJobs,contacted,hellos,seenHello,budgets={},{},{},{},{},{}
     local kept={}
-    for _,e in ipairs(db.journal.entries) do if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e) then e.groups=e.groups or {};kept[#kept+1]=e end end
+    for _,e in ipairs(db.journal.entries) do
+        if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e)
+            and (e.owner or P.fullName(e.sender)) then e.groups=e.groups or {};kept[#kept+1]=e end
+    end
     db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=time()+60
     db.journal.migrated=db.journal.migrated or {}
     local migrationKey=character.identity.client..":"..character.identity.guid

@@ -1,5 +1,7 @@
 -- Forever/Camelot adapter, authored from the mirrored client API; in-game checks pending.
-WoWStatusAdapter = {client_id = "forever", display_name = "WoW Forever", max_level = 60}
+WoWStatusAdapter = {client_id = "forever", display_name = "WoW Forever", max_level = 60,
+    -- Every character has a first and last name ("Edith Aateigen").
+    full_names = true}
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local cachedIdentity
 

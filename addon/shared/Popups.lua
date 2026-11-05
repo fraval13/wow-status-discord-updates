@@ -97,6 +97,14 @@ do
         pcall(addFilter, "CHAT_MSG_SYSTEM", function(_, _, message) return P.filterNotFound(message) end)
     end
 end
+-- WoW Forever requires a first and last name ("Edith Aateigen"); names without
+-- one there come from older versions that only knew the first name. True when a
+-- name is complete for this edition.
+function P.fullName(name)
+    if not A.full_names then return true end
+    local short = S.string(name) and name:match("^([^-]+)")
+    return short ~= nil and S.trim(short):find(" ", 1, true) ~= nil
+end
 -- A character's name and realm as other players see them: "Name-Realm".
 -- WoW Forever's UnitName gives only a first name ("Edith") while chat and
 -- channel rosters use the full name ("Edith Aateigen"); the full name is learnt

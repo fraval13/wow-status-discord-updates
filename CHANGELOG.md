@@ -12,6 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- WoW Forever: characters and log entries with only a first name, left by older versions, are removed
 - No more "No player named ... is currently playing" messages from the addon's own whispers
 
 ## 1.6.0

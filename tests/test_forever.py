@@ -206,3 +206,25 @@ def test_forever_pvp_uses_client_rank_points_and_season_baselines(forever_lua):
         __rank=__secret;fire("UPDATE_FACTION")
         assert(#character().events==3)
     ''')
+
+
+def test_forever_drops_names_without_a_last_name():
+    # Live report: "Unshaved" and an old "Edith" stayed listed next to the full names.
+    lua = forever_runtime()
+    lua.eval('fire')('PLAYER_LOGIN')
+    lua.execute('''
+        WoWStatusGroups.announce=nil
+        WoWStatusGroups.update("dawnwatch","")
+        local group=next(character().group_ids)
+        assert(not WoWStatusJournal.received({sender="Unshaved-TestRealm",nonce="1-1-aaaa",kind="level",level=5,at=time(),group_id=group}))
+        assert(WoWStatusJournal.received({sender="Unshaved Brittlebeard-TestRealm",nonce="1-2-bbbb",kind="level",level=6,at=time(),group_id=group}))
+        assert(#WoWStatusJournal.entries()==1)
+        -- An old own record with a first name only is dropped; the current character stays.
+        WoWStatusDB.characters["forever:TestRealm:old"]={identity={client="forever",realm="TestRealm",guid="old",name="Edith"},
+            settings=character().settings,roster_info={race="Human",sex=3,class="PALADIN",level=1}}
+        WoWStatusRoster.observe(character())
+        local names={}
+        for _,g in ipairs(WoWStatusRoster.groups()) do for _,r in ipairs(g.rows) do names[r.name]=true end end
+        assert(names["Thora-TestRealm"] and not names["Edith-TestRealm"] and not names["Unshaved-TestRealm"])
+        assert(names["Unshaved Brittlebeard-TestRealm"])
+    ''')

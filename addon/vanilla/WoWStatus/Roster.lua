@@ -251,6 +251,9 @@ function R.groups()
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
         end
+        -- WoW Forever: first-name-only characters come from older versions; your
+        -- current character stays even before its full name is known.
+        if not WoWStatusPopups.fullName(character.name) and not (self and character.current) then return end
         local groupKey = S.lowerASCII(title)
         local entry = merged[groupKey]
         if not entry then entry = {title=title, rows={}}; merged[groupKey] = entry; table.insert(order, entry) end
@@ -266,7 +269,8 @@ function R.groups()
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id then
             add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
-                race=info.race, sex=info.sex, class=info.class, level=info.level, at=info.at}, true)
+                race=info.race, sex=info.sex, class=info.class, level=info.level, at=info.at,
+                current=c == current}, true)
         end
     end
     for _, player in pairs(state().players) do

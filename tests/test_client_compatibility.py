@@ -93,6 +93,8 @@ def test_modern_restrictions_delay_delivery_and_login_sync_remains_two_way_and_q
         C_ChatInfo.AreOutgoingAddonChatMessagesRestricted=function() return __outgoingRestricted end
     ''') for name in ('Thora', 'Eldrin')}
     for lua in clients.values():
+        # These simulated players have no last name, which real Forever names always have.
+        lua.execute('WoWStatusAdapter.full_names=nil')
         lua.execute('''
             WoWStatusGroups.announce=nil
             WoWStatusGroups.update("dawnwatch", "")
