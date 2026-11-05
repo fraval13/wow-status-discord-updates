@@ -60,6 +60,24 @@ function F.compute(entries, group)
             if not result[medal.key] and medal.match(e) then result[medal.key] = e end
         end
     end
+    -- Level records also count milestones from members' synced character lists,
+    -- so a level reached before the log (or before joining) still counts. The
+    -- earliest time wins; on a tie the logged entry stays.
+    if group and WoWStatusRoster and WoWStatusRoster.milestoneHolders then
+        for _, medal in ipairs(medals) do
+            local level = tonumber(medal.key:match("^level:(%d+)$"))
+            if level then
+                local best = result[medal.key]
+                local holders = WoWStatusRoster.milestoneHolders(group, level)
+                table.sort(holders, function(a, b) if a.at == b.at then return a.name < b.name end return a.at < b.at end)
+                local h = holders[1]
+                if h and (not best or h.at < best.at) then
+                    result[medal.key] = {id="milestone:" .. group .. ":" .. level .. ":" .. (WoWStatusPopups.senderKey(h.name) or h.name),
+                        sender=h.name, at=h.at, kind="level", level=level, milestone=true, exact=h.exact}
+                end
+            end
+        end
+    end
     return result, medals
 end
 
@@ -150,7 +168,10 @@ local function render()
         local e = result[medal.key]
         c.icon:SetIcon(medalIcon(medal), e == nil)
         c.title:SetText(medal.title)
-        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(e.at):sub(1, 16)) or "nobody yet"
+        local when = e and WoWStatusHistory.oslo(e.at):sub(1, 16)
+        -- Reached before WoW Status tracked it: the date is "by then".
+        if e and e.milestone and not e.exact then when = "before WoW Status, by " .. when:sub(1, 10) end
+        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or "nobody yet"
         c.holder:SetText(e and holder or ("|cff808080" .. holder .. "|r"))
         UI.tint(c, e ~= nil)
         c.text = medal.title .. " — " .. holder -- Plain summary of the card.

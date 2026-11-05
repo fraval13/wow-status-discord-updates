@@ -59,7 +59,13 @@ def test_every_page_draws_on_every_edition(edition):
             assert(WoWStatusMainWindow.show(key))
         end
         assert(#WoWStatusRecordsPage.rows==#WoWStatusFirsts.medals())
-        assert(WoWStatusRecordsPage.rows[1].icon.path and WoWStatusRecordsPage.rows[1].icon.dimmed)
+        -- Nobody has died yet: that card is grey. (Level records can already be held:
+        -- the simulated characters reached those levels before WoW Status.)
+        local death
+        for _, row in ipairs(WoWStatusRecordsPage.rows) do
+            if row.text:find("to die", 1, true) then death = row end
+        end
+        assert(death.icon.path and death.icon.dimmed)
         assert(WoWStatusOverviewPage.you.badge.text.text~=nil)
         assert(WoWStatusOverviewPage.group.count.text:find("online",1,true))
         assert(WoWStatusOverviewPage.problem==nil, tostring(WoWStatusOverviewPage.problem))

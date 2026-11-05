@@ -12,6 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- Level records count levels reached before WoW Status or before joining, so late joiners no longer take them
 - Records are kept per group, with a tab for each group on the Records page
 - The floating status line can always be dragged; dragging it unpins it from the quest tracker
 - Characters page: a section per group that you can open and close

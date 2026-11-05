@@ -156,3 +156,34 @@ def test_each_group_has_its_own_records_in_tabs():
         local first = WoWStatusOverviewPage.records.rows[1].text.text
         assert(first:find("Cid", 1, true) and first:find("beta", 1, true))
     ''')
+
+
+def test_level_records_count_levels_reached_before_the_log():
+    # Live report: a member who joined later took "First to reach level 10" from
+    # someone who had reached it long before.
+    from test_roster import pair, pump
+    mira, thora = pair()
+    mira.execute('''
+        __level = 15
+        character().tracking_start = {level = 15, at = time() - 86400}
+        WoWStatusRoster.observe(character())
+    ''')
+    sent = pump(mira, thora)
+    assert any(line.startswith('M ') and ' 10 ' in line and line.endswith(' a') for line in sent)
+    thora.execute(ENTRY)
+    thora.execute('''
+        local group = next(character().group_ids)
+        table.insert(WoWStatusDB.journal.entries, put("bob10", "Bob-TestRealm", "level", time(), {level = 10, origin = "live"}))
+        local r = WoWStatusFirsts.compute(WoWStatusJournal.entries(), group)
+        assert(r["level:10"].sender == "Mira-TestRealm" and r["level:10"].milestone and not r["level:10"].exact)
+        -- Bob still takes a level nobody reached before him.
+        table.insert(WoWStatusDB.journal.entries, put("bob20", "Bob-TestRealm", "level", time(), {level = 20, origin = "live"}))
+        r = WoWStatusFirsts.compute(WoWStatusJournal.entries(), group)
+        assert(r["level:20"].sender == "Bob-TestRealm")
+        SlashCmdList.WOWSTATUS("records")
+        local text
+        for _, row in ipairs(WoWStatusRecordsPage.rows) do
+            if row.text:find("level 10", 1, true) then text = row.text end
+        end
+        assert(text:find("Mira", 1, true) and text:find("before WoW Status", 1, true), text)
+    ''')

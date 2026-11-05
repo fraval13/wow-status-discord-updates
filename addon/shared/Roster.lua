@@ -35,6 +35,31 @@ local function state()
     return db.roster
 end
 
+-- Who in a group reached a level milestone and when, from synced lists and this
+-- account's own characters: {name, at, exact}.
+function R.milestoneHolders(group, level)
+    local list = {}
+    if not db or not current or not WoWStatusGroups.selected(current)[group] then return list end
+    for _, c in pairs(db.characters or {}) do
+        if c.identity and c.identity.client == WoWStatusAdapter.client_id and type(c.roster_info) == "table" then
+            local item = R.milestones(c)[level]
+            local name = WoWStatusPopups.characterName(c)
+            if item and WoWStatusPopups.fullName(name) then table.insert(list, {name=name, at=item.at, exact=item.exact}) end
+        end
+    end
+    for _, player in pairs(state().players) do
+        if type(player.groups) == "table" and player.groups[group] then
+            for _, character in pairs(player.characters) do
+                local item = type(character.milestones) == "table" and character.milestones[level]
+                if type(item) == "table" and S.number(item.at) and WoWStatusPopups.fullName(character.name) then
+                    table.insert(list, {name=character.name, at=item.at, exact=item.exact == true})
+                end
+            end
+        end
+    end
+    return list
+end
+
 -- The player name a friend chose (Options > Groups > "Your name"), from the
 -- character lists they announced; nil when unknown or for this account.
 function R.playerOf(sender)
@@ -109,6 +134,48 @@ local function playerName()
 end
 
 -- This account's listed characters on this client, as message bodies.
+-- When each of a character's level milestones (every 10 levels and the maximum)
+-- was reached: {[level]={at, exact}}. Exact from its own level-ups (or Retail
+-- level achievements); otherwise, for levels reached before WoW Status tracked
+-- it, the time tracking began, meaning "by then". Records use these, so a member
+-- who joined later still holds a level record reached long before (synced in "M").
+function R.milestoneLevels()
+    local list, maximum = {}, WoWStatusAdapter.max_level or 60
+    for level = 10, maximum, 10 do table.insert(list, level) end
+    if maximum % 10 ~= 0 then table.insert(list, maximum) end
+    return list
+end
+-- Records ask for these per group and level, so each character's scan of the
+-- log is reused within the same second.
+local milestoneCache, milestoneAt = setmetatable({}, {__mode="k"}), nil
+function R.milestones(c)
+    local now = time()
+    if milestoneAt ~= now then milestoneCache, milestoneAt = setmetatable({}, {__mode="k"}), now end
+    if milestoneCache[c] then return milestoneCache[c] end
+    local result = R.scanMilestones(c)
+    milestoneCache[c] = result
+    return result
+end
+function R.scanMilestones(c)
+    local result, info = {}, c.roster_info
+    local current = type(info) == "table" and S.number(info.level) or nil
+    local exact = {}
+    for _, event in ipairs(c.history and c.history.events or {}) do
+        local level = event.kind == "level" and type(event.data) == "table" and not event.data.synthetic and S.number(event.data.level)
+        if level and S.number(event.at) and (not exact[level] or event.at < exact[level]) then exact[level] = event.at end
+    end
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        local level = e.kind == "level" and e.owner == c.identity.guid and e.client == c.identity.client and S.number(e.level)
+        if level and S.number(e.at) and (not exact[level] or e.at < exact[level]) then exact[level] = e.at end
+    end
+    local start = type(c.tracking_start) == "table" and S.number(c.tracking_start.at) or (type(info) == "table" and S.number(info.at))
+    for _, level in ipairs(R.milestoneLevels()) do
+        if exact[level] then result[level] = {at=math.floor(exact[level]), exact=true}
+        elseif current and current >= level and start then result[level] = {at=math.floor(start), exact=false} end
+    end
+    return result
+end
+
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
@@ -124,6 +191,10 @@ local function ownLines(group)
             table.insert(lines, table.concat({"C", group, roster.id, playerName() or "-", name, info.race, info.sex, info.class, info.level}, " "))
             -- XP progress goes in its own line, which older versions ignore.
             if S.number(info.xp) then table.insert(lines, table.concat({"P", group, roster.id, name, info.xp}, " ")) end
+            -- Level milestones with their times, for records ("e" exact, "a" by then).
+            for level, item in pairs(R.milestones(c)) do
+                table.insert(lines, table.concat({"M", group, roster.id, name, level, item.at, item.exact and "e" or "a"}, " "))
+            end
         end
     end
     -- The addon version, once per list; older versions ignore this line.
@@ -299,6 +370,22 @@ function R.receive(message, sender, distribution)
         if not player or #version > 16 or not version:match("^%d+%.%d+%.%d+$") then return false end
         player.version = version
         R.render()
+        return true
+    end
+    if op == "M" and #words == 7 then
+        local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
+        local level, at, flag, player = tonumber(words[5]), tonumber(words[6]), words[7], players[pid]
+        local maximum = WoWStatusAdapter.max_level or 60
+        if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player or not level or not at
+            or level ~= math.floor(level) or level < 1 or level > maximum or at ~= math.floor(at)
+            or at < 1000000000 or at > S.now() + 300 or (flag ~= "e" and flag ~= "a") then return false end
+        local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
+        if not character then return false end
+        character.milestones = type(character.milestones) == "table" and character.milestones or {}
+        local count = 0
+        for _ in pairs(character.milestones) do count = count + 1 end
+        if count >= 20 and not character.milestones[level] then return false end
+        character.milestones[level] = {at=at, exact=flag == "e"}
         return true
     end
     if op == "P" and #words == 5 then
