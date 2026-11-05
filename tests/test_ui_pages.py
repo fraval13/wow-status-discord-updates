@@ -64,3 +64,28 @@ def test_every_page_draws_on_every_edition(edition):
         assert(WoWStatusOverviewPage.group.count.text:find("online",1,true))
         assert(WoWStatusOverviewPage.problem==nil, tostring(WoWStatusOverviewPage.problem))
     ''')
+
+
+def test_overview_lists_everyone_online_and_fits_the_summary():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        __peers={"Thora-TestRealm","Ann-TestRealm","Bob-TestRealm","Cid-TestRealm","Dee-TestRealm","Eve-TestRealm","Fay-TestRealm"}
+        getmetatable(CreateFrame("Frame")).__index.SetHeight = function(self, h) self.height = h end
+        WoWStatusDB.overview = {since = time() - 3600}
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({sender="Ann-TestRealm",nonce="1-1-aaaa",kind="level",level=5,at=time(),group_id=group})
+        WoWStatusMainWindow.show("overview")
+        local page = WoWStatusOverviewPage
+        local names = page.group.names.text
+        for _, n in ipairs({"Ann","Bob","Cid","Dee","Eve","Fay"}) do assert(names:find(n, 1, true), n) end
+        assert(not names:find("more", 1, true))
+        -- Two summary lines: a compact box, not the full height.
+        assert(#page.rows == 2 and page.since.height == 98, page.since.height)
+        for i = 2, 30 do
+            WoWStatusJournal.received({sender="Bob-TestRealm",nonce="2-"..i.."-bbbb",kind="death",text="Died",at=time(),group_id=group})
+            WoWStatusJournal.received({sender="Cid"..i.."-TestRealm",nonce="3-"..i.."-cccc",kind="death",text="Died",at=time(),group_id=group})
+        end
+        WoWStatusMainWindow.show("overview")
+        assert(page.since.height == 232)
+    ''')

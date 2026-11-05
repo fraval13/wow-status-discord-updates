@@ -5,6 +5,7 @@
 WoWStatusOverview = {}
 local O, S = WoWStatusOverview, WoWStatusSafe
 local MAX_LINES = 40
+local SINCE_MIN, SINCE_MAX = 90, 232
 local page
 
 local function state()
@@ -164,10 +165,9 @@ local function renderGroup()
     local count = WoWStatusPopups.onlineCount()
     group.count:SetText(groups == 0 and "Join a group in Options to share with friends."
         or ("|cff40ff40" .. count .. "|r online · " .. groups .. (groups == 1 and " group" or " groups")))
-    local shown = {}
-    for i = 1, math.min(#names, 4) do shown[i] = names[i] end
-    if #names > 4 then table.insert(shown, "and " .. (#names - 4) .. " more") end
-    group.names:SetText(#shown > 0 and table.concat(shown, "\n") or (groups > 0 and "Nobody else is online right now." or ""))
+    -- Everyone online, scrolling when the box is full.
+    group.names:SetText(#names > 0 and table.concat(names, "\n") or (groups > 0 and "Nobody else is online right now." or ""))
+    group.list:SetHeight(math.max(1, (S.number(group.names:GetStringHeight()) or 0) + 4))
 end
 
 -- The "Latest records" box: the three newest Firsts medals.
@@ -227,6 +227,12 @@ local function render()
         widget.text:SetText(row.text); widget.id = row.id; widget:Show()
     end
     for i = #rows + 1, #page.list.lines do page.list.lines[i].id = nil; page.list.lines[i]:Hide() end
+    -- The box fits its lines (no empty space below a few), up to the room above
+    -- Latest records; longer summaries scroll.
+    local height = math.max(SINCE_MIN, math.min(SINCE_MAX, 50 + math.max(1, #rows) * 24))
+    page.since:SetHeight(height)
+    page.scroll:SetHeight(height - 48)
+    page.list:SetHeight(math.max(1, #rows) * 24)
     page.rows = rows
 end
 O.render = render
@@ -247,7 +253,11 @@ local function build(parent)
     local group = UI.box(page, 336, 136); group:SetPoint("TOPLEFT", 386, -4); page.group = group
     UI.header(group, "Your group", 12, -10, 312)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
-    group.names = UI.text(group, "GameFontHighlightSmall", 12, -56, 312)
+    group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
+    group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 70)
+    group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 70)
+    group.scroll:SetScrollChild(group.list)
+    group.names = UI.text(group.list, "GameFontHighlightSmall", 0, 0, 280)
     -- Since you were last here
     local since = UI.box(page, 698, 232); since:SetPoint("TOPLEFT", 24, -148); page.since = since
     page.heading = UI.text(since, "GameFontNormalLarge", 12, -10, 674)
@@ -258,7 +268,8 @@ local function build(parent)
     page.scroll:SetScrollChild(page.list)
     page.empty = UI.text(since, "GameFontHighlight", 12, -44, 674)
     -- Latest records
-    local records = UI.box(page, 698, 124); records:SetPoint("TOPLEFT", 24, -392); page.records = records
+    -- Directly under "Since you were last here", which sizes to its lines.
+    local records = UI.box(page, 698, 124); records:SetPoint("TOPLEFT", since, "BOTTOMLEFT", 0, -8); page.records = records
     UI.header(records, "Latest records", 12, -10, 674)
     records.rows = {}
     for i = 1, 3 do

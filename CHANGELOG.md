@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Overview: Your group lists everyone online with a scrollbar, and Since you were last here fits its lines
+
 ## 1.11.0
 
 - Sync now on the Characters page refreshes lists and the log with everyone online, once a minute
