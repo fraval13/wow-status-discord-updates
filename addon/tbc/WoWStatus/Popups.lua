@@ -47,6 +47,29 @@ local function realm()
     local value = A.realmName()
     return value and S.stripSpace(value) or ""
 end
+-- A character's name and realm as other players see them: "Name-Realm".
+-- WoW Forever's UnitName gives only a first name ("Edith") while chat and
+-- channel rosters use the full name ("Edith Aateigen"); the full name is learnt
+-- from a roster entry carrying this character's GUID (chat_name). The realm is
+-- the normalized one, as in senderKey, saved at login (normalized_realm).
+function P.characterName(character)
+    local identity = character.identity
+    local name = S.string(character.chat_name) or identity.name
+    local realmName = S.string(character.normalized_realm) or identity.realm
+    return name .. "-" .. S.stripSpace(realmName)
+end
+function P.ownName()
+    local character = getCharacter and getCharacter()
+    return character and S.string(character.chat_name) or A.playerName()
+end
+-- Learns this character's full chat name from a roster entry with its GUID.
+local function learnName(name)
+    local character = getCharacter and getCharacter()
+    local short = S.string(name) and name:match("^([^-]+)")
+    if not character or not short or character.chat_name == short then return end
+    character.chat_name = short
+    if WoWStatusJournal and WoWStatusJournal.selfRenamed then WoWStatusJournal.selfRenamed() end
+end
 -- Whether a name (and the GUID a roster gives) is this character. The realm in
 -- a name need not match GetNormalizedRealmName: WoW Forever names its realm
 -- internally ("CAMWOWEU5Realm1PvE"), so a full-name comparison alone kept you in
@@ -57,11 +80,14 @@ function P.isSelf(name, guid)
     if guid and own then return guid == own end
     name = S.string(name)
     if not name then return false end
-    if P.senderKey(name) == P.senderKey((A.playerName() or "") .. "-" .. realm()) then return true end
-    local player = A.playerName()
     local short = name:match("^([^-]+)")
-    return player ~= nil and short ~= nil
-        and S.lowerASCII(S.stripSpace(short)) == S.lowerASCII(S.stripSpace(player))
+    for _, player in ipairs({P.ownName() or "", A.playerName() or ""}) do
+        if player ~= "" and (P.senderKey(name) == P.senderKey(player .. "-" .. realm())
+            or (short and S.lowerASCII(S.stripSpace(short)) == S.lowerASCII(S.stripSpace(player)))) then
+            return true
+        end
+    end
+    return false
 end
 function P.senderKey(sender)
     sender = S.string(sender)
@@ -157,7 +183,9 @@ local function readRoster(index,count)
         local target=S.string(name);local key=target and P.senderKey(target)
         if key then
             read=read+1
-            if not P.isSelf(target,guid) and not seen[key] then seen[key]=true;result[#result+1]=target end
+            if P.isSelf(target,guid) then
+                if S.string(guid) then learnName(target) end
+            elseif not seen[key] then seen[key]=true;result[#result+1]=target end
         end
     end
     return result,count>0 and read>=math.min(count,64)

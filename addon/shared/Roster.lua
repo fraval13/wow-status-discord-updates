@@ -52,7 +52,7 @@ local function ownLines(group)
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
             and info.race and (info.sex == 2 or info.sex == 3) and CLASSES[info.class] and S.number(info.level) then
-            local name = c.identity.name .. "-" .. S.stripSpace(c.identity.realm)
+            local name = WoWStatusPopups.characterName(c)
             table.insert(lines, table.concat({"C", group, roster.id, playerName() or "-", name, info.race, info.sex, info.class, info.level}, " "))
         end
     end
@@ -211,7 +211,7 @@ function R.groups()
         local k = key(character.name)
         if not k or known[k] then return end
         known[k] = true
-        local status = self and (k == key(current.identity.name .. "-" .. S.stripSpace(current.identity.realm)) and "online" or "offline")
+        local status = self and (k == key(WoWStatusPopups.characterName(current)) and "online" or "offline")
             or (online[k] and "online") or ("last seen " .. ago(math.max(lastSeen[k] or 0, character.at or 0)))
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
             level=character.level, status=status, latest=latest[k]})
@@ -219,7 +219,7 @@ function R.groups()
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id then
-            add((playerName() or "You") .. " (you)", {name=c.identity.name .. "-" .. S.stripSpace(c.identity.realm),
+            add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
                 race=info.race, sex=info.sex, class=info.class, level=info.level, at=info.at}, true)
         end
     end

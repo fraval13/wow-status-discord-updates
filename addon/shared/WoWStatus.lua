@@ -416,6 +416,8 @@ local function initialize()
     }
     current = WoWStatusDB.characters[key]
     current.identity = identity
+    -- The realm as chat names it (see WoWStatusPopups.characterName).
+    current.normalized_realm = A.realmName() or current.normalized_realm
     WoWStatusLoot.defaults(current.settings)
     WoWStatusScreenshots.defaults(current.settings)
     for _, character in pairs(WoWStatusDB.characters) do

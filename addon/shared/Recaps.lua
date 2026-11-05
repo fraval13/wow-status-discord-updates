@@ -101,14 +101,14 @@ function R.close(at)
     local session = character and character.session
     if not session then return false end
     character.session = nil
-    local text = R.text(session, character.identity.name, at)
+    local text = R.text(session, character.chat_name or character.identity.name, at)
     if not text then return false end
     if emit and character.settings.enabled and character.settings.in_game.recap then
         local shared=R.sharedText(session,character.settings)
         if shared then return emit("recap",{text=shared,source="session_recap"})~=nil end
     end
     local main = session.top_level and "level" or (#session.dungeons > 0 and "dungeon") or next(session.counts)
-    local flavour = WoWStatusFlavour.text({kind=main, level=session.top_level, sender=character.identity.name,
+    local flavour = WoWStatusFlavour.text({kind=main, level=session.top_level, sender=character.chat_name or character.identity.name,
         id="recap:" .. tostring(at)})
     return WoWStatusJournal.recordRecap(character, at, text, flavour)
 end

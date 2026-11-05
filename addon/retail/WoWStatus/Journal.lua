@@ -41,7 +41,7 @@ local function trim(text,limit)
     return text
 end
 local function ownName()
-    return (WoWStatusAdapter.playerName() or current.identity.name).."-"..S.stripSpace(WoWStatusAdapter.realmName() or current.identity.realm)
+    return (P.ownName() or current.identity.name).."-"..S.stripSpace(WoWStatusAdapter.realmName() or current.identity.realm)
 end
 function J.eventID(sender,nonce)
     local key=P.senderKey(sender)
@@ -155,8 +155,11 @@ local function ownCharacter(entry)
     if entry.owner then return false end
     local senderKey=P.senderKey(entry.sender)
     for _, c in pairs(db.characters or {}) do
-        local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
-        if P.senderKey(name)==senderKey and c.identity.client==entry.client then return true end
+        if c.identity.client==entry.client then
+            for _, name in ipairs({P.characterName(c),c.identity.name.."-"..S.stripSpace(c.identity.realm)}) do
+                if P.senderKey(name)==senderKey then return true end
+            end
+        end
     end
     return false
 end
@@ -220,7 +223,7 @@ function J.prepare(database)
         for _,event in ipairs(c.history and c.history.events or {}) do
             if event.kind=="loot" then
                 local nonce=P.eventNonce(event)
-                local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
+                local name=P.characterName(c)
                 local id=nonce and c.identity.client..":"..P.senderKey(name)..":"..nonce
                 local entry=id and wanted[id]
                 if entry and event.data.item then
@@ -358,6 +361,31 @@ function J.received(item)
     if not db or item.preview then return false end
     local entry=liveEntry(item)
     return entry~=nil and add(entry)
+end
+-- This character's chat name was learnt (WoW Forever: "Edith Aateigen", where
+-- UnitName gave "Edith"). Its own entries take that name, and IDs derived from
+-- the old one change to the ID friends compute from the whisper sender, so their
+-- copies match. Copies of this account's entries received from others are dropped.
+function J.selfRenamed()
+    if not db or not current then return end
+    local sender=ownName()
+    local newKey=P.senderKey(sender)
+    if not newKey then return end
+    local kept={}
+    for _, e in ipairs(db.journal.entries) do
+        if e.owner==current.identity.guid and e.client==current.identity.client then
+            local oldKey=P.senderKey(e.sender)
+            if oldKey and oldKey~=newKey then
+                local prefix=e.client..":"..oldKey..":"
+                if e.id:sub(1,#prefix)==prefix then e.id=e.client..":"..newKey..":"..e.id:sub(#prefix+1);digestOf[e]=nil end
+                e.sender=sender
+            end
+            kept[#kept+1]=e
+        elseif not ownCharacter(e) then kept[#kept+1]=e end
+    end
+    db.journal.entries=kept;rebuild()
+    if refresh then refresh() end
+    if WoWStatusFirsts then WoWStatusFirsts.update() end
 end
 function J.shared(kind) return sharedKinds[kind]==true end
 function J.entries() return db and db.journal.entries or {} end
@@ -855,7 +883,7 @@ local function trackingMarkers()
         if type(start)=="table" and S.number(start.level) and start.level>1 and S.number(start.at)
             and c.identity.client==WoWStatusAdapter.client_id and c.settings.enabled then
             list[#list+1]={id="tracking:"..c.identity.client..":"..c.identity.guid,client=c.identity.client,
-                sender=c.identity.name.."-"..S.stripSpace(c.identity.realm),owner=c.identity.guid,kind="tracking",
+                sender=P.characterName(c),owner=c.identity.guid,kind="tracking",
                 at=start.at,text="Tracking started at level "..start.level,groups={},origin="mine"}
         end
     end
@@ -969,7 +997,7 @@ function J.recordRecap(character,at,text,flavour)
     if not db or type(text)~="string" or text=="" then return false end
     local identity=character.identity
     return add({id="recap:"..identity.client..":"..identity.guid..":"..at,client=identity.client,
-        sender=identity.name.."-"..S.stripSpace(identity.realm),owner=identity.guid,kind="recap",at=at,
+        sender=P.characterName(character),owner=identity.guid,kind="recap",at=at,
         text=trim(text,160),flavour=flavour,groups={},origin="mine"})
 end
 local frame=CreateFrame("Frame")
