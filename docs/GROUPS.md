@@ -149,6 +149,11 @@ candidates.
 - Share it with the group privately. Never put a real group name or its key in Git,
   issues, pull requests, screenshots or logs. Operators keep production names only
   in the server's private configuration.
+- The two previously exposed production groups are retired. Updated addons remove
+  those memberships, leave their old channels and reject rejoining them. The
+  companion also rejects those retired destinations. Only one-way fingerprints
+  of retired IDs are shipped; no replacement credential is distributed in code.
+  Ask the owner privately for the replacement name. Old local history is retained.
 - If a name leaks, choose a new one. Deleting it from a file does not undo the leak.
   In-game sharing moves as soon as members replace the name in `/wstatus groups`; the
   companion service needs [the operator's rotation steps](../deploy/SERVER.md#rotating-a-group-name).

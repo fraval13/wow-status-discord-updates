@@ -64,8 +64,9 @@ def main(argv=None):
     if args.output:
         temporary = args.output.with_name(args.output.name + '.partial')
         temporary.unlink(missing_ok=True)
-        temporary.write_text(text, encoding='utf-8', newline='\n')
-        temporary.chmod(0o644)
+        descriptor=os.open(temporary,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+        with os.fdopen(descriptor,'w',encoding='utf-8',newline='\n') as handle:
+            handle.write(text)
         os.replace(temporary, args.output)  # replaces a symlink itself, never its target
     else:
         sys.stdout.write(text)

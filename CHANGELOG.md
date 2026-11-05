@@ -10,6 +10,12 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Previously exposed groups are retired; ask the group owner privately for the replacement name
+- Old group channels are left automatically and cannot be re-added after updating
+- Private gateway routing files keep restricted permissions when the website is published
+
 ## 0.15.0
 
 - First successful raid boss kills and epic mount items earn big banners and Firsts medals
