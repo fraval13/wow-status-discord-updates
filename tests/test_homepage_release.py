@@ -1,6 +1,8 @@
 """Public downloads must match the release before their symlink can be activated."""
+import contextlib
 import functools
 import hashlib
+import http.server
 import importlib.util
 import io
 import json
@@ -8,6 +10,7 @@ import shutil
 import socket
 import subprocess
 import sys
+import threading
 import warnings
 import zipfile
 from pathlib import Path
@@ -294,17 +297,79 @@ def test_deploy_passes_the_local_manifest_to_the_verifier():
     assert '--manifest dist/homepage/downloads/release.json' in deploy[verify:].split('\n      - ')[0]
 
 
+def run_verifier(built_site, url, attempts=1):
+    revision = json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))['addon_revision']
+    return subprocess.run([sys.executable, str(ROOT/'scripts/verify_homepage.py'), '--url', url,
+                           '--revision', revision, '--manifest', str(built_site/'downloads/release.json'),
+                           '--attempts', str(attempts), '--delay', '0'], capture_output=True, text=True, encoding='utf-8')
+
+
+@contextlib.contextmanager
+def local_site(respond):
+    """A localhost HTTP server whose every GET calls respond(handler); yields (url, request count)."""
+    requests = []
+
+    class Handler(http.server.BaseHTTPRequestHandler):
+        protocol_version = 'HTTP/1.1'
+
+        def do_GET(self):
+            requests.append(self.path)
+            respond(self)
+
+        def log_message(self, *args):
+            pass
+
+    server = http.server.ThreadingHTTPServer(('127.0.0.1', 0), Handler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield f'http://127.0.0.1:{server.server_address[1]}', requests
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
 def test_an_unreachable_site_exits_with_its_own_status(built_site):
     """The deploy job rolls back on a wrong answer from the site, never on no answer (issue #27)."""
     with socket.socket() as probe:  # a local port nothing listens on
         probe.bind(('127.0.0.1', 0))
         port = probe.getsockname()[1]
-    revision = json.loads((built_site/'downloads/release.json').read_text(encoding='utf-8'))['addon_revision']
-    result = subprocess.run([sys.executable, str(ROOT/'scripts/verify_homepage.py'), '--url', f'http://127.0.0.1:{port}',
-                             '--revision', revision, '--manifest', str(built_site/'downloads/release.json'),
-                             '--attempts', '1'], capture_output=True, text=True, encoding='utf-8')
+    result = run_verifier(built_site, f'http://127.0.0.1:{port}')
     assert result.returncode == verifier_module().UNREACHABLE == 3
     assert 'Connection' in result.stderr or 'URLError' in result.stderr
+
+
+def test_a_site_serving_another_release_exits_with_the_status_that_rolls_back(built_site):
+    def stale(handler):
+        body = json.dumps({'addon_revision': '0' * 40}).encode()
+        handler.send_response(200)
+        handler.send_header('Content-Length', str(len(body)))
+        handler.end_headers()
+        handler.wfile.write(body)
+
+    with local_site(stale) as (url, requests):
+        result = run_verifier(built_site, url)
+    assert result.returncode == verifier_module().WRONG_CONTENT == 4
+    assert 'serving a different release revision' in result.stderr
+
+
+@pytest.mark.parametrize('framing', ['length', 'chunked'])
+def test_a_response_cut_short_is_retried_and_never_rolls_back(built_site, framing):
+    def cut_short(handler):
+        handler.send_response(200)
+        if framing == 'length':
+            handler.send_header('Content-Length', '1000')
+        else:
+            handler.send_header('Transfer-Encoding', 'chunked')
+        handler.end_headers()
+        handler.wfile.write(b'{"addon_' if framing == 'length' else b'3e8\r\n{"addon_')
+        handler.close_connection = True  # cut off before the promised 1000 bytes
+
+    with local_site(cut_short) as (url, requests):
+        result = run_verifier(built_site, url, attempts=2)
+    assert result.returncode == verifier_module().UNREACHABLE
+    assert 'IncompleteRead' in result.stderr
+    assert requests == ['/downloads/release.json'] * 2
 
 
 def test_command_line_requires_a_manifest_of_the_same_revision(built_site):

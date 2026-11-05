@@ -242,6 +242,24 @@ def test_redeploying_the_live_revision_keeps_the_earlier_rollback_target(server)
     assert server.live() == first and server.env_revision('group-a') == A
 
 
+def manual_publish(server, text='manual'):
+    """Point the homepage at a static release, as deploy/install_homepage.py does."""
+    manual = server.homepage / 'releases/20261105T000000000000Z'
+    manual.mkdir(parents=True)
+    (manual / 'index.html').write_text(text, encoding='utf-8')
+    server.module.point(server.homepage / 'current', manual)
+    return manual
+
+
+def test_a_redeploy_after_a_manual_publish_rolls_the_homepage_back_to_that_publish(server):
+    first = deployed(server, A)
+    deployed(server, B)
+    manual_publish(server)  # live before the redeploy, so that is what a rollback restores
+    deployed(server, B)
+    server.roll_back(B)
+    assert server.live() == first and server.homepage_text() == 'manual'
+
+
 def test_a_redeploy_without_a_record_of_the_earlier_release_cannot_roll_back(server):
     deployed(server, B)
     third = deployed(server, B)
@@ -250,17 +268,47 @@ def test_a_redeploy_without_a_record_of_the_earlier_release_cannot_roll_back(ser
     assert server.live() == third
 
 
+def test_a_damaged_record_is_replaced_by_the_next_deploy(server):
+    deployed(server, A)
+    second = deployed(server, B)
+    state = server.base / server.module.STATE
+    state.write_text(state.read_text(encoding='utf-8')[:20], encoding='utf-8')  # cut short by a full disk
+    with pytest.raises(server.module.Refused, match='No recorded deployment'):
+        server.roll_back(B)
+    deployed(server, C)
+    server.roll_back(C)
+    assert server.live() == second
+
+
+def test_a_record_that_cannot_be_written_still_lets_old_releases_go(server, monkeypatch, capsys):
+    deployed(server, A)
+    state = server.base / server.module.STATE
+    before = state.read_bytes()
+    real = server.module.write_private
+
+    def write_private(path, text):
+        if path.parent == server.base and server.module.STATE in path.name:
+            path.write_text(text[:5], encoding='utf-8')
+            raise OSError('disk full')
+        real(path, text)
+
+    monkeypatch.setattr(server.module, 'write_private', write_private)
+    for time in range(1, 9):
+        (server.base / 'releases' / f'{C}-{time}').mkdir()
+    deployed(server, B)
+    assert len(server.releases()) == server.module.KEEP_RELEASES  # pruned all the same
+    assert state.read_bytes() == before  # the earlier record, whole
+    assert sorted(path.name for path in server.base.iterdir()) == ['current', 'deployment.lock',
+                                                                   'last-deployment.json', 'releases']
+    output = capsys.readouterr()
+    assert 'Could not record the rollback target (OSError)' in output.err
+    assert 'Removed 5 old release(s).' in output.out
+
+
 # The lock shared with the manual homepage publish.
 
-def hold(path):
-    import fcntl  # Linux only; imported here so Windows reaches the module-level skip
-    handle = open(path, 'ab')
-    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    return handle
-
-
-def test_a_deploy_waits_for_a_manual_homepage_publish(server, capsys):
-    holder = hold(server.base / 'deployment.lock')
+def test_a_deploy_waits_for_a_manual_homepage_publish(server, capsys, hold_lock):
+    holder = hold_lock(server.base / 'deployment.lock')
     unread = []
 
     def publish_finishes():
@@ -273,8 +321,28 @@ def test_a_deploy_waits_for_a_manual_homepage_publish(server, capsys):
     assert 'Waiting for another deployment or homepage publish' in capsys.readouterr().err
 
 
-def test_a_deploy_that_cannot_get_the_lock_changes_nothing(server, monkeypatch):
-    holder = hold(server.base / 'deployment.lock')
+class Disconnected(io.TextIOBase):
+    """stderr once the runner's SSH connection is gone: sshd has closed the pipe."""
+
+    def write(self, text):
+        raise BrokenPipeError(32, 'Broken pipe')
+
+
+def test_a_deploy_whose_job_disconnected_while_it_waited_changes_nothing(server, monkeypatch, hold_lock):
+    holder = hold_lock(server.base / 'deployment.lock')
+
+    def job_cancelled_then_publish_finishes():
+        monkeypatch.setattr(sys, 'stderr', Disconnected())
+        holder.close()
+
+    server.on_sleep = job_cancelled_then_publish_finishes
+    with pytest.raises(server.module.Refused, match='disconnected while this waited'):
+        server.deploy(A)
+    assert server.live() is None and server.releases() == [] and server.commands == []
+
+
+def test_a_deploy_that_cannot_get_the_lock_changes_nothing(server, monkeypatch, hold_lock):
+    holder = hold_lock(server.base / 'deployment.lock')
     monkeypatch.setattr(server.module, 'LOCK_WAIT', 0)
     with pytest.raises(server.module.Refused, match='still running'):
         server.deploy(A)
@@ -339,10 +407,7 @@ def test_a_rollback_after_a_manual_publish_changes_nothing(server):
     """The manual publish explains the failed check; the release itself may be fine."""
     deployed(server, A)
     second = deployed(server, B)
-    manual = server.homepage / 'releases/20261105T000000000000Z'
-    manual.mkdir(parents=True)
-    (manual / 'index.html').write_text('manual', encoding='utf-8')
-    server.module.point(server.homepage / 'current', manual)
+    manual_publish(server)
     before = server.private()
     with pytest.raises(server.module.Refused, match='manual publish replaced the homepage'):
         server.roll_back(B)
@@ -389,14 +454,15 @@ def test_a_rollback_that_cannot_forget_its_record_still_reports_success(server, 
     assert f'Rolled back {B} to {A}' in capsys.readouterr().out
 
 
-def test_a_failed_homepage_switch_rolls_the_services_forward_again(server, monkeypatch, capsys):
+@pytest.mark.parametrize('lasting', [False, True], ids=['once', 'lasting'])
+def test_a_failed_homepage_switch_rolls_the_services_forward_again(server, monkeypatch, capsys, lasting):
     first = deployed(server, A)
     second = deployed(server, B)
     before = server.private()
     real = server.module.switch_homepage
 
     def switch_homepage(target):
-        if target == first / 'public-homepage':
+        if lasting or target == first / 'public-homepage':
             raise OSError('read-only file system')
         real(target)
 
@@ -405,7 +471,30 @@ def test_a_failed_homepage_switch_rolls_the_services_forward_again(server, monke
         server.roll_back(B)
     assert server.live() == second and server.private() == before
     assert server.homepage_text() == f'site {B}'
-    assert 'live and healthy again' in capsys.readouterr().err
+    # The services ran A for a moment; even when the homepage can't be switched back, they run B again.
+    restarts = [command[2] for command in server.commands if command[1] == 'restart']
+    assert restarts == ['group-a', 'group-b'] * 2
+    err = capsys.readouterr().err
+    assert ('could not be fully restored' if lasting else 'live and healthy again') in err
+
+
+def test_a_rollback_that_fails_before_the_switch_restarts_nothing(server, monkeypatch, capsys):
+    deployed(server, A)
+    second = deployed(server, B)
+    before = server.private()
+    real = server.module.write_private
+
+    def write_private(path, text):
+        if path.suffix == '.env':
+            raise OSError('disk full')
+        real(path, text)
+
+    monkeypatch.setattr(server.module, 'write_private', write_private)
+    with pytest.raises(OSError):
+        server.roll_back(B)
+    assert server.live() == second and server.private() == before
+    assert server.commands == []
+    assert 'before any service restarted' in capsys.readouterr().err
 
 
 def test_refusals_explain_themselves_and_failures_show_only_their_type(server):
@@ -423,8 +512,13 @@ def test_the_deploy_job_rolls_back_only_after_a_failed_verification():
     verify = next(step for step in steps if step.startswith('name: Verify live homepage'))
     rollback = next(step for step in steps if step.startswith('name: Roll back'))
     assert 'id: verify' in verify
-    assert "if: failure() && steps.verify.outcome == 'failure' && steps.verify.outputs.status != '3'" in rollback
-    assert 'echo "status=$status" >> "$GITHUB_OUTPUT"' in verify  # 3: the site was unreachable
+    # Only the verifier's "the site answered with another release" status rolls back.
+    assert "if: failure() && steps.verify.outcome == 'failure' && steps.verify.outputs.status == '4'" in rollback
+    assert 'echo "status=$status" >> "$GITHUB_OUTPUT"' in verify
+    spec = importlib.util.spec_from_file_location('verify_homepage', ROOT / 'scripts/verify_homepage.py')
+    verifier = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(verifier)
+    assert verifier.WRONG_CONTENT == 4
     assert steps.index(verify) + 1 == steps.index(rollback)
     # What the step sends is exactly what the receiver accepts as a rollback request.
     request = rollback.split("printf '", 1)[1].split("'", 1)[0].replace('%s', B).replace('\\n', '\n')

@@ -62,7 +62,11 @@ Hardening from issue #27:
   homepage publish and a pipeline deploy never switch `current` at the same time.
   Each waits up to ten minutes for the other. The publisher reads where `current`
   points when it inspects the host, and the install refuses if a deploy moved it
-  since, so a manual publish never replaces a newer site.
+  since, so a publish that waited never replaces the site that deploy switched to.
+  Nothing stops publishing an older checkout over a newer site, so publish from an
+  up-to-date `main`. A deploy that had to wait first writes a line to its SSH
+  connection once it gets the lock, and stops without changes if that fails, so a
+  deploy whose job was cancelled meanwhile can't activate over a newer one.
 - **Rollback when the public check fails.** If **Verify live homepage and all addon
   downloads** fails after a deploy, the next step sends the receiver
   `wow-status-rollback <commit>` instead of an archive. The receiver acts only if
@@ -74,9 +78,10 @@ Hardening from issue #27:
   not healthy, or the homepage can't be switched, the failed release stays live.
   Instances that deploy started for the first time are stopped and disabled, as a
   failed deploy does. Redeploying the live revision keeps the earlier rollback
-  target. No rollback is tried when the site could not be reached at all (the
-  verifier exits with status 3), since a rollback would not fix that. A refusal's
-  reason is printed in the log. The job stays red either way, and
+  target. A rollback is tried only when the site answered with something other
+  than this release (the verifier exits with status 4), not when it could not be
+  reached (status 3) or the verifier itself failed, which a rollback would not fix.
+  A refusal's reason is printed in the log. The job stays red either way, and
   **Deploy convergence** never re-dispatches a failed tip, so production stays on
   the earlier release until the next push.
 - **Public file modes.** `install_homepage.py` resets file and folder modes after

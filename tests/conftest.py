@@ -161,3 +161,20 @@ def store(tmp_path):
 @pytest.fixture
 def clone():
     return copy.deepcopy
+
+
+@pytest.fixture
+def hold_lock():
+    """Take the flock a deployment or homepage publish holds; whatever is still held is released after the test."""
+    handles = []
+
+    def hold(path):
+        import fcntl  # Linux only, like the deploy tests that use this
+        handle = open(path, 'ab')
+        handles.append(handle)
+        fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return handle
+
+    yield hold
+    for handle in handles:
+        handle.close()

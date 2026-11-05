@@ -559,15 +559,8 @@ def test_a_first_publish_that_fails_after_the_switch_leaves_no_site(server, tmp_
 
 # Issue #27: the lock shared with the pipeline receiver, public modes and pruning.
 
-def hold(path):
-    import fcntl
-    handle = open(path, 'ab')
-    fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-    return handle
-
-
-def test_install_waits_for_a_pipeline_deployment_to_release_the_lock(server, tmp_path, capsys):
-    holder = hold(server['lock'])
+def test_install_waits_for_a_pipeline_deployment_to_release_the_lock(server, tmp_path, capsys, hold_lock):
+    holder = hold_lock(server['lock'])
     server['on_sleep'] = holder.close  # the deployment finishes while the publish waits
     sent = payload(tmp_path)
     install(server, sent)
@@ -575,8 +568,8 @@ def test_install_waits_for_a_pipeline_deployment_to_release_the_lock(server, tmp
     assert 'Waiting for a pipeline deployment' in capsys.readouterr().err
 
 
-def test_a_publish_that_waited_never_replaces_the_site_a_deployment_switched_to(server, tmp_path):
-    holder = hold(server['lock'])
+def test_a_publish_that_waited_never_replaces_the_site_a_deployment_switched_to(server, tmp_path, hold_lock):
+    holder = hold_lock(server['lock'])
     pipeline = server['base'].parent / 'opt/releases/newer/public-homepage'
     pipeline.mkdir(parents=True)
 
@@ -608,8 +601,8 @@ def test_install_accepts_the_site_the_publisher_saw(server, tmp_path):
     assert Path(os.readlink(server['base'] / 'current')).name == sent['release']
 
 
-def test_install_that_cannot_get_the_lock_changes_nothing(server, tmp_path, monkeypatch):
-    holder = hold(server['lock'])
+def test_install_that_cannot_get_the_lock_changes_nothing(server, tmp_path, monkeypatch, hold_lock):
+    holder = hold_lock(server['lock'])
     monkeypatch.setattr(server['module'], 'LOCK_WAIT', 0)
     sent = payload(tmp_path)
     with pytest.raises(TimeoutError, match='pipeline deployment is still running'):

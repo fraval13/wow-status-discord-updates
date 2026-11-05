@@ -230,7 +230,11 @@ def point(link, target):
     swap = link.with_name(f'.{link.name}-{os.getpid()}')
     swap.unlink(missing_ok=True)
     swap.symlink_to(target)
-    swap.replace(link)
+    try:
+        swap.replace(link)
+    except BaseException:
+        swap.unlink(missing_ok=True)
+        raise
 
 
 def switch_homepage(target):
@@ -257,7 +261,7 @@ def wait_for_lock(path, wait):
     while True:
         try:
             fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-            return handle
+            break
         except BlockingIOError:
             if time.monotonic() >= deadline:
                 handle.close()
@@ -266,6 +270,15 @@ def wait_for_lock(path, wait):
                 print('Waiting for another deployment or homepage publish to finish.', file=sys.stderr)
                 waiting = True
             time.sleep(1)
+    if waiting:
+        # The deploy job may have been cancelled meanwhile, and a newer one may be waiting
+        # too. sshd closes a gone client's pipe, so this write fails before anything changes.
+        try:
+            print('Got the lock; continuing.', file=sys.stderr, flush=True)
+        except BrokenPipeError:
+            handle.close()
+            raise Refused('The deploy job disconnected while this waited; nothing was changed') from None
+    return handle
 
 
 def snapshot_config(groups):
@@ -337,10 +350,12 @@ def prune(releases, keep, protect):
 
 
 def read_state():
+    """The last activation's record, or None when there is none or it can't be read."""
     try:
-        return json.loads((BASE / STATE).read_text(encoding='utf-8'))
-    except FileNotFoundError:
+        state = json.loads((BASE / STATE).read_text(encoding='utf-8'))
+    except (FileNotFoundError, ValueError):  # ValueError: cut short, say; the next activation rewrites it
         return None
+    return state if isinstance(state, dict) else None
 
 
 def record(revision, candidate, previous, previous_homepage, added):
@@ -349,27 +364,41 @@ def record(revision, candidate, previous, previous_homepage, added):
     A redeploy of the live revision (say "Re-run all jobs" after a refused rollback)
     keeps the earlier rollback target, so a rollback never "returns" to the same code.
     `added` names the instances this deploy started for the first time. Neither step
-    may fail the deployment, which is live and healthy by now.
+    may fail the deployment, which is live and healthy by now, and neither depends on
+    the other.
     """
+    releases = (BASE / 'releases').resolve()
     try:
-        state = read_state()
         if previous is not None and previous.name.startswith(revision):
-            same = state is not None and state.get('revision') == revision
-            previous = (BASE / 'releases').resolve() / state['previous'] if same and state.get('previous') else None
-            previous_homepage = Path(state['previous_homepage']) if same and state.get('previous_homepage') else None
-            added = sorted(set(added) | set(state.get('added', []))) if same else added
-        write_private(BASE / STATE, json.dumps({
-            'revision': revision, 'release': candidate.name,
-            'previous': previous.name if previous else None,
-            'previous_homepage': str(previous_homepage) if previous_homepage else None,
-            'added': sorted(added)}))
+            state = read_state()
+            if state is not None and state.get('revision') == revision:
+                # The homepage that deploy replaced, unless a manual publish has replaced
+                # that deploy's own homepage since: then the published one was live before.
+                if previous_homepage == previous / 'public-homepage':
+                    previous_homepage = Path(state['previous_homepage']) if state.get('previous_homepage') else None
+                previous = releases / state['previous'] if state.get('previous') else None
+                added = sorted(set(added) | set(state.get('added', [])))
+            else:  # nothing is recorded to return to but the same code
+                previous = previous_homepage = None
+        swap = BASE / f'.{STATE}-{os.getpid()}'
+        try:
+            write_private(swap, json.dumps({
+                'revision': revision, 'release': candidate.name,
+                'previous': previous.name if previous else None,
+                'previous_homepage': str(previous_homepage) if previous_homepage else None,
+                'added': sorted(added)}))
+            swap.replace(BASE / STATE)  # whole or not at all: a full disk never leaves half a record
+        finally:
+            swap.unlink(missing_ok=True)
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        print(f'Could not record the rollback target ({type(error).__name__}).', file=sys.stderr)
+    try:
         protect = {candidate, *filter(None, [previous, previous_homepage, live(HOMEPAGE / 'current')])}
-        removed = prune((BASE / 'releases').resolve(), KEEP_RELEASES, protect)
+        removed = prune(releases, KEEP_RELEASES, protect)
         if removed:
             print(f'Removed {removed} old release(s).')
-    except (OSError, ValueError, KeyError, TypeError) as error:
-        print(f'Could not record the rollback target or prune old releases ({type(error).__name__}).',
-              file=sys.stderr)
+    except OSError as error:
+        print(f'Could not prune old releases ({type(error).__name__}).', file=sys.stderr)
 
 
 def deploy(raw, groups, migrated):
@@ -500,22 +529,34 @@ def roll_back(revision, groups):
     kept = {instance: group for instance, group in groups.items() if instance not in added}
     merged = json.loads((CONFIG / 'config.json').read_text(encoding='utf-8'))
     snapshot = snapshot_config(groups)
+    switched = False  # from here on a service may run the earlier release
     try:
         write_config(kept, merged, old_revision)
         point(current, previous)
+        switched = True
         if not start(kept, old_revision):
             raise RuntimeError('The earlier release did not become healthy')
         switch_homepage(old_homepage)
     except Exception:
-        restore_config(snapshot)
-        point(current, failed)
-        switch_homepage(failed / 'public-homepage')
-        if start(groups, revision, check=False):
+        # Each step on its own: one that fails again must not keep the services from restarting.
+        restored = True
+        for undo in (lambda: restore_config(snapshot), lambda: point(current, failed),
+                     lambda: switch_homepage(failed / 'public-homepage')):
+            try:
+                undo()
+            except Exception:
+                restored = False
+        # Before the switch no service was touched, so none needs a restart.
+        healthy = start(groups, revision, check=False) if switched else True
+        if not (restored and healthy):
+            print('Rollback failed, and the release that failed verification could not be fully restored; '
+                  'check the group services on the server (deploy/SERVER.md).', file=sys.stderr)
+        elif switched:
             print('Rollback failed; the release that failed verification is live and healthy again.',
                   file=sys.stderr)
         else:
-            print('Rollback failed, and the group services did not become healthy again; check them '
-                  'on the server (deploy/SERVER.md).', file=sys.stderr)
+            print('Rollback failed before any service restarted; the release that failed verification '
+                  'is still live.', file=sys.stderr)
         raise
     for instance in added:  # the earlier release never ran these
         systemctl('stop', instance, check=False)
