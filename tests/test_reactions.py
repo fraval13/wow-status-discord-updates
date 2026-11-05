@@ -69,3 +69,32 @@ def test_a_hovered_notification_stays_until_the_mouse_leaves():
         assert(toast.item ~= death and toast.item.kind == "first")
         assert(toast.reactions[1].text == "Congrats!")
     ''')
+
+
+def test_reaction_whispers_show_on_your_own_log_card():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        __peers = {"Thora-TestRealm", "Mira-TestRealm", "Bob-TestRealm"}
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+        for _ = 1, 3 do WoWStatusPopups.tick() end
+        fire("PLAYER_LEVEL_UP", 2)
+        fire("CHAT_MSG_WHISPER", "GZ!", "Mira-TestRealm")
+        fire("CHAT_MSG_WHISPER", "Gratulerer!", "Bob-TestRealm")      -- Congrats: not a level reaction
+        fire("CHAT_MSG_WHISPER", "GZ!", "Stranger-TestRealm")         -- not in the group
+        local own
+        for _, e in ipairs(WoWStatusJournal.entries()) do if e.owner and e.kind == "level" then own = e end end
+        assert(own.reactions and own.reactions["mira-testrealm"].text == "GZ!")
+        assert(not own.reactions["stranger-testrealm"] and not own.reactions["bob-testrealm"])
+        assert(WoWStatusJournal.reactionsText(own) == "GZ! from Mira")
+        WoWStatusJournal.show()
+        assert(WoWStatusActivityLog.rows[1].detail.text:find("GZ! from Mira", 1, true))
+    ''')
+    # A reaction long after the event is not linked to it.
+    clock(lua, 10 + 1000)
+    lua.execute('''
+        fire("CHAT_MSG_WHISPER", "GZ!", "Bob-TestRealm")
+        for _, e in ipairs(WoWStatusJournal.entries()) do
+            if e.owner and e.kind == "level" then assert(not e.reactions["bob-testrealm"]) end
+        end
+    ''')

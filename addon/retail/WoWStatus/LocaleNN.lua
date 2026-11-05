@@ -203,6 +203,8 @@ W.add({
     ["First epic mount"] = "Første episke ridedyr", ["First epic mount!"] = "Første episke ridedyr!",
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
+    -- Reactions
+    ["from"] = "frå", ["Git Good"] = "Git Good", ["GZ!"] = "GZ!", ["F"] = "F",
     -- New version notice
     ["is available"] = "er tilgjengeleg", ["you have"] = "du har",
     ["Get it at wow.frankvalde.com; the CurseForge app can take a few hours."] =

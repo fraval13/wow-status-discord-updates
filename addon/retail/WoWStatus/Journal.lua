@@ -928,7 +928,8 @@ local function render()
             row.flavour:SetText(WoWStatusFlavour.text(e))
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
-            row.detail:SetText(when.." · "..scope)
+            local reacted=J.reactionsText(e)
+            row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or ""))
             row.event_id=e.id;row.entry=e;row:Show()
         else row.event_id=nil;row:Hide() end
     end
@@ -1057,8 +1058,65 @@ function J.recordRecap(character,at,text,flavour)
         text=trim(text,160),flavour=flavour,groups={},origin="mine"})
 end
 local frame=CreateFrame("Frame")
+-- Reaction whispers ("GZ!", "F", "Congrats!" ... from the buttons on friends'
+-- notifications, English or Nynorsk) are linked to this character's matching
+-- event of the last 15 minutes, and shown on its log card ("GZ! from Mira").
+local REACTION_KINDS={["GZ!"]={level=true},["F"]={death=true},["Git Good"]={death=true},
+    ["Welcome!"]={introduction=true},["Velkomen!"]={introduction=true}}
+local POSITIVE={profession=true,dungeon=true,raid=true,mount=true,epicmount=true,reputation=true,unlock=true,pvp=true,
+    quest=true,loot=true}
+local REACTION_WINDOW=900
+function J.reaction(text,sender)
+    text,sender=S.string(text),S.string(sender)
+    if not db or not current or not text or not sender or #text>64 or P.isSelf(sender) then return false end
+    local kinds,zone=REACTION_KINDS[text],text:match("^Enjoy (.+)!$") or text:match("^Kos deg i (.+)!$")
+    if text=="Congrats!" or text=="Gratulerer!" then kinds=POSITIVE end
+    if zone then kinds={zone=true} end
+    if not kinds then return false end
+    -- Only group members react through the buttons.
+    local member=false
+    for group in pairs(WoWStatusGroups.selected(current)) do if peer(group,sender) then member=true end end
+    if not member then return false end
+    local now=S.now()
+    for _,e in ipairs(db.journal.entries) do
+        if e.owner==current.identity.guid and e.client==current.identity.client and kinds[e.kind]
+            and now-(e.at or 0)<=REACTION_WINDOW and (not zone or e.text=="Entered "..zone) then
+            e.reactions=type(e.reactions)=="table" and e.reactions or {}
+            local key=P.senderKey(sender)
+            local count=0
+            for _ in pairs(e.reactions) do count=count+1 end
+            if key and (e.reactions[key] or count<20) then
+                e.reactions[key]={name=sender:match("^[^-]+") or sender,text=text,at=now}
+                if refresh then refresh() end
+                return true
+            end
+            return false
+        end
+    end
+    return false
+end
+-- "GZ! from Mira, Bob · F from Eve", in the order they arrived.
+function J.reactionsText(e)
+    if type(e)~="table" or type(e.reactions)~="table" then return nil end
+    local list={}
+    for _,r in pairs(e.reactions) do list[#list+1]=r end
+    if #list==0 then return nil end
+    table.sort(list,function(a,b) return (a.at or 0)<(b.at or 0) end)
+    local byText,order={},{}
+    for _,r in ipairs(list) do
+        if not byText[r.text] then byText[r.text]={};order[#order+1]=r.text end
+        table.insert(byText[r.text],(tostring(r.name):gsub("|","||")))
+    end
+    local parts={}
+    for _,text in ipairs(order) do
+        parts[#parts+1]=T(text):gsub("|","||").." "..T("from").." "..table.concat(byText[text],", ")
+    end
+    return table.concat(parts," · ")
+end
 frame:RegisterEvent("CHAT_MSG_ADDON")
-frame:SetScript("OnEvent",function(_,_,prefix,message,distribution,sender)
+pcall(frame.RegisterEvent,frame,"CHAT_MSG_WHISPER")
+frame:SetScript("OnEvent",function(_,event,prefix,message,distribution,sender)
+    if event=="CHAT_MSG_WHISPER" then J.reaction(prefix,message);return end
     if S.string(prefix)==PREFIX then J.receive(S.string(message),S.string(sender),S.string(distribution)) end
 end)
 local elapsed=0
