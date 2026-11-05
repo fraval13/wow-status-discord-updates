@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## 1.5.0
+
+- Report CurseForge errors clearly without echoing the token (#114)
+
 ## 1.4.0
 
 - WoW Forever: your own updates no longer show up twice, once under your first name and once under your full name
