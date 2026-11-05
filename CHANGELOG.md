@@ -10,6 +10,20 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## 0.14.14
+
+- Character list grouped by player, with class portraits
+- New themes and a size setting for the WoW Status windows
+- First-time setup guide and a Show me around tour
+- Session recaps are written to the activity log
+- Firsts medals for the first player in the group to reach a milestone
+- Group history now catches up from friends, including events from before you joined
+- /wstatus minimap reports the button position, and the button sits further out
+- Live updates keep working when players computer clocks disagree
+- Every update reaches every group member, and throttled whispers are retried
+- One player can no longer fill the activity log and push out your own entries
+- Popups only accept text from known group members
+
 ## 0.14.13
 
 - New WoW Status window with tabs: Overview, Activity and more
