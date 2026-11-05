@@ -50,7 +50,7 @@ function P.show(host)
             if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
         end
         local options = 150 + #visible * 42
-        local footer = options + 150
+        local footer = options + 330
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
@@ -71,10 +71,19 @@ function P.show(host)
         panel.unlock=check("Unlock popup position",-options,function(o) return o.unlocked end,WoWStatusPopups.setUnlocked)
         panel.reset=button(panel,"Reset popup position",310,-options,250,function() WoWStatusPopups.resetPosition() end)
         panel.big=check("Big banners for big moments",-options-42,function(o) return o.big_banners end,WoWStatusPopups.setBigBanners)
+        -- Group status line (#62). Account-wide.
+        panel.line={}
+        for i,entry in ipairs({{"enabled","Show the group status line"},{"attach","Attach it under the quest tracker"},
+            {"hide_combat","Hide the status line in combat"},{"hide_instance","Hide the status line in dungeons and raids"}}) do
+            local key=entry[1]
+            panel.line[key]=check(entry[2],-options-84-(i-1)*42,function() return WoWStatusStatusLine.settings()[key] end,
+                function(value) WoWStatusStatusLine.set(key,value) end)
+        end
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
     for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
+    for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)
