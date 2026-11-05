@@ -186,3 +186,17 @@ def test_invalid_data_reports_from_a_fast_pc_are_accepted():
     clock(friend, 20)
     friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', report, 'WHISPER', 'Thora-TestRealm')
     assert 'Eldrin is a really bad boy' in friend.eval('WoWStatusLevelPopup.message:GetText()')
+
+
+@pytest.mark.parametrize('skew', [-180, 180])
+def test_level_history_stays_one_segment_whatever_the_pc_clock(skew):
+    """Level-ups and the level checks between them are both stamped in realm time."""
+    lua = pc('Thora', skew)
+    clock(lua, 10)
+    lua.execute('__level=2; fire("PLAYER_LEVEL_UP",2)')
+    clock(lua, 20)
+    lua.eval('fire')('PLAYER_ENTERING_WORLD')
+    points = lua.eval('character().history.tracking.points')
+    assert points[len(points)]['kind'] == 'level'
+    assert points[len(points)]['at'] == REALM + 10
+    assert lua.eval('character().history.tracking.observed_until') == REALM + 20
