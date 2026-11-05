@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.12.0
 
 - Level records count levels reached before WoW Status or before joining, so late joiners no longer take them
 - Records are kept per group, with a tab for each group on the Records page
