@@ -54,6 +54,8 @@ function P.show(host)
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
+        panel.guide=button(panel,"Setup guide",24,-96,170,function() WoWStatusGuide.show() end)
+        panel.tour=button(panel,"Show me around",210,-96,170,function() WoWStatusGuide.tour() end)
         panel.buttons={}
         for i, entry in ipairs(visible) do
             local kind=entry[1]

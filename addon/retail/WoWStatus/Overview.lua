@@ -120,7 +120,8 @@ local function render()
     local data = state() or {}
     page.status:SetText(O.ownStatus())
     local since = data.since
-    local summary = O.summary(WoWStatusJournal.entries(), since)
+    if WoWStatusGuide and WoWStatusGuide.touring() then since = time() - 86400 end
+    local summary = O.summary(WoWStatusJournal.displayEntries(), since)
     page.heading:SetText(since and ("Since you were last here (" .. WoWStatusHistory.oslo(since) .. ")")
         or "Since you were last here")
     local rows = {}
