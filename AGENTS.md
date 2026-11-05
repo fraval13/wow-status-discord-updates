@@ -121,10 +121,9 @@ explicit test-harness load lists (`test_addon.py`, `test_forever.py`).
 
 Versions: feature pull requests must NOT change the version. Several agents work
 on separate issues at once, so per-feature bumps would conflict and pick the same
-number. A release is its own small pull request that only runs
-`python scripts/bump_version.py <new-version>` (it rewrites `pyproject.toml` and
-all four TOCs together; `--check` reports them) and adds release notes. Merging
-it publishes the new number.
+number. A release is its own small pull request that only changes the version
+(see `scripts/sync_version.py` below) and adds release notes. Merging it
+publishes the new number.
 
 Release notes live in `CHANGELOG.md` (newest `## <version>` first; it must match
 `pyproject.toml`). After editing it run `python scripts/whats_new.py` and
