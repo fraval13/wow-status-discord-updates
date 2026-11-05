@@ -57,21 +57,22 @@ def test_saved_values_are_validated():
     lua = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="neon", scale=7, popups="yes"}}\n')
     lua.execute('''
         local value = WoWStatusTheme.settings()
-        assert(value.name == "achievement" and value.scale == 1.2 and value.popups == false)
+        -- Notifications follow the theme by default (popups was not saved as chosen).
+        assert(value.name == "achievement" and value.scale == 1.2 and value.popups == true)
     ''')
 
 
-def test_popups_follow_the_theme_only_when_chosen():
+def test_popups_follow_the_theme_by_default_and_can_opt_out():
     lua = make_lua(THEMES)
     lua.execute('''
-        WoWStatusTheme.next(); WoWStatusTheme.next(); WoWStatusTheme.resize(.2) -- Journal
+        WoWStatusTheme.next(); WoWStatusTheme.next(); WoWStatusTheme.resize(.2) -- Journal, 120%
         WoWStatusPopups.preview("zone"); WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
-        assert(toast.scale == 1 and toast.bg.colour[1] == .025)
-        WoWStatusTheme.setPopups(true)
         assert(toast.bg.colour[1] == .2 and toast.scale == 1.2)
         WoWStatusTheme.setPopups(false)
         assert(toast.bg.colour[1] == .025 and toast.scale == 1)
+        -- Unticking is kept.
+        assert(WoWStatusTheme.settings().popups == false)
     ''')
 
 

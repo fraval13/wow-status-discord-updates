@@ -25,6 +25,8 @@ local function settings()
     if not T.NAMES[value.name] then value.name = "achievement" end
     local scale = S.number(value.scale)
     value.scale = scale and math.max(T.MIN, math.min(T.MAX, math.floor(scale * 10 + .5) / 10)) or 1
+    -- Notifications follow the theme by default since 1.15 (moved once; unticking stays).
+    if not value.popups_default then value.popups = true; value.popups_default = true end
     value.popups = value.popups == true
     local size = S.number(value.popup_size)
     value.popup_size = size and math.max(T.POPUP_MIN, math.min(T.POPUP_MAX, math.floor(size + .5))) or T.POPUP_DEFAULT

@@ -13,6 +13,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - New default look: a solid dark brown window with a gold border, like the achievement window
+- Notifications use the window theme by default (untick it in the notification settings)
 
 ## 1.14.0
 
