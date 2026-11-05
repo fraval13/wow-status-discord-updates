@@ -63,10 +63,13 @@ function A.item(link)
     return S.string(name) and S.string(fullLink), S.number(quality)
 end
 function A.chatRestricted()
-    -- Missing/secret restriction state is treated as unavailable, never a bypass opportunity.
+    -- Missing/secret lockdown state is treated as unavailable, never a bypass opportunity.
+    -- AreOutgoingAddonChatMessagesRestricted is not consulted: in the live Forever
+    -- client it returns true in the open world while InChatMessagingLockdown is false
+    -- and chat works, so it stopped every send before the game could answer. Each send
+    -- still reports the game's real answer: an AddOnMessageLockdown result is retried
+    -- after a pause like a throttle (WoWStatusPopups.sendResult), never forced through.
     if not C_ChatInfo or not C_ChatInfo.InChatMessagingLockdown then return true end
-    if C_ChatInfo.AreOutgoingAddonChatMessagesRestricted
-        and S.call(C_ChatInfo.AreOutgoingAddonChatMessagesRestricted) ~= false then return true end
     return S.call(C_ChatInfo.InChatMessagingLockdown) ~= false
 end
 function A.chatSender()
