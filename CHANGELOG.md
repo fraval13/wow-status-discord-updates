@@ -12,6 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
+- The first dungeon clear icon shows a skull instead of a black square
 - Character cards end with level and total deaths instead of the latest event
 - WoW Forever: character lists are sent with full names, so fewer friends end up under Not announced
 - The Characters page shows each friend's addon version in small grey text
