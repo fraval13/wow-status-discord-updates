@@ -70,7 +70,7 @@ def validate_release(root: Path) -> str:
         raise ValueError('Newest release notes must match the project version')
     expected = whats_new.render(sections)
     for path in note_paths(root):
-        if read(path) != expected:
+        if read(path).replace("\r\n", "\n") != expected:
             raise ValueError(f'{path.relative_to(root)} has stale release notes')
     return version
 

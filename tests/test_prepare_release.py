@@ -54,8 +54,11 @@ def repository(tmp_path):
     return root, remote, initial
 
 
-def test_release_increments_minor_once_and_reuses_the_exact_commit_on_retries(repository, monkeypatch, tmp_path):
+@pytest.mark.parametrize("autocrlf", ["false", "true"])
+def test_release_increments_minor_once_and_reuses_the_exact_commit_on_retries(
+        repository, monkeypatch, tmp_path, autocrlf):
     root, remote, source = repository
+    git(root, "config", "core.autocrlf", autocrlf)
     output = tmp_path / 'output'
     monkeypatch.setattr(release, 'ROOT', root)
     monkeypatch.setenv('GITHUB_OUTPUT', str(output))
