@@ -1,13 +1,13 @@
 """One relay must not be able to flood the activity log (issue #4).
 
 Own entries and received entries are capped separately, one member can deliver
-only a bounded share of catch-up entries per session, and sync hellos are
-honored only within their login window and at a bounded rate.
+only a bounded share of new catch-up entries per session, and a member's sync
+hellos start at most one pull per ten minutes.
 """
 import re
 
 from test_journal import actor, clock, mesh
-from test_relay_provenance import digest, group_of, pack
+from test_relay_provenance import digest, entries_from, group_of, pack, relay, send_entry
 
 BASE = 1793000000
 
@@ -58,12 +58,13 @@ def sender_of(index):
     return name.capitalize() + '-TestRealm'
 
 
-def serve(victim, sender, record_for, start, stop, pages=None):
+def serve(victim, sender, record_for, start, stop, pages=None, deliver=True):
     """Answer the victim's catch-up queries to sender, in any group, from one list.
 
     record_for(n) gives the relay's n-th newest record (1-based), six a page; the
-    list has `pages` pages (unbounded if None). Returns the number of pages queried
-    and the number of entries the victim fetched with G.
+    list has `pages` pages (unbounded if None). With deliver=False the requested
+    entries are never sent. Returns the number of pages queried and the number of
+    entries the victim fetched with G.
     """
     client = victim.eval('WoWStatusAdapter.client_id')
 
@@ -87,10 +88,8 @@ def serve(victim, sender, record_for, start, stop, pages=None):
                 group, token = fetch.group(1), fetch.group(2)
                 for d in fetch.group(3).split(','):
                     fetched += 1
-                    encoded = pack(records[d]).encode().hex()
-                    chunks = [encoded[j:j + 140] for j in range(0, len(encoded), 140)]
-                    for part, chunk in enumerate(chunks, 1):
-                        send(group, f'D {token} {d} {part}/{len(chunks)} {chunk}')
+                    if deliver:
+                        send_entry(lambda text: send(group, text), token, records[d])
                 continue
             query = re.match(r'J2 (\S+) Q (\S+) (\d+) ', packet['text'])
             if not query:
@@ -197,19 +196,18 @@ def test_local_only_entries_keep_their_own_limit_within_the_own_cap():
 def test_one_relay_delivers_at_most_its_session_share():
     victim = actor('Mira')
     victim.execute('__peers={"Mallory-TestRealm"}')
-    queried, fetched = serve(victim, 'Mallory-TestRealm', forged_record, 11, 400)
-    assert fetched == 300
+    queried, fetched = serve(victim, 'Mallory-TestRealm', forged_record, 11, 400, pages=60)
+    # Every page is read, but only the first 300 new entries are fetched.
+    assert (queried, fetched) == (60, 300)
     assert received_from(victim, 'Mallory-TestRealm') == 300
-    # Paging stopped with the share, long before the 334-page limit.
-    assert queried == 50
     # A later hello from the same member, after the rate interval, starts a pull
-    # that fetches nothing more this session.
+    # that fetches nothing new this session.
     group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
     clock(victim, 700)
     assert victim.eval('WoWStatusJournal.receive')(f'J2 {group} H {BASE + 690}-1 {client}',
                                                     'Mallory-TestRealm', 'WHISPER')
-    queried, fetched = serve(victim, 'Mallory-TestRealm', lambda n: forged_record(n + 1000), 701, 760)
-    assert (queried, fetched) == (1, 0)
+    queried, fetched = serve(victim, 'Mallory-TestRealm', lambda n: forged_record(n + 1000), 701, 900, pages=10)
+    assert (queried, fetched) == (10, 0)
     assert received_from(victim, 'Mallory-TestRealm') == 300
 
 
@@ -256,7 +254,7 @@ def test_a_login_hello_delayed_by_a_chat_lockdown_still_starts_a_pull():
     assert len(queries_to(victim, 'Thora-TestRealm')) == 1
 
 
-def test_hello_over_the_rate_is_ignored():
+def test_hellos_over_the_rate_wait_and_start_one_pull_when_it_ends():
     victim = actor('Mira')
     victim.execute('__peers={"Mallory-TestRealm","Eldrin-TestRealm"}')
     group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
@@ -269,31 +267,122 @@ def test_hello_over_the_rate_is_ignored():
         clock(victim, at)
         return receive(f'J2 {group} H {BASE + at}-{serial} {client}', sender, 'WHISPER')
 
-    def pump(start):
-        """Tick, then answer every query with an empty page so each pull ends."""
-        for step in range(10):
-            clock(victim, start + step)
+    def pump(start, stop):
+        """Tick each second, answering every query with an empty page so pulls end."""
+        for now in range(start, stop):
+            clock(victim, now)
             victim.eval('WoWStatusJournal.tick')()
-        for target in ('Mallory-TestRealm', 'Eldrin-TestRealm'):
-            for text in queries_to(victim, target):
-                receive(f'J2 {group} I {text.split(" ")[3]} 0 0 -', target, 'WHISPER')
+            for target in ('Mallory-TestRealm', 'Eldrin-TestRealm'):
+                for text in queries_to(victim, target):
+                    receive(f'J2 {group} I {text.split(" ")[3]} 0 0 -', target, 'WHISPER')
+
+    def pulls(target='Mallory-TestRealm'):
+        return len(queries_to(victim, target))
 
     assert hello(1000)
-    pump(1001)
-    assert len(queries_to(victim, 'Mallory-TestRealm')) == 1
+    pump(1001, 1010)
+    assert pulls() == 1
     # The same nonce again is a duplicate, quietly accepted without a new pull.
     assert receive(f'J2 {group} H {BASE + 1000}-1 {client}', 'Mallory-TestRealm', 'WHISPER')
-    # A new login nonce within ten minutes is over the rate.
+    # New login nonces within ten minutes are over the rate: no pull now.
     assert not hello(1300, serial=2)
-    assert not hello(1599, serial=3)
-    pump(1600)
-    assert len(queries_to(victim, 'Mallory-TestRealm')) == 1
+    assert not hello(1590, serial=3)
+    pump(1590, 1600)
+    assert pulls() == 1
+    # When the interval ends, the waiting hellos start one pull between them.
+    pump(1600, 1610)
+    assert pulls() == 2
     # Another member's hello has its own rate.
     assert hello(1610, 'Eldrin-TestRealm')
-    # Ten minutes after the last honored hello, the member's next one counts again.
-    assert hello(1620, serial=4)
-    pump(1621)
-    assert len(queries_to(victim, 'Mallory-TestRealm')) == 2
+    # The deferred pull started a new interval.
+    assert not hello(1700, serial=4)
+    pump(1700, 2199)
+    assert pulls() == 2
+    pump(2200, 2205)
+    assert pulls() == 3
+
+
+def test_a_member_withholding_entries_cannot_reset_its_hello_rate():
+    """Review round 2: only a retry with no answer at all clears the rate."""
+    victim = actor('Mira')
+    victim.execute('__peers={"Mallory-TestRealm"}')
+    group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    clock(victim, 100)
+    victim.eval('WoWStatusJournal.tick')()
+    receive = victim.eval('WoWStatusJournal.receive')
+    clock(victim, 1000)
+    assert receive(f'J2 {group} H {BASE + 1000}-1 {client}', 'Mallory-TestRealm', 'WHISPER')
+    # Mallory answers both the pull and its retry but never sends the entries.
+    queried, fetched = serve(victim, 'Mallory-TestRealm', forged_record, 1001, 1300, pages=1, deliver=False)
+    assert queried == 2
+    clock(victim, 1300)
+    assert not receive(f'J2 {group} H {BASE + 1300}-2 {client}', 'Mallory-TestRealm', 'WHISPER')
+
+
+def test_a_dropped_entry_does_not_stall_the_pull():
+    """Review round 2: an entry this client can't keep still finishes its page."""
+    victim = actor('Mira')
+    victim.execute('__peers={"Eldrin-TestRealm"}')
+
+    def record(n):
+        values = forged_record(n)
+        if n == 2:
+            values[4] = 'futurekind'  # a kind from a newer version
+        if n == 3:
+            values[3] = str(BASE - 100)  # before this client joined the group
+        return values
+    queried, fetched = serve(victim, 'Eldrin-TestRealm', record, 11, 200, pages=5)
+    assert (queried, fetched) == (5, 30)
+    assert received_from(victim, 'Eldrin-TestRealm') == 28
+
+
+def test_a_full_responder_answers_queries_past_two_thousand():
+    """Review round 2: with separate caps a log can offer up to 4,000 entries."""
+    responder = actor('Thora')
+    group = group_of(responder)
+    clock(responder, 5000)
+    responder.execute(f'''
+        local c,list=character(),WoWStatusDB.journal.entries
+        local name=c.identity.name.."-"..c.identity.realm
+        for i=1,1500 do
+            list[#list+1]={{id=c.identity.client..":thora-testrealm:o-"..i,client=c.identity.client,sender=name,
+                owner=c.identity.guid,kind="death",text="Died",at={BASE}+i,groups={{["{group}"]=true}},origin="mine"}}
+            list[#list+1]={{id=c.identity.client..":someone-testrealm:r-"..i,client=c.identity.client,
+                sender="Someone-TestRealm",kind="death",text="Died",at={BASE}+i,groups={{["{group}"]=true}},
+                origin="live"}}
+        end
+        WoWStatusJournal.init(WoWStatusDB,c)
+        __peers={{"Mira-TestRealm"}}
+        __sent={{}}
+    ''')
+    assert responder.eval('#WoWStatusJournal.entries()') == 3000
+    assert responder.eval('WoWStatusJournal.receive')(f'J2 {group} Q q-1 2004 {BASE} 7', 'Mira-TestRealm', 'WHISPER')
+    for step in range(5):
+        clock(responder, 5001 + step)
+        responder.eval('WoWStatusJournal.tick')()
+    answers = [p['text'] for p in responder.eval('__sent').values() if ' I q-1 ' in p['text']]
+    assert len(answers) == 1 and answers[0].split(' ')[4:6] == ['2010', '1']
+
+
+def test_the_authors_copy_replaces_a_claim_after_the_authors_share_is_spent():
+    """Review round 2: paging continues for fetches that add no entry."""
+    victim = actor('Mira')
+    victim.execute('__peers={"Mallory-TestRealm"}')
+    client = victim.eval('WoWStatusAdapter.client_id')
+    claim = [f'{client}:thora-testrealm:x-1', client, 'Thora-TestRealm', str(BASE + 12), 'death', '', 'Died',
+             '', '', '', '']
+    relay(victim, 'Mallory-TestRealm', claim)
+    victim.execute('__peers={"Mallory-TestRealm","Thora-TestRealm"}')
+
+    def record(n):
+        if n == 307:
+            return ['{client}:thora-testrealm:x-1', '{client}', 'Thora-TestRealm', str(BASE + 12), 'death', '',
+                    'Total deaths: 3', '', '', '', '']
+        return forged_record(n, 'Thora-TestRealm')
+    queried, fetched = serve(victim, 'Thora-TestRealm', record, 45, 400, pages=52)
+    assert (queried, fetched) == (52, 301)
+    [entry] = [e for e in entries_from(victim, 'Thora-TestRealm').values() if e['id'] == claim[0]]
+    assert (entry['text'], entry['via']) == ('Total deaths: 3', 'Thora-TestRealm')
 
 
 def test_a_failed_pull_does_not_use_up_the_hello_rate():

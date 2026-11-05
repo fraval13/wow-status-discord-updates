@@ -23,14 +23,33 @@ def group_of(lua):
     return lua.eval('function() for id in pairs(character().group_ids) do return id end end')()
 
 
+def send_entry(send, token, record):
+    """Send one record as the D parts of a catch-up transfer."""
+    encoded, d = pack(record).encode().hex(), digest(record[0])
+    chunks = [encoded[i:i + 140] for i in range(0, len(encoded), 140)]
+    for part, chunk in enumerate(chunks, 1):
+        send(f'D {token} {d} {part}/{len(chunks)} {chunk}')
+
+
 def relay(victim, sender, record, start=11, via=None, group=None):
     """Drive the normal H/Q/I/D catch-up exchange from a modified client."""
     group, client = group or group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    # Packets go through the frame's CHAT_MSG_ADDON handler; this records what
+    # J.receive returned, so a refused packet can't pass silently.
+    victim.execute("""
+        if not __receiveWrapped then
+            local receive=WoWStatusJournal.receive
+            function WoWStatusJournal.receive(...) __received=receive(...);return __received end
+            __receiveWrapped=true
+        end
+    """)
 
     def send(text):
-        return victim.eval('WoWStatusJournal.receive')(f'J2 {group} {text}', sender, 'WHISPER')
-    # A real login hello names the sender's login time. Only a query sent after it
-    # counts: with a stale token every later packet would be a silent no-op (#4).
+        victim.execute('__received=nil')
+        victim.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', f'J2 {group} {text}', 'WHISPER', sender)
+        return victim.eval('__received')
+    # Only a query sent after this hello counts: with a stale token every later
+    # packet would be refused and the caller's checks would pass without testing.
     before = victim.eval('#__sent')
     clock(victim, start)
     send(f'H {1793000000 + start}-1 {client}')
@@ -46,13 +65,11 @@ def relay(victim, sender, record, start=11, via=None, group=None):
         if token:
             break
     assert token, f'{sender} was never queried'
-    encoded, d = pack(record).encode().hex(), digest(record[0])
+    d = digest(record[0])
     assert send(f'I {token} 1 0 {d}'), 'inventory refused'
     if via:
         send(f'V {token} {d} {via}')
-    chunks = [encoded[i:i + 140] for i in range(0, len(encoded), 140)]
-    for part, chunk in enumerate(chunks, 1):
-        send(f'D {token} {d} {part}/{len(chunks)} {chunk}')
+    send_entry(send, token, record)
     return token, d
 
 

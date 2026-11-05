@@ -14,7 +14,8 @@ local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
 -- Catch-up one member can deliver per login session: at most RELAY_CAP new
 -- entries fetched from it, at most SENDER_CAP of them naming one other member (#4).
 local RELAY_CAP, SENDER_CAP = 300, 100
--- A member's hello starts a pull at most once per HELLO_INTERVAL in one group (#4).
+-- A member's hello starts a pull at most once per HELLO_INTERVAL in one group; a
+-- newer hello within it waits for the interval to end (#4).
 local HELLO_INTERVAL = 600
 local budgets = {}
 -- The accused name is last and may contain spaces: WoW Forever names can ("Mr Exadi").
@@ -44,8 +45,13 @@ local function digest(id)
     for i=1,#id do local byte=id:byte(i);a=(a*33+byte)%4294967296;b=(b*65599+byte)%4294967296;c=(c*131+byte)%4294967296 end
     return string.format("%08x%08x%06x",a,b,c%16777216)
 end
--- An entry's ID never changes, so rebuild reuses its digest.
+-- An entry's ID never changes, so its digest is computed once.
 local digestOf = setmetatable({}, {__mode="k"})
+local function digestFor(e)
+    local d=digestOf[e]
+    if not d then d=digest(e.id);digestOf[e]=d end
+    return d
+end
 local function groupMember(group)
     return current and WoWStatusGroups.selected(current)[group]
 end
@@ -117,11 +123,7 @@ local function rebuild()
         end
     end
     db.journal.entries=kept
-    for _, e in ipairs(db.journal.entries) do
-        local d=digestOf[e]
-        if not d then d=digest(e.id);digestOf[e]=d end
-        index[e.id]=e;digests[d]=e
-    end
+    for _, e in ipairs(db.journal.entries) do index[e.id]=e;digests[digestFor(e)]=e end
 end
 -- t is full, or a live packet's cut of it: a prefix of full followed by "...".
 local function cutOf(full,t)
@@ -456,7 +458,9 @@ local function advance(t)
     requests[t]=nil
     local key=r.group..":"..r.key
     cursors[key]=r.more and r.nextOffset or 0
-    if r.more and r.pages<math.ceil(CAP/PAGE) and budget(r.key).fetched<RELAY_CAP then
+    -- Paging continues past a spent share: later pages can still hold free
+    -- fetches, such as an author's own copy replacing a relay's claim (#3).
+    if r.more and r.pages<math.ceil(CAP/PAGE) then
         requestPage(r.group,r.target,r.nextOffset,r.pages+1,r.retries)
     elseif pumpJobs then pumpJobs() end
 end
@@ -523,14 +527,18 @@ function J.receive(message,sender,distribution)
         local helloKey=group..":"..key
         local last=seenHello[helloKey]
         if last and last.nonce==t then return true end
-        -- A new hello from the same member and group starts a pull only so often (#4).
-        if last and last.at and time()-last.at<HELLO_INTERVAL then return false end
-        seenHello[helloKey]={nonce=t,at=time()};enqueueJob(group,sender);return true
+        -- A new hello from the same member and group starts a pull only so often.
+        -- Within the interval it waits, and J.tick starts one pull when it ends (#4).
+        if last and last.at and time()-last.at<HELLO_INTERVAL then
+            last.nonce,last.waiting=t,sender;return false
+        end
+        seenHello[helloKey]={nonce=t,at=time(),group=group};enqueueJob(group,sender);return true
     end
     if op=="Q" then
         local offset,cutoff,mask=body:match("^(%d+) (%d+) ([0-7])$")
         offset,cutoff,mask=tonumber(offset),tonumber(cutoff),tonumber(mask)
-        if not offset or offset>CAP or not cutoff or cutoff>time()+300 then return false end
+        -- Own and received entries are capped separately, so up to 2*CAP are offered.
+        if not offset or offset>2*CAP or not cutoff or cutoff>time()+300 then return false end
         local rateKey=group..":"..key
         if rates[rateKey] and time()-rates[rateKey]<2 then return false end
         rates[rateKey]=time()
@@ -546,7 +554,7 @@ function J.receive(message,sender,distribution)
             if wanted and e.at>=cutoff and offerable(e,group) then eligible[#eligible+1]=e end
         end
         local offer,list={},{}
-        for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digest(eligible[i].id);offer[d]=eligible[i].id;list[#list+1]=d end
+        for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digestFor(eligible[i]);offer[d]=eligible[i].id;list[#list+1]=d end
         local cursor=math.min(offset+PAGE,#eligible)
         sessions[group..":"..key..":"..t]={at=time(),offer=offer,used=false,group=group,key=key}
         queue(group,sender,"I "..t.." "..cursor.." "..(cursor<#eligible and "1" or "0").." "..(#list>0 and table.concat(list,",") or "-"))
@@ -624,9 +632,10 @@ function J.receive(message,sender,distribution)
         for i=1,total do if not chunks[i] then return true end end
         local decoded=table.concat(chunks):gsub("..",function(pair) return string.char(tonumber(pair,16)) end)
         local e,problem=unpackEntry(decoded)
-        if not e then if problem=="invalid" then J.reportInvalid(group,sender) end;return false end
-        if digest(e.id)~=d then J.reportInvalid(group,sender);return false end
-        if e.at<r.cutoff then return false end
+        -- A dropped entry still finishes, so one bad entry can't stall the pull.
+        if not e then if problem=="invalid" then J.reportInvalid(group,sender) end;finish(r,t,d);return false end
+        if digest(e.id)~=d then J.reportInvalid(group,sender);finish(r,t,d);return false end
+        if e.at<r.cutoff then finish(r,t,d);return false end
         -- A member adds at most SENDER_CAP new entries naming one other member per
         -- session; its own entries count only toward RELAY_CAP (#4).
         local claimed,claims=P.senderKey(e.sender),budget(key).claims
@@ -653,15 +662,20 @@ function J.tick()
         if now-r.at>(r.sent and 120 or 300) then
             requests[t]=nil
             if r.retries<1 then enqueueJob(r.group,r.target,r.retries+1)
-            else
-                -- A pull that failed for good doesn't use up the member's hello rate,
-                -- so its next login hello is honored (#4).
+            elseif not r.inventory then
+                -- The member never answered its retry (offline), so the pull doesn't
+                -- use up its hello rate: its next login hello is honored (#4).
                 local hello=seenHello[r.group..":"..r.key]
                 if hello then hello.at=nil end
             end
         end
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
+    for _,h in pairs(seenHello) do
+        if h.waiting and (not h.at or now-h.at>=HELLO_INTERVAL) then
+            enqueueJob(h.group,h.waiting);h.at,h.waiting=now,nil
+        end
+    end
     for k,at in pairs(rates) do if now-at>120 then rates[k]=nil end end
     -- Log sync is not held for combat: addon whispers are not combat-protected,
     -- and WoW Forever can report a UI lockdown outside combat, which stopped sync.
