@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## 0.17.0
+
+- Recover history from before installation where the client allows it (#110)
+
 ## 0.16.0
 
 - Previously exposed groups are retired; ask the group owner privately for the replacement name
