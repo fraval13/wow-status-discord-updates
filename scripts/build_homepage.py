@@ -77,10 +77,21 @@ def release_notes(root, revision, version):
     raise ValueError(f'CHANGELOG.md has no notes for {version}; the release pull request adds them')
 
 
+def earlier_build(folder):
+    """True if folder holds a homepage build: an index.html and a build's release.json."""
+    try:
+        manifest = json.loads((folder / 'downloads/release.json').read_text(encoding='utf-8'))
+    except (OSError, ValueError):
+        return False
+    return ((folder / 'index.html').is_file() and isinstance(manifest, dict)
+            and re.fullmatch('[0-9a-f]{40}', str(manifest.get('addon_revision'))) is not None
+            and isinstance(manifest.get('editions'), dict))
+
+
 def replaceable(output):
     """Raise unless output is absent, empty or an earlier build, the only folders a build replaces."""
     if output.is_symlink() or output.exists() and not (output.is_dir() and (
-            not any(output.iterdir()) or (output / 'downloads/release.json').is_file())):
+            not any(output.iterdir()) or earlier_build(output))):
         raise ValueError(f'{output} is not an earlier homepage build; choose a new or empty --output folder')
 
 
@@ -91,14 +102,18 @@ def replace_output(staging, output):
         return
     # Windows can't rename onto an existing folder, so the earlier build moves aside first.
     aside = Path(tempfile.mkdtemp(prefix=f'.{output.name}-old-', dir=output.parent))
-    output.rename(aside / 'build')
+    try:
+        output.rename(aside / 'build')
+    except OSError as error:
+        aside.rmdir()
+        raise ValueError(f'Could not replace {output} ({error}); close any program using it and build again') from error
     try:
         staging.rename(output)
     except BaseException:
-        (aside / 'build').rename(output)
+        (aside / 'build').rename(output)  # if even this fails, the earlier build stays in aside
+        aside.rmdir()
         raise
-    finally:
-        shutil.rmtree(aside, ignore_errors=True)
+    shutil.rmtree(aside, ignore_errors=True)
 
 
 def write_site(root, output, revision, editions, version, notes):
@@ -196,4 +211,5 @@ if __name__ == '__main__':
     parser.add_argument('--addon-ref', default='HEAD')
     parser.add_argument('--output', type=Path, default=Path('dist/homepage'))
     args = parser.parse_args()
-    build(Path(__file__).resolve().parents[1], args.output.resolve(), args.addon_ref)
+    # absolute(), not resolve(): a symlinked --output must reach replaceable() as a symlink.
+    build(Path(__file__).resolve().parents[1], args.output.absolute(), args.addon_ref)

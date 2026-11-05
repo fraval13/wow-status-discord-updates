@@ -325,10 +325,16 @@ def test_publish_sends_the_rendered_caddyfile_over_ssh_not_in_the_upload(fake_ss
 
 
 def test_publish_without_private_config_on_the_host_stops_before_uploading(monkeypatch):
-    monkeypatch.setattr(subprocess, 'check_output', lambda command, **kwargs: OLD_ROUTE)
+    real_check_output = subprocess.check_output
+    monkeypatch.setattr(subprocess, 'check_output', lambda command, **kwargs: (
+        real_check_output(command, **kwargs) if command[0] == 'git' else OLD_ROUTE))
     calls = []
 
+    real_run = subprocess.run
+
     def run(command, **kwargs):
+        if command[0] == 'git':
+            return real_run(command, **kwargs)
         calls.append(command)
         return subprocess.CompletedProcess(command, 1, b'', b'No such file')
 

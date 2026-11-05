@@ -37,18 +37,21 @@ This requires ordinary authorized SSH access (for the current session, use
 checks the build folder and refuses to publish when:
 
 - `downloads/release.json` names another revision than the checkout's `HEAD`;
-- `website/`, `scripts/build_homepage.py` or `scripts/whats_new.py` has uncommitted,
-  untracked or ignored files, which the build copies from the working tree;
+- `website/` (apart from its `README.md` and `ARTWORK.md`), the builder
+  (`scripts/build_homepage.py`, `scripts/whats_new.py`), the Caddyfile template or
+  renderer, or `deploy/install_homepage.py` has uncommitted, untracked or ignored
+  files: publishing reads them from the working tree;
 - a ZIP does not match its size and SHA-256 in `release.json`;
 - any file is stale, missing or different compared with a fresh build it makes
   itself. It uploads that fresh build.
 
-The Caddyfile is rendered from the committed `deploy/Caddyfile.production.template`,
-never from an uncommitted edit. On the server, `deploy/install_homepage.py` checks
-the upload's SHA-256 and the live Caddyfile, extracts the new static release,
-validates the candidate Caddyfile outside the web root, switches the symlink and
-gracefully reloads Caddy. A failure removes the partial release and the upload; one
-after the switch first restores the previous site and Caddyfile. The previous
+The Caddyfile is rendered from the committed `deploy/Caddyfile.production.template`.
+On the server, `deploy/install_homepage.py` checks the upload's SHA-256 and the live
+Caddyfile, extracts the new static release with public read permissions, validates
+the candidate Caddyfile outside the web root, switches the symlink and gracefully
+reloads Caddy. A failure removes the partial release and the upload; one after the
+switch first restores the previous site and Caddyfile and restarts Caddy if it
+stopped. The previous
 configuration and release stay available for rollback. It reads the server's
 private `groups.json` to render the
 group routes (never the Discord settings) and refuses to change the live routes.

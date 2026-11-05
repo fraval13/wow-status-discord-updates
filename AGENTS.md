@@ -183,7 +183,7 @@ python -m http.server 4173 --directory dist/homepage-clean --bind 127.0.0.1
 ```
 
 The default publisher expects `dist/homepage` (see its CLI for other options), built
-for the checkout's `HEAD` with `website/` and the builder committed. Final
+for the checkout's `HEAD` with everything it ships committed. Final
 ZIPs must contain top-level `WoWStatus/` and all TOC-listed files. All four versions
 must match. `downloads/release.json` records source revision and checksums; website
 version and size labels are generated, not maintained manually. Update meaningful
@@ -212,7 +212,8 @@ python scripts/verify_homepage.py --url https://wow.frankvalde.com \
 ```
 
 Before contacting the host, the publisher refuses a build of another revision,
-uncommitted or untracked `website/` or builder files, a ZIP that does not match its
+uncommitted or untracked `website/`, builder, Caddyfile template/renderer or
+`deploy/install_homepage.py` files, a ZIP that does not match its
 `release.json` checksum, and any stale, missing or changed file compared with a
 fresh build it makes itself; it uploads that fresh build (issue #19). It renders the
 Caddyfile's group routes from the committed template and the server's private

@@ -57,8 +57,8 @@ def commit(repo, files):
 def repo(tmp_path):
     """A Git checkout holding what a homepage build and publish read, committed and clean.
 
-    Website, addons and the Caddyfile template come from HEAD; the builder is this
-    working tree's, so the code under test is what runs.
+    Website, addons and the Caddyfile template come from HEAD; the builder and server
+    code are this working tree's, so the code under test is what runs.
     """
     repo = tmp_path / 'repo'
     archive = git(ROOT, 'archive', '--format=tar', 'HEAD', 'website', 'addon', 'pyproject.toml', 'CHANGELOG.md',
@@ -67,8 +67,9 @@ def repo(tmp_path):
         for member in package.getmembers():
             if member.isfile():
                 write(repo / member.name, package.extractfile(member).read())
-    for script in ('build_homepage.py', 'whats_new.py'):
-        write(repo / 'scripts' / script, (ROOT / 'scripts' / script).read_bytes())
+    for script in ('scripts/build_homepage.py', 'scripts/whats_new.py', 'deploy/render_caddyfile.py',
+                   'deploy/install_homepage.py'):
+        write(repo / script, (ROOT / script).read_bytes())
     git(repo, 'init', '-q')
     git(repo, 'add', '-A')
     git(repo, 'commit', '-q', '-m', 'release')
@@ -108,13 +109,58 @@ def test_a_failed_build_leaves_the_earlier_build_untouched(repo, tmp_path):
     assert sorted(path.name for path in site.parent.iterdir()) == ['homepage']
 
 
-def test_the_builder_refuses_to_replace_a_folder_that_is_not_a_build(repo, tmp_path):
+@pytest.mark.parametrize('contents', [
+    {'keep.txt': b'mine'},
+    # A saved manifest alone does not make a folder a build.
+    {'Downloads/release.json': b'{"addon_revision": "' + b'a' * 40 + b'", "editions": {}}', 'keep.txt': b'mine'},
+])
+def test_the_builder_refuses_to_replace_a_folder_that_is_not_a_build(repo, tmp_path, contents):
     notes = tmp_path / 'notes'
-    write(notes / 'keep.txt', b'mine')
+    for name, data in contents.items():
+        write(notes / name, data)
     with pytest.raises(ValueError, match='not an earlier homepage build'):
         build(repo, notes)
-    assert snapshot(notes) == {'keep.txt': b'mine'}
+    assert snapshot(notes) == contents
     assert sorted(path.name for path in tmp_path.iterdir()) == ['notes', 'repo']
+
+
+def test_the_builder_cli_refuses_a_symlinked_output(repo, tmp_path):
+    site = build(repo, tmp_path / 'releases/live')
+    link = tmp_path / 'dist/homepage'
+    link.parent.mkdir()
+    try:
+        link.symlink_to(site, target_is_directory=True)
+    except OSError:
+        pytest.skip('Creating symlinks needs extra rights here')
+    before = snapshot(site)
+    result = subprocess.run([sys.executable, str(repo / 'scripts/build_homepage.py'), '--output', str(link)],
+                            cwd=repo, capture_output=True, encoding='utf-8')
+    assert result.returncode and 'not an earlier homepage build' in result.stderr
+    assert link.is_symlink() and snapshot(site) == before
+
+
+@pytest.mark.parametrize('locked', [{'aside'}, {'swap'}, {'swap', 'restore'}])
+def test_a_failed_swap_never_loses_the_earlier_build(repo, tmp_path, monkeypatch, locked):
+    site = build(repo, tmp_path / 'dist/homepage')
+    before = snapshot(site)
+    rename = Path.rename
+
+    def rename_unless_locked(self, target):
+        # Windows refuses to rename a folder another program holds open.
+        step = 'aside' if self == site else 'restore' if self.name == 'build' else 'swap'
+        if step in locked:
+            raise PermissionError(13, 'in use', str(self))
+        return rename(self, target)
+
+    monkeypatch.setattr(Path, 'rename', rename_unless_locked)
+    with pytest.raises((ValueError, PermissionError), match='close any program' if 'aside' in locked else 'in use'):
+        build(repo, site)
+    if 'restore' in locked:  # the earlier build waits beside the output instead of being deleted
+        [aside] = site.parent.iterdir()
+        assert aside.name.startswith('.homepage-old-') and snapshot(aside / 'build') == before
+    else:
+        assert snapshot(site) == before
+        assert sorted(path.name for path in site.parent.iterdir()) == ['homepage']
 
 
 # The publisher's checks, all before the host is contacted.
@@ -197,8 +243,8 @@ def test_publish_refuses_a_build_of_another_revision(repo, tmp_path, publisher, 
     assert 'was built for revision' in refused(publisher, site, tmp_path, host, capsys)
 
 
-@pytest.mark.parametrize('change', ['modified', 'untracked', 'ignored', 'builder'])
-def test_publish_refuses_uncommitted_build_inputs(repo, tmp_path, publisher, host, capsys, change):
+@pytest.mark.parametrize('change', ['modified', 'untracked', 'ignored', 'builder', 'template', 'server code'])
+def test_publish_refuses_uncommitted_inputs(repo, tmp_path, publisher, host, capsys, change):
     if change == 'modified':
         write(repo / 'website/style.css', (repo / 'website/style.css').read_bytes() + b'\n/* draft */\n')
     elif change == 'untracked':
@@ -208,10 +254,19 @@ def test_publish_refuses_uncommitted_build_inputs(repo, tmp_path, publisher, hos
         commit(repo, {})
         write(repo / 'website/.DS_Store', b'\0\0\0\1Bud1')
     else:
-        write(repo / 'scripts/build_homepage.py', (repo / 'scripts/build_homepage.py').read_bytes() + b'\n')
+        name = {'builder': 'scripts/build_homepage.py', 'template': TEMPLATE,
+                'server code': 'deploy/install_homepage.py'}[change]
+        write(repo / name, (repo / name).read_bytes() + b'\n# draft\n')
     # Built from the changed tree, so the folder holds exactly what the change would ship.
     site = build(repo, tmp_path / 'dist/homepage')
-    assert 'Uncommitted or untracked build input' in refused(publisher, site, tmp_path, host, capsys)
+    assert 'Uncommitted or untracked publish input' in refused(publisher, site, tmp_path, host, capsys)
+
+
+def test_publish_ignores_website_notes_the_build_never_copies(repo, tmp_path, publisher, host):
+    for name in ('website/README.md', 'website/ARTWORK.md'):
+        write(repo / name, (repo / name).read_bytes() + b'\nDraft note.\n')
+    publish(publisher, build(repo, tmp_path / 'dist/homepage'), tmp_path)
+    assert 'script' in host
 
 
 def test_publish_refuses_a_download_that_does_not_match_its_checksum(repo, tmp_path, publisher, host, capsys):
@@ -240,7 +295,6 @@ def test_publish_refuses_anything_but_a_fresh_build(repo, tmp_path, publisher, h
 def test_publish_renders_the_caddyfile_from_the_committed_template(repo, tmp_path, publisher, host):
     template = (repo / TEMPLATE).read_text(encoding='utf-8')
     commit(repo, {TEMPLATE: (template + '# committed \U0001f600\n').encode('utf-8')})  # any text, even outside the BMP
-    write(repo / TEMPLATE, (template + '# uncommitted\n').encode('utf-8'))
     site = build(repo, tmp_path / 'dist/homepage')
     publish(publisher, site, tmp_path)
     renderer = importlib.import_module('render_caddyfile')
@@ -299,7 +353,7 @@ def payload(tmp_path, data=None, revision='a' * 40):
             for name, content in [('index.html', b'new site'), ('assets/art.png', random.Random(1).randbytes(65536)),
                                   ('downloads/release.json', json.dumps({'addon_revision': revision}).encode())]:
                 info = tarfile.TarInfo(name)
-                info.size = len(content)
+                info.size, info.mode = len(content), 0o600  # as a publisher with umask 077 packs them
                 package.addfile(info, io.BytesIO(content))
         data = buffer.getvalue()
     upload = tmp_path / 'wow-homepage.tar.gz'
@@ -318,13 +372,17 @@ def unchanged(server, sent):
     assert Path(os.readlink(base / 'current')) == server['old']
     assert server['caddy'].read_bytes() == b'old caddy\n'
     assert sorted(path.name for path in (base / 'releases').iterdir()) == ['old']
-    assert not any(path.name.startswith('.') for path in base.iterdir())  # no candidate or swap link
+    assert sorted(path.name for path in base.iterdir()) == ['current', 'releases']  # no candidate, backup or link
     assert not Path(sent['payload']).exists()
 
 
 def test_install_validates_the_caddyfile_outside_the_web_root_then_switches(server, tmp_path):
     sent = payload(tmp_path)
-    result = install(server, sent)
+    umask = os.umask(0o077)  # a restrictive root umask must not hide the site from Caddy
+    try:
+        result = install(server, sent)
+    finally:
+        os.umask(umask)
     base, release = server['base'], server['base'] / 'releases' / sent['release']
     assert Path(os.readlink(base / 'current')) == release
     assert (base / 'current/index.html').read_bytes() == b'new site'
@@ -337,6 +395,10 @@ def test_install_validates_the_caddyfile_outside_the_web_root_then_switches(serv
     backup = base / f'Caddyfile.before-{sent["release"]}'
     assert backup.read_bytes() == b'old caddy\n' and stat.S_IMODE(backup.stat().st_mode) == 0o600
     assert result['previous'] == str(server['old'])
+    modes = {path.relative_to(release).as_posix(): stat.S_IMODE(path.stat().st_mode) for path in release.rglob('*')}
+    assert modes == {'assets': 0o755, 'assets/art.png': 0o644, 'downloads': 0o755,
+                     'downloads/release.json': 0o644, 'index.html': 0o644}
+    assert stat.S_IMODE(release.stat().st_mode) == 0o755
 
 
 def test_install_refuses_an_incomplete_upload_before_changing_anything(server, tmp_path):
@@ -393,8 +455,9 @@ def test_a_failed_validation_or_reload_restores_the_previous_site(server, tmp_pa
     with pytest.raises(subprocess.CalledProcessError):
         install(server, sent)
     unchanged(server, sent)
-    reloads = [command for command in server['commands'] if command[:2] == ['systemctl', 'reload']]
-    assert len(reloads) == (2 if failing[0] == 'systemctl' else 0)  # the failed reload, then the rollback's
+    reloads = [command[1] for command in server['commands'] if command[0] == 'systemctl']
+    # The failed reload, then the rollback's, which also starts Caddy if it stopped.
+    assert reloads == (['reload', 'reload-or-restart'] if failing[0] == 'systemctl' else [])
 
 
 def test_a_first_publish_that_fails_after_the_switch_leaves_no_site(server, tmp_path):

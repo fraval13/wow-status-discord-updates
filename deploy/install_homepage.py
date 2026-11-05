@@ -8,10 +8,11 @@ the archive the publisher checked (issue #19). It extracts the release, then wri
 and validates the candidate Caddyfile outside the web root with mode 0600, because
 it holds the group route keys. Only then does it switch the `current` symlink and
 reload Caddy. A failure before the switch removes the partial release; a failure
-after it restores the previous site and Caddyfile first. The uploaded archive and
-the candidate Caddyfile are always deleted.
+after it restores the previous site and Caddyfile first and restarts Caddy if it
+stopped. The uploaded archive and the candidate Caddyfile are always deleted.
 """
 import hashlib
+import io
 import json
 import os
 import shutil
@@ -37,23 +38,35 @@ def point(link, target):
     os.replace(swap, link)
 
 
-def switch(archive, release, revision, old_config, caddyfile, base, caddy):
+def public_tree(path):
+    """Make the extracted release readable by Caddy whatever umask built or extracted it."""
+    for parent, dirs, files in os.walk(path):
+        os.chmod(parent, 0o755)
+        for name in files:
+            os.chmod(os.path.join(parent, name), 0o644)
+
+
+def switch(data, release, revision, old_config, caddyfile, base, caddy):
     current = base / 'current'
     previous = os.readlink(current) if current.is_symlink() else None
     target = base / 'releases' / release
     target.parent.mkdir(parents=True, exist_ok=True)
     target.mkdir()  # an existing release is never touched, not even to clean it up
     candidate = base / f'.Caddyfile-{release}'  # beside, not inside, the served directory
-    switched = False
+    backup = base / f'Caddyfile.before-{release}'
+    backed_up = switched = False
     try:
-        with tarfile.open(archive) as package:
+        # The checked bytes themselves, not the upload path, which could change after the check.
+        with tarfile.open(fileobj=io.BytesIO(data)) as package:
             package.extractall(target, filter='data')
+        public_tree(target)
         manifest = json.loads((target / 'downloads/release.json').read_text(encoding='utf-8'))
         if manifest.get('addon_revision') != revision:
             raise RuntimeError('The uploaded release is not the checked build; nothing was changed')
         write_private(candidate, caddyfile.encode('utf-8'))
         subprocess.run(['caddy', 'validate', '--config', str(candidate), '--adapter', 'caddyfile'], check=True)
-        write_private(base / f'Caddyfile.before-{release}', old_config)
+        write_private(backup, old_config)
+        backed_up = True
         point(current, target)
         switched = True
         shutil.copyfile(candidate, caddy)
@@ -67,9 +80,13 @@ def switch(archive, release, revision, old_config, caddyfile, base, caddy):
                 point(current, previous)
             else:
                 current.unlink(missing_ok=True)
-            subprocess.run(['systemctl', 'reload', 'caddy'], check=False)
-        # Reached only once current no longer points at the new release.
+            # A plain reload can't start Caddy again if the new configuration stopped it.
+            subprocess.run(['systemctl', 'reload-or-restart', 'caddy'], check=False)
+        # Reached only once current no longer points at the new release and the live
+        # Caddyfile is the old one again, so neither the release nor the backup is needed.
         shutil.rmtree(target, ignore_errors=True)
+        if backed_up:
+            backup.unlink(missing_ok=True)
         raise
     finally:
         candidate.unlink(missing_ok=True)
@@ -83,8 +100,9 @@ def install(payload, release, revision, archive_sha256, caddy_sha256, caddyfile,
         old_config = caddy.read_bytes()
         if hashlib.sha256(old_config).hexdigest() != caddy_sha256:
             raise RuntimeError('Caddy changed since inspection; no configuration was changed')
-        if hashlib.sha256(archive.read_bytes()).hexdigest() != archive_sha256:
+        data = archive.read_bytes()
+        if hashlib.sha256(data).hexdigest() != archive_sha256:
             raise RuntimeError('The upload is incomplete or changed; nothing was changed')
-        return switch(archive, release, revision, old_config, caddyfile, base, caddy)
+        return switch(data, release, revision, old_config, caddyfile, base, caddy)
     finally:
         archive.unlink(missing_ok=True)

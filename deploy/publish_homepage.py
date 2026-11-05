@@ -1,10 +1,10 @@
 """Publish the built static homepage through the existing authorized SSH account.
 
 Before contacting the host it checks the build folder (issue #19). It must be a
-build of this checkout's HEAD commit, the website/ files and builder it was built
-from must match Git, every ZIP must match its release.json checksum, and it must
-equal a fresh build made now, file for file, so no stale or changed file ships.
-What it uploads is that fresh build.
+build of this checkout's HEAD commit; the website files, the builder and the
+Caddyfile and server code it sends must match Git; every ZIP must match its
+release.json checksum; and it must equal a fresh build made now, file for file, so
+no stale or changed file ships. What it uploads is that fresh build.
 
 Renders the Caddyfile's group routes from the template in that commit and the
 private groups.json (by default the server's own copy; group names never come from
@@ -35,8 +35,12 @@ PRIVATE_GROUPS = render_caddyfile.GROUPS.as_posix()
 DEPLOY = Path(__file__).resolve().parent
 REPOSITORY = DEPLOY.parent
 TEMPLATE = 'deploy/Caddyfile.production.template'
-# The build reads these from the working tree; everything else it reads from Git.
-BUILD_INPUTS = ('website', 'scripts/build_homepage.py', 'scripts/whats_new.py')
+# What a publish reads from the working tree and ships: the website and the builder
+# that copies it, and what renders the Caddyfile or runs on the server as root.
+# Everything else comes from Git. The builder never copies these two website files.
+PUBLISH_INPUTS = ('website', ':(exclude)website/README.md', ':(exclude)website/ARTWORK.md',
+                  'scripts/build_homepage.py', 'scripts/whats_new.py', TEMPLATE,
+                  'deploy/render_caddyfile.py', 'deploy/install_homepage.py')
 REBUILD = 'Rebuild with python scripts/build_homepage.py and publish again.'
 
 
@@ -69,10 +73,10 @@ def check_build(directory, revision, fresh):
         raise ValueError(f'{directory} was built for revision {release.get("addon_revision")}, but this '
                          f'checkout is at {revision}. {REBUILD}')
     status = git('status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--ignored',
-                 '--', *BUILD_INPUTS).decode('utf-8')
+                 '--', *PUBLISH_INPUTS).decode('utf-8')
     uncommitted = [entry[3:] for entry in status.split('\0') if entry]
     if uncommitted:
-        raise ValueError(f'Uncommitted or untracked build input: {", ".join(uncommitted)}. The build would '
+        raise ValueError(f'Uncommitted or untracked publish input: {", ".join(uncommitted)}. Publishing would '
                          'ship it, but the revision does not hold it. Commit or remove it, rebuild and publish again.')
     builder = load_builder()
     editions = release.get('editions') if isinstance(release.get('editions'), dict) else {}
@@ -132,7 +136,8 @@ def main(argv=None):
                 site = check_build(args.directory.resolve(), revision, temporary / 'homepage')
             except ValueError as error:
                 parser.error(str(error))
-        ssh = ['ssh', '-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes', args.host]
+        ssh = ['ssh', '-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
+               '-o', 'ConnectTimeout=20', args.host]
         old_config = subprocess.check_output([*ssh, 'cat /etc/caddy/Caddyfile'])
         # Refuse an unrelated host/config rather than replacing another site's setup.
         if b'wow.frankvalde.com {' not in old_config or b'handle_path /groups/' not in old_config:
@@ -174,9 +179,11 @@ def main(argv=None):
             subprocess.run(['scp', '-F', '/dev/null', '-o', 'BatchMode=yes', '-o', 'StrictHostKeyChecking=yes',
                             str(upload), f'{args.host}:{remote_path}'], check=True)
             subprocess.run([*ssh, 'python3 -'], input=script.encode('utf-8'), check=True)
-        except BaseException:
+        except Exception:
             # The server deletes the upload itself; this covers a broken copy or connection.
-            subprocess.run([*ssh, 'rm -f -- ' + shlex.quote(remote_path)], check=False)
+            # Best effort: a failure here must not hide the original error.
+            with contextlib.suppress(OSError, subprocess.SubprocessError):
+                subprocess.run([*ssh, 'rm -f -- ' + shlex.quote(remote_path)], check=False, timeout=60)
             raise
 
 
