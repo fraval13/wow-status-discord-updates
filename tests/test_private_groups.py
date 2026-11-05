@@ -245,23 +245,30 @@ def live():
 @pytest.fixture
 def fake_ssh(monkeypatch, live):
     calls = []
+    real_run, real_check_output = subprocess.run, subprocess.check_output
 
     def check_output(command, **kwargs):
+        if command[0] == 'git':
+            return real_check_output(command, **kwargs)
         calls.append(command)
         assert command[-1] == 'cat /etc/caddy/Caddyfile'
         return live['config']
 
     def run(command, **kwargs):
+        if command[0] == 'git':
+            return real_run(command, **kwargs)
         calls.append(command)
         if command[-1] == 'cat /etc/wow-character-status/groups.json':
             return subprocess.CompletedProcess(command, 0, json.dumps(GROUPS).encode(), b'')
-        if command[0] == 'scp' and sys.platform != 'win32':
+        if command[0] == 'scp':
             with tarfile.open(command[-2]) as package:
                 calls.append(('uploaded', package.getnames()))
         return subprocess.CompletedProcess(command, 0, b'', b'')
 
     monkeypatch.setattr(subprocess, 'check_output', check_output)
     monkeypatch.setattr(subprocess, 'run', run)
+    # These tests are about the Caddy routes; test_homepage_publish.py covers the build checks.
+    monkeypatch.setattr(load('deploy/publish_homepage.py'), 'check_build', lambda directory, revision, fresh: directory)
     return calls
 
 
@@ -291,10 +298,6 @@ def test_publish_refuses_to_change_live_group_routes(fake_ssh, live, tmp_path, p
 
 
 def test_publish_sends_the_rendered_caddyfile_over_ssh_not_in_the_upload(fake_ssh, tmp_path, monkeypatch):
-    renderer = load('deploy/render_caddyfile.py')
-    template = tmp_path / 'Caddyfile.template'  # any text survives, even outside the BMP
-    template.write_text(renderer.TEMPLATE.read_text(encoding='utf-8') + '# \U0001f600\n', encoding='utf-8')
-    monkeypatch.setattr(renderer, 'TEMPLATE', template)
     site = tmp_path / 'homepage'
     (site / 'downloads').mkdir(parents=True)
     (site / 'index.html').write_text('<!doctype html>', encoding='utf-8')
@@ -313,18 +316,25 @@ def test_publish_sends_the_rendered_caddyfile_over_ssh_not_in_the_upload(fake_ss
     load('deploy/publish_homepage.py').main(['--host', 'root@example.test', '--directory', str(site),
                                              '--groups-config', str(config)])
     assert not any(call[-1] == 'cat /etc/wow-character-status/groups.json' for call in fake_ssh)
-    variables = dict(line.split('=', 1) for line in sent['script'].split('\nimport ', 1)[0].splitlines())
-    assert ast.literal_eval(variables['CADDYFILE']) == renderer.render(GROUPS)
-    if sys.platform != 'win32':  # Windows can't reopen the open temporary upload
-        uploaded = next(call[1] for call in fake_ssh if call[0] == 'uploaded')
-        assert sorted(uploaded) == ['downloads/release.json', 'index.html']
+    settings = next(line for line in sent['script'].splitlines() if line.startswith('SETTINGS = '))
+    template = subprocess.check_output(['git', '-C', str(ROOT), 'show', 'HEAD:deploy/Caddyfile.production.template'])
+    expected = load('deploy/render_caddyfile.py').render(GROUPS, template.decode('utf-8'))
+    assert ast.literal_eval(settings.removeprefix('SETTINGS = '))['caddyfile'] == expected
+    uploaded = next(call[1] for call in fake_ssh if call[0] == 'uploaded')
+    assert sorted(uploaded) == ['downloads/release.json', 'index.html']
 
 
 def test_publish_without_private_config_on_the_host_stops_before_uploading(monkeypatch):
-    monkeypatch.setattr(subprocess, 'check_output', lambda command, **kwargs: OLD_ROUTE)
+    real_check_output = subprocess.check_output
+    monkeypatch.setattr(subprocess, 'check_output', lambda command, **kwargs: (
+        real_check_output(command, **kwargs) if command[0] == 'git' else OLD_ROUTE))
     calls = []
 
+    real_run = subprocess.run
+
     def run(command, **kwargs):
+        if command[0] == 'git':
+            return real_run(command, **kwargs)
         calls.append(command)
         return subprocess.CompletedProcess(command, 1, b'', b'No such file')
 

@@ -148,8 +148,9 @@ The root address now hosts the addon homepage and all standalone ZIP downloads.
 Static releases live in `/srv/wow-status-homepage/releases/`, with an atomic
 `current` symlink. They are independent from the Python application releases.
 See [homepage deployment](../website/README.md) for building and publishing the
-site without restarting either application. `deploy/publish_homepage.py` validates
-Caddy and retains the prior configuration/release for rollback.
+site without restarting either application. `deploy/publish_homepage.py` checks
+that the build is a fresh build of the checked-out commit before uploading it,
+validates Caddy and retains the prior configuration/release for rollback.
 
 Unknown groups return 404. Friends configure only the shared base address; the
 companion derives routing keys from the names selected in WoW. At home:
