@@ -5,21 +5,26 @@ After the one-time setup below, every release that `main` deploys to the
 homepage is also uploaded to CurseForge by the `curseforge` job in
 `.github/workflows/checks.yml` (`scripts/upload_curseforge.py`).
 
-## One-time setup (project owner, logged in to CurseForge)
+## Setup
 
-1. Go to <https://authors.curseforge.com/>, choose **Create project**, game
-   **World of Warcraft**, and fill it in from the [listing](#listing) below.
-   Upload `assets/branding/WoWStatus-curseforge.png` (400 × 400) as the avatar.
-2. Submit it. CurseForge reviews new projects, which can take a few days.
-3. Note the numeric **Project ID** from the project's page.
-4. In CurseForge author settings, open **API Tokens** and create a token.
-5. In GitHub, go to **Settings → Secrets and variables → Actions**:
-   - **Secrets**: add `CURSEFORGE_API_TOKEN` with the token.
-   - **Variables**: add `CURSEFORGE_PROJECT_ID` with the project ID.
-6. Upload the current release: **Actions → Checks and addon packages → Run
+The project is <https://www.curseforge.com/wow/addons/wow-status> (project ID
+`1772945`, license All Rights Reserved). The GitHub repository variable
+`CURSEFORGE_PROJECT_ID` is set to that ID.
+
+Remaining one-time step for the owner:
+
+1. In CurseForge author settings, open **API Tokens** and create a token.
+2. Store it as the GitHub Actions secret `CURSEFORGE_API_TOKEN`, for example with
+   `gh secret set CURSEFORGE_API_TOKEN` (it prompts for the value).
+3. Upload the current release: **Actions → Checks and addon packages → Run
    workflow** on `main`, or merge the next pull request.
 
-Until `CURSEFORGE_PROJECT_ID` is set, the `curseforge` job is skipped.
+Without the token the job runs but uploads nothing and prints a notice. Without
+the variable the job is skipped.
+
+The listing's description, summary and categories are edited on CurseForge, not
+here. The text below is the current recommended listing; the original one
+describes only Classic Era and armor loot.
 
 ## How uploads work
 
