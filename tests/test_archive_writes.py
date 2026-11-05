@@ -527,3 +527,36 @@ def test_archives_are_written_in_batches_with_the_same_text(tmp_path, monkeypatc
     companion.atomic_json(tmp_path / 'large.json', data)
     for name in ('small.json', 'large.json'):
         assert (tmp_path / name).read_text(encoding='utf-8') == expected
+
+
+def test_a_failed_rewrite_of_withdrawn_data_is_tried_again(store, monkeypatch):
+    now = int(time.time())
+    cid = store.ingest('owner', payload(now - 10, zones(0, now, 2)))['character_id']
+    monkeypatch.setattr(archive_module, 'RETRY_SECONDS', 0.05)
+    original = archive_module.atomic_json
+    failures = []
+
+    def disk_full(path, data):
+        if not failures:
+            failures.append(path)
+            raise OSError('disk full')
+        original(path, data)
+
+    monkeypatch.setattr(archive_module, 'atomic_json', disk_full)
+    narrower = payload(now - 5)
+    narrower['settings']['fields']['zone'] = False
+    store.start_background()
+    try:
+        try:
+            store.ingest('owner', narrower)
+        except OSError:
+            pass  # committed, but the archive still holds the zones
+        assert failures and len(archived(store, cid)['activity']['zones']) == 2
+        # The companion's retry changes nothing, so only the archive thread can fix the file.
+        assert store.ingest('owner', narrower)['accepted'] == 0
+        deadline = time.monotonic() + 5
+        while archived(store, cid)['activity']['zones'] and time.monotonic() < deadline:
+            time.sleep(0.02)
+    finally:
+        store.stop_background()
+    assert archived(store, cid)['activity']['zones'] == []

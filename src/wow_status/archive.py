@@ -85,6 +85,8 @@ def event_entry(event_id, at, received, data, client, delivery=None):
 
 # Snapshot and event entries sit three levels deep in a character archive.
 ENTRY_DEPTH = 3
+# Seconds before the archive thread tries a failed rebuild again.
+RETRY_SECONDS = 60
 
 
 def archived_bytes(entry, depth=ENTRY_DEPTH):
@@ -178,6 +180,10 @@ class ArchiveWriter:
     rebuild numbered after whatever last wrote or dropped it, so an older read of the
     database never overwrites a newer one, and a rebuild that read the database before a
     drop never writes the file back.
+
+    A failed rebuild is tried again on the archive thread a minute later. A retried
+    upload that changes nothing doesn't mark the archive, so without that, data a change
+    withdrew could stay in the file until the next start.
     """
 
     def __init__(self, store):
@@ -190,6 +196,7 @@ class ArchiveWriter:
         self._dirty = {}  # character IDs in marking order
         self._sequence = 0  # the number of the latest rebuild or drop to start
         self._written = {}  # character ID -> number of the rebuild or drop that last wrote it
+        self._failed = {}  # character ID -> monotonic time to retry its failed rebuild
         self._busy = False
         self._thread = None
         self._stopping = False
@@ -211,12 +218,24 @@ class ArchiveWriter:
         with self._files, self._state:
             self._written[cid] = self._sequence
             self._dirty.pop(cid, None)
+            self._failed.pop(cid, None)
             self.path(cid).unlink(missing_ok=True)
 
     def _rebuild(self, cid):
         with self._state:
             self._sequence += 1
             sequence = self._sequence
+        try:
+            self._write(cid, sequence)
+        except Exception:
+            with self._state:
+                self._failed[cid] = time.monotonic() + RETRY_SECONDS
+                self._changed.notify_all()
+            raise
+        with self._state:
+            self._failed.pop(cid, None)
+
+    def _write(self, cid, sequence):
         db = self.store.db
         # One read transaction, so a commit from the store thread can't land between two
         # of the document's queries; the caller may already be inside one.
@@ -236,6 +255,18 @@ class ArchiveWriter:
             if document is not None:
                 atomic_json(self.path(cid), document)
 
+    def _retry_due(self):
+        """Under _state: mark the failed rebuilds that are due again, and return how many
+        seconds until the next one is, or None."""
+        now = time.monotonic()
+        for cid, at in list(self._failed.items()):
+            if at <= now:
+                del self._failed[cid]
+                self._dirty.setdefault(cid, None)
+        if not self._failed:
+            return None
+        return min(self._failed.values()) - now
+
     def start(self):
         with self._state:
             if self._thread is not None:
@@ -249,14 +280,18 @@ class ArchiveWriter:
         try:
             while True:
                 with self._state:
-                    while not self._dirty and not self._stopping:
-                        self._changed.wait()
+                    while not self._stopping:
+                        wait = self._retry_due()
+                        if self._dirty:
+                            break
+                        self._changed.wait(wait)
                     if self._stopping:
                         # Cleared with the check, so a later mark() rebuilds in its caller.
                         # What is still marked waits for the startup rebuild: withdrawn
                         # data never waits here, as its mark rebuilds at once.
                         self._thread = None
                         self._dirty.clear()
+                        self._failed.clear()
                         self._changed.notify_all()
                         return
                     cid = next(iter(self._dirty))
@@ -265,8 +300,8 @@ class ArchiveWriter:
                 try:
                     self._rebuild(cid)
                 except Exception as exc:
-                    # The database stays the source of truth; the next mark or the
-                    # startup rebuild writes this archive again. Never log its content.
+                    # The database stays the source of truth, and the rebuild is tried
+                    # again later. Never log the archive's content.
                     log.error('Character archive could not be written (%s)', type(exc).__name__)
                 finally:
                     with self._state:
@@ -282,6 +317,7 @@ class ArchiveWriter:
                 if self._thread is threading.current_thread():
                     self._thread = None
                 self._dirty.clear()
+                self._failed.clear()
                 self._busy = False
                 self._changed.notify_all()
             self.store.close_thread_connection()
