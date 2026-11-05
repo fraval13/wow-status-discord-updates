@@ -17,7 +17,10 @@ def steps(text):
 
 def deploy_job():
     text = (ROOT / '.github/workflows/checks.yml').read_text(encoding='utf-8')
-    return text[text.index('\n  deploy:\n'):]
+    job = text[text.index('\n  deploy:\n'):]
+    # Up to the next job, if any follows.
+    following = re.search(r'\n  [\w-]+:\n', job[1:])
+    return job[:following.start() + 1] if following else job
 
 
 @pytest.mark.parametrize('workflow', WORKFLOWS, ids=lambda path: path.name)
