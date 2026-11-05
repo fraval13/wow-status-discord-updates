@@ -130,3 +130,30 @@ One sender can have at most four updates queued or waiting; more are dropped
 quietly in the next login sync. To test: have a friend whose roster entry is
 visible send several milestones at once, and check that a fifth update while you
 are in combat is not queued.
+
+## Relayed entries and event IDs
+
+A catch-up entry is a claim by the member who relayed it; only a live update's
+sender, or an author passing on their own entry, is authenticated by the game.
+So a live update replaces a relayed entry that holds its event ID with other
+content, and it still shows its popup. A relayed copy with the same content
+keeps the update quiet, as before. Either way the log then holds the live copy,
+all fields included, and a later relayed copy can't change it (not even extend a
+text the live packet cut). This applies even when the popup itself is dropped,
+for example when the sender's queue is full.
+During login sync, a client also fetches the author's own copy of an entry that
+only another member relayed, and the author's copy replaces or confirms it.
+
+New event IDs end in a random part (`<epoch>-<sequence>-<8 hex digits>`), so a
+relay can't claim a member's next ID before the event happens. Older clients'
+IDs without it are still accepted, and events saved before keep their IDs.
+
+The log names where a caught-up entry came from: `Caught up via <A>, passed on by
+<B>`. B sent it to you, checked by your game; A sent it to B, checked by B's game
+and reported by B in a `J2 V` message before the entry. A member never forwards
+a name it could not check itself, so a dishonest relay can't hide behind someone
+else on the next hop. When B saw it live or wrote it, the card says just
+`Caught up via B`. Older versions ignore `V` and show the direct sender, as
+before. To test: B catches up an entry from A (B was offline when it happened),
+then C catches it up from B alone. C's log should say `Caught up via A, passed on
+by B`.

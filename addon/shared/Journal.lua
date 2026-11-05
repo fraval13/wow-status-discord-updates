@@ -105,30 +105,68 @@ local function rebuild()
     while #db.journal.entries>CAP do table.remove(db.journal.entries) end
     for _, e in ipairs(db.journal.entries) do index[e.id]=e;digests[digest(e.id)]=e end
 end
-local function add(entry)
-    if not db or not entry.id or not permitted(entry) then return false end
-    local old=index[entry.id]
-    if old then
-        -- A live legacy packet can have a shorter display string than its log copy.
-        if old.kind~=entry.kind or P.senderKey(old.sender)~=P.senderKey(entry.sender) or old.at~=entry.at then return false end
-        for group in pairs(entry.groups or {}) do if not old.owner then old.groups[group]=true end end
-        if #entry.text>#old.text then old.text=entry.text end
-        if refresh then refresh() end
-        return false
+-- t is full, or a live packet's cut of it: a prefix of full followed by "...".
+local function cutOf(full,t)
+    return t==full or (t:sub(-3)=="..." and #full>#t-3 and full:sub(1,#t-3)==t:sub(1,-4))
+end
+local function sameFacts(a,b)
+    return a.kind==b.kind and P.senderKey(a.sender)==P.senderKey(b.sender) and a.at==b.at
+end
+-- Only the game authenticates a whisper's sender. A catch-up entry is a claim by
+-- whoever passed it on (relay, or via when no relay is named), unless that was
+-- its author. Live packets and this client's own data are authenticated.
+local function relayed(e)
+    return e.origin=="catchup" and P.senderKey(e.relay or e.via)~=P.senderKey(e.sender)
+end
+-- Another member's entry naming one of this account's characters as its sender.
+local function ownCharacter(entry)
+    if entry.owner then return false end
+    local senderKey=P.senderKey(entry.sender)
+    for _, c in pairs(db.characters or {}) do
+        local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
+        if P.senderKey(name)==senderKey and c.identity.client==entry.client then return true end
     end
-    if not entry.owner then
-        local senderKey=P.senderKey(entry.sender)
-        for _, c in pairs(db.characters or {}) do
-            local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
-            if P.senderKey(name)==senderKey and c.identity.client==entry.client then return false end
-        end
-    end
-    entry.groups=entry.groups or {}
+    return false
+end
+local function insert(entry)
     WoWStatusFlavour.text(entry)
     table.insert(db.journal.entries,entry);rebuild()
     if refresh then refresh() end
     if WoWStatusStatusLine then WoWStatusStatusLine.update() end
     if WoWStatusFirsts then WoWStatusFirsts.update() end
+end
+-- Returns true when the entry is new to the log: a new ID, or one that replaces a
+-- relay's claim with other content. False when it repeats a logged event or is refused.
+local function add(entry)
+    if not db or not entry.id or not permitted(entry) then return false end
+    entry.groups=entry.groups or {}
+    local old=index[entry.id]
+    if old and relayed(old) and not relayed(entry) then
+        if ownCharacter(entry) then return false end
+        -- An authenticated copy replaces a relay's claim on its ID, all fields
+        -- included; the claim may even predate the event (issue #3). Queued sends
+        -- of the claim stop, as J.tick checks the entry itself. It repeats the
+        -- claim (a quiet popup) only when its text is the claim's or a live cut of
+        -- it, so a "..." stub claim can't silence an update.
+        local same=sameFacts(old,entry)
+        if same and (cutOf(old.text,entry.text) or cutOf(entry.text,old.text)) then
+            for group in pairs(old.groups) do entry.groups[group]=true end
+        end
+        for i,e in ipairs(db.journal.entries) do if e==old then table.remove(db.journal.entries,i);break end end
+        insert(entry)
+        return not (same and cutOf(old.text,entry.text))
+    end
+    if old then
+        if not sameFacts(old,entry) or not (cutOf(old.text,entry.text) or cutOf(entry.text,old.text)) then return false end
+        if not old.owner then for group in pairs(entry.groups) do old.groups[group]=true end end
+        -- A relay's copy never changes what this client saw live, wrote or got
+        -- from the author; a live packet can be shorter than such a copy.
+        if relayed(entry)==relayed(old) and #entry.text>#old.text then old.text=entry.text end
+        if refresh then refresh() end
+        return false
+    end
+    if ownCharacter(entry) then return false end
+    insert(entry)
     return true
 end
 function J.prepare(database)
@@ -139,9 +177,9 @@ function J.prepare(database)
     for _,c in pairs(database.characters or {}) do
         for _,event in ipairs(c.history and c.history.events or {}) do
             if event.kind=="loot" then
-                local epoch,sequence=event.id:match(":(%d+%-%d+):(%d+)$")
+                local nonce=P.eventNonce(event)
                 local name=c.identity.name.."-"..S.stripSpace(c.identity.realm)
-                local id=epoch and c.identity.client..":"..P.senderKey(name)..":"..epoch.."-"..sequence
+                local id=nonce and c.identity.client..":"..P.senderKey(name)..":"..nonce
                 local entry=id and wanted[id]
                 if entry and event.data.item then
                     WoWStatusLoot.capture(event.data.item,function(info)
@@ -157,11 +195,7 @@ function J.recordLocal(event,backfill)
     if not db or not event or (event.data and event.data.synthetic) or not sharedKinds[event.kind] then return end
     local loot=event.kind=="loot" and WoWStatusLoot.eventInfo(event.data)
     if event.kind=="loot" and not WoWStatusLoot.allowed(current.settings,loot) then return end
-    local nonce=current.epoch.."-"..current.sequence
-    if backfill then
-        local epoch,seq=event.id:match(":(%d+%-%d+):(%d+)$")
-        nonce=epoch and epoch.."-"..seq or nil
-    end
+    local nonce=P.eventNonce(event)
     local id=nonce and J.eventID(ownName(),nonce) or ("archive:"..current.identity.client..":"..event.id)
     local groups={}
     if not backfill and P.canShare(current,event) and (event.kind~="loot" or WoWStatusLoot.allowed(current.settings,loot)) then
@@ -202,17 +236,24 @@ function J.professions(observed)
         professionRanks[p.name]=p.skill
     end
 end
-function J.received(item)
-    if not db or item.preview then return end
+local function liveEntry(item)
     local id=J.eventID(item.sender,item.nonce)
-    if not id then return end
+    if not id then return nil end
     local groups={}
     if item.group_id then groups[item.group_id]=true end
-    add({id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
+    return {id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
         text=trim(item.level and ("Reached level "..item.level.."!") or item.text or "",160),
         quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,flavour=item.flavour,
-        at=item.at or item.received_at or time(),groups=groups,origin="live"})
+        at=item.at or item.received_at or time(),groups=groups,origin="live"}
 end
+-- Logs a live update. Returns true when it is new to the log, which includes
+-- replacing a relay's claim on its ID that has other content.
+function J.received(item)
+    if not db or item.preview then return false end
+    local entry=liveEntry(item)
+    return entry~=nil and add(entry)
+end
+function J.shared(kind) return sharedKinds[kind]==true end
 function J.entries() return db and db.journal.entries or {} end
 function J.contains(id) return id and index[id]~=nil end
 function J.groupsChanged()
@@ -277,10 +318,11 @@ local function unpackEntry(text)
     if kind~="loot" and (values[8]~="" or values[9]~="" or values[10]~="" or values[11]~="") then return nil end
     return e
 end
-local function queue(group,target,body,id,expires)
+-- entry: the log entry a D/V packet carries; it is sent only while still logged.
+local function queue(group,target,body,entry,expires)
     local text="J2 "..group.." "..body
     if #text>243 or #sendQueue>=512 then return false end
-    sendQueue[#sendQueue+1]={group=group,target=target,text=text,id=id,expires=expires,query=body:match("^Q ([%w%-]+)")}
+    sendQueue[#sendQueue+1]={group=group,target=target,text=text,entry=entry,expires=expires,query=body:match("^Q ([%w%-]+)")}
     return true
 end
 local function token()
@@ -380,7 +422,7 @@ local function requestPage(group,target,offset,pages,retries)
     local member=groupMember(group)
     if not member then return end
     local cutoff=math.max(groupSince(group),time()-AGE)
-    requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},retries=retries or 0}
+    requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
 local function advance(t)
@@ -490,7 +532,9 @@ function J.receive(message,sender,distribution)
                 if #d~=22 or seen[d] or n>PAGE then return false end
                 seen[d]=true
                 local existing=digests[d]
-                if not existing or not existing.groups[group] then wanted[#wanted+1]=d end
+                -- Also fetch the author's own copy of an entry only a relay vouched for.
+                if not existing or not existing.groups[group]
+                    or (relayed(existing) and P.senderKey(existing.sender)==key) then wanted[#wanted+1]=d end
             end
         end
         r.inventory=true;r.nextOffset=offset;r.more=more=="1"
@@ -506,13 +550,24 @@ function J.receive(message,sender,distribution)
         for _, d in ipairs(ids) do
             local e=index[session.offer[d]]
             if e and offerable(e,group) then
+                -- For an entry this client caught up itself, name the member it came
+                -- from (checked by this client's game), so provenance survives the
+                -- next hop. Never forward an unchecked via claim. Older clients ignore V.
+                local from=e.origin=="catchup" and (e.relay or e.via)
+                if from then queue(group,sender,"V "..t.." "..d.." "..from,e) end
                 local encoded=pack(e):gsub(".",function(c) return string.format("%02x",c:byte()) end)
                 local total=math.ceil(#encoded/140)
                 for part=1,total do
-                    queue(group,sender,"D "..t.." "..d.." "..part.."/"..total.." "..encoded:sub((part-1)*140+1,part*140),e.id)
+                    queue(group,sender,"D "..t.." "..d.." "..part.."/"..total.." "..encoded:sub((part-1)*140+1,part*140),e)
                 end
             end
         end
+        return true
+    elseif op=="V" then
+        if not r or r.group~=group or r.key~=key then return false end
+        local d,from=body:match("^([a-f0-9]+) ("..S.NONSPACE.."+)$")
+        if not d or #d~=22 or not r.pending[d] or not P.senderKey(from) then return false end
+        r.via[d]=from
         return true
     elseif op=="D" then
         if not r or r.group~=group or r.key~=key then return false end
@@ -529,8 +584,13 @@ function J.receive(message,sender,distribution)
         if digest(e.id)~=d then J.reportInvalid(group,sender);return false end
         if e.at<r.cutoff then return false end
         -- Forwarded identities are claims by the relay, not authenticated origins.
+        -- via: who the sender says it got the entry from (the sender itself if it
+        -- does not say). relay: the sender, checked by the game, when that differs.
         e.groups[group]=true;e.via=sender
-        add(e);r.pending[d]=nil;r.parts[d]=nil;advance(t)
+        local from=r.via[d]
+        -- Keep the game's spelling of the sender's name, even if V names it.
+        if from and P.senderKey(from)~=key then e.via,e.relay=from,sender end
+        add(e);r.pending[d]=nil;r.parts[d]=nil;r.via[d]=nil;advance(t)
         return true
     end
     return false
@@ -558,7 +618,7 @@ function J.tick()
     table.remove(sendQueue,1)
     if item.expires and (now>item.expires or not current.settings.enabled) then return end
     if not groupMember(item.group) or not peer(item.group,item.target) then return end
-    if item.id and (not index[item.id] or not offerable(index[item.id],item.group)) then return end
+    if item.entry and (index[item.entry.id]~=item.entry or not offerable(item.entry,item.group)) then return end
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if send then
         lastSend=clock
@@ -632,7 +692,8 @@ local function render()
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(heading)
             row.message:SetText(((e.sender:match("^[^-]+") or e.sender):gsub("|","||")).." — "..e.text:gsub("|","||"))
-            local scope=e.owner and "Your activity" or (e.origin=="catchup" and "Caught up via "..(e.via or "a group member") or e.origin=="legacy" and "Saved group update" or "Live group update")
+            local scope=e.owner and "Your activity" or (e.origin=="catchup" and "Caught up via "..(e.via or "a group member")..(e.relay and ", passed on by "..e.relay or "")
+                or e.origin=="legacy" and "Saved group update" or "Live group update")
             row.flavour:SetText(WoWStatusFlavour.text(e))
             row.detail:SetText(WoWStatusHistory.oslo(e.at).." · "..scope)
             row.event_id=e.id;row.entry=e;row:Show()

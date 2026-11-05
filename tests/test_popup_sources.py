@@ -123,8 +123,8 @@ def test_sender_does_not_send_text_receivers_would_reject():
     lua.execute('''
         local ids = {}
         for id in pairs(character().group_ids) do ids[id] = true end
-        WoWStatusPopups.broadcast(character(), {id="pvp-1", kind="pvp", at=time(), group_ids=ids,
-            data={text="Won a duel"}})
+        WoWStatusPopups.broadcast(character(), {id="pvp-1", kind="pvp", at=time(), nonce="1-1-0000abcd",
+            group_ids=ids, data={text="Won a duel"}})
     ''')
     assert lua.eval('#__sent') == 0
     assert lua.eval('WoWStatusDB.popups.last_send.state') == 'invalid_text'
@@ -354,7 +354,8 @@ def test_own_text_that_peers_would_reject_is_logged_but_never_offered():
         local ids = {}
         for id in pairs(character().group_ids) do ids[id] = true end
         for i, zone in ipairs({"Elwynn Forest", "|TInterface\\\\Icons\\\\X:0|t"}) do
-            WoWStatusJournal.recordLocal({id="zone-"..i, kind="zone", at=time()-i, group_ids=ids, data={zone=zone}})
+            WoWStatusJournal.recordLocal({id="zone-"..i, kind="zone", at=time()-i,
+                nonce=WoWStatusPopups.newNonce(character()), group_ids=ids, data={zone=zone}})
             character().sequence = (character().sequence or 0) + 1
         end
     ''')

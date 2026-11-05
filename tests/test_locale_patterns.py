@@ -146,7 +146,7 @@ def test_outgoing_detail_strips_escapes_and_pipes_the_receiver_would_reject(lua,
     text = lua.execute(f'''
         local ids = {{}}
         for id in pairs(character().group_ids) do ids[id] = true end
-        WoWStatusPopups.broadcast(character(), {{id = "pvp-1", kind = "pvp", at = time(),
+        WoWStatusPopups.broadcast(character(), {{id = "pvp-1", kind = "pvp", at = time(), nonce = "1-1-0000abcd",
             group_ids = ids, data = {{text = "{detail}"}}}})
         return __sent[1].text
     ''')

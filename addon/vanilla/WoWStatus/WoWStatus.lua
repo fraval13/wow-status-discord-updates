@@ -80,6 +80,8 @@ local function queue(kind, data, fixed, targetGroups)
     if current.settings.fields.zone then data.zone = A.zone() end
     local event = {id = id, kind = kind, at = time(), data = data,
         group_ids = H.copy(targetGroups or current.group_ids or {})}
+    -- Only events that can be sent or logged for the group need a packet nonce.
+    if WoWStatusJournal.shared(kind) and not data.synthetic then event.nonce = WoWStatusPopups.newNonce(current) end
     table.insert(current.events, event)
     H.record(current, event)
     WoWStatusJournal.recordLocal(event)
