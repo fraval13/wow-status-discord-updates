@@ -49,7 +49,8 @@ function P.show(host)
         for _,entry in ipairs(examples) do
             if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
         end
-        local footer = 170 + #visible * 42
+        local options = 150 + #visible * 42
+        local footer = options + 150
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notification previews",24,-20)
         text(panel,"Choose a notification to preview it.",24,-60)
@@ -58,8 +59,22 @@ function P.show(host)
             local kind=entry[1]
             panel.buttons[kind]=button(panel,kind=="pvp" and A.pvpLabel or entry[2],24,-148-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
         end
+        -- Popup placement and big banners (#61). Account-wide.
+        local function check(title,y,get,set)
+            local widget=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate")
+            widget:SetPoint("TOPLEFT",24,y);widget:SetSize(32,32)
+            text(widget,title,38,-6,460)
+            widget:SetScript("OnClick",function(self) set(self:GetChecked() and true or false) end)
+            widget.get=get
+            return widget
+        end
+        panel.unlock=check("Unlock popup position",-options,function(o) return o.unlocked end,WoWStatusPopups.setUnlocked)
+        panel.reset=button(panel,"Reset popup position",310,-options,250,function() WoWStatusPopups.resetPosition() end)
+        panel.big=check("Big banners for big moments",-options-42,function(o) return o.big_banners end,WoWStatusPopups.setBigBanners)
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
+    local options=WoWStatusPopups.options()
+    for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)
