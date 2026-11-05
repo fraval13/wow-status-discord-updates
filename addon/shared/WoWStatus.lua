@@ -649,6 +649,11 @@ SlashCmdList.WOWSTATUS = function(message)
         elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
     elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
     elseif command == "share" then WoWStatusShare.send(rest)
+    elseif command == "minimap" then
+        if rest == "" then say(WoWStatusMinimap.report())
+        elseif rest == "reset" then WoWStatusMinimap.setOffset(nil); say("Minimap button distance reset.")
+        elseif WoWStatusMinimap.setOffset(tonumber(rest)) then say("Minimap button distance set to " .. rest .. ".")
+        else say("Usage: /wstatus minimap [distance " .. WoWStatusMinimap.MIN_OFFSET .. " to " .. WoWStatusMinimap.MAX_OFFSET .. " | reset]") end
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

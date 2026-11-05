@@ -64,3 +64,22 @@ def test_unavailable_map_dimensions_are_safe_and_later_layout_recovers(client):
         Minimap:SetSize(198,198);Minimap.OnShow()
         assert(WoWStatusMinimapButton.point[4]==109)
     ''')
+
+
+@pytest.mark.parametrize('client', ['forever', 'classic-era'])
+def test_distance_can_be_adjusted_reset_and_reported(client):
+    lua = minimap_runtime(client)
+    base = lua.eval('WoWStatusMinimapButton.point[4]')
+    assert lua.eval('WoWStatusMinimap.setOffset(40)') is True
+    assert lua.eval('WoWStatusMinimapButton.point[4]') == base + 30
+    for bad in ('81', '-41', '2.5', '"x"'):
+        assert lua.eval(f'WoWStatusMinimap.setOffset({bad})') is False
+    assert lua.eval('WoWStatusDB.minimap_offset') == 40
+    report = lua.eval('WoWStatusMinimap.report()')
+    assert report.startswith(client) and 'Minimap=198x198@0.75' in report and 'offset=40' in report
+    assert 'MinimapCluster=missing' in report
+    lua.execute('WoWStatusMinimap.setOffset(nil)')
+    assert lua.eval('WoWStatusMinimapButton.point[4]') == base
+    # A corrupt saved value falls back to the default distance.
+    lua.execute('WoWStatusDB.minimap_offset=1000; Minimap.OnShow()')
+    assert lua.eval('WoWStatusMinimapButton.point[4]') == base
