@@ -134,6 +134,8 @@ local function learnName(name)
     if not character or not short or character.chat_name == short then return end
     character.chat_name = short
     if WoWStatusJournal and WoWStatusJournal.selfRenamed then WoWStatusJournal.selfRenamed() end
+    -- A list sent before this had only the first name, which members drop: send again.
+    if WoWStatusRoster and WoWStatusRoster.changed then WoWStatusRoster.changed() end
 end
 -- Whether a name (and the GUID a roster gives) is this character. The realm in
 -- a name need not match GetNormalizedRealmName: WoW Forever names its realm

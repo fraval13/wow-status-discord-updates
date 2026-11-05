@@ -228,3 +228,41 @@ def test_forever_drops_names_without_a_last_name():
         assert(names["Thora-TestRealm"] and not names["Edith-TestRealm"] and not names["Unshaved-TestRealm"])
         assert(names["Unshaved Brittlebeard-TestRealm"])
     ''')
+
+
+def test_forever_sends_its_character_list_only_with_the_full_name():
+    # Live report: many members stayed "Not announced" because their list went out
+    # with the first name only, before the full name was learnt, and never again.
+    lua = forever_runtime(extra='function UnitRace() return "Human","Human" end function UnitSex() return 3 end')
+    lua.eval('fire')('PLAYER_LOGIN')
+    lua.execute('''
+        WoWStatusGroups.announce=nil
+        WoWStatusGroups.update("dawnwatch","")
+        local group=next(character().group_ids)
+        __channelNames={WoWStatusGroups.channel(group)}
+        WoWStatusRoster.observe(character())
+        local function lists()
+            local found={}
+            for _,p in ipairs(__sent) do if p.prefix=="WoWStatusChr" and p.text:sub(1,2)=="C " then found[#found+1]=p.text end end
+            return found
+        end
+        __mono=0
+        function GetTime() return __mono end
+        local function pump() for i=1,40 do __mono=__mono+1;WoWStatusRoster.tick() end end
+        __peers={"x","y"}
+        C_ChatInfo.GetChannelRosterInfo=function(_, i)
+            local list={{"Thora Stone",UnitGUID("player")},{"Eldrin Vale","Player-2"}}
+            local item=__learn and list[i] or ({{"Eldrin Vale","Player-2"}})[i]
+            if item then return item[1],false,false,item[2] end
+        end
+        __peers={"x"}
+        WoWStatusPopups.peers(group); for _=1,3 do WoWStatusPopups.tick() end
+        pump()
+        assert(#lists()==0, "no first-name-only list")
+        __learn=true;__peers={"x","y"}
+        WoWStatusPopups.peers(group); for _=1,3 do WoWStatusPopups.tick() end
+        assert(character().chat_name=="Thora Stone")
+        pump()
+        local sent=lists()
+        assert(#sent>=1 and sent[1]:find("Thora_Stone-TestRealm",1,true), tostring(sent[1]))
+    ''')

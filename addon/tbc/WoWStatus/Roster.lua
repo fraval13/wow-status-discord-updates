@@ -107,8 +107,11 @@ local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
+        -- WoW Forever: a character whose full name is not learnt yet would arrive as
+        -- a first name only, which members drop; it is sent once the name is known.
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
-            and info.race and (info.sex == 2 or info.sex == 3) and CLASSES[info.class] and S.number(info.level) then
+            and info.race and (info.sex == 2 or info.sex == 3) and CLASSES[info.class] and S.number(info.level)
+            and WoWStatusPopups.fullName(WoWStatusPopups.characterName(c)) then
             -- A message is split on spaces; WoW Forever names have one ("Edith Aateigen").
             -- Character names cannot contain "_", so it stands for a space here.
             local name = (WoWStatusPopups.characterName(c):gsub(" ", "_"))
@@ -116,6 +119,11 @@ local function ownLines(group)
             -- XP progress goes in its own line, which older versions ignore.
             if S.number(info.xp) then table.insert(lines, table.concat({"P", group, roster.id, name, info.xp}, " ")) end
         end
+    end
+    -- The addon version, once per list; older versions ignore this line.
+    local version = WoWStatusPopups.runtimeVersion
+    if #lines > 0 and type(version) == "string" and version:match("^%d+%.%d+%.%d+$") then
+        table.insert(lines, table.concat({"V", group, roster.id, version}, " "))
     end
     table.sort(lines)
     return lines
@@ -214,6 +222,13 @@ function R.receive(message, sender, distribution)
     if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false end
     local players = state().players
     if op == "X" and #words == 3 then players[pid] = nil; R.render(); return true end
+    if op == "V" and #words == 4 then
+        local version, player = words[4], players[pid]
+        if not player or #version > 16 or not version:match("^%d+%.%d+%.%d+$") then return false end
+        player.version = version
+        R.render()
+        return true
+    end
     if op == "P" and #words == 5 then
         local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
         local permille = tonumber(words[5])
@@ -336,7 +351,7 @@ function R.groups()
         return (k and full[k]) or name
     end
     local merged, order, known = {}, {}, {}
-    local function add(title, character, self)
+    local function add(title, character, self, note)
         if not self then
             character = {name=resolve(character.name), race=character.race, sex=character.sex,
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups}
@@ -356,6 +371,7 @@ function R.groups()
         local groupKey = S.lowerASCII(title)
         local entry = merged[groupKey]
         if not entry then entry = {title=title, rows={}}; merged[groupKey] = entry; table.insert(order, entry) end
+        entry.note = entry.note or note
         local k = key(character.name)
         if not k or known[k] then return end
         known[k] = true
@@ -374,15 +390,17 @@ function R.groups()
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id then
+            local own = WoWStatusPopups.runtimeVersion
             add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
                 race=info.race, sex=info.sex, class=info.class, level=info.level, xp=info.xp, at=info.at,
-                current=c == current}, true)
+                current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
         end
     end
     for _, player in pairs(state().players) do
         for _, character in pairs(player.characters) do
             add(player.name or "Unnamed player", {name=character.name, race=character.race, sex=character.sex,
-                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups})
+                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups},
+                nil, S.string(player.version) and ("v" .. player.version) or "older version")
         end
     end
     -- Senders in the log that never announced a list.
@@ -390,7 +408,8 @@ function R.groups()
         if not e.owner and e.sender and key(e.sender) and not known[key(e.sender)] then
             local groups = {}
             for group in pairs(e.groups or {}) do groups[group] = true end
-            add("Not announced", {name=resolve(e.sender), at=e.at, groups=groups})
+            add("Not announced", {name=resolve(e.sender), at=e.at, groups=groups}, nil,
+                "older version or list sharing off")
         end
     end
     for _, entry in ipairs(order) do
@@ -444,7 +463,8 @@ function R.render()
         headers = headers + 1
         local h = page.headers[headers] or header(headers)
         h:ClearAllPoints(); h:SetPoint("TOPLEFT", 0, -y)
-        h.text:SetText(group.title:gsub("|", "||")); h:Show()
+        -- The version note stays small and grey beside the title.
+        h.text:SetText(group.title:gsub("|", "||") .. (group.note and ("   |cff808080" .. group.note .. "|r") or "")); h:Show()
         y = y + HEADER
         for _, character in ipairs(group.rows) do
             if index >= 200 then break end

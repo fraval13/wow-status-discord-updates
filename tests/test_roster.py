@@ -204,3 +204,24 @@ def test_friends_show_as_character_and_player_name():
         for _, p in pairs(WoWStatusDB.roster.players) do p.name = "mira" end
         assert(WoWStatusRoster.displayName("Mira-TestRealm") == "Mira")
     ''')
+
+
+def test_each_player_heading_notes_their_addon_version():
+    mira, thora = pair()
+    mira.execute('WoWStatusPopups.runtimeVersion = "1.11.0"')
+    sent = pump(mira, thora)
+    assert any(line.startswith('V ') and line.endswith(' 1.11.0') for line in sent)
+    groups = {g.title: g.note for g in thora.eval('WoWStatusRoster.groups()').values()}
+    assert groups['Frank (1 character)'] == 'v1.11.0'
+    # A list from a version that does not send one, and members without a list.
+    thora.execute('''
+        for _, p in pairs(WoWStatusDB.roster.players) do p.version = nil end
+        local group=next(character().group_ids)
+        WoWStatusJournal.received({sender="Bob-TestRealm",nonce="1-1-aaaa",kind="level",level=5,at=time(),group_id=group})
+    ''')
+    groups = {g.title: g.note for g in thora.eval('WoWStatusRoster.groups()').values()}
+    assert groups['Frank (1 character)'] == 'older version'
+    assert groups['Not announced (1 character)'] == 'older version or list sharing off'
+    thora.eval('SlashCmdList.WOWSTATUS')('characters')
+    assert 'older version' in thora.eval('WoWStatusCharactersPage.headers[1].text.text') or \
+        'older version' in thora.eval('WoWStatusCharactersPage.headers[2].text.text')
