@@ -138,4 +138,6 @@ jobs:
         continue-on-error: true
         env:
           RELEASE_REVISION: ${{ github.sha }}
+          # Route keys are private; each instance's optional "route" says which to check.
+          WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
         run: python scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"

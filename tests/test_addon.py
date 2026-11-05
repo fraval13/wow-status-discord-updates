@@ -1265,7 +1265,7 @@ def test_spirit_release_does_not_recount_the_same_death(lua):
 
 def test_group_updates_are_sent_while_in_combat(lua):
     # Combat holds only what is shown; holding sends let updates expire unsent.
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.execute('__combat=true')
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     lua.execute('WoWStatusPopups.tick()')
@@ -1276,8 +1276,8 @@ def test_group_updates_are_sent_while_in_combat(lua):
 
 def _group_death(lua, sender='Eldrin-TestRealm'):
     from wow_status.group_routing import group_key
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
-    channel = 'WStatus' + group_key('navsquad')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
+    channel = 'WStatus' + group_key('dawnwatch')
     assert lua.eval('WoWStatusPopups.receive')(
         'WSTATUS3 classic-era death 1793000000 death1 44696564', sender, channel)
 
@@ -1302,7 +1302,7 @@ def test_popup_waits_while_the_player_is_fighting(lua):
 def test_names_with_spaces_are_peers_for_sending_and_receiving(lua):
     # WoW Forever character names can contain spaces ("Mr Exadi").
     lua.execute('__peers={"Mr Exadi-TestRealm"}')
-    lua.eval('WoWStatusGroups.update')('navsquad', '')
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
     assert lua.eval('__sent[1].target') == 'Mr Exadi-TestRealm'
     _group_death(lua, 'Mr Exadi-TestRealm')

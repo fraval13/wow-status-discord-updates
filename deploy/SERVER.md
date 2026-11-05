@@ -56,7 +56,8 @@ in GitHub Actions logs. The server keeps them in `/etc/wow-character-status/grou
   `wow-character-<instance>`, the data directory, the `<instance>.env` file and the
   key in the Discord secret below. Use lowercase letters, digits and `-`, start with
   a letter, at most 18 characters; `build` and `deploy` are taken by the pipeline's
-  own accounts. Do not use the group name as the label.
+  own accounts. Do not use the group name as the label: labels can appear in the
+  deploy log's bot warnings.
 - `name` is the exact text members enter in WoW. The server accepts letters, digits,
   spaces, `.`, `_` and `-`, at most 80 characters, starting with a letter or digit, so
   it can go into a systemd environment file and command line unchanged.
@@ -81,10 +82,14 @@ instance labels in `groups.json`:
 
 ```json
 {
-  "group-a": {"bot_token": "...", "guild_id": "...", "channel_id": "..."},
-  "group-b": {"bot_token": "...", "guild_id": "...", "channel_id": "..."}
+  "group-a": {"bot_token": "...", "guild_id": "...", "channel_id": "...", "route": "..."},
+  "group-b": {"bot_token": "...", "guild_id": "...", "channel_id": "...", "route": "..."}
 }
 ```
+
+`route` is optional: the group's route key (`wow-status group-key "<group name>"`).
+The deploy's bot check uses it to reach that group's public `/health`. It is not sent
+to the server. The deploy log masks every token and route.
 
 One JSON secret keeps the labels out of the workflow file. Without it, a deployment
 sends no Discord settings and the server keeps the ones it already has (the deploy
@@ -206,20 +211,23 @@ name plus Discord's HTTP status and error code. A Discord failure no longer stop
 the service: ingestion and `/health` keep running, and a new bot session starts
 after 30 s, doubling to every 10 minutes. A crash in posting restarts only the
 delivery loop on the same schedule, so slash commands stay available. The deploy's
-**Report Discord bot state** step warns when a group's bot is not `ready`.
+**Report Discord bot state** step warns when a group's bot is not `ready`. Route keys
+are private, so it checks only the instances that have a `route` in
+`WOW_STATUS_DISCORD_CONFIG` (see [Discord settings](#discord-settings-when-you-have-created-the-botchats)),
+and its warnings name the instance label.
 
 ### Discord bot not connected
 
 ```sh
-curl -s http://127.0.0.1:18082/health          # navsquad; 18081 is ronkalot
-journalctl -u wow-character-status@navsquad -n 50 --no-pager | grep -i discord
+curl -s http://127.0.0.1:PORT/health          # PORT and INSTANCE from groups.json
+journalctl -u wow-character-status@INSTANCE -n 50 --no-pager | grep -i discord
 ```
 
 - `LoginFailure`: the token no longer works. Discord resets a token that is
   published (for example in a public repository) or that starts more than 1,000
   sessions in a day, and emails the bot owner. Reset it under Developer Portal >
-  Bot, put it in the group's `*_DISCORD_BOT_TOKEN` secret, then use **Re-run all
-  jobs** on the run for the tip of `main`.
+  Bot, put it in the group's `bot_token` in the `WOW_STATUS_DISCORD_CONFIG` secret,
+  then use **Re-run all jobs** on the run for the tip of `main`.
 - `Forbidden 403 50001` (Missing Access) or `NotFound 404 10004` (Unknown Guild):
   the bot was removed from the server, or the guild variable is wrong. Re-invite
   it with the `bot` and `applications.commands` scopes.
@@ -234,14 +242,14 @@ If `curl` to the local port is refused and `systemctl status` shows restarts, th
 process exits before it listens, so the cause is in its own state:
 
 ```sh
-journalctl -u wow-character-status@navsquad --since "1 hour ago" --no-pager | tail -60
+journalctl -u wow-character-status@INSTANCE --since "1 hour ago" --no-pager | tail -60
 df -h /var/lib /opt; df -i /var/lib /opt         # ENOSPC, "database or disk is full"
-fuser -v /var/lib/wow-character-navsquad/service.sqlite3.lock   # "Another process is using this database"
-find /var/lib/wow-character-navsquad ! -user wow-character-navsquad -ls   # files a root tool created
+fuser -v /var/lib/wow-character-INSTANCE/service.sqlite3.lock   # "Another process is using this database"
+find /var/lib/wow-character-INSTANCE ! -user wow-character-INSTANCE -ls   # files a root tool created
 ls /opt/wow-character-status/releases | wc -l    # every deploy, failed ones too, leaves a release
 ```
 
-Fix ownership with `chown -R wow-character-navsquad: /var/lib/wow-character-navsquad`
+Fix ownership with `chown -R wow-character-INSTANCE: /var/lib/wow-character-INSTANCE`
 after stopping the service. Old releases other than `current` can be deleted.
 
 Do not print environment files or config.json while inspecting logs. For backups,
@@ -272,7 +280,7 @@ name in `/wstatus groups`. For the companion service, as root:
    `"group-c": {"name": "<new name>", "port": <free port>}`. The receiver from this
    revision must be installed (see [private group configuration](#private-group-configuration)).
 5. If the group posts to Discord, move its entry in `WOW_STATUS_DISCORD_CONFIG` to
-   the new label.
+   the new label and set its `route` to the new route key.
 6. Deploy: push to `main`, or use **Re-run all jobs** on the run for the tip of
    `main`. The receiver writes `group-c.env`, then starts and health-checks the new service.
 7. Render, check and install the Caddyfile (see [network access](#network-access-and-home-testing)).

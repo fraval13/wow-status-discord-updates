@@ -2,21 +2,25 @@
 
 Discord settings come from one JSON repository secret, WOW_STATUS_DISCORD_CONFIG:
 
-    {"<instance>": {"bot_token": "...", "guild_id": "...", "channel_id": "..."}}
+    {"<instance>": {"bot_token": "...", "guild_id": "...", "channel_id": "...", "route": "..."}}
 
-Instances are the labels in the server's private groups.json (deploy/SERVER.md), so
+The optional route (the group's route key) is only for the post-deploy bot check
+(scripts/report_discord_state.py) and is not sent to the server. Instances are the labels in the server's private groups.json (deploy/SERVER.md), so
 no group name appears in Git or in the workflow. Without the secret the archive
 carries no Discord settings and the server keeps the ones it has.
 """
 import io
 import json
 import os
+import re
 import subprocess
 import sys
 import tarfile
 from pathlib import Path
 
 from install_release import DISCORD, INSTANCE, RESERVED, discord_value
+
+ROUTE = re.compile(r'[0-9a-f]{22}')
 
 SHAPE = ('WOW_STATUS_DISCORD_CONFIG must map each group instance to an object with '
          'bot_token, guild_id and channel_id values')
@@ -36,7 +40,7 @@ def discord_config(raw):
         raise SystemExit(SHAPE)
     result = {}
     for instance, values in config.items():
-        if not isinstance(values, dict) or not set(values) <= set(DISCORD):
+        if not isinstance(values, dict) or not set(values) <= {*DISCORD, 'route'}:
             raise SystemExit(SHAPE)
         # No label in the message: a migrated label can be an old group name, and this log is public.
         if not INSTANCE.fullmatch(instance) or instance in RESERVED:
@@ -44,6 +48,11 @@ def discord_config(raw):
                              '(lowercase letters, digits and -, see deploy/SERVER.md)')
         result[instance] = {}
         for key, value in values.items():
+            if key == 'route':  # only for the runner's post-deploy bot check; the server has it
+                if not isinstance(value, str) or not ROUTE.fullmatch(value):
+                    raise SystemExit('WOW_STATUS_DISCORD_CONFIG has an invalid route')
+                print('::add-mask::' + value)
+                continue
             # Discord IDs are often pasted as JSON numbers; the receiver expects text.
             if key != 'bot_token' and type(value) is int:
                 value = str(value)

@@ -287,7 +287,7 @@ def fetch_health(port):
 
 async def test_serve_keeps_ingestion_healthy_while_the_bot_keeps_failing(store, monkeypatch):
     """Regression for the deploys that failed after #33: a bot that died at login took
-    the navsquad service down, so the receiver's health check never passed."""
+    a group's service down, so the receiver's health check never passed."""
     monkeypatch.setenv('WOW_STATUS_REVISION', 'a' * 40)
     attempts = []
 
@@ -325,17 +325,24 @@ def report_module():
     return module
 
 
-def test_report_reads_every_production_group_route_and_name():
+def test_report_takes_routes_from_the_private_discord_secret(capsys):
     module = report_module()
-    routes = module.group_routes((ROOT / 'deploy/Caddyfile.production').read_text(encoding='utf-8'))
-    names = module.group_names((ROOT / 'deploy/install_release.py').read_text(encoding='utf-8'))
-    assert sorted(names[port] for _, port in routes) == ['navsquad', 'ronkalot']
+    raw = json.dumps({'group-b': {'bot_token': 't', 'route': 'b' * 22},
+                      'group-a': {'route': 'a' * 22}, 'group-c': {'bot_token': 't'}})
+    assert module.configured_routes(raw) == (
+        [('/groups/' + 'a' * 22, 'group-a'), ('/groups/' + 'b' * 22, 'group-b')], 1)
+    # A route key alone admits someone to the group, so each one is masked in the log.
+    assert capsys.readouterr().out.splitlines() == ['::add-mask::' + 'a' * 22, '::add-mask::' + 'b' * 22]
+    assert module.configured_routes('') == ([], 0)
+    for broken in ('{"group-a": ', '["x"]', '{"group-a": "x"}'):
+        with pytest.raises(ValueError):
+            module.configured_routes(broken)
 
 
 def test_report_waits_for_a_bot_to_settle_then_warns_only_for_broken_groups():
     module = report_module()
     routes = [('/groups/aa', '18081'), ('/groups/bb', '18082')]
-    names = {'18081': 'ronkalot', '18082': 'navsquad'}
+    names = {'18081': 'group-a', '18082': 'group-b'}
     replies = {
         '/groups/aa': iter([{'discord': 'disabled'}] * 3),
         '/groups/bb': iter([{'discord': 'starting'},
@@ -351,7 +358,7 @@ def test_report_waits_for_a_bot_to_settle_then_warns_only_for_broken_groups():
 
     warnings = module.report('https://example.test/', routes, REVISION, names, fetch=fetch,
                              attempts=3, pause=5, sleep=pauses.append)
-    assert warnings == ['navsquad: retrying LoginFailure']
+    assert warnings == ['group-b: retrying LoginFailure']
     assert pauses == [5]  # 'retrying' can't change within the window, so it stops there.
 
 
@@ -377,22 +384,18 @@ def test_report_stops_polling_once_bots_are_ready_and_flags_unreachable_or_stale
                        'checked for this one']
 
 
-def test_report_cannot_inject_workflow_commands_from_the_public_site(tmp_path, monkeypatch,
-                                                                     capsys):
+def test_report_cannot_inject_workflow_commands_from_the_public_site(monkeypatch, capsys):
     module = report_module()
-    (tmp_path / 'Caddyfile.production').write_text(
-        'handle_path /groups/aa/* {\n reverse_proxy 127.0.0.1:18081\n}\n', encoding='utf-8')
-    (tmp_path / 'install_release.py').write_text("GROUPS = {'ronkalot': 18081}\n",
-                                                 encoding='utf-8')
-    monkeypatch.setattr(module, 'DEPLOY', tmp_path)
+    monkeypatch.setenv('WOW_STATUS_DISCORD_CONFIG', json.dumps({'group-a': {'route': 'a' * 22}}))
     monkeypatch.setattr(module, 'read', lambda url: {
         'revision': REVISION, 'discord': 'retrying', 'discord_error': 'x\n::error::forged %0A'})
     monkeypatch.setattr('sys.argv', ['report', '--url', 'https://example.test',
                                      '--revision', REVISION])
     module.main()
     lines = capsys.readouterr().out.splitlines()
-    assert len(lines) == 1 and lines[0].startswith('::warning title=Discord bot not connected::')
-    assert '::error' not in lines[0] and 'ronkalot: retrying x???error??forged ?0A.' in lines[0]
+    assert lines[0] == '::add-mask::' + 'a' * 22
+    assert len(lines) == 2 and lines[1].startswith('::warning title=Discord bot not connected::')
+    assert '::error' not in lines[1] and 'group-a: retrying x???error??forged ?0A.' in lines[1]
 
 
 def test_report_flags_replies_without_a_bot_state():
@@ -408,33 +411,17 @@ def test_report_flags_replies_without_a_bot_state():
         'port 18082: health check failed (TypeError)']
 
 
-def test_report_warns_when_it_finds_no_group_routes(tmp_path, monkeypatch, capsys):
+@pytest.mark.parametrize('config, expected', [
+    ('', '::notice title=Discord bot not checked::no group routes in WOW_STATUS_DISCORD_CONFIG'),
+    ('{"group-a": {"bot_token": "t"}}', '::notice title=Discord bot not checked::1 instance(s)'),
+    ('not json', '::warning title=Discord bot not connected::WOW_STATUS_DISCORD_CONFIG is not'),
+])
+def test_report_without_routes_says_so_and_passes(monkeypatch, capsys, config, expected):
     module = report_module()
-    (tmp_path / 'Caddyfile.production').write_text('wow.example.test {\n}\n', encoding='utf-8')
-    (tmp_path / 'install_release.py').write_text("GROUPS = {}\n", encoding='utf-8')
-    monkeypatch.setattr(module, 'DEPLOY', tmp_path)
+    monkeypatch.setenv('WOW_STATUS_DISCORD_CONFIG', config)
+    monkeypatch.setattr(module, 'read', lambda url: pytest.fail('no route to check'))
     monkeypatch.setattr('sys.argv', ['report', '--url', 'https://example.test',
                                      '--revision', REVISION])
     module.main()
     output = capsys.readouterr().out
-    assert output.startswith('::warning ') and 'no group routes found' in output
-
-
-def test_report_finds_routes_whatever_comes_before_the_upstream(tmp_path, monkeypatch, capsys):
-    module = report_module()
-    caddy = ('handle_path /groups/aa/* {\n  header X-Test {\n    a b\n  }\n'
-             '  reverse_proxy 127.0.0.1:18081 {\n  }\n}\n'
-             'handle_path /groups/bb/* {\n  respond "moved" 410\n}\n')
-    assert module.group_routes(caddy) == [('/groups/aa', '18081'), ('/groups/bb', None)]
-    (tmp_path / 'Caddyfile.production').write_text(caddy, encoding='utf-8')
-    (tmp_path / 'install_release.py').write_text("GROUPS = {'ronkalot': 18081}\n",
-                                                 encoding='utf-8')
-    monkeypatch.setattr(module, 'DEPLOY', tmp_path)
-    monkeypatch.setattr(module, 'read', lambda url: {'revision': REVISION, 'discord': 'ready'})
-    monkeypatch.setattr('sys.argv', ['report', '--url', 'https://example.test',
-                                     '--revision', REVISION])
-    module.main()
-    output = capsys.readouterr().out.splitlines()
-    assert output == ['::warning title=Discord bot not connected::/groups/bb: no local upstream '
-                      'found in deploy/Caddyfile.production, not checked. Ingestion is running; '
-                      'see "Discord bot not connected" in deploy/SERVER.md.']
+    assert output.startswith(expected) and 'not json' not in output
