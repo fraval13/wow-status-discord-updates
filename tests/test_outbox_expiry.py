@@ -146,6 +146,19 @@ def test_retrying_an_expired_announcement_posts_it_on_its_own(store, payload, cl
     assert item['delivery_id'] == row and store.summary_items(item) == [item]
 
 
+def test_a_repeated_part_never_takes_back_a_retried_announcement(store, payload, clone):
+    first = summary(payload, clone, 'a' * 64, 1, 3, 11)
+    store.ingest('owner', first)
+    age_receipts(store, WEEK_AND_A_DAY)
+    store.expire_incomplete_batches()
+    row = store.db.execute("SELECT o.id FROM outbox o WHERE o.event_id='level-11'").fetchone()[0]
+    store.delivery(row, 'pending')  # wow-status resolve <id> retry
+    store.ingest('owner', first)  # The companion re-sends a part it already sent.
+    assert store.expire_incomplete_batches() == 0
+    item = store.pending()
+    assert item['delivery_id'] == row and store.summary_items(item) == [item]
+
+
 def test_community_filters_also_discard_expired_announcements(store, payload, clone):
     store.ingest('owner', summary(payload, clone, 'a' * 64, 1, 3, 11))
     age_receipts(store, WEEK_AND_A_DAY)

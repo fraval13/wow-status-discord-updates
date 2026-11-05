@@ -1,8 +1,10 @@
 """Guild-scoped commands, private linking and controlled outbox delivery."""
 import asyncio
 import logging
+import sqlite3
 import time
 
+import aiohttp
 import discord
 from discord import app_commands
 
@@ -17,14 +19,20 @@ from .weekly import WeeklyRecaps
 
 log = logging.getLogger(__name__)
 
-# An unsent post that failed in a way no handler expected is tried again after this
-# long, while the rest of the queue goes ahead (#26).
-UNEXPECTED_RETRY_SECONDS = DISCORD_RETRY_MAX
+# An unsent post that failed in a way no handler expected waits this long, doubling with
+# each further failure up to the cap, while the rest of the queue goes ahead (#26).
+SET_ASIDE_SECONDS, SET_ASIDE_MAX_SECONDS = DISCORD_RETRY_MAX, 3600
 
 
 def expected(exc):
     """Failures the delivery handlers know: Discord's replies, network errors, timeouts."""
     return isinstance(exc, (discord.HTTPException, OSError, asyncio.TimeoutError))
+
+
+def transient(exc):
+    """A failure to reach Discord that says nothing about the post itself. aiohttp's own
+    errors, such as ServerDisconnectedError, are no OSError."""
+    return expected(exc) or isinstance(exc, aiohttp.ClientError)
 
 
 class CommunityTree(app_commands.CommandTree):
@@ -58,6 +66,7 @@ class StatusBot(discord.Client):
         self.worker = None
         self.delivery_error = None
         self.paused = {}  # Report kind -> when to try it again after a failure to render.
+        self.setbacks = {}  # Post or report kind -> unexpected failures since it last posted.
         self.online = False
         self.register_commands()
 
@@ -320,12 +329,18 @@ class StatusBot(discord.Client):
         self.store.deliver_many(items, 'sending')
         return items, content
 
-    def failure(self, exc, claimed, what):
-        """How a failed post is recorded, as (status, retry delay), or None to leave it.
+    def set_aside(self, key, exc, what):
+        """Log an unexpected failure of an unsent post and return how long it waits. The
+        wait doubles each time, so a post that keeps failing costs a traceback an hour
+        instead of stopping the queue (#26). The count clears once the post goes out."""
+        count = self.setbacks[key] = self.setbacks.get(key, 0) + 1
+        delay = min(SET_ASIDE_SECONDS * 2 ** (count - 1), SET_ASIDE_MAX_SECONDS)
+        log.error('Could not post the %s (%s); trying it again in %d s while the rest of '
+                  'the queue goes ahead', what, failure_name(exc), delay, exc_info=exc)
+        return delay
 
-        Before the claim nothing was sent, so a transient error requeues the post. After
-        it, an unexplained failure may have posted the message: the supervisor's recovery
-        marks it uncertain."""
+    def failure(self, exc, claimed, what, key):
+        """How a failed post is recorded, as (status, retry delay), or None to leave it."""
         if isinstance(exc, discord.Forbidden):
             log.error('Discord denied channel access for the %s; fix permissions then '
                       'resolve it', what)
@@ -334,22 +349,26 @@ class StatusBot(discord.Client):
             return 'pending', 60
         if isinstance(exc, discord.HTTPException) and exc.status < 500:
             return 'failed', 0
-        if expected(exc):  # Discord server errors, network errors and timeouts.
-            return ('uncertain', 0) if claimed else ('pending', 60)
-        # Anything else, such as a formatting bug or a network error that is no OSError,
-        # sets an unsent post aside, so the restarted loop goes on with the next one
-        # instead of failing on the same post forever (#26).
-        return None if claimed else ('pending', UNEXPECTED_RETRY_SECONDS)
+        if claimed:
+            # The message may have posted. Anything unexplained goes to the supervisor,
+            # whose backoff keeps a lasting fault from marking the whole queue at once.
+            return ('uncertain', 0) if expected(exc) else None
+        if transient(exc):
+            return 'pending', 60  # Nothing was sent.
+        # Anything else, such as a formatting bug, sets the post aside here instead of
+        # restarting the loop, which would pick the same post again as soon as it was due.
+        return 'pending', self.set_aside(key, exc, what)
 
-    async def failed(self, exc, claimed, posted, mark, what):
-        """Record a failed post with ``mark(status, delay)``. Anything no handler expects,
-        and any failure to record a post that went out, then goes to keep_delivering,
-        which logs it, shows it on /health, recovers a claimed send and backs off."""
-        outcome = None if posted else self.failure(exc, claimed, what)
-        if outcome is not None:
-            await mark(*outcome)
-        if posted or not expected(exc):
+    async def failed(self, exc, claimed, posted, mark, what, key):
+        """Record a failed post with ``mark(status, delay)``. A store failure, anything
+        unexplained after the claim and any failure to record a post that went out go to
+        keep_delivering instead, which logs them, shows them on /health, recovers a
+        claimed send and backs off."""
+        outcome = None if posted or isinstance(exc, sqlite3.Error) else \
+            self.failure(exc, claimed, what, key)
+        if outcome is None:
             raise exc
+        await mark(*outcome)
 
     async def deliver(self):
         await self.wait_until_ready()
@@ -372,9 +391,10 @@ class StatusBot(discord.Client):
                 await asyncio.sleep(2)
                 continue
             delivery_id = item['delivery_id']
-            items = await call(self.store.summary_items, item)
-            claimed, posted = None, False
+            items, claimed, posted = [item], None, False
             try:
+                # Inside the try, so a row its summary cannot be read for is set aside too.
+                items = await call(self.store.summary_items, item) or [item]
                 channel = self.get_channel(self.channel_id) or await self.fetch_channel(self.channel_id)
                 if getattr(getattr(channel, 'guild', None), 'id', None) != self.guild_id:
                     await call(self.store.deliver_many, items, 'failed')
@@ -388,23 +408,26 @@ class StatusBot(discord.Client):
                 message = await channel.send(**content, allowed_mentions=discord.AllowedMentions.none())
                 posted = True
                 await call(self.store.deliver_many, items, 'sent', message_id=str(message.id))
+                self.setbacks.pop(delivery_id, None)
             except Exception as exc:
                 await self.failed(exc, claimed is not None, posted, lambda status, delay: call(
-                    self.store.deliver_many, items, status, delay=delay), 'announcement')
+                    self.store.deliver_many, items, status, delay=delay), 'announcement',
+                    delivery_id)
             await asyncio.sleep(1)
 
-    async def queued(self, reports):
+    async def queued(self, reports, what):
         """The next recap or status report to post, or None. Recaps are rendered while
-        they are read, before there is a row to set aside, so a failure pauses that kind
-        of report instead; otherwise the restarted loop would fail on it again before
-        posting anything else (#26)."""
+        they are read, before there is a row to set aside, so a failure to render sets
+        that whole kind aside instead (#26)."""
         if time.monotonic() < self.paused.get(reports, 0):
             return None
         try:
             return await self.store.call(reports.pending)
-        except Exception:
-            self.paused[reports] = time.monotonic() + UNEXPECTED_RETRY_SECONDS
-            raise
+        except sqlite3.Error:
+            raise  # A store failure is the supervisor's.
+        except Exception as exc:
+            self.paused[reports] = time.monotonic() + self.set_aside(reports, exc, what)
+            return None
 
     def claim_recap(self, recaps, key):
         """Refresh a recap after awaits and mark it as sending, in one store call: data
@@ -421,7 +444,7 @@ class StatusBot(discord.Client):
         if not await call(self.store.can_post):
             return
         recaps = recaps or self.recaps
-        item = await self.queued(recaps)
+        item = await self.queued(recaps, 'recap')
         if item is None:
             return
         key, current, posted = item['key'], None, False
@@ -438,9 +461,10 @@ class StatusBot(discord.Client):
                                          allowed_mentions=discord.AllowedMentions.none())
             posted = True
             await call(recaps.delivery, key, 'sent', str(message.id))
+            self.setbacks.pop(recaps, None)
         except Exception as exc:
             await self.failed(exc, current is not None, posted, lambda status, delay: call(
-                recaps.delivery, key, status, delay=delay), 'recap')
+                recaps.delivery, key, status, delay=delay), 'recap', recaps)
 
     def claim_standings(self, key, emojis):
         """Re-read the report and mark it as sending, in one store call, so a withdrawal
@@ -461,7 +485,7 @@ class StatusBot(discord.Client):
         call = self.store.call
         if not await call(self.store.can_post):
             return
-        item = await self.queued(self.standings)
+        item = await self.queued(self.standings, 'daily status report')
         if item is None:
             return
         key, pages, posted = item['key'], None, False
@@ -481,9 +505,11 @@ class StatusBot(discord.Client):
                 sent.append(str(message.id))
             posted = True
             await call(self.standings.delivery, key, 'sent', sent)
+            self.setbacks.pop(self.standings, None)
         except Exception as exc:
             await self.failed(exc, pages is not None, posted, lambda status, delay: call(
-                self.standings.delivery, key, status, delay=delay), 'daily status report')
+                self.standings.delivery, key, status, delay=delay), 'daily status report',
+                self.standings)
 
 
 def session(store, guild_id, channel_id, token):

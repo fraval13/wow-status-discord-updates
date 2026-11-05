@@ -4,6 +4,7 @@ import importlib.util
 import json
 import logging
 import socket
+import sqlite3
 import time
 import urllib.request
 import warnings
@@ -471,8 +472,7 @@ RETRYING = {'discord': 'delivery_retrying'}
 
 async def test_one_unformattable_delivery_is_set_aside_and_the_next_is_sent(store, payload,
                                                                            monkeypatch, caplog):
-    """#26: without setting it aside, the restarted loop picked the same delivery again,
-    so one bad row stopped every post."""
+    """#26: one bad row used to stop every post, since the restarted loop picked it again."""
     store.ingest('owner', payload)  # The introduction, then the level-10 announcement.
     bad, good = [row[0] for row in store.db.execute('SELECT id FROM outbox ORDER BY id')]
     original = discord_bot.announcement_message
@@ -493,12 +493,121 @@ async def test_one_unformattable_delivery_is_set_aside_and_the_next_is_sent(stor
     status, attempts, next_try = store.db.execute(
         'SELECT status,attempts,next_try FROM outbox WHERE id=?', (bad,)).fetchone()
     assert status == 'pending' and attempts == 0
-    assert next_try >= before + discord_bot.UNEXPECTED_RETRY_SECONDS
+    assert next_try >= before + discord_bot.SET_ASIDE_SECONDS
     channel.send.assert_awaited_once()
-    # The supervisor logged it, showed it on /health and backed off once.
-    assert pauses == [(30, dict(RETRYING, discord_error='KeyError'))]
+    # Logged with its traceback, while the loop itself never stopped.
     assert [r.exc_info[0] for r in caplog.records if r.exc_info] == [KeyError]
-    assert client.state() == {'discord': 'ready'}
+    assert pauses == [] and client.state() == {'discord': 'ready'}
+
+
+async def test_a_post_that_keeps_failing_waits_longer_and_never_stops_the_queue(
+        store, payload, clone, monkeypatch):
+    """#26 review: when setting a post aside also restarted the loop, the restart backoff
+    grew to 10 minutes and lined up with the post coming due again, so every restart
+    failed on it first and nothing else was ever posted."""
+    store.ingest('owner', payload)
+    bad, good = [row[0] for row in store.db.execute('SELECT id FROM outbox ORDER BY id')]
+    original = discord_bot.announcement_message
+
+    def message(store_, item, emojis):
+        if item['delivery_id'] == bad:
+            raise KeyError('formatting bug')
+        return original(store_, item, emojis)
+
+    waits, deliver_many = [], store.deliver_many
+
+    def recording(items, status, delay=0, **kwargs):
+        if status == 'pending' and any(item['delivery_id'] == bad for item in items):
+            waits.append(delay)
+        return deliver_many(items, status, delay=delay, **kwargs)
+
+    monkeypatch.setattr(discord_bot, 'announcement_message', message)
+    monkeypatch.setattr(store, 'deliver_many', recording)
+    client, _ = delivering_bot(store, monkeypatch,
+                               AsyncMock(return_value=SimpleNamespace(id=789)))
+    later = clone(payload)
+    later['exported_at'] += 1
+    later['events'] = [{'id': 'level-20', 'kind': 'level', 'at': later['exported_at'],
+                        'data': {'level': 20}}]
+    newer = []
+
+    def done():
+        if waits == [discord_bot.SET_ASIDE_SECONDS] and outbox_status(store, good) == 'sent' \
+                and not newer:
+            # Its wait has passed: it is due and first in line again, ahead of a new post.
+            with store.db:
+                store.db.execute('UPDATE outbox SET next_try=0 WHERE id=?', (bad,))
+                store.db.execute('DELETE FROM posting_cooldowns')
+            store.ingest('owner', later)
+            newer.append(store.db.execute('SELECT max(id) FROM outbox').fetchone()[0])
+            assert newer[0] > good
+        return bool(newer) and outbox_status(store, newer[0]) == 'sent'
+
+    pauses = await deliver_until(client, done, seconds=20)
+    assert waits == [600, 1200] and pauses == []
+    assert outbox_status(store, bad) == 'pending' and client.setbacks == {bad: 2}
+    # The wait keeps doubling up to an hour.
+    assert [client.set_aside('post', KeyError(), 'announcement') for _ in range(5)] == [
+        600, 1200, 2400, 3600, 3600]
+
+
+async def test_a_network_error_before_the_claim_requeues_the_post_for_a_minute(
+        store, payload, monkeypatch):
+    # aiohttp's own errors are no OSError, but say nothing about the post: nothing was
+    # sent, so it is tried again soon, without a traceback or a restart.
+    store.ingest('owner', payload)
+    first = store.pending()['delivery_id']
+    client, channel = delivering_bot(store, monkeypatch, AsyncMock())
+    client.get_channel = lambda _: None
+    client.fetch_channel = AsyncMock(side_effect=aiohttp.ServerDisconnectedError())
+    before = time.time()
+
+    def requeued():
+        return store.db.execute('SELECT next_try FROM outbox WHERE id=?',
+                                (first,)).fetchone()[0] >= before + 60
+
+    pauses = await deliver_until(client, requeued)
+    status, next_try = store.db.execute('SELECT status,next_try FROM outbox WHERE id=?',
+                                        (first,)).fetchone()
+    assert status == 'pending' and before + 60 <= next_try < before + 120
+    assert pauses == [] and client.setbacks == {}
+    channel.send.assert_not_awaited()
+
+
+async def test_a_row_whose_summary_cannot_be_read_is_set_aside(store, payload, monkeypatch):
+    store.ingest('owner', payload)
+    bad, good = [row[0] for row in store.db.execute('SELECT id FROM outbox ORDER BY id')]
+    original = store.summary_items
+
+    def summary_items(item):
+        if item['delivery_id'] == bad:
+            raise KeyError('settings from an older version')
+        return original(item)
+
+    monkeypatch.setattr(store, 'summary_items', summary_items)
+    client, _ = delivering_bot(store, monkeypatch, AsyncMock(return_value=SimpleNamespace(id=7)))
+    pauses = await deliver_until(client, lambda: outbox_status(store, good) == 'sent')
+    assert outbox_status(store, bad) == 'pending' and pauses == []
+    assert client.setbacks == {bad: 1}
+
+
+async def test_a_store_failure_before_the_claim_goes_to_the_supervisor(store, payload,
+                                                                      monkeypatch):
+    # A locked database is no fault of the post: nothing is set aside or logged as one.
+    store.ingest('owner', payload)
+    first = store.pending()['delivery_id']
+    client, _ = delivering_bot(store, monkeypatch, AsyncMock(return_value=SimpleNamespace(id=7)))
+    original, failures = client.claim, [sqlite3.OperationalError('database is locked')]
+
+    def claim(*args):
+        if failures:
+            raise failures.pop()
+        return original(*args)
+
+    monkeypatch.setattr(client, 'claim', claim)
+    pauses = await deliver_until(client, lambda: outbox_status(store, first) == 'sent')
+    assert pauses == [(30, dict(RETRYING, discord_error='OperationalError'))]
+    assert client.setbacks == {}
 
 
 async def test_an_unexpected_error_during_the_send_backs_off_and_marks_it_uncertain(
@@ -559,11 +668,11 @@ class FakeReports:
         pass
 
 
-RETRY = discord_bot.UNEXPECTED_RETRY_SECONDS
+RETRY = discord_bot.SET_ASIDE_SECONDS
 
 
 @pytest.mark.parametrize('error,stage,expected,raised', [
-    (RuntimeError('formatting bug'), 'claim', [('pending', RETRY)], True),
+    (RuntimeError('formatting bug'), 'claim', [('pending', RETRY)], False),
     (RuntimeError('unexpected'), 'send', [], True),  # Left sending, for the supervisor.
     (asyncio.TimeoutError(), 'claim', [('pending', 60)], False),  # Nothing was sent.
     (asyncio.TimeoutError(), 'send', [('uncertain', 0)], False),
@@ -607,7 +716,7 @@ async def test_a_recap_that_cannot_render_pauses_only_that_kind(store, payload, 
     broken = FakeReports(broken=KeyError('bad digest'))
     monkeypatch.setattr(client, 'recaps', broken)
     first = store.pending()['delivery_id']
-    # The loop reads recaps before announcements, so without the pause it never got past.
+    # The loop reads recaps before announcements, so a crash there stopped every post.
     pauses = await deliver_until(client, lambda: outbox_status(store, first) == 'sent')
-    assert broken.reads == 1 and broken.states == []
-    assert pauses == [(30, dict(RETRYING, discord_error='KeyError'))]
+    assert broken.reads == 1 and broken.states == [] and pauses == []
+    assert client.setbacks == {broken: 1}

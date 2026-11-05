@@ -544,10 +544,13 @@ class Store:
                                         [(row['id'],) for row in revived])
                     rebuild |= any(row['character'] == cid for row in revived)
                     revived_elsewhere = {row['character'] for row in revived} - {cid}
-                # A newer complete export also absorbs any older unsent backlog for
-                # this character, including legacy per-event and incomplete batches.
-                self.db.execute("""INSERT OR REPLACE INTO outbox_batches(delivery,owner,batch)
-                    SELECT id,?,? FROM outbox WHERE character=? AND status='pending'""", (owner, batch, cid))
+                    # A newer complete export also absorbs any older unsent backlog for
+                    # this character, including legacy per-event and incomplete batches.
+                    # A repeated part moves nothing: it would take an announcement retried
+                    # on its own back into its stalled export.
+                    self.db.execute("""INSERT OR REPLACE INTO outbox_batches(delivery,owner,batch)
+                        SELECT id,?,? FROM outbox WHERE character=? AND status='pending'""",
+                        (owner, batch, cid))
                 rebuild |= self.db.execute(
                     "UPDATE digest_parts SET status='discarded' WHERE character=? AND status='pending'",
                     (cid,)).rowcount > 0
@@ -798,7 +801,9 @@ class Store:
         return decorate(self, item)
 
     def summary_items(self, item):
-        """All still-permitted rows in this completed account export; never split it into messages."""
+        """All still-permitted rows in this completed account export that are due; never
+        split it into messages. A row set aside after a failure keeps its own wait even
+        when a newer export absorbs it (#26)."""
         if item['settings'].get('discord_delivery') != 'summary':
             return [item]
         batch = self.db.execute('SELECT owner,batch FROM outbox_batches WHERE delivery=?',
@@ -809,7 +814,8 @@ class Store:
             FROM outbox_batches b JOIN outbox o ON o.id=b.delivery
             JOIN characters c ON c.id=o.character JOIN events e ON e.character=c.id AND e.id=o.event_id
             WHERE b.owner=? AND b.batch=? AND o.status='pending' AND e.suppressed=0
-            ORDER BY c.id,e.at,o.id""", (batch['owner'], batch['batch'])).fetchall()
+            AND o.next_try<=? ORDER BY c.id,e.at,o.id""",
+            (batch['owner'], batch['batch'], time.time())).fetchall()
         from .people import decorate
         values = []
         for row in rows:

@@ -1,4 +1,5 @@
 import asyncio
+import time
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
@@ -172,3 +173,22 @@ def test_a_batch_that_changes_its_part_count_is_refused_with_a_conflict(store, p
         store.ingest('owner', summary(payload, clone, part, 3))
     items = store.summary_items(store.pending())
     assert sum(item['kind'] == 'level' for item in items) == 3
+
+
+def test_a_summary_set_aside_after_a_failure_keeps_its_wait_in_a_newer_export(store, payload,
+                                                                             clone):
+    # #26: a newer export absorbs the character's queued rows, but rows set aside after a
+    # failed post keep their own wait instead of failing the new summary with them.
+    store.ingest('owner', summary(payload, clone, 1, 1))
+    old = store.summary_items(store.pending())
+    store.deliver_many(old, 'pending', delay=600)
+    assert store.pending() is None
+    newer = summary(payload, clone, 1, 1)
+    newer.update(upload_batch='b' * 64, exported_at=newer['exported_at'] + 1)
+    newer['events'][0].update(id='level-5', data={'level': 6})
+    store.ingest('owner', newer)
+    items = store.summary_items(store.pending())
+    assert [item['event_id'] for item in items] == ['level-5']
+    waiting = store.db.execute('SELECT count(*) FROM outbox WHERE status=? AND next_try>?',
+                               ('pending', time.time())).fetchone()[0]
+    assert waiting == len(old)

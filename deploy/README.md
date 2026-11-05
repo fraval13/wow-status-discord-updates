@@ -79,11 +79,12 @@ and request errors become `failed`. Discord's library handles rate limits; a
 surfaced 429 is requeued. This prevents blind duplicate retries after an ambiguous
 send. Exactly-once delivery across a network failure is not guaranteed. A network
 or server error before the message was sent only requeues it for a minute. Any other
-error is logged with its traceback, shown on `/health` as `delivery_retrying`, and
-delivery restarts after a backoff. A post that failed before sending is set aside for
-10 minutes, so the restart goes on with the next one; once its message may have been
-sent it becomes `uncertain`. A recap that fails to render pauses that kind of recap
-for 10 minutes.
+error before the send, such as a formatting bug, is logged with its traceback and sets
+that post aside for 10 minutes, doubling each time it fails again up to an hour,
+while the rest of the queue goes ahead. A recap that fails to render sets that kind of
+recap aside the same way. An unexplained error once the message may have been sent,
+or a database error, is shown on `/health` as `delivery_retrying` and delivery
+restarts after a backoff; an interrupted send becomes `uncertain`.
 
 A summary export whose remaining parts stop arriving for a week becomes `expired`, so
 it no longer waits in the queue. Its events stay in the character's history, and the
