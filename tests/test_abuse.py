@@ -299,11 +299,22 @@ def test_any_cut_of_escaped_text_keeps_backslashes_paired():
         assert (len(cut) - len(cut.rstrip('\\'))) % 2 == 0
 
 
-@pytest.mark.parametrize('value,limit', [('x' * 66 + '@everyone', 67), ('x' * 59 + ' https://e.x', 66)])
+@pytest.mark.parametrize('value,limit', [('x' * 66 + '@everyone', 67), ('x' * 59 + ' https://e.x', 66),
+                                         ('x' * 66 + '<#123>', 67)])
 def test_truncation_never_keeps_a_character_without_its_guard(value, limit):
     output = safe(value, limit)
-    assert not output.endswith(('@', ':'))
+    assert not output.endswith(('@', ':', '<'))
     assert len(output) < limit
+
+
+@pytest.mark.parametrize('token', [
+    '<#123456789012345678>', '</status:123456789012345678>', '<t:1700000000:R>',
+    '<t:1700000000>', '<:wow_mage:123>', '<a:dance:123>', '<@&123>', '<@!123>', '<id:customize>'])
+def test_user_text_cannot_render_discord_angle_bracket_tokens(token):
+    # #26: channel, command and timestamp tokens rendered; mentions were already blocked.
+    output = safe(f'Thora {token} done')
+    assert token not in output
+    assert output.count('<\u200b') == output.count('<') == 1
 
 
 def test_fit_lines_keeps_whole_lines_so_spoilers_stay_closed():

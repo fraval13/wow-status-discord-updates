@@ -1,6 +1,9 @@
 import asyncio
+import time
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
+
+import pytest
 
 from wow_status.discord_bot import StatusBot
 from wow_status.output import upload_summary
@@ -155,3 +158,37 @@ def test_status_change_honors_event_preferences(store, payload, clone):
     p['settings']['announcements']['level'] = False
     store.ingest('owner', p)
     assert store.pending() is None
+
+
+def test_a_batch_that_changes_its_part_count_is_refused_with_a_conflict(store, payload, clone):
+    # #26: the 409 for a batch whose part total changed had no test.
+    from wow_status.store import Conflict
+    store.ingest('owner', summary(payload, clone, 1, 3))
+    with pytest.raises(Conflict, match='Upload batch changed'):
+        store.ingest('owner', summary(payload, clone, 2, 2))
+    # The refused part stored nothing, and the original batch still completes.
+    assert store.db.execute("SELECT count(*) FROM events WHERE id='level-2'").fetchone()[0] == 0
+    assert store.db.execute('SELECT count(*) FROM upload_receipts').fetchone()[0] == 1
+    for part in (2, 3):
+        store.ingest('owner', summary(payload, clone, part, 3))
+    items = store.summary_items(store.pending())
+    assert sum(item['kind'] == 'level' for item in items) == 3
+
+
+def test_a_summary_set_aside_after_a_failure_keeps_its_wait_in_a_newer_export(store, payload,
+                                                                             clone):
+    # #26: a newer export absorbs the character's queued rows, but rows set aside after a
+    # failed post keep their own wait instead of failing the new summary with them.
+    store.ingest('owner', summary(payload, clone, 1, 1))
+    old = store.summary_items(store.pending())
+    store.deliver_many(old, 'pending', delay=600)
+    assert store.pending() is None
+    newer = summary(payload, clone, 1, 1)
+    newer.update(upload_batch='b' * 64, exported_at=newer['exported_at'] + 1)
+    newer['events'][0].update(id='level-5', data={'level': 6})
+    store.ingest('owner', newer)
+    items = store.summary_items(store.pending())
+    assert [item['event_id'] for item in items] == ['level-5']
+    waiting = store.db.execute('SELECT count(*) FROM outbox WHERE status=? AND next_try>?',
+                               ('pending', time.time())).fetchone()[0]
+    assert waiting == len(old)

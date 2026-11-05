@@ -21,19 +21,23 @@ def safe(value, limit=500):
     """Escape user text for Discord and cut it to at most `limit` characters.
 
     The cut keeps escape pairs whole and never keeps a character whose zero-width-space
-    guard was cut off, so a bare `@` or `scheme:` cannot meet the text that follows.
+    guard was cut off, so a bare `@`, `<` or `scheme:` cannot meet the text that follows.
     """
     text = str(value)
     text = re.sub(r'\|c[0-9a-fA-F]{8}|\|r', '', text)
     text = re.sub(r'\|H[^|]+\|h(.*?)\|h', r'\1', text)
     text = text.replace('@', '@\u200b')
+    # A guard after every `<` breaks each `<…>` token Discord renders: channels `<#id>`,
+    # commands `</name:id>`, timestamps `<t:…>`, custom emoji and mentions (#26).
+    text = text.replace('<', '<\u200b')
     # Keep raw evidence in JSON, but user text cannot create clickable URLs/invites.
     text = re.sub(r'(?i)\b([a-z][a-z0-9+.-]{1,31}):(?=//)', r'\1:​', text)
     text = re.sub(r'(?i)\b(www|discord|discordapp)\.', r'\1​.', text)
     text = re.sub(r'([\\`*_~|>\[\]])', r'\\\1', text)
     cut = clip(text, limit)
-    # The guards put U+200B after `@` and `scheme:`; `www` before its dot is harmless alone.
-    if text[len(cut):len(cut) + 1] == '\u200b' and cut.endswith(('@', ':')):
+    # The guards put U+200B after `@`, `<` and `scheme:`; `www` before its dot is harmless
+    # alone.
+    if text[len(cut):len(cut) + 1] == '\u200b' and cut.endswith(('@', '<', ':')):
         cut = cut[:-1]
     return cut
 

@@ -11,11 +11,17 @@ class FileLock:
     def __enter__(self):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.stream = self.path.open('a+b')
-        self.stream.seek(0)
-        if self.stream.read(1) == b'':
-            self.stream.write(b'0')
-            self.stream.flush()
-        self.stream.seek(0)
+        try:
+            # The size comes from a seek, not a read: Windows refuses to read a byte that
+            # another handle has locked, which failed here before reaching the lock (#26).
+            if self.stream.seek(0, os.SEEK_END) == 0:
+                self.stream.write(b'0')  # Windows locks a byte, so the file needs one.
+                self.stream.flush()
+            self.stream.seek(0)
+        except OSError:
+            self.stream.close()  # A real I/O error, such as a full disk: shown as it is.
+            self.stream = None
+            raise
         try:
             if os.name == 'nt':
                 import msvcrt

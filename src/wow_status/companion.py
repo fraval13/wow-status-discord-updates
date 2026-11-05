@@ -43,7 +43,9 @@ def scoped_claim_secret(payload, url):
 WRITE_BATCH = 1 << 20
 
 
-def atomic_json(path, data):
+def atomic_json(path, data, durable=True):
+    """Replace ``path`` with ``data`` as JSON in one rename. ``durable`` syncs the file to
+    disk first; only a file rebuilt from elsewhere after a crash may skip it."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     temp = path.with_suffix('.tmp')
@@ -62,6 +64,12 @@ def atomic_json(path, data):
                 stream.write(''.join(batch))
                 batch, size = [], 0
         stream.write(''.join(batch))
+        if durable:
+            # On disk before the rename. Otherwise a crash or power cut soon after can
+            # leave the name pointing at an empty or partial file, losing the credentials
+            # or state it replaced (#26). A lost rename only keeps the previous whole file.
+            stream.flush()
+            os.fsync(stream.fileno())
     os.replace(temp, path)
     if os.name != 'nt':
         path.chmod(0o600)

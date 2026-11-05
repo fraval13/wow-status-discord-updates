@@ -138,6 +138,27 @@ def test_status_card_is_cumulative_tidy_and_uses_custom_faction_and_class_emojis
     assert not any('Player' in field.name for field in hidden.fields)
 
 
+def test_status_card_title_fits_discords_256_character_limit():
+    # #26: a 120-character name escapes to 240 characters; with a custom class emoji the
+    # title passed 256 and Discord rejected the whole summary message.
+    import json
+    from pathlib import Path
+
+    from wow_status.output import upload_summary
+    item = json.loads((Path(__file__).parent/'fixtures/status_preview.json').read_text(encoding='utf-8'))
+    icon = '<:wow_warlock:' + '1' * 20 + '>'
+    # The last name is cut inside an escape pair, at an odd offset.
+    for name in ('*' * 120, '@' * 120, 'a' + '*' * 119):
+        item['identity']['name'] = name
+        card = upload_summary([item], {'wow_warlock': icon}, preview=True)['embeds'][0]
+        assert len(card.title) <= 256 and card.title.startswith(icon + ' ')
+        assert (len(card.title) - len(card.title.rstrip('\\'))) % 2 == 0  # no dangling escape
+        assert not card.title.endswith('@')  # never without its guard
+    item['identity']['name'] = 'Previewlock'
+    card = upload_summary([item], {'wow_warlock': icon}, preview=True)['embeds'][0]
+    assert card.title == icon + ' Previewlock'
+
+
 def test_status_metrics_and_skill_ranks_are_filtered_with_profile_privacy():
     import json
     from pathlib import Path
