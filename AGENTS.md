@@ -55,7 +55,8 @@ be checked against Git and the environment rather than assumed permanently true.
   fills website versions/sizes and publishes a checksummed release manifest.
   Each ZIP holds only the TOC, the files it lists and `Textures/*.tga`; other
   committed files are skipped. The build fails unless all four TOC versions
-  equal the `pyproject.toml` version.
+  equal the `pyproject.toml` version. Each build replaces its output folder as a
+  whole, so no file of an earlier build survives.
 - `.github/workflows/checks.yml`: Linux/Windows checks, packaging, deployment and
   public verification on `main` pushes; also supports manual dispatch.
   `scripts/verify_homepage.py` compares the live site with the locally built
@@ -153,7 +154,7 @@ build with `PYTHONWARNDEFAULTENCODING=1` and `PYTHONWARNINGS=error::EncodingWarn
 so any such call on a tested path fails, including in scripts that tests start as
 subprocesses. `tests/test_text_encoding.py` also scans `src/`, `scripts/`, `deploy/`
 and `tests/` statically for the common forms; it cannot see code inside string
-literals such as the remote script in `deploy/publish_homepage.py`. Reproduce locally
+literals. Reproduce locally
 with `LC_ALL=C PYTHONWARNDEFAULTENCODING=1 PYTHONWARNINGS=error::EncodingWarning
 python -X utf8=0 -m pytest -q`.
 
@@ -172,16 +173,17 @@ files before replacing a local game installation; keep account groups/logs intac
 See `website/README.md` and `deploy/SERVER.md` before publishing. Commit intended
 addon source first: builds read addon files from Git, not the working tree;
 website assets come from the working tree. Verify precisely what will ship.
-Use a fresh output directory when deleting assets: the builder merges into an
-existing output directory and does NOT remove stale files.
+The builder builds into a new folder and swaps it in only when complete, so a
+rebuild drops deleted assets and a failed build leaves the earlier one in place.
+It refuses an existing `--output` folder that is not an earlier build.
 
 ```sh
 python scripts/build_homepage.py --addon-ref <full-commit-sha> --output dist/homepage-clean
 python -m http.server 4173 --directory dist/homepage-clean --bind 127.0.0.1
 ```
 
-The default publisher expects `dist/homepage` (see its CLI for other options).
-For a default build, ensure that output is fresh before generating it. Final
+The default publisher expects `dist/homepage` (see its CLI for other options), built
+for the checkout's `HEAD` with `website/` and the builder committed. Final
 ZIPs must contain top-level `WoWStatus/` and all TOC-listed files. All four versions
 must match. `downloads/release.json` records source revision and checksums; website
 version and size labels are generated, not maintained manually. Update meaningful
@@ -209,10 +211,16 @@ python scripts/verify_homepage.py --url https://wow.frankvalde.com \
   --manifest dist/homepage/downloads/release.json
 ```
 
-The publisher renders the Caddyfile's group routes from the server's private
-`groups.json` (`--dry-run` shows the Caddy diff and changes nothing), validates
-Caddy, atomically switches the static-site symlink and reloads Caddy, retaining
-previous releases for rollback. Website-only publishing
+Before contacting the host, the publisher refuses a build of another revision,
+uncommitted or untracked `website/` or builder files, a ZIP that does not match its
+`release.json` checksum, and any stale, missing or changed file compared with a
+fresh build it makes itself; it uploads that fresh build (issue #19). It renders the
+Caddyfile's group routes from the committed template and the server's private
+`groups.json` (`--dry-run` shows the Caddy diff and changes nothing). On the server,
+`deploy/install_homepage.py` checks the upload's checksum, validates the candidate
+Caddyfile outside the web root, atomically switches the static-site symlink and
+reloads Caddy, retaining previous releases for rollback; a failure removes the
+partial release and the upload. Website-only publishing
 does not require restarting companion services. Verify public assets/downloads
 and existing group health routes after deployment. Do not touch unrelated
 `wow-forever-news` or `wow-forever-qa` services.

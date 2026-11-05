@@ -3,6 +3,8 @@
 Usage: python scripts/build_homepage.py [--addon-ref HEAD] [--output dist/homepage]
 The website source comes from the workspace; addon downloads come only from Git,
 so an unfinished local addon change can never leak into a public download.
+Each build replaces the output folder as a whole: no file of an earlier build
+survives, and an existing folder that is not an earlier build is refused.
 """
 import argparse
 import hashlib
@@ -12,6 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
+import tempfile
 import tomllib
 import zipfile
 from pathlib import Path
@@ -74,9 +77,75 @@ def release_notes(root, revision, version):
     raise ValueError(f'CHANGELOG.md has no notes for {version}; the release pull request adds them')
 
 
+def replaceable(output):
+    """Raise unless output is absent, empty or an earlier build, the only folders a build replaces."""
+    if output.is_symlink() or output.exists() and not (output.is_dir() and (
+            not any(output.iterdir()) or (output / 'downloads/release.json').is_file())):
+        raise ValueError(f'{output} is not an earlier homepage build; choose a new or empty --output folder')
+
+
+def replace_output(staging, output):
+    """Put the finished build at output in place of any earlier build."""
+    if not output.exists():
+        staging.rename(output)
+        return
+    # Windows can't rename onto an existing folder, so the earlier build moves aside first.
+    aside = Path(tempfile.mkdtemp(prefix=f'.{output.name}-old-', dir=output.parent))
+    output.rename(aside / 'build')
+    try:
+        staging.rename(output)
+    except BaseException:
+        (aside / 'build').rename(output)
+        raise
+    finally:
+        shutil.rmtree(aside, ignore_errors=True)
+
+
+def write_site(root, output, revision, editions, version, notes):
+    """Write the website and the four ZIPs into the new, empty folder output."""
+    for source in (root / 'website').iterdir():
+        if source.name in {'README.md', 'ARTWORK.md'}:
+            continue
+        destination = output / source.name
+        if source.is_dir():
+            shutil.copytree(source, destination)
+        else:
+            shutil.copy2(source, destination)
+    downloads = output / 'downloads'
+    downloads.mkdir(exist_ok=True)
+    releases = {}
+    for edition, (files, edition_version) in editions.items():
+        folder = f'addon/{edition}/WoWStatus/'
+        archive = downloads / f'WoWStatus-{edition}.zip'
+        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
+            for file in files:
+                # Stable timestamps keep repeated builds byte-identical.
+                info = zipfile.ZipInfo(f'WoWStatus/{file}', date_time=(2026, 1, 1, 0, 0, 0))
+                info.compress_type = zipfile.ZIP_DEFLATED
+                info.external_attr = 0o100644 << 16
+                package.writestr(info, git(root, 'show', f'{revision}:{folder}{file}'))
+        with zipfile.ZipFile(archive) as package:
+            if package.testzip() is not None:
+                raise ValueError(f'Broken archive: {archive}')
+        releases[edition] = {'version': edition_version, 'file': archive.name,
+                             'bytes': archive.stat().st_size,
+                             'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
+    html = (output / 'index.html').read_text(encoding='utf-8')
+    html = html.replace('__VERSION__', version)
+    html = html.replace('__WHATS_NEW__', ''.join(f'<li>{html_text.escape(note)}</li>' for note in notes))
+    for edition, release in releases.items():
+        html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
+    if re.search(r'__[A-Z_]+__', html):
+        raise ValueError('Unresolved homepage placeholder')
+    (output / 'index.html').write_text(html, encoding='utf-8')
+    (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
+
+
 def build(root, output, addon_ref):
     revision = git(root, 'rev-parse', '--verify', f'{addon_ref}^{{commit}}').decode().strip()
-    # Check every edition before writing anything, so a failed build leaves the output untouched.
+    output = Path(output)
+    replaceable(output)
+    # Check every edition before writing anything.
     editions = {}
     for edition in EDITIONS:
         folder = f'addon/{edition}/WoWStatus/'
@@ -107,43 +176,18 @@ def build(root, output, addon_ref):
         found = ', '.join(f'{edition} {version}' for edition, (_, version) in editions.items())
         raise ValueError(f'Addon TOC versions ({found}) must all equal pyproject.toml version {expected}')
     notes = release_notes(root, revision, expected)
-    output.mkdir(parents=True, exist_ok=True)
-    for source in (root / 'website').iterdir():
-        if source.name in {'README.md', 'ARTWORK.md'}:
-            continue
-        destination = output / source.name
-        if source.is_dir():
-            shutil.copytree(source, destination, dirs_exist_ok=True)
-        else:
-            shutil.copy2(source, destination)
-    downloads = output / 'downloads'
-    downloads.mkdir(exist_ok=True)
-    releases = {}
-    for edition, (files, version) in editions.items():
-        folder = f'addon/{edition}/WoWStatus/'
-        archive = downloads / f'WoWStatus-{edition}.zip'
-        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
-            for file in files:
-                # Stable timestamps keep repeated builds byte-identical.
-                info = zipfile.ZipInfo(f'WoWStatus/{file}', date_time=(2026, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o100644 << 16
-                package.writestr(info, git(root, 'show', f'{revision}:{folder}{file}'))
-        with zipfile.ZipFile(archive) as package:
-            if package.testzip() is not None:
-                raise ValueError(f'Broken archive: {archive}')
-        releases[edition] = {'version': version, 'file': archive.name,
-                             'bytes': archive.stat().st_size,
-                             'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
-    html = (output / 'index.html').read_text(encoding='utf-8')
-    html = html.replace('__VERSION__', expected)
-    html = html.replace('__WHATS_NEW__', ''.join(f'<li>{html_text.escape(note)}</li>' for note in notes))
-    for edition, release in releases.items():
-        html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
-    if re.search(r'__[A-Z_]+__', html):
-        raise ValueError('Unresolved homepage placeholder')
-    (output / 'index.html').write_text(html, encoding='utf-8')
-    (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
+    # Build in a new folder beside the output and swap it in only when complete, so a
+    # failed build leaves the earlier one untouched and no stale asset or old ZIP of an
+    # earlier build survives a rebuild (issue #19).
+    output.parent.mkdir(parents=True, exist_ok=True)
+    staging = Path(tempfile.mkdtemp(prefix=f'.{output.name}-', dir=output.parent))
+    try:
+        staging.chmod(0o755)  # mkdtemp's private mode would otherwise become the site folder's
+        write_site(root, staging, revision, editions, expected, notes)
+        replace_output(staging, output)
+    except BaseException:
+        shutil.rmtree(staging, ignore_errors=True)
+        raise
     print(f'Homepage built at {output}; addon {expected} ({revision[:7]})')
 
 

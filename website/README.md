@@ -18,6 +18,9 @@ left out, and a TOC-listed file that is not committed fails the build. The build
 also fails unless all four TOC versions equal the `pyproject.toml` version. Addon
 files always come from the specified committed Git revision. Uncommitted addon
 edits are excluded.
+Each build replaces the output folder as a whole, so a deleted asset or an old ZIP
+never survives a rebuild, and a failed build leaves the earlier one in place. The
+builder refuses an existing `--output` folder that is not an earlier build.
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 
@@ -30,10 +33,24 @@ still return 404. No application restart or player database changes are needed.
 
 Use `python deploy/publish_homepage.py --host root@193.243.189.202` after building.
 This requires ordinary authorized SSH access (for the current session, use
-`SSH_AUTH_SOCK=/tmp/wow-forever-deploy-agent.sock`). It uploads a new static release,
-validates Caddy, switches the symlink and gracefully reloads Caddy. The previous
-configuration and release stay available for rollback. See the script for the
-exact maintenance steps. It reads the server's private `groups.json` to render the
+`SSH_AUTH_SOCK=/tmp/wow-forever-deploy-agent.sock`). Before contacting the server it
+checks the build folder and refuses to publish when:
+
+- `downloads/release.json` names another revision than the checkout's `HEAD`;
+- `website/`, `scripts/build_homepage.py` or `scripts/whats_new.py` has uncommitted,
+  untracked or ignored files, which the build copies from the working tree;
+- a ZIP does not match its size and SHA-256 in `release.json`;
+- any file is stale, missing or different compared with a fresh build it makes
+  itself. It uploads that fresh build.
+
+The Caddyfile is rendered from the committed `deploy/Caddyfile.production.template`,
+never from an uncommitted edit. On the server, `deploy/install_homepage.py` checks
+the upload's SHA-256 and the live Caddyfile, extracts the new static release,
+validates the candidate Caddyfile outside the web root, switches the symlink and
+gracefully reloads Caddy. A failure removes the partial release and the upload; one
+after the switch first restores the previous site and Caddyfile. The previous
+configuration and release stay available for rollback. It reads the server's
+private `groups.json` to render the
 group routes (never the Discord settings) and refuses to change the live routes.
 `--dry-run` prints the Caddy change without uploading anything; that output holds
 the group route keys, so keep it private.

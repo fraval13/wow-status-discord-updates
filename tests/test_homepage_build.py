@@ -109,7 +109,7 @@ def test_a_toc_listed_file_must_be_committed(addon_repo, tmp_path):
     git(addon_repo, 'rm', '-q', 'addon/tbc/WoWStatus/Popups.lua')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='tbc: Missing addon file: Popups.lua'):
-        builder.build(addon_repo, tmp_path, 'HEAD')
+        builder.build(addon_repo, tmp_path / 'site', 'HEAD')
 
 
 @pytest.mark.parametrize('variant', ['bom', 'crlf'])
@@ -119,33 +119,33 @@ def test_a_toc_with_a_bom_or_crlf_fails_clearly(addon_repo, tmp_path, variant):
     data = b'\xef\xbb\xbf' + data if variant == 'bom' else data.replace(b'\n', b'\r\n')
     commit(addon_repo, {toc: data})
     with pytest.raises(ValueError, match='retail TOC must be saved without a BOM and with LF'):
-        builder.build(addon_repo, tmp_path, 'HEAD')
+        builder.build(addon_repo, tmp_path / 'site', 'HEAD')
 
 
 def test_a_missing_toc_fails_clearly(addon_repo, tmp_path):
     git(addon_repo, 'rm', '-q', 'addon/forever/WoWStatus/WoWStatus.toc')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='No forever TOC'):
-        builder.build(addon_repo, tmp_path, 'HEAD')
+        builder.build(addon_repo, tmp_path / 'site', 'HEAD')
 
 
 def test_textures_that_differ_only_by_case_fail(addon_repo, tmp_path):
     commit(addon_repo, {'addon/tbc/WoWStatus/Textures/logo.TGA': b'\0'})
     with pytest.raises(ValueError, match='tbc: Addon files differ only by case: Textures/Logo.tga, Textures/logo.TGA'):
-        builder.build(addon_repo, tmp_path, 'HEAD')
+        builder.build(addon_repo, tmp_path / 'site', 'HEAD')
 
 
 def test_a_revision_without_pyproject_fails_clearly(addon_repo, tmp_path):
     git(addon_repo, 'rm', '-q', 'pyproject.toml')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='No pyproject.toml project version'):
-        builder.build(addon_repo, tmp_path, 'HEAD')
+        builder.build(addon_repo, tmp_path / 'site', 'HEAD')
 
 
 def test_non_ascii_texture_names_ship(addon_repo, tmp_path):
     commit(addon_repo, {'addon/vanilla/WoWStatus/Textures/Æsir.tga': b'\0'})
-    builder.build(addon_repo, tmp_path, 'HEAD')
-    assert 'WoWStatus/Textures/Æsir.tga' in zip_names(tmp_path, 'vanilla')
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    assert 'WoWStatus/Textures/Æsir.tga' in zip_names(tmp_path / 'site', 'vanilla')
 
 
 def test_package_files_reads_toc_paths_and_allowlisted_textures():
