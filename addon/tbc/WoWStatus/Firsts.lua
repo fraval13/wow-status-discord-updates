@@ -42,11 +42,13 @@ function F.medals()
 end
 
 -- Medal key -> winning entry. Ties: earlier time, then the smaller event ID.
-function F.compute(entries)
+-- With a group, only entries shared in that group count: each group has its own records.
+function F.compute(entries, group)
     local sorted = {}
     for _, e in ipairs(entries or {}) do
         -- Imported pre-installation history is local only, so peers' logs would disagree.
         if type(e) == "table" and type(e.at) == "number" and type(e.id) == "string" and not e.imported
+            and (not group or (type(e.groups) == "table" and e.groups[group]))
             and (not WoWStatusJournal.visible or WoWStatusJournal.visible(e)) then
             table.insert(sorted, e)
         end
@@ -97,10 +99,50 @@ local function card(index)
     return c
 end
 
+-- The selected group tab, kept when it still exists.
+local function selectedGroup(groups)
+    local data = state() or {}
+    for _, group in ipairs(groups) do if group.id == data.tab then return group end end
+    return groups[1]
+end
+local function tabs(groups, chosen)
+    local UI = WoWStatusUI
+    page.tabs = page.tabs or {}
+    for i, group in ipairs(groups) do
+        local tab = page.tabs[i]
+        if not tab then
+            tab = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+            tab:SetSize(128, 24)
+            tab:SetScript("OnClick", function(self)
+                local data = state()
+                if data then data.tab = self.group end
+                F.render()
+            end)
+            page.tabs[i] = tab
+        end
+        tab:ClearAllPoints(); tab:SetPoint("TOPLEFT", 24 + ((i - 1) % 5) * 134, -4 - math.floor((i - 1) / 5) * 28)
+        tab.group = group.id
+        tab:SetText(group.label)
+        UI.call(tab, "SetEnabled", group ~= chosen)
+        tab:Show()
+    end
+    for i = #groups + 1, #page.tabs do page.tabs[i]:Hide() end
+    return math.ceil(#groups / 5) * 28
+end
+
 local function render()
     if not page then return end
     local UI = WoWStatusUI
-    local result, medals = F.compute(WoWStatusJournal.entries())
+    local groups = F.groups()
+    local chosen = selectedGroup(groups)
+    local top = tabs(groups, chosen)
+    page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -8 - top)
+    page.heading:SetText(chosen and ("Firsts in " .. chosen.label:gsub("|", "||"))
+        or "Join a group to compete for records with your friends.")
+    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -36 - top)
+    page.scroll:SetHeight(494 - top)
+    page.group = chosen and chosen.id
+    local result, medals = F.compute(WoWStatusJournal.entries(), chosen and chosen.id or "")
     for i, medal in ipairs(medals) do
         local c = page.rows[i] or card(i)
         local column, line = (i - 1) % 2, math.floor((i - 1) / 2)
@@ -145,21 +187,41 @@ F.render = render
 F.medalIcon = medalIcon
 
 -- Called after the log changes. Announces only medals newly won by a live entry.
+-- This account's groups, sorted by their labels: {id, label}.
+function F.groups()
+    local list = {}
+    local character = WoWStatusPopups and WoWStatusPopups.character and WoWStatusPopups.character()
+    for id, member in pairs(WoWStatusGroups.selected(character)) do
+        table.insert(list, {id=id, label=member.label or id})
+    end
+    table.sort(list, function(a, b) return S.lowerASCII(a.label) < S.lowerASCII(b.label) end)
+    return list
+end
+
 function F.update()
     local data = state()
     if not data or not WoWStatusJournal.entries then return end
-    local result, medals = F.compute(WoWStatusJournal.entries())
-    local quiet = not data.initialized
-    for _, medal in ipairs(medals) do
-        local e = result[medal.key]
-        local previous = data.holders[medal.key]
-        if e and previous ~= e.id then
-            data.holders[medal.key] = e.id
-            -- Recent by realm time, or by this PC's clock for an older peer's stamp.
-            if not quiet and previous == nil and e.origin == "live"
-                and not S.outside(e.at, ANNOUNCE_WITHIN, math.huge) and WoWStatusPopups.notice then
-                WoWStatusPopups.notice({sender=e.sender, kind="first", text=medal.title .. "!",
-                    flavour="A new record on the Records page."})
+    data.group_holders = type(data.group_holders) == "table" and data.group_holders or {}
+    local entries, announced = WoWStatusJournal.entries(), {}
+    for _, group in ipairs(F.groups()) do
+        local result, medals = F.compute(entries, group.id)
+        -- The very first count stays quiet; later only live, recent entries are announced.
+        local quiet = not data.initialized
+        for _, medal in ipairs(medals) do
+            local e = result[medal.key]
+            local holderKey = group.id .. ":" .. medal.key
+            local previous = data.group_holders[holderKey]
+            if e and previous ~= e.id then
+                data.group_holders[holderKey] = e.id
+                -- Recent by realm time, or by this PC's clock for an older peer's stamp.
+                -- One popup per entry and medal, even when it wins in several groups.
+                local seen = e.id .. ":" .. medal.key
+                if not quiet and previous == nil and e.origin == "live" and not announced[seen]
+                    and not S.outside(e.at, ANNOUNCE_WITHIN, math.huge) and WoWStatusPopups.notice then
+                    announced[seen] = true
+                    WoWStatusPopups.notice({sender=e.sender, kind="first", text=medal.title .. "!",
+                        flavour="A new record in " .. group.label:gsub("|", "||") .. "."})
+                end
             end
         end
     end

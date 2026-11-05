@@ -3,7 +3,10 @@ from test_journal import actor, clock, deliver_popup, mesh
 
 ENTRY = '''
 function put(id, sender, kind, at, fields)
-    local e = {id=id, client=WoWStatusAdapter.client_id, sender=sender, kind=kind, at=at, text=kind, groups={}, origin="catchup"}
+    -- Shared in the player's groups, as received entries are: records are per group.
+    local groups = {}
+    for group in pairs(character().group_ids or {}) do groups[group] = true end
+    local e = {id=id, client=WoWStatusAdapter.client_id, sender=sender, kind=kind, at=at, text=kind, groups=groups, origin="catchup"}
     for k, v in pairs(fields or {}) do e[k] = v end
     return e
 end
@@ -77,7 +80,7 @@ def test_late_recovered_entry_takes_the_medal_quietly():
     before = thora.eval('#__frames')
     mesh(clients, start=30)
     assert holder(thora, 'death') == 'Eldrin-TestRealm'
-    assert thora.eval('WoWStatusDB.firsts.holders.death') == thora.eval(
+    assert thora.eval('WoWStatusDB.firsts.group_holders[next(character().group_ids)..":death"]') == thora.eval(
         '(function() for _, e in ipairs(WoWStatusJournal.entries()) do '
         'if e.sender == "Eldrin-TestRealm" and e.kind == "death" then return e.id end end end)()')
     # Recovered entries never announce.
@@ -95,7 +98,8 @@ def test_existing_log_is_seeded_without_popups():
         WoWStatusDB.firsts = nil
         table.insert(WoWStatusDB.journal.entries, put("x", "Bob-TestRealm", "death", time(), {origin="live"}))
         WoWStatusFirsts.update()
-        assert(WoWStatusDB.firsts.initialized and WoWStatusDB.firsts.holders.death == "x")
+        assert(WoWStatusDB.firsts.initialized
+            and WoWStatusDB.firsts.group_holders[next(character().group_ids) .. ":death"] == "x")
         WoWStatusPopups.tick()
         assert(WoWStatusLevelPopup == nil)
     ''')
@@ -116,4 +120,39 @@ def test_records_page_lists_every_medal():
         end
         assert(found:find("Bob", 1, true))
         assert(rows[1].text:find("nobody yet", 1, true))
+    ''')
+
+
+def test_each_group_has_its_own_records_in_tabs():
+    lua = actor('Thora')
+    lua.execute(ENTRY)
+    lua.eval('WoWStatusGroups.update')('alpha\nbeta', '')
+    lua.execute('''
+        local ids = {}
+        for _, g in ipairs(WoWStatusFirsts.groups()) do ids[g.label] = g.id end
+        local e = put("x", "Bob-TestRealm", "death", 100)
+        e.groups = {[ids.alpha] = true}
+        table.insert(WoWStatusDB.journal.entries, e)
+        local f = put("y", "Cid-TestRealm", "death", 200)
+        f.groups = {[ids.beta] = true}
+        table.insert(WoWStatusDB.journal.entries, f)
+        local entries = WoWStatusJournal.entries()
+        assert(WoWStatusFirsts.compute(entries, ids.alpha).death.sender == "Bob-TestRealm")
+        assert(WoWStatusFirsts.compute(entries, ids.beta).death.sender == "Cid-TestRealm")
+        SlashCmdList.WOWSTATUS("records")
+        local page = WoWStatusRecordsPage
+        assert(page.tabs[1].text == "alpha" and page.tabs[2].text == "beta")
+        local function deathHolder()
+            for _, row in ipairs(page.rows) do
+                if row.text:find("First in the group to die", 1, true) then return row.text end
+            end
+        end
+        assert(page.group == ids.alpha and deathHolder():find("Bob", 1, true))
+        page.tabs[2].OnClick(page.tabs[2])
+        assert(page.group == ids.beta and deathHolder():find("Cid", 1, true))
+        assert(WoWStatusDB.firsts.tab == ids.beta)
+        -- The Overview names the group of each record.
+        WoWStatusMainWindow.show("overview")
+        local first = WoWStatusOverviewPage.records.rows[1].text.text
+        assert(first:find("Cid", 1, true) and first:find("beta", 1, true))
     ''')

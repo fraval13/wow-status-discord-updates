@@ -173,10 +173,13 @@ end
 -- The "Latest records" box: the three newest Firsts medals.
 local function renderRecords()
     local box, won = page.records, {}
-    if WoWStatusFirsts and WoWStatusFirsts.compute then
-        local result, medals = WoWStatusFirsts.compute(WoWStatusJournal.entries())
-        for _, medal in ipairs(medals) do
-            if result[medal.key] then table.insert(won, {medal=medal, entry=result[medal.key]}) end
+    if WoWStatusFirsts and WoWStatusFirsts.compute and WoWStatusFirsts.groups then
+        -- Each group has its own records; the newest across all of them.
+        for _, group in ipairs(WoWStatusFirsts.groups()) do
+            local result, medals = WoWStatusFirsts.compute(WoWStatusJournal.entries(), group.id)
+            for _, medal in ipairs(medals) do
+                if result[medal.key] then table.insert(won, {medal=medal, entry=result[medal.key], group=group.label}) end
+            end
         end
     end
     table.sort(won, function(a, b) return a.entry.at > b.entry.at end)
@@ -186,7 +189,7 @@ local function renderRecords()
             row.icon:SetIcon(WoWStatusFirsts.medalIcon(item.medal))
             row.text:SetText("|cffffd100" .. item.medal.title .. "|r — "
                 .. ((item.entry.sender or "?"):match("^[^-]+") or "?"):gsub("|", "||")
-                .. "  |cff9d9d9d" .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
+                .. "  |cff9d9d9d" .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
             row:Show()
         else row:Hide() end
     end
