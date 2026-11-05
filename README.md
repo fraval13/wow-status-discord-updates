@@ -15,7 +15,7 @@ only when WoW can identify the sender’s class; otherwise a general roast is us
 Start with [AGENTS.md](AGENTS.md). It contains the repository map, product choices,
 release workflow, deployment pointers and pending-work caveats.
 
-As of **5 November 2026**, all four downloads are **0.14.12**. Every merge to
+As of **5 November 2026**, all four downloads are **0.14.13**. Every merge to
 `main` runs the tests and deploys the homepage, addon downloads and group
 services (see [deploy/SERVER.md](deploy/SERVER.md)). Live in-game checking of the
 caption layout is pending. The homepage uses its original still artwork.
@@ -25,7 +25,7 @@ historical releases; the current source and newest handoff notes take precedence
 
 ## Start sharing
 
-The current release is **0.14.12**. It adds corrected Retail/Forever minimap
+The current release is **0.14.13**. It sends updates and log sync during combat (WoW Forever could report combat all the time, which stopped both). 0.14.12 added corrected Retail/Forever minimap
 button placement, the dungeon API fix, clearer group-join wording, group warnings
 for invalid log data, leaving removed group channels after `/reload`, and counting
 a death once when the player releases their spirit.

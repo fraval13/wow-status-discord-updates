@@ -35,8 +35,15 @@ function P.senderKey(sender)
     if not sender:find("-", 1, true) then sender = sender .. "-" .. realm() end
     return S.lowerASCII(S.stripSpace(sender))
 end
+-- Whether popups should wait: the player's own combat state where the client
+-- reports it. The UI lockdown flag is only a fallback; WoW Forever can report a
+-- lockdown outside combat, which held every popup until it expired.
 local function combat()
-    return InCombatLockdown and InCombatLockdown()
+    if UnitAffectingCombat then
+        local fighting = S.call(UnitAffectingCombat, "player")
+        if fighting ~= nil then return fighting == true end
+    end
+    return InCombatLockdown and InCombatLockdown() and true or false
 end
 local function groupMode(character)
     character = character or (getCharacter and getCharacter())
@@ -528,19 +535,21 @@ local function tick()
         active = nil
         if toast then toast:Hide() end
     end
+    -- Combat only holds what is shown. Sending carries on: addon messages are not
+    -- combat-protected, and holding them let queued updates expire unsent.
     if combat() then
         if active then
             table.insert(incoming, 1, active)
             active = nil
             if toast then toast:Hide() end
         end
-        return
-    end
-    if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
-    if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
-        local item = table.remove(incoming, 1)
-        if (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
-            or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
+    else
+        if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
+        if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
+            local item = table.remove(incoming, 1)
+            if (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
+                or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
+        end
     end
     if #outgoing == 0 or now - lastAttempt < 1 then return end
     local item, character = outgoing[1], getCharacter()
