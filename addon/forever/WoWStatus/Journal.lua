@@ -11,13 +11,11 @@ local loginUntil,loginNonce=0,nil
 local pumpJobs
 -- CAP bounds this account's own entries and, separately, received entries (#4).
 local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
--- Catch-up one member can deliver per login session: at most RELAY_CAP entries
--- fetched from it, at most SENDER_CAP of them naming one other member (#4).
+-- Catch-up one member can deliver per login session: at most RELAY_CAP new
+-- entries fetched from it, at most SENDER_CAP of them naming one other member (#4).
 local RELAY_CAP, SENDER_CAP = 300, 100
--- A hello is a login (or group-change) nonce "<time>-<serial>". It is honored only
--- within HELLO_WINDOW seconds of that time, either way, and at most once per
--- HELLO_INTERVAL for one member in one group (#4).
-local HELLO_WINDOW, HELLO_INTERVAL = 900, 600
+-- A member's hello starts a pull at most once per HELLO_INTERVAL in one group (#4).
+local HELLO_INTERVAL = 600
 local budgets = {}
 -- The accused name is last and may contain spaces: WoW Forever names can ("Mr Exadi").
 local WITNESS = "^([%w%-]+) (%d+) (.+)$"
@@ -46,6 +44,8 @@ local function digest(id)
     for i=1,#id do local byte=id:byte(i);a=(a*33+byte)%4294967296;b=(b*65599+byte)%4294967296;c=(c*131+byte)%4294967296 end
     return string.format("%08x%08x%06x",a,b,c%16777216)
 end
+-- An entry's ID never changes, so rebuild reuses its digest.
+local digestOf = setmetatable({}, {__mode="k"})
 local function groupMember(group)
     return current and WoWStatusGroups.selected(current)[group]
 end
@@ -117,7 +117,11 @@ local function rebuild()
         end
     end
     db.journal.entries=kept
-    for _, e in ipairs(db.journal.entries) do index[e.id]=e;digests[digest(e.id)]=e end
+    for _, e in ipairs(db.journal.entries) do
+        local d=digestOf[e]
+        if not d then d=digest(e.id);digestOf[e]=d end
+        index[e.id]=e;digests[d]=e
+    end
 end
 -- t is full, or a live packet's cut of it: a prefix of full followed by "...".
 local function cutOf(full,t)
@@ -439,10 +443,11 @@ local function requestPage(group,target,offset,pages,retries)
     requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
--- What one member (by sender key) has delivered by catch-up this session.
+-- What one member (by sender key) has delivered by catch-up this session:
+-- the new entries fetched from it (each counted once) and per-sender claims.
 local function budget(key)
     local b=budgets[key]
-    if not b then b={fetched=0,claims={}};budgets[key]=b end
+    if not b then b={fetched=0,seen={},claims={}};budgets[key]=b end
     return b
 end
 local function advance(t)
@@ -454,6 +459,10 @@ local function advance(t)
     if r.more and r.pages<math.ceil(CAP/PAGE) and budget(r.key).fetched<RELAY_CAP then
         requestPage(r.group,r.target,r.nextOffset,r.pages+1,r.retries)
     elseif pumpJobs then pumpJobs() end
+end
+-- A requested entry is done, stored or dropped; the page advances once all are.
+local function finish(r,t,d)
+    r.pending[d]=nil;r.parts[d]=nil;r.via[d]=nil;advance(t)
 end
 local function enqueueJob(group,target,retries)
     local key=group..":"..P.senderKey(target)
@@ -514,9 +523,8 @@ function J.receive(message,sender,distribution)
         local helloKey=group..":"..key
         local last=seenHello[helloKey]
         if last and last.nonce==t then return true end
-        -- Only a login or group-change hello schedules a pull, and only so often (#4).
-        local at=tonumber(t:match("^(%d+)%-%d+$"))
-        if not at or math.abs(at-time())>HELLO_WINDOW or (last and time()-last.at<HELLO_INTERVAL) then return false end
+        -- A new hello from the same member and group starts a pull only so often (#4).
+        if last and last.at and time()-last.at<HELLO_INTERVAL then return false end
         seenHello[helloKey]={nonce=t,at=time()};enqueueJob(group,sender);return true
     end
     if op=="Q" then
@@ -550,7 +558,7 @@ function J.receive(message,sender,distribution)
         local offset,more,list=body:match("^(%d+) ([01]) ([a-f0-9,%-]+)$")
         offset=tonumber(offset)
         if not offset or offset<r.offset or offset>r.offset+PAGE then return false end
-        local wanted,seen,n={}, {}, 0
+        local wanted,charged,seen,n={},{},{},0
         local spent=budget(key)
         if list~="-" then
             for d in list:gmatch("[^,]+") do
@@ -558,16 +566,23 @@ function J.receive(message,sender,distribution)
                 if #d~=22 or seen[d] or n>PAGE then return false end
                 seen[d]=true
                 local existing=digests[d]
-                -- Also fetch the author's own copy of an entry only a relay vouched for.
-                -- Past this member's share for the session, fetch nothing more (#4).
-                if (not existing or not existing.groups[group]
-                    or (relayed(existing) and P.senderKey(existing.sender)==key))
-                    and spent.fetched+#wanted<RELAY_CAP then wanted[#wanted+1]=d end
+                if not existing then
+                    -- A new entry uses this member's share for the session once, even
+                    -- if fetched again for another group or a retry. Past the share,
+                    -- fetch no more new entries from it this session (#4).
+                    if spent.seen[d] then wanted[#wanted+1]=d
+                    elseif spent.fetched+#charged<RELAY_CAP then wanted[#wanted+1]=d;charged[#charged+1]=d end
+                -- Also fetch a logged entry for this group's scope, or the author's own
+                -- copy of an entry only a relay vouched for; neither adds an entry.
+                elseif not existing.groups[group] or (relayed(existing) and P.senderKey(existing.sender)==key) then
+                    wanted[#wanted+1]=d
+                end
             end
         end
         r.inventory=true;r.nextOffset=offset;r.more=more=="1"
         if r.more and offset<=r.offset then return false end
-        spent.fetched=spent.fetched+#wanted
+        for _, d in ipairs(charged) do spent.seen[d]=true end
+        spent.fetched=spent.fetched+#charged
         for _, d in ipairs(wanted) do r.pending[d]=true end
         if #wanted>0 then queue(group,sender,"G "..t.." "..table.concat(wanted,",")) end
         advance(t);return true
@@ -612,14 +627,11 @@ function J.receive(message,sender,distribution)
         if not e then if problem=="invalid" then J.reportInvalid(group,sender) end;return false end
         if digest(e.id)~=d then J.reportInvalid(group,sender);return false end
         if e.at<r.cutoff then return false end
-        -- A member vouches for at most SENDER_CAP entries naming one other member
-        -- per session; its own entries count only toward RELAY_CAP (#4).
+        -- A member adds at most SENDER_CAP new entries naming one other member per
+        -- session; its own entries count only toward RELAY_CAP (#4).
         local claimed,claims=P.senderKey(e.sender),budget(key).claims
-        if claimed~=key then
-            if (claims[claimed] or 0)>=SENDER_CAP then
-                r.pending[d]=nil;r.parts[d]=nil;r.via[d]=nil;advance(t)
-                return false
-            end
+        if claimed~=key and not index[e.id] then
+            if (claims[claimed] or 0)>=SENDER_CAP then finish(r,t,d);return false end
             claims[claimed]=(claims[claimed] or 0)+1
         end
         -- Forwarded identities are claims by the relay, not authenticated origins.
@@ -629,7 +641,7 @@ function J.receive(message,sender,distribution)
         local from=r.via[d]
         -- Keep the game's spelling of the sender's name, even if V names it.
         if from and P.senderKey(from)~=key then e.via,e.relay=from,sender end
-        add(e);r.pending[d]=nil;r.parts[d]=nil;r.via[d]=nil;advance(t)
+        add(e);finish(r,t,d)
         return true
     end
     return false
@@ -640,13 +652,17 @@ function J.tick()
     for t,r in pairs(requests) do
         if now-r.at>(r.sent and 120 or 300) then
             requests[t]=nil
-            if r.retries<1 then enqueueJob(r.group,r.target,r.retries+1) end
+            if r.retries<1 then enqueueJob(r.group,r.target,r.retries+1)
+            else
+                -- A pull that failed for good doesn't use up the member's hello rate,
+                -- so its next login hello is honored (#4).
+                local hello=seenHello[r.group..":"..r.key]
+                if hello then hello.at=nil end
+            end
         end
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
     for k,at in pairs(rates) do if now-at>120 then rates[k]=nil end end
-    -- Past this, a remembered hello's nonce is outside the window anyway.
-    for k,h in pairs(seenHello) do if now-h.at>2*HELLO_WINDOW then seenHello[k]=nil end end
     -- Log sync is not held for combat: addon whispers are not combat-protected,
     -- and WoW Forever can report a UI lockdown outside combat, which stopped sync.
     -- Real messaging restrictions are still checked through chatRestricted().

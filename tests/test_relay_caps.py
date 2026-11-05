@@ -59,16 +59,20 @@ def sender_of(index):
 
 
 def serve(victim, sender, record_for, start, stop, pages=None):
-    """Answer the victim's catch-up queries to sender with six records a page.
+    """Answer the victim's catch-up queries to sender, in any group, from one list.
 
-    record_for(n) gives the n-th record (1-based). Returns the number of pages
-    queried and the number of entries the victim fetched with G.
+    record_for(n) gives the relay's n-th newest record (1-based), six a page; the
+    list has `pages` pages (unbounded if None). Returns the number of pages queried
+    and the number of entries the victim fetched with G.
     """
-    group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    client = victim.eval('WoWStatusAdapter.client_id')
 
-    def send(text):
+    def send(group, text):
         victim.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', f'J2 {group} {text}', 'WHISPER', sender)
-    seen, served, queried, fetched, now = victim.eval('#__sent'), 0, 0, 0, start
+
+    def record(n):
+        return [part.replace('{client}', client) for part in record_for(n)]
+    seen, queried, fetched, now = victim.eval('#__sent'), 0, 0, start
     records = {}
     while now < stop:
         clock(victim, now)
@@ -78,28 +82,26 @@ def serve(victim, sender, record_for, start, stop, pages=None):
             packet = victim.eval(f'__sent[{i}]')
             if packet['target'] != sender:
                 continue
-            fetch = re.match(rf'J2 {group} G (\S+) (\S+)$', packet['text'])
+            fetch = re.match(r'J2 (\S+) G (\S+) (\S+)$', packet['text'])
             if fetch:
-                token = fetch.group(1)
-                for d in fetch.group(2).split(','):
+                group, token = fetch.group(1), fetch.group(2)
+                for d in fetch.group(3).split(','):
                     fetched += 1
                     encoded = pack(records[d]).encode().hex()
                     chunks = [encoded[j:j + 140] for j in range(0, len(encoded), 140)]
                     for part, chunk in enumerate(chunks, 1):
-                        send(f'D {token} {d} {part}/{len(chunks)} {chunk}')
+                        send(group, f'D {token} {d} {part}/{len(chunks)} {chunk}')
                 continue
-            match = re.match(rf'J2 {group} Q (\S+) (\d+) ', packet['text'])
-            if not match:
+            query = re.match(r'J2 (\S+) Q (\S+) (\d+) ', packet['text'])
+            if not query:
                 continue
             queried += 1
-            token, offset, page = match.group(1), int(match.group(2)), []
-            last = pages is not None and queried >= pages
-            for _ in range(6):
-                served += 1
-                record = [part.replace('{client}', client) for part in record_for(served)]
-                records[digest(record[0])] = record
-                page.append(digest(record[0]))
-            send(f'I {token} {offset + 6} {0 if last else 1} ' + ','.join(page))
+            group, token, offset = query.group(1), query.group(2), int(query.group(3))
+            page = [record(offset + k) for k in range(1, 7)]
+            for r in page:
+                records[digest(r[0])] = r
+            more = pages is None or offset + 6 < pages * 6
+            send(group, f'I {token} {offset + 6} {1 if more else 0} ' + ','.join(digest(r[0]) for r in page))
         seen, now = count, now + 0.5
     return queried, fetched
 
@@ -125,6 +127,12 @@ def claiming(lua, sender):
         for _,e in ipairs(WoWStatusJournal.entries()) do if e.sender==sender then n=n+1 end end
         return n
     end''')(sender)
+
+
+def groups_of(lua):
+    return lua.eval('''function()
+        local ids={} for id in pairs(character().group_ids) do ids[#ids+1]=id end
+        table.sort(ids) return ids[1],ids[2] end''')()
 
 
 def queries_to(lua, target):
@@ -231,28 +239,21 @@ def test_one_relay_vouches_for_at_most_a_hundred_entries_per_claimed_member():
     assert claiming(victim, 'Mallory-TestRealm') == 150
 
 
-def test_hello_outside_the_login_window_is_ignored():
+def test_a_login_hello_delayed_by_a_chat_lockdown_still_starts_a_pull():
+    """Review round 1: a hello held back for a long time is still a login hello."""
     victim = actor('Mira')
-    victim.execute('__peers={"Mallory-TestRealm"}')
+    victim.execute('__peers={"Thora-TestRealm"}')
     group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
     clock(victim, 100)
     victim.eval('WoWStatusJournal.tick')()  # the victim's own login window is over
     victim.execute('__sent={}')
-    receive = victim.eval('WoWStatusJournal.receive')
     clock(victim, 2000)
-    for nonce in ('hello-1', f'{BASE + 2000 - 901}-1', f'{BASE + 2000 + 901}-1', f'{BASE + 2000}', 'x-1'):
-        assert not receive(f'J2 {group} H {nonce} {client}', 'Mallory-TestRealm', 'WHISPER'), nonce
+    # Thora logged in at 0; her hello waited in her send queue until now.
+    assert victim.eval('WoWStatusJournal.receive')(f'J2 {group} H {BASE}-1 {client}', 'Thora-TestRealm', 'WHISPER')
     for step in range(10):
         clock(victim, 2001 + step)
         victim.eval('WoWStatusJournal.tick')()
-    assert queries_to(victim, 'Mallory-TestRealm') == []
-    # A hello naming its sender's login time 15 minutes back still counts (clock skew).
-    clock(victim, 2020)
-    assert receive(f'J2 {group} H {BASE + 2020 - 900}-7 {client}', 'Mallory-TestRealm', 'WHISPER')
-    for step in range(10):
-        clock(victim, 2021 + step)
-        victim.eval('WoWStatusJournal.tick')()
-    assert len(queries_to(victim, 'Mallory-TestRealm')) == 1
+    assert len(queries_to(victim, 'Thora-TestRealm')) == 1
 
 
 def test_hello_over_the_rate_is_ignored():
@@ -293,6 +294,46 @@ def test_hello_over_the_rate_is_ignored():
     assert hello(1620, serial=4)
     pump(1621)
     assert len(queries_to(victim, 'Mallory-TestRealm')) == 2
+
+
+def test_a_failed_pull_does_not_use_up_the_hello_rate():
+    victim = actor('Mira')
+    victim.execute('__peers={"Eldrin-TestRealm"}')
+    group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    clock(victim, 100)
+    victim.eval('WoWStatusJournal.tick')()
+    receive = victim.eval('WoWStatusJournal.receive')
+    clock(victim, 1000)
+    assert receive(f'J2 {group} H {BASE + 1000}-1 {client}', 'Eldrin-TestRealm', 'WHISPER')
+    # Eldrin disconnects: the pull and its one retry time out unanswered.
+    for now in range(1001, 1300):
+        clock(victim, now)
+        victim.eval('WoWStatusJournal.tick')()
+    assert len(queries_to(victim, 'Eldrin-TestRealm')) == 2
+    # He logs in again within ten minutes of his first hello; that one counts.
+    clock(victim, 1300)
+    assert receive(f'J2 {group} H {BASE + 1290}-1 {client}', 'Eldrin-TestRealm', 'WHISPER')
+    for now in range(1301, 1310):
+        clock(victim, now)
+        victim.eval('WoWStatusJournal.tick')()
+    assert len(queries_to(victim, 'Eldrin-TestRealm')) == 3
+
+
+def test_a_member_in_two_shared_groups_uses_its_share_once_per_entry():
+    """Review round 1: fetching an entry again for a second group is not charged."""
+    victim = actor('Mira')
+    victim.eval('WoWStatusGroups.update')('dawnwatch\nother-group', '')
+    victim.execute('__peers={"Thora-TestRealm"}')
+    record = lambda n: forged_record(n, 'Thora-TestRealm')  # noqa: E731
+    queried, fetched = serve(victim, 'Thora-TestRealm', record, 11, 400, pages=40)
+    assert claiming(victim, 'Thora-TestRealm') == 240
+    first, second = groups_of(victim)
+    both = victim.eval('''function(a,b)
+        local n=0
+        for _,e in ipairs(WoWStatusJournal.entries()) do if e.groups[a] and e.groups[b] then n=n+1 end end
+        return n
+    end''')(first, second)
+    assert (both, fetched) == (240, 480)
 
 
 def test_login_sync_still_recovers_entries_from_every_member():

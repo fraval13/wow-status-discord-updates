@@ -70,7 +70,8 @@ def deliver_popup(sender, receiver):
     """Popups need the sender in the receiver's roster; it leaves again afterwards."""
     packet = sender.eval('__sent[1].text')
     name = sender.eval('WoWStatusAdapter.playerName()')+'-TestRealm'
-    receiver.execute('__rosterBefore={unpack and unpack(__peers) or table.unpack(__peers)}')
+    # (unpack or table.unpack)(...) keeps every name; `unpack and unpack(...) or ...` kept one.
+    receiver.execute('__rosterBefore={(unpack or table.unpack)(__peers)}')
     join_roster(receiver, name)
     receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', name)
     # The roster cache is keyed on member count: read the restored roster now, so

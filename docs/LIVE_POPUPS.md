@@ -68,16 +68,16 @@ is not a server mailbox: unavailable or evicted copies cannot be reconstructed.
 
 Catch-up is bounded per member, so one member can't flood the log:
 
-- A hello carries its sender's login time (`<time>-<serial>`). It starts a pull
-  only within 15 minutes of that time, either way (allowing for PC clocks a few
-  minutes apart), and at most once per 10 minutes for one member in one group.
-  A hello sent after a later group change carries the login time too, so it is
-  ignored once that is 15 minutes old; the joiner has no history in a new group
-  yet, and the joiner's own pull is unaffected.
-- In one login session, a client fetches at most 300 entries from one member,
-  and keeps at most 100 of them naming any one other member as the sender. A
-  member's own entries count only toward the 300. Paging stops once a member's
-  share is used; other members, or the next login, provide the rest.
+- A new hello from a member starts a pull at most once per 10 minutes in one
+  group. A pull that fails for good (no answer, one retry) doesn't count, so a
+  member who reconnects is pulled from again. A repeated hello is still quietly
+  accepted. A hello held back by a chat lockdown still counts when it arrives.
+- In one login session, a client fetches at most 300 new entries from one
+  member, and keeps at most 100 new entries naming any one other member as the
+  sender. A member's own entries count only toward the 300. Fetching an entry
+  again (for a second shared group, a retry, or the author's own copy) costs
+  nothing more. Paging stops once a member's share is used; other members, or
+  the next login, provide the rest.
 - Own entries and received entries are capped separately (2,000 each), so
   received traffic never evicts your own history.
 

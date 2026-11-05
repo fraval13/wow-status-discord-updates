@@ -28,22 +28,26 @@ def relay(victim, sender, record, start=11, via=None, group=None):
     group, client = group or group_of(victim), victim.eval('WoWStatusAdapter.client_id')
 
     def send(text):
-        victim.eval('fire')('CHAT_MSG_ADDON', 'WoWStatusLog', f'J2 {group} {text}', 'WHISPER', sender)
-    # A real login hello names the sender's login time (issue #4).
+        return victim.eval('WoWStatusJournal.receive')(f'J2 {group} {text}', sender, 'WHISPER')
+    # A real login hello names the sender's login time. Only a query sent after it
+    # counts: with a stale token every later packet would be a silent no-op (#4).
+    before = victim.eval('#__sent')
+    clock(victim, start)
     send(f'H {1793000000 + start}-1 {client}')
     token = None
     for step in range(30):
         clock(victim, start + step)
         victim.eval('WoWStatusJournal.tick')()
-        for i in range(1, victim.eval('#__sent') + 1):
+        for i in range(before + 1, victim.eval('#__sent') + 1):
             packet = victim.eval(f'__sent[{i}]')
             match = re.match(rf'J2 {group} Q (\S+) ', packet['text'])
             if packet['target'] == sender and match:
                 token = match.group(1)
         if token:
             break
+    assert token, f'{sender} was never queried'
     encoded, d = pack(record).encode().hex(), digest(record[0])
-    send(f'I {token} 1 0 {d}')
+    assert send(f'I {token} 1 0 {d}'), 'inventory refused'
     if via:
         send(f'V {token} {d} {via}')
     chunks = [encoded[i:i + 140] for i in range(0, len(encoded), 140)]
@@ -149,8 +153,8 @@ def test_live_packet_replaces_a_relay_only_entry():
     assert (entries[0]['id'], entries[0]['kind'], entries[0]['text']) == (guessed, 'level', 'Reached level 2!')
     assert entries[0]['origin'] == 'live' and entries[0]['via'] is None
     assert popup_text(victim) == 'Thora reached level 2!'
-    # A later relay can't swap it back.
-    preclaim(victim, guessed, sender='Mallory-TestRealm', start=60)
+    # A later relay can't swap it back (after the 10-minute hello rate, #4).
+    preclaim(victim, guessed, sender='Mallory-TestRealm', start=700)
     assert kinds_from(victim, 'Thora-TestRealm') == ['level']
 
 
