@@ -16,7 +16,32 @@ concurrency:
   group: checks-${{ github.ref == 'refs/heads/main' && github.run_id || github.ref }}
   cancel-in-progress: true
 jobs:
+  release:
+    # Trusted main only. PR validation has no write token and never prepares a release.
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: character-status-release
+      cancel-in-progress: false
+    outputs:
+      revision: ${{ steps.prepare.outputs.revision }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Prepare one minor release, or reuse the existing release on retry
+        id: prepare
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_REVISION: ${{ github.sha }}
+        run: python3 scripts/prepare_release.py --revision "$SOURCE_REVISION"
   validate:
+    needs: release
+    if: always() && !cancelled() && (needs.release.result == 'success' || needs.release.result == 'skipped')
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
@@ -25,6 +50,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+          ref: ${{ needs.release.outputs.revision || github.sha }}
       # The oldest supported Python, for the receiver mirror below: the server's venv uses its
       # own python3, and the lock has entries only older versions install.
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
@@ -94,20 +120,24 @@ jobs:
     # the tip of `main` must not wait there, because a newly waiting deploy cancels the
     # one already waiting, which would be the newer commit's. A newer commit's deploy
     # that arrives while this one waits cancels this one, so deploys stay in order.
-    needs: validate
+    needs: [release, validate]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     outputs:
+      revision: ${{ needs.release.outputs.revision }}
       current: ${{ steps.gate.outputs.current }}
       attempt: ${{ github.run_attempt }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+          ref: ${{ needs.release.outputs.revision }}
           sparse-checkout: scripts/deploy_gate.py
           sparse-checkout-cone-mode: false
       - id: gate
-        run: python3 scripts/deploy_gate.py --revision "$GITHUB_SHA"
+        env:
+          RELEASE_REVISION: ${{ needs.release.outputs.revision }}
+        run: python3 scripts/deploy_gate.py --revision "$RELEASE_REVISION"
   deploy:
     needs: deploy-gate
     if: needs.deploy-gate.outputs.current == 'true'
@@ -132,6 +162,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
+          ref: ${{ needs.deploy-gate.outputs.revision }}
       # No setup-python: this job holds the deploy key and bot tokens, so after checkout it
       # runs only this commit's own standard-library scripts, on the runner image's python3.
       - name: Build homepage for this release
@@ -151,7 +182,7 @@ jobs:
       - name: Verify live homepage and all addon downloads
         id: verify
         env:
-          RELEASE_REVISION: ${{ github.sha }}
+          RELEASE_REVISION: ${{ needs.deploy-gate.outputs.revision }}
         # Compare the live site with the release.json this job built, not only with the
         # manifest the site serves, which a tampered site could regenerate. Status 4 means
         # the site answered with something other than this release; any other failure
@@ -171,7 +202,7 @@ jobs:
           DEPLOY_KEY: ${{ secrets.WOW_STATUS_SSH_KEY }}
           KNOWN_HOSTS: ${{ secrets.WOW_STATUS_KNOWN_HOSTS }}
           DEPLOY_HOST: ${{ vars.WOW_STATUS_SSH_HOST }}
-          RELEASE_REVISION: ${{ github.sha }}
+          RELEASE_REVISION: ${{ needs.deploy-gate.outputs.revision }}
         run: |
           printf 'wow-status-rollback %s\n' "$RELEASE_REVISION" > "$RUNNER_TEMP/wow-character-rollback"
           if ! bash deploy/send_to_receiver.sh "$RUNNER_TEMP/wow-character-rollback"; then
@@ -183,7 +214,7 @@ jobs:
         # passes and a revoked token or removed bot shows here instead.
         continue-on-error: true
         env:
-          RELEASE_REVISION: ${{ github.sha }}
+          RELEASE_REVISION: ${{ needs.deploy-gate.outputs.revision }}
           # Route keys are private; each instance's optional "route" says which to check.
           WOW_STATUS_DISCORD_CONFIG: ${{ secrets.WOW_STATUS_DISCORD_CONFIG }}
         run: python3 scripts/report_discord_state.py --url https://wow.frankvalde.com --revision "$RELEASE_REVISION"

@@ -6,7 +6,7 @@ configuration, player SavedVariables, or production service was changed.
 | Issue | Finding and action |
 | --- | --- |
 | [#5](https://github.com/fraval13/wow-status-discord-updates/issues/5) | Already fixed: the encounter count is the third lockout return. Existing regression coverage verifies the documented tuple. The normal-dungeon API question stays under #25. |
-| [#85](https://github.com/fraval13/wow-status-discord-updates/issues/85) | The geometry and offset tools are present. The latest issue comment explicitly awaits Forever dimensions and rendering evidence. No further guessed geometry change was made. `/wstatus minimap 40` is the existing workaround; `reset` restores the default. |
+| #85 — minimap | Owner confirmed on 5 November that the minimap worked in their live check the previous day and is handling the issue closure. No further geometry change is needed. |
 | [#25](https://github.com/fraval13/wow-status-discord-updates/issues/25) | Fixed empty Classic profession-list fallback, empty mount-collection fallback, Era outgoing-message restrictions, settings-call failure fallback, and channel selection tracking/restoration without the optional getter. Live API availability, normal dungeon completion, realm/faction transport, protected calls and channel limits remain live checks. |
 | [#87](https://github.com/fraval13/wow-status-discord-updates/issues/87) | Added successful first raid encounters, conservative epic mount-item acquisition, large banners and Firsts medals. No raid-clear claim is inferred from an arbitrary boss. Mount item metadata and inventory APIs must be available; Retail scaling mounts and class-quest mounts are unsupported. |
 | [#88](https://github.com/fraval13/wow-status-discord-updates/issues/88) | Added per-character opt-in compact recap sharing, strict fixed-phrase validation, and quiet bounded log recovery. The sender name is supplied by the existing popup/log card rather than arbitrary recap text. |
@@ -26,7 +26,7 @@ does not undo a user's later change. Missing UI frames remain supported.
 
 ## Live acceptance still required
 
-- Forever: check `/wstatus minimap` dimensions, edge placement, and dragging.
+- Forever minimap: owner confirmed the fix works in a live client; issue #85 is resolved.
 - Each edition: start up, open settings in/out of combat, observe professions,
   and exchange a new milestone and quiet login history with a second account.
 - Raid: a failed encounter produces nothing; first success produces one banner

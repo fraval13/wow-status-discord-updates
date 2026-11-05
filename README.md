@@ -15,9 +15,11 @@ only when WoW can identify the sender’s class; otherwise a general roast is us
 Start with [AGENTS.md](AGENTS.md). It contains the repository map, product choices,
 release workflow, deployment pointers and pending-work caveats.
 
-As of **5 November 2026**, all four downloads are **0.14.14**. Every merge to
-`main` runs the tests and deploys the homepage, addon downloads and group
-services (see [deploy/SERVER.md](deploy/SERVER.md)). Live in-game checking of the
+Every merge to `main` prepares one minor-version increment, runs the tests, and
+deploys matching homepage, addon downloads and group services. Re-running a release
+keeps its existing version. The [public release manifest](https://wow.frankvalde.com/downloads/release.json)
+records the published version and exact source revision
+(see [deploy/SERVER.md](deploy/SERVER.md)). Live in-game checking of the
 caption layout is pending. The homepage uses its original still artwork.
 
 Some older status documents describe
@@ -25,7 +27,7 @@ historical releases; the current source and newest handoff notes take precedence
 
 ## Start sharing
 
-The current release is **0.14.14**. It groups the character list by player with
+The addon groups the character list by player with
 class portraits, adds window themes and a size setting, a first-time setup guide
 and Show me around tour, session recaps, Firsts medals, and catches group history
 up from friends. It also keeps live updates working when players' clocks disagree,

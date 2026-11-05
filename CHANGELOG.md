@@ -6,9 +6,16 @@ update (`/wstatus news` opens it again) and fills the homepage release panel.
 file; run `python scripts/sync_addons.py` afterwards.
 
 Rules: one `## <version>` heading per release, newest first, matching
-`pyproject.toml` (the release pull request adds it). Each note is one `- ` line of
+`pyproject.toml` (the pipeline prepares it on main). Each note is one `- ` line of
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
+
+## Unreleased
+
+- First successful raid boss kills and epic mount items earn big banners and Firsts medals
+- Optional session recap sharing, off by default, with private activity choices respected
+- Better Classic profession and mount detection, channel selection, and settings compatibility
+- Each main update now prepares one minor release and publishes matching website downloads
 
 ## 0.14.14
 
