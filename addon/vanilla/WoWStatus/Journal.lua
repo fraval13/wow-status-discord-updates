@@ -823,6 +823,7 @@ function J.tick()
     local send=C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if drop or not send then table.remove(sendQueue,1);return end
     lastSend,allowance=clock,math.max(0,allowance-1)
+    P.whispered(item.target)
     local result=P.sendResult(pcall(send,PREFIX,item.text,"WHISPER",item.target))
     local wait=P.retryWait(result,item,pacing,clock)
     if wait then allowance,holdUntil=0,clock+wait;return end

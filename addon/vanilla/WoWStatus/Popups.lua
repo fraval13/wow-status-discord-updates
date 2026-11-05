@@ -47,6 +47,56 @@ local function realm()
     local value = A.realmName()
     return value and S.stripSpace(value) or ""
 end
+-- Whisper targets of the last few seconds. The server answers an addon whisper
+-- to someone who is not (or no longer) online with a "No player named ... is
+-- currently playing" chat line; those lines are hidden for these targets only,
+-- and the target stops counting as recently heard. Your own whispers still show
+-- the message, unless the addon whispered the same name in those seconds.
+local whispers = {}
+local WHISPER_ECHO = 10
+local function whisperKey(name)
+    local short = S.string(name) and name:match("^([^-]+)")
+    return short and S.lowerASCII(S.stripSpace(short)) or nil
+end
+function P.whispered(target)
+    local key = whisperKey(target)
+    if not key then return end
+    local now, count = time(), 0
+    for k, at in pairs(whispers) do
+        if now - at > WHISPER_ECHO then whispers[k] = nil else count = count + 1 end
+    end
+    if count < 256 or whispers[key] then whispers[key] = now end
+end
+-- ERR_CHAT_PLAYER_NOT_FOUND_S is the client's "No player named '<name>' is
+-- currently playing." line with a format placeholder for the name; the pattern
+-- is built from the client's own string, so it follows the client's language.
+local notFound
+local function notFoundPattern()
+    if notFound == nil then
+        local text = S.string(ERR_CHAT_PLAYER_NOT_FOUND_S)
+        notFound = text and ("^" .. text:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"):gsub("%%%%s", "(.+)") .. "$") or false
+    end
+    return notFound or nil
+end
+function P.filterNotFound(message)
+    local pattern = notFoundPattern()
+    local text = S.string(message)
+    if not pattern or not text then return false end
+    local name = text:match(pattern)
+    local key = whisperKey(name)
+    local at = key and whispers[key]
+    if not at or time() - at > WHISPER_ECHO then return false end
+    for group, known in pairs(knownPeers) do
+        for k in pairs(known) do if whisperKey(k) == key then known[k] = nil end end
+    end
+    return true
+end
+do
+    local addFilter = (ChatFrameUtil and ChatFrameUtil.AddMessageEventFilter) or ChatFrame_AddMessageEventFilter
+    if addFilter then
+        pcall(addFilter, "CHAT_MSG_SYSTEM", function(_, _, message) return P.filterNotFound(message) end)
+    end
+end
 -- A character's name and realm as other players see them: "Name-Realm".
 -- WoW Forever's UnitName gives only a first name ("Edith") while chat and
 -- channel rosters use the full name ("Edith Aateigen"); the full name is learnt
@@ -988,6 +1038,7 @@ local function tick()
         args = {item.message, "CHANNEL", nil, tostring(joined(item.group_id))}
     end
     local unpackArgs = unpack or table.unpack
+    if args[3] == "WHISPER" then P.whispered(args[4]) end
     local result = P.sendResult(pcall(send, unpackArgs(args, 1, 4)))
     -- A throttled whisper goes to the same target again after a pause; only a
     -- send that went out or failed moves on to the next target.

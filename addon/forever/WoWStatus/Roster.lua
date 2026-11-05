@@ -112,7 +112,11 @@ function R.tick()
     if #outgoing == 0 or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
     local item = table.remove(outgoing, 1)
     local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
-    if send then lastSend = now; pcall(send, PREFIX, item.text, "WHISPER", item.target) end
+    if send then
+        lastSend = now
+        WoWStatusPopups.whispered(item.target)
+        pcall(send, PREFIX, item.text, "WHISPER", item.target)
+    end
 end
 
 local function valid(words, max)
