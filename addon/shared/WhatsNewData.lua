@@ -1,5 +1,11 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="0.15.0", notes={
+        "First successful raid boss kills and epic mount items earn big banners and Firsts medals",
+        "Optional session recap sharing, off by default, with private activity choices respected",
+        "Better Classic profession and mount detection, channel selection, and settings compatibility",
+        "Each main update now prepares one minor release and publishes matching website downloads",
+    }},
     {version="0.14.14", notes={
         "Character list grouped by player, with class portraits",
         "New themes and a size setting for the WoW Status windows",
@@ -23,13 +29,5 @@ WoWStatusWhatsNewData = {
         "Share WoW Status with a friend: /wstatus share <name>",
         "This What's New page, shown once after each update (/wstatus news)",
         "Updates and log sync keep running during combat",
-    }},
-    {version="0.14.12", notes={
-        "Retail and Forever minimap buttons sit in the right place",
-        "Dungeon clears use the game's completion data correctly",
-        "Clearer wording when you join a group",
-        "Group warnings for invalid log data",
-        "Removed group channels are left after /reload",
-        "A death counts once when you release your spirit",
     }},
 }

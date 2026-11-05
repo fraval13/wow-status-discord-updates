@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 0.15.0
 
 - First successful raid boss kills and epic mount items earn big banners and Firsts medals
 - Optional session recap sharing, off by default, with private activity choices respected
