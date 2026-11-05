@@ -1,5 +1,10 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="0.16.0", notes={
+        "Previously exposed groups are retired; ask the group owner privately for the replacement name",
+        "Old group channels are left automatically and cannot be re-added after updating",
+        "Private gateway routing files keep restricted permissions when the website is published",
+    }},
     {version="0.15.0", notes={
         "First successful raid boss kills and epic mount items earn big banners and Firsts medals",
         "Optional session recap sharing, off by default, with private activity choices respected",
@@ -18,16 +23,5 @@ WoWStatusWhatsNewData = {
         "Every update reaches every group member, and throttled whispers are retried",
         "One player can no longer fill the activity log and push out your own entries",
         "Popups only accept text from known group members",
-    }},
-    {version="0.14.13", notes={
-        "New WoW Status window with tabs: Overview, Activity and more",
-        "Overview shows what your group did since you were last here",
-        "Big banners for every 10th level and maximum level",
-        "Click a popup to open it in the activity log; popups can be moved",
-        "Optional group status line under the quest tracker",
-        "Optional screenshots on level-up and first dungeon clear",
-        "Share WoW Status with a friend: /wstatus share <name>",
-        "This What's New page, shown once after each update (/wstatus news)",
-        "Updates and log sync keep running during combat",
     }},
 }
