@@ -28,6 +28,7 @@ WhatsNewData.lua
 WhatsNew.lua
 Firsts.lua
 Recaps.lua
+Roster.lua
 Minimap.lua
 StatusLine.lua
 Previews.lua
