@@ -21,7 +21,20 @@ R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
 local XP_INTERVAL = 300
 
-local function key(name) return WoWStatusPopups.senderKey(name) end
+-- One key per character for the list. WoW Forever spreads characters over many
+-- internal realms ("CAMWOWEU4Realm3PvE") while chat and rosters name them without
+-- a realm, and full names are unique there: the realm is left out, so "Annie Fett"
+-- and "Annie Fett-CAMWOWEU5Realm3PvE" are one character (they were listed twice).
+local function key(name)
+    if WoWStatusAdapter.full_names then
+        local short = S.string(name) and name:match("^([^-]+)")
+        if not short or #short > 120 or short:find(S.CONTROL_OR_PIPE) then return nil end
+        short = S.lowerASCII(S.stripSpace(short))
+        return short ~= "" and short or nil
+    end
+    return WoWStatusPopups.senderKey(name)
+end
+R.key = key
 
 local function state()
     db.roster = type(db.roster) == "table" and db.roster or {}
@@ -818,9 +831,30 @@ WoWStatusMainWindow.register("characters", "Characters", build, function()
     R.render()
 end)
 
+-- Saved lists keyed before the realm was left out (WoW Forever): merge to one key,
+-- keeping the newest copy of each character.
+local function rekey(map)
+    if type(map) ~= "table" then return end
+    local merged = {}
+    for old, item in pairs(map) do
+        local name = type(item) == "table" and (item.name or old)
+        local k = type(name) == "string" and key(name) or old
+        local other = merged[k]
+        if not other or (type(item) == "table" and (item.at or 0) > (other.at or 0)) then merged[k] = item end
+    end
+    for old in pairs(map) do map[old] = nil end
+    for k, item in pairs(merged) do map[k] = item end
+end
+
 function R.init(database, character)
     db, current = database, character
-    state()
+    local roster = state()
+    if WoWStatusAdapter.full_names and not roster.realmless then
+        for _, player in pairs(roster.players) do rekey(player.characters) end
+        rekey(roster.seen)
+        roster.identified = nil -- Rebuilt from the GUIDs on the next roster read.
+        roster.realmless = true
+    end
     R.observe(character)
     -- The list sent at login already carries this XP.
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0

@@ -287,3 +287,28 @@ def test_forever_learns_its_full_name_from_its_guid_at_login():
         __guidName = "Someone Else"
         assert(not WoWStatusPopups.learnOwnName() and character().chat_name == nil)
     ''')
+
+
+def test_forever_lists_each_character_once_whatever_its_realm():
+    # Live screenshot: "Annie Fett-CAMWOWEU5Realm3PvE" from her list and "Annie Fett"
+    # from the channel roster were listed twice (the roster name got this realm).
+    lua = forever_runtime(extra='function UnitRace() return "Human","Human" end function UnitSex() return 3 end')
+    lua.eval('fire')('PLAYER_LOGIN')
+    lua.execute('''
+        WoWStatusGroups.announce=nil
+        WoWStatusGroups.update("dawnwatch","")
+        local group=next(character().group_ids)
+        assert(WoWStatusRoster.key("Annie Fett-CAMWOWEU5Realm3PvE") == WoWStatusRoster.key("Annie Fett"))
+        -- A saved list keyed with the realm, and the same member seen in the roster.
+        WoWStatusDB.roster.players.p1 = {name="Garvik", groups={[group]=true}, characters={
+            ["anniefett-camwoweu5realm3pve"]={name="Annie Fett-CAMWOWEU5Realm3PvE",race="Human",sex=3,class="MAGE",level=12,at=time()}}}
+        WoWStatusDB.roster.seen = {["anniefett-testrealm"]={name="Annie Fett",at=time(),groups={[group]=true}}}
+        WoWStatusDB.roster.realmless = nil
+        WoWStatusRoster.init(WoWStatusDB, character())
+        local count = 0
+        for _,g in ipairs(WoWStatusRoster.groups()) do
+            for _,r in ipairs(g.rows) do if r.name:find("Annie Fett",1,true) then count = count + 1 end end
+        end
+        assert(count == 1, count)
+        assert(WoWStatusRoster.playerOf("Annie Fett") == "Garvik")
+    ''')

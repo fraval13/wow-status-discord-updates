@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- WoW Forever: friends on other internal realms are no longer listed twice on the Characters page
+
 ## 1.13.0
 
 - WoW Forever: your full name is known at login, so friends get your character list right away
