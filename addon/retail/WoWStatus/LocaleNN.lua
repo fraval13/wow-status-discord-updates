@@ -203,6 +203,11 @@ W.add({
     ["First epic mount"] = "Første episke ridedyr", ["First epic mount!"] = "Første episke ridedyr!",
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
+    -- Activity filters
+    ["Type:"] = "Type:", ["Person:"] = "Person:", ["Level-ups"] = "Nye nivå", ["Deaths"] = "Dødsfall", ["Zones"] = "Område",
+    ["Quests"] = "Oppdrag", ["Dungeons and raids"] = "Fangehol og raid", ["Mounts"] = "Ridedyr", ["Armor"] = "Rustning",
+    ["Reputation"] = "Omdøme", ["Class abilities"] = "Klasseevner", ["PvP"] = "PvP", ["Joins"] = "Nye medlemer",
+    ["Recaps"] = "Samandrag",
     -- Overview
     ["Your status is not available right now."] = "Statusen din er ikkje tilgjengeleg no.",
     ["You are level %d"] = "Du er på nivå %d", ["maximum level"] = "høgaste nivå",

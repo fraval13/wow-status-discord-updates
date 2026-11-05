@@ -229,3 +229,49 @@ function UI.classColour(class)
     local colour = RAID_CLASS_COLORS and class and RAID_CLASS_COLORS[class]
     return colour and colour.colorStr and ("|c" .. colour.colorStr) or nil
 end
+
+-- A small drop-down list under a button: items {label=, value=}; onPick(value).
+-- One shared list, closed by picking, by clicking its button again or by Escape.
+-- Built from plain buttons, since the game's dropdown menus differ by client.
+function UI.menu(owner, items, onPick)
+    local menu = UI.menuFrame
+    if not menu then
+        menu = UI.box(UIParent, 200, 40)
+        menu:SetFrameStrata("FULLSCREEN_DIALOG"); menu:EnableMouse(true)
+        menu.scroll = CreateFrame("ScrollFrame", nil, menu, "UIPanelScrollFrameTemplate")
+        menu.scroll:SetPoint("TOPLEFT", 6, -6)
+        menu.list = CreateFrame("Frame", nil, menu.scroll)
+        menu.scroll:SetScrollChild(menu.list)
+        menu.rows = {}
+        UI.menuFrame = menu
+        _G.WoWStatusMenu = menu
+        if UISpecialFrames then table.insert(UISpecialFrames, "WoWStatusMenu") end
+    end
+    if menu:IsShown() and menu.owner == owner then menu:Hide(); return menu end
+    local width, rowHeight, visible = math.max(180, owner.GetWidth and owner:GetWidth() or 180), 22, math.min(#items, 14)
+    menu:SetSize(width + (#items > 14 and 24 or 12), visible * rowHeight + 12)
+    menu.scroll:SetSize(width, visible * rowHeight)
+    menu.list:SetSize(width, #items * rowHeight)
+    for i, item in ipairs(items) do
+        local row = menu.rows[i]
+        if not row then
+            row = CreateFrame("Button", nil, menu.list)
+            row:SetSize(width, rowHeight)
+            row.highlight = row:CreateTexture(nil, "BACKGROUND"); row.highlight:SetAllPoints()
+            row.highlight:SetColorTexture(1, .82, 0, .15); row.highlight:Hide()
+            row.text = UI.text(row, "GameFontHighlight", 6, -4, width - 12)
+            row:SetScript("OnEnter", function(self) self.highlight:Show() end)
+            row:SetScript("OnLeave", function(self) self.highlight:Hide() end)
+            row:SetScript("OnClick", function(self) menu:Hide(); if menu.onPick then menu.onPick(self.value) end end)
+            menu.rows[i] = row
+        end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * rowHeight)
+        row.text:SetText(item.label); row.value = item.value; row:Show()
+    end
+    for i = #items + 1, #menu.rows do menu.rows[i]:Hide() end
+    menu.owner, menu.onPick, menu.items = owner, onPick, items
+    menu:ClearAllPoints(); menu:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -2)
+    call(menu.scroll, "SetVerticalScroll", 0)
+    menu:Show()
+    return menu
+end

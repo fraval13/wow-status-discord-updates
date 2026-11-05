@@ -875,15 +875,24 @@ local function trackingMarkers()
     end
     return list
 end
+-- Type filter groups for the Activity page: label and the entry kinds it shows.
+J.TYPES={
+    {"Level-ups",{level=true}}, {"Deaths",{death=true}}, {"Zones",{zone=true}}, {"Quests",{quest=true}},
+    {"Professions",{profession=true,professionprogress=true}}, {"Dungeons and raids",{dungeon=true,raid=true}},
+    {"Mounts",{mount=true,epicmount=true}}, {"Armor",{loot=true,equipment=true}}, {"Reputation",{reputation=true}},
+    {"Class abilities",{unlock=true}}, {"PvP",{pvp=true}}, {"Joins",{introduction=true}}, {"Recaps",{recap=true}},
+}
 local function visibleEntries()
     local list={}
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
+    local kinds=panel.typeFilter and J.TYPES[panel.typeFilter] and J.TYPES[panel.typeFilter][2]
     for _,e in ipairs(J.displayEntries()) do
-        local wanted=panel.filter=="all" or (panel.filter=="character" and P.senderKey(e.sender)==panel.character)
-            or (panel.filter~="character" and (panel.filter=="mine")==not not e.owner)
+        local wanted=(panel.filter=="all" or panel.filter=="character" or (panel.filter=="mine")==not not e.owner)
+            and (not panel.character or P.senderKey(e.sender)==panel.character)
+            and (not kinds or kinds[e.kind])
         if (e.sample or permitted(e)) and wanted then list[#list+1]=e end
     end
-    if not samples and (panel.filter=="all" or panel.filter=="mine") then
+    if not samples and not panel.character and not kinds and (panel.filter=="all" or panel.filter=="mine") then
         for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
         table.sort(list,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
     end
@@ -893,8 +902,14 @@ local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
     panel.empty:SetShown(#list==0)
-    panel.showing:SetText(panel.filter=="character" and (T("Showing:").." |cffffd100"..(panel.characterName or "?"):gsub("|","||").."|r") or "")
-    panel.showAll:SetShown(panel.filter=="character")
+    -- What the type and person filters show, with Show all to clear them.
+    local parts={}
+    if panel.typeFilter and J.TYPES[panel.typeFilter] then parts[#parts+1]=T(J.TYPES[panel.typeFilter][1]) end
+    if panel.character then parts[#parts+1]=(panel.characterName or "?"):gsub("|","||") end
+    panel.showing:SetText(#parts>0 and (T("Showing:").." |cffffd100"..table.concat(parts," · ").."|r") or "")
+    panel.showAll:SetShown(#parts>0)
+    panel.typeButton:SetText(T("Type:").." "..(panel.typeFilter and T(J.TYPES[panel.typeFilter][1]) or T("All")))
+    panel.personButton:SetText(T("Person:").." "..(panel.character and (panel.characterName or "?"):gsub("|","||") or T("All")))
     panel.child:SetHeight(math.max(360,#list*132))
     local first=math.floor(panel.scroll:GetVerticalScroll()/132)+1
     for slot,row in ipairs(panel.rows) do
@@ -930,6 +945,21 @@ refresh=function()
     end
     render()
 end
+-- The people in the log, for the Person filter: {label, value=sender key}.
+local function people()
+    local list,seen={},{}
+    for _,e in ipairs(J.displayEntries()) do
+        local key=P.senderKey(e.sender)
+        if key and not seen[key] and (e.sample or permitted(e)) then
+            seen[key]=true
+            local shown=(not e.owner and WoWStatusRoster and WoWStatusRoster.displayName) and WoWStatusRoster.displayName(e.sender)
+                or (e.sender:match("^[^-]+") or e.sender)
+            list[#list+1]={label=shown:gsub("|","||"),value=key,name=e.sender:match("^[^-]+") or e.sender}
+        end
+    end
+    table.sort(list,function(a,b) return S.lowerASCII(a.label)<S.lowerASCII(b.label) end)
+    return list
+end
 local function build(parent)
     panel=CreateFrame("Frame","WoWStatusActivityLog",parent);panel:SetAllPoints(parent)
     panel.scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate")
@@ -961,14 +991,35 @@ local function build(parent)
     else panel.scroll:SetScript("OnVerticalScroll",render) end
     local buttons={{"All","all"},{"Mine","mine"},{"Friends","friends"}}
     for i,b in ipairs(buttons) do
-        local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*182,-490);widget:SetSize(160,30);widget:SetText(T(b[1]))
+        local widget=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");widget:SetPoint("TOPLEFT",24+(i-1)*114,-490);widget:SetSize(106,30);widget:SetText(T(b[1]))
         widget:SetScript("OnClick",function() panel.filter=b[2];panel.scroll:SetVerticalScroll(0);render() end)
     end
-    -- Set by clicking a character on the Characters page.
+    -- Type and Person filters, combined with the buttons above.
+    panel.typeButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.typeButton:SetPoint("TOPLEFT",372,-490);panel.typeButton:SetSize(176,30)
+    panel.typeButton:SetScript("OnClick",function(self)
+        local items={{label=T("All"),value=0}}
+        for i,t in ipairs(J.TYPES) do items[#items+1]={label=T(t[1]),value=i} end
+        WoWStatusUI.menu(self,items,function(value)
+            panel.typeFilter=value~=0 and value or nil;panel.scroll:SetVerticalScroll(0);render()
+        end)
+    end)
+    panel.personButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.personButton:SetPoint("TOPLEFT",556,-490);panel.personButton:SetSize(176,30)
+    panel.personButton:SetScript("OnClick",function(self)
+        local list,items=people(),{{label=T("All"),value=""}}
+        for _,item in ipairs(list) do items[#items+1]={label=item.label,value=item.value} end
+        WoWStatusUI.menu(self,items,function(value)
+            panel.character,panel.characterName=value~="" and value or nil,nil
+            for _,item in ipairs(list) do if item.value==value then panel.characterName=item.name end end
+            panel.scroll:SetVerticalScroll(0);render()
+        end)
+    end)
     panel.showing=label(panel,"GameFontHighlight",24,-528,420)
     panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
     panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
-    panel.showAll:SetScript("OnClick",function() panel.filter="all";panel.scroll:SetVerticalScroll(0);render() end)
+    panel.showAll:SetScript("OnClick",function()
+        panel.filter,panel.typeFilter,panel.character,panel.characterName="all",nil,nil,nil
+        panel.scroll:SetVerticalScroll(0);render()
+    end)
     return panel
 end
 -- The log is the Activity page of the main window (#57).
@@ -981,7 +1032,7 @@ end
 function J.showCharacter(name)
     if not db or not P.senderKey(name) then return false end
     WoWStatusMainWindow.show("activity")
-    panel.filter,panel.character,panel.characterName="character",P.senderKey(name),name:match("^[^-]+") or name
+    panel.filter,panel.character,panel.characterName="all",P.senderKey(name),name:match("^[^-]+") or name
     panel.scroll:SetVerticalScroll(0);render()
     return true
 end

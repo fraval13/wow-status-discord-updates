@@ -95,3 +95,34 @@ def test_overview_lists_everyone_online_and_fits_the_summary():
         WoWStatusMainWindow.show("overview")
         assert(page.since.height == 232)
     ''')
+
+
+def test_activity_filters_by_type_and_person_combine():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        local group = next(character().group_ids)
+        local r = WoWStatusJournal.received
+        r({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=5,at=time(),group_id=group})
+        r({sender="Mira-TestRealm",nonce="1-2-b",kind="death",text="Died",at=time(),group_id=group})
+        r({sender="Bob-TestRealm",nonce="1-3-c",kind="death",text="Died",at=time(),group_id=group})
+        WoWStatusJournal.show()
+        local log = WoWStatusActivityLog
+        assert(#log.entriesList == 3)
+        -- Type: Deaths
+        log.typeButton.OnClick(log.typeButton)
+        local menu = WoWStatusMenu
+        local deaths
+        for _, row in ipairs(menu.rows) do if row.text.text == "Deaths" then deaths = row end end
+        deaths.OnClick(deaths)
+        assert(#log.entriesList == 2 and log.typeButton.text == "Type: Deaths")
+        -- Person: Mira, combined with the type
+        log.personButton.OnClick(log.personButton)
+        local mira
+        for _, row in ipairs(menu.rows) do if row:IsShown() and row.text.text == "Mira" then mira = row end end
+        mira.OnClick(mira)
+        assert(#log.entriesList == 1 and log.entriesList[1].kind == "death" and log.entriesList[1].sender == "Mira-TestRealm")
+        assert(log.showing.text:find("Deaths", 1, true) and log.showing.text:find("Mira", 1, true))
+        log.showAll.OnClick(log.showAll)
+        assert(#log.entriesList == 3 and log.typeButton.text == "Type: All")
+    ''')
