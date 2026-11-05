@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.7.0
 
 - WoW Forever: characters and log entries with only a first name, left by older versions, are removed
 - No more "No player named ... is currently playing" messages from the addon's own whispers
