@@ -156,6 +156,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False):
     runtime.execute((root / 'WhatsNewData.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'WhatsNew.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Firsts.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Recaps.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Minimap.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'StatusLine.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))

@@ -78,7 +78,27 @@ local function render()
             .. " · " .. WoWStatusHistory.oslo(e.at)) or "nobody yet"))
         row:Show()
     end
-    page.list:SetHeight(math.max(1, #medals) * 24)
+    -- Session recaps (#66): your newest ones below the medals.
+    local lines = {"", "|cffffd100Session recaps|r"}
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        if e.kind == "recap" and #lines < 12 and WoWStatusJournal.visible(e) then
+            table.insert(lines, WoWStatusHistory.oslo(e.at):sub(1, 16) .. "  " .. e.text:gsub("|", "||"))
+        end
+    end
+    if #lines == 2 then table.insert(lines, "No recaps yet. One is written after each play session.") end
+    page.recaps = page.recaps or {}
+    for i, text in ipairs(lines) do
+        local row = page.recaps[i]
+        if not row then
+            row = page.list:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            row:SetWidth(680); row:SetJustifyH("LEFT")
+            page.recaps[i] = row
+        end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(#medals + i - 1) * 24)
+        row:SetText(text); row:Show()
+    end
+    for i = #lines + 1, #page.recaps do page.recaps[i]:Hide() end
+    page.list:SetHeight((#medals + #lines) * 24)
 end
 F.render = render
 
@@ -107,7 +127,7 @@ end
 function F.buildRecords(parent)
     page = CreateFrame("Frame", "WoWStatusRecordsPage", parent); page:SetAllPoints(parent)
     page.heading = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    page.heading:SetPoint("TOPLEFT", 24, -4); page.heading:SetText("Firsts")
+    page.heading:SetPoint("TOPLEFT", 24, -4); page.heading:SetText("Firsts and session recaps")
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 24, -36); page.scroll:SetSize(710, 490)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)

@@ -51,6 +51,14 @@ local function peer(group,sender)
 end
 local function permitted(entry)
     if entry.kind=="questprogress" then return false end
+    -- Session recaps (#66) are local notes about your own characters only.
+    if entry.kind=="recap" then
+        if not entry.owner then return false end
+        for _, c in pairs(db.characters or {}) do
+            if c.identity.guid==entry.owner and c.identity.client==entry.client then return true end
+        end
+        return false
+    end
     if entry.kind=="quest" then
         local total=tonumber((entry.text or ""):match("^Completed (%d+) quests!$"))
         if not total or total<100 or total%100~=0 then return false end
@@ -638,6 +646,14 @@ function J.focus(id)
     return false
 end
 function J.visible(entry) return db~=nil and permitted(entry) end
+-- A private recap of one of your sessions: never sent or relayed (not a shared kind).
+function J.recordRecap(character,at,text,flavour)
+    if not db or type(text)~="string" or text=="" then return false end
+    local identity=character.identity
+    return add({id="recap:"..identity.client..":"..identity.guid..":"..at,client=identity.client,
+        sender=identity.name.."-"..S.stripSpace(identity.realm),owner=identity.guid,kind="recap",at=at,
+        text=trim(text,160),flavour=flavour,groups={},origin="mine"})
+end
 local frame=CreateFrame("Frame")
 frame:RegisterEvent("CHAT_MSG_ADDON")
 frame:SetScript("OnEvent",function(_,_,prefix,message,distribution,sender)

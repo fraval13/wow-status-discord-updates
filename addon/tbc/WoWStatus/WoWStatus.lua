@@ -86,6 +86,7 @@ local function queue(kind, data, fixed, targetGroups)
     snapshot()
     WoWStatusPopups.broadcast(current, event)
     WoWStatusScreenshots.event(event, current.settings)
+    WoWStatusRecaps.note(event)
     return event
 end
 
@@ -490,6 +491,7 @@ local function initialize()
     WoWStatusProgress.questMilestone(current, current.snapshot.quests_completed, current.snapshot.quests_source, true)
     if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
     WoWStatusMilestones.init(current, queue)
+    WoWStatusRecaps.init(current)
     registerSettings()
     if current.settings.enabled then
         if current.settings.fields.playtime then A.requestPlaytime() end
@@ -527,6 +529,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
     end
     if not current then return end
     if event == "PLAYER_LOGOUT" then
+        WoWStatusRecaps.logout()
         scrub()
     elseif event == "PLAYER_LEVEL_UP" then
         local level = S.number(...)
@@ -572,7 +575,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
         -- unavailable API clears the latch so death counting can never get stuck.
         local still_dead = S.call(UnitIsDeadOrGhost, "player")
         if not (still_dead == true or still_dead == 1) then current.death_latched = false end
-    elseif event == "PLAYER_XP_UPDATE" then snapshot()
+    elseif event == "PLAYER_XP_UPDATE" then WoWStatusRecaps.activity(); snapshot()
     elseif event == "QUEST_QUERY_COMPLETE" or event == "QUEST_LOG_UPDATE" then
         WoWStatusProgress.queryComplete(); snapshot(); questMilestone()
     elseif event == "QUEST_TURNED_IN" then
