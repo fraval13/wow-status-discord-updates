@@ -149,3 +149,20 @@ def test_you_are_never_your_own_peer_when_the_roster_names_your_realm_differentl
         WoWStatusPopups.notePeer(group,"Thora-Realm1PvE")
         assert(WoWStatusPopups.onlineCount()==1)
     ''')
+
+
+def test_dragging_an_attached_line_unpins_it_from_the_tracker():
+    # Live report: players tracking quests could not move the line, others could.
+    lua = actor('Thora')
+    lua.execute(TRACKER)
+    lua.execute('''
+        WoWStatusStatusLine.update()
+        local f = WoWStatusStatusLineFrame
+        assert(f.attached)
+        f.OnDragStart(f); f.OnDragStop(f)
+        assert(not f.attached and WoWStatusDB.status_line.attach == false)
+        assert(WoWStatusDB.status_line.position.x == 40)
+        -- It stays where it was dropped, also after the next update.
+        WoWStatusStatusLine.update()
+        assert(not f.attached and f.anchor[1] == "TOPLEFT")
+    ''')

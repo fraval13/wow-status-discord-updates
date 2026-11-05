@@ -1,6 +1,6 @@
 -- Compact group status line (#62): "WoW Status · 3 online · Bob hit 42 (5m)".
 -- It sits under the quest tracker when one is found and attaching is chosen,
--- otherwise it is a small panel you can drag. Clicking it opens the main
+-- otherwise it is a small panel you can drag; dragging an attached line unpins it. Clicking it opens the main
 -- window. Settings are account-wide in WoWStatusDB.status_line.
 WoWStatusStatusLine = {}
 local L, S = WoWStatusStatusLine, WoWStatusSafe
@@ -95,7 +95,13 @@ local function create()
         WoWStatusMainWindow.show()
     end)
     line:SetScript("OnDragStart", function(self)
-        if self.attached then return end -- Attached lines follow the tracker.
+        -- Dragging always works: an attached line is unpinned from the quest
+        -- tracker and stays where it is dropped (re-attach in the settings).
+        if self.attached then
+            local value = settings()
+            if value then value.attach = false end
+            self.attached = false
+        end
         self.moved = true; self:StartMoving()
     end)
     line:SetScript("OnDragStop", function(self)
