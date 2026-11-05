@@ -250,6 +250,42 @@ function J.recordLocal(event,backfill)
         level=event.kind=="level" and event.data.level or nil,at=event.at,
         text=trim(event.kind=="level" and ("Reached level "..event.data.level.."!") or P.eventText(event) or event.kind,160),
         quality=loot and loot.quality,class_id=loot and loot.class_id,equip_loc=loot and loot.equip_loc,item_id=loot and loot.item_id,groups=groups,origin="mine"})
+    if event.kind=="death" and not backfill then J.setDetails(id,event.data.zone,event.data.killer) end
+end
+-- Death details (zone, killer) by entry ID: this character's own deaths, and
+-- friends' from a separate "K" message, which older versions ignore. Kept apart
+-- from the entry, so details may arrive before or after it. At most 300.
+function J.setDetails(id,zone,killer)
+    if not db or type(id)~="string" then return false end
+    local function clean(text)
+        text=S.string(text)
+        return text and #text<=48 and not text:find(S.CONTROL_OR_PIPE) and text or nil
+    end
+    zone,killer=clean(zone),clean(killer)
+    if not zone and not killer then return false end
+    db.journal.details=type(db.journal.details)=="table" and db.journal.details or {}
+    local details=db.journal.details
+    if not details[id] then
+        local count,oldest,oldestAt=0,nil,math.huge
+        for key,item in pairs(details) do count=count+1;if (item.at or 0)<oldestAt then oldest,oldestAt=key,item.at or 0 end end
+        if count>=300 and oldest then details[oldest]=nil end
+    end
+    details[id]={zone=zone,killer=killer,at=S.now()}
+    if refresh then refresh() end
+    return true
+end
+function J.details(e)
+    local details=db and type(db.journal.details)=="table" and db.journal.details
+    return details and type(e)=="table" and details[e.id] or nil
+end
+-- "Died · Duskwood · killed by Defias Pillager" for a death with details.
+function J.deathText(e)
+    local text=T(e.text)
+    local d=e.kind=="death" and J.details(e)
+    if not d then return text end
+    if d.zone then text=text.." · "..d.zone end
+    if d.killer then text=text.." · "..T("killed by").." "..T(d.killer) end
+    return text
 end
 function J.observe(kind,text,info)
     if kind=="questprogress" then return end
@@ -921,7 +957,7 @@ local function render()
             row.heading:SetText(T(heading))
             local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
                 and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
-            row.message:SetText(who:gsub("|","||").." — "..T(e.text):gsub("|","||"))
+            row.message:SetText(who:gsub("|","||").." — "..J.deathText(e):gsub("|","||"))
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
                 or e.origin=="legacy" and T("Saved group update") or T("Live group update"))

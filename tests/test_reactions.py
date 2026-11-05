@@ -98,3 +98,31 @@ def test_reaction_whispers_show_on_your_own_log_card():
             if e.owner and e.kind == "level" then assert(not e.reactions["bob-testrealm"]) end
         end
     ''')
+
+
+def test_death_details_show_zone_and_killer_for_you_and_your_friends():
+    from test_roster import pair, pump
+    mira, thora = pair()
+    pump(mira, thora)
+    mira.execute('''
+        __hit = {0, "SWING_DAMAGE", false, "Creature-1", "Defias Pillager", 0, 0, UnitGUID("player"), "Mira", 0, 0}
+        function CombatLogGetCurrentEventInfo() return (unpack or table.unpack)(__hit) end
+        function GetRealZoneText() return "Westfall" end
+        fire("COMBAT_LOG_EVENT_UNFILTERED")
+        fire("PLAYER_DEAD")
+        local own
+        for _, e in ipairs(WoWStatusJournal.entries()) do if e.kind == "death" then own = e end end
+        assert(WoWStatusJournal.deathText(own):find("Westfall · killed by Defias Pillager", 1, true), WoWStatusJournal.deathText(own))
+    ''')
+    sent = pump(mira, thora, start=300)
+    assert any(line.startswith('K ') and 'Defias_Pillager' in line for line in sent)
+    # The death itself reaches Thora as a live update; the details join it by ID.
+    thora.execute('''
+        local group = next(character().group_ids)
+        local nonce
+        for id in pairs(WoWStatusDB.journal.details or {}) do nonce = id:match(":([^:]+)$") end
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce=nonce,kind="death",text="Total deaths: 1",at=time(),group_id=group})
+        local e
+        for _, entry in ipairs(WoWStatusJournal.entries()) do if entry.kind == "death" then e = entry end end
+        assert(WoWStatusJournal.deathText(e) == "Total deaths: 1 · Westfall · killed by Defias Pillager", WoWStatusJournal.deathText(e))
+    ''')

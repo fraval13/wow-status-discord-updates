@@ -8,6 +8,25 @@ local kinds = {"level", "death", "zone", "quest", "profession", "dungeon", "moun
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
+-- What last hurt this character, from the combat log, for death details. Only
+-- damage to this character is looked at; clients that hide the combat log
+-- (secret values) simply give no killer.
+local lastHit
+local DAMAGE = {SWING_DAMAGE=true, RANGE_DAMAGE=true, SPELL_DAMAGE=true, SPELL_PERIODIC_DAMAGE=true,
+    DAMAGE_SHIELD=true, DAMAGE_SPLIT=true, ENVIRONMENTAL_DAMAGE=true}
+local ENVIRONMENT = {Falling="Falling", Drowning="Drowning", Fatigue="Fatigue", Fire="Fire", Lava="Lava", Slime="Slime",
+    FALLING="Falling", DROWNING="Drowning", FATIGUE="Fatigue", FIRE="Fire", LAVA="Lava", SLIME="Slime"}
+local function trackHit()
+    if not CombatLogGetCurrentEventInfo then return end
+    local ok, _, sub, _, _, sourceName, _, _, destGUID, _, _, _, environment = pcall(CombatLogGetCurrentEventInfo)
+    if not ok or not DAMAGE[S.value(sub)] then return end
+    -- The stored GUID: this runs for every combat event nearby, so it stays cheap.
+    if not current or S.string(destGUID) ~= current.identity.guid then return end
+    local name = sub == "ENVIRONMENTAL_DAMAGE" and ENVIRONMENT[S.string(environment) or ""] or S.string(sourceName)
+    if name and #name <= 48 and not name:find(S.CONTROL_OR_PIPE) then
+        lastHit = {name=name, at=GetTime and GetTime() or time()}
+    end
+end
 
 local T = WoWStatusLocale.T
 -- Every chat message of the addon (also other modules' notices) passes here.
@@ -527,7 +546,7 @@ end
 -- registration of the remaining observers, options and slash commands.
 for _,event in ipairs({"ADDON_LOADED","PLAYER_LOGIN","PLAYER_ENTERING_WORLD","PLAYER_REGEN_ENABLED",
     "PLAYER_LOGOUT","PLAYER_LEVEL_UP","PLAYER_EQUIPMENT_CHANGED","ZONE_CHANGED_NEW_AREA",
-    "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE",
+    "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE","COMBAT_LOG_EVENT_UNFILTERED",
     "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST"}) do
     if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event)==true then
         pcall(frame.RegisterEvent,frame,event)
@@ -588,8 +607,15 @@ frame:SetScript("OnEvent", function(_, event, ...)
         snapshot()
     elseif event == "PLAYER_DEAD" then
         if current.settings.enabled and current.settings.collection.death and WoWStatusProgress.death(current) then
-            queue("death", current.settings.fields.deaths and {total_deaths=WoWStatusProgress.totalDeaths(current)} or {})
+            local data = current.settings.fields.deaths and {total_deaths=WoWStatusProgress.totalDeaths(current)} or {}
+            local now = GetTime and GetTime() or time()
+            if lastHit and now - lastHit.at <= 5 then data.killer = lastHit.name end
+            lastHit = nil
+            local event = queue("death", data)
+            if event and WoWStatusRoster.deathDetails then WoWStatusRoster.deathDetails(event) end
         end
+    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        trackHit()
     elseif event == "PLAYER_ALIVE" or event == "PLAYER_UNGHOST" then
         -- PLAYER_ALIVE also fires on spirit release, while the player is still a ghost.
         -- Unlatching then would let a later PLAYER_DEAD recount the same death. An

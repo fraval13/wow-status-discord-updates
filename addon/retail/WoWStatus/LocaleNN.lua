@@ -203,6 +203,9 @@ W.add({
     ["First epic mount"] = "Første episke ridedyr", ["First epic mount!"] = "Første episke ridedyr!",
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
+    -- Death details
+    ["killed by"] = "drepen av", ["Falling"] = "fall", ["Drowning"] = "drukning", ["Fatigue"] = "utmatting",
+    ["Fire"] = "eld", ["Lava"] = "lava", ["Slime"] = "slim",
     -- Reactions
     ["from"] = "frå", ["Git Good"] = "Git Good", ["GZ!"] = "GZ!", ["F"] = "F",
     -- New version notice

@@ -300,6 +300,26 @@ local function noteSeen(group, name)
 end
 R.noteSeen = noteSeen
 
+-- Details of this character's death for its groups' members online now.
+function R.deathDetails(event)
+    if not db or not current or type(event) ~= "table" or type(event.data) ~= "table" then return end
+    local nonce = WoWStatusPopups.eventNonce(event)
+    local function encode(text)
+        text = S.string(text)
+        if not text or #text > 48 or text:find(S.CONTROL_OR_PIPE) then return "-" end
+        return (text:gsub(" ", "_"))
+    end
+    local zone, killer = encode(event.data.zone), encode(event.data.killer)
+    if not nonce or (zone == "-" and killer == "-") then return end
+    for group in pairs(event.group_ids or {}) do
+        if WoWStatusGroups.selected(current)[group] then
+            for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                table.insert(outgoing, {target=peer, text=table.concat({"K", group, state().id, nonce, zone, killer}, " ")})
+            end
+        end
+    end
+end
+
 -- Send to group members not yet told this session (also after a change).
 function R.scan()
     if not db or not current then return end
@@ -423,6 +443,14 @@ function R.receive(message, sender, distribution)
         if sentTo[group] then sentTo[group][k] = nil end
         enqueue(group, sender)
         return true
+    end
+    -- "K": details of a member's death (zone, killer); "_" stands for spaces, "-" for none.
+    if op == "K" and #words == 6 then
+        local nonce = words[4]
+        if #nonce > 64 or not nonce:match("^[%w%-]+$") then return false end
+        local function decode(text) return text ~= "-" and (text:gsub("_", " ")) or nil end
+        local id = WoWStatusJournal.eventID(sender, nonce)
+        return id ~= nil and WoWStatusJournal.setDetails(id, decode(words[5]), decode(words[6]))
     end
     if op == "V" and #words == 4 then
         local version, player = words[4], players[pid]
