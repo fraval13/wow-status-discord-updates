@@ -58,12 +58,13 @@ def sender_of(index):
     return name.capitalize() + '-TestRealm'
 
 
-def serve(victim, sender, record_for, start, stop, pages=None, deliver=True):
+def serve(victim, sender, record_for, start, stop, pages=None, deliver=True, during=None):
     """Answer the victim's catch-up queries to sender, in any group, from one list.
 
     record_for(n) gives the relay's n-th newest record (1-based), six a page; the
     list has `pages` pages (unbounded if None). With deliver=False the requested
-    entries are never sent. Returns the number of pages queried and the number of
+    entries are never sent. during maps a time to a call made when it is reached.
+    Returns the number of pages queried and the number of
     entries the victim fetched with G.
     """
     client = victim.eval('WoWStatusAdapter.client_id')
@@ -75,8 +76,11 @@ def serve(victim, sender, record_for, start, stop, pages=None, deliver=True):
         return [part.replace('{client}', client) for part in record_for(n)]
     seen, queried, fetched, now = victim.eval('#__sent'), 0, 0, start
     records = {}
+    during = dict(during or {})
     while now < stop:
         clock(victim, now)
+        for at in sorted(at for at in during if at <= now):
+            during.pop(at)()
         victim.eval('WoWStatusJournal.tick')()
         count = victim.eval('#__sent')
         for i in range(seen + 1, count + 1):
@@ -385,7 +389,7 @@ def test_the_authors_copy_replaces_a_claim_after_the_authors_share_is_spent():
     assert (entry['text'], entry['via']) == ('Total deaths: 3', 'Thora-TestRealm')
 
 
-def test_a_failed_pull_does_not_use_up_the_hello_rate():
+def test_a_member_who_reconnects_soon_after_a_failed_pull_is_pulled_when_the_interval_ends():
     victim = actor('Mira')
     victim.execute('__peers={"Eldrin-TestRealm"}')
     group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
@@ -394,18 +398,99 @@ def test_a_failed_pull_does_not_use_up_the_hello_rate():
     receive = victim.eval('WoWStatusJournal.receive')
     clock(victim, 1000)
     assert receive(f'J2 {group} H {BASE + 1000}-1 {client}', 'Eldrin-TestRealm', 'WHISPER')
-    # Eldrin disconnects: the pull and its one retry time out unanswered.
-    for now in range(1001, 1300):
+    clock(victim, 1001)
+    victim.eval('WoWStatusJournal.tick')()
+    # Eldrin goes offline mid-pull and leaves the channel roster.
+    victim.execute('__peers={}')
+    for now in range(1002, 1300):
+        clock(victim, now)
+        victim.eval('WoWStatusJournal.tick')()
+    assert len(queries_to(victim, 'Eldrin-TestRealm')) == 1
+    # He logs in again 5 minutes later: his hello waits for the interval to end.
+    victim.execute('__peers={"Eldrin-TestRealm"}')
+    clock(victim, 1300)
+    assert not receive(f'J2 {group} H {BASE + 1290}-1 {client}', 'Eldrin-TestRealm', 'WHISPER')
+    for now in range(1301, 1610):
         clock(victim, now)
         victim.eval('WoWStatusJournal.tick')()
     assert len(queries_to(victim, 'Eldrin-TestRealm')) == 2
-    # He logs in again within ten minutes of his first hello; that one counts.
-    clock(victim, 1300)
-    assert receive(f'J2 {group} H {BASE + 1290}-1 {client}', 'Eldrin-TestRealm', 'WHISPER')
-    for now in range(1301, 1310):
+
+
+def test_a_waiting_hello_waits_for_the_running_pull_and_restarts_from_the_newest():
+    """Review round 3: neither lost while a long pull runs, nor resumed at its end."""
+    victim = actor('Mira')
+    victim.execute('__peers={"Mallory-TestRealm"}')
+    group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    clock(victim, 100)
+    victim.eval('WoWStatusJournal.tick')()
+    receive = victim.eval('WoWStatusJournal.receive')
+    clock(victim, 1000)
+    assert receive(f'J2 {group} H {BASE + 1000}-1 {client}', 'Mallory-TestRealm', 'WHISPER')
+    reload = {1300: lambda: receive(f'J2 {group} H {BASE + 1300}-2 {client}', 'Mallory-TestRealm', 'WHISPER')}
+    # Mallory always has more: the pull runs to the page limit, past the interval.
+    serve(victim, 'Mallory-TestRealm', forged_record, 1001, 2100, during=reload)
+    offsets = [int(text.split(' ')[4]) for text in queries_to(victim, 'Mallory-TestRealm')]
+    first = offsets.index(2004) + 1  # the page limit: 335 pages of 6
+    assert offsets[:first] == list(range(0, 2005, 6))
+    # The waiting hello's pull starts after it, from the newest entries again.
+    assert offsets[first] == 0
+
+
+def test_the_hello_rate_ignores_pc_clock_changes():
+    """Review round 3: the rate runs on game uptime, not the PC clock."""
+    victim = actor('Mira')
+    victim.execute('__peers={"Mallory-TestRealm"}')
+    group, client = group_of(victim), victim.eval('WoWStatusAdapter.client_id')
+    clock(victim, 100)
+    victim.eval('WoWStatusJournal.tick')()
+    receive = victim.eval('WoWStatusJournal.receive')
+    clock(victim, 1000)
+    assert receive(f'J2 {group} H {BASE + 1000}-1 {client}', 'Mallory-TestRealm', 'WHISPER')
+    for now in range(1001, 1010):
         clock(victim, now)
         victim.eval('WoWStatusJournal.tick')()
-    assert len(queries_to(victim, 'Eldrin-TestRealm')) == 3
+    [query] = queries_to(victim, 'Mallory-TestRealm')
+    receive(f'J2 {group} I {query.split(" ")[3]} 0 0 -', 'Mallory-TestRealm', 'WHISPER')
+    # Eleven minutes of play later, the PC clock is set back an hour.
+    clock(victim, 1660)
+    victim.execute('__now=__now-3600')
+    assert receive(f'J2 {group} H {BASE - 1940}-2 {client}', 'Mallory-TestRealm', 'WHISPER')
+
+
+def test_the_records_page_is_recounted_only_when_its_entries_come_or_go():
+    """Review round 3: a catch-up of other entries skips the whole-log recount."""
+    victim = actor('Mira')
+    group = group_of(victim)
+    clock(victim, 10000)
+    victim.execute(f"""
+        local c,list=character(),WoWStatusDB.journal.entries
+        list[#list+1]={{id=c.identity.client..":thora-testrealm:d-1",client=c.identity.client,
+            sender="Thora-TestRealm",kind="death",text="Died",at={BASE}+50,groups={{["{group}"]=true}},origin="live"}}
+        for i=1,1999 do
+            list[#list+1]={{id=c.identity.client..":thora-testrealm:z-"..i,client=c.identity.client,
+                sender="Thora-TestRealm",kind="zone",text="Entered Zone "..i,at={BASE}+100+i,
+                groups={{["{group}"]=true}},origin="live"}}
+        end
+        WoWStatusJournal.init(WoWStatusDB,c)
+        __recounts=0
+        local update=WoWStatusFirsts.update
+        function WoWStatusFirsts.update() __recounts=__recounts+1;return update() end
+    """)
+    received = victim.eval('WoWStatusJournal.received')
+
+    def live(nonce, kind, text, at):
+        return received(victim.table_from({'sender': 'Eldrin-TestRealm', 'nonce': nonce, 'kind': kind,
+                                           'text': text, 'at': BASE + at, 'group_id': group}))
+    # The received side is full: a new zone evicts the oldest entry, a possible
+    # medal holder (Thora's death), so the medals are recounted.
+    assert live('z-a', 'zone', 'Entered Elwynn Forest', 9000)
+    assert victim.eval('__recounts') == 1
+    # The next zone only evicts a zone: nothing on the Records page changes.
+    assert live('z-b', 'zone', 'Entered Westfall', 9001)
+    assert victim.eval('__recounts') == 1
+    assert live('d-b', 'death', 'Died', 9002)
+    assert victim.eval('__recounts') == 2
+    assert victim.eval('WoWStatusFirsts.compute(WoWStatusJournal.entries()).death.id').endswith(':d-b')
 
 
 def test_a_member_in_two_shared_groups_uses_its_share_once_per_entry():

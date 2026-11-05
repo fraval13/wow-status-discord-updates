@@ -14,8 +14,9 @@ local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",2000,7*86400,6
 -- Catch-up one member can deliver per login session: at most RELAY_CAP new
 -- entries fetched from it, at most SENDER_CAP of them naming one other member (#4).
 local RELAY_CAP, SENDER_CAP = 300, 100
--- A member's hello starts a pull at most once per HELLO_INTERVAL in one group; a
--- newer hello within it waits for the interval to end (#4).
+-- A member's hello starts a pull at most once per HELLO_INTERVAL seconds of game
+-- uptime in one group; a newer hello within it waits for the interval and for
+-- any running pull from that member to end (#4).
 local HELLO_INTERVAL = 600
 local budgets = {}
 -- The accused name is last and may contain spaces: WoW Forever names can ("Mr Exadi").
@@ -110,20 +111,23 @@ local function rebuild()
     -- Own and received entries are capped separately, newest kept, so received
     -- traffic can never evict this account's own history (#4).
     local private,own,received=0,0,0
-    local kept,seen={},{}
+    local kept,seen,dropped={},{},{}
     for _, e in ipairs(db.journal.entries) do
+        local keep=false
         if not seen[e.id] then
             seen[e.id]=true
             local localOnly=e.owner and not next(e.groups or {})
             if localOnly then private=private+1 end
             if not (localOnly and private>1000) then
                 if e.owner then own=own+1 else received=received+1 end
-                if (e.owner and own or received)<=CAP then kept[#kept+1]=e end
+                keep=(e.owner and own or received)<=CAP
             end
         end
+        if keep then kept[#kept+1]=e else dropped[#dropped+1]=e end
     end
     db.journal.entries=kept
     for _, e in ipairs(db.journal.entries) do index[e.id]=e;digests[digestFor(e)]=e end
+    return dropped
 end
 -- t is full, or a live packet's cut of it: a prefix of full followed by "...".
 local function cutOf(full,t)
@@ -148,12 +152,22 @@ local function ownCharacter(entry)
     end
     return false
 end
-local function insert(entry)
+-- The Records page changes only when an entry it can show comes or goes, so a
+-- catch-up of other entries skips its whole-log recount (#4).
+local function recordsChange(entry,removed,dropped)
+    local F=WoWStatusFirsts
+    if not F.matters or F.matters(entry) or (removed and F.matters(removed)) then return true end
+    for _, e in ipairs(dropped) do if F.matters(e) then return true end end
+    return false
+end
+-- removed: an entry this one replaces, already taken out of the log.
+local function insert(entry,removed)
     WoWStatusFlavour.text(entry)
-    table.insert(db.journal.entries,entry);rebuild()
+    table.insert(db.journal.entries,entry)
+    local dropped=rebuild()
     if refresh then refresh() end
     if WoWStatusStatusLine then WoWStatusStatusLine.update() end
-    if WoWStatusFirsts then WoWStatusFirsts.update() end
+    if WoWStatusFirsts and recordsChange(entry,removed,dropped) then WoWStatusFirsts.update() end
 end
 -- Returns true when the entry is new to the log: a new ID, or one that replaces a
 -- relay's claim with other content. False when it repeats a logged event or is refused.
@@ -173,7 +187,7 @@ local function add(entry)
             for group in pairs(old.groups) do entry.groups[group]=true end
         end
         for i,e in ipairs(db.journal.entries) do if e==old then table.remove(db.journal.entries,i);break end end
-        insert(entry)
+        insert(entry,old)
         return not (same and cutOf(old.text,entry.text))
     end
     if old then
@@ -457,22 +471,32 @@ local function advance(t)
     if not r or not r.nextOffset or next(r.pending) then return end
     requests[t]=nil
     local key=r.group..":"..r.key
-    cursors[key]=r.more and r.nextOffset or 0
     -- Paging continues past a spent share: later pages can still hold free
     -- fetches, such as an author's own copy replacing a relay's claim (#3).
     if r.more and r.pages<math.ceil(CAP/PAGE) then
+        cursors[key]=r.nextOffset
         requestPage(r.group,r.target,r.nextOffset,r.pages+1,r.retries)
-    elseif pumpJobs then pumpJobs() end
+    else
+        -- The next pull starts from the newest entries again, also after the page
+        -- limit: a responder can offer 2*CAP, but entries older than the newest
+        -- CAP or so would not outlast this log's own received cap.
+        cursors[key]=0
+        if pumpJobs then pumpJobs() end
+    end
 end
 -- A requested entry is done, stored or dropped; the page advances once all are.
 local function finish(r,t,d)
     r.pending[d]=nil;r.parts[d]=nil;r.via[d]=nil;advance(t)
 end
+-- Whether a pull from this member in this group is queued or running.
+local function pulling(group,key)
+    if queuedJobs[group..":"..key] then return true end
+    for _,r in pairs(requests) do if r.group==group and r.key==key then return true end end
+    return false
+end
 local function enqueueJob(group,target,retries)
-    local key=group..":"..P.senderKey(target)
-    if queuedJobs[key] or #jobs>=512 then return end
-    for _,r in pairs(requests) do if r.group==group and r.key==P.senderKey(target) then return end end
-    jobs[#jobs+1]={group=group,target=target,retries=retries or 0};queuedJobs[key]=true
+    if pulling(group,P.senderKey(target)) or #jobs>=512 then return end
+    jobs[#jobs+1]={group=group,target=target,retries=retries or 0};queuedJobs[group..":"..P.senderKey(target)]=true
 end
 pumpJobs=function()
     local active=0;for _ in pairs(requests) do active=active+1 end
@@ -528,11 +552,13 @@ function J.receive(message,sender,distribution)
         local last=seenHello[helloKey]
         if last and last.nonce==t then return true end
         -- A new hello from the same member and group starts a pull only so often.
-        -- Within the interval it waits, and J.tick starts one pull when it ends (#4).
-        if last and last.at and time()-last.at<HELLO_INTERVAL then
+        -- Within the interval it waits, and J.tick starts one pull later (#4).
+        -- Game uptime, unlike time(), can't jump when the PC clock is changed.
+        local uptime=GetTime and GetTime() or time()
+        if last and uptime-last.at<HELLO_INTERVAL then
             last.nonce,last.waiting=t,sender;return false
         end
-        seenHello[helloKey]={nonce=t,at=time(),group=group};enqueueJob(group,sender);return true
+        seenHello[helloKey]={nonce=t,at=uptime,group=group};enqueueJob(group,sender);return true
     end
     if op=="Q" then
         local offset,cutoff,mask=body:match("^(%d+) (%d+) ([0-7])$")
@@ -661,19 +687,14 @@ function J.tick()
     for t,r in pairs(requests) do
         if now-r.at>(r.sent and 120 or 300) then
             requests[t]=nil
-            if r.retries<1 then enqueueJob(r.group,r.target,r.retries+1)
-            elseif not r.inventory then
-                -- The member never answered its retry (offline), so the pull doesn't
-                -- use up its hello rate: its next login hello is honored (#4).
-                local hello=seenHello[r.group..":"..r.key]
-                if hello then hello.at=nil end
-            end
+            if r.retries<1 then enqueueJob(r.group,r.target,r.retries+1) end
         end
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
+    local uptime=GetTime and GetTime() or now
     for _,h in pairs(seenHello) do
-        if h.waiting and (not h.at or now-h.at>=HELLO_INTERVAL) then
-            enqueueJob(h.group,h.waiting);h.at,h.waiting=now,nil
+        if h.waiting and uptime-h.at>=HELLO_INTERVAL and not pulling(h.group,P.senderKey(h.waiting)) then
+            enqueueJob(h.group,h.waiting);h.at,h.waiting=uptime,nil
         end
     end
     for k,at in pairs(rates) do if now-at>120 then rates[k]=nil end end
