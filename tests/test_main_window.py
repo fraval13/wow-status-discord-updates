@@ -35,37 +35,37 @@ def test_new_pages_register_without_changing_the_frame_code():
     lua = make_lua(WINDOW)
     lua.execute('''
         __built, __refreshed = 0, 0
-        assert(WoWStatusMainWindow.register("records", "Records",
+        assert(WoWStatusMainWindow.register("sample", "Sample",
             function(parent) __built = __built + 1; local f = CreateFrame("Frame", nil, parent); return f end,
             function(frame) __refreshed = __refreshed + 1 end))
-        assert(not WoWStatusMainWindow.register("records", "Again"))
-        SlashCmdList.WOWSTATUS("records")
-        assert(WoWStatusMainWindow.active() == "records" and __built == 1 and __refreshed == 1)
+        assert(not WoWStatusMainWindow.register("sample", "Again"))
+        SlashCmdList.WOWSTATUS("sample")
+        assert(WoWStatusMainWindow.active() == "sample" and __built == 1 and __refreshed == 1)
         assert(not WoWStatusActivityLog or not WoWStatusActivityLog:IsShown())
         SlashCmdList.WOWSTATUS("activity")
-        SlashCmdList.WOWSTATUS("records")
+        SlashCmdList.WOWSTATUS("sample")
         assert(__built == 1 and __refreshed == 2)
-        WoWStatusMainWindow.refresh("records")
+        WoWStatusMainWindow.refresh("sample")
         assert(__refreshed == 3)
         WoWStatusMainWindow.refresh("activity")
         assert(__refreshed == 3)
     ''')
-    assert tab(lua, 'Records') is not None
+    assert tab(lua, "Sample") is not None
 
 
 def test_tabs_switch_pages_and_the_last_page_is_remembered():
     lua = make_lua(WINDOW)
     lua.execute('''
-        WoWStatusMainWindow.register("records", "Records", function(parent) return CreateFrame("Frame", nil, parent) end)
+        WoWStatusMainWindow.register("sample", "Sample", function(parent) return CreateFrame("Frame", nil, parent) end)
         WoWStatusJournal.show()
     ''')
-    records = tab(lua, 'Records')
+    records = tab(lua, "Sample")
     records.OnClick(records)
-    assert lua.eval('WoWStatusMainWindow.active()') == 'records'
+    assert lua.eval('WoWStatusMainWindow.active()') == "sample"
     assert lua.eval('WoWStatusActivityLog:IsShown()') is False
-    assert lua.eval('WoWStatusDB.main_window.page') == 'records'
+    assert lua.eval('WoWStatusDB.main_window.page') == "sample"
     lua.execute('WoWStatusMainWindow.hide(); WoWStatusMainWindow.show()')
-    assert lua.eval('WoWStatusMainWindow.active()') == 'records'
+    assert lua.eval('WoWStatusMainWindow.active()') == "sample"
 
 
 def test_window_position_is_saved_and_restored():

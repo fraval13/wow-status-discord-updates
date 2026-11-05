@@ -591,6 +591,16 @@ function P.guardWarning(group, accused, reporter)
     return true
 end
 
+-- A local-only notice (for example a new First). Never logged, sent or opened in the log.
+-- Notices wait for the next tick, so they follow the update that caused them.
+local notices = {}
+function P.notice(item)
+    if not prefs or #incoming + #notices >= 128 then return false end
+    item.preview, item.key, item.received_at = true, "local-notice", time()
+    table.insert(notices, item)
+    return true
+end
+
 function P.preview(kind)
     if not prefs then return end
     local samples = {
@@ -616,6 +626,8 @@ end
 
 local function tick()
     if not prefs then return end
+    for _, item in ipairs(notices) do table.insert(incoming, item) end
+    notices = {}
     local now = time()
     syncGroups()
     if not receiving() then
