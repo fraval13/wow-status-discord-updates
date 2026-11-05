@@ -833,6 +833,12 @@ function P.reactions(item)
     if item.level then return {"GZ!"} end
     if item.kind == "death" then return {"F", "Git Good"} end
     if item.kind == "introduction" then return {"Welcome!"} end
+    if item.kind == "zone" then
+        -- "Enjoy Stranglethorn Vale!" from the notification's "Entered Stranglethorn Vale".
+        local zone = S.string(item.text) and S.trim(item.text:match("^Entered (.+)$") or "")
+        if zone and zone ~= "" and #zone <= 48 and not zone:find(S.CONTROL_OR_PIPE) then return {"Enjoy " .. zone .. "!"} end
+        return {"Congrats!"}
+    end
     if POSITIVE[item.kind] then return {"Congrats!"} end
     return {}
 end
@@ -864,12 +870,16 @@ local function reactionButtons()
         end
         button.reaction = list[i]
         button:SetText(list[i])
+        -- Wide enough for its text ("Enjoy Stranglethorn Vale!"), never narrower than 86.
+        local label = button.GetFontString and button:GetFontString()
+        local width = label and label.GetStringWidth and S.number(label:GetStringWidth())
+        button:SetSize(math.min(260, math.max(86, (width or (#list[i] * 7)) + 24)), 24)
         button:ClearAllPoints(); button:SetPoint("TOPRIGHT", x, -10)
-        x = x - 90
+        x = x - (button.GetWidth and button:GetWidth() or 86) - 4
         button:Show()
     end
     -- Short headings ("LEVEL UP!") sit beside the buttons.
-    toast.heading:SetWidth(#list > 0 and (438 + x + 12) or 438)
+    toast.heading:SetWidth(#list > 0 and math.max(120, 438 + x + 12) or 438)
 end
 -- Whether the mouse is over the visible notification (or one of its buttons).
 function P.hovered()

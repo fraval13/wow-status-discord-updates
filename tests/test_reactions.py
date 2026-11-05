@@ -32,7 +32,8 @@ def test_each_kind_gets_fitting_reactions():
         local function r(item) return table.concat(WoWStatusPopups.reactions(item), "|") end
         assert(r({sender="Mira-TestRealm", level=10}) == "GZ!")
         assert(r({sender="Mira-TestRealm", kind="death", text="Died"}) == "F|Git Good")
-        for _, kind in ipairs({"profession","dungeon","raid","mount","epicmount","reputation","unlock","pvp","quest","zone","loot"}) do
+        assert(r({sender="Mira-TestRealm", kind="zone", text="Entered Stranglethorn Vale"}) == "Enjoy Stranglethorn Vale!")
+        for _, kind in ipairs({"profession","dungeon","raid","mount","epicmount","reputation","unlock","pvp","quest","loot"}) do
             assert(r({sender="Mira-TestRealm", kind=kind}) == "Congrats!", kind)
         end
         assert(r({sender="Mira-TestRealm", kind="introduction"}) == "Welcome!")
