@@ -12,6 +12,8 @@ function WoWStatusPresentation.theme(item)
         introduction={"Achievement_Character_Human_Male",.9,.75,.4,"WELCOME, ADVENTURER!"},
         guard={"INV_Misc_Book_07",1,.35,.2,"INVALID LOG DATA REPORTED"},
         dungeon={"Achievement_Dungeon_Deadmines",1,.75,.2,"FIRST DUNGEON CLEAR!"},
+        raid={"Achievement_Boss_Ragnaros",1,.6,.15,"FIRST RAID BOSS!"},
+        epicmount={"Ability_Mount_RidingHorse",.7,.3,1,"FIRST EPIC MOUNT!"},
         mount={"Ability_Mount_RidingHorse",1,.8,.3,"A NEW ADVENTURE!"},
         reputation={"Achievement_Reputation_01",.3,.8,1,"REPUTATION MILESTONE!"},
         unlock={"INV_Misc_Book_07",.6,.4,1,"CLASS ABILITY UNLOCKED!"},

@@ -31,7 +31,7 @@ local WITNESS = "^([%w%-]+) (%d+) (.+)$"
 local panel, refresh
 local equipment, professionRanks, lastQuery = {}, {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
-    dungeon=true,mount=true,reputation=true,unlock=true,pvp=true}
+    raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true}
 local fields={level="level",zone="zone",quest="quests",questprogress="quests",profession="professions",
     professionprogress="professions",equipment="gear"}
 local function trim(text,limit)
@@ -72,8 +72,8 @@ local function peer(group,sender)
 end
 local function permitted(entry)
     if entry.kind=="questprogress" then return false end
-    -- Session recaps (#66) are local notes about your own characters only.
-    if entry.kind=="recap" then
+    -- Private recaps retain empty group scope and belong to this account only.
+    if entry.kind=="recap" and not next(entry.groups or {}) then
         if not entry.owner then return false end
         for _, c in pairs(db.characters or {}) do
             if c.identity.guid==entry.owner and c.identity.client==entry.client then return true end
@@ -89,7 +89,7 @@ local function permitted(entry)
     local owner
     for _, c in pairs(db.characters or {}) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
     if not owner or not owner.settings.enabled then return false end
-    local kind=({questprogress="quest",professionprogress="profession"})[entry.kind] or entry.kind
+    local kind=({raid="dungeon",epicmount="mount",questprogress="quest",professionprogress="profession"})[entry.kind] or entry.kind
     if entry.kind~="equipment" and not owner.settings.collection[kind] then return false end
     if fields[entry.kind] and not owner.settings.fields[fields[entry.kind]] then return false end
     return true
@@ -103,7 +103,7 @@ local function relayable(entry,group,now)
     if entry.owner then
         local owner
         for _, c in pairs(db.characters) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
-        if not owner or not owner.settings.in_game or owner.settings.in_game[entry.kind]==false then return false end
+        if not owner or not owner.settings.in_game or owner.settings.in_game[({raid="dungeon",epicmount="mount"})[entry.kind] or entry.kind]==false then return false end
         if entry.kind=="loot" and not WoWStatusLoot.allowed(owner.settings,entry) then return false end
     end
     return true
@@ -415,6 +415,9 @@ function J.validText(kind,detail,level)
     -- Local logs also keep "Looted"; only "Equipped" is ever shared or shown.
     if kind=="loot" then return named(detail,"Equipped ") or named(detail,"Looted ") end
     if kind=="dungeon" then return named(detail,"First clear: ") end
+    if kind=="raid" then return named(detail,"First raid boss: ") end
+    if kind=="epicmount" then return named(detail,"First epic mount: ") end
+    if kind=="recap" then return WoWStatusRecaps and WoWStatusRecaps.validShared(detail) or false end
     if kind=="mount" then return detail=="First mount ride recorded!" or named(detail,"First mount: ") end
     if kind=="reputation" then
         return named(detail,"Honored with ") or named(detail,"Revered with ") or named(detail,"Exalted with ")
@@ -875,7 +878,7 @@ function J.focus(id)
     return false
 end
 function J.visible(entry) return db~=nil and (entry.sample==true or permitted(entry)) end
--- A private recap of one of your sessions: never sent or relayed (not a shared kind).
+-- A private recap has no group scopes and is never sent or offered to peers.
 function J.recordRecap(character,at,text,flavour)
     if not db or type(text)~="string" or text=="" then return false end
     local identity=character.identity

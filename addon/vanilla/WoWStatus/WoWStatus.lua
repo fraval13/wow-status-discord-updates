@@ -60,7 +60,7 @@ local function snapshot()
 end
 
 local function queue(kind, data, fixed, targetGroups)
-    if not current or not current.settings.enabled or not current.settings.collection[kind] then
+    if not current or not current.settings.enabled or not current.settings.collection[({raid="dungeon",epicmount="mount"})[kind] or kind] then
         return
     end
     if kind == "discovery" or kind == "lfg" then return end
@@ -103,7 +103,7 @@ local function scrub()
     -- Remove data immediately when privacy choices change, before any disk export.
     local retained = {}
     for _, event in ipairs(current.events) do
-        local allowed = current.settings.enabled and current.settings.collection[event.kind]
+        local allowed = current.settings.enabled and current.settings.collection[({raid="dungeon",epicmount="mount"})[event.kind] or event.kind]
         if event.kind == "level" and not current.settings.fields.level then allowed = false end
         if event.kind == "zone" and not current.settings.fields.zone then allowed = false end
         if event.kind == "equipment" and not current.settings.fields.gear then allowed = false end
@@ -180,12 +180,13 @@ local function showPanel(host)
         checkbox("enabled","Share my progress",24,-174)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
-            profession="Profession milestones",dungeon="First dungeon clear",mount="First mount",
+            profession="Profession milestones",dungeon="Dungeon / raid milestones",mount="Mount milestones",
             reputation="Reputation rank",unlock="Class ability unlock",pvp=A.pvpLabel or "PvP rank"}
         for i,key in ipairs(kinds) do
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end
-        section("First-time equipment",-508)
+        checkbox("recap","Share my session recaps",24,-480,"in_game")
+        section("First-time equipment",-522)
         checkbox("loot","Announce first armor equips",24,-544,"in_game")
         checkbox("rare","Rare equipment",54,-586,"loot_rarities")
         checkbox("epic","Epic equipment",54,-628,"loot_rarities")
@@ -363,9 +364,11 @@ openSettings = function(mode)
     registerSettings()
     local category = mode == "previews" and previewsCategory or mode == "discord" and discordCategory or (mode == "groups" and groupsCategory or settingsCategory)
     if category and category.GetID and Settings and Settings.OpenToCategory then
-        Settings.OpenToCategory(category:GetID())
+        local ok=pcall(function() Settings.OpenToCategory(category:GetID()) end)
+        if not ok then showPanel() end
     elseif category and InterfaceOptionsFrame_OpenToCategory then
-        InterfaceOptionsFrame_OpenToCategory(category)
+        local ok=pcall(InterfaceOptionsFrame_OpenToCategory,category)
+        if not ok then showPanel() end
     elseif mode == "previews" then WoWStatusPreviews.show()
     elseif mode == "discord" then showDiscord()
     elseif mode == "groups" then WoWStatusGroups.show()
@@ -435,6 +438,8 @@ local function initialize()
     current.settings.announcements.equipment = false
     current.settings.in_game = current.settings.in_game or {}
     current.settings.in_game.equipment = false
+    if current.settings.in_game.recap==nil then current.settings.in_game.recap=false end
+    current.settings.collection.recap=true
     current.settings.in_game.introduction=true
     current.settings.collection.introduction=true
     current.settings.announcements.introduction=true
@@ -494,7 +499,7 @@ local function initialize()
     WoWStatusProgress.questMilestone(current, current.snapshot.quests_completed, current.snapshot.quests_source, true)
     if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
     WoWStatusMilestones.init(current, queue)
-    WoWStatusRecaps.init(current)
+    WoWStatusRecaps.init(current,queue)
     WoWStatusRoster.init(WoWStatusDB, current)
     registerSettings()
     if current.settings.enabled then
