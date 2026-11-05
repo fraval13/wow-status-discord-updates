@@ -1,7 +1,7 @@
 """The workflows run pinned actions, keep no token on disk and fence the deploy (issue #27)."""
 import importlib.util
 import re
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 import pytest
 
@@ -63,7 +63,7 @@ def test_ci_installs_the_lock_with_the_receivers_own_pip_arguments(monkeypatch):
     spec.loader.exec_module(receiver)
     commands = []
     monkeypatch.setattr(receiver, 'run', lambda *args: commands.append(args))
-    receiver.install_dependencies(Path('/release'))
+    receiver.install_dependencies(PurePosixPath('/release'))  # the server's separators, on Windows too
     pip = [command[command.index('install') + 1:] for command in commands if 'pip' in command]
     text = (ROOT / '.github/workflows/checks.yml').read_text(encoding='utf-8')
     step = next(step for step in steps(text) if step.startswith('name: Install the locked release'))
