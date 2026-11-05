@@ -39,6 +39,25 @@ def test_online_count_uses_the_channel_count_without_requesting_a_roster():
     ''')
 
 
+def test_members_who_logged_off_stop_counting_as_online():
+    lua = actor('Thora')
+    lua.execute('''
+        __peers={"Thora-TestRealm","A-TestRealm","B-TestRealm"}
+        local group=next(character().group_ids)
+        WoWStatusPopups.peers(group)
+        for _=1,3 do WoWStatusPopups.tick() end
+        assert(WoWStatusPopups.onlineCount() == 2)
+        -- A and B log off: the old roster read no longer matches the channel.
+        __peers={"Thora-TestRealm"}
+        assert(WoWStatusPopups.onlineCount() == 0)
+        -- A recently heard member who left is not counted either.
+        WoWStatusPopups.notePeer(group,"A-TestRealm")
+        assert(WoWStatusPopups.onlineCount() == 0)
+        __peers={"Thora-TestRealm","A-TestRealm"}
+        assert(WoWStatusPopups.onlineCount() == 1)
+    ''')
+
+
 def test_line_attaches_under_the_quest_tracker_or_floats():
     lua = actor('Thora')
     lua.execute(TRACKER)
