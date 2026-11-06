@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.21.0
 
 - Long activity-log lines end with "..." instead of wrapping; hover a card to read all of it (no event ID)
 - In Nynorsk, GZ!, F and new-zone buttons pick one of 20 lines at random, and whisper what they show

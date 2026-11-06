@@ -1,5 +1,9 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.21.0", notes={
+        "Long activity-log lines end with \"...\" instead of wrapping; hover a card to read all of it (no event ID)",
+        "In Nynorsk, GZ!, F and new-zone buttons pick one of 20 lines at random, and whisper what they show",
+    }},
     {version="1.20.0", notes={
         "The day calendar and the filter menus are no longer hidden behind the window",
         "The day button simply says Today, Yesterday, a date or All days",
@@ -10,12 +14,5 @@ WoWStatusWhatsNewData = {
         "Clicking a reaction button sends it and closes the notification",
         "Browse groups: tick Listed on a group to let friends in your other groups see and join it",
         "Settings opened in their own window (for example in combat) use your window theme too",
-    }},
-    {version="1.18.0", notes={
-        "The activity log opens on today; a Day button opens a calendar to pick another day or all days",
-        "Clicking a notification only dismisses it; it no longer opens the activity log",
-        "In Nynorsk, F and Git Good are long lines too; long reaction buttons get their own row under the text",
-        "Congrats say what for: \"Congrats on the new gear!\", \"Congrats on level 30!\" and more, also in Nynorsk",
-        "Armor updates show the item's icon and coloured name; hover the notification or log card for its stats",
     }},
 }
