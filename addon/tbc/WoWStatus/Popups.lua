@@ -722,7 +722,16 @@ local function admit(c, now)
     noteReceive("verifying_sender", c, now)
     return false
 end
+local receiveUpdate
+-- Live updates; the debug log notes each with its result (no group name).
 function P.receive(text, sender, channel)
+    local result = receiveUpdate(text, sender, channel)
+    if type(text) == "string" then
+        S.debug("live " .. text:sub(1, 80) .. " from " .. tostring(sender) .. ": " .. (result and "shown" or "dropped"))
+    end
+    return result
+end
+receiveUpdate = function(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)
     if not receiving() or type(text) ~= "string" or #text > 220
         or type(channel) ~= "string" then return false end
@@ -1388,6 +1397,8 @@ frame:SetScript("OnEvent", function(_, event, ...)
         local group, message = text:match("^([a-f0-9]+) (.+)$")
         if group and WoWStatusGroups.valid(group) and WoWStatusGroups.contains(getCharacter(), group) then
             P.receive(message, sender, WoWStatusGroups.channel(group))
+        else
+            S.debug("live update for another group from " .. tostring(S.string(sender)))
         end
     elseif event == "CHAT_MSG_CHANNEL" then
         local text, sender, _, _, _, _, _, _, channel = ...
