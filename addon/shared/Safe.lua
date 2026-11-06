@@ -90,3 +90,14 @@ function S.outside(at, past, ahead)
     if (at >= realm - past and at <= realm + ahead) or (at >= pc - past and at <= pc + ahead) then return nil end
     return at < realm - past and "stale" or "future", realm
 end
+
+-- Debug log for live testing (/wstatus debug on): the newest 500 lines, saved in
+-- WoWStatusDB.debug_log and readable in the SavedVariables file after a /reload.
+-- Group names are shared secrets: callers leave them out.
+function S.debug(text)
+    local db = WoWStatusDB
+    if type(db) ~= "table" or db.debug ~= true then return end
+    db.debug_log = type(db.debug_log) == "table" and db.debug_log or {}
+    table.insert(db.debug_log, tostring(time()) .. " " .. tostring(text))
+    while #db.debug_log > 500 do table.remove(db.debug_log, 1) end
+end

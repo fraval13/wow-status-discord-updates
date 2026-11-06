@@ -186,6 +186,9 @@ W.add({
     ["Right-click: Options"] = "Høgreklikk: Innstillingar", ["Drag to move"] = "Dra for å flytte",
     -- Language and What's new
     ["Language:"] = "Språk:", ["Reload"] = "Last på nytt", ["Reload to apply"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
+    ["Use /wstatus debug on or /wstatus debug off."] = "Bruk /wstatus debug on eller /wstatus debug off.",
+    ["Debug log on. Type /reload to save it for reading."] = "Feilsøkingslogg på. Skriv /reload for å lagra han.",
+    ["Debug log off."] = "Feilsøkingslogg av.",
     ["Use /wstatus language nn for Nynorsk or /wstatus language en for English."] =
         "Bruk /wstatus language nn for nynorsk eller /wstatus language en for engelsk.",
     -- Notifications

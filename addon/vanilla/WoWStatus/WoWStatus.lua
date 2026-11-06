@@ -727,6 +727,15 @@ SlashCmdList.WOWSTATUS = function(message)
         else
             say("Use /wstatus language nn for Nynorsk or /wstatus language en for English.")
         end
+    elseif command == "debug" then
+        local value = rest:lower()
+        if value == "on" or value == "off" then
+            WoWStatusDB.debug = value == "on" or nil
+            if value == "on" then WoWStatusDB.debug_log = {} end
+            say("Debug log " .. value .. (value == "on" and ". Type /reload to save it for reading." or "."))
+        else
+            say("Use /wstatus debug on or /wstatus debug off.")
+        end
     elseif command == "popupsize" then
         if WoWStatusTheme.setPopupSize(rest) then
             say("Notification size: " .. WoWStatusTheme.popupSize() .. "%.")

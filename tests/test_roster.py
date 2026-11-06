@@ -407,3 +407,27 @@ def test_sync_looks_up_one_member_with_who():
     assert level_of(thora, 'Mira-TestRealm')[0] == 43
     # Only group members are remembered.
     assert thora.eval('(function() local n = 0; for _ in pairs(WoWStatusDB.roster.who) do n = n + 1 end; return n end)()') == 1
+
+
+def test_forever_accepts_lists_from_members_on_any_internal_realm():
+    # WoW Forever: the roster key leaves the realm out, but membership is checked
+    # by full name with realm. Using the roster key rejected every list (1.14-1.16).
+    mira, thora = pair()
+    thora.execute('WoWStatusAdapter.full_names = true')
+    mira.execute('character().chat_name = "Mira Stone"')
+    pump(mira, thora)
+    assert level_of(thora, 'Mira Stone-TestRealm')[0] == 1
+
+
+def test_debug_log_records_roster_traffic_without_group_names():
+    mira, thora = pair()
+    thora.eval('SlashCmdList.WOWSTATUS')('debug on')
+    pump(mira, thora)
+    log = list(thora.eval('WoWStatusDB.debug_log').values())
+    group = thora.eval('(next(character().group_ids))')
+    assert any(' from Mira-TestRealm: ok' in line for line in log)
+    assert not any(group in line for line in log)
+    thora.eval('SlashCmdList.WOWSTATUS')('debug off')
+    before = thora.eval('#WoWStatusDB.debug_log')
+    pump(mira, thora, start=500)
+    assert thora.eval('#WoWStatusDB.debug_log') == before

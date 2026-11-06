@@ -28,6 +28,11 @@ local MAX_PLAYERS, MAX_CHARACTERS = 64, 20
 local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=true, DEATHKNIGHT=true, SHAMAN=true,
     MAGE=true, WARLOCK=true, MONK=true, DRUID=true, DEMONHUNTER=true, EVOKER=true}
 local db, current, page, report
+-- A roster line for the debug log, its group name left out.
+local function redacted(text)
+    local op, rest = tostring(text):match("^(" .. S.NONSPACE .. "+) " .. S.NONSPACE .. "+(.*)$")
+    return op and (op .. " <group>" .. rest) or "?"
+end
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
 local lastXp, xpSent = 0, nil
 -- The Sync button: usable once a minute; list requests answered once a minute per member.
@@ -323,9 +328,17 @@ function R.deathDetails(event)
 end
 
 -- Send to group members not yet told this session (also after a change).
+local lastPeers = {}
 function R.scan()
     if not db or not current then return end
+    local index = 0
     for group in pairs(WoWStatusGroups.selected(current)) do
+        index = index + 1
+        local names = table.concat(WoWStatusPopups.peers(group), ", ")
+        if lastPeers[group] ~= names then
+            lastPeers[group] = names
+            S.debug("group " .. index .. " members online: " .. (names ~= "" and names or "none"))
+        end
         for _, peer in ipairs(WoWStatusPopups.peers(group)) do
             noteSeen(group, peer); enqueue(group, peer)
             -- Ask each member once a session for their list: one sent while this
@@ -385,6 +398,7 @@ function R.readWho()
             learnt = learnt + 1
         end
     end
+    S.debug("/who results: " .. count .. ", group members learnt: " .. learnt)
     if learnt > 0 then R.render() end
     return learnt
 end
@@ -414,6 +428,7 @@ function R.whoLookup()
     local target = R.whoTarget()
     local F = C_FriendList
     local send = F and F.SendWho or SendWho
+    S.debug("/who lookup: " .. tostring(target) .. (send and "" or " (no SendWho)"))
     if not target or not send then return nil end
     whoAsked[key(target)] = true
     local short = target:match("^([^%-]+)")
@@ -501,6 +516,7 @@ function R.tick()
     local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if send then
         lastSend = now
+        S.debug("send " .. redacted(item.text) .. " to " .. tostring(item.target))
         WoWStatusPopups.whispered(item.target)
         pcall(send, PREFIX, item.text, "WHISPER", item.target)
     end
@@ -515,23 +531,34 @@ local function valid(words, max)
     return {name=name, race=race, sex=sex, class=class, level=level}
 end
 
+local receive
 function R.receive(message, sender, distribution)
+    local ok, why = receive(message, sender, distribution)
+    if db and type(message) == "string" then
+        S.debug("got " .. redacted(message) .. " from " .. tostring(sender) .. ": " .. (ok and "ok" or tostring(why or "ignored")))
+    end
+    return ok
+end
+receive = function(message, sender, distribution)
     if not db or not current or distribution ~= "WHISPER" or type(message) ~= "string" or #message > 250 then return false end
     local words = {}
     for word in message:gmatch(S.NONSPACE .. "+") do words[#words + 1] = word end
     local op, group, pid = words[1], words[2], words[3]
-    if not group or not WoWStatusGroups.contains(current, group) then return false end
-    if not WoWStatusPopups.isPeer(group, key(sender)) then
+    if not group or not WoWStatusGroups.contains(current, group) then return false, "not one of my groups" end
+    -- Membership is by full name with realm, as the member list keeps it (the
+    -- roster's own key leaves the realm out on WoW Forever, and never matched).
+    local member = WoWStatusPopups.senderKey(sender)
+    if not WoWStatusPopups.isPeer(group, member) then
         WoWStatusPopups.peers(group) -- Refresh the member list once before rejecting.
-        if not WoWStatusPopups.isPeer(group, key(sender)) then return false end
+        if not WoWStatusPopups.isPeer(group, member) then return false, "not a member (" .. tostring(member) .. ")" end
     end
-    if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false end
+    if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false, "bad player ID" end
     local players = state().players
     if op == "X" and #words == 3 then players[pid] = nil; R.render(); return true end
     -- "R": a member asks for this account's list again (their Sync button).
     if op == "R" and #words == 3 then
         local k, now = key(sender), time()
-        if not k or (answered[k] and now - answered[k] < R.SYNC_COOLDOWN) then return false end
+        if not k or (answered[k] and now - answered[k] < R.SYNC_COOLDOWN) then return false, "answered this minute" end
         answered[k] = now
         if sentTo[group] then sentTo[group][k] = nil end
         enqueue(group, sender)
@@ -561,7 +588,7 @@ function R.receive(message, sender, distribution)
             or level ~= math.floor(level) or level < 1 or level > maximum or at ~= math.floor(at)
             or at < 1000000000 or at > S.now() + 300 or (flag ~= "e" and flag ~= "a") then return false end
         local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
-        if not character then return false end
+        if not character then return false, "unknown character" end
         character.milestones = type(character.milestones) == "table" and character.milestones or {}
         local count = 0
         for _ in pairs(character.milestones) do count = count + 1 end
@@ -576,16 +603,16 @@ function R.receive(message, sender, distribution)
         if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player or not permille
             or permille ~= math.floor(permille) or permille < 0 or permille > 999 then return false end
         local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
-        if not character then return false end
+        if not character then return false, "unknown character" end
         character.xp = permille
         R.render()
         return true
     end
-    if op ~= "C" or #words ~= 9 then return false end
+    if op ~= "C" or #words ~= 9 then return false, "unknown op or length" end
     local name = words[4]
     if #name > 24 or name:find(S.CONTROL_OR_PIPE) then return false end
     local character = valid(words, WoWStatusAdapter.max_level or 60)
-    if not character then return false end
+    if not character then return false, "invalid character line" end
     local short, realmPart = character.name:match("^([^%-]+)%-(.+)$")
     character.name = short:gsub("_", " ") .. "-" .. realmPart
     local player = players[pid]
@@ -1075,8 +1102,13 @@ function R.init(database, character, reporter)
 end
 
 local frame = CreateFrame("Frame")
-for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE", "WHO_LIST_UPDATE", "CHAT_MSG_SYSTEM"}) do pcall(frame.RegisterEvent, frame, event) end
+for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE", "WHO_LIST_UPDATE", "CHAT_MSG_SYSTEM",
+    "ADDON_ACTION_BLOCKED", "ADDON_ACTION_FORBIDDEN"}) do pcall(frame.RegisterEvent, frame, event) end
 frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sender)
+    if event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
+        if S.string(prefix) == "WoWStatus" then S.debug(event .. ": " .. tostring(S.string(message))) end
+        return
+    end
     -- A short /who answer arrives as a chat line; its results are readable then.
     if event == "WHO_LIST_UPDATE" or event == "CHAT_MSG_SYSTEM" then
         R.readWho()
