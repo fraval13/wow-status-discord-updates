@@ -1359,9 +1359,17 @@ local function category(item)
     if item.kind=="profession" and (item.text or ""):match("^Learned ") then return "profession_learned" end
     return item.kind
 end
+-- English and Nynorsk banks of a caption personality (classic: the banks above).
+local function bankSet(personality)
+    local P=WoWStatusPersonalities
+    if P and personality and personality~="classic" then
+        local en,nn=P.banks(personality)
+        if en then return en,nn end
+    end
+    return banks,WoWStatusFlavourNN
+end
 -- Positions in the bank this item may draw from (death: general lines and its class).
-local function choices(item,kind)
-    local bank=banks[kind]
+local function choices(item,kind,bank)
     if not bank then return nil end
     local pool={}
     if kind~="death" then
@@ -1376,19 +1384,32 @@ local function choices(item,kind)
     return pool
 end
 -- A caption line in the chosen language (Nynorsk lines share the English order).
-local function line(kind,pos)
-    local nn=WoWStatusLocale and WoWStatusLocale.lang()=="nn" and WoWStatusFlavourNN and WoWStatusFlavourNN[kind]
-    local text=(nn and nn[pos]) or (banks[kind] and banks[kind][pos])
+local function line(kind,pos,personality)
+    local en,nnBanks=bankSet(personality)
+    local nn=WoWStatusLocale and WoWStatusLocale.lang()=="nn" and nnBanks and nnBanks[kind]
+    local text=(nn and nn[pos]) or (en[kind] and en[kind][pos])
     return text and (text:gsub("^%[[A-Z]+%] ","")) or ""
 end
 F.line=line
--- English caption text -> {kind, pos}, for items saved before positions were kept.
+-- English caption text -> {kind, pos, personality}, for items that keep only the
+-- English text (log entries, and items saved before positions were kept).
+-- Classic lines are indexed first, so they win any identical wording.
 local reverse
 local function lookup(text)
     if not reverse then
         reverse={}
-        for kind,bank in pairs(banks) do
-            for pos,entry in ipairs(bank) do reverse[(entry:gsub("^%[[A-Z]+%] ",""))]={kind,pos} end
+        local P=WoWStatusPersonalities
+        for _,id in ipairs(P and P.order or {"classic"}) do
+            -- Nynorsk too: a caption shown in Nynorsk may have been saved as shown.
+            local en,nn=bankSet(id)
+            for _,set in ipairs({en,nn or {}}) do
+                for kind,bank in pairs(set) do
+                    for pos,entry in ipairs(bank) do
+                        local key=(entry:gsub("^%[[A-Z]+%] ",""))
+                        if not reverse[key] then reverse[key]={kind,pos,id~="classic" and id or nil} end
+                    end
+                end
+            end
         end
     end
     return reverse[text]
@@ -1396,15 +1417,25 @@ end
 local previous={}
 function F.text(item)
     if type(item)~="table" then return "" end
-    if item.flavour_kind and item.flavour_pos then return line(item.flavour_kind,item.flavour_pos) end
+    if item.flavour_kind and item.flavour_pos then return line(item.flavour_kind,item.flavour_pos,item.flavour_personality) end
     if item.flavour then
-        -- An older saved caption: find its line, so it follows the chosen language.
+        -- A caption saved as English text: find its line, so it follows the chosen language.
         local found=lookup(item.flavour)
-        if found then item.flavour_kind,item.flavour_pos=found[1],found[2]; return line(found[1],found[2]) end
+        if found then
+            item.flavour_kind,item.flavour_pos,item.flavour_personality=found[1],found[2],found[3]
+            return line(found[1],found[2],found[3])
+        end
         return WoWStatusLocale and WoWStatusLocale.T(item.flavour) or item.flavour
     end
     local kind=category(item)
-    local pool=choices(item,kind)
+    -- New captions use the chosen personality; one without this kind falls back to classic.
+    local personality=WoWStatusPersonalities and WoWStatusPersonalities.current() or "classic"
+    local en=bankSet(personality)
+    local pool=choices(item,kind,en[kind])
+    if (not pool or #pool==0) and en~=banks then
+        personality,en="classic",banks
+        pool=choices(item,kind,banks[kind])
+    end
     if not pool or #pool==0 then return "" end
     local seed=item.id
     if not seed and item.nonce then
@@ -1419,13 +1450,15 @@ function F.text(item)
         for i=1,#seed do hash=(hash*131+seed:byte(i))%4294967291 end
         index=hash%#pool+1
     else
+        local recent=personality..":"..kind
         index=math.random(#pool)
-        if #pool>1 and previous[kind]==pool[index] then index=index%#pool+1 end
-        previous[kind]=pool[index]
+        if #pool>1 and previous[recent]==pool[index] then index=index%#pool+1 end
+        previous[recent]=pool[index]
     end
     local pos=pool[index]
     -- The English text stays saved too, for older versions reading this log.
     item.flavour_kind,item.flavour_pos=kind,pos
-    item.flavour=(banks[kind][pos]:gsub("^%[[A-Z]+%] ",""))
-    return line(kind,pos)
+    item.flavour_personality=personality~="classic" and personality or nil
+    item.flavour=(en[kind][pos]:gsub("^%[[A-Z]+%] ",""))
+    return line(kind,pos,item.flavour_personality)
 end

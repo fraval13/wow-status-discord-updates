@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "Congratulations! Your upgrade invoice is in the mail.",
+  "nn": "Gratulerer! Fakturaen for oppgraderinga er sendt i posten."
+ },
+ {
+  "en": "A new level? That calls for a premium membership.",
+  "nn": "Nytt nivå? Det krev eit premiummedlemskap."
+ },
+ {
+  "en": "Bigger hero, bigger budget. I like where this is going.",
+  "nn": "Større helt, større budsjett. Eg likar kor dette går."
+ },
+ {
+  "en": "Your market value just went up. Mine too, as your agent.",
+  "nn": "Marknadsverdien din gjekk nett opp. Min òg, som agenten din."
+ },
+ {
+  "en": "Level up! Shall I print new business cards? Small fee.",
+  "nn": "Nytt nivå! Skal eg trykkje nye visittkort? Lita avgift."
+ },
+ {
+  "en": "Excellent growth this quarter. The shareholders are thrilled.",
+  "nn": "Framifrå vekst dette kvartalet. Aksjonærane jublar."
+ },
+ {
+  "en": "Stronger already? Time to renegotiate your contracts.",
+  "nn": "Sterkare alt? Då må vi forhandle kontraktane på nytt."
+ },
+ {
+  "en": "That level came with a free warranty. It expired just now.",
+  "nn": "Nivået kom med gratis garanti. Han gjekk ut akkurat no."
+ },
+ {
+  "en": "Ding! That’s the sound of money, friend. Or a level. Same thing.",
+  "nn": "Pling! Det er lyden av pengar, venn. Eller eit nivå. Same sak."
+ },
+ {
+  "en": "New level unlocked. New price list unlocked too.",
+  "nn": "Nytt nivå låst opp. Ny prisliste låst opp òg."
+ },
+ {
+  "en": "Upgraded model, same lovely customer.",
+  "nn": "Oppgradert modell, same kjekke kunde."
+ },
+ {
+  "en": "You’re worth more now. I’ve already adjusted your insurance.",
+  "nn": "Du er meir verd no. Eg har alt justert forsikringa di."
+ },
+ {
+  "en": "Profit margins rising, adventurer stock soaring!",
+  "nn": "Forteneste aukar, eventyrarar stig på børsen!"
+ },
+ {
+  "en": "Look at you, compounding like interest.",
+  "nn": "Sjå på deg, du veks som rente på rente."
+ },
+ {
+  "en": "Every level is a sound investment. Mine, mostly.",
+  "nn": "Kvart nivå er ei sikker investering. Mest for meg."
+ },
+ {
+  "en": "I’d sell shares in you right now. In fact, I already did.",
+  "nn": "Eg ville selt aksjar i deg no. Faktisk har eg alt gjort det."
+ },
+ {
+  "en": "Level up! Your old gear is now vintage. I’ll buy it cheap.",
+  "nn": "Nytt nivå! Det gamle utstyret ditt er vintage. Eg kjøper det billeg."
+ },
+ {
+  "en": "Bigger muscles mean bigger repair bills. Wonderful!",
+  "nn": "Større musklar gir større reparasjonsrekningar. Fantastisk!"
+ },
+ {
+  "en": "Growth like that deserves a rocket-powered celebration.",
+  "nn": "Slik vekst fortener ei rakettdriven feiring."
+ },
+ {
+  "en": "A stronger customer is a richer customer. Keep going!",
+  "nn": "Ein sterkare kunde er ein rikare kunde. Hald fram!"
+ },
+ {
+  "en": "This level brought to you by my sponsorship. Pay later.",
+  "nn": "Dette nivået er sponsa av meg. Betal seinare."
+ },
+ {
+  "en": "Another rung on the ladder. Ladder rental is extra.",
+  "nn": "Eitt steg til på stigen. Stigeleige kostar ekstra."
+ },
+ {
+  "en": "Level up! Would you like the deluxe celebration package?",
+  "nn": "Nytt nivå! Vil du ha deluxe-feiringspakka?"
+ },
+ {
+  "en": "Huge news for your portfolio. Even bigger for my commission.",
+  "nn": "Store nyheiter for porteføljen din. Endå større for provisjonen min."
+ },
+ {
+  "en": "Upgrade complete. No refunds, no regrets.",
+  "nn": "Oppgradering fullført. Ingen refusjon, ingen anger."
+ },
+ {
+  "en": "You’ve outgrown the starter plan. Let’s talk gold tier.",
+  "nn": "Du har vakse frå startpakka. La oss snakke gullnivå."
+ },
+ {
+  "en": "That’s what I call return on investment!",
+  "nn": "Det kallar eg avkastning!"
+ },
+ {
+  "en": "Stronger, faster, more profitable. Just how I like my clients.",
+  "nn": "Sterkare, raskare, meir lønsam. Slik eg likar kundane mine."
+ },
+ {
+  "en": "Your experience points are accruing interest nicely.",
+  "nn": "Erfaringspoenga dine aukar fint med renter."
+ },
+ {
+  "en": "A level a day keeps the bankruptcy away.",
+  "nn": "Eitt nivå om dagen held konkursen borte."
+ },
+ {
+  "en": "Fresh level, fresh opportunities. Fresh invoices, too.",
+  "nn": "Nytt nivå, nye moglegheiter. Nye fakturaer òg."
+ },
+ {
+  "en": "I knew you were a growth stock the moment I met you.",
+  "nn": "Eg visste du var ein vekstaksje då eg møtte deg."
+ },
+ {
+  "en": "Splendid! I’ll add a surcharge for all this awesomeness.",
+  "nn": "Strålande! Eg legg på eit tillegg for alt dette flotte."
+ },
+ {
+  "en": "Level up! Sign here, here and here. Don’t read the small print.",
+  "nn": "Nytt nivå! Signer her, her og her. Ikkje les det med småskrift."
+ },
+ {
+  "en": "Power is a commodity, and you’re hoarding it. Smart.",
+  "nn": "Makt er ei handelsvare, og du hamstrar. Smart."
+ },
+ {
+  "en": "Ka-ching! Oh, sorry, I meant congratulations.",
+  "nn": "Ka-tsjing! Å, orsak, eg meinte gratulerer."
+ },
+ {
+  "en": "You levelled up faster than my prices. Impressive.",
+  "nn": "Du gjekk opp raskare enn prisane mine. Imponerande."
+ },
+ {
+  "en": "One step closer to being able to afford my good stuff.",
+  "nn": "Eitt steg nærare å ha råd til det gode utstyret mitt."
+ },
+ {
+  "en": "The board of directors approves this level. I am the board.",
+  "nn": "Styret godkjenner dette nivået. Eg er styret."
+ },
+ {
+  "en": "New level means new bags to fill with my merchandise.",
+  "nn": "Nytt nivå betyr nye bager å fylle med varene mine."
+ },
+ {
+  "en": "Level up! Limited-time offer: feel amazing, free of charge.",
+  "nn": "Nytt nivå! Tilbod for kort tid: kjenn deg fantastisk, gratis."
+ },
+ {
+  "en": "Strong work. I’ll be billing for the inspiration.",
+  "nn": "Sterkt arbeid. Eg sender rekning for inspirasjonen."
+ },
+ {
+  "en": "Higher level, higher credit limit. Let’s go shopping!",
+  "nn": "Høgare nivå, høgare kredittgrense. Vi går og handlar!"
+ },
+ {
+  "en": "I see potential. I also see a payment plan.",
+  "nn": "Eg ser potensial. Eg ser òg ein nedbetalingsplan."
+ },
+ {
+  "en": "That’s one fine upgrade. Comes with a complimentary explosion.",
+  "nn": "Det er ei fin oppgradering. Kjem med ein gratis eksplosjon."
+ },
+ {
+  "en": "Your stats went up. So did my opinion of your wallet.",
+  "nn": "Statsane dine steig. Det same gjorde meininga mi om lommeboka di."
+ },
+ {
+  "en": "Levelling up is free. Celebrating properly costs extra.",
+  "nn": "Å gå opp i nivå er gratis. Å feire skikkeleg kostar ekstra."
+ },
+ {
+  "en": "Bigger hero, same discount. Which is none.",
+  "nn": "Større helt, same rabatt. Altså ingen."
+ },
+ {
+  "en": "Your growth chart looks like my profit chart. Beautiful.",
+  "nn": "Vekstkurva di liknar på profittkurva mi. Vakker."
+ },
+ {
+  "en": "Congratulations on the merger of you and more power!",
+  "nn": "Gratulerer med fusjonen mellom deg og meir makt!"
+ },
+ {
+  "en": "Level achieved. Bonus paid. To me.",
+  "nn": "Nivå oppnådd. Bonus utbetalt. Til meg."
+ },
+ {
+  "en": "Brilliant! You’re officially too good for the bargain bin.",
+  "nn": "Glimrande! Du er offisielt for god for tilbodskassa."
+ },
+ {
+  "en": "Another level, another reason to buy my potions.",
+  "nn": "Endå eit nivå, endå ein grunn til å kjøpe eliksirane mine."
+ },
+ {
+  "en": "You’re climbing faster than a rocket with a cracked fuel tank.",
+  "nn": "Du klatrar raskare enn ei rakett med sprekk i tanken."
+ },
+ {
+  "en": "The ledger says you’re doing great. The ledger never lies. Much.",
+  "nn": "Rekneskapen seier du gjer det bra. Rekneskapen lyg aldri. Mykje."
+ },
+ {
+  "en": "Levelled up! Now accepting larger loans.",
+  "nn": "Gått opp i nivå! Tek no imot større lån."
+ },
+ {
+  "en": "Keep this up and I’ll name a product after you.",
+  "nn": "Held du fram slik, kallar eg opp eit produkt etter deg."
+ },
+ {
+  "en": "One more level in the vault. Lock it up tight.",
+  "nn": "Endå eit nivå i hvelvet. Lås godt att."
+ },
+ {
+  "en": "Upgrade detected. Updating your customer profile to VIP.",
+  "nn": "Oppgradering oppdaga. Oppdaterer kundeprofilen din til VIP."
+ },
+ {
+  "en": "Lovely! Experience is the only currency I can’t counterfeit.",
+  "nn": "Fint! Erfaring er den einaste valutaen eg ikkje kan forfalske."
+ },
+ {
+  "en": "You’re appreciating in value. Unlike that sword.",
+  "nn": "Du stig i verdi. I motsetnad til det sverdet."
+ },
+ {
+  "en": "Stronger now? Perfect, you can carry more of my crates.",
+  "nn": "Sterkare no? Perfekt, då kan du bere fleire av kassane mine."
+ },
+ {
+  "en": "Level up! Batteries not included.",
+  "nn": "Nytt nivå! Batteri ikkje inkludert."
+ },
+ {
+  "en": "Quarterly report: client improved. Merchant delighted.",
+  "nn": "Kvartalsrapport: kunden betra. Kremmaren nøgd."
+ },
+ {
+  "en": "Nothing says success like a shiny new level and an open wallet.",
+  "nn": "Ingenting seier suksess som eit nytt nivå og ei open lommebok."
+ },
+ {
+  "en": "That level was a bargain. You paid in sweat, not gold.",
+  "nn": "Det nivået var eit kupp. Du betalte med sveitte, ikkje gull."
+ },
+ {
+  "en": "Great level! Tell your friends where you shop.",
+  "nn": "Flott nivå! Fortel venene dine kvar du handlar."
+ },
+ {
+  "en": "More power to you! Literally. I sell it by the bottle.",
+  "nn": "Meir makt til deg! Bokstaveleg. Eg sel det på flaske."
+ },
+ {
+  "en": "I predicted this growth. I also bet against it. Hmm.",
+  "nn": "Eg spådde denne veksten. Eg vedda òg imot han. Hm."
+ },
+ {
+  "en": "Step right up, champ! Your new level awaits accessories.",
+  "nn": "Kom hit, mester! Det nye nivået ditt treng tilbehøyr."
+ },
+ {
+  "en": "You’ve been promoted from customer to valued customer.",
+  "nn": "Du er forfremja frå kunde til verdsett kunde."
+ },
+ {
+  "en": "Level complete. Please rate your experience five stars.",
+  "nn": "Nivå fullført. Ver snill og gi opplevinga fem stjerner."
+ },
+ {
+  "en": "Gold doesn’t grow on trees, but levels grow on you.",
+  "nn": "Gull veks ikkje på tre, men nivå veks på deg."
+ },
+ {
+  "en": "A goblin knows a winning streak when he sees one.",
+  "nn": "Ein goblin kjenner att ein vinnarstreak når han ser ein."
+ },
+ {
+  "en": "Fantastic! I’ve raised your bounty. I mean your bonus.",
+  "nn": "Fantastisk! Eg har heva dusøren din. Eg meiner bonusen din."
+ },
+ {
+  "en": "Look at those gains! I’d frame them, for a fee.",
+  "nn": "Sjå på dei vinstane! Eg rammar dei inn, mot betaling."
+ },
+ {
+  "en": "New level, who dis? The richer version, hopefully.",
+  "nn": "Nytt nivå, kven er du? Den rikare utgåva, håpar eg."
+ },
+ {
+  "en": "Progress! The one product I can’t sell you. Sadly.",
+  "nn": "Framgang! Den eine varen eg ikkje kan selje deg. Dessverre."
+ },
+ {
+  "en": "You keep growing like that, I’ll need a bigger ledger.",
+  "nn": "Veks du slik vidare, treng eg ein større rekneskap."
+ },
+ {
+  "en": "Well done! Now about that subscription renewal…",
+  "nn": "Godt gjort! No, det med fornying av abonnementet …"
+ },
+ {
+  "en": "This level is fully tax-deductible. Probably.",
+  "nn": "Dette nivået er fullt frådragsberettiga. Truleg."
+ },
+ {
+  "en": "Power up complete. Side effects may include confidence.",
+  "nn": "Kraftauke fullført. Biverknader kan vere sjølvtillit."
+ },
+ {
+  "en": "That was a stellar trade: time for strength.",
+  "nn": "Det var ein strålande handel: tid mot styrke."
+ },
+ {
+  "en": "I always invest in winners. Glad I picked you.",
+  "nn": "Eg investerer alltid i vinnarar. Godt eg valde deg."
+ },
+ {
+  "en": "Your level went up. My asking price went up with it.",
+  "nn": "Nivået ditt steig. Prisen min steig saman med det."
+ },
+ {
+  "en": "New heights reached! Mind the step, I don’t do liability.",
+  "nn": "Nye høgder nådde! Pass steget, eg tek ikkje ansvar."
+ },
+ {
+  "en": "Excellent! Your adventuring license has been upgraded.",
+  "nn": "Framifrå! Eventyrlisensen din er oppgradert."
+ },
+ {
+  "en": "Feeling stronger? I sell mirrors to admire yourself in.",
+  "nn": "Kjenner du deg sterkare? Eg sel speglar til å beundre deg i."
+ },
+ {
+  "en": "I smell opportunity. And a little bit of sweat.",
+  "nn": "Eg luktar moglegheiter. Og litt sveitte."
+ },
+ {
+  "en": "Ding! Your account has been credited with awesome.",
+  "nn": "Pling! Kontoen din er kreditert med fantastisk."
+ },
+ {
+  "en": "Leveling up is the best deal in Azeroth. Second best is mine.",
+  "nn": "Å gå opp i nivå er den beste handelen i Azeroth. Nest best er min."
+ },
+ {
+  "en": "Upward and onward, like gold prices at the auction house!",
+  "nn": "Oppover og framover, som gullprisane i auksjonshuset!"
+ },
+ {
+  "en": "That’s a five-star upgrade, if I do say so myself.",
+  "nn": "Det er ei femstjerners oppgradering, om eg skal seie det sjølv."
+ },
+ {
+  "en": "A level! Shall I wrap it? Gift wrapping is two silver.",
+  "nn": "Eit nivå! Skal eg pakke det inn? Gåvepapir kostar to sølv."
+ },
+ {
+  "en": "Strength is up, risk is down. Insurance premium? Up anyway.",
+  "nn": "Styrken er opp, risikoen ned. Forsikringspremien? Opp likevel."
+ },
+ {
+  "en": "Bigger, better, and almost creditworthy.",
+  "nn": "Større, betre og nesten kredittverdig."
+ },
+ {
+  "en": "Look who’s moving up in the world. And in my contact list.",
+  "nn": "Sjå kven som stig i verda. Og i kontaktlista mi."
+ },
+ {
+  "en": "You levelled. The market rallied. Coincidence? I think not.",
+  "nn": "Du gjekk opp. Marknaden steig. Tilfeldig? Neppe."
+ },
+ {
+  "en": "Fresh power, hot off the press!",
+  "nn": "Fersk kraft, rett frå pressa!"
+ },
+ {
+  "en": "I’d offer a discount for the occasion, but I value you too much.",
+  "nn": "Eg ville gitt rabatt for høvet, men eg set deg for høgt."
+ },
+ {
+  "en": "New level installed. Please restart your adventure.",
+  "nn": "Nytt nivå installert. Start eventyret på nytt."
+ },
+ {
+  "en": "A champion in the making, and a customer for life!",
+  "nn": "Ein meister i emning, og ein kunde for livet!"
+ },
+ {
+  "en": "Level up! Your old armor is officially last season.",
+  "nn": "Nytt nivå! Den gamle rustninga di er offisielt førre sesong."
+ },
+ {
+  "en": "You’ve grown. My trust in your repayment schedule has too.",
+  "nn": "Du har vakse. Det har òg trua mi på nedbetalinga di."
+ },
+ {
+  "en": "Wow, a level! That’s the kind of growth bankers dream of.",
+  "nn": "Jøss, eit nivå! Slik vekst drøymer bankfolk om."
+ },
+ {
+  "en": "Stack those levels like gold coins, friend.",
+  "nn": "Stabl nivåa som gullmyntar, venn."
+ },
+ {
+  "en": "I’ll mark this day in my ledger. In green ink, of course.",
+  "nn": "Eg merkar denne dagen i rekneskapen. Med grønt blekk, sjølvsagt."
+ },
+ {
+  "en": "More power means more errands for my company. Win-win!",
+  "nn": "Meir makt betyr fleire oppdrag for firmaet mitt. Vinn-vinn!"
+ },
+ {
+  "en": "Keep levelling. My retirement plan depends on it.",
+  "nn": "Hald fram med nivåa. Pensjonsplanen min er avhengig av det."
+ },
+ {
+  "en": "That level? A steal. And I know steals.",
+  "nn": "Det nivået? Eit kupp. Og eg kan kupp."
+ },
+ {
+  "en": "Superb growth! I’m raising my rates in your honor.",
+  "nn": "Supert vekst! Eg hevar prisane til di ære."
+ },
+ {
+  "en": "You’re now strong enough to carry the heavy discounts. Kidding.",
+  "nn": "No er du sterk nok til å bere tunge rabattar. Tuller."
+ },
+ {
+  "en": "Leveled up! Coupons not valid on this achievement.",
+  "nn": "Nytt nivå! Kupongar gjeld ikkje for denne bragda."
+ },
+ {
+  "en": "Business is booming, and so are you!",
+  "nn": "Forretningane blomstrar, og det gjer du òg!"
+ },
+ {
+  "en": "I would explode with joy, but explosions cost extra.",
+  "nn": "Eg ville eksplodert av glede, men eksplosjonar kostar ekstra."
+ },
+ {
+  "en": "Mighty fine level. Want it engraved on a gold plaque?",
+  "nn": "Svært fint nivå. Vil du ha det gravert på ei gullplate?"
+ },
+ {
+  "en": "A rising star! Let me manage your sponsorships.",
+  "nn": "Ei stigande stjerne! La meg handtere sponsoravtalane dine."
+ },
+ {
+  "en": "That’s one more zero on your future price tag.",
+  "nn": "Det er endå ei null på den framtidige prislappen din."
+ },
+ {
+  "en": "Power acquired. Receipt attached.",
+  "nn": "Kraft skaffa. Kvittering vedlagd."
+ },
+ {
+  "en": "Strong move! Like buying low and levelling high.",
+  "nn": "Sterkt trekk! Som å kjøpe lågt og gå høgt."
+ },
+ {
+  "en": "My accountant says you’re trending upward. He’s rarely wrong.",
+  "nn": "Rekneskapsføraren min seier du er på veg opp. Han tek sjeldan feil."
+ },
+ {
+  "en": "This upgrade is non-transferable. I checked.",
+  "nn": "Denne oppgraderinga kan ikkje overførast. Eg sjekka."
+ },
+ {
+  "en": "A level gained is a level earned. Unlike my markup.",
+  "nn": "Eit vunne nivå er eit fortent nivå. I motsetnad til påslaget mitt."
+ },
+ {
+  "en": "I can feel your purchasing power from here.",
+  "nn": "Eg kjenner kjøpekrafta di herifrå."
+ },
+ {
+  "en": "Well, well, well. Somebody’s ready for the expensive aisle.",
+  "nn": "Vel, vel. Nokon er klar for den dyre hylla."
+ },
+ {
+  "en": "Level up! Your patience has paid dividends.",
+  "nn": "Nytt nivå! Tolmodet ditt har gitt utbyte."
+ },
+ {
+  "en": "New level smell! Can’t bottle it, but I’m trying.",
+  "nn": "Ny nivå-lukt! Kan ikkje tappe ho på flaske, men eg prøver."
+ },
+ {
+  "en": "Ding ding ding! We have a high roller!",
+  "nn": "Pling pling pling! Vi har ein storspelar!"
+ },
+ {
+  "en": "You’re getting expensive to hire. I approve.",
+  "nn": "Du begynner å bli dyr å leige. Eg godkjenner."
+ },
+ {
+  "en": "Leveling is like gambling, except you always win.",
+  "nn": "Å gå opp i nivå er som gambling, berre at du alltid vinn."
+ },
+ {
+  "en": "Bravo! I’ve upgraded you to the platinum mailing list.",
+  "nn": "Bravo! Eg har oppgradert deg til platina-postlista."
+ },
+ {
+  "en": "More level, more mettle, more money. Mostly money.",
+  "nn": "Meir nivå, meir mot, meir pengar. Mest pengar."
+ },
+ {
+  "en": "Your heroism stock just split. Twice the hero!",
+  "nn": "Heltaksjen din vart nett splitta. Dobbelt så mykje helt!"
+ },
+ {
+  "en": "I could sell this moment as a souvenir. Want one?",
+  "nn": "Eg kunne selt denne augneblinken som suvenir. Vil du ha ein?"
+ },
+ {
+  "en": "Upgrade successful. Fireworks sold separately.",
+  "nn": "Oppgradering vellukka. Fyrverkeri seljast separat."
+ },
+ {
+  "en": "You’re outpacing inflation. Rare talent!",
+  "nn": "Du spring frå inflasjonen. Sjeldan talent!"
+ },
+ {
+  "en": "One small step for you, one giant leap for my profits.",
+  "nn": "Eit lite steg for deg, eit stort byks for forteneste mi."
+ },
+ {
+  "en": "That level looks good on you. Matching hat, ten gold.",
+  "nn": "Det nivået kler deg. Matchande hatt, ti gull."
+ },
+ {
+  "en": "Stronger by the day! My loan sharks will be thrilled.",
+  "nn": "Sterkare for kvar dag! Lånehaiane mine blir glade."
+ },
+ {
+  "en": "Keep climbing! The view from the top is very lucrative.",
+  "nn": "Hald fram å klatre! Utsikta frå toppen er svært lønsam."
+ },
+ {
+  "en": "Look at that leap! You should sell jumping lessons.",
+  "nn": "Sjå det bykset! Du burde selje hoppkurs."
+ },
+ {
+  "en": "A new level, still under manufacturer’s warranty. My warranty.",
+  "nn": "Eit nytt nivå, framleis under produsentgaranti. Min garanti."
+ },
+ {
+  "en": "Power surge! Hope your fuses are rated for this.",
+  "nn": "Kraftstraum! Håpar sikringane dine toler dette."
+ },
+ {
+  "en": "You levelled up. I levelled up my sales pitch.",
+  "nn": "Du gjekk opp i nivå. Eg gjekk opp i salspitch."
+ },
+ {
+  "en": "You’re a blue-chip adventurer now. Very prestigious.",
+  "nn": "Du er ein blue-chip-eventyrar no. Svært prestisjefylt."
+ },
+ {
+  "en": "Congratulations, you’ve reached the next pricing tier!",
+  "nn": "Gratulerer, du har nådd neste prisnivå!"
+ },
+ {
+  "en": "Level up! Now we can talk about the good contracts.",
+  "nn": "Nytt nivå! No kan vi snakke om dei gode kontraktane."
+ },
+ {
+  "en": "You earned it. I invoiced it. Teamwork!",
+  "nn": "Du tente det. Eg fakturerte det. Samarbeid!"
+ },
+ {
+  "en": "Such progress! I’ll take ten percent of it.",
+  "nn": "For ein framgang! Eg tek ti prosent av han."
+ },
+ {
+  "en": "Another level? You’re making the competition nervous.",
+  "nn": "Endå eit nivå? Du gjer konkurrentane nervøse."
+ },
+ {
+  "en": "Splendid gains! Shall we diversify into explosives?",
+  "nn": "Flotte vinstar! Skal vi spreie oss til sprengstoff?"
+ },
+ {
+  "en": "I’m adding a gold star to your file. Gold-plated, actually.",
+  "nn": "Eg set ei gullstjerne i mappa di. Gullbelagd, faktisk."
+ },
+ {
+  "en": "Your future just got shinier. Like freshly minted coin.",
+  "nn": "Framtida di vart nett blankare. Som nypregde myntar."
+ },
+ {
+  "en": "Upgrade! Your previous self has been discontinued.",
+  "nn": "Oppgradering! Den førre utgåva av deg er utgått."
+ },
+ {
+  "en": "You’re building quite the empire. Need a treasurer?",
+  "nn": "Du byggjer eit heilt imperium. Treng du ein kasserar?"
+ },
+ {
+  "en": "Level up! Those enemies will need to pay more for the fight.",
+  "nn": "Nytt nivå! Fiendane må betale meir for kampen no."
+ },
+ {
+  "en": "Rich in experience! Now let’s work on rich in gold.",
+  "nn": "Rik på erfaring! No jobbar vi med rik på gull."
+ },
+ {
+  "en": "I’d give you a raise if I paid you. Which I don’t.",
+  "nn": "Eg ville gitt deg lønnsauke om eg betalte deg. Det gjer eg ikkje."
+ },
+ {
+  "en": "That’s a growth curve my investors would kill for. Figuratively.",
+  "nn": "Den vekstkurva ville investorane mine gjort alt for. Billedleg."
+ },
+ {
+  "en": "Leveling up suits you better than any armor I sell.",
+  "nn": "Nytt nivå kler deg betre enn rustningane eg sel."
+ },
+ {
+  "en": "New level, new needs. Luckily I sell everything.",
+  "nn": "Nytt nivå, nye behov. Heldigvis sel eg alt."
+ },
+ {
+  "en": "Ding! My favourite sound after coins hitting a counter.",
+  "nn": "Pling! Yndlingslyden min etter myntar på disken."
+ },
+ {
+  "en": "A level-up worth every copper you didn’t spend.",
+  "nn": "Eit nivå verdt kvar kopar du ikkje brukte."
+ },
+ {
+  "en": "Look at that power! It practically sells itself.",
+  "nn": "Sjå den krafta! Ho sel seg nesten sjølv."
+ },
+ {
+  "en": "Well played! I always back the winning horse. Or kodo.",
+  "nn": "Godt spelt! Eg satsar alltid på vinnarhesten. Eller kodoen."
+ },
+ {
+  "en": "Upgrade accepted. Your enemies may file complaints with me.",
+  "nn": "Oppgradering godteken. Fiendane dine kan klage til meg."
+ },
+ {
+  "en": "You’re now officially overqualified for the cheap quests.",
+  "nn": "Du er offisielt overkvalifisert for dei billege oppdraga."
+ },
+ {
+  "en": "Every level is a dividend. Reinvest it in my shop!",
+  "nn": "Kvart nivå er eit utbyte. Investér det i butikken min!"
+ },
+ {
+  "en": "Progress report: excellent. Billing report: also excellent.",
+  "nn": "Framdriftsrapport: framifrå. Faktureringsrapport: òg framifrå."
+ },
+ {
+  "en": "I don’t do charity, but I do celebrate profitable clients!",
+  "nn": "Eg driv ikkje veldedigheit, men eg feirar lønsame kundar!"
+ },
+ {
+  "en": "That’s a level so shiny I want to pawn it.",
+  "nn": "Det nivået er så blankt at eg vil pantsetje det."
+ },
+ {
+  "en": "Bigger guns! Well, bigger whatever you use. I sell all of it.",
+  "nn": "Større våpen! Eller kva du no brukar. Eg sel alt."
+ },
+ {
+  "en": "A strong level for a strong economy!",
+  "nn": "Eit sterkt nivå for ein sterk økonomi!"
+ },
+ {
+  "en": "Level up! I hear the bank calling your name.",
+  "nn": "Nytt nivå! Eg høyrer banken rope namnet ditt."
+ },
+ {
+  "en": "Getting stronger is cheaper than buying protection. Almost.",
+  "nn": "Å bli sterkare er billegare enn å kjøpe vern. Nesten."
+ },
+ {
+  "en": "Your rise is my favourite market trend.",
+  "nn": "Oppturen din er yndlingstrenden min på marknaden."
+ },
+ {
+  "en": "Bravo! The deluxe edition of you has arrived.",
+  "nn": "Bravo! Deluxe-utgåva av deg er komen."
+ },
+ {
+  "en": "I’ll throw in a free congratulations. Just this once.",
+  "nn": "Eg slenger med ein gratis gratulasjon. Berre denne gongen."
+ },
+ {
+  "en": "Your adventuring stock is a strong buy!",
+  "nn": "Eventyraksjen din er eit sterkt kjøp!"
+ },
+ {
+  "en": "Look out world, this customer just upgraded!",
+  "nn": "Sjå opp, verda, denne kunden har nett oppgradert!"
+ },
+ {
+  "en": "That’s it, keep scaling up. Economies of scale, friend!",
+  "nn": "Slik ja, hald fram å skalere. Stordriftsfordelar, venn!"
+ },
+ {
+  "en": "Each level makes you a better business partner.",
+  "nn": "Kvart nivå gjer deg til ein betre forretningspartnar."
+ },
+ {
+  "en": "Levelled! I’ve got the perfect overpriced trinket for this.",
+  "nn": "Nytt nivå! Eg har det perfekte overprisa smykket til dette."
+ },
+ {
+  "en": "Your power curve beats the auction house. Barely.",
+  "nn": "Kraftkurva di slår auksjonshuset. Så vidt."
+ },
+ {
+  "en": "A milestone! Mile markers cost extra, by the way.",
+  "nn": "Ein milepæl! Milepælar kostar forresten ekstra."
+ },
+ {
+  "en": "I always said you’d go far. Now pay me for saying it.",
+  "nn": "Eg har alltid sagt du skulle nå langt. Betal meg for det no."
+ },
+ {
+  "en": "Stronger than yesterday! And yesterday wasn’t cheap.",
+  "nn": "Sterkare enn i går! Og i går var ikkje billeg."
+ },
+ {
+  "en": "You’re in high demand! I can tell by my waiting list.",
+  "nn": "Du er etterspurd! Eg ser det på ventelista mi."
+ },
+ {
+  "en": "Upgrade complete. Previous version available at half price.",
+  "nn": "Oppgradering fullført. Førre utgåve tilgjengeleg til halv pris."
+ },
+ {
+  "en": "You’ve got the momentum of a runaway mine cart!",
+  "nn": "Du har farten til ei løpsk gruvevogn!"
+ },
+ {
+  "en": "I’d buy you a drink, but I prefer selling them.",
+  "nn": "Eg ville spandert ein drink, men eg føretrekkjer å selje dei."
+ },
+ {
+  "en": "Now you’re worth robbing! I mean, protecting. Insurance?",
+  "nn": "No er du verd å rane! Eg meiner verne. Forsikring?"
+ },
+ {
+  "en": "A splendid level for a splendid price: free! Don’t get used to it.",
+  "nn": "Eit flott nivå til ein flott pris: gratis! Ikkje venn deg til det."
+ },
+ {
+  "en": "What a climb! You must have a goblin-made ladder.",
+  "nn": "For ei klatring! Du må ha ein goblinlaga stige."
+ },
+ {
+  "en": "Level up! I’ve updated your profile from bargain to premium.",
+  "nn": "Nytt nivå! Eg har endra profilen din frå kupp til premium."
+ },
+ {
+  "en": "Hard work pays off. Usually to me, but this time to you.",
+  "nn": "Hardt arbeid lønner seg. Vanlegvis for meg, men no for deg."
+ },
+ {
+  "en": "Your growth is so explosive I want to patent it.",
+  "nn": "Veksten din er så eksplosiv at eg vil patentere han."
+ },
+ {
+  "en": "Another level banked. Interest pending.",
+  "nn": "Endå eit nivå i banken. Renter kjem."
+ },
+ {
+  "en": "Excellent! Experience is the best investment. After my shop.",
+  "nn": "Framifrå! Erfaring er den beste investeringa. Etter butikken min."
+ },
+ {
+  "en": "Feeling powerful? Feel powerful near my shop, please.",
+  "nn": "Kjenner du deg mektig? Kjenn deg mektig nær butikken min, takk."
+ },
+ {
+  "en": "Level up! The market for heroes just got tighter.",
+  "nn": "Nytt nivå! Marknaden for heltar vart nett trongare."
+ },
+ {
+  "en": "Strong level. Even stronger sales potential.",
+  "nn": "Sterkt nivå. Endå sterkare salspotensial."
+ },
+ {
+  "en": "Whoa, look at you go! Need a faster vehicle? I know a guy.",
+  "nn": "Oi, sjå på deg! Treng du eit raskare køyretøy? Eg kjenner ein kar."
+ },
+ {
+  "en": "If only gold levelled up as fast as you!",
+  "nn": "Om berre gullet gjekk opp i nivå like fort som deg!"
+ },
+ {
+  "en": "I’ve updated your file. It now says: promising, solvent.",
+  "nn": "Eg har oppdatert mappa di. No står det: lovande, solvent."
+ },
+ {
+  "en": "Your new level has been notarized. Stamp fee applies.",
+  "nn": "Det nye nivået ditt er notarialstadfesta. Stempelavgift gjeld."
+ },
+ {
+  "en": "That level? Pure profit. No overhead at all.",
+  "nn": "Det nivået? Reint overskot. Ingen kostnader i det heile."
+ },
+ {
+  "en": "You’re climbing the ranks faster than a goblin up a pay scale.",
+  "nn": "Du klatrar raskare enn ein goblin på lønnsstigen."
+ },
+ {
+  "en": "Fine growth! I water my investments with praise and invoices.",
+  "nn": "Fin vekst! Eg vatnar investeringane mine med ros og fakturaer."
+ },
+ {
+  "en": "A new tier of hero has entered the marketplace.",
+  "nn": "Ein ny klasse helt har kome inn på marknaden."
+ },
+ {
+  "en": "Level up! Your discount remains exactly zero percent.",
+  "nn": "Nytt nivå! Rabatten din er framleis nøyaktig null prosent."
+ },
+ {
+  "en": "I can’t sell levels, but I can sell congratulations cards.",
+  "nn": "Eg kan ikkje selje nivå, men eg kan selje gratulasjonskort."
+ },
+ {
+  "en": "Up you go! Like a gyrocopter with a full tank.",
+  "nn": "Opp du går! Som eit gyrokopter med full tank."
+ },
+ {
+  "en": "More power, more problems? No, more profits!",
+  "nn": "Meir makt, meir trøbbel? Nei, meir forteneste!"
+ },
+ {
+  "en": "Brilliant level! The goblin cartel takes notice.",
+  "nn": "Glimrande nivå! Goblinkartellet legg merke til det."
+ },
+ {
+  "en": "Your value proposition just got irresistible.",
+  "nn": "Verditilbodet ditt vart nett uimotståeleg."
+ },
+ {
+  "en": "A level-up! Best thing I’ve seen since compound interest.",
+  "nn": "Nytt nivå! Det beste eg har sett sidan rente på rente."
+ },
+ {
+  "en": "Excellent results. I’ll take credit at the next meeting.",
+  "nn": "Framifrå resultat. Eg tek æra på neste møte."
+ },
+ {
+  "en": "New level achieved. Old prices discontinued.",
+  "nn": "Nytt nivå oppnådd. Gamle prisar avvikla."
+ },
+ {
+  "en": "Look at those numbers climb! I love numbers that climb.",
+  "nn": "Sjå tala stige! Eg elskar tal som stig."
+ },
+ {
+  "en": "Great job, partner. I’ll draw up the profit-sharing deal.",
+  "nn": "Godt jobba, partnar. Eg set opp avtalen om å dele overskotet."
+ },
+ {
+  "en": "Your adventure is now running at a profit. Keep it that way.",
+  "nn": "Eventyret ditt går no med overskot. Hald det slik."
+ },
+ {
+  "en": "Look, a growth spurt! Need bigger pants? Bulk discount!",
+  "nn": "Sjå, ein vekstspurt! Treng du større bukser? Mengderabatt!"
+ },
+ {
+  "en": "Level up! I’ll buy back your old potions at a tiny loss. Yours.",
+  "nn": "Nytt nivå! Eg kjøper tilbake dei gamle eliksirane med eit lite tap. Ditt."
+ },
+ {
+  "en": "The trade winds favor you today. Sail on!",
+  "nn": "Handelsvindane er med deg i dag. Seil vidare!"
+ },
+ {
+  "en": "Every hero needs a manager. I’m available. Expensively.",
+  "nn": "Kvar helt treng ein manager. Eg er ledig. Dyrt."
+ },
+ {
+  "en": "That’s some premium-grade progress right there.",
+  "nn": "Det der er framgang av premiumkvalitet."
+ },
+ {
+  "en": "A bigger you means a bigger shopping list. Splendid!",
+  "nn": "Ein større du betyr ei større handleliste. Flott!"
+ },
+ {
+  "en": "You’re rising like dough in a goblin bakery. Quickly and suspiciously.",
+  "nn": "Du hevar deg som deig i eit goblinbakeri. Fort og mistenkjeleg."
+ },
+ {
+  "en": "Level up! This calls for a celebratory explosion. Stand back.",
+  "nn": "Nytt nivå! Dette krev ein feiringseksplosjon. Gå unna."
+ },
+ {
+  "en": "Your power portfolio is beautifully diversified.",
+  "nn": "Kraftporteføljen din er vakkert spreidd."
+ },
+ {
+  "en": "Profitable progress! My favourite kind.",
+  "nn": "Lønsam framgang! Den beste typen."
+ },
+ {
+  "en": "I’m proud of you, and proud of your credit score.",
+  "nn": "Eg er stolt av deg, og stolt av kredittscoren din."
+ },
+ {
+  "en": "You’ve leveled into a higher tax bracket. Bad luck!",
+  "nn": "Du har gått opp i ein høgare skatteklasse. Uflaks!"
+ },
+ {
+  "en": "Nice level. Shame you can’t sell it, though.",
+  "nn": "Fint nivå. Synd du ikkje kan selje det."
+ },
+ {
+  "en": "That’s the spirit! Spirits also available at my counter.",
+  "nn": "Det er ånda! Brennevin finst òg ved disken min."
+ },
+ {
+  "en": "Hero upgrade shipped and delivered. Signature required.",
+  "nn": "Heltoppgradering sendt og levert. Signatur krevst."
+ },
+ {
+  "en": "Your progress is outperforming the gold index.",
+  "nn": "Framgangen din slår gullindeksen."
+ },
+ {
+  "en": "Look at that! You’re practically a luxury brand.",
+  "nn": "Sjå der! Du er nesten eit luksusmerke."
+ },
+ {
+  "en": "Stronger already. Let me guess, you bought my tonic? No? Shame.",
+  "nn": "Sterkare alt. Lat meg gjette, du kjøpte tonicen min? Nei? Synd."
+ },
+ {
+  "en": "Another level, another opportunity to sell you a cape.",
+  "nn": "Endå eit nivå, endå ein sjanse til å selje deg ei kappe."
+ },
+ {
+  "en": "Bigger level, bigger hat. That’s just good branding.",
+  "nn": "Større nivå, større hatt. Det er god merkevarebygging."
+ },
+ {
+  "en": "You’ve got the hustle. I respect hustle.",
+  "nn": "Du har driv. Eg respekterer driv."
+ },
+ {
+  "en": "Level up! I’ll update the price of your autograph.",
+  "nn": "Nytt nivå! Eg oppdaterer prisen på autografen din."
+ },
+ {
+  "en": "The numbers don’t lie. You’re a good investment!",
+  "nn": "Tala lyg ikkje. Du er ei god investering!"
+ },
+ {
+  "en": "Level gained! No hidden fees. Well, a few hidden fees.",
+  "nn": "Nivå vunne! Ingen skjulte gebyr. Vel, nokre få."
+ },
+ {
+  "en": "Climbing up the hero charts! Want a promotional poster?",
+  "nn": "Klatrar på heltelistene! Vil du ha ein reklameplakat?"
+ },
+ {
+  "en": "Bigger level, bigger smile. Bigger tip for me?",
+  "nn": "Større nivå, større smil. Større tips til meg?"
+ },
+ {
+  "en": "Splendid! Your strength rating is now triple-A.",
+  "nn": "Strålande! Styrkeratinga di er no trippel-A."
+ },
+ {
+  "en": "Advancement achieved! I take cash, gems or favors.",
+  "nn": "Framsteg oppnådd! Eg tek kontantar, edelsteinar eller tenester."
+ },
+ {
+  "en": "You’re on the rise. I recommend a rocket for faster rising.",
+  "nn": "Du er på veg opp. Eg tilrår ei rakett for raskare stigning."
+ },
+ {
+  "en": "Level up! Your hero license now has a shiny new sticker.",
+  "nn": "Nytt nivå! Heltelisensen din har fått eit blankt nytt klistermerke."
+ },
+ {
+  "en": "New level, same great customer service. From me, to you.",
+  "nn": "Nytt nivå, same flotte kundeservice. Frå meg, til deg."
+ },
+ {
+  "en": "Your experience bar filled faster than my tip jar.",
+  "nn": "Erfaringsbaren din vart fylt raskare enn tipsboksen min."
+ },
+ {
+  "en": "Leveling up: the only purchase you make with persistence.",
+  "nn": "Å gå opp i nivå: det einaste kjøpet du betaler med uthald."
+ },
+ {
+  "en": "You’re now too strong for the clearance rack. Congratulations!",
+  "nn": "Du er no for sterk for utsalshylla. Gratulerer!"
+ },
+ {
+  "en": "The more you grow, the more you’ll owe. To me. With love.",
+  "nn": "Di meir du veks, di meir skuldar du. Meg. Med kjærleik."
+ },
+ {
+  "en": "A level-up! Let’s celebrate with a business lunch. You pay.",
+  "nn": "Nytt nivå! Vi feirar med forretningslunsj. Du betaler."
+ },
+ {
+  "en": "That’s growth you can take to the bank. Take it to my bank.",
+  "nn": "Det er vekst du kan ta med til banken. Ta han til banken min."
+ },
+ {
+  "en": "Higher level unlocked. Higher expectations invoiced.",
+  "nn": "Høgare nivå låst opp. Høgare forventningar fakturert."
+ },
+ {
+  "en": "Whoa! That was faster than express shipping.",
+  "nn": "Oi! Det gjekk raskare enn ekspressfrakt."
+ },
+ {
+  "en": "Level up! Better start budgeting for epic upgrades.",
+  "nn": "Nytt nivå! Best å byrje å budsjettere for episke oppgraderingar."
+ },
+ {
+  "en": "You’re getting so strong. Have you considered bodyguard work?",
+  "nn": "Du blir så sterk. Har du tenkt på livvaktarjobb?"
+ },
+ {
+  "en": "Another notch on the belt. Belts sold separately.",
+  "nn": "Endå eit hakk i beltet. Belte seljast separat."
+ },
+ {
+  "en": "I’ve seen great investments, but you’re a gold mine.",
+  "nn": "Eg har sett gode investeringar, men du er ei gullgruve."
+ },
+ {
+  "en": "Level up! Kindly direct all praise through my office.",
+  "nn": "Nytt nivå! Send all ros gjennom kontoret mitt, takk."
+ },
+ {
+  "en": "The bigger they grow, the better they pay. Rule of trade.",
+  "nn": "Di større dei veks, di betre betaler dei. Handelsregel."
+ },
+ {
+  "en": "Up, up and away with your bottom line!",
+  "nn": "Opp, opp og av garde med botnlinja di!"
+ },
+ {
+  "en": "That level was hard-earned. Keep the change.",
+  "nn": "Det nivået var hardt tent. Behald vekslepengane."
+ },
+ {
+  "en": "Power up! Now you can afford my second-cheapest wares.",
+  "nn": "Kraftauke! No har du råd til dei nest billegaste varene mine."
+ },
+ {
+  "en": "You’ve unlocked a new level of customer loyalty points!",
+  "nn": "Du har låst opp eit nytt nivå med lojalitetspoeng!"
+ },
+ {
+  "en": "Experience: gained. Wallet: hopefully also gained.",
+  "nn": "Erfaring: vunnen. Lommebok: forhåpentleg òg vunnen."
+ },
+ {
+  "en": "I’d frame this level, but the frame costs more than your armor.",
+  "nn": "Eg ville ramma inn nivået, men ramma kostar meir enn rustninga di."
+ },
+ {
+  "en": "More muscle on the payroll! Splendid.",
+  "nn": "Meir muskel på lønningslista! Flott."
+ },
+ {
+  "en": "Stronger by the hour! I’ll start charging hourly.",
+  "nn": "Sterkare for kvar time! Eg byrjar å ta timebetalt."
+ },
+ {
+  "en": "Bank this feeling. It earns interest.",
+  "nn": "Set denne kjensla i banken. Ho gir renter."
+ },
+ {
+  "en": "Excellent! Your next upgrade is just one purchase away.",
+  "nn": "Framifrå! Neste oppgradering er berre eitt kjøp unna."
+ },
+ {
+  "en": "That’s premium hero material. Handle with care.",
+  "nn": "Det er heltemateriale av premiumklasse. Handter varsamt."
+ },
+ {
+  "en": "A level! Quick, sell it before the market notices.",
+  "nn": "Eit nivå! Fort, sel det før marknaden merkar det."
+ },
+ {
+  "en": "You’re getting good at this. Don’t start charging me.",
+  "nn": "Du blir god på dette. Ikkje byrj å ta betalt av meg."
+ },
+ {
+  "en": "Good level! Not as good as a sale, but close.",
+  "nn": "Godt nivå! Ikkje like godt som eit sal, men nær."
+ },
+ {
+  "en": "Your hero brand is gaining traction. Merchandise soon?",
+  "nn": "Heltemerket ditt får fotfeste. Varer snart?"
+ },
+ {
+  "en": "A new level, freshly minted and still warm.",
+  "nn": "Eit nytt nivå, nypregt og framleis varmt."
+ },
+ {
+  "en": "Good things come to those who grind. And to those who sell.",
+  "nn": "Gode ting kjem til dei som slit. Og til dei som sel."
+ },
+ {
+  "en": "Your growth plan is working! Mine is too.",
+  "nn": "Vekstplanen din fungerer! Min òg."
+ },
+ {
+  "en": "Level up! I’ll leave a congratulatory invoice on your doorstep.",
+  "nn": "Nytt nivå! Eg legg ein gratulasjonsfaktura på trappa di."
+ },
+ {
+  "en": "Stronger hero, safer investment. Lower risk, same price.",
+  "nn": "Sterkare helt, tryggare investering. Lågare risiko, same pris."
+ },
+ {
+  "en": "Nicely done! Even the auctioneers are impressed.",
+  "nn": "Pent gjort! Sjølv auksjonarius er imponert."
+ },
+ {
+  "en": "Level up! You’re now eligible for my extended warranty plan.",
+  "nn": "Nytt nivå! No kan du få den utvida garantien min."
+ },
+ {
+  "en": "Another level stacked. You’re practically a vault.",
+  "nn": "Endå eit nivå stabla. Du er nesten eit hvelv."
+ },
+ {
+  "en": "That’s what dedication looks like. And what profit smells like.",
+  "nn": "Slik ser innsats ut. Og slik luktar forteneste."
+ },
+ {
+  "en": "Your power is up. Your bargaining power too. Uh-oh.",
+  "nn": "Makta di er opp. Forhandlingsmakta òg. Oi."
+ },
+ {
+  "en": "Grown-up hero, grown-up prices.",
+  "nn": "Vaksen helt, vaksne prisar."
+ },
+ {
+  "en": "You’re a self-made hero. The best kind of entrepreneur.",
+  "nn": "Du er ein sjølvlaga helt. Den beste typen gründer."
+ },
+ {
+  "en": "Up another level! I’m updating my sales projections.",
+  "nn": "Opp endå eit nivå! Eg oppdaterer salsprognosane mine."
+ },
+ {
+  "en": "Leveling looks good on the balance sheet.",
+  "nn": "Nivå ser bra ut i balansen."
+ },
+ {
+  "en": "I’d celebrate with fireworks, but they’re still in testing. Mostly.",
+  "nn": "Eg ville feira med fyrverkeri, men det er framleis under testing. Stort sett."
+ },
+ {
+  "en": "You keep levelling, I keep smiling. Business is beautiful.",
+  "nn": "Du går opp, eg smiler. Forretningar er vakre."
+ },
+ {
+  "en": "Splendid upgrade! Return policy: there is none.",
+  "nn": "Strålande oppgradering! Returreglar: det finst ingen."
+ },
+ {
+  "en": "Leveled up and looking expensive. I approve of this look.",
+  "nn": "Nytt nivå, og du ser dyr ut. Eg godkjenner stilen."
+ }
+]

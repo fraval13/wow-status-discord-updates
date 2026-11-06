@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "A new ability, eh? Back in my day we had to buy every rank.",
+  "nn": "Ei ny evne, ja? På mi tid måtte vi kjøpe kvar rang."
+ },
+ {
+  "en": "Hmph. Fancy new trick. Try not to set yourself on fire with it.",
+  "nn": "Hm. Nytt fint triks. Prøv å ikkje setje fyr på deg sjølv med det."
+ },
+ {
+  "en": "New power. Same old you. Use it wisely. You won't.",
+  "nn": "Ny makt. Same gamle deg. Bruk henne klokt. Det gjer du ikkje."
+ },
+ {
+  "en": "In my day, a new spell meant a long walk to the trainer.",
+  "nn": "På mi tid betydde ein ny formel ein lang tur til trenaren."
+ },
+ {
+  "en": "Good. Your action bars were looking empty.",
+  "nn": "Bra. Handlingsbarane dine såg tomme ut."
+ },
+ {
+  "en": "Hm. Now you've got one more button to forget to press.",
+  "nn": "Hm. No har du éin knapp til å gløyme å trykkje på."
+ },
+ {
+  "en": "Back then, we unlocked abilities through sweat and copper coins.",
+  "nn": "Den gongen låste vi opp evner med sveitte og koparmyntar."
+ },
+ {
+  "en": "That's a mighty new move. Practise on training dummies. Not friends.",
+  "nn": "Det er eit kraftig nytt grep. Øv på treningsdokker. Ikkje vener."
+ },
+ {
+  "en": "Hmph. Kids get the good spells handed to them now.",
+  "nn": "Hm. Ungane får dei gode formlane servert no."
+ },
+ {
+  "en": "A new ability! Read the tooltip. All of it. Twice.",
+  "nn": "Ei ny evne! Les verktøytipset. Heile. To gonger."
+ },
+ {
+  "en": "In my day, a big ability was a big deal. Still is. Fine.",
+  "nn": "På mi tid var ei stor evne ei stor sak. Er det framleis. Greitt."
+ },
+ {
+  "en": "Good. Now you're slightly more dangerous. Mostly to yourself.",
+  "nn": "Bra. No er du litt farlegare. Mest for deg sjølv."
+ },
+ {
+  "en": "Hm. That one's a classic. I used it before it was cool.",
+  "nn": "Hm. Den er ein klassikar. Eg brukte henne før ho var kul."
+ },
+ {
+  "en": "That's power. Respect it, or it'll bite.",
+  "nn": "Det er makt. Respekter henne, elles bit ho."
+ },
+ {
+  "en": "Back then, we had to find the right keybind ourselves. On a keyboard missing keys.",
+  "nn": "Den gongen måtte vi finne rett tastebinding sjølve. På eit tastatur utan alle tastane."
+ },
+ {
+  "en": "Hmph. Shiny new spell. Bet you'll spam it. Everyone does.",
+  "nn": "Hm. Blank ny formel. Du kjem sikkert til å spamme henne. Alle gjer det."
+ },
+ {
+  "en": "Good. Every adventurer needs a signature move. This might be yours.",
+  "nn": "Bra. Kvar eventyrar treng eit kjenneteikn. Dette kan vere ditt."
+ },
+ {
+  "en": "In my day, we earned big abilities with class quests. Long ones.",
+  "nn": "På mi tid tente vi store evner med klasseoppdrag. Lange."
+ },
+ {
+  "en": "Hm. Your trainer finally trusts you with that? Bold of them.",
+  "nn": "Hm. Stolar trenaren endeleg på deg med det? Djervt av dei."
+ },
+ {
+  "en": "A new ability. Your enemies just got a bit more nervous. A bit.",
+  "nn": "Ei ny evne. Fiendane dine vart nett litt meir nervøse. Litt."
+ },
+ {
+  "en": "Back then, our spellbooks were thin and our patience thick.",
+  "nn": "Den gongen var trylleboka tynn og tolmodet tjukt."
+ },
+ {
+  "en": "Hmph. Now you'll think you're invincible. You aren't.",
+  "nn": "Hm. No trur du at du er uovervinneleg. Det er du ikkje."
+ },
+ {
+  "en": "Good. Learn it well. Abilities are only as good as their user.",
+  "nn": "Bra. Lær henne godt. Evner er berre så gode som den som brukar dei."
+ },
+ {
+  "en": "In my day, unlocking that took three quests, two dungeons and a tear.",
+  "nn": "På mi tid kravde det tre oppdrag, to fangehol og ei tåre å låse opp det."
+ },
+ {
+  "en": "Hm. That's a big one. Don't drop it on your foot.",
+  "nn": "Hm. Det er ei stor ei. Ikkje mist henne på foten."
+ },
+ {
+  "en": "New ability, new responsibility. Don't waste it on critters.",
+  "nn": "Ny evne, nytt ansvar. Ikkje kast henne bort på smådyr."
+ },
+ {
+  "en": "Back then, we had fewer abilities and more stubbornness.",
+  "nn": "Den gongen hadde vi færre evner og meir stahet."
+ },
+ {
+  "en": "Hmph. Show-off. I'm kidding. That's a fine one.",
+  "nn": "Hm. Skrytepave. Tuller. Det er ei fin ei."
+ },
+ {
+  "en": "Good. Now you can do something besides auto-attack.",
+  "nn": "Bra. No kan du gjere noko anna enn autoangrep."
+ },
+ {
+  "en": "In my day, new abilities had longer cooldowns. And we waited. Patiently.",
+  "nn": "På mi tid hadde nye evner lengre nedkjøling. Og vi venta. Tolmodig."
+ },
+ {
+  "en": "Hm. Use it in a crisis. Not just because it glows.",
+  "nn": "Hm. Bruk henne i ei krise. Ikkje berre fordi ho lyser."
+ },
+ {
+  "en": "That's a game-changer. Or a minor convenience. We'll see.",
+  "nn": "Det endrar alt. Eller er ein liten fordel. Vi får sjå."
+ },
+ {
+  "en": "Back then, we'd practise new moves for days before trying them in a fight.",
+  "nn": "Den gongen øvde vi nye grep i dagevis før vi prøvde dei i kamp."
+ },
+ {
+  "en": "Hmph. Took you long enough to get there. Use it well.",
+  "nn": "Hm. Det tok si tid å kome dit. Bruk henne godt."
+ },
+ {
+  "en": "Good. Your class is starting to make sense now. A little.",
+  "nn": "Bra. Klassen din byrjar å gi meining no. Litt."
+ },
+ {
+  "en": "In my day, that ability came with a lecture from an ancient trainer. Mine: be careful.",
+  "nn": "På mi tid kom den evna med ei preike frå ein svært gammal trenar. Mi: ver varsam."
+ },
+ {
+  "en": "Hm. A new tool in the box. Don't rust it.",
+  "nn": "Hm. Eit nytt verktøy i kassa. Ikkje la det ruste."
+ },
+ {
+  "en": "That's real power. The old-timers felt it too. A long time ago.",
+  "nn": "Det er ekte makt. Gamlingane kjende henne òg. For lenge sidan."
+ },
+ {
+  "en": "Back then, you'd have to find the trainer in a different city. On foot.",
+  "nn": "Den gongen måtte du finne trenaren i ein annan by. Til fots."
+ },
+ {
+  "en": "Hmph. Now you'll stop complaining you've got nothing to press.",
+  "nn": "Hm. No sluttar du å klage på at du ikkje har noko å trykkje på."
+ },
+ {
+  "en": "Good. Put it on a key you can reach. Not the one under the coffee.",
+  "nn": "Bra. Legg henne på ein tast du rekk. Ikkje den under kaffikoppen."
+ },
+ {
+  "en": "In my day, we'd celebrate a new spell with a quiet nod. Nod.",
+  "nn": "På mi tid feira vi ein ny formel med eit stilt nikk. Nikk."
+ },
+ {
+  "en": "Hm. That's a famous one. Try not to embarrass it.",
+  "nn": "Hm. Det er ei kjend ei. Prøv å ikkje gjere henne flau."
+ },
+ {
+  "en": "A new ability. Your rotation just got more complicated. Enjoy.",
+  "nn": "Ei ny evne. Rotasjonen din vart nett meir komplisert. Kos deg."
+ },
+ {
+  "en": "Back then, abilities had ranks. You bought rank one, then rank two…",
+  "nn": "Den gongen hadde evnene rangar. Du kjøpte rang ein, så rang to…"
+ },
+ {
+  "en": "Hmph. Look at you, all powerful now. Still can't open doors properly.",
+  "nn": "Hm. Sjå på deg, mektig no. Kan framleis ikkje opne dører skikkeleg."
+ },
+ {
+  "en": "Good. More power for the coming storm. And there's always a storm.",
+  "nn": "Bra. Meir makt til uvêret som kjem. Og det kjem alltid eit uvêr."
+ },
+ {
+  "en": "In my day, the big abilities were legends. Now they're keybinds.",
+  "nn": "På mi tid var dei store evnene legender. No er dei tastebindingar."
+ },
+ {
+  "en": "Hm. Fine move. Mind the cooldown.",
+  "nn": "Hm. Fint grep. Pass nedkjølinga."
+ },
+ {
+  "en": "That ability has saved a thousand lives. Maybe yours someday.",
+  "nn": "Den evna har berga tusen liv. Kanskje ditt ein dag."
+ },
+ {
+  "en": "Back then, we didn't have tooltips. We experimented. Painfully.",
+  "nn": "Den gongen hadde vi ingen verktøytips. Vi eksperimenterte. Smertefullt."
+ },
+ {
+  "en": "Hmph. That spell's older than me. Treat it with respect.",
+  "nn": "Hm. Den formelen er eldre enn meg. Behandle han med respekt."
+ },
+ {
+  "en": "Good. A real adventurer knows every tool in their kit. Learn this one.",
+  "nn": "Bra. Ein ekte eventyrar kjenner kvart verktøy i kassa. Lær dette."
+ },
+ {
+  "en": "Tell me about it by the fire. Briefly. I'll grumble.",
+  "nn": "Fortel meg om det ved bålet. Kort. Eg skal brumme."
+ },
+ {
+  "en": "Hm. You'll want to try it on everything. Don't.",
+  "nn": "Hm. Du vil prøve henne på alt. Ikkje gjer det."
+ },
+ {
+  "en": "A new power. The world just got a tiny bit more interesting.",
+  "nn": "Ei ny makt. Verda vart nett litt meir interessant."
+ },
+ {
+  "en": "Hours of grinding for the gold, I hope. No? Spoiled.",
+  "nn": "Timar med grinding for gullet, håpar eg. Nei? Bortskjemd."
+ },
+ {
+  "en": "Hmph. Kids. Get one new trick and think they're archmages.",
+  "nn": "Hm. Ungar. Får eitt nytt triks og trur dei er erkemagarar."
+ },
+ {
+  "en": "Good. Use it right and it'll make you look clever. Use it wrong…",
+  "nn": "Bra. Bruk henne rett, så ser du klok ut. Bruk henne feil…"
+ },
+ {
+  "en": "Show the trainer. Out loud. They like that.",
+  "nn": "Vis trenaren. Høgt. Dei likar det."
+ },
+ {
+  "en": "Hm. That's a staple of your class. About time.",
+  "nn": "Hm. Det er ein grunnstein i klassen din. På tide."
+ },
+ {
+  "en": "That's the stuff. Raw power, fresh from the trainer.",
+  "nn": "Slik skal det vere. Rå makt, fersk frå trenaren."
+ },
+ {
+  "en": "Long cast time, short temper. That's how big abilities should be.",
+  "nn": "Lang kastetid, kort lunte. Slik skal store evner vere."
+ },
+ {
+  "en": "Hmph. You'll be pressing it constantly now. I know you.",
+  "nn": "Hm. No kjem du til å trykkje på henne heile tida. Eg kjenner deg."
+ },
+ {
+  "en": "Good. It'll make the hard fights a bit less hard. A bit.",
+  "nn": "Bra. Ho gjer dei harde kampane litt mindre harde. Litt."
+ },
+ {
+  "en": "All your gold on one spell? Worth it. Always is.",
+  "nn": "Alt gullet ditt på éin formel? Verdt det. Er det alltid."
+ },
+ {
+  "en": "Hm. Now the training dummy has something to fear.",
+  "nn": "Hm. No har treningsdokka noko å frykte."
+ },
+ {
+  "en": "A new ability. Practise until it's muscle memory. Mine's mostly forgetting.",
+  "nn": "Ei ny evne. Øv til det sit i musklane. Mine er mest gløymsle."
+ },
+ {
+  "en": "Feel like a legend? Enjoy it. It lasts about a day.",
+  "nn": "Kjennest det som ei legende? Nyt det. Det varer omtrent ein dag."
+ },
+ {
+  "en": "Hmph. That's a good one. I'm jealous. Don't tell anyone.",
+  "nn": "Hm. Det er ei god ei. Eg er sjalu. Ikkje sei det til nokon."
+ },
+ {
+  "en": "Good. Your enemies won't know what hit them. Mostly because you'll miss.",
+  "nn": "Bra. Fiendane dine veit ikkje kva som trefte dei. Mest fordi du bommar."
+ },
+ {
+  "en": "A popup. Sigh. It should come from a dusty tome.",
+  "nn": "Eit sprettoppvindauge. Sukk. Det burde kome frå ei støvete bok."
+ },
+ {
+  "en": "Hm. That ability defines your class. Now you'll have to live up to it.",
+  "nn": "Hm. Den evna definerer klassen din. No må du leve opp til henne."
+ },
+ {
+  "en": "That's a powerful addition. Don't let it make you lazy.",
+  "nn": "Det er eit kraftig tilskot. Ikkje la det gjere deg lat."
+ },
+ {
+  "en": "Watch a master use it. Slowly. Then copy. That's how you learn.",
+  "nn": "Sjå ein meister bruke henne. Sakte. Kopier så. Slik lærer du."
+ },
+ {
+  "en": "Hmph. Now you've got a big red button. Don't press it in town.",
+  "nn": "Hm. No har du ein stor raud knapp. Ikkje trykk på han i byen."
+ },
+ {
+  "en": "Good. Strength is earned. And sometimes unlocked.",
+  "nn": "Bra. Styrke blir tent. Og stundom låst opp."
+ },
+ {
+  "en": "No long, painful quest for that one? Lucky you.",
+  "nn": "Inkje langt, vondt oppdrag for den? Heldiggris."
+ },
+ {
+  "en": "Hm. Fine. Use it and tell me how it goes. I'll pretend to listen.",
+  "nn": "Hm. Greitt. Bruk henne og fortel meg korleis det går. Eg skal late som eg høyrer etter."
+ },
+ {
+  "en": "A new trick for an old dog. Well, a young pup.",
+  "nn": "Eit nytt triks for ein gammal hund. Vel, ein ung valp."
+ },
+ {
+  "en": "Visited the trainer in the rain, I hope. It's always raining.",
+  "nn": "Vitja trenaren i regnet, håpar eg. Det regnar alltid."
+ },
+ {
+  "en": "Hmph. Look who's moving up in the world. One button at a time.",
+  "nn": "Hm. Sjå kven som er på veg opp i verda. Éin knapp om gongen."
+ },
+ {
+  "en": "Good. Master it before you move on. Masters are rare.",
+  "nn": "Bra. Meistre henne før du går vidare. Meistrar er sjeldne."
+ },
+ {
+  "en": "Funny name. They all have funny names. Still useful.",
+  "nn": "Rart namn. Alle har rare namn. Framleis nyttig."
+ },
+ {
+  "en": "Hm. That's a big step. Your class is proud. I'm… content.",
+  "nn": "Hm. Det er eit stort steg. Klassen din er stolt. Eg er… nøgd."
+ },
+ {
+  "en": "That's one more reason for enemies to fear you. Or laugh.",
+  "nn": "Det er éin grunn til for fiendar å frykte deg. Eller le."
+ },
+ {
+  "en": "New ability, new strategy. Write it down. Seriously.",
+  "nn": "Ny evne, ny strategi. Skriv det ned. Seriøst."
+ },
+ {
+  "en": "Hmph. You'll want to brag about it. Brag quietly.",
+  "nn": "Hm. Du vil skryte av det. Skryt stilt."
+ },
+ {
+  "en": "Good. Every big ability is a promise of bigger fights.",
+  "nn": "Bra. Kvar stor evne er ein lovnad om større kampar."
+ },
+ {
+  "en": "Practise in the woods. The trees won't appreciate it, but still.",
+  "nn": "Øv i skogen. Trea set ikkje pris på det, men likevel."
+ },
+ {
+  "en": "Hm. Now you can do what your class is known for. Finally.",
+  "nn": "Hm. No kan du gjere det klassen din er kjend for. Endeleg."
+ },
+ {
+  "en": "A new power awakens. Try to keep it awake.",
+  "nn": "Ei ny makt vaknar. Prøv å halde henne vaken."
+ },
+ {
+  "en": "Cooldowns in seconds? You've got it easy. Easy, I say.",
+  "nn": "Nedkjøling i sekund? Du har det lett. Lett, seier eg."
+ },
+ {
+  "en": "Hmph. Took me ages to get that. You got it before lunch.",
+  "nn": "Hm. Det tok meg evigheiter å få det. Du fekk det før lunsj."
+ },
+ {
+  "en": "Good. Read up on it. Don't just mash it.",
+  "nn": "Bra. Les deg opp på henne. Ikkje berre hamre på henne."
+ },
+ {
+  "en": "Read the manual. What? There's no manual? Kids these days.",
+  "nn": "Les bruksanvisinga. Kva? Det finst inga bruksanvising? Ungdomen i dag."
+ },
+ {
+  "en": "Hm. Fine power. Wield it like you've got sense.",
+  "nn": "Hm. Fin makt. Bruk henne som om du har vit."
+ },
+ {
+  "en": "That's a classic move. Older than most of your gear.",
+  "nn": "Det er eit klassisk grep. Eldre enn det meste av utstyret ditt."
+ },
+ {
+  "en": "Big ability, empty mana bar. Watch for that. Classic mistake.",
+  "nn": "Stor evne, tom manabar. Pass deg for det. Klassisk feil."
+ },
+ {
+  "en": "Hmph. A new spell. I'll add it to my list of things you'll misuse.",
+  "nn": "Hm. Ein ny formel. Eg set han på lista over ting du kjem til å misbruke."
+ },
+ {
+  "en": "Good. Now you're a proper member of your class. Mostly.",
+  "nn": "Bra. No er du eit ordentleg medlem av klassen din. Stort sett."
+ },
+ {
+  "en": "No chores to earn it? Your trainer's gone soft.",
+  "nn": "Ingen plikter for å tene henne? Trenaren din har blitt blaut."
+ },
+ {
+  "en": "Hm. That'll come in handy. When you remember you have it.",
+  "nn": "Hm. Det kjem til å vere nyttig. Når du hugsar at du har det."
+ },
+ {
+  "en": "A new ability. The world shudders. Slightly.",
+  "nn": "Ei ny evne. Verda skjelv. Litt."
+ },
+ {
+  "en": "Didn't need a pilgrimage for that? Sore feet are character, kid.",
+  "nn": "Trong du ikkje ei pilegrimsferd for det? Såre føter er karakter, valp."
+ },
+ {
+  "en": "Hmph. Now go break something with it. Something that deserves it.",
+  "nn": "Hm. Gå og knus noko med henne no. Noko som fortener det."
+ },
+ {
+  "en": "Good. Power plus patience equals results. You've got half.",
+  "nn": "Bra. Makt pluss tolmod gir resultat. Du har halvparten."
+ },
+ {
+  "en": "Sounds quieter than it should. Big spells should crackle.",
+  "nn": "Høyrest stillare ut enn det burde. Store formlar skal knitre."
+ },
+ {
+  "en": "Hm. You'll grow into it. Or it'll grow into you.",
+  "nn": "Hm. Du veks inn i henne. Eller ho veks inn i deg."
+ },
+ {
+  "en": "That's a fine new skill. Use it before it uses you.",
+  "nn": "Det er ei fin ny ferdigheit. Bruk henne før ho brukar deg."
+ },
+ {
+  "en": "I'd have traded a mount for that ability. If I'd had one.",
+  "nn": "Eg ville bytt bort eit ridedyr for den evna. Om eg hadde hatt eitt."
+ },
+ {
+  "en": "Hmph. It glows. Of course it glows. Everything glows now.",
+  "nn": "Hm. Ho lyser. Sjølvsagt lyser ho. Alt lyser no."
+ },
+ {
+  "en": "Good. A strong ability needs a steady hand. Steady yours.",
+  "nn": "Bra. Ei sterk evne treng ei stø hand. Gjer di stø."
+ },
+ {
+  "en": "Test it on boars first. They'll suspect. Do it anyway.",
+  "nn": "Test henne på villsvin først. Dei kjem til å ane uråd. Gjer det likevel."
+ },
+ {
+  "en": "Hm. That's power earned through levels. Good. Use it honestly.",
+  "nn": "Hm. Det er makt tent gjennom nivå. Bra. Bruk henne ærleg."
+ },
+ {
+  "en": "A new ability. Your keybinds weep.",
+  "nn": "Ei ny evne. Tastebindingane dine græt."
+ },
+ {
+  "en": "No expensive reagent needed? Spoiled rotten.",
+  "nn": "Ingen dyr reagens? Gjennomført bortskjemd."
+ },
+ {
+  "en": "Hmph. You're becoming dangerous. Good. Stay polite, though.",
+  "nn": "Hm. Du er i ferd med å bli farleg. Bra. Ver høfleg likevel."
+ },
+ {
+  "en": "Good. That's one more tool for when everything goes wrong. Which it will.",
+  "nn": "Bra. Det er eitt verktøy til for når alt går gale. Noko det kjem til å gjere."
+ },
+ {
+  "en": "That ability used to be a tavern rumour. Now it's yours. Behave.",
+  "nn": "Den evna var eit rykte på vertshuset før. No er ho di. Oppfør deg."
+ },
+ {
+  "en": "Hm. Strong stuff. Keep it on a short leash.",
+  "nn": "Hm. Sterke saker. Hald det i kort band."
+ },
+ {
+  "en": "That's your class showing its teeth. Bite carefully.",
+  "nn": "Det er klassen din som viser tennene. Bit varsamt."
+ },
+ {
+  "en": "No fanfare? Here: toot. A tired trumpet. You're welcome.",
+  "nn": "Ingen fanfare? Her: tut. Ein trøytt trompet. Ver så god."
+ },
+ {
+  "en": "Hmph. There's no shortcut to mastery. But this button helps.",
+  "nn": "Hm. Det finst ingen snarveg til meisterskap. Men denne knappen hjelper."
+ },
+ {
+  "en": "Good. Practise it on a dummy before you try it on a dragon.",
+  "nn": "Bra. Øv på ei dokke før du prøver henne på ein drake."
+ },
+ {
+  "en": "Learn by watching the elders. Watch me. Nap. Lesson over.",
+  "nn": "Lær ved å sjå på dei eldre. Sjå på meg. Lur. Leksa er over."
+ },
+ {
+  "en": "Hm. That's an ability with history. Add to it.",
+  "nn": "Hm. Det er ei evne med historie. Legg til litt."
+ },
+ {
+  "en": "A fine new power. Don't let it go to your head. Keep it in your hands.",
+  "nn": "Ei fin ny makt. Ikkje la henne gå til hovudet. Hald henne i hendene."
+ },
+ {
+  "en": "A tooltip. Lucky. My trainers spoke in riddles.",
+  "nn": "Eit verktøytips. Heldig. Trenarane mine snakka i gåter."
+ },
+ {
+  "en": "Hmph. Big ability, big expectations. No pressure. Some pressure.",
+  "nn": "Hm. Stor evne, store forventningar. Ikkje noko press. Litt press."
+ },
+ {
+  "en": "Good. Your arsenal's growing. Your wisdom should too.",
+  "nn": "Bra. Arsenalet ditt veks. Visdomen din bør òg gjere det."
+ },
+ {
+  "en": "That spell is legend stuff. Now it's your Tuesday. Hmph.",
+  "nn": "Den formelen er legendestoff. No er han tysdagen din. Hm."
+ },
+ {
+  "en": "Hm. Fine. I'll stand back while you test it. Far back.",
+  "nn": "Hm. Greitt. Eg står langt unna medan du testar henne. Langt unna."
+ },
+ {
+  "en": "That's a proper milestone for your class. Wear it with pride.",
+  "nn": "Det er ein ordentleg milepæl for klassen din. Ber han med stoltheit."
+ },
+ {
+  "en": "Look at that. The kid's learned a real trick.",
+  "nn": "Sjå der. Ungen har lært eit ekte triks."
+ },
+ {
+  "en": "A big new button. Resist the urge to press it on the mailbox.",
+  "nn": "Ein stor ny knapp. Motstå trongen til å trykkje på han mot postkassa."
+ },
+ {
+  "en": "Your old self couldn't do that. Your old self was hopeless.",
+  "nn": "Det gamle deg kunne ikkje gjere det. Det gamle deg var håplaust."
+ },
+ {
+  "en": "Every class has its crown jewel. You've just been handed yours.",
+  "nn": "Kvar klasse har krona si. Du har nett fått di."
+ },
+ {
+  "en": "That move took years to master in my time. You've got an afternoon.",
+  "nn": "Det grepet tok år å meistre i mi tid. Du har ein ettermiddag."
+ },
+ {
+  "en": "I remember the first time I used that. I hit myself. Don't.",
+  "nn": "Eg hugsar første gongen eg brukte det. Eg trefte meg sjølv. Ikkje gjer det."
+ },
+ {
+  "en": "The trainer's done their part. Now do yours.",
+  "nn": "Trenaren har gjort sin del. Gjer din no."
+ },
+ {
+  "en": "Respect the power. It doesn't respect you yet.",
+  "nn": "Respekter makta. Ho respekterer ikkje deg enno."
+ },
+ {
+  "en": "Ah, the thrill of a fresh ability. It fades by the hundredth cast.",
+  "nn": "Å, spenninga ved ei fersk evne. Ho falmar etter hundrede kastet."
+ },
+ {
+  "en": "I'd show you how it's done, but my wrists aren't what they were.",
+  "nn": "Eg skulle vist deg korleis det skal gjerast, men handledda mine er ikkje som før."
+ },
+ {
+  "en": "Use it sparingly. Or constantly. Just use it right.",
+  "nn": "Bruk henne sparsamt. Eller heile tida. Berre bruk henne rett."
+ },
+ {
+  "en": "Lovely. Another glowing thing that makes noise.",
+  "nn": "Nydeleg. Endå ein lysande ting som lagar lyd."
+ },
+ {
+  "en": "That's the sort of power that makes old-timers nod. Grudgingly.",
+  "nn": "Det er den typen makt som får gamlingar til å nikke. Motvillig."
+ },
+ {
+  "en": "Now you're a proper threat. A small, proper threat.",
+  "nn": "No er du ein ordentleg trussel. Ein liten, ordentleg trussel."
+ },
+ {
+  "en": "Don't wave it around. Power's best kept quiet until needed.",
+  "nn": "Ikkje vift med henne. Makt er best halden stille til ho trengst."
+ },
+ {
+  "en": "Hmph. When I unlocked mine, the trainer was asleep. I had to wake them.",
+  "nn": "Hm. Då eg låste opp mi, sov trenaren. Eg måtte vekkje dei."
+ },
+ {
+  "en": "Fresh ability, fresh mistakes. Make the good kind.",
+  "nn": "Fersk evne, ferske feil. Gjer den gode sorten."
+ },
+ {
+  "en": "That one will get you out of trouble. Or into more. Both, really.",
+  "nn": "Den kjem til å få deg ut av trøbbel. Eller inn i meir. Begge, eigentleg."
+ },
+ {
+  "en": "The spellbook gets heavier. So does the responsibility.",
+  "nn": "Trylleboka blir tyngre. Det blir ansvaret òg."
+ },
+ {
+  "en": "I see you've reached the good stuff. About time.",
+  "nn": "Eg ser du har nådd dei gode tinga. På tide."
+ },
+ {
+  "en": "Ooh, impressive. Now do it again without looking surprised.",
+  "nn": "Å, imponerande. Gjer det igjen no utan å sjå overraska ut."
+ },
+ {
+  "en": "Proper class power. Wear it like an old cloak. Comfortably.",
+  "nn": "Ordentleg klassemakt. Ber henne som ei gammal kappe. Komfortabelt."
+ },
+ {
+  "en": "You've unlocked it. Now unlock the wisdom to use it. Harder.",
+  "nn": "Du har låst henne opp. Lås no opp visdomen til å bruke henne. Vanskelegare."
+ },
+ {
+  "en": "Some of us waited ages for that. You young ones get it fast.",
+  "nn": "Somme av oss venta evigheiter på det. De unge får det fort."
+ },
+ {
+  "en": "I'll admit it, that ability is lovely. Use it lovingly.",
+  "nn": "Eg skal innrømme det, den evna er nydeleg. Bruk henne kjærleg."
+ },
+ {
+  "en": "Your class just got a whole lot more interesting. You too. Slightly.",
+  "nn": "Klassen din vart nett mykje meir interessant. Du òg. Litt."
+ },
+ {
+  "en": "That's a heavy hitter. Don't hit your friends with it.",
+  "nn": "Det er ein tungvektar. Ikkje slå venene dine med han."
+ },
+ {
+  "en": "Ah, new magic. Or new muscle. Either way, mind the furniture.",
+  "nn": "Å, ny magi. Eller nye musklar. Uansett, pass møblane."
+ },
+ {
+  "en": "Remember: a fancy ability is only fancy if it lands.",
+  "nn": "Hugs: ei fin evne er berre fin om ho treff."
+ },
+ {
+  "en": "That's a big moment. I'll stop grumbling for it. Done. Back to grumbling.",
+  "nn": "Det er eit stort augneblink. Eg sluttar å brumme for det. Ferdig. Tilbake til brumminga."
+ },
+ {
+  "en": "Training pays off. Slowly, then all at once. Like this.",
+  "nn": "Trening løner seg. Sakte, og så med eitt. Som no."
+ },
+ {
+  "en": "Learn its rhythm. Every ability has a rhythm. Mine's a shuffle.",
+  "nn": "Lær rytmen hennar. Kvar evne har ein rytme. Min er tasling."
+ },
+ {
+  "en": "That's power the young shouldn't have. But here we are.",
+  "nn": "Det er makt dei unge ikkje burde ha. Men her er vi."
+ },
+ {
+  "en": "Keep it sharp, keep it ready, keep it off cooldown when it matters.",
+  "nn": "Hald henne kvass, hald henne klar, hald henne utanfor nedkjøling når det gjeld."
+ },
+ {
+  "en": "Bah. Next you'll be teaching me. Never. Well, maybe. No.",
+  "nn": "Pøh. Snart lærer du meg. Aldri. Vel, kanskje. Nei."
+ },
+ {
+  "en": "A proud moment for your class. A tolerable moment for me.",
+  "nn": "Eit stolt augneblink for klassen din. Eit tolerabelt augneblink for meg."
+ },
+ {
+  "en": "Your foes have a new reason to stay home.",
+  "nn": "Fiendane dine har ein ny grunn til å halde seg heime."
+ },
+ {
+  "en": "The hard part's not learning it. It's remembering it mid-fight.",
+  "nn": "Det vanskelege er ikkje å lære henne. Det er å hugse henne midt i kampen."
+ },
+ {
+  "en": "That's one of the good ones. I'd know. I've seen them all.",
+  "nn": "Det er ei av dei gode. Eg ville visst. Eg har sett alle."
+ },
+ {
+  "en": "Unlocked, eh? Good. Now lock in some practice.",
+  "nn": "Låst opp, ja? Bra. Lås deg inne med litt øving no."
+ },
+ {
+  "en": "Fine. You're officially less useless in a fight.",
+  "nn": "Greitt. Du er offisielt mindre ubrukeleg i kamp."
+ },
+ {
+  "en": "You'll feel invincible for a week. Enjoy it. It passes.",
+  "nn": "Du kjem til å kjenne deg uovervinneleg i ei veke. Nyt det. Det går over."
+ },
+ {
+  "en": "That one's saved my hide more times than I can count. I count badly.",
+  "nn": "Den har berga skinnet mitt fleire gonger enn eg kan telje. Eg tel dårleg."
+ },
+ {
+  "en": "New power, old lesson: don't stand in the fire anyway.",
+  "nn": "Ny makt, gammal lekse: ikkje stå i elden uansett."
+ },
+ {
+  "en": "I'll be watching to see you use it properly. Squinting, but watching.",
+  "nn": "Eg skal følgje med på at du brukar henne rett. Mysande, men følgjande."
+ },
+ {
+  "en": "Mm. That's the kind of thing worth writing home about.",
+  "nn": "Mm. Det er den typen ting som er verdt å skrive heim om."
+ },
+ {
+  "en": "Every veteran started with that same new-ability grin. Wipe it off. Kidding.",
+  "nn": "Kvar veteran starta med det same nye-evne-gliset. Tørk det av. Tuller."
+ },
+ {
+  "en": "That's a step up from flailing. Big step.",
+  "nn": "Det er eit steg opp frå fekting i lufta. Stort steg."
+ },
+ {
+  "en": "Let me guess: you've already used it on a squirrel.",
+  "nn": "La meg gjette: du har alt brukt henne på eit ekorn."
+ },
+ {
+  "en": "A fresh weapon in the arsenal. Polish it with practice.",
+  "nn": "Eit ferskt våpen i arsenalet. Puss det med øving."
+ },
+ {
+  "en": "Your trainer's proud. Trainers pretend not to be. Like me.",
+  "nn": "Trenaren din er stolt. Trenarar later som dei ikkje er det. Som meg."
+ },
+ {
+  "en": "That ability's been the downfall of many bosses. Add to the count.",
+  "nn": "Den evna har felt mange sjefar. Legg til i teljinga."
+ },
+ {
+  "en": "Hmph. Sorcery, swordplay, whatever it is. It looks good on you.",
+  "nn": "Hm. Trolldom, sverdkunst, kva det no er. Det kler deg."
+ },
+ {
+  "en": "The real test is using it when everything's on fire. Literally.",
+  "nn": "Den verkelege prøva er å bruke henne når alt brenn. Bokstaveleg."
+ },
+ {
+  "en": "I see your class finally trusts you with the sharp stuff.",
+  "nn": "Eg ser klassen din endeleg stolar på deg med dei kvasse tinga."
+ },
+ {
+  "en": "That ability's older than the realm you're on. Respect your elders.",
+  "nn": "Den evna er eldre enn riket du er på. Respekter dei eldre."
+ },
+ {
+  "en": "Use it well and the bards will hum about you. Badly.",
+  "nn": "Bruk henne godt, så nynnar bardane om deg. Dårleg."
+ },
+ {
+  "en": "So you've grown into your class at last. Took you a while. Fine.",
+  "nn": "Så du har endeleg vakse inn i klassen din. Det tok ei stund. Greitt."
+ },
+ {
+  "en": "I'd clap, but I'm saving my energy for complaining.",
+  "nn": "Eg skulle klappa, men eg sparer krefter til klaginga."
+ },
+ {
+  "en": "That's a good one. Keep it on your main bar. Not hidden away.",
+  "nn": "Det er ei god ei. Hald henne på hovudbaren. Ikkje gøymd bort."
+ },
+ {
+  "en": "The cooldown's long. Your patience is short. Bad combination.",
+  "nn": "Nedkjølinga er lang. Tolmodet ditt er kort. Dårleg kombinasjon."
+ },
+ {
+  "en": "You've grown sharper. Now don't cut yourself.",
+  "nn": "Du har vorte kvassare. Ikkje skjer deg no."
+ },
+ {
+  "en": "Proud of you, kid. There. Said it. Never again.",
+  "nn": "Stolt av deg, valp. Der. Sa det. Aldri meir."
+ },
+ {
+  "en": "Ah, the day the button arrives. Every adventurer remembers it.",
+  "nn": "Å, dagen då knappen kjem. Kvar eventyrar hugsar han."
+ },
+ {
+  "en": "That one's a crowd-pleaser. The crowd being your party.",
+  "nn": "Den er ein publikumsfavoritt. Publikum er gruppa di."
+ },
+ {
+  "en": "Now you can do the thing your class is famous for. Don't fumble it.",
+  "nn": "No kan du gjere det klassen din er kjend for. Ikkje klabb det til."
+ },
+ {
+  "en": "Hmph. More power to you. Literally.",
+  "nn": "Hm. Meir makt til deg. Bokstaveleg."
+ },
+ {
+  "en": "That's the stuff that turns a novice into a nuisance. To enemies.",
+  "nn": "Det er det som gjer ein nybyrjar til ein plage. For fiendar."
+ },
+ {
+  "en": "I hope you read the fine print. There's always fine print.",
+  "nn": "Eg håpar du las det med liten skrift. Det er alltid noko med liten skrift."
+ },
+ {
+  "en": "Every great hero had a moment like this. Most of them wasted it. Don't.",
+  "nn": "Kvar stor helt hadde eit augneblink som dette. Dei fleste kasta det bort. Ikkje gjer det."
+ },
+ {
+  "en": "Grand. You'll be insufferable at dinner now.",
+  "nn": "Flott. No blir du uuthaldeleg ved middagsbordet."
+ },
+ {
+  "en": "Power doesn't make you wise. But it makes you louder.",
+  "nn": "Makt gjer deg ikkje klok. Men ho gjer deg høgare."
+ },
+ {
+  "en": "Fine skill. My old guildmates would have fought over that.",
+  "nn": "Fin ferdigheit. Dei gamle lagkameratane mine ville ha slost om det."
+ },
+ {
+  "en": "Well, look who's got something worth bragging about. Brag softly.",
+  "nn": "Nei sjå, kven som har noko verdt å skryte av. Skryt mjukt."
+ },
+ {
+  "en": "New ability unlocked. Old habits, sadly, not removed.",
+  "nn": "Ny evne låst opp. Gamle vanar, dessverre, ikkje fjerna."
+ },
+ {
+  "en": "I see a hero in the making. Very slowly in the making.",
+  "nn": "Eg ser ein helt i emning. Svært sakte i emning."
+ },
+ {
+  "en": "That's a fine reward for all those levels of nonsense.",
+  "nn": "Det er ei fin løn for alle dei nivåa med tøv."
+ },
+ {
+  "en": "Use it to protect the weak. Not just to look cool. Fine, both.",
+  "nn": "Bruk henne til å verne dei veike. Ikkje berre for å sjå kul ut. Greitt, begge."
+ },
+ {
+  "en": "A new page in the spellbook. Don't dog-ear it.",
+  "nn": "Ei ny side i trylleboka. Ikkje brett hjørnet."
+ },
+ {
+  "en": "Hmph. Kids today get the good abilities and still complain. Don't complain.",
+  "nn": "Hm. Ungdomen i dag får dei gode evnene og klagar likevel. Ikkje klag."
+ },
+ {
+  "en": "That's a turning point. Turn carefully.",
+  "nn": "Det er eit vendepunkt. Snu varsamt."
+ },
+ {
+  "en": "Some of us had to earn that through a quest chain longer than a winter.",
+  "nn": "Somme av oss måtte tene det gjennom ei oppdragskjede lengre enn ein vinter."
+ },
+ {
+  "en": "It suits you. Like an old pair of gloves. Broken in.",
+  "nn": "Det kler deg. Som eit gammalt par hanskar. Innkøyrde."
+ },
+ {
+  "en": "That's a sign you're getting serious. I approve. Seriously.",
+  "nn": "Det er eit teikn på at du blir seriøs. Eg godkjenner. Seriøst."
+ },
+ {
+  "en": "You'll be wondering how you ever lived without it. You barely did.",
+  "nn": "Du kjem til å lure på korleis du levde utan henne. Du gjorde så vidt det."
+ },
+ {
+  "en": "Fine. You've got the key. Now find the door.",
+  "nn": "Greitt. Du har nøkkelen. Finn døra no."
+ },
+ {
+  "en": "That'll make you a better ally. Allies like that sort of thing.",
+  "nn": "Det gjer deg til ein betre alliert. Allierte likar slikt."
+ },
+ {
+  "en": "Ah, a proper ability. I was getting tired of your tickling.",
+  "nn": "Å, ei ordentleg evne. Eg byrja å bli lei av kilinga di."
+ },
+ {
+  "en": "Strong stuff, kid. Strong stuff. Don't spill it.",
+  "nn": "Sterke saker, valp. Sterke saker. Ikkje søl."
+ },
+ {
+  "en": "That's a power the old masters guarded jealously. You got it free. Typical.",
+  "nn": "Det er ei makt dei gamle meistrane vakta sjalu på. Du fekk henne gratis. Typisk."
+ },
+ {
+  "en": "You've gained a weapon. Gain the judgement to match.",
+  "nn": "Du har fått eit våpen. Få dømmekrafta som passar til."
+ },
+ {
+  "en": "I suppose your enemies should start writing their wills.",
+  "nn": "Fiendane dine bør vel byrje å skrive testamente."
+ },
+ {
+  "en": "Mark the day. It's the day you stopped being harmless.",
+  "nn": "Merk dagen. Det er dagen du slutta å vere ufarleg."
+ },
+ {
+  "en": "Not bad at all. Even the training dummy looks worried.",
+  "nn": "Slett ikkje verst. Sjølv treningsdokka ser uroleg ut."
+ },
+ {
+  "en": "That's what we called a real power-up. Back when we had to walk to get it.",
+  "nn": "Det kalla vi ei ekte oppgradering. Då vi måtte gå for å få henne."
+ },
+ {
+  "en": "Use it well, use it often, and for goodness' sake, use it on time.",
+  "nn": "Bruk henne godt, bruk henne ofte, og for all del, bruk henne i tide."
+ },
+ {
+  "en": "A fine gift from your class. Say thank you. Politely.",
+  "nn": "Ei fin gåve frå klassen din. Sei takk. Høfleg."
+ },
+ {
+  "en": "Hm. You might just be ready for the hard stuff now. Might.",
+  "nn": "Hm. Kanskje du er klar for dei vanskelege tinga no. Kanskje."
+ },
+ {
+  "en": "That's a cornerstone of your class. Build on it. Carefully.",
+  "nn": "Det er ein hjørnestein i klassen din. Bygg vidare på han. Varsamt."
+ },
+ {
+  "en": "Some say power changes people. Change for the better, kid.",
+  "nn": "Nokre seier at makt endrar folk. Endre deg til det betre, valp."
+ },
+ {
+  "en": "I can see you're excited. Calm down before you press it in the bank.",
+  "nn": "Eg ser du er spent. Ro deg ned før du trykkjer på henne i banken."
+ },
+ {
+  "en": "Now you've got something to brag about at the inn. Briefly.",
+  "nn": "No har du noko å skryte av på vertshuset. Kort."
+ },
+ {
+  "en": "That's the sound of your class clicking into place. Click.",
+  "nn": "Det er lyden av at klassen din fell på plass. Klikk."
+ },
+ {
+  "en": "Fine. One more thing I'll have to watch you misuse.",
+  "nn": "Greitt. Éin ting til eg må sjå deg misbruke."
+ },
+ {
+  "en": "Ah, a proper ability at last. The years of flailing are over. Mostly.",
+  "nn": "Å, ei ordentleg evne til slutt. Åra med fekting er over. Stort sett."
+ },
+ {
+  "en": "Grumble. Fine. That's a good one. Grumble.",
+  "nn": "Brumm. Greitt. Det er ei god ei. Brumm."
+ },
+ {
+  "en": "Your arsenal's getting heavy. Lift with your knees.",
+  "nn": "Arsenalet ditt blir tungt. Løft med knea."
+ },
+ {
+  "en": "You're one step closer to being the hero you think you are.",
+  "nn": "Du er eitt steg nærare å vere den helten du trur du er."
+ },
+ {
+  "en": "In the old days, a power like that needed a ritual. Now it's a level.",
+  "nn": "I gamle dagar trong ei slik makt eit ritual. No er det eit nivå."
+ },
+ {
+  "en": "That's what all that grinding was for. Enjoy it, kid.",
+  "nn": "Det er det all grindinga var for. Nyt det, valp."
+ },
+ {
+  "en": "Don't forget the basics now that you've got the flashy stuff.",
+  "nn": "Ikkje gløym det grunnleggjande no som du har dei prangande tinga."
+ },
+ {
+  "en": "That'll do nicely. Very nicely. Don't tell anyone I said nicely.",
+  "nn": "Det duger fint. Svært fint. Ikkje fortel nokon at eg sa fint."
+ },
+ {
+  "en": "A real ability. Not a tickle, not a poke. A real one. Proud. Ish.",
+  "nn": "Ei ekte evne. Ikkje ei kiling, ikkje eit pirk. Ei ekte. Stolt. Nesten."
+ },
+ {
+  "en": "I'll sleep better knowing you can do that. I sleep a lot.",
+  "nn": "Eg søv betre når eg veit at du kan det. Eg søv mykje."
+ },
+ {
+  "en": "Your hands now hold real power. Wash them.",
+  "nn": "Hendene dine held ekte makt no. Vask dei."
+ },
+ {
+  "en": "That's the moment a class becomes a calling. Answer it.",
+  "nn": "Det er augneblinken då ein klasse blir eit kall. Svar på det."
+ },
+ {
+  "en": "Hmph. Bigger powers, bigger repair bills. Always.",
+  "nn": "Hm. Større makt, større reparasjonsrekningar. Alltid."
+ },
+ {
+  "en": "Lovely. My old knees could use a power like that.",
+  "nn": "Nydeleg. Dei gamle knea mine kunne trengt ei slik makt."
+ },
+ {
+  "en": "A power worth unlocking, wielded by a youngster worth tolerating.",
+  "nn": "Ei makt verdt å låse opp, brukt av ein unge verdt å tole."
+ },
+ {
+  "en": "You're turning into something formidable. Slowly. Formidably slowly.",
+  "nn": "Du er i ferd med å bli noko fryktinngytande. Sakte. Fryktinngytande sakte."
+ },
+ {
+  "en": "The world's a bit more dangerous now. For your enemies. Good.",
+  "nn": "Verda er litt farlegare no. For fiendane dine. Bra."
+ },
+ {
+  "en": "Fine ability. Even I'd use it. If I could still lift my arms.",
+  "nn": "Fin evne. Sjølv eg ville brukt henne. Om eg framleis kunne løfte armane."
+ },
+ {
+  "en": "Ah, that one. A classic. Some things never go out of style.",
+  "nn": "Å, den. Ein klassikar. Somt går aldri av moten."
+ },
+ {
+  "en": "Learn it, love it, don't lean on it too hard.",
+  "nn": "Lær henne, elsk henne, ikkje len deg for tungt på henne."
+ },
+ {
+  "en": "Hm. You've been handed a sword. Metaphorically. Maybe literally. Swing carefully.",
+  "nn": "Hm. Du har fått eit sverd. I overført tyding. Kanskje bokstaveleg. Sving varsamt."
+ },
+ {
+  "en": "Back in the day we called this coming of age. Welcome to it.",
+  "nn": "I gamle dagar kalla vi dette å bli vaksen. Velkomen til det."
+ },
+ {
+  "en": "Well done, kid. The class you chose just chose you back.",
+  "nn": "Godt gjort, valp. Klassen du valde valde deg tilbake."
+ },
+ {
+  "en": "Nice. You'll press it in every fight for a month. Then you'll understand it.",
+  "nn": "Fint. Du kjem til å trykkje på henne i kvar kamp i ein månad. Så forstår du henne."
+ },
+ {
+  "en": "That's one more answer to the question: what now? Usually: that.",
+  "nn": "Det er eitt svar til på spørsmålet: kva no? Som regel: det."
+ },
+ {
+  "en": "I'll be honest. That's a fine power. Don't make me be honest again.",
+  "nn": "Eg skal vere ærleg. Det er ei fin makt. Ikkje få meg til å vere ærleg igjen."
+ },
+ {
+  "en": "That's your class saying you're ready. I'd say almost.",
+  "nn": "Det er klassen din som seier at du er klar. Eg ville sagt nesten."
+ },
+ {
+  "en": "Use it with heart. And a little caution. Mostly caution.",
+  "nn": "Bruk henne med hjarte. Og litt varsemd. Mest varsemd."
+ },
+ {
+  "en": "A bigger stick to swing. Mind the ceiling.",
+  "nn": "Ein større pinne å svinge. Pass taket."
+ },
+ {
+  "en": "Ah. Another milestone in your class. I'll mark it with a grunt. Hmph.",
+  "nn": "Å. Endå ein milepæl i klassen din. Eg markerer han med eit grynt. Hm."
+ },
+ {
+  "en": "The old trainers would've made you earn that by scrubbing floors.",
+  "nn": "Dei gamle trenarane ville late deg tene det ved å skrubbe golv."
+ },
+ {
+  "en": "New trick learned. Now teach it some manners.",
+  "nn": "Nytt triks lært. Lær det litt folkeskikk no."
+ },
+ {
+  "en": "I've seen that ability turn a fight around. Seen it fail too. Be the first kind.",
+  "nn": "Eg har sett den evna snu ein kamp. Sett henne feile òg. Ver den første sorten."
+ },
+ {
+  "en": "Ah, the good stuff. Took its sweet time, didn't it?",
+  "nn": "Å, dei gode tinga. Tok si tid, gjorde det ikkje?"
+ },
+ {
+  "en": "Mind the animation. It's not a dance. Well, sort of.",
+  "nn": "Pass animasjonen. Det er ingen dans. Vel, nesten."
+ },
+ {
+  "en": "You've just become harder to ignore. Annoying, but good.",
+  "nn": "Du vart nett vanskelegare å oversjå. Irriterande, men bra."
+ },
+ {
+  "en": "Hm. If you misuse it, I'll know. I always know.",
+  "nn": "Hm. Misbrukar du henne, får eg vite det. Eg veit alltid."
+ },
+ {
+  "en": "The kind of power that used to fill a whole tavern with gossip.",
+  "nn": "Den typen makt som før fylte eit heilt vertshus med sladder."
+ },
+ {
+  "en": "New ability, same old advice: look where you're aiming.",
+  "nn": "Ny evne, same gamle råd: sjå kvar du siktar."
+ },
+ {
+  "en": "Your class handed you the good tools. Don't lose them in your bags.",
+  "nn": "Klassen din gav deg dei gode verktøya. Ikkje mist dei i veskene."
+ },
+ {
+  "en": "That's the moment you stop borrowing courage and start owning it.",
+  "nn": "Det er augneblinken du sluttar å låne mot og byrjar å eige det."
+ },
+ {
+  "en": "Use it before the enemy does something similar. They will.",
+  "nn": "Bruk henne før fienden gjer noko liknande. Det kjem dei til å gjere."
+ },
+ {
+  "en": "Ooh, sparkly. Let's see if it works as well as it shines.",
+  "nn": "Å, glitrande. La oss sjå om ho verkar like godt som ho skin."
+ },
+ {
+  "en": "Grand. One more key to fumble when the boss enrages.",
+  "nn": "Flott. Éin tast til å klusse med når sjefen blir rasande."
+ },
+ {
+  "en": "Hmph. That's power I'd have killed for. Mostly boars, but still.",
+  "nn": "Hm. Det er makt eg ville ha drepe for. Mest villsvin, men likevel."
+ },
+ {
+  "en": "You've grown teeth. Use them on the right things.",
+  "nn": "Du har fått tenner. Bruk dei på rette ting."
+ },
+ {
+  "en": "Well, well. Not a beginner anymore. Not a master either. Somewhere nice.",
+  "nn": "Vel, vel. Ikkje nybyrjar lenger. Ikkje meister heller. Ein fin stad imellom."
+ },
+ {
+  "en": "I'll pretend to be unimpressed. It's harder than usual.",
+  "nn": "Eg skal late som eg ikkje er imponert. Det er vanskelegare enn vanleg."
+ },
+ {
+  "en": "That ability has a long, proud history. Don't be its low point.",
+  "nn": "Den evna har ei lang, stolt historie. Ikkje bli botnpunktet hennar."
+ },
+ {
+  "en": "You've earned it with every level. Spend it like you mean it.",
+  "nn": "Du har tent henne med kvart nivå. Bruk henne som om du meiner det."
+ },
+ {
+  "en": "The training dummy just filed a complaint. Good sign.",
+  "nn": "Treningsdokka sende nett inn ei klage. Godt teikn."
+ },
+ {
+  "en": "A powerful move. Remember: timing beats power. Mostly.",
+  "nn": "Eit kraftig grep. Hugs: timing slår makt. Stort sett."
+ },
+ {
+  "en": "That's the kind of skill that earns a seat at the veterans' table. Almost.",
+  "nn": "Det er den typen dugleik som gir plass ved veteranbordet. Nesten."
+ },
+ {
+  "en": "Use it in the dark moments. That's what it's for.",
+  "nn": "Bruk henne i dei mørke augneblinka. Det er det ho er til."
+ },
+ {
+  "en": "I remember the first time I saw that ability. I said: hmph. Same now.",
+  "nn": "Eg hugsar første gongen eg såg den evna. Eg sa: hm. Same no."
+ },
+ {
+  "en": "Your class has been waiting to give you that. So have I. Sort of.",
+  "nn": "Klassen din har venta på å gi deg den. Det har eg òg. På eit vis."
+ },
+ {
+  "en": "No more excuses about lacking tools. You've got tools.",
+  "nn": "Ingen fleire unnskyldningar om manglande verktøy. Du har verktøy."
+ },
+ {
+  "en": "That's a mighty addition. Keep it oiled with practice.",
+  "nn": "Det er eit mektig tilskot. Hald det smurt med øving."
+ },
+ {
+  "en": "Hmph. Nice. Annoyingly nice.",
+  "nn": "Hm. Fint. Irriterande fint."
+ },
+ {
+  "en": "Ah, a power unlocked. The road ahead looks a little less steep.",
+  "nn": "Å, ei makt låst opp. Vegen vidare ser litt mindre bratt ut."
+ },
+ {
+  "en": "That's the stuff old songs are about. Make a new one.",
+  "nn": "Det er det gamle songar handlar om. Lag ein ny."
+ },
+ {
+  "en": "Mind it doesn't go to your head. Heads are fragile. Mine especially.",
+  "nn": "Pass på at det ikkje går til hovudet. Hovud er skjøre. Mitt særleg."
+ }
+]

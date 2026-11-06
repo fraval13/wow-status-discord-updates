@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "Ooh, shiny! I’ll give you three gold for it. Final offer.",
+  "nn": "Å, blankt! Eg gir deg tre gull for det. Siste bod."
+ },
+ {
+  "en": "Nice piece! Want insurance on that? Theft, fire, dragons?",
+  "nn": "Fint stykke! Vil du forsikre det? Tjuveri, brann, drakar?"
+ },
+ {
+  "en": "That looks expensive. Let me appraise it. Closely. Very closely.",
+  "nn": "Det ser dyrt ut. La meg taksere det. Nøye. Svært nøye."
+ },
+ {
+  "en": "New armor! Extended warranty available for a modest fee.",
+  "nn": "Ny rustning! Utvida garanti for ei lita avgift."
+ },
+ {
+  "en": "Fancy! Did you pay retail? You should have come to me.",
+  "nn": "Fint! Betalte du full pris? Du skulle ha kome til meg."
+ },
+ {
+  "en": "I could sell that for triple. Just saying.",
+  "nn": "Eg kunne selt det for tredobbel pris. Berre så du veit."
+ },
+ {
+  "en": "Gorgeous gear! I’ll need it back by Tuesday. Kidding. Mostly.",
+  "nn": "Nydeleg utstyr! Eg treng det tilbake innan tysdag. Tuller. Stort sett."
+ },
+ {
+  "en": "That’s a premium item. You’ve got premium taste.",
+  "nn": "Det er ein premiumvare. Du har premiumsmak."
+ },
+ {
+  "en": "Shiny new gear! Polishing service is ten silver a week.",
+  "nn": "Blankt nytt utstyr! Pussetenesta kostar ti sølv i veka."
+ },
+ {
+  "en": "Finally, armor worthy of my best customer.",
+  "nn": "Endeleg ei rustning verdig den beste kunden min."
+ },
+ {
+  "en": "Lovely loot! Have you considered selling it to a trusted goblin?",
+  "nn": "Fin loot! Har du tenkt på å selje det til ein påliteleg goblin?"
+ },
+ {
+  "en": "That’s worth a fortune! Please don’t tell the auction house.",
+  "nn": "Det er verd ein formue! Ikkje fortel det til auksjonshuset."
+ },
+ {
+  "en": "Wearing gold like that? You’re a walking investment.",
+  "nn": "Går du med slikt gull? Du er ei gåande investering."
+ },
+ {
+  "en": "Excellent find! Finder’s fee goes to me, naturally.",
+  "nn": "Framifrå funn! Finnarløna går sjølvsagt til meg."
+ },
+ {
+  "en": "That gear just raised your resale value.",
+  "nn": "Det utstyret auka nett vidaresalsverdien din."
+ },
+ {
+  "en": "Ooh, legendary sparkle! I can practically hear it jingle.",
+  "nn": "Å, legendarisk glans! Eg høyrer det nesten klirre."
+ },
+ {
+  "en": "Look at that craftsmanship! Almost as good as goblin-made.",
+  "nn": "Sjå det handverket! Nesten like bra som goblinlaga."
+ },
+ {
+  "en": "Now that’s a statement piece. The statement is: rich.",
+  "nn": "Det er eit stykke som seier noko. Det seier: rik."
+ },
+ {
+  "en": "I’ve got a matching set for that. Very reasonable, for you.",
+  "nn": "Eg har eit matchande sett til det. Svært rimeleg, for deg."
+ },
+ {
+  "en": "New gear! Remember to keep the receipt. Oh, there isn’t one.",
+  "nn": "Nytt utstyr! Hugs å ta vare på kvitteringa. Å, det finst ingen."
+ },
+ {
+  "en": "That’s a fine piece of merchandise you’ve got on.",
+  "nn": "Det er ein fin vare du har på deg."
+ },
+ {
+  "en": "Sparkly! Please don’t stand near my competitors wearing that.",
+  "nn": "Glitrande! Ikkje stå nær konkurrentane mine med det på."
+ },
+ {
+  "en": "A rare find! Rarity is the spice of profit.",
+  "nn": "Eit sjeldan funn! Sjeldanheit er kryddet i forteneste."
+ },
+ {
+  "en": "Smart upgrade. Now let’s talk accessories.",
+  "nn": "Smart oppgradering. No snakkar vi tilbehøyr."
+ },
+ {
+  "en": "I’d put that in a display case and charge admission.",
+  "nn": "Eg ville sett det i eit utstillingsskap og teke inngangspengar."
+ },
+ {
+  "en": "Nice! Was it free? Free is my favourite price to buy at.",
+  "nn": "Fint! Var det gratis? Gratis er yndlingsprisen min å kjøpe til."
+ },
+ {
+  "en": "You look like a million gold. I should know, I count gold.",
+  "nn": "Du ser ut som ein million gull. Eg veit det, eg tel gull."
+ },
+ {
+  "en": "Fancy armor alert! Pickpockets, take note. Joking.",
+  "nn": "Varsel om flott rustning! Lommetjuvar, legg merke til det. Tuller."
+ },
+ {
+  "en": "That armor is so good I’m almost jealous. Make me an offer.",
+  "nn": "Den rustninga er så god at eg nesten er sjalu. Kom med eit bod."
+ },
+ {
+  "en": "That’s the kind of loot that keeps goblins up at night.",
+  "nn": "Det er slik loot som held goblinar vakne om natta."
+ },
+ {
+  "en": "New gear equipped! Return window closed. Congrats!",
+  "nn": "Nytt utstyr på! Returvindauget er stengt. Gratulerer!"
+ },
+ {
+  "en": "What a find! I’d have charged you a fortune for that.",
+  "nn": "For eit funn! Eg ville teke ein formue for det."
+ },
+ {
+  "en": "Free upgrade? You’re robbing the market blind. Respect.",
+  "nn": "Gratis oppgradering? Du ranar marknaden. Respekt."
+ },
+ {
+  "en": "That piece screams value. And a little bit of bling.",
+  "nn": "Det stykket skrik verdi. Og litt bling."
+ },
+ {
+  "en": "Ah, quality! Can’t find that in the clearance bin.",
+  "nn": "Å, kvalitet! Det finn du ikkje i utsalskassa."
+ },
+ {
+  "en": "Fine gear. I’ll add it to your net worth.",
+  "nn": "Fint utstyr. Eg legg det til nettoformuen din."
+ },
+ {
+  "en": "Now you’re dressed for success! And for robbery. Insurance?",
+  "nn": "No er du kledd for suksess! Og for ran. Forsikring?"
+ },
+ {
+  "en": "Excellent! New gear, same reliable customer.",
+  "nn": "Framifrå! Nytt utstyr, same pålitelege kunde."
+ },
+ {
+  "en": "I can smell the gold in that armor from here.",
+  "nn": "Eg luktar gullet i den rustninga herifrå."
+ },
+ {
+  "en": "That’s top-shelf loot! Top shelf is where I keep the pricey stuff.",
+  "nn": "Det er loot frå øvste hylle! Der har eg dei dyre tinga."
+ },
+ {
+  "en": "Glorious! May I interest you in a protective case?",
+  "nn": "Strålande! Kan eg friste med eit vernande etui?"
+ },
+ {
+  "en": "Upgrade acquired. The market for your old gear just crashed.",
+  "nn": "Oppgradering skaffa. Marknaden for det gamle utstyret ditt krasja nett."
+ },
+ {
+  "en": "Snazzy! I’ll put you on the cover of my catalogue.",
+  "nn": "Stilig! Eg set deg på framsida av katalogen min."
+ },
+ {
+  "en": "A gem among gear! I’d know, I sell both.",
+  "nn": "Ein perle blant utstyr! Eg veit, eg sel begge delar."
+ },
+ {
+  "en": "Looking sharp! Sharpening services also available.",
+  "nn": "Du ser skarp ut! Kvesseteneste òg tilgjengeleg."
+ },
+ {
+  "en": "New loot! Quick, before the tax collector sees.",
+  "nn": "Ny loot! Fort, før skatteoppkrevjaren ser det."
+ },
+ {
+  "en": "That gear has resale value written all over it.",
+  "nn": "Det utstyret har vidaresalsverdi skrive over heile seg."
+ },
+ {
+  "en": "Such quality! I’d put a lock on that if I were you. Locks sold here.",
+  "nn": "Slik kvalitet! Eg ville sett lås på det. Låsar seljast her."
+ },
+ {
+  "en": "I like that. I like you better now that you’re worth more.",
+  "nn": "Eg likar det. Eg likar deg betre no som du er meir verd."
+ },
+ {
+  "en": "Splendid armor. I’ve seen kings pay less.",
+  "nn": "Flott rustning. Eg har sett kongar betale mindre."
+ },
+ {
+  "en": "That item is so rare, I’d need a vault just to look at it.",
+  "nn": "Den tingen er så sjeldan at eg treng eit hvelv berre for å sjå på han."
+ },
+ {
+  "en": "New gear! Every hero deserves a little luxury.",
+  "nn": "Nytt utstyr! Kvar helt fortener litt luksus."
+ },
+ {
+  "en": "Wonderful. Now please don’t get it scratched. Repair costs, you know.",
+  "nn": "Herleg. Ikkje skrap det no. Reparasjonar kostar, veit du."
+ },
+ {
+  "en": "That’s a fashion statement and a financial one.",
+  "nn": "Det er ei motefråsegn og ei økonomisk ei."
+ },
+ {
+  "en": "Look at you, decked out like a trade prince!",
+  "nn": "Sjå på deg, pynta som ein handelsprins!"
+ },
+ {
+  "en": "That piece belongs in a museum. Or my shop. Same price.",
+  "nn": "Det stykket høyrer heime på museum. Eller i butikken min. Same pris."
+ },
+ {
+  "en": "Loot so good I want a commission just for seeing it.",
+  "nn": "Loot så bra at eg vil ha provisjon berre for å sjå det."
+ },
+ {
+  "en": "Ah, a collector’s item! Collectors are my favourite customers.",
+  "nn": "Å, eit samlarobjekt! Samlarar er yndlingskundane mine."
+ },
+ {
+  "en": "Fresh gear! Smell that? That’s the smell of money.",
+  "nn": "Nytt utstyr! Luktar du det? Det er lukta av pengar."
+ },
+ {
+  "en": "Ooh la la! Haute couture for heroes.",
+  "nn": "Oi oi! Haute couture for heltar."
+ },
+ {
+  "en": "You found that? Lucky! Luck is worth more than gold. Almost.",
+  "nn": "Fann du det? Heldig! Hell er verd meir enn gull. Nesten."
+ },
+ {
+  "en": "That armor will pay for itself. In survival.",
+  "nn": "Den rustninga betaler seg sjølv. I overleving."
+ },
+ {
+  "en": "Shiny upgrade! I sell polish, oils and admiring glances.",
+  "nn": "Blank oppgradering! Eg sel puss, oljar og beundrande blikk."
+ },
+ {
+  "en": "Gear like that deserves a name. And a price tag.",
+  "nn": "Slikt utstyr fortener eit namn. Og ein prislapp."
+ },
+ {
+  "en": "That loot just made my appraiser faint.",
+  "nn": "Den looten fekk nett takstmannen min til å svime av."
+ },
+ {
+  "en": "Nice armor! Want to rent it out on weekends? Big market.",
+  "nn": "Fin rustning! Vil du leige ho ut i helgane? Stor marknad."
+ },
+ {
+  "en": "Such a beauty! Don’t wear it near any explosions. Like mine.",
+  "nn": "For ei skjønnheit! Ikkje bruk ho nær eksplosjonar. Som mine."
+ },
+ {
+  "en": "Grade-A merchandise, right there on your shoulders. Or wherever.",
+  "nn": "Varer av klasse A, rett der på skuldrene dine. Eller kvar det no er."
+ },
+ {
+  "en": "Excellent loot! I’ll write it into your will for you. For me.",
+  "nn": "Framifrå loot! Eg skriv det inn i testamentet ditt. Til meg."
+ },
+ {
+  "en": "Look at that gleam! It practically sells itself.",
+  "nn": "Sjå den glansen! Det sel seg nesten sjølv."
+ },
+ {
+  "en": "Your gear now outshines my storefront. Rude.",
+  "nn": "Utstyret ditt skin no meir enn butikkvindauget mitt. Frekt."
+ },
+ {
+  "en": "New gear, new you, new price bracket.",
+  "nn": "Nytt utstyr, ny deg, ny prisklasse."
+ },
+ {
+  "en": "Is that legendary? My ears perked up at once.",
+  "nn": "Er det legendarisk? Øyra mine spissa seg med ein gong."
+ },
+ {
+  "en": "Lovely loot. Bet you didn’t pay the dragon for it.",
+  "nn": "Fin loot. Eg vedd på at du ikkje betalte draken for det."
+ },
+ {
+  "en": "Upgrade! Out with the old, in with the bold.",
+  "nn": "Oppgradering! Ut med det gamle, inn med det djerve."
+ },
+ {
+  "en": "That armor costs more than my first zeppelin. Respect.",
+  "nn": "Den rustninga kostar meir enn den første zeppelinaren min. Respekt."
+ },
+ {
+  "en": "Shiny! I’d bite it to check if it’s real, but that’s rude.",
+  "nn": "Blankt! Eg ville bite i det for å sjå om det er ekte, men det er frekt."
+ },
+ {
+  "en": "Now that’s armor with a healthy profit margin!",
+  "nn": "Det er rustning med god forteneste!"
+ },
+ {
+  "en": "Gorgeous. Wear it proudly, and maybe sell it to me later.",
+  "nn": "Nydeleg. Ber det med stoltheit, og sel det kanskje til meg seinare."
+ },
+ {
+  "en": "A treasure! You’re officially a high-value target. Insurance?",
+  "nn": "Ein skatt! Du er offisielt eit verdifullt mål. Forsikring?"
+ },
+ {
+  "en": "I’ve had my eye on that for years. Okay, minutes. Still.",
+  "nn": "Eg har hatt augo på det i årevis. Greitt, minutt. Likevel."
+ },
+ {
+  "en": "Lucky drop! I’d frame the moment. Frames cost extra.",
+  "nn": "Heldig drop! Eg ville ramma inn augneblinken. Rammer kostar ekstra."
+ },
+ {
+  "en": "That’s an investment piece if I ever saw one.",
+  "nn": "Det er eit investeringsobjekt om eg nokon gong har sett eitt."
+ },
+ {
+  "en": "Brilliant! That’ll keep you alive and my customer list intact.",
+  "nn": "Glimrande! Det held deg i live og kundelista mi intakt."
+ },
+ {
+  "en": "Very stylish. I’d put a markup on just the shine.",
+  "nn": "Svært stilig. Eg ville lagt påslag berre på glansen."
+ },
+ {
+  "en": "You wear wealth well. Few can pull it off.",
+  "nn": "Du ber rikdom godt. Få får det til."
+ },
+ {
+  "en": "Loot! My favourite four-letter word after gold.",
+  "nn": "Loot! Yndlingsordet mitt etter gull."
+ },
+ {
+  "en": "Such a nice drop. Let me guess, you want to sell? No? Pity.",
+  "nn": "For eit fint drop. Lat meg gjette, du vil selje? Nei? Synd."
+ },
+ {
+  "en": "Look at you, all premium and polished!",
+  "nn": "Sjå på deg, heilt premium og blankpussa!"
+ },
+ {
+  "en": "Top quality! Make sure to register it with the goblin gear bureau.",
+  "nn": "Toppkvalitet! Hugs å registrere det hjå goblinkontoret for utstyr."
+ },
+ {
+  "en": "That thing could fund a small expedition. Or one big party.",
+  "nn": "Den tingen kunne finansiert ein liten ekspedisjon. Eller éin stor fest."
+ },
+ {
+  "en": "Fancy duds! I’ll be by later with matching boots.",
+  "nn": "Flotte klede! Eg kjem innom seinare med matchande støvlar."
+ },
+ {
+  "en": "Rare gear equipped! Thieves weep, merchants cheer.",
+  "nn": "Sjeldan utstyr på! Tjuvar græt, kremmarar jublar."
+ },
+ {
+  "en": "I appraise that at very, very valuable. Technical term.",
+  "nn": "Eg takserer det til svært, svært verdfullt. Fagterm."
+ },
+ {
+  "en": "New armor! You’ll look great on my advertising posters.",
+  "nn": "Ny rustning! Du kjem til å sjå flott ut på reklameplakatane mine."
+ },
+ {
+  "en": "That’s the good stuff. I keep mine behind three locks.",
+  "nn": "Det er dei gode greiene. Eg har mine bak tre låsar."
+ },
+ {
+  "en": "Gleaming gear! Pair it with my enchanted socks. Wink.",
+  "nn": "Skinande utstyr! Kombinér det med dei fortrylte sokkane mine. Blunk."
+ },
+ {
+  "en": "Delightful! That item has excellent market fundamentals.",
+  "nn": "Herleg! Den tingen har framifrå grunnlag i marknaden."
+ },
+ {
+  "en": "Fabulous! You’re dripping with value.",
+  "nn": "Fabelaktig! Du dryp av verdi."
+ },
+ {
+  "en": "Hey, that’s really nice! What’s your asking price?",
+  "nn": "Hei, det er verkeleg fint! Kva vil du ha for det?"
+ },
+ {
+  "en": "I’d trade my second-best rocket for that. Not the first.",
+  "nn": "Eg ville bytt min nest beste rakett for det. Ikkje den beste."
+ },
+ {
+  "en": "Wow, real quality. The kind I usually only fake.",
+  "nn": "Jøss, ekte kvalitet. Den typen eg vanlegvis berre forfalskar."
+ },
+ {
+  "en": "That armor fits like a lucrative contract.",
+  "nn": "Den rustninga sit som ein lukrativ kontrakt."
+ },
+ {
+  "en": "Gleaming loot! Keep it away from rust and goblins.",
+  "nn": "Glinsande loot! Hald det unna rust og goblinar."
+ },
+ {
+  "en": "That’s an heirloom in the making. Inheritance tax not included.",
+  "nn": "Det er eit arvestykke i emning. Arveavgift ikkje inkludert."
+ },
+ {
+  "en": "Beautiful! It’d be a shame if someone offered to buy it. Hint.",
+  "nn": "Vakkert! Det ville vore synd om nokon baud på det. Hint."
+ },
+ {
+  "en": "Upgraded! Your enemies now pay a premium to hit you.",
+  "nn": "Oppgradert! Fiendane dine må no betale premium for å treffe deg."
+ },
+ {
+  "en": "Ah, quality loot. Like a fine wine, but you can wear it.",
+  "nn": "Å, kvalitetsloot. Som god vin, men du kan ha det på deg."
+ },
+ {
+  "en": "That gear is worth more than some kingdoms. Small ones.",
+  "nn": "Det utstyret er verd meir enn somme kongerike. Små, rett nok."
+ },
+ {
+  "en": "Sweet loot! Let’s get that appraised, insured and bragged about.",
+  "nn": "Søt loot! Vi får det taksert, forsikra og skrytt av."
+ },
+ {
+  "en": "Dazzling! Customers will follow you just to stare.",
+  "nn": "Blendande! Kundar kjem til å følgje deg berre for å stire."
+ },
+ {
+  "en": "That item has a story. And a price. Mostly a price.",
+  "nn": "Den tingen har ei historie. Og ein pris. Mest ein pris."
+ },
+ {
+  "en": "Fine armor. Shall I start a waiting list for when you outgrow it?",
+  "nn": "Fin rustning. Skal eg opne venteliste til du veks frå ho?"
+ },
+ {
+  "en": "Gear upgrade complete! Old gear exiled to the vendor.",
+  "nn": "Utstyr oppgradert! Det gamle er sendt i eksil hjå seljaren."
+ },
+ {
+  "en": "Spectacular! I’ve never been so tempted to make an offer.",
+  "nn": "Spektakulært! Eg har aldri vore så freista til å kome med eit bod."
+ },
+ {
+  "en": "That gear says you’re going places. Expensive places.",
+  "nn": "Det utstyret seier at du skal langt. Til dyre stader."
+ },
+ {
+  "en": "Nice drop! The auction house trembles.",
+  "nn": "Fint drop! Auksjonshuset skjelv."
+ },
+ {
+  "en": "I’d sell my own grandmother for that. She’s retired anyway.",
+  "nn": "Eg ville selt bestemor mi for det. Ho er pensjonert uansett."
+ },
+ {
+  "en": "A stunning piece! Matching gold-plated pauldrons, anyone?",
+  "nn": "Eit fantastisk stykke! Matchande gullbelagde skulderplater, nokon?"
+ },
+ {
+  "en": "That’s some serious bling! Keep it shiny, keep it yours.",
+  "nn": "Det er seriøs bling! Hald det blankt, hald det ditt."
+ },
+ {
+  "en": "New armor! I hear dragons charge extra for that kind.",
+  "nn": "Ny rustning! Eg høyrer at drakar tek ekstra for slike."
+ },
+ {
+  "en": "Such sparkle! I’d need sunglasses. Sold separately.",
+  "nn": "For ein glans! Eg treng solbriller. Seljast separat."
+ },
+ {
+  "en": "That’s rarer than an honest goblin. And that’s rare.",
+  "nn": "Det er sjeldnare enn ein ærleg goblin. Og det er sjeldan."
+ },
+ {
+  "en": "A beauty! Don’t let it gather dust. Dust removal service available.",
+  "nn": "Ei skjønnheit! Ikkje la det samle støv. Støvfjerning tilgjengeleg."
+ },
+ {
+  "en": "Free armor from a dungeon? Best price in town.",
+  "nn": "Gratis rustning frå eit fangehol? Beste pris i byen."
+ },
+ {
+  "en": "Magnificent! You must be the envy of every merchant.",
+  "nn": "Storslått! Du må vere misunnd av alle kremmarar."
+ },
+ {
+  "en": "New gear means old gear for me. Hand it over. Kidding. Not kidding.",
+  "nn": "Nytt utstyr betyr gammalt utstyr til meg. Gi det hit. Tuller. Tuller ikkje."
+ },
+ {
+  "en": "That piece has excellent long-term value. Unlike my coupons.",
+  "nn": "Det stykket har framifrå langsiktig verdi. I motsetnad til kupongane mine."
+ },
+ {
+  "en": "Fresh from the loot table to your shoulders. Delivery is free!",
+  "nn": "Rett frå loot-tabellen til skuldrene dine. Frakta er gratis!"
+ },
+ {
+  "en": "That’s a stellar upgrade! I’d buy stock in your survival rate.",
+  "nn": "Strålande oppgradering! Eg ville kjøpt aksjar i overlevingsevna di."
+ },
+ {
+  "en": "Rarity like that should come with a security detail. I offer one.",
+  "nn": "Slik sjeldanheit burde kome med livvakter. Eg tilbyr det."
+ },
+ {
+  "en": "Shimmering! Looks like it was forged by an accountant’s dreams.",
+  "nn": "Skimrande! Ser ut som det vart smidd av draumane til ein rekneskapsførar."
+ },
+ {
+  "en": "I’d gift-wrap that if you plan to show it off.",
+  "nn": "Eg ville pakka det inn om du skal vise det fram."
+ },
+ {
+  "en": "Gear acquired at zero cost. You’d make a great goblin.",
+  "nn": "Utstyr skaffa til null kostnad. Du hadde vore ein flott goblin."
+ },
+ {
+  "en": "Look at those stats! I’d mark that up by five hundred percent.",
+  "nn": "Sjå dei statsane! Eg ville lagt fem hundre prosent på det."
+ },
+ {
+  "en": "Exquisite. Truly exquisite. Would you consider a trade-in?",
+  "nn": "Utsøkt. Verkeleg utsøkt. Vil du vurdere innbyte?"
+ },
+ {
+  "en": "New gear? Let me guess, you’ll want my polishing cloth.",
+  "nn": "Nytt utstyr? Lat meg gjette, du vil ha pussekluten min."
+ },
+ {
+  "en": "Grand! You’re now the best-dressed client on my books.",
+  "nn": "Storarta! No er du den best kledde kunden i bøkene mine."
+ },
+ {
+  "en": "That will turn heads. And wallets.",
+  "nn": "Det kjem til å snu hovud. Og lommebøker."
+ },
+ {
+  "en": "Ooh, is that enchanted? Enchanting services next door. Mine.",
+  "nn": "Å, er det fortrylt? Fortryllingsteneste vegg i vegg. Mi."
+ },
+ {
+  "en": "A worthy piece! I’ll note it in your file under assets.",
+  "nn": "Eit verdig stykke! Eg noterer det i mappa di under eigedelar."
+ },
+ {
+  "en": "Well, aren’t you dressed to impress the bankers!",
+  "nn": "Vel, du er visst kledd for å imponere bankfolka!"
+ },
+ {
+  "en": "That’s the sort of loot I dream about. Then I wake up poorer.",
+  "nn": "Det er den typen loot eg drøymer om. Så vaknar eg fattigare."
+ },
+ {
+  "en": "Excellent piece! Want a certificate of authenticity? Ten gold.",
+  "nn": "Framifrå stykke! Vil du ha eit ekthetsbevis? Ti gull."
+ },
+ {
+  "en": "Now that’s quality, not my usual merchandise.",
+  "nn": "Det der er kvalitet, ikkje dei vanlege varene mine."
+ },
+ {
+  "en": "Stunning! Don’t forget: loot is only as good as its insurance.",
+  "nn": "Fantastisk! Hugs: loot er berre så godt som forsikringa."
+ },
+ {
+  "en": "You hit the jackpot! Mind sharing? No? Worth asking.",
+  "nn": "Du vann jackpoten! Vil du dele? Nei? Verdt å spørje."
+ },
+ {
+  "en": "Lavish! I’ll have my tailor copy that. Knockoffs sell well.",
+  "nn": "Overdådig! Skreddaren min skal kopiere det. Kopiar sel godt."
+ },
+ {
+  "en": "That sparkle increased my blood pressure. And my offer.",
+  "nn": "Den glansen auka blodtrykket mitt. Og bodet mitt."
+ },
+ {
+  "en": "A rare treasure! Keep it close. Keep me closer.",
+  "nn": "Ein sjeldan skatt! Hald det nær. Hald meg nærare."
+ },
+ {
+  "en": "Fine loot! The goblin in me wants to haggle for it.",
+  "nn": "Fin loot! Goblinen i meg vil prute om det."
+ },
+ {
+  "en": "New gear! Time to retire the old stuff. I’ll take it.",
+  "nn": "Nytt utstyr! Tid for å pensjonere det gamle. Eg tek det."
+ },
+ {
+  "en": "Impressive. That item’s market value just made me hiccup.",
+  "nn": "Imponerande. Marknadsverdien på den tingen gav meg hikke."
+ },
+ {
+  "en": "Ah, the good stuff. You can tell by the glow and the price.",
+  "nn": "Å, dei gode greiene. Du ser det på glansen og prisen."
+ },
+ {
+  "en": "Such elegance! Like a vault you can walk around in.",
+  "nn": "Slik eleganse! Som eit hvelv du kan gå rundt i."
+ },
+ {
+  "en": "That’s your best armor yet. Until I sell you better.",
+  "nn": "Det er den beste rustninga di til no. Til eg sel deg betre."
+ },
+ {
+  "en": "Upgrade! Your defense went up and so did my respect.",
+  "nn": "Oppgradering! Forsvaret ditt steig, og det gjorde respekten min òg."
+ },
+ {
+  "en": "Magnificent drop! That’s what I call a dividend.",
+  "nn": "Storslått drop! Det kallar eg utbyte."
+ },
+ {
+  "en": "Mmm, epic. The word, the item, the price.",
+  "nn": "Mm, episk. Ordet, tingen, prisen."
+ },
+ {
+  "en": "That armor looks good on you. It’d look better on my shelf.",
+  "nn": "Den rustninga kler deg. Ho ville kledd hylla mi betre."
+ },
+ {
+  "en": "A fine catch! You fish in very expensive waters.",
+  "nn": "Ein fin fangst! Du fiskar i svært dyrt farvatn."
+ },
+ {
+  "en": "Polished, powerful and priceless. Well, priced.",
+  "nn": "Pussa, kraftig og uvurderleg. Vel, vurdert."
+ },
+ {
+  "en": "Ah, the shine of a well-earned upgrade!",
+  "nn": "Å, glansen av ei velfortent oppgradering!"
+ },
+ {
+  "en": "Your style just went from bargain bin to boutique.",
+  "nn": "Stilen din gjekk nett frå tilbodskasse til butikk."
+ },
+ {
+  "en": "Rare! I’ll alert the collectors. They pay well.",
+  "nn": "Sjeldan! Eg varslar samlarane. Dei betaler godt."
+ },
+ {
+  "en": "That’s loot worth bragging about. Bragging permit: one silver.",
+  "nn": "Det er loot verdt å skryte av. Skryteløyve: eitt sølv."
+ },
+ {
+  "en": "Very nice! I’m adding it to your insurance policy as we speak.",
+  "nn": "Svært fint! Eg legg det til forsikringa di medan vi snakkar."
+ },
+ {
+  "en": "That’s worth more than my whole stall. Ouch.",
+  "nn": "Det er verd meir enn heile boda mi. Au."
+ },
+ {
+  "en": "Gleaming new armor! Maybe stand still so I can admire it.",
+  "nn": "Skinande ny rustning! Stå litt i ro så eg kan beundre ho."
+ },
+ {
+  "en": "I see a top-tier customer in top-tier gear. Perfect match.",
+  "nn": "Eg ser ein kunde i toppklasse med utstyr i toppklasse. Perfekt."
+ },
+ {
+  "en": "New look, new budget. Splendid!",
+  "nn": "Ny stil, nytt budsjett. Flott!"
+ },
+ {
+  "en": "An upgrade! Somewhere, a vendor is weeping with envy.",
+  "nn": "Ei oppgradering! Ein stad græt ein seljar av misunning."
+ },
+ {
+  "en": "Fantastic! Wear it with pride, and polish it with my polish.",
+  "nn": "Fantastisk! Ber det med stoltheit, og puss det med pussen min."
+ },
+ {
+  "en": "That’s the shiniest thing in your bags. Besides your future.",
+  "nn": "Det er det blankaste i bagane dine. Bortsett frå framtida di."
+ },
+ {
+  "en": "Excellent armor. Do you need a bodyguard for it? I know some.",
+  "nn": "Framifrå rustning. Treng ho livvakt? Eg kjenner nokre."
+ },
+ {
+  "en": "That gear has curb appeal! Real estate term.",
+  "nn": "Det utstyret har god fasade! Eigedomsterm."
+ },
+ {
+  "en": "A fine addition to the collection. Mine, eventually.",
+  "nn": "Eit fint tilskot til samlinga. Mi, til slutt."
+ },
+ {
+  "en": "Treasure on your back, glory in your future.",
+  "nn": "Skatt på ryggen, ære i framtida."
+ },
+ {
+  "en": "Stellar loot! Want me to arrange a showcase tour?",
+  "nn": "Strålande loot! Vil du at eg skal arrangere ei utstillingsturné?"
+ },
+ {
+  "en": "It’s gorgeous. I’d marry it if I weren’t married to profit.",
+  "nn": "Det er nydeleg. Eg ville gifta meg med det om eg ikkje var gift med forteneste."
+ },
+ {
+  "en": "Look at that! Pure quality, no assembly required.",
+  "nn": "Sjå der! Rein kvalitet, inga montering naudsynt."
+ },
+ {
+  "en": "You found treasure! Treasure-finding tax: optional, payable to me.",
+  "nn": "Du fann skatt! Skattefunnskatt: frivillig, betalast til meg."
+ },
+ {
+  "en": "That gear is so fine it should have its own bank account.",
+  "nn": "Det utstyret er så fint at det burde hatt eigen bankkonto."
+ },
+ {
+  "en": "New armor, new swagger. Swagger is free. For now.",
+  "nn": "Ny rustning, ny stil. Stilen er gratis. Førebels."
+ },
+ {
+  "en": "A splendid upgrade! I hope you tipped the boss.",
+  "nn": "Ei flott oppgradering! Eg håpar du gav tips til bossen."
+ },
+ {
+  "en": "Behold, quality! The rarest thing in my business.",
+  "nn": "Sjå, kvalitet! Det sjeldnaste i bransjen min."
+ },
+ {
+  "en": "That piece would sell out in minutes. Shame it’s yours.",
+  "nn": "Det stykket ville vorte utselt på minutt. Synd det er ditt."
+ },
+ {
+  "en": "Lovely gear! It practically gleams with interest rates.",
+  "nn": "Fint utstyr! Det glinsar nesten av renter."
+ },
+ {
+  "en": "Nice score! You’re officially high-end inventory.",
+  "nn": "Fin fangst! Du er offisielt eksklusive varer."
+ },
+ {
+  "en": "That’s armor fit for a trade prince. Or a trade princess.",
+  "nn": "Det er rustning som passar for ein handelsprins. Eller ei handelsprinsesse."
+ },
+ {
+  "en": "Delicious loot! I’m drooling. Professionally.",
+  "nn": "Deilig loot! Eg siklar. Profesjonelt."
+ },
+ {
+  "en": "Very fancy! I’d suggest a matching gold toothpick.",
+  "nn": "Svært flott! Eg vil tilrå ein matchande tannpirkar i gull."
+ },
+ {
+  "en": "Shiny and new! Don’t forget to read the care label.",
+  "nn": "Blankt og nytt! Hugs å lese vaskelappen."
+ },
+ {
+  "en": "Upgrade unlocked! Your old gear goes on clearance at my stall.",
+  "nn": "Oppgradering låst opp! Det gamle utstyret ditt går på sal i boda mi."
+ },
+ {
+  "en": "That shine could blind an ogre. Useful!",
+  "nn": "Den glansen kunne blende eit troll. Nyttig!"
+ },
+ {
+  "en": "A legendary look! You’re practically on brand.",
+  "nn": "Ein legendarisk stil! Du er nesten på merkevare."
+ },
+ {
+  "en": "What a beauty! Let me know when you get bored of it.",
+  "nn": "For ei skjønnheit! Sei frå når du går lei."
+ },
+ {
+  "en": "Sturdy and shiny. My two favourite adjectives. Besides profitable.",
+  "nn": "Solid og blank. Dei to beste adjektiva mine. Bortsett frå lønsam."
+ },
+ {
+  "en": "Very nice piece! It just raised the average wealth of this group.",
+  "nn": "Svært fint stykke! Det auka nett gjennomsnittsformuen i gruppa."
+ },
+ {
+  "en": "Premium protection! The enemies will need a better offer.",
+  "nn": "Premiumvern! Fiendane må kome med eit betre bod."
+ },
+ {
+  "en": "That armor has the glow of a successful quarter.",
+  "nn": "Den rustninga har glansen av eit vellukka kvartal."
+ },
+ {
+  "en": "I’d auction that off and retire on a tropical island.",
+  "nn": "Eg ville selt det på auksjon og pensjonert meg på ei tropisk øy."
+ },
+ {
+  "en": "Excellent loot! I knew you had an eye for value.",
+  "nn": "Framifrå loot! Eg visste du hadde auge for verdi."
+ },
+ {
+  "en": "Glorious gear! Remember, scratches lower the resale value.",
+  "nn": "Strålande utstyr! Hugs at riper senkar vidaresalsverdien."
+ },
+ {
+  "en": "Fresh armor! Time to update your portrait. Artist fee extra.",
+  "nn": "Ny rustning! Tid for å oppdatere portrettet ditt. Kunstnarhonorar ekstra."
+ },
+ {
+  "en": "That gear’s worth a king’s ransom. Don’t get kidnapped.",
+  "nn": "Det utstyret er verd ein kongeleg løysepengesum. Ikkje bli kidnappa."
+ },
+ {
+  "en": "Magnificent! It even outshines my gold teeth.",
+  "nn": "Storslått! Det skin meir enn gulltennene mine."
+ },
+ {
+  "en": "Ooh, top tier! That’s my favourite tier. Next to the gold tier.",
+  "nn": "Å, toppnivå! Det er yndlingsnivået mitt. Ved sida av gullnivået."
+ },
+ {
+  "en": "Sharp-looking gear! You’ll look great on the wanted posters. Kidding!",
+  "nn": "Skarpt utstyr! Du kjem til å sjå flott ut på etterlysingane. Tuller!"
+ },
+ {
+  "en": "Glamorous! The kind of loot that makes merchants weep.",
+  "nn": "Glamorøst! Den typen loot som får kremmarar til å gråte."
+ },
+ {
+  "en": "I’d trade you a whole cart of potions for that. Expired ones.",
+  "nn": "Eg ville bytt ei heil vogn eliksirar for det. Utgåtte."
+ },
+ {
+  "en": "New threads! Just remember who sold you the bags to carry them.",
+  "nn": "Nye klede! Hugs berre kven som selde deg bagane å bere dei i."
+ },
+ {
+  "en": "A collector’s dream! Mine, specifically.",
+  "nn": "Ein samlardraum! Min, spesifikt."
+ },
+ {
+  "en": "That’s rare quality! Rarer than a refund at my shop.",
+  "nn": "Det er sjeldan kvalitet! Sjeldnare enn refusjon i butikken min."
+ },
+ {
+  "en": "Valuable! Please don’t go swimming in it.",
+  "nn": "Verdfullt! Ikkje sym med det på."
+ },
+ {
+  "en": "That loot screams luxury. I adore screaming luxury.",
+  "nn": "Den looten skrik luksus. Eg elskar skrikande luksus."
+ },
+ {
+  "en": "Gilded and glorious! I approve with my whole wallet.",
+  "nn": "Forgylt og strålande! Eg godkjenner med heile lommeboka."
+ },
+ {
+  "en": "That gear looks like it costs more than my rent. It probably does.",
+  "nn": "Det utstyret ser ut til å koste meir enn husleiga mi. Det gjer det nok."
+ },
+ {
+  "en": "New loot! Every adventurer needs a little sparkle.",
+  "nn": "Ny loot! Kvar eventyrar treng litt glitter."
+ },
+ {
+  "en": "Such a find! Remember to thank your lucky coin.",
+  "nn": "For eit funn! Hugs å takke lukkemynten din."
+ },
+ {
+  "en": "Finest quality! Not a single goblin modification needed.",
+  "nn": "Finaste kvalitet! Ikkje ei einaste goblinendring naudsynt."
+ },
+ {
+  "en": "That gear just upgraded your credit rating.",
+  "nn": "Det utstyret oppgraderte nett kredittverdigheita di."
+ },
+ {
+  "en": "Oh, that’s a keeper! Unless you’d like to sell. No? Fine.",
+  "nn": "Å, det må du halde på! Med mindre du vil selje. Nei? Greitt."
+ },
+ {
+  "en": "You’re wearing a small fortune. Walk carefully.",
+  "nn": "Du går med ein liten formue på deg. Gå varsamt."
+ },
+ {
+  "en": "Rich colors, rich stats, rich owner!",
+  "nn": "Rike fargar, rike stats, rik eigar!"
+ },
+ {
+  "en": "Excellent drop! I’ll tell everyone you bought it from me.",
+  "nn": "Framifrå drop! Eg seier til alle at du kjøpte det hjå meg."
+ },
+ {
+  "en": "That piece is one of a kind. I’ll make a dozen copies.",
+  "nn": "Det stykket er éin av sitt slag. Eg lagar ti kopiar."
+ },
+ {
+  "en": "Pretty! Pretty valuable, that is.",
+  "nn": "Pent! Pent verdfullt, altså."
+ },
+ {
+  "en": "Armor so fine it should come with a velvet hanger.",
+  "nn": "Rustning så fin at ho burde kome med fløyelshengar."
+ },
+ {
+  "en": "Look at that gleam! Even my gold coins are jealous.",
+  "nn": "Sjå den glansen! Sjølv gullmyntane mine er sjalu."
+ },
+ {
+  "en": "Superb! That’ll last longer than most of my warranties.",
+  "nn": "Supert! Det varer lenger enn dei fleste garantiane mine."
+ },
+ {
+  "en": "Your gear is now worth more than your enemies. Good trade!",
+  "nn": "Utstyret ditt er no verd meir enn fiendane dine. God handel!"
+ },
+ {
+  "en": "Exceptional loot! I’ll need a moment to calculate my envy.",
+  "nn": "Eksepsjonell loot! Eg treng ei stund for å rekne ut misunninga mi."
+ },
+ {
+  "en": "Treasure equipped! Today’s exchange rate: one hero, very shiny.",
+  "nn": "Skatt på! Dagens kurs: éin helt, svært blank."
+ },
+ {
+  "en": "That gear has premium written in invisible ink all over it.",
+  "nn": "Det utstyret har premium skrive med usynleg blekk over heile seg."
+ },
+ {
+  "en": "Smashing loot! Not literally. Smashed loot loses value.",
+  "nn": "Knallbra loot! Ikkje bokstaveleg. Knust loot mistar verdi."
+ },
+ {
+  "en": "New gear! I’m updating your file from customer to client.",
+  "nn": "Nytt utstyr! Eg oppdaterer mappa di frå kunde til klient."
+ },
+ {
+  "en": "Fine plunder! Er, I mean, fairly acquired goods.",
+  "nn": "Fint bytte! Eh, eg meiner rettferdig skaffa varer."
+ },
+ {
+  "en": "That looks like it came straight from a vault. Did it?",
+  "nn": "Det ser ut som det kom rett frå eit hvelv. Gjorde det?"
+ },
+ {
+  "en": "Wonderful find! Treasure like that should earn interest.",
+  "nn": "Herleg funn! Slik skatt burde gi renter."
+ },
+ {
+  "en": "Lustrous! I’d store that in a padded crate. Crates for sale!",
+  "nn": "Skinande! Eg ville lagra det i ei polstra kasse. Kasser til sals!"
+ },
+ {
+  "en": "Such quality! Somebody up there loves you. Or the loot table does.",
+  "nn": "Slik kvalitet! Nokon der oppe elskar deg. Eller loot-tabellen gjer."
+ },
+ {
+  "en": "An epic upgrade! I’d celebrate, but celebrations cost money.",
+  "nn": "Ei episk oppgradering! Eg ville feira, men feiring kostar pengar."
+ },
+ {
+  "en": "Splendid! That gear has the aura of a winning deal.",
+  "nn": "Strålande! Det utstyret har aura av ein vinnande avtale."
+ },
+ {
+  "en": "Luxurious loot! Wear it in good health and good credit.",
+  "nn": "Luksuriøs loot! Ber det ved god helse og god kreditt."
+ },
+ {
+  "en": "That’s fine armor. I’d sell my mother-in-law’s teeth for it.",
+  "nn": "Det er fin rustning. Eg ville selt tennene til svigermor for ho."
+ },
+ {
+  "en": "That’s a showstopper! Showroom position reserved.",
+  "nn": "Det er ein blikkfangar! Plass i utstillingslokalet er reservert."
+ },
+ {
+  "en": "Behold, the gear of a future tycoon!",
+  "nn": "Sjå, utstyret til ein framtidig magnat!"
+ },
+ {
+  "en": "That item’s rarer than a fair price at the auction house.",
+  "nn": "Den tingen er sjeldnare enn ein rimeleg pris på auksjonshuset."
+ },
+ {
+  "en": "Gorgeous gear, gorgeous margins. If you ever sell.",
+  "nn": "Nydeleg utstyr, nydelege marginar. Om du nokon gong sel."
+ },
+ {
+  "en": "Great loot! I’m sending a congratulations card. Postage due.",
+  "nn": "Flott loot! Eg sender eit gratulasjonskort. Porto betalast av mottakar."
+ },
+ {
+  "en": "The glow, the stats, the value! I’m speechless. Briefly.",
+  "nn": "Glansen, statsane, verdien! Eg er målaus. Ei kort stund."
+ },
+ {
+  "en": "What a piece! The kind of thing that makes a goblin honest. Almost.",
+  "nn": "For eit stykke! Den typen ting som gjer ein goblin ærleg. Nesten."
+ },
+ {
+  "en": "Fancy new gear! May it never need repairs. My repair shop disagrees.",
+  "nn": "Flott nytt utstyr! Måtte det aldri trenge reparasjon. Verkstaden min er usamd."
+ },
+ {
+  "en": "That’s worth a vault, a zeppelin and a small island.",
+  "nn": "Det er verd eit hvelv, ein zeppelinar og ei lita øy."
+ },
+ {
+  "en": "Fabulous! Your enemies will hate how good you look.",
+  "nn": "Fabelaktig! Fiendane dine kjem til å hate kor bra du ser ut."
+ },
+ {
+  "en": "Ooh! Such a gem! Mind if I take a rubbing for my catalogue?",
+  "nn": "Å! For ein perle! Kan eg ta eit avtrykk til katalogen min?"
+ },
+ {
+  "en": "High-end loot for a high-end hero!",
+  "nn": "Eksklusiv loot for ein eksklusiv helt!"
+ },
+ {
+  "en": "That armor is pure gold. Figuratively. Unless? Let me check.",
+  "nn": "Den rustninga er reint gull. Billedleg. Eller? La meg sjekke."
+ },
+ {
+  "en": "You’re officially too well dressed for my bargain bin.",
+  "nn": "Du er offisielt for godt kledd for tilbodskassa mi."
+ },
+ {
+  "en": "Beautiful loot! It’ll be the envy of every pawnshop.",
+  "nn": "Vakker loot! Han blir misunnd av alle pantelånarar."
+ },
+ {
+  "en": "New gear! A small step for you, a big jump in your net worth.",
+  "nn": "Nytt utstyr! Eit lite steg for deg, eit stort hopp i nettoformuen din."
+ },
+ {
+  "en": "Hold still, I’m mentally pricing every rivet.",
+  "nn": "Stå i ro, eg prisar kvar nagle i hovudet."
+ },
+ {
+  "en": "That’s not armor, that’s a savings account with straps.",
+  "nn": "Det er ikkje rustning, det er ein sparekonto med reimer."
+ },
+ {
+  "en": "Fresh off the boss, still warm. Best kind of merchandise.",
+  "nn": "Rett frå bossen, framleis varmt. Den beste typen vare."
+ },
+ {
+  "en": "I see you’ve discovered the luxury aisle. Welcome.",
+  "nn": "Eg ser du har funne luksushylla. Velkomen."
+ },
+ {
+  "en": "That gear could pay off my zeppelin loan. Twice.",
+  "nn": "Det utstyret kunne betalt ned zeppelinlånet mitt. To gonger."
+ },
+ {
+  "en": "Do you know what that’s worth? I do. I won’t tell you.",
+  "nn": "Veit du kva det er verd? Det veit eg. Eg seier det ikkje."
+ },
+ {
+  "en": "Fine plating! I can see my reflection, and my envy.",
+  "nn": "Fin plating! Eg ser spegelbiletet mitt, og misunninga mi."
+ },
+ {
+  "en": "Upgrade spotted! My sales radar just beeped.",
+  "nn": "Oppgradering oppdaga! Salsradaren min pip nett."
+ },
+ {
+  "en": "Proper loot at last. The rags were hurting my eyes.",
+  "nn": "Ordentleg loot endeleg. Fillene gjorde vondt i augo mine."
+ },
+ {
+  "en": "Ah, a status symbol! Status is very marketable.",
+  "nn": "Å, eit statussymbol! Status er svært salbart."
+ },
+ {
+  "en": "That’s the kind of gear rich adventurers flaunt. Flaunt away!",
+  "nn": "Det er slikt utstyr rike eventyrarar viser fram. Vis i veg!"
+ },
+ {
+  "en": "Treasure that fits? Rare as a quiet goblin.",
+  "nn": "Ein skatt som passar? Sjeldan som ein stille goblin."
+ },
+ {
+  "en": "I’d keep that one far from rust monsters and relatives.",
+  "nn": "Eg ville halde den unna rustmonster og slektningar."
+ },
+ {
+  "en": "Equipped and dazzling! Enemies are now paying full attention.",
+  "nn": "På og blendande! Fiendane følgjer no godt med."
+ },
+ {
+  "en": "Splendid stitching! Wait, is that real gold thread? Ooh.",
+  "nn": "Fine sauma! Vent, er det ekte gulltråd? Oi."
+ },
+ {
+  "en": "New treasure! Shall I schedule a viewing for investors?",
+  "nn": "Ny skatt! Skal eg setje opp ei visning for investorar?"
+ },
+ {
+  "en": "That gear gives off strong rich-hero energy.",
+  "nn": "Det utstyret utstrålar sterk rik-helt-energi."
+ },
+ {
+  "en": "A real upgrade! Not one of those cheap goblin ones. Ahem.",
+  "nn": "Ei ekte oppgradering! Ikkje ei av dei billege goblinvariantane. Kremt."
+ },
+ {
+  "en": "Glimmering loot! I want to lick it. Professional curiosity.",
+  "nn": "Glimrande loot! Eg vil slikke på det. Profesjonell nysgjerrigheit."
+ },
+ {
+  "en": "That’s fine kit. You could bribe a city guard with that.",
+  "nn": "Det er fint utstyr. Du kunne bestukke ein byvakt med det."
+ },
+ {
+  "en": "You’ve upgraded from walking target to walking treasure.",
+  "nn": "Du har gått frå gåande mål til gåande skatt."
+ },
+ {
+  "en": "Spectacular! My calculator just ran out of ink.",
+  "nn": "Spektakulært! Kalkulatoren min gjekk tom for blekk."
+ },
+ {
+  "en": "Wear that to a negotiation. Instant leverage.",
+  "nn": "Ha det på deg til ei forhandling. Straks overtak."
+ },
+ {
+  "en": "A fine trophy! Trophy case rentals available.",
+  "nn": "Eit fint trofé! Trofeskap til leige."
+ },
+ {
+  "en": "Oh my, that’s a beauty. Is it spoken for? It is? Ugh.",
+  "nn": "Å, det er ei skjønnheit. Er det oppteke? Det er? Æsj."
+ },
+ {
+  "en": "Lovely piece! I sense a strong future in the collectibles market.",
+  "nn": "Fint stykke! Eg ser ei sterk framtid på samlarmarknaden."
+ },
+ {
+  "en": "Your wardrobe just outvalued my warehouse.",
+  "nn": "Garderoben din er nett meir verd enn lageret mitt."
+ },
+ {
+  "en": "Bling acquired! Morale up, wallet safe. Rare combo.",
+  "nn": "Bling skaffa! Moral opp, lommebok trygg. Sjeldan kombinasjon."
+ },
+ {
+  "en": "That gear just made you the richest-looking person in the room.",
+  "nn": "Det utstyret gjorde deg til den rikast utsjåande i rommet."
+ },
+ {
+  "en": "I’d trade a crate of gnome gadgets for that. They mostly work.",
+  "nn": "Eg ville bytt ei kasse gnomedingsar for det. Dei verkar stort sett."
+ },
+ {
+  "en": "Splendid steel! Or whatever that is. Expensive, that’s what.",
+  "nn": "Flott stål! Eller kva det no er. Dyrt, det er det."
+ },
+ {
+  "en": "The loot gods smile on you. Ask them about my prices.",
+  "nn": "Lootgudane smiler til deg. Spør dei om prisane mine."
+ },
+ {
+  "en": "A fine prize! Wear it well and wear it often.",
+  "nn": "Ein fin premie! Ber det godt og ber det ofte."
+ },
+ {
+  "en": "That’s a power purchase without the purchase. Genius!",
+  "nn": "Det er eit maktkjøp utan kjøp. Genialt!"
+ },
+ {
+  "en": "Ooh, quality hinges, quality straps, quality everything!",
+  "nn": "Å, kvalitetshengsel, kvalitetsreimer, kvalitet på alt!"
+ },
+ {
+  "en": "That piece just upgraded my opinion of you. And it was high.",
+  "nn": "Det stykket oppgraderte nett meininga mi om deg. Og ho var høg."
+ },
+ {
+  "en": "Rare gear! The goblin council will want to see this.",
+  "nn": "Sjeldan utstyr! Goblinrådet vil sjå dette."
+ },
+ {
+  "en": "New armor! I’d take a bite of that deal any day.",
+  "nn": "Ny rustning! Eg ville teke ein bit av den handelen kva dag som helst."
+ }
+]

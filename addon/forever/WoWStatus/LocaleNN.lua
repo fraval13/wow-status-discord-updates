@@ -200,6 +200,8 @@ W.add({
     ["now"] = "no", ["hit"] = "nådde", ["Left-click: Activity log"] = "Venstreklikk: Aktivitetslogg",
     ["Right-click: Options"] = "Høgreklikk: Innstillingar", ["Drag to move"] = "Dra for å flytte",
     -- Language and What's new
+    ["Caption personality:"] = "Personlegdom i kommentarane:", ["Caption personalities:"] = "Personlegdomar i kommentarane:",
+    ["Next personality"] = "Neste personlegdom", ["Use /wstatus personality <name>."] = "Skriv /wstatus personality <namn>.",
     ["Language:"] = "Språk:", ["Reload"] = "Last på nytt", ["Reload to apply"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
     ["Use /wstatus debug on or /wstatus debug off."] = "Bruk /wstatus debug on eller /wstatus debug off.",
     ["Debug log on. Type /reload to save it for reading."] = "Feilsøkingslogg på. Skriv /reload for å lagra han.",

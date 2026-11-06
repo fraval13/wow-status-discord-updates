@@ -1,0 +1,2802 @@
+[
+ {
+  "en": "Dying again? You undead types never read the warranty.",
+  "nn": "Død igjen? De udøde les aldri garantien.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Death knight down! Technically a return customer.",
+  "nn": "Dødsriddar nede! Teknisk sett ein gjengangarkunde.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Already dead once, dead again now. Volume discount?",
+  "nn": "Alt død éin gong, død igjen no. Mengderabatt?",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Rune weapon broken? I sell runes. Slightly used.",
+  "nn": "Runevåpenet øydelagt? Eg sel runer. Lett brukte.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Should’ve death gripped a better deal.",
+  "nn": "Du burde ha nappa til deg ein betre avtale med dødsgrepet.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Undying, they said. I’d ask for a refund.",
+  "nn": "Udøyeleg, sa dei. Eg ville kravd pengane tilbake.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Frost on the armor, dirt on the face. Cleaning fee applies.",
+  "nn": "Frost på rustninga, jord i fjeset. Reinsavgift gjeld.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Even the Lich King’s old staff need my insurance.",
+  "nn": "Sjølv dei gamle tenarane til Lich King treng forsikringa mi.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Your ghoul looks lonely. Rent a replacement master?",
+  "nn": "Ghoulen din ser einsam ut. Leige ein ny meister?",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Plague and decay didn’t save you. My potions might have.",
+  "nn": "Pest og forfall berga deg ikkje. Eliksirane mine kunne gjort det.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Blindfold on, eyes off the price tag. Classic mistake.",
+  "nn": "Bind for augo, ikkje auge for prisen. Klassisk tabbe.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "You were prepared. Just not insured.",
+  "nn": "Du var førebudd. Berre ikkje forsikra.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Glided straight into trouble. Gliding lessons available.",
+  "nn": "Glei rett inn i trøbbel. Glidekurs tilgjengeleg.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Fel-powered and still flat? My batteries last longer.",
+  "nn": "Feldriven og likevel flat? Batteria mine varer lenger.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Metamorphosis into a corpse? Not the upgrade I’d sell.",
+  "nn": "Metamorfose til lik? Ikkje oppgraderinga eg ville selt.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Double-jumped right off the profit margin.",
+  "nn": "Dobbelthoppa rett ut over forteneste-kanten.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Those glaives need a warranty. So do you.",
+  "nn": "Dei glavene treng garanti. Det gjer du òg.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Demon inside, death outside. Mixed reviews.",
+  "nn": "Demon inni, død utanpå. Blanda omtalar.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Should have fel rushed to my shop instead.",
+  "nn": "Du burde ha rusa til butikken min i staden.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "All that sacrifice and still no life insurance?",
+  "nn": "Alt det offeret og framleis inga livsforsikring?",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Bear form didn’t bear the load. Bulk armor sale today!",
+  "nn": "Bjørneham bar ikkje lasta. Sal på rustning i dag!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Rooted to the spot? I sell running shoes.",
+  "nn": "Rota fast? Eg sel joggesko.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Nature called. It wanted its druid back.",
+  "nn": "Naturen ringde. Ho ville ha druiden sin tilbake.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Should’ve shapeshifted into something with a warranty.",
+  "nn": "Du burde ha skifta ham til noko med garanti.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Cat form: nine lives not included.",
+  "nn": "Katteham: ni liv ikkje inkludert.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Even trees need fertilizer. Too soon?",
+  "nn": "Sjølv tre treng gjødsel. For tidleg?",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Regrowth on credit? Ask me about financing.",
+  "nn": "Gjenvekst på kreditt? Spør meg om finansiering.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Moonkin down! Feathers sell well, by the way.",
+  "nn": "Månekin nede! Fjør sel godt, forresten.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Travel form to the graveyard. Very efficient.",
+  "nn": "Reiseham til gravplassen. Svært effektivt.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Leaves, fur, feathers and still no armor plate. Tsk.",
+  "nn": "Lauv, pels, fjør og framleis ingen platerustning. Tsk.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Wings, scales, fire, and no fire insurance?",
+  "nn": "Venger, skjel, eld og inga brannforsikring?",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Dragons hoard gold. You should have hoarded potions.",
+  "nn": "Drakar hamstrar gull. Du skulle ha hamstra eliksirar.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Empowered spell, unempowered outcome.",
+  "nn": "Forsterka trylleformel, svekt resultat.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Even dragons need a repair bill now and then.",
+  "nn": "Sjølv drakar treng ei reparasjonsrekning av og til.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Soared, then floored. Landing gear sold separately.",
+  "nn": "Sveva, så i golvet. Landingsunderstell seljast separat.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Breath attack, then out of breath. Bad trade.",
+  "nn": "Pusteåtak, så tom for pust. Dårleg handel.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Scales chipped? I do touch-ups. Gold leaf extra.",
+  "nn": "Avskala skjel? Eg reparerer. Bladgull ekstra.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Time magic and you still ran out of time?",
+  "nn": "Tidsmagi, og likevel gjekk du tom for tid?",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Dracthyr down! Who insures dragons? Me, from now on.",
+  "nn": "Dracthyr nede! Kven forsikrar drakar? Eg, frå no av.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Hover over to my shop next time. Healing on sale.",
+  "nn": "Sveva over til butikken min neste gong. Lækjing på tilbod.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Your pet looks sad. Pet comfort service, five gold.",
+  "nn": "Kjæledyret ditt ser trist ut. Trøyst for kjæledyr, fem gull.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Feign death? Oh, it’s real this time. Awkward.",
+  "nn": "Spelar død? Å, det er ekte denne gongen. Pinleg.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Out of ammo, out of luck. I sell both.",
+  "nn": "Tom for ammunisjon, tom for flaks. Eg sel begge delar.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Disengaged, but not far enough.",
+  "nn": "Kopla frå, men ikkje langt nok.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Trap set, hunter caught. Irony is free.",
+  "nn": "Felle sett, jegar fanga. Ironi er gratis.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Your pet survived. Want to sell me the leash?",
+  "nn": "Kjæledyret ditt overlevde. Vil du selje meg bandet?",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Aimed shot, missed opportunity.",
+  "nn": "Sikta skot, tapt moglegheit.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Should’ve tamed a bigger bodyguard. I rent those.",
+  "nn": "Du burde ha temja ein større livvakt. Eg leiger ut slike.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The hunted got the hunter. Market correction.",
+  "nn": "Byttet tok jegaren. Marknadskorreksjon.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Mend pet, sure, but who mends the hunter? Me, for a fee.",
+  "nn": "Lækje kjæledyret, javel, men kven lækjer jegaren? Eg, mot betaling.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Blinked the wrong way? Directions cost a silver.",
+  "nn": "Blinka feil veg? Vegbeskriving kostar eitt sølv.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Ice block melted? Freezer upgrades available.",
+  "nn": "Isblokka smelta? Frysaroppgraderingar tilgjengelege.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "So smart, yet no health potions. Typical.",
+  "nn": "Så klok, og likevel ingen helseeliksirar. Typisk.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Conjured food can’t fix this. My potions can.",
+  "nn": "Trylla mat fiksar ikkje dette. Eliksirane mine kan.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Polymorphed the wrong target? Sheep insurance available.",
+  "nn": "Forvandla feil mål? Saueforsikring tilgjengeleg.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Cloth armor: cheap for a reason.",
+  "nn": "Tøyrustning: billeg av ein grunn.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Teleport to the graveyard? Bold choice.",
+  "nn": "Teleportere til gravplassen? Modig val.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "All that mana and not a copper for protection.",
+  "nn": "All den manaen og ikkje ein kopar til vern.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Fireball, frostbolt, flatline.",
+  "nn": "Eldkule, frostbolt, flat linje.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Arcane intellect, mundane outcome.",
+  "nn": "Arkan intelligens, kvardagsleg utfall.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Inner peace achieved. Outer peace too, permanently.",
+  "nn": "Indre fred oppnådd. Ytre fred òg, permanent.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Rolled into danger. Rolling out costs extra.",
+  "nn": "Rulla inn i fare. Å rulle ut kostar ekstra.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Brewmaster down! Your keg is now for sale.",
+  "nn": "Bryggjemeister nede! Tønna di er no til sals.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Balance is everything. Your balance is zero now.",
+  "nn": "Balanse er alt. Balansen din er null no.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Too much meditation, not enough insurance.",
+  "nn": "For mykje meditasjon, for lite forsikring.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Touch of death? Wrong direction, friend.",
+  "nn": "Dødsberøring? Feil retning, venn.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Stagger the damage, they said. Stagger the payments, I say.",
+  "nn": "Spreie skaden, sa dei. Spreie betalingane, seier eg.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Flying kick, failing landing.",
+  "nn": "Flygande spark, mislukka landing.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Chi flows, health doesn’t. I sell the second one.",
+  "nn": "Chi flyt, helsa gjer det ikkje. Eg sel det andre.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Serenity now, invoice later.",
+  "nn": "Ro no, faktura seinare.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Bubble popped? I sell sturdier bubbles.",
+  "nn": "Bobla sprakk? Eg sel sterkare bobler.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The Light was busy. My potions never are.",
+  "nn": "Lyset var oppteke. Eliksirane mine er aldri det.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Plate armor and still flattened. Return it.",
+  "nn": "Platerustning og likevel flatklemd. Returner ho.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Lay on Hands on cooldown? Lay on gold instead.",
+  "nn": "Handspålegging på nedkøyring? Legg på gull i staden.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Divine protection, mortal results.",
+  "nn": "Guddommeleg vern, dødeleg resultat.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Righteous fury, unrighteous ending.",
+  "nn": "Rettferdig raseri, urettferdig slutt.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "A holy warrior should have holy insurance. Ask me.",
+  "nn": "Ein heilag krigar bør ha heilag forsikring. Spør meg.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Even shining armor gets dented. Repairs this way!",
+  "nn": "Sjølv skinande rustning får bulkar. Reparasjonar denne vegen!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Judgment came. It was not in your favour.",
+  "nn": "Domen kom. Han var ikkje i din favør.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Blessed, but not bulletproof. Noted.",
+  "nn": "Velsigna, men ikkje skotsikker. Notert.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Healer, heal thyself. Or buy my potions.",
+  "nn": "Lækjar, lækj deg sjølv. Eller kjøp eliksirane mine.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Power word: shield. Power word: oops.",
+  "nn": "Kraftord: skjold. Kraftord: oi.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "All those prayers and no extended warranty.",
+  "nn": "Alle dei bønene og ingen utvida garanti.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Spirit of redemption? I offer cheaper redemption.",
+  "nn": "Forløysingsånd? Eg tilbyr billegare innløysing.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Even holy folk need a little goblin backup.",
+  "nn": "Sjølv heilage folk treng litt goblinhjelp.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Shadow form, shadow of former self.",
+  "nn": "Skuggeform, skuggen av seg sjølv.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Faith is great. Faith plus armor is better.",
+  "nn": "Tru er flott. Tru pluss rustning er betre.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Who heals the healer? A paying customer, ideally.",
+  "nn": "Kven lækjer lækjaren? Ein betalande kunde, helst.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Divine intervention denied. Try my mortal intervention.",
+  "nn": "Guddommeleg inngrep avslått. Prøv mitt dødelege inngrep.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Mind blast, mind lost, life lost.",
+  "nn": "Sinnsstøyt, sinnet tapt, livet tapt.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Vanished? Not quite enough, it seems.",
+  "nn": "Forsvann? Ikkje heilt nok, ser det ut til.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Stealthy until the very end. Then very visible.",
+  "nn": "Snikande heilt til slutt. Så svært synleg.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Picked a pocket, lost a life. Bad exchange rate.",
+  "nn": "Tømde ei lomme, miste eit liv. Dårleg vekslingskurs.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Poisons applied, sense not applied.",
+  "nn": "Gift påført, vit ikkje påført.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Backstab gone wrong? Front stab, I guess.",
+  "nn": "Rygg-stikk som gjekk gale? Framstikk, då.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Shadows were cheaper than armor. Now you know why.",
+  "nn": "Skuggar var billegare enn rustning. No veit du kvifor.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Even thieves need life insurance. I won’t ask questions.",
+  "nn": "Sjølv tjuvar treng livsforsikring. Eg spør ikkje.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Cloak of shadows? Should’ve bought cloak of more health.",
+  "nn": "Skuggekappe? Du skulle ha kjøpt kappe med meir helse.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Sneaky death. Nobody saw it coming. Including you.",
+  "nn": "Snikande død. Ingen såg ho kome. Ikkje du heller.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Evasion failed. Tax evasion would’ve been safer. Kidding!",
+  "nn": "Unnamanøveren feila. Skatteunndraging hadde vore tryggare. Tuller!",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Totem dropped, shaman dropped.",
+  "nn": "Totem sett ned, sjaman slått ned.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The elements say sorry. I say buy armor.",
+  "nn": "Elementa seier orsak. Eg seier kjøp rustning.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Ancestral spirit, eh? Pay the ancestors a visit.",
+  "nn": "Forfedreånd, altså? Gå og besøk forfedrane.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Lightning bolt to the face? No, yours.",
+  "nn": "Lynnedslag i fjeset? Nei, ditt.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Ghost wolf to the rescue. Just a bit late.",
+  "nn": "Spøkjelsesulv til unnsetning. Berre litt seint.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Bloodlust, then blood loss.",
+  "nn": "Blodtørst, så blodtap.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Earth shield cracked? I do masonry.",
+  "nn": "Jordskjoldet sprakk? Eg driv med muring.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Reincarnation ready? Cheapest resurrection in town!",
+  "nn": "Reinkarnasjon klar? Billegaste oppstoda i byen!",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The storm took you. Storm insurance, anyone?",
+  "nn": "Stormen tok deg. Stormforsikring, nokon?",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Healing stream ran dry. My bottles never do.",
+  "nn": "Lækjestraumen tørka ut. Flaskene mine gjer aldri det.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Soulstone? Hope you had one in stock.",
+  "nn": "Sjelestein? Håpar du hadde ein på lager.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Your demon is now unemployed. I’m hiring!",
+  "nn": "Demonen din er arbeidsledig no. Eg tilset!",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Life tap went too far. Classic overdraft.",
+  "nn": "Livsuttaket gjekk for langt. Klassisk overtrekk.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Dark pact, darker ending. Read contracts, friend.",
+  "nn": "Mørk pakt, mørkare slutt. Les kontraktar, venn.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Healthstone eaten? Next time, eat two.",
+  "nn": "Helsestein eten? Neste gong, et to.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Demons make terrible bodyguards. Hire goblins.",
+  "nn": "Demonar er elendige livvakter. Leig goblinar.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Fel fire, fel finish.",
+  "nn": "Feleld, felslutt.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Even dark magic comes with fine print.",
+  "nn": "Sjølv mørk magi har småskrift.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Summoned a demon, summoned a graveyard trip.",
+  "nn": "Påkalla ein demon, påkalla ein tur til gravplassen.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Soul shards for sale. Yours, now.",
+  "nn": "Sjelesplintar til sals. Dine, no.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Charged in, carried out.",
+  "nn": "Storma inn, boren ut.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "All rage, no armor repairs.",
+  "nn": "Berre raseri, ingen reparasjonar.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Last stand turned into last lie-down.",
+  "nn": "Siste stand vart til siste kvil.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Shield wall cracked? Bricks are on sale.",
+  "nn": "Skjoldmuren sprakk? Murstein er på sal.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Big sword, big swing, big repair bill.",
+  "nn": "Stort sverd, stort sving, stor reparasjonsrekning.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Bladestorm into a brick wall? Bold strategy.",
+  "nn": "Bladstorm inn i ein murvegg? Djerv strategi.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Battle shout heard. Battle lost. Shop open!",
+  "nn": "Kamprop høyrt. Kamp tapt. Butikken er open!",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Heroic leap, unheroic landing.",
+  "nn": "Heltemodig hopp, uheltemodig landing.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Muscle is free. Medical care isn’t.",
+  "nn": "Musklar er gratis. Helsehjelp er det ikkje.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Executed with style. Unfortunately, you were the target.",
+  "nn": "Avretta med stil. Dessverre var du målet.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Death is bad for business. Please stop doing it.",
+  "nn": "Død er dårleg for forretningane. Ver snill og slutt med det.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That’ll cost you. Repair bills, mostly.",
+  "nn": "Det kjem til å koste. Mest reparasjonsrekningar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve bought the insurance. I did offer. Twice.",
+  "nn": "Du skulle ha kjøpt forsikringa. Eg tilbaud. To gonger.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down already? Your warranty doesn’t cover that.",
+  "nn": "Nede alt? Garantien din dekkjer ikkje det.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dead customers don’t pay. Get back up, quick!",
+  "nn": "Døde kundar betaler ikkje. Kom deg opp, fort!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The spirit healer charges less than me. For now.",
+  "nn": "Åndelækjaren tek mindre enn meg. Førebels.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ouch! I’ll add this to your invoice.",
+  "nn": "Au! Eg legg dette til fakturaen din.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A tragic loss. Mostly of durability.",
+  "nn": "Eit tragisk tap. Mest av slitestyrke.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death? Terrible investment. Zero returns.",
+  "nn": "Død? Elendig investering. Null avkastning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fear not, resurrection is affordable. Ish.",
+  "nn": "Frykt ikkje, oppstoda er rimeleg. Nesten.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You died! Have you seen my health potions? On sale!",
+  "nn": "Du døydde! Har du sett helseeliksirane mine? På tilbod!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Oops. I’ll send flowers. Flowers are ten gold.",
+  "nn": "Oi. Eg sender blomar. Blomar kostar ti gull.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That’s a costly nap, friend.",
+  "nn": "Det er ein dyr lur, venn.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Run back fast. Time spent dead is profit lost.",
+  "nn": "Spring fort tilbake. Tid som død er tapt forteneste.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The ghost walk is free. Enjoy it while it lasts.",
+  "nn": "Spøkjelsesturen er gratis. Nyt han medan han varer.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dying is the one thing I can’t sell. Sadly.",
+  "nn": "Å døy er det einaste eg ikkje kan selje. Dessverre.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down but not out! Well, out. Briefly.",
+  "nn": "Nede men ikkje ute! Vel, ute. Kort.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your armor is crying. So is my repair shop. With joy.",
+  "nn": "Rustninga di græt. Det gjer verkstaden min òg. Av glede.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That’s a write-off. Luckily you’re fully reusable.",
+  "nn": "Det er avskrive. Heldigvis kan du brukast om att.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Hey, no dying on my watch! Unless you’ve paid.",
+  "nn": "Hei, inga døying på min vakt! Om du ikkje har betalt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I sell feathers for slow falling, you know.",
+  "nn": "Eg sel fjør for sakte fall, veit du.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death: the ultimate hidden fee.",
+  "nn": "Død: det ultimate skjulte gebyret.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Bad deal, friend. Very bad deal.",
+  "nn": "Dårleg avtale, venn. Svært dårleg avtale.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You were worth more alive. Business-wise.",
+  "nn": "Du var meir verd i live. Forretningsmessig.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ah, the floor. Great view, terrible returns.",
+  "nn": "Å, golvet. Fin utsikt, elendig avkastning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Sorry for your loss. Your loss of life, specifically.",
+  "nn": "Eg kondolerer med tapet. Tapet av livet, spesifikt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Graveyard trip! Want the souvenir mug?",
+  "nn": "Tur til gravplassen! Vil du ha suvenirkoppen?",
+  "tag": "ANY"
+ },
+ {
+  "en": "Don’t worry, death is temporary. Debt is forever.",
+  "nn": "Ikkje uroa deg, døden er mellombels. Gjeld er for alltid.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Rebuild, repair, rebuy. The goblin cycle of life.",
+  "nn": "Byggje opp, reparere, kjøpe på nytt. Goblinlivssyklusen.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The monsters won that round. They don’t tip, either.",
+  "nn": "Monstera vann den runden. Dei gir ikkje tips heller.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Next time, try not dying. It’s cheaper.",
+  "nn": "Neste gong, prøv å ikkje døy. Det er billegare.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Spilled your health all over the floor. Cleanup fee.",
+  "nn": "Søla helsa di utover golvet. Reingjeringsavgift.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fell over? My rocket boots would’ve prevented that.",
+  "nn": "Fall du? Rakettstøvlane mine ville hindra det.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Died? Classic beginner mistake. Also expert mistake.",
+  "nn": "Døydde? Klassisk nybyrjarfeil. Òg ekspertfeil.",
+  "tag": "ANY"
+ },
+ {
+  "en": "If only someone had sold you a bandage. Oh wait, I tried.",
+  "nn": "Om berre nokon hadde selt deg ein bandasje. Å vent, eg prøvde.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your durability took a hit. My profits took a bow.",
+  "nn": "Slitestyrken din fekk seg ein smell. Forteneste mi bukka.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Rest in pieces. Pieces sold separately.",
+  "nn": "Kvil i bitar. Bitar seljast separat.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is just a temporary market dip.",
+  "nn": "Døden er berre eit mellombels fall i marknaden.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Get up! You’ve got bills to pay!",
+  "nn": "Kom deg opp! Du har rekningar å betale!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The repair guy is gonna love you.",
+  "nn": "Reparatøren kjem til å elske deg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Oof. That’s gonna cost a few gold to fix.",
+  "nn": "Uff. Det kjem til å koste nokre gull å fikse.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death! The one thing not covered by my coupons.",
+  "nn": "Død! Det einaste som ikkje er dekt av kupongane mine.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Too bad, friend. Life’s expensive, death even more so.",
+  "nn": "Synd, venn. Livet er dyrt, døden endå dyrare.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I warned you. I sell warnings.",
+  "nn": "Eg åtvara deg. Eg sel åtvaringar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Lying down on the job? I don’t pay for that.",
+  "nn": "Ligg du på jobben? Det betaler eg ikkje for.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That was an expensive way to sit down.",
+  "nn": "Det var ein dyr måte å setje seg ned på.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The graveyard has excellent property values these days.",
+  "nn": "Gravplassen har gode eigedomsprisar for tida.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Need a revive? I know a guy. He’s pricey.",
+  "nn": "Treng du gjenoppliving? Eg kjenner ein kar. Han er dyr.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Return to body, return to spending. Hurry!",
+  "nn": "Tilbake til kroppen, tilbake til forbruket. Skund deg!",
+  "tag": "ANY"
+ },
+ {
+  "en": "That one hurt. Pain relief potions on aisle three.",
+  "nn": "Det der gjorde vondt. Smertestillande eliksirar i hylle tre.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You died. I’ll put it under operating costs.",
+  "nn": "Du døydde. Eg fører det under driftskostnader.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ah well. Every adventurer has an off day. Or off life.",
+  "nn": "Nå ja. Alle eventyrarar har ein dårleg dag. Eller eit dårleg liv.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your corpse is in excellent condition. Mint, even.",
+  "nn": "Liket ditt er i framifrå stand. Nesten nytt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dead again? I’ll start a loyalty card for the graveyard.",
+  "nn": "Død igjen? Eg lagar eit lojalitetskort for gravplassen.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down you go. Up you come. Pay as you go.",
+  "nn": "Ned du går. Opp du kjem. Betal undervegs.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Let me guess. You skipped the potion aisle.",
+  "nn": "Lat meg gjette. Du hoppa over eliksirhylla.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dying? Not on my balance sheet, please.",
+  "nn": "Døy? Ikkje i balansen min, takk.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Smell that? It’s the scent of repair costs.",
+  "nn": "Luktar du? Det er lukta av reparasjonskostnader.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Next time, hide behind someone with more armor.",
+  "nn": "Neste gong, gøym deg bak nokon med meir rustning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Bad luck! Good news: luck charms are on sale.",
+  "nn": "Uflaks! Gode nyheiter: lukkeamulettar er på tilbod.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You’ve been temporarily discontinued.",
+  "nn": "Du er mellombels utgått.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fear not! Death is merely a business setback.",
+  "nn": "Frykt ikkje! Døden er berre eit forretningsmessig tilbakeslag.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Out of health? Should have bought the large bottle.",
+  "nn": "Tom for helse? Du skulle ha kjøpt den store flaska.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Run, ghost, run! The corpse won’t rescue itself.",
+  "nn": "Spring, spøkjelse, spring! Liket bergar ikkje seg sjølv.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Sad news. Your armor durability is in mourning.",
+  "nn": "Triste nyheiter. Slitestyrken på rustninga di er i sorg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dead men tell no tales. Dead customers buy no goods.",
+  "nn": "Døde menn fortel ingen soger. Døde kundar kjøper ingen varer.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Well, that was a short-term loss.",
+  "nn": "Vel, det var eit kortsiktig tap.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is just nature’s way of saying: buy more potions.",
+  "nn": "Døden er berre naturen sin måte å seie: kjøp fleire eliksirar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Never fear, the spirit healer has a punch card.",
+  "nn": "Ikkje ver redd, åndelækjaren har stempelkort.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Looks like you took a hostile takeover.",
+  "nn": "Ser ut som du vart utsett for eit fiendtleg oppkjøp.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A dramatic exit! Encore costs extra.",
+  "nn": "Ein dramatisk sorti! Ekstranummer kostar ekstra.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down! But hey, the floor was free.",
+  "nn": "Nede! Men golvet var i alle fall gratis.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I’d send a rescue team, but they bill hourly.",
+  "nn": "Eg ville sendt eit redningslag, men dei tek timebetalt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your health bar went bankrupt.",
+  "nn": "Helsebaren din gjekk konkurs.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve read the danger label. It was in small print.",
+  "nn": "Du skulle ha lese fareetiketten. Han stod med småskrift.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ah, death. The worst customer service in Azeroth.",
+  "nn": "Å, døden. Den verste kundeservicen i Azeroth.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You’re worth nothing to me dead. Get back up, champ!",
+  "nn": "Du er ingenting verd for meg som død. Opp med deg, mester!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The monster got a bargain on that one.",
+  "nn": "Monsteret gjorde eit kupp der.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ka-boom! Wait, that wasn’t one of my gadgets, was it?",
+  "nn": "Ka-bom! Vent, det var vel ikkje ein av dingsane mine?",
+  "tag": "ANY"
+ },
+ {
+  "en": "Gravity wins again. I should invest in gravity.",
+  "nn": "Tyngdekrafta vinn igjen. Eg burde investere i tyngdekraft.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Bounced off the ground. Bouncing costs nothing. Landing costs.",
+  "nn": "Sprett i bakken. Å sprette er gratis. Å lande kostar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even legends lie down now and then. On the ground. Dead.",
+  "nn": "Sjølv legender legg seg ned av og til. På bakken. Døde.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You dropped this: your life. Want it back? Small fee.",
+  "nn": "Du miste dette: livet ditt. Vil du ha det tilbake? Lita avgift.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That was not in the business plan.",
+  "nn": "Det stod ikkje i forretningsplanen.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death detected. Initiating sales pitch for armor.",
+  "nn": "Død oppdaga. Startar salspitch for rustning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You had a good run. Then a bad stop.",
+  "nn": "Du hadde ein god tur. Så ein dårleg stopp.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Durability dropping, prices rising. My kind of day.",
+  "nn": "Slitestyrken fell, prisane stig. Ein dag etter mitt hovud.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ouch. Bandages are cheap. Graveyards are cheaper, apparently.",
+  "nn": "Au. Bandasjar er billege. Gravplassar er billegare, visst.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I see you’ve tested the floor. Rating?",
+  "nn": "Eg ser du har testa golvet. Vurdering?",
+  "tag": "ANY"
+ },
+ {
+  "en": "That’s gonna leave a mark. On your wallet.",
+  "nn": "Det kjem til å setje merke. På lommeboka.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Oh no! Who’s going to buy my potions now? Get up!",
+  "nn": "Å nei! Kven skal kjøpe eliksirane mine no? Kom deg opp!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve hired a bodyguard. My cousin’s available.",
+  "nn": "Du burde ha leigd ein livvakt. Fetteren min er ledig.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dying is just a long walk with extra steps.",
+  "nn": "Å døy er berre ein lang tur med ekstra steg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Lesson learned. Tuition paid in repair costs.",
+  "nn": "Lærdom teken. Skulepengar betalte i reparasjonar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even the best get knocked down. Then they pay to get up.",
+  "nn": "Sjølv dei beste blir slått ned. Så betaler dei for å kome opp.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Rough day at the office, huh?",
+  "nn": "Tøff dag på kontoret, hm?",
+  "tag": "ANY"
+ },
+ {
+  "en": "You know what prevents death? My premium potions.",
+  "nn": "Veit du kva som hindrar død? Premiumeliksirane mine.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ghost mode activated. Shopping mode disabled. Tragic!",
+  "nn": "Spøkjelsesmodus aktivert. Handlemodus deaktivert. Tragisk!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A minor setback. A major repair bill.",
+  "nn": "Eit lite tilbakeslag. Ei stor reparasjonsrekning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I’ll file that under unforeseen expenses.",
+  "nn": "Eg arkiverer det under uventa utgifter.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve called in sick today.",
+  "nn": "Du skulle ha meldt deg sjuk i dag.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The enemy invoiced you in damage.",
+  "nn": "Fienden fakturerte deg i skade.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Out of the game, briefly. Out of pocket, definitely.",
+  "nn": "Ute av spelet, kort. Utlegg, heilt sikkert.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your life just hit rock bottom. Literally.",
+  "nn": "Livet ditt traff botnen. Bokstaveleg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death! My second least favourite word after refund.",
+  "nn": "Død! Det nest verste ordet mitt etter refusjon.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Back from the dead? Don’t forget the repair stop.",
+  "nn": "Tilbake frå dei døde? Ikkje gløym reparasjonsstoppet.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That fight had terrible terms and conditions.",
+  "nn": "Den kampen hadde elendige vilkår.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down for the count. I’m counting gold meanwhile.",
+  "nn": "Telt ut. Eg tel gull i mellomtida.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Nothing a few gold and a bandage can’t fix.",
+  "nn": "Ingenting nokre gull og ein bandasje ikkje kan fikse.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A heroic sacrifice! Unpaid, sadly.",
+  "nn": "Eit heltemodig offer! Ubetalt, dessverre.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You’re making the spirit healer rich. Stop that.",
+  "nn": "Du gjer åndelækjaren rik. Slutt med det.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Hey, at least you went out swinging. Mostly missing.",
+  "nn": "Hei, du gjekk i alle fall ned med sverdet i handa. Mest bom.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Losing a fight is fine. Losing gear durability is not!",
+  "nn": "Å tape ein kamp er greitt. Å tape slitestyrke er det ikkje!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Quick, revive before your armor rusts!",
+  "nn": "Fort, bli vekt opp før rustninga rustar!",
+  "tag": "ANY"
+ },
+ {
+  "en": "That boss got the better end of the deal.",
+  "nn": "Den bossen fekk den beste delen av avtalen.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Big oof. Bigger invoice.",
+  "nn": "Stort uff. Større faktura.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death: always free, never cheap.",
+  "nn": "Død: alltid gratis, aldri billeg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I’d hold a moment of silence, but silence doesn’t sell.",
+  "nn": "Eg ville halde eit minutts stille, men stille sel ikkje.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The floor thanks you for your patronage.",
+  "nn": "Golvet takkar for at du handla.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your life insurance claim has been… rejected. Sorry!",
+  "nn": "Livsforsikringskravet ditt er ... avslått. Orsak!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Faceplant achieved. Not an achievement I’d sell.",
+  "nn": "Fjeset i bakken. Ikkje ei bragd eg ville selt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is just an unscheduled break. Unpaid.",
+  "nn": "Døden er berre ei uplanlagd pause. Ubetalt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your health ran out faster than my discount stock.",
+  "nn": "Helsa di tok slutt raskare enn rabattlageret mitt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "I’m not saying it’s your fault. I’m saying buy armor.",
+  "nn": "Eg seier ikkje at det er di skuld. Eg seier kjøp rustning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dying hurts. Paying for repairs hurts more.",
+  "nn": "Å døy gjer vondt. Å betale reparasjonar gjer meir vondt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Back to the graveyard, my old business partner.",
+  "nn": "Tilbake til gravplassen, min gamle forretningspartnar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The spirit healer says hi. And sends a bill.",
+  "nn": "Åndelækjaren helsar. Og sender rekning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The good news: you’re lighter now. The bad news: you’re a ghost.",
+  "nn": "Den gode nyheita: du er lettare no. Den dårlege: du er eit spøkjelse.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Next adventure, budget for bandages.",
+  "nn": "Neste eventyr, budsjetter for bandasjar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That’s a negative return on courage.",
+  "nn": "Det er negativ avkastning på mot.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You died. But you died with style! Style is extra.",
+  "nn": "Du døydde. Men du døydde med stil! Stil kostar ekstra.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Insurance? You laughed. Who’s laughing now? Me.",
+  "nn": "Forsikring? Du lo. Kven ler no? Eg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve read the room. And the monster’s level.",
+  "nn": "Du skulle ha lese stemninga. Og nivået til monsteret.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your ghost is very transparent. Great for business ethics.",
+  "nn": "Spøkjelset ditt er svært gjennomsiktig. Bra for forretningsetikken.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A swift death! Swift resurrection costs extra.",
+  "nn": "Ein snøgg død! Snøgg oppstoding kostar ekstra.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You lose some, you lose some more. Then you buy from me.",
+  "nn": "Du tapar litt, du tapar litt til. Så kjøper du av meg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "All that loot, and you couldn’t loot a few extra seconds?",
+  "nn": "All den looten, og du kunne ikkje loote nokre ekstra sekund?",
+  "tag": "ANY"
+ },
+ {
+  "en": "The floor called. It wants rent.",
+  "nn": "Golvet ringde. Det vil ha husleige.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Oh dear. Shall I call the undertaker or the repairman?",
+  "nn": "Å nei. Skal eg ringje gravferdsbyrået eller reparatøren?",
+  "tag": "ANY"
+ },
+ {
+  "en": "That attempt has been marked as a loss in the books.",
+  "nn": "Det forsøket er ført som tap i bøkene.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You died! On the bright side, no more repair bills. Until now.",
+  "nn": "Du døydde! Det positive: ingen fleire reparasjonsrekningar. Til no.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Hm. Not my most profitable customer today.",
+  "nn": "Hm. Ikkje den mest lønsame kunden min i dag.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your health just bounced like a bad check.",
+  "nn": "Helsa di sprett som ein dekningslaus sjekk.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Danger was underpriced. You paid full value.",
+  "nn": "Faren var underprisa. Du betalte full verdi.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve sprung for the deluxe life package.",
+  "nn": "Du skulle ha spandert på deluxe-livspakka.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Well, that went straight in the red.",
+  "nn": "Vel, det gjekk rett i raudt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down and out? Up and about soon, I hope. Customers needed!",
+  "nn": "Nede og ute? Oppe og går snart, håpar eg. Treng kundar!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Dead? That’s not how adventuring is supposed to work.",
+  "nn": "Død? Det er ikkje slik eventyr skal fungere.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your last words should’ve been: I’ll buy that potion.",
+  "nn": "Dei siste orda dine skulle ha vore: eg kjøper den eliksiren.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Let’s call that a learning investment.",
+  "nn": "Lat oss kalle det ei læringsinvestering.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Explosive ending! Not one of mine, I swear.",
+  "nn": "Eksplosiv slutt! Ikkje ein av mine, eg sver.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death comes for us all. Taxes come first, though.",
+  "nn": "Døden kjem for oss alle. Skatten kjem først, likevel.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You’ll be back. Customers always come back.",
+  "nn": "Du kjem tilbake. Kundar kjem alltid tilbake.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Get up, hero. My sales numbers depend on you.",
+  "nn": "Opp med deg, helt. Salstala mine er avhengige av deg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Lost your life? Check the lost-and-found. Retrieval fee applies.",
+  "nn": "Mista livet? Sjekk hittegodset. Henteavgift gjeld.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Graveyard again? You should buy property there.",
+  "nn": "Gravplassen igjen? Du burde kjøpe eigedom der.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The enemy won this deal. Renegotiate!",
+  "nn": "Fienden vann denne avtalen. Forhandle på nytt!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Too bad. You were doing so well, financially.",
+  "nn": "Synd. Det gjekk så bra, økonomisk.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Overextended. Like my credit line.",
+  "nn": "Strekte deg for langt. Som kredittramma mi.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death: the only sale with no profit for anyone.",
+  "nn": "Død: det einaste salet utan forteneste for nokon.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A moment of silence. Okay, that’s enough. Back to shopping.",
+  "nn": "Eit minutt stille. Greitt, det held. Tilbake til handelen.",
+  "tag": "ANY"
+ },
+ {
+  "en": "You look terrible. I sell face paint.",
+  "nn": "Du ser forferdeleg ut. Eg sel ansiktsmåling.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Should’ve stayed in town. Town has my shop.",
+  "nn": "Du skulle ha halde deg i byen. Byen har butikken min.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Oh, bad timing. Health potions just went up in price.",
+  "nn": "Å, dårleg tidspunkt. Helseeliksirane gjekk nett opp i pris.",
+  "tag": "ANY"
+ },
+ {
+  "en": "That monster owes you an apology. And a repair bill.",
+  "nn": "Det monsteret skuldar deg ei orsaking. Og ei reparasjonsrekning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Here lies a fine customer. Briefly.",
+  "nn": "Her kviler ein god kunde. Ei kort stund.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Took a dirt nap? Dirt is free, at least.",
+  "nn": "Tok ein jordlur? Jord er i det minste gratis.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Kaput! Happens to the best of us. And my rockets.",
+  "nn": "Kaputt! Det skjer med dei beste av oss. Og rakettane mine.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Your hit points were overdrawn. Bounced, really.",
+  "nn": "Livspoenga dine var overtrekte. Sprett, rett og slett.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The way back is long. Rocket rides available.",
+  "nn": "Vegen tilbake er lang. Raketturar tilgjengelege.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Anti-magic shell, anti-profit outcome.",
+  "nn": "Antimagiskal, antiforteneste-resultat.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Death strike missed the death part. Wrong target, friend.",
+  "nn": "Dødsslaget bomma på målet. Feil mottakar, venn.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Army of the dead? Should’ve hired the living. Cheaper.",
+  "nn": "Dei dødes hær? Du burde ha leigd levande. Billegare.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "You walked on frost. The frost walked on you.",
+  "nn": "Du gjekk på frost. Frosten gjekk på deg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Icebound fortitude melted. Refrigeration services available.",
+  "nn": "Isbunden styrke smelta. Kjøleteneste tilgjengeleg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Unholy, unlucky, un-alive. Again.",
+  "nn": "Uheilag, uheldig, ikkje i live. Igjen.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Death and decay on the floor, and now you’re on it too.",
+  "nn": "Død og forfall på golvet, og no ligg du der òg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Your runes ran out. Rune refills, five gold each.",
+  "nn": "Runene tok slutt. Runepåfyll, fem gull stykket.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "A death knight dying? That’s just a rerun.",
+  "nn": "Ein dødsriddar som døyr? Det er berre ein reprise.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Blood boiled, then cooled off permanently.",
+  "nn": "Blodet kokte, og så kjølna det for godt.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Raise ally needs an ally. Rent one from me.",
+  "nn": "Gjenreis allierte krev ein allierte. Leig ein av meg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Chains of ice couldn’t hold the bill collector. That’s me.",
+  "nn": "Islenkjer heldt ikkje att inkassatoren. Det er meg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "So much plate, so little survival. Return policy? None.",
+  "nn": "Så mykje plate, så lite overleving. Returreglar? Ingen.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The scourge would be disappointed. I’m just disappointed in sales.",
+  "nn": "Svøpa ville vore skuffa. Eg er berre skuffa over salet.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Dark command: lie down. You obeyed.",
+  "nn": "Mørk ordre: legg deg ned. Du lydde.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Obliterate? You got obliterated. Irony costs extra.",
+  "nn": "Utslette? Du vart utsletta. Ironi kostar ekstra.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Corpse explosion used your own corpse? Efficient, I guess.",
+  "nn": "Likeksplosjon med ditt eige lik? Effektivt, kanskje.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Undead warranty expired. Twice.",
+  "nn": "Den udøde garantien gjekk ut. To gonger.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Even the cold-hearted need warm potions.",
+  "nn": "Sjølv dei kaldhjarta treng varme eliksirar.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Pestilence spread, you didn’t. Wait, you did. On the floor.",
+  "nn": "Pesten spreidde seg, ikkje du. Vent, du gjorde. Utover golvet.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Spectral sight saw everything except that hit coming.",
+  "nn": "Spektralt syn såg alt bortsett frå det slaget.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Eye beam, then eyes closed. Permanently-ish.",
+  "nn": "Augestråle, så augo att. Nesten for godt.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Fel devastation, personal devastation.",
+  "nn": "Felødelegging, personleg øydelegging.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Vengeful retreat should retreat further.",
+  "nn": "Hemngjerrig tilbaketrekking burde trekkje seg lenger tilbake.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Wings out, health out. Wing insurance?",
+  "nn": "Venger ut, helse ut. Vengeforsikring?",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Chaos strike! Chaos won.",
+  "nn": "Kaosslag! Kaoset vann.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Soul fragments everywhere. Want me to sweep them up? Fee.",
+  "nn": "Sjelefragment overalt. Vil du at eg feiar dei opp? Avgift.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Ten thousand years of training, one bad pull.",
+  "nn": "Ti tusen år med trening, eitt dårleg drag.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Tattoos glowing, life dimming. Not a good look.",
+  "nn": "Tatoveringar lyser, livet dimmar. Ikkje fint.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Hunting demons is risky. Have you heard of insurance?",
+  "nn": "Å jakte på demonar er risikabelt. Har du høyrt om forsikring?",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Throw glaive, throw life away. Bad trade.",
+  "nn": "Kast glaven, kast livet. Dårleg byte.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Darkness cast. Then darkness, period.",
+  "nn": "Mørker kasta. Så berre mørker.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Immolation aura burned out. Like your health bar.",
+  "nn": "Brannauraen brann ut. Som helsebaren din.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Sigil placed, hero displaced.",
+  "nn": "Sigil plassert, helt fordriven.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "All that agility and you still tripped over death.",
+  "nn": "All den smidigheita, og du snubla likevel i døden.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Blind, brave and broke. Repair bills incoming.",
+  "nn": "Blind, modig og blakk. Reparasjonsrekningar på veg.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Fel-infused and still fragile? Bad supplier.",
+  "nn": "Felfylt og likevel skjør? Dårleg leverandør.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "You consumed magic. Death consumed you.",
+  "nn": "Du åt magi. Døden åt deg.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Demon form looked tougher in the brochure.",
+  "nn": "Demonforma såg tøffare ut i brosjyren.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Leaping in is the easy part. Leaping out costs gold.",
+  "nn": "Å hoppe inn er det lette. Å hoppe ut kostar gull.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Barkskin turned out to be bark. Not armor.",
+  "nn": "Barkhuda viste seg å vere bark. Ikkje rustning.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Rebirth on cooldown? Bad timing, leafy friend.",
+  "nn": "Gjenfødsel på nedkøyring? Dårleg timing, lauvrike venn.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Starfall fell. So did you.",
+  "nn": "Stjernefall fall. Det gjorde du òg.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Tranquility for everyone except you.",
+  "nn": "Ro for alle utanom deg.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Your bear went into hibernation. A long one.",
+  "nn": "Bjørnen din gjekk i hi. Eit langt eitt.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Herbs everywhere, yet no herbal remedy. Buy mine!",
+  "nn": "Urter overalt, men inga urtemedisin. Kjøp mi!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Entangling roots entangled the wrong druid.",
+  "nn": "Slyngande røter slynga seg om feil druide.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Even a tree falls. At least nobody charged for the sound.",
+  "nn": "Sjølv eit tre fell. I det minste tok ingen betalt for lyden.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Lifebloom bloomed out. Flowers sold at my stall.",
+  "nn": "Livsblomen visna. Blomar til sals i boda mi.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Swiftmend wasn’t swift enough.",
+  "nn": "Snøggbøting var ikkje snøgg nok.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Turned into compost. Very eco-friendly.",
+  "nn": "Vart kompost. Svært miljøvenleg.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Prowling cat, pouncing enemy. Bad deal.",
+  "nn": "Lurande katt, åtakande fiende. Dårleg handel.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Moonfire everywhere and still in the dark.",
+  "nn": "Måneeld overalt og likevel i mørkret.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Wild growth, wild ending.",
+  "nn": "Vill vekst, vill slutt.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Nature is free. Resurrections aren’t.",
+  "nn": "Naturen er gratis. Gjenopplivingar er ikkje det.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The forest mourns. My shop sells tissues.",
+  "nn": "Skogen sørgjer. Butikken min sel lommetørkle.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Flight form to the spirit healer. Very scenic.",
+  "nn": "Flygeham til åndelækjaren. Svært naturskjønt.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Your feral side should’ve read the danger signs.",
+  "nn": "Den ville sida di skulle ha lese fareskilta.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Ironbark? More like paper bark.",
+  "nn": "Jernbark? Meir som papirbark.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Druids should know: everything dies. Except my prices.",
+  "nn": "Druidar burde vite: alt døyr. Bortsett frå prisane mine.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Living flame, not-so-living evoker.",
+  "nn": "Levande flamme, ikkje så levande evoker.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Rewind didn’t rewind far enough.",
+  "nn": "Tilbakespolinga spola ikkje langt nok.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Deep breath, then no breath. Respiratory insurance?",
+  "nn": "Djupt pust, så inkje pust. Pusteforsikring?",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Obsidian scales chipped. Polish costs extra.",
+  "nn": "Obsidianskjel avskala. Puss kostar ekstra.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Dragonrage met human rage. Or orc. Whatever. You lost.",
+  "nn": "Drakeraseri møtte anna raseri. Same kva. Du tapte.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Emerald blossom wilted. Gardening tips, two silver.",
+  "nn": "Smaragdblomen visna. Hagetips, to sølv.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Even scaled hide needs a warranty.",
+  "nn": "Sjølv skjelhud treng garanti.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "A dragon on the floor. Rare sight. Sell tickets?",
+  "nn": "Ein drake på golvet. Sjeldan syn. Selje billettar?",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Hover was on. The ground still won.",
+  "nn": "Svevinga var på. Bakken vann likevel.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Fire breath out, life out. Timing matters.",
+  "nn": "Eldpust ut, liv ut. Timing betyr noko.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Time dilation couldn’t stretch your luck.",
+  "nn": "Tidsutviding kunne ikkje strekkje flaksen din.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Dream breath, nightmare ending.",
+  "nn": "Draumepust, marerittslutt.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Your wings deserve better maintenance. I’m available.",
+  "nn": "Vengene dine fortener betre vedlikehald. Eg er ledig.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Ancient magic, modern repair bill.",
+  "nn": "Gammal magi, moderne reparasjonsrekning.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Disintegrate, then disintegrated.",
+  "nn": "Oppløyse, så oppløyst.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Dragons hoard treasure. You hoarded damage.",
+  "nn": "Drakar hamstrar skattar. Du hamstra skade.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Soar high, fall hard. Classic market curve.",
+  "nn": "Sveve høgt, falle hardt. Klassisk marknadskurve.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Verdant embrace hugged the wrong target.",
+  "nn": "Den grøne omfamninga klemde feil mål.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Should’ve used your wings to fly to my potion shop.",
+  "nn": "Du burde ha brukt vengene til å fly til eliksirbutikken min.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Even timeless dragons run out of time.",
+  "nn": "Sjølv tidlause drakar går tom for tid.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Multi-shot, multi-mistakes.",
+  "nn": "Multiskot, multitabbar.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Your pet is guarding your corpse. Loyal, but unpaid.",
+  "nn": "Kjæledyret ditt vaktar liket ditt. Lojalt, men ubetalt.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Aspect of the cheetah, aspect of the floor.",
+  "nn": "Gepardaspekt, golvaspekt.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Kill command backfired. Bad customer service.",
+  "nn": "Drepekommandoen slo tilbake. Dårleg kundeservice.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Freezing trap froze the wrong person.",
+  "nn": "Frysefella fraus feil person.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Arrows: plenty. Health: none. Supply chain problem.",
+  "nn": "Piler: nok. Helse: inga. Problem i forsyningskjeda.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Hunter’s mark marked you instead.",
+  "nn": "Jegarmerket merkte deg i staden.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Your bow is fine. You’re not. Funny how that works.",
+  "nn": "Bogen din er fin. Det er ikkje du. Rart korleis det blir.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Should’ve stayed at max range. Max range from danger.",
+  "nn": "Du skulle ha halde maks avstand. Maks avstand frå fare.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Your pet will need a new owner. I’m accepting applications.",
+  "nn": "Kjæledyret ditt treng ny eigar. Eg tek imot søknader.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Turtle aspect? Should’ve stayed in the shell.",
+  "nn": "Skjelpaddeaspekt? Du skulle ha halde deg i skalet.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Explosive shot! Not one of mine. I checked.",
+  "nn": "Eksplosivt skot! Ikkje eitt av mine. Eg sjekka.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Camouflage didn’t fool death. Death has good eyes.",
+  "nn": "Kamuflasjen lurte ikkje døden. Døden ser godt.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Rapid fire, rapid demise.",
+  "nn": "Snøggskyting, snøgg undergang.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Tame beast, untamed outcome.",
+  "nn": "Temja dyr, utemt utfall.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The beast within lost to the beast without.",
+  "nn": "Dyret inni tapte mot dyret utanfor.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Steady focus, unsteady survival.",
+  "nn": "Stø fokus, ustø overleving.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Bring your pet to my shop. Pets get treats. Owners get invoices.",
+  "nn": "Ta med kjæledyret til butikken min. Dyr får godbitar. Eigarar får fakturaer.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Volley! Then volley of bad luck.",
+  "nn": "Salve! Så ei salve med uflaks.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Marksman, meet mark. You were it.",
+  "nn": "Skarpskyttar, møt målet. Det var deg.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Mirror image? The real you was the weak one.",
+  "nn": "Spegelbilete? Den ekte deg var den svake.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Arcane explosion! Who’s cleaning that up? Me, for a fee.",
+  "nn": "Arkan eksplosjon! Kven ryddar opp? Eg, mot betaling.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Pyroblast went boom. So did you.",
+  "nn": "Pyroblasten smalt. Det gjorde du òg.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Frost nova froze them. Then they thawed. Unfortunate.",
+  "nn": "Frostnova fraus dei. Så tina dei. Uheldig.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Slow fall wasn’t slow enough.",
+  "nn": "Sakte fall var ikkje sakte nok.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Counterspell countered nothing. Death has no spells.",
+  "nn": "Motformelen stoppa ingenting. Døden har ingen formlar.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "A portal to the graveyard? Most efficient route yet.",
+  "nn": "Ein portal til gravplassen? Den mest effektive ruta til no.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Combustion! Literal this time.",
+  "nn": "Forbrenning! Bokstaveleg denne gongen.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Mana gems are no substitute for life insurance.",
+  "nn": "Manasteinar erstattar ikkje livsforsikring.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Time warp? Can’t warp back from this one.",
+  "nn": "Tidskrumming? Den kan du ikkje krumme deg ut av.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "So many books and not one on staying alive. I sell one.",
+  "nn": "Så mange bøker og ikkje éi om å overleve. Eg sel éi.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Frozen orb rolled away. So did your life.",
+  "nn": "Frosne kula rulla vekk. Det gjorde livet ditt òg.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Invisibility on cooldown? Now you’re a ghost. Same effect.",
+  "nn": "Usynlegheit på nedkøyring? No er du spøkjelse. Same verknad.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Prismatic barrier, prismatic disaster.",
+  "nn": "Prismatisk barriere, prismatisk katastrofe.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Robes look lovely. They block nothing. Classic fashion trap.",
+  "nn": "Kappene ser fine ut. Dei stoppar ingenting. Klassisk motefelle.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Smartest one in the room, flattest one on the floor.",
+  "nn": "Den klokaste i rommet, den flataste på golvet.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Blizzard everywhere and still no cool head.",
+  "nn": "Snøstorm overalt og likevel ikkje kaldt hovud.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Conjure refreshment? Conjure a resurrection next time.",
+  "nn": "Trylle fram forfriskingar? Trylle fram ei oppstoding neste gong.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Spellsteal stole nothing. Death stole you.",
+  "nn": "Formeltjuveriet stal ingenting. Døden stal deg.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Alter time didn’t alter the result.",
+  "nn": "Endre tid endra ikkje resultatet.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Fortifying brew ran dry. Refill on tap at my stall!",
+  "nn": "Styrkebrygget tok slutt. Påfyll på kran i boda mi!",
+  "tag": "MONK"
+ },
+ {
+  "en": "Transcendence went one step too far.",
+  "nn": "Transcendensen gjekk eitt steg for langt.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Fists of fury, face on floor.",
+  "nn": "Raseriknyttnevar, fjeset i golvet.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Renewing mist evaporated.",
+  "nn": "Fornyande tåke fordampa.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Paralysis on them, then on you. Permanent version.",
+  "nn": "Lamming på dei, så på deg. Permanent utgåve.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Spinning crane kick spun you into the graveyard.",
+  "nn": "Snurrande tranespark snurra deg rett til gravplassen.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Zen pilgrimage, now with extra pilgrimage.",
+  "nn": "Zen-pilegrimsferd, no med ekstra pilegrimsferd.",
+  "tag": "MONK"
+ },
+ {
+  "en": "You were one with everything. Including the floor.",
+  "nn": "Du var eitt med alt. Inkludert golvet.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Diffuse magic, concentrated failure.",
+  "nn": "Spreidd magi, konsentrert fiasko.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Keg smash, life smash.",
+  "nn": "Tønneknusing, livsknusing.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Life cocoon popped open a bit too early.",
+  "nn": "Livskokongen sprakk opp litt for tidleg.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Harmony restored. By you leaving. Ouch.",
+  "nn": "Harmoni gjenoppretta. Ved at du gjekk. Au.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Your inner peace is fine. Your outer body isn’t.",
+  "nn": "Den indre freden din er fin. Kroppen din er ikkje det.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Mist healing, misty ending.",
+  "nn": "Tåkelækjing, tåkete slutt.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Should’ve rolled toward my potion stall.",
+  "nn": "Du skulle ha rulla mot eliksirboda mi.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Discipline is great. Health potions are greater.",
+  "nn": "Disiplin er flott. Helseeliksirar er betre.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Blackout kick, literal blackout.",
+  "nn": "Svart spark, bokstaveleg svart.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Martial arts master, mortal arts beginner.",
+  "nn": "Meister i kampsport, nybyrjar i å overleve.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Your brew needed more brewing.",
+  "nn": "Brygget ditt trong meir brygging.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Tiger palm, tiger loss.",
+  "nn": "Tigerhand, tigertap.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Divine shield, divine eviction.",
+  "nn": "Guddommeleg skjold, guddommeleg utkasting.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Avenging wrath avenged nothing.",
+  "nn": "Hemnande vreide hemna ingenting.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Consecrated ground, now consecrated graveyard.",
+  "nn": "Vigsla jord, no vigsla gravplass.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Hammer of justice missed justice.",
+  "nn": "Rettferdsslegga bomma på rettferda.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Your aura glowed. Then it didn’t.",
+  "nn": "Auraen din lyste. Så slokna han.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Blessing of protection? Should’ve blessed yourself.",
+  "nn": "Vernesigning? Du skulle ha velsigna deg sjølv.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Shield of the righteous, body of the fallen.",
+  "nn": "Skjoldet til dei rettferdige, kroppen til dei falne.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Holy light flickered out. Lamp oil for sale!",
+  "nn": "Det heilage lyset blafra ut. Lampeolje til sals!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Divine steed galloped off without you.",
+  "nn": "Den guddommelege hesten galopperte av garde utan deg.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Even crusaders need an emergency fund.",
+  "nn": "Sjølv korsfararar treng eit nødfond.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Your hammer dropped. So did you. Matching set!",
+  "nn": "Hammaren din fall. Det gjorde du òg. Matchande sett!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The Light forgives. My repair shop doesn’t.",
+  "nn": "Lyset tilgir. Verkstaden min gjer det ikkje.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Word of glory, word of oops.",
+  "nn": "Æresord, oi-ord.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Holy power: three. Health: zero. Wrong resource.",
+  "nn": "Heilag kraft: tre. Helse: null. Feil ressurs.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Guardian of ancient kings couldn’t guard you.",
+  "nn": "Vaktaren til dei gamle kongane klarte ikkje vakte deg.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Righteousness doesn’t stop arrows. Shields do. I sell shields.",
+  "nn": "Rettferd stoppar ikkje piler. Skjold gjer. Eg sel skjold.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Beacon of light, beacon of doom.",
+  "nn": "Lysfyr, undergangsfyr.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "That armor’s dented. Shiny dents, at least.",
+  "nn": "Den rustninga er bulkete. Blanke bulkar, i det minste.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Crusader strike struck back.",
+  "nn": "Korsfararslaget slo tilbake.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "So holy, so heavy, so horizontal.",
+  "nn": "Så heilag, så tung, så vassrett.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Guardian spirit went on break.",
+  "nn": "Vernånda tok pause.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Psychic scream scared everyone but death.",
+  "nn": "Psykisk skrik skremde alle utanom døden.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Prayer of mending couldn’t mend this.",
+  "nn": "Lækjebøna kunne ikkje lækje dette.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Leap of faith, faceplant of reality.",
+  "nn": "Trusprang, røyndomsplask.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Holy nova, holy no.",
+  "nn": "Heilag nova, heilag nei.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Void form, void life.",
+  "nn": "Tomromsform, tomt liv.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Renew couldn’t renew your lease on life.",
+  "nn": "Fornying kunne ikkje fornye leigekontrakten din på livet.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Divine hymn, final hymn.",
+  "nn": "Guddommeleg salme, siste salme.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Pain suppression suppressed nothing.",
+  "nn": "Smertedemping dempa ingenting.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Fade? You faded all the way.",
+  "nn": "Blekne? Du bleikna heilt bort.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Mass resurrection would be handy now. Not cheap, though.",
+  "nn": "Masseoppstoding hadde vore nyttig no. Ikkje billeg, rett nok.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "So much healing for others. Selfish healing next time!",
+  "nn": "Så mykje lækjing for andre. Eigenlækjing neste gong!",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Shadow word: pain. Received in full.",
+  "nn": "Skuggeord: smerte. Motteke i sin heilskap.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Holy word: serenity. Now very serene. Too serene.",
+  "nn": "Heilag ord: ro. No svært roleg. For roleg.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Atonement owed. Payable to the spirit healer.",
+  "nn": "Soning skuldig. Betalast til åndelækjaren.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Mind control? Couldn’t control the outcome.",
+  "nn": "Sinnskontroll? Klarte ikkje kontrollere utfallet.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The healer is down! Everyone panic and buy potions.",
+  "nn": "Lækjaren er nede! Alle får panikk og kjøper eliksirar.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Robes and righteousness. Neither stops a boss.",
+  "nn": "Kappe og rettferd. Ingen av dei stoppar ein boss.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Dispel cleared everything except death.",
+  "nn": "Fjerninga fjerna alt bortsett frå døden.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Your flock will miss you. Briefly. Rez fast!",
+  "nn": "Flokken din kjem til å sakne deg. Kort. Bli vekt opp fort!",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Sprint to safety failed. Safety moved.",
+  "nn": "Spurten til tryggleik feila. Tryggleiken flytta seg.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Smoke bomb! Only the smoke survived.",
+  "nn": "Røykbombe! Berre røyken overlevde.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Kidney shot? Your kidneys say thanks for the break.",
+  "nn": "Nyreslag? Nyrene dine takkar for pausen.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Sap, then sapped.",
+  "nn": "Slag i bakhovudet, så slått ut.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Blade flurry, blood flurry.",
+  "nn": "Bladkvervel, blodkvervel.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Combo points full, life bar empty.",
+  "nn": "Kombopoeng fulle, livsbar tom.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Shadowstep straight into a wall of pain.",
+  "nn": "Skuggesteg rett inn i ein vegg av smerte.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "You picked locks, death picked you.",
+  "nn": "Du dirka opp låsar, døden plukka deg.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Garrote, guarantee... no, no guarantee.",
+  "nn": "Garrote, garanti ... nei, ingen garanti.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Feint failed. Death was real.",
+  "nn": "Fintet feila. Døden var ekte.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Daggers sharp, plan dull.",
+  "nn": "Dolkar skarpe, plan sløv.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Slice and dice, sliced and diced.",
+  "nn": "Skjere og terne, skoren og terna.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Stealth is free. Getting caught costs everything.",
+  "nn": "Sniking er gratis. Å bli tatt kostar alt.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Crimson vial emptied. Refills at my counter!",
+  "nn": "Den raude flaska tom. Påfyll ved disken min!",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The shadows didn’t cover the medical bill.",
+  "nn": "Skuggane dekte ikkje legerekninga.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Gouged them, got gouged. Fair market.",
+  "nn": "Stakk dei i auga, vart stukken. Rettferdig marknad.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "You pickpocketed death? Death charged interest.",
+  "nn": "Du rana døden? Døden kravde renter.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Ambush ambushed.",
+  "nn": "Bakhaldet kom i bakhald.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Even thieves get robbed sometimes. Of life.",
+  "nn": "Sjølv tjuvar blir rana somme tider. For livet.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Shadow dance, final dance.",
+  "nn": "Skuggedans, siste dans.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Healing surge, healing purge.",
+  "nn": "Lækjestøyt, lækjestopp.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Chain lightning chained you to the floor.",
+  "nn": "Kjedelyn lenkja deg til golvet.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Spirit walk walked you right to the graveyard.",
+  "nn": "Åndevandringa vandra rett til gravplassen.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Hex turned them into a frog. Then the frog won.",
+  "nn": "Forhekseinga gjorde dei til frosk. Så vann frosken.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Lava burst, life burst.",
+  "nn": "Lavautbrot, livsutbrot.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Windfury, windfail.",
+  "nn": "Vindraseri, vindfiasko.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Your totems are still standing. Unlike you.",
+  "nn": "Totemane dine står framleis. I motsetnad til deg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Astral shift shifted the wrong way.",
+  "nn": "Astralforskyvinga forskauv seg feil veg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Earthquake shook loose your last hit point.",
+  "nn": "Jordskjelvet rista laus det siste livspoenget ditt.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Stormkeeper kept the storm. Not you.",
+  "nn": "Stormvaktaren heldt på stormen. Ikkje på deg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Purge removed buffs. And you.",
+  "nn": "Reinsinga fjerna buffar. Og deg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Totem recall? Recall your life next time.",
+  "nn": "Totemretur? Kall tilbake livet ditt neste gong.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Fire elemental left without saying goodbye.",
+  "nn": "Eldelementalen gjekk utan å seie farvel.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The spirits whispered danger. You didn’t listen.",
+  "nn": "Åndene kviskra om fare. Du lytta ikkje.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Earth, wind, fire, water... and now dirt.",
+  "nn": "Jord, vind, eld, vatn ... og no mold.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Spirit link linked you to bad luck.",
+  "nn": "Åndelenkja lenkja deg til uflaks.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Thunderstorm knocked back everyone except death.",
+  "nn": "Tordenvêret dytta vekk alle bortsett frå døden.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Riptide swept you out to sea. Permanently-ish.",
+  "nn": "Strømmen tok deg til havs. Nesten for godt.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Ancestors called. You answered a bit too literally.",
+  "nn": "Forfedrane ringde. Du svara litt for bokstaveleg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Elemental mastery, mortal mishap.",
+  "nn": "Elementært meisterskap, dødeleg uhell.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Unending resolve ended.",
+  "nn": "Endelaus vilje tok slutt.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Fear sent them running. Then they came back.",
+  "nn": "Frykta fekk dei til å springe. Så kom dei tilbake.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Chaos bolt, chaos result.",
+  "nn": "Kaosbolt, kaosresultat.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Drain life drained the wrong way.",
+  "nn": "Livstapping tappa feil veg.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Your imp is laughing. Imps are bad employees.",
+  "nn": "Imp-en din ler. Imp-ar er dårlege tilsette.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Demonic circle led back to... the graveyard.",
+  "nn": "Demonisk sirkel førte tilbake til ... gravplassen.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Corruption spread. Your health didn’t.",
+  "nn": "Korrupsjonen spreidde seg. Det gjorde ikkje helsa di.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Should’ve read the infernal contract’s fine print.",
+  "nn": "Du skulle ha lese småskrifta i den infernalske kontrakten.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Summon a doomguard? You summoned doom.",
+  "nn": "Påkalle ein undergangsvakt? Du påkalla undergang.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Rain of fire, rain of failure.",
+  "nn": "Eldregn, fiaskoregn.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Your voidwalker walked into the void. You followed.",
+  "nn": "Tomromsvandraren din gjekk inn i tomrommet. Du fylgde etter.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Shadowfury, shadow-fail.",
+  "nn": "Skuggeraseri, skuggefiasko.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Dark magic is expensive. You just paid.",
+  "nn": "Mørk magi er dyr. Du har nett betalt.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Even a soul collector loses one sometimes. Yours.",
+  "nn": "Sjølv ein sjelesamlar mistar ei somme tider. Di.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Agony delivered. Agony received.",
+  "nn": "Kvalar levert. Kvalar mottekne.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Banish? You got banished. To the graveyard.",
+  "nn": "Forvise? Du vart forvist. Til gravplassen.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Healthstones: delicious and insufficient.",
+  "nn": "Helsesteinar: smakfulle og utilstrekkelege.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Your felhunter sniffed out danger. You ignored it.",
+  "nn": "Felhunden snusa opp faren. Du oversåg han.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Demonic pacts have terrible cancellation policies.",
+  "nn": "Demoniske pakter har elendige oppseiingsvilkår.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Shadow bolt, shadow of a doubt, shadow of a corpse.",
+  "nn": "Skuggebolt, skugge av tvil, skugge av eit lik.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Mortal strike reminded you you’re mortal.",
+  "nn": "Det dødelege slaget minte deg på at du er dødeleg.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Whirlwind spun you right into the ground.",
+  "nn": "Kvervelvinden snurra deg rett i bakken.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Spell reflection didn’t reflect on consequences.",
+  "nn": "Formelrefleksjonen reflekterte ikkje over følgjene.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Enraged regeneration couldn’t regenerate fast enough.",
+  "nn": "Rasande regenerering regenererte ikkje fort nok.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Taunt worked. A little too well.",
+  "nn": "Utfordringa verka. Litt for godt.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Shield slam slammed back.",
+  "nn": "Skjoldsmellet smalt tilbake.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Rallying cry, falling sigh.",
+  "nn": "Samlingsrop, fallande sukk.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Intervene intervened with the floor.",
+  "nn": "Inngripinga greip inn i golvet.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Thunder clap, thunder flop.",
+  "nn": "Tordenklapp, tordenflopp.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Rampage ended in a nap. A long one.",
+  "nn": "Herjinga enda i ein lur. Ein lang ein.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Overpower overpowered by everything.",
+  "nn": "Overmakt overmanna av alt.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Ignore pain? Pain didn’t ignore you.",
+  "nn": "Ignorere smerte? Smerta ignorerte ikkje deg.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Recklessness lived up to its name.",
+  "nn": "Hensynsløysa levde opp til namnet.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Sweeping strikes swept you away.",
+  "nn": "Feiande slag feia deg vekk.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Pummel, then pummelled.",
+  "nn": "Bank, så banka.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Commanding shout couldn’t command death.",
+  "nn": "Kommandoropet kunne ikkje kommandere døden.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Avatar mode, ghost mode.",
+  "nn": "Avatarmodus, spøkjelsesmodus.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "A warrior’s rage is free. Their resurrection isn’t.",
+  "nn": "Raseriet til ein krigar er gratis. Oppstoda er ikkje det.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Two-handed weapon, zero-handed survival.",
+  "nn": "Tohandsvåpen, nullhandsoverleving.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Hamstring them next time, not yourself.",
+  "nn": "Skjer over hasene på dei neste gong, ikkje på deg sjølv.",
+  "tag": "WARRIOR"
+ }
+]

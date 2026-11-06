@@ -734,6 +734,16 @@ SlashCmdList.WOWSTATUS = function(message)
         else
             say("Use /wstatus language nn for Nynorsk or /wstatus language en for English.")
         end
+    elseif command == "personality" then
+        -- Caption personality: /wstatus personality <name> (either language), or the list.
+        local P = WoWStatusPersonalities
+        local id = (rest or "") ~= "" and P.find(rest)
+        if id then
+            P.set(id)
+            say(T("Caption personality:") .. " " .. P.name(id) .. ".")
+        else
+            say(T("Caption personalities:") .. " " .. P.names() .. ". " .. T("Use /wstatus personality <name>."))
+        end
     elseif command == "debug" then
         local value = rest:lower()
         if value == "on" or value == "off" then
