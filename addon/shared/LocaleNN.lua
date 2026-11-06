@@ -201,7 +201,16 @@ W.add({
     ["Use /wstatus language nn for Nynorsk or /wstatus language en for English."] =
         "Bruk /wstatus language nn for nynorsk eller /wstatus language en for engelsk.",
     -- Notifications
-    ["Congrats!"] = "Gratulerer!", ["Welcome!"] = "Velkomen!", ["You whispered"] = "Du kviskra",
+    ["Congrats!"] = "Gratulerer!",
+    ["Congrats on the new gear!"] = "Gratulerer med det nye utstyret!",
+    ["Congrats on all those quests!"] = "Gratulerer med alle dei oppdraga!",
+    ["Congrats on the new profession rank!"] = "Gratulerer med det nye yrkesnivået!",
+    ["Congrats on the clear!"] = "Gratulerer med sigeren!", ["Congrats on the boss kill!"] = "Gratulerer med bossdrapet!",
+    ["Congrats on the new mount!"] = "Gratulerer med det nye ridedyret!",
+    ["Congrats on the epic mount!"] = "Gratulerer med det episke ridedyret!",
+    ["Congrats on the new reputation!"] = "Gratulerer med det betre omdømet!",
+    ["Congrats on the new ability!"] = "Gratulerer med den nye evna!",
+    ["Congrats on the promotion!"] = "Gratulerer med opprykket!", ["Congrats on the record!"] = "Gratulerer med rekorden!", ["Welcome!"] = "Velkomen!", ["You whispered"] = "Du kviskra",
     -- Records
     ["Firsts in"] = "Rekordar i", ["Join a group to compete for records with your friends."] =
         "Bli med i ei gruppe for å kjempe om rekordar med venene dine.",
@@ -265,6 +274,7 @@ W.add({
     ["LEGENDARY ARMOR EQUIPPED!"] = "LEGENDARISK RUSTNING PÅ!",
 }, {
     {"^Reached level (%d+)!$", "Nådde nivå %1!"},
+    {"^Congrats on level (%d+)!$", "Gratulerer med nivå %1!"},
     {"^reached level (%d+)!(.*)$", function(level, rest)
         return "nådde nivå " .. level .. "!" .. rest:gsub(" %((%d+) recorded level%-ups%)", " (%1 registrerte nivå)")
     end},

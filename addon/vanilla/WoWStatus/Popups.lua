@@ -857,12 +857,19 @@ end
 -- sent only when you click, at most once per notification.
 local POSITIVE = {profession=true, dungeon=true, raid=true, mount=true, epicmount=true, reputation=true,
     unlock=true, pvp=true, quest=true, zone=true, loot=true, first=true}
+-- A congratulation that says what for, whispered as written (or in Nynorsk).
+P.CONGRATS = {loot="Congrats on the new gear!", quest="Congrats on all those quests!",
+    profession="Congrats on the new profession rank!", dungeon="Congrats on the clear!", raid="Congrats on the boss kill!",
+    mount="Congrats on the new mount!", epicmount="Congrats on the epic mount!",
+    reputation="Congrats on the new reputation!", unlock="Congrats on the new ability!",
+    pvp="Congrats on the promotion!", first="Congrats on the record!"}
 function P.reactions(item)
     if type(item) ~= "table" or not S.string(item.sender) then return {} end
     -- Sample previews have nobody to whisper; record notices name a real friend.
     if item.preview and item.key ~= "local-notice" then return {} end
     if P.isSelf(item.sender) or not P.senderKey(item.sender) then return {} end
-    if item.level then return {"GZ!"} end
+    local level = S.number(item.level)
+    if level then return {"GZ!", "Congrats on level " .. level .. "!"} end
     if item.kind == "death" then return {"F", "Git Good"} end
     if item.kind == "introduction" then return {"Welcome!"} end
     if item.kind == "zone" then
@@ -871,7 +878,7 @@ function P.reactions(item)
         if zone and zone ~= "" and #zone <= 48 and not zone:find(S.CONTROL_OR_PIPE) then return {"Enjoy " .. zone .. "!"} end
         return {"Congrats!"}
     end
-    if POSITIVE[item.kind] then return {"Congrats!"} end
+    if POSITIVE[item.kind] then return {P.CONGRATS[item.kind] or "Congrats!"} end
     return {}
 end
 function P.react(item, text)
@@ -885,7 +892,7 @@ end
 -- Reaction buttons sit top right beside the heading. Long ones (the Nynorsk
 -- lines, "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
 -- notification grows to make room.
-local TOAST_HEIGHT, BESIDE_HEADING = 124, 220
+local TOAST_HEIGHT, BESIDE_HEADING = 124, 260
 local function reactionButtons()
     local item = toast.item
     local list = item and not item.reacted and P.reactions(item) or {}

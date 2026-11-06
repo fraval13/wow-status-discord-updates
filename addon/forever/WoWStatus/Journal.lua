@@ -1144,6 +1144,11 @@ function J.reaction(text,sender)
     if not db or not current or not text or not sender or #text>64 or P.isSelf(sender) then return false end
     local kinds,zone=REACTION_KINDS[text],text:match("^Enjoy (.+)!$") or text:match("^Kos deg i (.+)!$")
     if text=="Congrats!" or text=="Gratulerer!" then kinds=POSITIVE end
+    -- "Congrats on the new gear!" and the like, in English or Nynorsk, for that kind only.
+    for kind,congrats in pairs(P.CONGRATS or {}) do
+        if text==congrats or text==WoWStatusLocale.NN[congrats] then kinds={[kind]=true} end
+    end
+    if text:match("^Congrats on level %d+!$") or text:match("^Gratulerer med nivå %d+!$") then kinds={level=true} end
     if zone then kinds={zone=true} end
     if not kinds then return false end
     -- Only group members react through the buttons.

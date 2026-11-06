@@ -15,6 +15,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - The activity log opens on today; a Day button opens a calendar to pick another day or all days
 - Clicking a notification only dismisses it; it no longer opens the activity log
 - In Nynorsk, F and Git Good are long lines too; long reaction buttons get their own row under the text
+- Congrats say what for: "Congrats on the new gear!", "Congrats on level 30!" and more, also in Nynorsk
 
 ## 1.17.0
 

@@ -30,15 +30,16 @@ def test_each_kind_gets_fitting_reactions():
     lua = actor('Thora')
     lua.execute('''
         local function r(item) return table.concat(WoWStatusPopups.reactions(item), "|") end
-        assert(r({sender="Mira-TestRealm", level=10}) == "GZ!")
+        assert(r({sender="Mira-TestRealm", level=10}) == "GZ!|Congrats on level 10!")
         assert(r({sender="Mira-TestRealm", kind="death", text="Died"}) == "F|Git Good")
         assert(r({sender="Mira-TestRealm", kind="zone", text="Entered Stranglethorn Vale"}) == "Enjoy Stranglethorn Vale!")
         for _, kind in ipairs({"profession","dungeon","raid","mount","epicmount","reputation","unlock","pvp","quest","loot"}) do
-            assert(r({sender="Mira-TestRealm", kind=kind}) == "Congrats!", kind)
+            assert(r({sender="Mira-TestRealm", kind=kind}) == WoWStatusPopups.CONGRATS[kind], kind)
         end
+        assert(r({sender="Mira-TestRealm", kind="loot"}) == "Congrats on the new gear!")
         assert(r({sender="Mira-TestRealm", kind="introduction"}) == "Welcome!")
         -- A record notice names a real friend; sample previews and yourself get nothing.
-        assert(r({sender="Mira-TestRealm", kind="first", preview=true, key="local-notice"}) == "Congrats!")
+        assert(r({sender="Mira-TestRealm", kind="first", preview=true, key="local-notice"}) == "Congrats on the record!")
         assert(r({sender="Previewlock", kind="death", preview=true, key="local-preview"}) == "")
         assert(r({sender="Thora-TestRealm", level=10}) == "")
         assert(r({sender="Mira-TestRealm", kind="recap"}) == "")
@@ -67,7 +68,7 @@ def test_a_hovered_notification_stays_until_the_mouse_leaves():
         WoWStatusPopups.tick()
         -- The death notification closed; Mira's "First in the group to die" record follows.
         assert(toast.item ~= death and toast.item.kind == "first")
-        assert(toast.reactions[1].text == "Congrats!")
+        assert(toast.reactions[1].text == "Congrats on the record!")
     ''')
 
 
@@ -199,3 +200,35 @@ def test_long_reactions_get_rows_along_the_bottom():
         button = toast.reactions[i]
         assert button.text == text
         assert button.width == max(86, len(text.encode()) * 6 + 24) and button.width <= 536
+
+
+def test_specific_congrats_link_to_their_own_kind_in_either_language():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        __peers = {"Thora-TestRealm", "Mira-TestRealm", "Bob-TestRealm"}
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+        for _ = 1, 3 do WoWStatusPopups.tick() end
+        fire("PLAYER_LEVEL_UP", 2)
+        fire("CHAT_MSG_WHISPER", "Gratulerer med det nye utstyret!", "Bob-TestRealm")  -- gear: not this level-up
+        fire("CHAT_MSG_WHISPER", "Gratulerer med nivå 2!", "Mira-TestRealm")
+        local own
+        for _, e in ipairs(WoWStatusJournal.entries()) do if e.owner and e.kind == "level" then own = e end end
+        assert(own.reactions["mira-testrealm"].text == "Gratulerer med nivå 2!")
+        assert(not own.reactions["bob-testrealm"])
+        WoWStatusLocale.set("nn")
+        assert(WoWStatusLocale.T("Congrats on level 30!") == "Gratulerer med nivå 30!")
+        assert(WoWStatusLocale.T("Congrats on the new gear!") == "Gratulerer med det nye utstyret!")
+    ''')
+
+
+def test_level_up_buttons_fit_beside_the_heading_in_english():
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    own.eval('fire')('PLAYER_LEVEL_UP', 30)
+    deliver_popup(own, friend)
+    friend.eval('WoWStatusPopups.tick')()
+    toast = friend.eval('WoWStatusLevelPopup')
+    assert [toast.reactions[i].text for i in (1, 2)] == ['GZ!', 'Congrats on level 30!']
+    assert toast.reactionRow == 'top' and toast.height == 124
