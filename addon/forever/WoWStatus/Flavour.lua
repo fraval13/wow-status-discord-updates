@@ -1399,7 +1399,7 @@ local function lookup(text)
     if not reverse then
         reverse={}
         local P=WoWStatusPersonalities
-        for _,id in ipairs(P and P.order or {"classic"}) do
+        for _,id in ipairs(P and P.voices() or {"classic"}) do
             -- Nynorsk too: a caption shown in Nynorsk may have been saved as shown.
             local en,nn=bankSet(id)
             for _,set in ipairs({en,nn or {}}) do
@@ -1428,8 +1428,29 @@ function F.text(item)
         return WoWStatusLocale and WoWStatusLocale.T(item.flavour) or item.flavour
     end
     local kind=category(item)
-    -- New captions use the chosen personality; one without this kind falls back to classic.
-    local personality=WoWStatusPersonalities and WoWStatusPersonalities.current() or "classic"
+    local seed=item.id
+    if not seed and item.nonce then
+        local key=senderKey(item.sender)
+        if key then seed=WoWStatusAdapter.client_id..":"..key..":"..item.nonce end
+    end
+    local stable=seed and not item.preview
+    -- Event identity gives peers the same draw; Safe integer arithmetic in Lua 5.1,
+    -- no global RNG reseeding. Previews and unseeded items draw at random.
+    local function draw(count,salt)
+        if not stable then return math.random(count) end
+        local hash=5381
+        local text=seed..salt
+        for i=1,#text do hash=(hash*131+text:byte(i))%4294967291 end
+        return hash%count+1
+    end
+    -- New captions use the chosen personality. Random picks a voice per event,
+    -- Classic included; a voice without this kind falls back to classic.
+    local P=WoWStatusPersonalities
+    local personality=P and P.current() or "classic"
+    if personality=="random" then
+        local voices=P.voices()
+        personality=voices[draw(#voices,"#voice")]
+    end
     local en=bankSet(personality)
     local pool=choices(item,kind,en[kind])
     if (not pool or #pool==0) and en~=banks then
@@ -1437,18 +1458,9 @@ function F.text(item)
         pool=choices(item,kind,banks[kind])
     end
     if not pool or #pool==0 then return "" end
-    local seed=item.id
-    if not seed and item.nonce then
-        local key=senderKey(item.sender)
-        if key then seed=WoWStatusAdapter.client_id..":"..key..":"..item.nonce end
-    end
     local index
-    if seed and not item.preview then
-        -- Event identity gives peers the same draw from the same available pool.
-        -- Safe integer arithmetic in Lua 5.1; no global RNG reseeding.
-        local hash=5381
-        for i=1,#seed do hash=(hash*131+seed:byte(i))%4294967291 end
-        index=hash%#pool+1
+    if stable then
+        index=draw(#pool,"")
     else
         local recent=personality..":"..kind
         index=math.random(#pool)
@@ -1458,7 +1470,7 @@ function F.text(item)
     local pos=pool[index]
     -- The English text stays saved too, for older versions reading this log.
     item.flavour_kind,item.flavour_pos=kind,pos
-    item.flavour_personality=personality~="classic" and personality or nil
+    item.flavour_personality=en~=banks and personality or nil
     item.flavour=(en[kind][pos]:gsub("^%[[A-Z]+%] ",""))
     return line(kind,pos,item.flavour_personality)
 end

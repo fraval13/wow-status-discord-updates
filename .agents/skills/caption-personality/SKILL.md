@@ -26,8 +26,8 @@ untouched here.
 4. **Load it.** Add `Flavour<Name>.lua` to each edition's `WoWStatus.toc` after
    the other `Flavour*.lua` personality files, in `PERSONALITIES` order, and to
    `PERSONALITY_FILES` in `tests/test_addon.py` in the same order. Raise the
-   personality count in `tests/test_personalities.py` (`#P.order`, and the
-   number of clicks that cycles back to Classic).
+   personality count in `tests/test_personalities.py` (`#P.order`, `#P.voices()`, the
+   number of clicks that cycles back to Random, and the voice count in the Random test).
 5. **Document it.** Add a row to the table in `docs/caption-personalities/README.md`,
    name it in the README "Caption personalities" section, and add a player-facing
    note under `## Unreleased` in `CHANGELOG.md` (one line, at most 120 characters).

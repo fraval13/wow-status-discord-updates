@@ -64,14 +64,15 @@ and the release notes stay English.
 
 ## Caption personalities
 
-The funny line under each notification comes from the **Classic** captions by
-default. Under **Notifications → Next personality**, or with
-`/wstatus personality <name>`, you can pick another voice: Wholesome, Epic bard,
-Grumpy veteran, Goblin merchant, Christian, Condescending Christian, Dwarf, Jealous friend or
-Drama queen. Each has 300 captions per
-event, plus 30 death roasts for each class, in English and Nynorsk. The choice is yours alone (friends can pick their
-own), applies to new notifications, and captions already in your log keep their
-wording. See `docs/caption-personalities/README.md` to edit or add one.
+The funny line under each notification comes from a **Random** personality by
+default: each notification picks one of the voices below, Classic included. Under
+**Notifications → Next personality**, or with `/wstatus personality <name>`, you can
+stick to one voice instead: Classic, Wholesome, Epic bard, Grumpy veteran, Goblin
+merchant, Christian, Condescending Christian, Dwarf, Jealous friend or Drama queen.
+Each has 300 captions per event, plus 30 death roasts for each class, in English and
+Nynorsk. The choice is yours alone (friends can pick their own), applies to new
+notifications, and captions already in your log keep their wording. See
+`docs/caption-personalities/README.md` to edit or add one.
 
 ## Announcements
 

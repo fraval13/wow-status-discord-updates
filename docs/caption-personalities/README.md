@@ -6,8 +6,11 @@ Next personality**, or with `/wstatus personality <name>` (English or Nynorsk
 name). The choice is account-wide and presentation only: nothing about it is sent
 to other players, so friends can each use a different personality.
 
-**Classic** is the original bank (`docs/notification-flavour-text.md`,
-`Flavour.lua`, `FlavourNN.lua`) and stays the default.
+**Random** (`random`, Nynorsk *Tilfeldig*) is the default and has no captions
+of its own: each new caption picks one of the voices below, Classic included,
+from the event's identity, so friends and reloads see the same voice for the
+same event. **Classic** is the original bank (`docs/notification-flavour-text.md`,
+`Flavour.lua`, `FlavourNN.lua`).
 
 | Id | English | Nynorsk | Voice |
 |---|---|---|---|
@@ -52,7 +55,8 @@ each edition's TOC after `FlavourNN.lua` and to `PERSONALITY_FILES` in
 
 ## How captions are chosen
 
-A new notification draws from the current personality's bank, with the same
+A new notification draws from the current personality's bank (under Random,
+from a voice picked per event), with the same
 event-identity seed as Classic. The chosen line's personality, category and
 position are saved with it, so a caption never changes when the player later
 picks another personality; it only follows the language setting. Log entries that

@@ -69,8 +69,9 @@ def test_every_personality_has_paired_banks_of_300_and_30_deaths_per_class():
     lua = make_lua()
     lua.execute('''
         local P=WoWStatusPersonalities
-        assert(#P.order==10 and P.order[1]=="classic" and P.current()=="classic")
-        for i=2,#P.order do
+        assert(#P.order==11 and P.order[1]=="random" and P.order[2]=="classic" and P.current()=="random")
+        assert(#P.voices()==10 and P.voices()[1]=="classic" and not P.banks("random") and not P.banks("classic"))
+        for i=3,#P.order do
             local en,nn=P.banks(P.order[i])
             local count=0
             for kind,bank in pairs(en) do
@@ -106,7 +107,7 @@ def test_new_captions_use_the_chosen_personality_and_keep_it():
         assert(item.flavour==caption)
         -- A saved caption keeps its personality after the choice changes, and follows the language.
         P.set("classic")
-        assert(WoWStatusDB.personality==nil and F.text(item)==caption)
+        assert(WoWStatusDB.personality=="classic" and F.text(item)==caption)
         WoWStatusLocale.set("nn")
         assert(F.text(item)==strip(nn.level[item.flavour_pos]))
         -- A log entry keeps only the text: it is found again, in either language.
@@ -121,9 +122,10 @@ def test_new_captions_use_the_chosen_personality_and_keep_it():
         local classic={kind="level",level=20,id="classic-era:eldrin-testrealm:1-1"}
         F.text(classic)
         assert(classic.flavour_personality==nil and WoWStatusFlavour.banks.level[classic.flavour_pos]==classic.flavour)
-        -- An unknown saved choice falls back to classic.
+        -- Random is the default, saved as no choice; an unknown saved choice falls back to it.
+        assert(P.set("random") and WoWStatusDB.personality==nil and P.current()=="random")
         WoWStatusDB.personality="pirate"
-        assert(P.current()=="classic" and not P.set("pirate"))
+        assert(P.current()=="random" and not P.set("pirate"))
     ''')
 
 
@@ -158,12 +160,14 @@ def test_settings_button_cycles_and_previews_and_the_command_switches():
         local P=WoWStatusPersonalities
         WoWStatusPreviews.show()
         local panel=WoWStatusNotificationPreviews
-        assert(panel.personality.text=="Caption personality: Classic")
+        assert(panel.personality.text=="Caption personality: Random")
+        panel.personalityNext.OnClick(panel.personalityNext)
+        assert(P.current()=="classic" and panel.personality.text=="Caption personality: Classic")
         panel.personalityNext.OnClick(panel.personalityNext)
         assert(P.current()=="wholesome" and panel.personality.text=="Caption personality: Wholesome")
         assert(WoWStatusLevelPopup.detail.visible and #WoWStatusDB.journal.entries==0 and #__sent==0)
         for i=1,9 do panel.personalityNext.OnClick(panel.personalityNext) end
-        assert(P.current()=="classic")
+        assert(P.current()=="random")
         local said
         DEFAULT_CHAT_FRAME.AddMessage=function(_,message) said=message end
         SlashCmdList.WOWSTATUS("personality epic bard")
@@ -186,3 +190,34 @@ def test_the_agent_skill_is_mirrored_for_claude():
     assert names == sorted(path.name for path in mirror.iterdir()) and 'SKILL.md' in names
     for name in names:
         assert (mirror / name).read_bytes() == (source / name).read_bytes(), name
+
+
+def test_random_is_the_default_and_mixes_every_voice_per_event():
+    lua = make_lua()
+    lua.execute('''
+        local F,P=WoWStatusFlavour,WoWStatusPersonalities
+        assert(P.current()=="random")
+        local seen,classic={},0
+        for i=1,400 do
+            local id="forever:eldrin-testrealm:"..i
+            local item={kind="level",level=10,id=id}
+            local caption=F.text(item)
+            local voice=item.flavour_personality or "classic"
+            seen[voice]=true
+            if voice=="classic" then classic=classic+1 end
+            -- The same event draws the same voice and line again (peers, reloads).
+            local again={kind="level",level=10,id=id}
+            assert(F.text(again)==caption and (again.flavour_personality or "classic")==voice)
+            -- The saved caption keeps its voice when the choice changes.
+            P.set("dwarf");assert(F.text(item)==caption);P.set("random")
+        end
+        local voices=0
+        for _ in pairs(seen) do voices=voices+1 end
+        assert(voices==10 and classic>0, voices)
+        -- Previews draw a fresh voice and line each time.
+        local captions={}
+        for i=1,30 do captions[F.text({kind="level",level=10,preview=true})]=true end
+        local count=0
+        for _ in pairs(captions) do count=count+1 end
+        assert(count>20)
+    ''')

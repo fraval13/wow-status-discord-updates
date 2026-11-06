@@ -2,17 +2,20 @@
 -- notification. "classic" is the original bank in Flavour.lua/FlavourNN.lua;
 -- every other personality is a FlavourXxx.lua file, generated from
 -- docs/caption-personalities/<id>/*.json by scripts/build_personalities.py.
+-- "random" (the default) is no bank of its own: each new caption picks one of
+-- the other voices, Classic included, from the event's identity.
 -- The choice is account-wide (WoWStatusDB.personality) and presentation only:
 -- nothing about it is sent to other players, so friends may each pick their own.
 WoWStatusPersonalities = {}
 local P = WoWStatusPersonalities
-P.order = {"classic"}
-P.defs = {classic = {name = "Classic", nn_name = "Klassisk"}}
+P.DEFAULT = "random"
+P.order = {"random", "classic"}
+P.defs = {random = {name = "Random", nn_name = "Tilfeldig"}, classic = {name = "Classic", nn_name = "Klassisk"}}
 
 -- A FlavourXxx.lua file adds its banks: en/nn = {kind = {lines…}}, nn line i
 -- translating en line i. Death lines keep their "[CLASS] " tags.
 function P.register(id, def)
-    if type(id) ~= "string" or id == "classic" or type(def) ~= "table" or P.defs[id] then return end
+    if type(id) ~= "string" or type(def) ~= "table" or P.defs[id] then return end
     if type(def.en) ~= "table" then return end
     P.defs[id] = def
     table.insert(P.order, id)
@@ -24,12 +27,12 @@ end
 
 function P.current()
     local value = type(WoWStatusDB) == "table" and WoWStatusDB.personality
-    return P.valid(value) and value or "classic"
+    return P.valid(value) and value or P.DEFAULT
 end
 
 function P.set(id)
     if not P.valid(id) or type(WoWStatusDB) ~= "table" then return false end
-    WoWStatusDB.personality = id ~= "classic" and id or nil
+    WoWStatusDB.personality = id ~= P.DEFAULT and id or nil
     return true
 end
 
@@ -66,11 +69,21 @@ function P.names()
     return table.concat(list, ", ")
 end
 
--- English and Nynorsk banks for one personality (nil for classic: Flavour.lua owns those).
+-- English and Nynorsk banks for one personality (nil for classic, whose banks
+-- Flavour.lua owns, and for random, which has none).
 function P.banks(id)
-    local def = id ~= "classic" and P.defs[id]
-    if not def then return nil end
+    local def = P.defs[id]
+    if not def or not def.en then return nil end
     return def.en, def.nn
+end
+
+-- The voices "random" draws from: every personality with captions, Classic included.
+function P.voices()
+    local list = {}
+    for _, id in ipairs(P.order) do
+        if id ~= "random" then table.insert(list, id) end
+    end
+    return list
 end
 
 function P.label()

@@ -38,6 +38,7 @@ def test_nynorsk_translates_facts_recaps_and_titles():
 def test_captions_follow_the_language_and_keep_their_line():
     lua = make_lua()
     lua.execute('''
+        WoWStatusPersonalities.set("classic")  -- these check the Classic banks; Random is the default
         local item = {id = "x:1", kind = "death", text = "Died", sender = "Mira-TestRealm"}
         local english = WoWStatusFlavour.text(item)
         assert(item.flavour_kind == "death" and item.flavour == english)
