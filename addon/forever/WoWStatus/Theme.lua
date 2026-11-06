@@ -332,7 +332,7 @@ function UI.calendar(owner, selected, today, counts, onPick)
     cal.owner, cal.selected, cal.todayKey, cal.counts, cal.onPick = owner, selected, today, counts or {}, onPick
     cal.today:SetText(tr("Today")); cal.all:SetText(tr("All days"))
     cal.render()
-    cal:ClearAllPoints(); cal:SetPoint("BOTTOMLEFT", owner, "TOPLEFT", 0, 4)
+    cal:ClearAllPoints(); cal:SetPoint("BOTTOMRIGHT", owner, "TOPRIGHT", 0, 4) -- Inside the window: the button is at its right edge.
     cal:Show()
     return cal
 end
