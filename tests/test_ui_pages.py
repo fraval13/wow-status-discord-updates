@@ -254,3 +254,13 @@ def test_day_button_names_the_day_in_either_language():
         WoWStatusJournal.show()
         assert(WoWStatusActivityLog.dayButton.text == "I dag")
     ''')
+
+
+def test_log_card_lines_end_with_dots_instead_of_wrapping():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        WoWStatusJournal.show()
+        local row = WoWStatusActivityLog.rows[1]
+        for _, key in ipairs({"heading", "message", "flavour", "detail"}) do assert(row[key].oneLine, key) end
+    ''')

@@ -893,6 +893,15 @@ end
 local function label(parent,font,x,y,width)
     local f=parent:CreateFontString(nil,"OVERLAY",font);f:SetPoint("TOPLEFT",x,y);f:SetWidth(width);f:SetJustifyH("LEFT");return f
 end
+-- One line; the game ends a text that does not fit with "..." (the card's
+-- tooltip has it in full) instead of wrapping it.
+local function oneLine(f)
+    f:SetWordWrap(false)
+    if f.SetNonSpaceWrap then f:SetNonSpaceWrap(false) end
+    if f.SetMaxLines then f:SetMaxLines(1) end
+    f.oneLine=true
+    return f
+end
 -- The tour (#64) shows sample entries instead of the real log, display only.
 function J.displayEntries()
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
@@ -1079,8 +1088,8 @@ local function build(parent)
         local row=WoWStatusUI.box(panel.child,680,124)
         row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT",4,-4);row.accent:SetSize(672,2)
         row.iconFrame=WoWStatusUI.icon(row,60);row.iconFrame:SetPoint("TOPLEFT",12,-20);row.icon=row.iconFrame.texture
-        row.heading=label(row,"GameFontNormalLarge",88,-12,570)
-        row.message=label(row,"GameFontHighlightLarge",88,-36,570);row.message:SetHeight(42)
+        row.heading=oneLine(label(row,"GameFontNormalLarge",88,-12,570))
+        row.message=oneLine(label(row,"GameFontHighlightLarge",88,-40,570));row.message:SetHeight(22)
         row:EnableMouse(true)
         row:SetScript("OnEnter",function(self)
             -- Armor: the item's own tooltip, with who equipped it.
@@ -1089,13 +1098,15 @@ local function build(parent)
                 GameTooltip:Show()
             elseif GameTooltip and self.entry then
                 GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
-                GameTooltip:AddLine(self.entry.text,1,1,1,true)
+                GameTooltip:AddLine(J.deathText(self.entry),1,1,1,true) -- In full: the card may cut it off.
+                local caption=WoWStatusFlavour.text(self.entry)
+                if caption and caption~="" then GameTooltip:AddLine(caption,.8,.8,.8,true) end
                 GameTooltip:AddLine(T("Event ID:").." "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
             end
         end)
         row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
-        row.flavour=label(row,"GameFontHighlightSmall",88,-80,570)
-        row.detail=label(row,"GameFontHighlightSmall",88,-102,570)
+        row.flavour=oneLine(label(row,"GameFontHighlightSmall",88,-74,570))
+        row.detail=oneLine(label(row,"GameFontHighlightSmall",88,-98,570))
         panel.rows[i]=row
     end
     local waited=0
