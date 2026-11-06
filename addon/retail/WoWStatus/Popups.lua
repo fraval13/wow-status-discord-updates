@@ -930,7 +930,11 @@ reactionButtons = function()
                 if guarded() then return end
                 local shown = toast.item
                 if shown and P.react(shown, self.reaction) then
-                    toast.detail:SetText(T("You whispered") .. " “" .. T(self.reaction) .. "”"); toast.detail:Show()
+                    -- Reacted: the notification closes (the log card notes the whisper).
+                    if GameTooltip and GameTooltip.GetOwner and GameTooltip:GetOwner() == toast then GameTooltip:Hide() end
+                    toast:Hide(); active = nil
+                    lastDisplay = time() - 7 -- The next one follows on the next tick.
+                    return
                 end
                 reactionButtons()
             end)

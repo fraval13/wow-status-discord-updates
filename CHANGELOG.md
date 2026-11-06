@@ -14,6 +14,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 - Clicks in the first 1.5 seconds of a notification are ignored, so a stray click cannot dismiss it
 - Missed the reaction buttons? A friend's log card offers them for a minute after the notification
+- Clicking a reaction button sends it and closes the notification
 
 ## 1.18.0
 

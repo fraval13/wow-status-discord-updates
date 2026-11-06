@@ -18,11 +18,11 @@ def test_level_up_offers_gz_and_whispers_it_once():
         WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
         assert(toast:IsShown() and toast.reactions[1]:IsShown() and toast.reactions[1].text == "GZ!")
+        local item = toast.item
         toast.reactions[1].OnClick(toast.reactions[1])
-        assert(not toast.reactions[1]:IsShown())
-        assert(toast.detail.text:find("GZ!", 1, true))
-        -- A second click is not possible, and a direct second reaction is refused.
-        assert(not WoWStatusPopups.react(toast.item, "GZ!"))
+        -- Reacting closes the notification; a second reaction is refused.
+        assert(not toast:IsShown())
+        assert(not WoWStatusPopups.react(item, "GZ!"))
     ''')
     assert sent_whispers(friend) == [('GZ!', 'Mira-TestRealm')]
 
@@ -254,10 +254,8 @@ def test_clicks_in_the_first_moments_are_ignored():
         toast.reactions[1].OnClick(toast.reactions[1])
         toast.OnMouseUp(toast, "LeftButton")
         assert(toast:IsShown() and toast.reactions[1]:IsShown())
-        __mono = 11.6 -- after 1.5 seconds clicks count
+        __mono = 11.6 -- after 1.5 seconds clicks count: the reaction is sent and it closes
         toast.reactions[1].OnClick(toast.reactions[1])
-        assert(not toast.reactions[1]:IsShown())
-        toast.OnMouseUp(toast, "LeftButton")
         assert(not toast:IsShown())
     ''')
     assert sent_whispers(friend) == [('GZ!', 'Mira-TestRealm')]
@@ -323,4 +321,23 @@ def test_caught_up_entries_have_no_reaction_buttons():
         local row = WoWStatusActivityLog.rows[1]
         assert(row.entry.kind == "level")
         assert(not row.reactions or not row.reactions[1] or not row.reactions[1]:IsShown())
+    ''')
+
+
+def test_the_next_notification_follows_after_a_reaction():
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    own.eval('fire')('PLAYER_LEVEL_UP', 42)
+    deliver_popup(own, friend)
+    friend.execute('''
+        WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        assert(toast.item.level == 42)
+        WoWStatusPopups.preview("death")   -- waits in the queue
+        __mono = 12
+        toast.reactions[1].OnClick(toast.reactions[1])
+        assert(not toast:IsShown())
+        WoWStatusPopups.tick()
+        assert(toast:IsShown() and toast.item.kind == "death")
     ''')
