@@ -175,3 +175,8 @@ def test_retail_previews_match_profession_and_honor_behavior():
         assert(WoWStatusLevelPopup.message:GetText():find("Reached honor level 101",1,true))
         assert(#character().events==0 and #__sent==0)
     ''')
+
+
+def test_retail_never_registers_for_the_combat_log():
+    # Midnight forbids addons the combat log; registering is a blocked action.
+    assert retail_runtime().eval('__events.COMBAT_LOG_EVENT_UNFILTERED') is None

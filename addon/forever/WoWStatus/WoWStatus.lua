@@ -544,10 +544,15 @@ end
 
 -- Client builds differ in event availability; one absent event must not abort
 -- registration of the remaining observers, options and slash commands.
-for _,event in ipairs({"ADDON_LOADED","PLAYER_LOGIN","PLAYER_ENTERING_WORLD","PLAYER_REGEN_ENABLED",
+local EVENTS = {"ADDON_LOADED","PLAYER_LOGIN","PLAYER_ENTERING_WORLD","PLAYER_REGEN_ENABLED",
     "PLAYER_LOGOUT","PLAYER_LEVEL_UP","PLAYER_EQUIPMENT_CHANGED","ZONE_CHANGED_NEW_AREA",
-    "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE","COMBAT_LOG_EVENT_UNFILTERED",
-    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST"}) do
+    "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE",
+    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST"}
+-- What killed you, from the combat log. Midnight-era clients (WoW Forever,
+-- Retail) forbid it: registering alone raises a "blocked action" dialog, and
+-- pcall cannot stop that. Deaths there show the zone only.
+if A.combat_log ~= false then table.insert(EVENTS, "COMBAT_LOG_EVENT_UNFILTERED") end
+for _,event in ipairs(EVENTS) do
     if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid,event)==true then
         pcall(frame.RegisterEvent,frame,event)
     end

@@ -312,3 +312,10 @@ def test_forever_lists_each_character_once_whatever_its_realm():
         assert(count == 1, count)
         assert(WoWStatusRoster.playerOf("Annie Fett") == "Garvik")
     ''')
+
+
+def test_forever_never_registers_for_the_combat_log(forever_lua):
+    # WoW Forever (a Midnight-era client) stops an addon that registers for the
+    # combat log with a "blocked action" dialog; pcall cannot prevent it.
+    assert forever_lua.eval('__events.COMBAT_LOG_EVENT_UNFILTERED') is None
+    assert forever_lua.eval('__events.PLAYER_DEAD') is not None

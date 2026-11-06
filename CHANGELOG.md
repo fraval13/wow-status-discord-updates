@@ -13,7 +13,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - Leaderboard per group on the Records page: level, deaths and quests, with sorting
-- Deaths show where and what killed you, also for friends: Died · Duskwood · killed by Defias Pillager
+- Deaths show where you died, also for friends: Died · Duskwood. On Classic Era and TBC also what killed you (WoW Forever and Retail keep the combat log from addons)
 - Your log cards show who reacted with GZ!, F or Congrats!
 - Filter the activity log by type and by person
 - You are told when a friend runs a newer version of WoW Status

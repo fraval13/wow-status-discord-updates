@@ -1,7 +1,10 @@
 -- Forever/Camelot adapter, authored from the mirrored client API; in-game checks pending.
 WoWStatusAdapter = {client_id = "forever", display_name = "WoW Forever", max_level = 60,
     -- Every character has a first and last name ("Edith Aateigen").
-    full_names = true}
+    full_names = true,
+    -- A Midnight-era client: an addon that registers for the combat log is
+    -- stopped with "blocked from an action only available to the Blizzard UI".
+    combat_log = false}
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local cachedIdentity
 
