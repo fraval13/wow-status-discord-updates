@@ -1,5 +1,12 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.18.0", notes={
+        "The activity log opens on today; a Day button opens a calendar to pick another day or all days",
+        "Clicking a notification only dismisses it; it no longer opens the activity log",
+        "In Nynorsk, F and Git Good are long lines too; long reaction buttons get their own row under the text",
+        "Congrats say what for: \"Congrats on the new gear!\", \"Congrats on level 30!\" and more, also in Nynorsk",
+        "Armor updates show the item's icon and coloured name; hover the notification or log card for its stats",
+    }},
     {version="1.17.0", notes={
         "Leaderboard per group on the Records page: level, deaths and quests, with sorting",
         "Deaths show where you died, for you and friends; on Classic Era and TBC also what killed you",
@@ -14,9 +21,5 @@ WoWStatusWhatsNewData = {
     }},
     {version="1.16.0", notes={
         "Optional Nynorsk: windows, notifications, the log, records and all captions, in settings or /wstatus language nn",
-    }},
-    {version="1.15.0", notes={
-        "New default look: a solid dark brown window with a gold border, like the achievement window",
-        "Notifications use the window theme by default (untick it in the notification settings)",
     }},
 }
