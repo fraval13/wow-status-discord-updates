@@ -358,6 +358,21 @@ function R.deathDetails(event)
     end
 end
 
+-- The full item of a first armor equip (suffix, enchant) for its groups' members.
+function R.itemDetails(event)
+    if not db or not current or type(event) ~= "table" or type(event.data) ~= "table" then return end
+    local nonce = WoWStatusPopups.eventNonce(event)
+    local item = WoWStatusJournal.itemString(event.data.item)
+    if not nonce or not item then return end
+    for group in pairs(event.group_ids or {}) do
+        if WoWStatusGroups.selected(current)[group] then
+            for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                table.insert(outgoing, {target=peer, text=table.concat({"I", group, state().id, nonce, item}, " ")})
+            end
+        end
+    end
+end
+
 -- Send to group members not yet told this session (also after a change).
 local lastPeers = {}
 function R.scan()
@@ -691,6 +706,12 @@ receive = function(message, sender, distribution)
         local function decode(text) return text ~= "-" and (text:gsub("_", " ")) or nil end
         local id = WoWStatusJournal.eventID(sender, nonce)
         return id ~= nil and WoWStatusJournal.setDetails(id, decode(words[5]), decode(words[6]))
+    end
+    if op == "I" and #words == 5 then
+        local nonce = words[4]
+        if #nonce > 64 or not nonce:match("^[%w%-]+$") then return false, "bad item line" end
+        local id = WoWStatusJournal.eventID(sender, nonce)
+        return id ~= nil and WoWStatusJournal.setItem(id, words[5])
     end
     if op == "V" and #words == 4 then
         local version, player = words[4], players[pid]

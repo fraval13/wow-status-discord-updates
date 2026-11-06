@@ -31,7 +31,13 @@ function W.itemTooltip(owner, item, anchor)
     local id = itemID(item)
     if not id or not GameTooltip then return false end
     GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
-    local ok = GameTooltip.SetItemByID and pcall(GameTooltip.SetItemByID, GameTooltip, id)
+    -- The full item (suffix, enchant) when it is known, else the base item.
+    local J = WoWStatusJournal
+    local entry = J and ((item.id and item.client) and item or (item.nonce and J.entry and J.entry(J.eventID(item.sender, item.nonce))))
+    local details = entry and J.details(entry)
+    local full = details and details.item
+    local ok = full and GameTooltip.SetHyperlink and pcall(GameTooltip.SetHyperlink, GameTooltip, full)
+    if not ok then ok = GameTooltip.SetItemByID and pcall(GameTooltip.SetItemByID, GameTooltip, id) end
     if not ok and GameTooltip.SetHyperlink then ok = pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. id) end
     if not ok then GameTooltip:Hide(); return false end
     GameTooltip:Show()

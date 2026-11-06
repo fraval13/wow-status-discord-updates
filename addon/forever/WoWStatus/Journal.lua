@@ -251,6 +251,29 @@ function J.recordLocal(event,backfill)
         text=trim(event.kind=="level" and ("Reached level "..event.data.level.."!") or P.eventText(event) or event.kind,160),
         quality=loot and loot.quality,class_id=loot and loot.class_id,equip_loc=loot and loot.equip_loc,item_id=loot and loot.item_id,groups=groups,origin="mine"})
     if event.kind=="death" and not backfill then J.setDetails(id,event.data.zone,event.data.killer) end
+    if loot and not backfill then J.setItem(id,J.itemString(event.data.item)) end
+end
+-- The item string of a link ("item:16923:2564:0:..."), with its suffix and enchant.
+function J.itemString(link)
+    local text=S.string(link)
+    local item=text and (text:match("|H(item:[%-%d:]+)|h") or text:match("^(item:[%-%d:]+)$"))
+    return item and #item<=120 and item or nil
+end
+-- The full item of an armor entry, for its tooltip: own equips, and friends'
+-- from a separate "I" message, which older versions ignore.
+function J.setItem(id,item)
+    item=J.itemString(item)
+    if not db or type(id)~="string" or not item then return false end
+    db.journal.details=type(db.journal.details)=="table" and db.journal.details or {}
+    local details=db.journal.details
+    if not details[id] then
+        local count,oldest,oldestAt=0,nil,math.huge
+        for key,value in pairs(details) do count=count+1;if (value.at or 0)<oldestAt then oldest,oldestAt=key,value.at or 0 end end
+        if count>=300 and oldest then details[oldest]=nil end
+        details[id]={at=S.now()}
+    end
+    details[id].item=item
+    return true
 end
 -- Death details (zone, killer) by entry ID: this character's own deaths, and
 -- friends' from a separate "K" message, which older versions ignore. Kept apart
@@ -270,7 +293,8 @@ function J.setDetails(id,zone,killer)
         for key,item in pairs(details) do count=count+1;if (item.at or 0)<oldestAt then oldest,oldestAt=key,item.at or 0 end end
         if count>=300 and oldest then details[oldest]=nil end
     end
-    details[id]={zone=zone,killer=killer,at=S.now()}
+    local kept=details[id] and details[id].item
+    details[id]={zone=zone,killer=killer,item=kept,at=S.now()}
     if refresh then refresh() end
     return true
 end

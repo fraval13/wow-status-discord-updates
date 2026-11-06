@@ -601,7 +601,8 @@ frame:SetScript("OnEvent", function(_, event, ...)
                     current.equipped_items[key]=true
                     if WoWStatusLoot.allowed(current.settings,info) then
                         info.first_equip=true
-                        queue("loot",info)
+                        local event=queue("loot",info)
+                        if event and WoWStatusRoster.itemDetails then WoWStatusRoster.itemDetails(event) end
                     end
                 end
             end)

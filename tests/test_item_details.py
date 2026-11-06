@@ -102,3 +102,35 @@ def test_every_armor_slot_has_a_name_in_both_languages():
             english = heading(lua, quality, slot)
             assert 'ARMOR' not in english, slot
             assert lua.eval(f'WoWStatusLocale.T("{english}")').endswith(' PÅ!'), english
+
+
+FULL = 'item:16923:2564:0:0:0:0:0:0:60'
+
+
+def test_the_full_item_reaches_friends_and_its_tooltip():
+    from test_roster import pair, pump
+    mira, thora = pair()
+    pump(mira, thora)
+    mira.execute(f'''
+        WoWStatusRoster.itemDetails({{nonce="1-2-ab", group_ids=character().group_ids,
+            data={{item="|cffa335ee|H{FULL}|h[Robe of Transcendence]|h|r"}}}})
+    ''')
+    sent = pump(mira, thora, start=300)
+    assert any(line.startswith('I ') and FULL in line for line in sent)
+    thora.execute(TOOLTIP + f'''
+        GameTooltip.SetHyperlink = function(self, link) __tooltip.link = link end
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({{sender="Mira-TestRealm", nonce="1-2-ab", kind="loot", text="Equipped Robe of Transcendence",
+            quality=4, class_id=4, equip_loc="INVTYPE_CHEST", item_id=16923, at=time(), group_id=group}})
+        local id = WoWStatusJournal.eventID("Mira-TestRealm", "1-2-ab")
+        assert(WoWStatusJournal.details(WoWStatusJournal.entry(id)).item == "{FULL}")
+        assert(WoWStatusPresentation.itemTooltip(UIParent, WoWStatusJournal.entry(id)))
+        assert(__tooltip.link == "{FULL}" and __tooltip.item == nil)
+    ''')
+
+
+def test_bad_item_strings_are_refused():
+    lua = actor('Mira')
+    assert lua.eval('WoWStatusJournal.itemString')('|Hitem:1:2|h[x]|h') == 'item:1:2'
+    assert lua.eval('WoWStatusJournal.itemString')('item:1;DROP') is None
+    assert lua.eval('WoWStatusJournal.itemString')('item:' + '1:' * 80) is None
