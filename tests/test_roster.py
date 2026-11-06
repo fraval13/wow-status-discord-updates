@@ -383,23 +383,21 @@ def test_level_ups_in_the_log_update_an_older_list():
     assert level_of(thora, 'Mira-TestRealm')[0] == listed
 
 
-def test_sync_looks_up_one_member_with_who():
+def test_who_results_the_player_asks_for_update_levels():
     mira, thora = pair()
     pump(mira, thora)
     thora.execute('''
         __who, __results = {}, {}
         C_FriendList = {
-            SendWho=function(filter) table.insert(__who, filter) end,
             GetNumWhoResults=function() return #__results end,
             GetWhoInfo=function(i) return __results[i] end,
         }
     ''')
-    assert thora.eval('WoWStatusRoster.whoLookup()') == 'Mira-TestRealm'
-    assert thora.eval('__who[1]') == 'n-"Mira"'
-    # Once a session each: nobody else is online.
-    assert thora.eval('WoWStatusRoster.whoLookup()') is None
+    # The addon never sends a /who itself: WoW blocks it.
+    thora.execute('WoWStatusRoster.syncNow()')
+    assert thora.eval('#__who') == 0 and thora.eval('WoWStatusRoster.whoLookup') is None
     thora.execute('__results = {{fullName="Mira", level=42}, {fullName="Stranger", level=5}}')
-    thora.eval('fire')('WHO_LIST_UPDATE')
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'Mira: Level 42 Dwarf Warrior')
     assert level_of(thora, 'Mira-TestRealm')[0] == 42
     # Only group members are remembered.
     assert thora.eval('(function() local n = 0; for _ in pairs(WoWStatusDB.roster.who) do n = n + 1 end; return n end)()') == 1

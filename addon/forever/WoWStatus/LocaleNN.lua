@@ -63,8 +63,8 @@ W.add({
     ["No characters yet."] = "Ingen figurar enno.", ["Share my character list"] = "Del figurlista mi",
     ["Hide this character from the list"] = "Gøym denne figuren frå lista",
     ["Sync with everyone online"] = "Synk med alle som er pålogga",
-    ["Sends your character list, asks for theirs, looks up one friend's level with /who and catches up the activity log. Once a minute."] =
-        "Sender figurlista di, ber om deira, slår opp nivået til éin ven med /who og hentar inn aktivitetsloggen. Éin gong i minuttet.",
+    ["Sends your character list, asks for theirs and catches up the activity log. Once a minute."] =
+        "Sender figurlista di, ber om deira og hentar inn aktivitetsloggen. Éin gong i minuttet.",
     -- Classes
     ["Warrior"] = "Krigar", ["Paladin"] = "Paladin", ["Hunter"] = "Jeger", ["Rogue"] = "Tjuv", ["Priest"] = "Prest",
     ["Shaman"] = "Sjaman", ["Mage"] = "Magikar", ["Warlock"] = "Heksemeister", ["Druid"] = "Druide",
