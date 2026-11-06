@@ -3,7 +3,7 @@ local H = WoWStatusHistory
 local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
-local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests"}
+local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests", "gold", "kills"}
 local kinds = {"level", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
@@ -38,7 +38,7 @@ local function defaults()
     return {
         enabled = true, discord_enabled = false, discord_delivery = "summary", introduction_confirmed = false, character_role = "alt",
         fields = {level = true, class = true, race = true, faction = true, guild = true,
-                  gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true},
+                  gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true, gold = true, kills = true},
         collection = {introduction = true, level = true, loot = true, equipment = false,
                       death = true, zone = true, quest = true, profession = true, lfg = false},
         announcements = {introduction = true, level = true, loot = true,
@@ -214,7 +214,8 @@ local function showPanel(host)
         checkbox("legendary","Legendary equipment",54,-670,"loot_rarities")
         section("Character details",-742)
         local names={level="Level and XP",class="Class",race="Race and male/female",faction="Faction",
-            guild="Guild",gear="Equipment",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests"}
+            guild="Guild",gear="Equipment",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
+            gold="Gold and gold earned",kills="Monsters killed"}
         for i,key in ipairs(fields) do
             checkbox(key,names[key] or key,(i-1)%2==0 and 24 or 310,-780-math.floor((i-1)/2)*42,"fields")
         end
@@ -473,7 +474,7 @@ local function initialize()
         current.settings.announcements[removed]=false
         current.settings.in_game[removed]=false
     end
-    for _, field in ipairs({"deaths", "quests"}) do
+    for _, field in ipairs({"deaths", "quests", "gold", "kills"}) do
         if current.settings.fields[field] == nil then current.settings.fields[field] = true end
     end
     for _, kind in ipairs({"quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}) do
@@ -517,6 +518,7 @@ local function initialize()
     local level = A.level()
     if level then H.sync(current, level, S.now()) end
     WoWStatusProgress.initDeaths(current)
+    WoWStatusProgress.initTotals(current)
     if level then WoWStatusJournal.backfill(current, level) end
     WoWStatusProgress.initZones(current,A.zone())
     snapshot()
@@ -547,7 +549,7 @@ end
 local EVENTS = {"ADDON_LOADED","PLAYER_LOGIN","PLAYER_ENTERING_WORLD","PLAYER_REGEN_ENABLED",
     "PLAYER_LOGOUT","PLAYER_LEVEL_UP","PLAYER_EQUIPMENT_CHANGED","ZONE_CHANGED_NEW_AREA",
     "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE",
-    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST"}
+    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST","PLAYER_MONEY","CHAT_MSG_COMBAT_XP_GAIN"}
 -- What killed you, from the combat log. Midnight-era clients (WoW Forever,
 -- Retail) forbid it: registering alone raises a "blocked action" dialog, and
 -- pcall cannot stop that. Deaths there show the zone only.
@@ -645,6 +647,10 @@ frame:SetScript("OnEvent", function(_, event, ...)
             WoWStatusJournal.professions(current.progress.professions)
         end
         snapshot()
+    elseif event == "PLAYER_MONEY" then
+        WoWStatusProgress.money(current)
+    elseif event == "CHAT_MSG_COMBAT_XP_GAIN" then
+        WoWStatusProgress.kill(current, ...)
     elseif event == "TIME_PLAYED_MSG" then
         if current.settings.enabled and current.settings.fields.playtime then
             local total, thisLevel = ...

@@ -145,7 +145,20 @@ local function renderYou()
     local facts = {}
     if S.number(snapshot.deaths_lifetime or snapshot.deaths) then table.insert(facts, T("Deaths:") .. " " .. (snapshot.deaths_lifetime or snapshot.deaths)) end
     if S.number(snapshot.quests_completed) then table.insert(facts, T("Quests:") .. " " .. snapshot.quests_completed) end
+    local progress = character and character.progress
+    local fields = character and character.settings and character.settings.fields or {}
+    if fields.kills and WoWStatusProgress.totalKills then table.insert(facts, T("Kills:") .. " " .. WoWStatusProgress.totalKills(character)) end
     you.stats:SetText(table.concat(facts, "   "))
+    -- Gold now, gold earned and played time.
+    local more = {}
+    local gold = fields.gold and progress and S.number(progress.gold)
+    if gold then table.insert(more, T("Gold:") .. " " .. UI.money(gold)) end
+    if fields.gold and progress and WoWStatusProgress.goldEarned then
+        table.insert(more, T("Earned:") .. " " .. UI.money(WoWStatusProgress.goldEarned(character), true))
+    end
+    local played = S.number(snapshot.playtime)
+    if played then table.insert(more, T("Played:") .. " " .. UI.duration(played)) end
+    you.stats2:SetText(table.concat(more, "   "))
     local newer = WoWStatusRoster.newerVersion and WoWStatusRoster.newerVersion()
     you.update:SetText(newer and (T("Update available:") .. " " .. newer .. " — wow.frankvalde.com") or "")
 end
@@ -254,8 +267,9 @@ local function build(parent)
     you.info = UI.text(you, "GameFontHighlightSmall", 84, -36, 256)
     you.xp = UI.xpBar(you, 250, 12); you.xp:SetPoint("TOPLEFT", 84, -56)
     page.status = UI.text(you, "GameFontHighlightSmall", 12, -86, 326)
-    you.stats = UI.text(you, "GameFontHighlightSmall", 12, -110, 326)
-    you.update = UI.text(you, "GameFontNormalSmall", 12, -128, 326)
+    you.stats = UI.text(you, "GameFontHighlightSmall", 12, -102, 326)
+    you.stats2 = UI.text(you, "GameFontHighlightSmall", 12, -118, 326)
+    you.update = UI.text(you, "GameFontNormalSmall", 12, -134, 326)
     -- Your group
     local group = UI.box(page, 336, 150); group:SetPoint("TOPLEFT", 386, -4); page.group = group
     UI.header(group, T("Your group"), 12, -10, 312)

@@ -34,7 +34,7 @@ local function redacted(text)
     return op and (op .. " <group>" .. rest) or "?"
 end
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
-local lastXp, xpSent = 0, nil
+local lastXp, xpSent, statsSent = 0, nil, nil
 -- The Sync button: usable once a minute; list requests answered once a minute per member.
 R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
@@ -189,8 +189,16 @@ function R.observe(character)
     -- Total deaths, saved so other characters' cards keep their last known total.
     local deaths = character.settings and character.settings.fields.deaths and WoWStatusProgress.totalDeaths
         and S.number(WoWStatusProgress.totalDeaths(character)) or nil
+    -- Gold, gold earned, kills and played time, each only with its field on.
+    local fields = character.settings and character.settings.fields or {}
+    local P = WoWStatusProgress
+    if fields.gold and P.money then P.money(character) end
+    local gold = fields.gold and character.progress and S.number(character.progress.gold) or nil
+    local earned = fields.gold and P.goldEarned and P.goldEarned(character) or nil
+    local kills = fields.kills and P.totalKills and P.totalKills(character) or nil
+    local played = fields.playtime and character.snapshot and S.number(character.snapshot.playtime) or nil
     character.roster_info = {race=S.string(race), sex=S.number(S.call(UnitSex, "player")), class=S.string(class),
-        level=level, xp=permille, deaths=deaths, at=time()}
+        level=level, xp=permille, deaths=deaths, gold=gold, earned=earned, kills=kills, played=played, at=time()}
 end
 
 local function playerName()
@@ -242,6 +250,17 @@ function R.scanMilestones(c)
     return result
 end
 
+-- "gold earned kills played" for an "S" line, or nil when none is shared.
+local STAT_LIMIT = 1e12
+function R.statsLine(info)
+    local values, any = {}, false
+    for _, k in ipairs({"gold", "earned", "kills", "played"}) do
+        local v = S.number(info[k])
+        if v and v >= 0 and v < STAT_LIMIT and v == math.floor(v) then values[#values + 1] = tostring(v); any = true
+        else values[#values + 1] = "-" end
+    end
+    return any and table.concat(values, " ") or nil
+end
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
@@ -257,6 +276,9 @@ local function ownLines(group)
             table.insert(lines, table.concat({"C", group, roster.id, playerName() or "-", name, info.race, info.sex, info.class, info.level}, " "))
             -- XP progress goes in its own line, which older versions ignore.
             if S.number(info.xp) then table.insert(lines, table.concat({"P", group, roster.id, name, info.xp}, " ")) end
+            -- Gold, gold earned, kills and played seconds ("-" when not shared); older versions ignore it.
+            local stats = R.statsLine(info)
+            if stats then table.insert(lines, table.concat({"S", group, roster.id, name, stats}, " ")) end
             -- Level milestones with their times, for records ("e" exact, "a" by then).
             for level, item in pairs(R.milestones(c)) do
                 table.insert(lines, table.concat({"M", group, roster.id, name, level, item.at, item.exact and "e" or "a"}, " "))
@@ -501,6 +523,19 @@ function R.tick()
     local info = current.roster_info
     if now - lastXp >= XP_INTERVAL then
         lastXp = now
+        -- Gold, kills and played time change between level-ups: refresh them too.
+        R.observe(current)
+        info = current.roster_info
+        local stats = info and R.statsLine(info)
+        if stats and stats ~= statsSent and state().share and not current.hide_from_list then
+            statsSent = stats
+            local name = (WoWStatusPopups.characterName(current):gsub(" ", "_"))
+            for group in pairs(WoWStatusGroups.selected(current)) do
+                for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                    table.insert(outgoing, {target=peer, text=table.concat({"S", group, state().id, name, stats}, " ")})
+                end
+            end
+        end
         if info and S.number(info.xp) and info.xp ~= xpSent and state().share and not current.hide_from_list then
             xpSent = info.xp
             local name = (WoWStatusPopups.characterName(current):gsub(" ", "_"))
@@ -594,6 +629,27 @@ receive = function(message, sender, distribution)
         for _ in pairs(character.milestones) do count = count + 1 end
         if count >= 20 and not character.milestones[level] then return false end
         character.milestones[level] = {at=at, exact=flag == "e"}
+        return true
+    end
+    if op == "S" and #words == 8 then
+        local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
+        local player = players[pid]
+        if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player then return false, "bad stats line" end
+        local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
+        if not character then return false, "unknown character" end
+        local values = {}
+        for i, k in ipairs({"gold", "earned", "kills", "played"}) do
+            local text = words[4 + i]
+            local v = tonumber(text)
+            if text ~= "-" and not (v and v >= 0 and v < STAT_LIMIT and v == math.floor(v) and text:match("^%d+$")) then
+                return false, "bad stats value"
+            end
+            values[k] = v
+        end
+        for k, v in pairs({gold=values.gold or false, earned=values.earned or false, kills=values.kills or false, played=values.played or false}) do
+            character[k] = v or nil
+        end
+        R.render()
         return true
     end
     if op == "P" and #words == 5 then
@@ -735,7 +791,8 @@ function R.groups()
     local function add(title, character, self, note)
         if not self then
             character = {name=resolve(character.name), race=character.race, sex=character.sex,
-                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups}
+                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups,
+                deaths=character.deaths, gold=character.gold, earned=character.earned, kills=character.kills, played=character.played}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
             local newer = fresher[key(character.name) or ""]
@@ -770,7 +827,8 @@ function R.groups()
         table.sort(labels)
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
             level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels, groupIds=ids,
-            deaths=S.number(character.deaths) or deaths[k] or nil})
+            deaths=S.number(character.deaths) or deaths[k] or nil, gold=S.number(character.gold),
+            earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played)})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
@@ -779,13 +837,15 @@ function R.groups()
             add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
                 race=info.race, sex=info.sex, class=info.class, level=info.level, xp=info.xp, at=info.at,
                 deaths=c == current and current.settings.fields.deaths and WoWStatusProgress.totalDeaths(current) or info.deaths,
+                gold=info.gold, earned=info.earned, kills=info.kills, played=info.played,
                 current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
         end
     end
     for _, player in pairs(state().players) do
         for _, character in pairs(player.characters) do
             add(player.name or "Unnamed player", {name=character.name, race=character.race, sex=character.sex,
-                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups},
+                class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups,
+                gold=character.gold, earned=character.earned, kills=character.kills, played=character.played},
                 nil, S.string(player.version) and ("v" .. player.version) or "older version")
         end
     end
@@ -844,7 +904,14 @@ local function card(index)
     c:SetScript("OnEnter", function(self)
         UI.tint(self, true)
         if GameTooltip and self.character then
-            GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(self.character.name)
+            local character = self.character
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(character.name)
+            -- The shared statistics in full.
+            local function line(label, value) if value then GameTooltip:AddDoubleLine(T(label), value, .8, .8, .8, 1, 1, 1) end end
+            line("Gold", S.number(character.gold) and UI.money(character.gold))
+            line("Gold earned", S.number(character.earned) and UI.money(character.earned))
+            line("Monsters killed", S.number(character.kills) and tostring(character.kills))
+            line("Played", S.number(character.played) and UI.duration(character.played))
             GameTooltip:AddLine(T("Click to see this character's activity."), 1, 1, 1, true); GameTooltip:Show()
         end
     end)
@@ -999,7 +1066,8 @@ function R.render()
                     c.class:SetText(character.race and (shownRace(character.race) .. " " .. class) or class)
                     local online = character.status == "online"
                     c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
-                    c.status:SetText(T(character.status))
+                    local gold = S.number(character.gold) and UI.money(character.gold, true)
+                    c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or ""))
                     local xp = S.number(character.xp)
                     c.xp:SetProgress(xp and xp / 1000, xp and TF("XP %d%%", math.floor(xp / 10)))
                     -- Level and total deaths at the end of the card.
@@ -1007,6 +1075,8 @@ function R.render()
                     if character.level then table.insert(facts, TF("Level %d", character.level)) end
                     local died = S.number(character.deaths)
                     if died then table.insert(facts, died == 1 and T("1 death") or TF("%d deaths", died)) end
+                    local kills = S.number(character.kills)
+                    if kills and kills > 0 then table.insert(facts, kills == 1 and T("1 kill") or TF("%d kills", kills)) end
                     c.latest:SetText(table.concat(facts, " · "))
                     local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
                     c.groups:SetText(groups ~= "" and ("|cff9d9d9d" .. T("Groups:") .. "|r " .. groups:gsub("|", "||")) or "")
@@ -1097,6 +1167,7 @@ function R.init(database, character, reporter)
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
     requested, whoAsked = {}, {}
     xpSent = character and character.roster_info and character.roster_info.xp
+    statsSent = character and character.roster_info and R.statsLine(character.roster_info)
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register, PREFIX) end
 end

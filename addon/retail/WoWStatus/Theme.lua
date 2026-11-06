@@ -225,6 +225,28 @@ function UI.icon(parent, size)
 end
 
 -- Class colour as an escape-sequence prefix, or nil.
+-- Gold with coin icons: "12g 34s 5c"; short shows only whole gold (from 1 gold).
+local function coin(kind) return "|TInterface\\MoneyFrame\\UI-" .. kind .. "Icon:0:0:2:0|t" end
+function UI.money(copper, short)
+    copper = tonumber(copper)
+    if not copper or copper < 0 then return nil end
+    local g, s, c = math.floor(copper / 10000), math.floor(copper / 100) % 100, copper % 100
+    if short and g > 0 then return g .. coin("Gold") end
+    local parts = {}
+    if g > 0 then table.insert(parts, g .. coin("Gold")) end
+    if s > 0 or g > 0 then table.insert(parts, s .. coin("Silver")) end
+    table.insert(parts, c .. coin("Copper"))
+    return table.concat(parts, " ")
+end
+-- Played time: "3d 4h", "5h 12m" or "12m".
+function UI.duration(seconds)
+    seconds = tonumber(seconds)
+    if not seconds or seconds < 0 then return nil end
+    local d, h, m = math.floor(seconds / 86400), math.floor(seconds / 3600) % 24, math.floor(seconds / 60) % 60
+    if d > 0 then return d .. "d " .. h .. "h" end
+    if h > 0 then return h .. "h " .. m .. "m" end
+    return m .. "m"
+end
 function UI.classColour(class)
     local colour = RAID_CLASS_COLORS and class and RAID_CLASS_COLORS[class]
     return colour and colour.colorStr and ("|c" .. colour.colorStr) or nil

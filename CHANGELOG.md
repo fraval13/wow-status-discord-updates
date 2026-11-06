@@ -18,6 +18,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - Filter the activity log by type and by person
 - You are told when a friend runs a newer version of WoW Status
 - Friends' levels stay current: their level-ups in the log update the list, each friend is asked for a fresh list when you log in, and Sync now looks one friend up with /who
+- Gold, gold earned, monsters killed and played time on the Overview and on every character card (hover a card for all of them). Gold earned and kills count from installation, or use the game's lifetime statistics where it has them; each can be turned off under Character details
 - The "Preview toasts" settings page is now called Notifications, with its settings first and the previews below them
 
 ## 1.16.0

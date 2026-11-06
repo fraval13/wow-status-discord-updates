@@ -107,6 +107,13 @@ function P.observe(character, fields)
         result.deaths, result.deaths_since = value.deaths, value.started_at
         if value.death_base then result.deaths_lifetime = P.totalDeaths(character) end
     end
+    if fields.gold then
+        result.gold = S.number(value.gold)
+        result.gold_earned, result.gold_lifetime = P.goldEarned(character), value.gold_base ~= nil or nil
+    end
+    if fields.kills then
+        result.kills, result.kills_lifetime, result.kills_since = P.totalKills(character), value.kill_base ~= nil or nil, value.started_at
+    end
     if fields.quests then
         local completed, modern
         local sample = not questAt or time() - questAt >= 5
@@ -137,6 +144,93 @@ function P.observe(character, fields)
     end
     return result
 end
+-- Gold and kills. Gold earned adds every rise in gold (loot, quests, sales,
+-- mail); spending never lowers it. Kills count monsters killed for experience.
+-- Both count from installation; where the client has statistics (Retail;
+-- Forever if its client has them) the game's lifetime totals are used instead:
+-- 1197 "Total kills" and 328 "Total gold acquired".
+local STAT_KILLS, STAT_GOLD = 1197, 328
+local LIMIT = 2000000000
+local function statistic(id)
+    if not GetStatistic then return nil end
+    local raw = S.call(GetStatistic, id)
+    local text = S.string(raw)
+    local n = S.number(raw) or (text and tonumber(text))
+    if not n and text then
+        -- Money statistics are text with coin icons: "12|T...GoldIcon...|t 3|T...SilverIcon...|t".
+        local g, s, c = tonumber(text:match("(%d+)|T[^|]*Gold")), tonumber(text:match("(%d+)|T[^|]*Silver")),
+            tonumber(text:match("(%d+)|T[^|]*Copper"))
+        if g or s or c then n = (g or 0) * 10000 + (s or 0) * 100 + (c or 0) end
+    end
+    if n and n >= 0 and n < LIMIT * 100 and n == math.floor(n) then return n end
+    return nil
+end
+P.statistic = statistic
+-- Reads the gold now; a rise since the last reading counts as earned.
+function P.money(character)
+    local value = stats(character)
+    local copper = S.number(S.call(GetMoney))
+    if not copper or copper < 0 or copper >= LIMIT * 100 or copper ~= math.floor(copper) then return nil end
+    local last = S.number(value.gold)
+    if last and copper > last then value.gold_earned = (value.gold_earned or 0) + (copper - last) end
+    value.gold, value.gold_earned = copper, value.gold_earned or 0
+    return copper
+end
+-- "<monster> dies, you gain <n> experience", built from the game's own text so
+-- every client language works; rested and group bonus text may follow.
+local killPattern, killFormat
+local function killMatcher()
+    local fmt = S.string(COMBATLOG_XPGAIN_FIRSTPERSON) or ("%" .. "s dies, you gain %" .. "d experience.")
+    if fmt == killFormat then return killPattern end
+    killFormat = fmt
+    local out, i, named = {}, 1, false
+    while i <= #fmt do
+        local ch = fmt:sub(i, i)
+        if ch == "%" then
+            local j = i + 1
+            while fmt:sub(j, j):match("[0-9%$]") do j = j + 1 end
+            local conversion = fmt:sub(j, j)
+            if conversion == "d" then table.insert(out, "%d+"); break end
+            table.insert(out, conversion == "%" and "%%" or ".+")
+            named = named or conversion ~= "%"
+            i = j + 1
+        else
+            table.insert(out, ch:find("[%^%$%(%)%%%.%[%]%*%+%-%?]") and ("%" .. ch) or ch)
+            i = i + 1
+        end
+    end
+    killPattern = named and ("^" .. table.concat(out)) or false
+    return killPattern
+end
+function P.kill(character, message)
+    local pattern = killMatcher()
+    message = S.string(message)
+    if not pattern or not message or not message:find(pattern) then return false end
+    local value = stats(character)
+    value.kills = (value.kills or 0) + 1
+    return true
+end
+-- At login: the game's lifetime figures, when it has them, plus what is counted afterwards.
+function P.initTotals(character)
+    local value = stats(character)
+    P.money(character)
+    local kills, gold = statistic(STAT_KILLS), statistic(STAT_GOLD)
+    value.kill_base = kills and kills >= (value.kills or 0) and {lifetime=kills, tracked=value.kills or 0} or nil
+    value.gold_base = gold and gold >= (value.gold_earned or 0) and {lifetime=gold, tracked=value.gold_earned or 0} or nil
+    S.debug("statistics: kills " .. tostring(kills) .. ", gold acquired " .. tostring(gold)
+        .. (GetStatistic and "" or " (no GetStatistic)") .. ", kill text " .. tostring(killMatcher()))
+end
+function P.totalKills(character)
+    local value = stats(character)
+    local base, kills = value.kill_base, value.kills or 0
+    return base and (base.lifetime + math.max(0, kills - base.tracked)) or kills
+end
+function P.goldEarned(character)
+    local value = stats(character)
+    local base, earned = value.gold_base, value.gold_earned or 0
+    return base and (base.lifetime + math.max(0, earned - base.tracked)) or earned
+end
+
 -- Clients with statistics (Retail; Forever if its client has them) count deaths
 -- from before installation. Statistic 60 is "Total deaths". Classic Era and TBC
 -- have no statistics, so their totals stay "since installation".

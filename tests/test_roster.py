@@ -42,7 +42,7 @@ def pair():
 
 def test_characters_are_announced_once_per_member_and_grouped_by_player():
     mira, thora = pair()
-    sent = [line for line in pump(mira, thora) if not line.startswith('R ')]
+    sent = [line for line in pump(mira, thora) if line[0] not in 'RS']
     assert len(sent) == 1
     assert sent[0].split(' ')[0] == 'C' and sent[0].endswith('Mira-TestRealm Dwarf 3 WARRIOR 1')
     assert pump(mira, thora, start=200) == []  # not repeated to the same member
@@ -117,7 +117,7 @@ def test_hiding_a_character_and_turning_sharing_off():
     assert len(sent) == 1 and sent[0].startswith('X ')
     assert thora.eval('next(WoWStatusDB.roster.players)') is None
     mira.execute('WoWStatusRoster.setSharing(true)')
-    assert len(pump(mira, thora, start=500)) == 1
+    assert [line[0] for line in pump(mira, thora, start=500)] == ['C', 'S']
 
 
 def test_log_senders_without_a_list_show_as_never_met():
@@ -431,3 +431,68 @@ def test_debug_log_records_roster_traffic_without_group_names():
     before = thora.eval('#WoWStatusDB.debug_log')
     pump(mira, thora, start=500)
     assert thora.eval('#WoWStatusDB.debug_log') == before
+
+
+def test_gold_earned_and_kills_are_counted_and_shared_with_friends():
+    mira, thora = pair()
+    mira.execute('''
+        __money = 1000
+        function GetMoney() return __money end
+        fire("PLAYER_MONEY")
+        __money = 25000; fire("PLAYER_MONEY")   -- +24000 looted
+        __money = 5000; fire("PLAYER_MONEY")    -- spent: earned stays
+        __money = 125000; fire("PLAYER_MONEY")  -- +120000 sold
+        fire("CHAT_MSG_COMBAT_XP_GAIN", "Kobold Miner dies, you gain 45 experience. (+22 exp Rested bonus)")
+        fire("CHAT_MSG_COMBAT_XP_GAIN", "Defias Thug dies, you gain 60 experience.")
+        fire("CHAT_MSG_COMBAT_XP_GAIN", "You gain 300 experience.")       -- not a kill
+        character().snapshot.playtime = 93784
+        WoWStatusRoster.observe(character())
+    ''')
+    assert mira.eval('WoWStatusProgress.goldEarned(character())') == 144000
+    assert mira.eval('WoWStatusProgress.totalKills(character())') == 2
+    sent = pump(mira, thora)
+    assert 'Mira-TestRealm 125000 144000 2 93784' in next(line for line in sent if line.startswith('S '))
+    row = next(r for g in thora.eval('WoWStatusRoster.groups()').values() for r in g.rows.values()
+               if r.name == 'Mira-TestRealm')
+    assert (row.gold, row.earned, row.kills, row.played) == (125000, 144000, 2, 93784)
+    thora.eval('SlashCmdList.WOWSTATUS')('characters')
+    cards = [thora.eval(f'WoWStatusCharactersPage.lines[{i}]') for i in range(1, thora.eval('WoWStatusCharactersPage.count') + 1)]
+    card = next(c for c in cards if 'Mira' in c.name.text)
+    assert '12|TInterface\\MoneyFrame\\UI-GoldIcon' in card.status.text
+    assert card.latest.text.endswith('2 kills')
+    assert thora.eval('WoWStatusUI.duration(93784)') == '1d 2h'
+
+
+def test_unshared_gold_and_kills_stay_private():
+    mira, thora = pair()
+    mira.execute('''
+        function GetMoney() return 50000 end
+        character().settings.fields.gold = false
+        character().settings.fields.kills = false
+        character().settings.fields.playtime = false
+        WoWStatusRoster.observe(character())
+    ''')
+    assert not any(line.startswith('S ') for line in pump(mira, thora))
+
+
+def test_lifetime_statistics_are_used_where_the_game_has_them():
+    mira, _ = pair()
+    mira.execute('''
+        function GetStatistic(id)
+            if id == 1197 then return "5000" end
+            if id == 328 then return "1234|TInterface\\\\MoneyFrame\\\\UI-GoldIcon:0:0:2:0|t 5|TInterface\\\\MoneyFrame\\\\UI-SilverIcon:0:0:2:0|t 6|TInterface\\\\MoneyFrame\\\\UI-CopperIcon:0:0:2:0|t" end
+        end
+        WoWStatusProgress.initTotals(character())
+        fire("CHAT_MSG_COMBAT_XP_GAIN", "Kobold Miner dies, you gain 45 experience.")
+    ''')
+    assert mira.eval('WoWStatusProgress.totalKills(character())') == 5001
+    assert mira.eval('WoWStatusProgress.goldEarned(character())') == 12340506
+
+
+def test_kills_are_recognised_in_the_clients_own_language():
+    mira, _ = pair()
+    mira.execute('''
+        COMBATLOG_XPGAIN_FIRSTPERSON = "%1$s stirbt, Ihr erhaltet %2$d Erfahrung."
+        fire("CHAT_MSG_COMBAT_XP_GAIN", "Kobold stirbt, Ihr erhaltet 45 Erfahrung. (+22 Erfahrung Erholungsbonus)")
+    ''')
+    assert mira.eval('WoWStatusProgress.totalKills(character())') == 1
