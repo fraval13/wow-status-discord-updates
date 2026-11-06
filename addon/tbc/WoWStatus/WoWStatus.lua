@@ -176,6 +176,7 @@ local function showPanel(host)
         panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
         panel.background=panel:CreateTexture(nil,"BACKGROUND")
         panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
+        if WoWStatusTheme and WoWStatusTheme.attachBackground then WoWStatusTheme.attachBackground(panel.background) end
         label(panel,"WoW Status",24,-20)
         label(panel,"Set the same group ID as your friends to start sharing.",24,-64,550)
         panel.checks={}

@@ -52,6 +52,13 @@ function T.attach(frame, background, popup)
     table.insert(windows, {frame=frame, background=background, popup=popup == true})
     T.apply()
 end
+-- The theme colour only, for the settings pages' own windows (opened in combat,
+-- or when the game's Options cannot open): they look like the main window, but
+-- keep their size, as they also sit inside Options.
+function T.attachBackground(background)
+    table.insert(windows, {background=background, colourOnly=true})
+    T.apply()
+end
 
 -- Window scale; for notifications, their own size times the window size when
 -- "Use the theme and size for popups too" is on.
@@ -73,7 +80,9 @@ end
 function T.apply()
     local value = settings()
     for _, window in ipairs(windows) do
-        if not window.popup then
+        if window.colourOnly then
+            window.background:SetColorTexture(T.colour())
+        elseif not window.popup then
             window.background:SetColorTexture(T.colour())
             window.frame:SetScale(value.scale)
         elseif value.popups then

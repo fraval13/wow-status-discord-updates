@@ -207,3 +207,23 @@ def test_groups_page_lists_and_browses_groups():
         assert(WoWStatusGroups.contains(character(), id))
         assert(panel.rows[2]:IsShown())
     ''')
+
+
+def test_settings_windows_opened_on_their_own_use_the_window_theme():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:SetColorTexture(r, g, b, a) self.colour = {r, g, b, a} end
+        local function same(texture)
+            local r, g, b = WoWStatusTheme.colour()
+            return texture.colour[1] == r and texture.colour[2] == g and texture.colour[3] == b
+        end
+        WoWStatusGroups.show()                    -- standalone, as in combat
+        local groups = WoWStatusGroupWindow.background
+        assert(groups:IsShown() ~= false and same(groups))
+        WoWStatusPreviews.show()
+        assert(same(WoWStatusNotificationPreviews.background))
+        WoWStatusTheme.next()                     -- a theme change reaches them too
+        assert(same(groups) and same(WoWStatusNotificationPreviews.background))
+    ''')

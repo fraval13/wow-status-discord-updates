@@ -16,6 +16,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - Missed the reaction buttons? A friend's log card offers them for a minute after the notification
 - Clicking a reaction button sends it and closes the notification
 - Browse groups: tick Listed on a group to let friends in your other groups see and join it
+- Settings opened in their own window (for example in combat) use your window theme too
 
 ## 1.18.0
 

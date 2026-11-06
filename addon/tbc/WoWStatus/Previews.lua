@@ -25,6 +25,7 @@ end
 local function background(frame)
     local texture=frame:CreateTexture(nil,"BACKGROUND")
     texture:SetAllPoints(); texture:SetColorTexture(.025,.035,.055,.96)
+    if WoWStatusTheme and WoWStatusTheme.attachBackground then WoWStatusTheme.attachBackground(texture) end
     return texture
 end
 function P.statusCard()

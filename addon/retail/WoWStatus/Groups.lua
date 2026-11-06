@@ -264,6 +264,7 @@ function G.show(host)
         panel:EnableMouse(true)
         local bg = panel:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints(); bg:SetColorTexture(.025,.035,.055,.96);panel.background=bg
+        if WoWStatusTheme and WoWStatusTheme.attachBackground then WoWStatusTheme.attachBackground(bg) end
         local function label(text, y, width)
             local f = panel:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
             f:SetPoint("TOPLEFT", 24, y); f:SetWidth(width or 570)
