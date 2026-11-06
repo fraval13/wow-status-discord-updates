@@ -496,3 +496,11 @@ def test_kills_are_recognised_in_the_clients_own_language():
         fire("CHAT_MSG_COMBAT_XP_GAIN", "Kobold stirbt, Ihr erhaltet 45 Erfahrung. (+22 Erfahrung Erholungsbonus)")
     ''')
     assert mira.eval('WoWStatusProgress.totalKills(character())') == 1
+
+
+def test_debug_log_leaves_out_ordinary_chat():
+    lua = person('Thora', 'Ada')
+    lua.eval('SlashCmdList.WOWSTATUS')('debug on')
+    lua.eval('WoWStatusPopups.receive')('WTS Linen Bag cheap', 'Stranger-TestRealm', 'Trade')
+    lua.eval('fire')('CHAT_MSG_SYSTEM', 'Stranger has come online.')
+    assert lua.eval('#WoWStatusDB.debug_log') == 0

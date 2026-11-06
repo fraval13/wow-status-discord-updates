@@ -420,7 +420,7 @@ function R.readWho()
             learnt = learnt + 1
         end
     end
-    S.debug("/who results: " .. count .. ", group members learnt: " .. learnt)
+    if learnt > 0 then S.debug("/who: levels learnt for " .. learnt .. " group member(s)") end
     if learnt > 0 then R.render() end
     return learnt
 end

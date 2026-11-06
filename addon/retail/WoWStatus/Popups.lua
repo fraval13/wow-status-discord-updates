@@ -730,7 +730,8 @@ local receiveUpdate
 -- Live updates; the debug log notes each with its result (no group name).
 function P.receive(text, sender, channel)
     local result, why = receiveUpdate(text, sender, channel)
-    if type(text) == "string" then
+    -- Only addon packets: channel chat passes here too and is never logged.
+    if type(text) == "string" and text:find("^WSTATUS%d") then
         S.debug("live " .. text:sub(1, 80) .. " from " .. tostring(sender) .. ": "
             .. (result and "shown" or ("dropped" .. (why and (" (" .. why .. ")") or ""))))
     end
