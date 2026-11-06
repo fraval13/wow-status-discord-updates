@@ -285,6 +285,15 @@ local function ownLines(group)
             end
         end
     end
+    -- Listed groups (the account ticked Listed), name in hex; older versions ignore "G".
+    if #lines > 0 then
+        for id, name in pairs(WoWStatusGroups.listed and WoWStatusGroups.listed() or {}) do
+            if id ~= group then
+                local hex = name:gsub(".", function(c) return string.format("%02x", c:byte()) end)
+                table.insert(lines, table.concat({"G", group, roster.id, hex}, " "))
+            end
+        end
+    end
     -- The addon version, once per list; older versions ignore this line.
     local version = WoWStatusPopups.runtimeVersion
     if #lines > 0 and type(version) == "string" and version:match("^%d+%.%d+%.%d+$") then
@@ -458,6 +467,50 @@ function R.whoLookup()
     return target
 end
 
+-- Groups friends listed: {[id] = {name, by = {[player ID] = {name, at}}}}. Bounded.
+local MAX_LISTINGS, LISTING_DAYS = 32, 14
+local function listings()
+    local roster = state()
+    roster.listings = type(roster.listings) == "table" and roster.listings or {}
+    return roster.listings
+end
+-- Listed groups to browse: not yet joined, heard of in the last 14 days, newest first.
+function R.listings()
+    if not db or not current then return {} end
+    local list, now = {}, time()
+    for id, item in pairs(listings()) do
+        if type(item) == "table" and S.string(item.name) and not WoWStatusGroups.contains(current, id) then
+            local names, newest = {}, 0
+            for _, by in pairs(type(item.by) == "table" and item.by or {}) do
+                if type(by) == "table" and (S.number(by.at) or 0) > now - LISTING_DAYS * 86400 then
+                    names[#names + 1] = S.string(by.name) or "?"
+                    newest = math.max(newest, by.at)
+                end
+            end
+            if #names > 0 then
+                table.sort(names)
+                list[#list + 1] = {id=id, name=item.name, by=table.concat(names, ", "), at=newest}
+            end
+        end
+    end
+    table.sort(list, function(a, b) return a.at > b.at end)
+    return list
+end
+-- Ticking or unticking Listed: members get the listing now, or are told to drop it.
+function R.listingChanged(id, listed)
+    if not db or not current then return end
+    R.changed() -- Resends the lists (it starts a new queue, so the "U" lines follow it).
+    if not listed then
+        for group in pairs(WoWStatusGroups.selected(current)) do
+            if group ~= id then
+                for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                    table.insert(outgoing, {target=peer, text=table.concat({"U", group, state().id, id}, " ")})
+                end
+            end
+        end
+    end
+end
+
 -- After a privacy change: tell everyone again (or tell them to forget us).
 function R.changed()
     if not db or not current then return end
@@ -629,6 +682,37 @@ receive = function(message, sender, distribution)
         for _ in pairs(character.milestones) do count = count + 1 end
         if count >= 20 and not character.milestones[level] then return false end
         character.milestones[level] = {at=at, exact=flag == "e"}
+        return true
+    end
+    -- "G": a member listed one of their groups; "U": they unlisted it.
+    if op == "G" and #words == 4 then
+        local hex = words[4]
+        if #hex > 160 or #hex % 2 ~= 0 or not hex:match("^[0-9a-f]+$") then return false, "bad listing" end
+        local name = hex:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
+        local id, cleaned = WoWStatusGroups.key(name)
+        if not id or cleaned:find(S.CONTROL_OR_PIPE) then return false, "bad group name" end
+        local all = listings()
+        if not all[id] then
+            local count, oldest, oldestAt = 0, nil, math.huge
+            for k, item in pairs(all) do
+                count = count + 1
+                local at = 0
+                for _, by in pairs(type(item) == "table" and type(item.by) == "table" and item.by or {}) do at = math.max(at, S.number(by.at) or 0) end
+                if at < oldestAt then oldest, oldestAt = k, at end
+            end
+            if count >= MAX_LISTINGS and oldest then all[oldest] = nil end
+            all[id] = {name=cleaned, by={}}
+        end
+        local player = players[pid]
+        all[id].by[pid] = {name=(player and player.name) or (S.string(sender) and sender:match("^[^-]+")) or "?", at=time()}
+        return true
+    end
+    if op == "U" and #words == 4 then
+        local item = listings()[words[4]]
+        if item and type(item.by) == "table" then
+            item.by[pid] = nil
+            if not next(item.by) then listings()[words[4]] = nil end
+        end
         return true
     end
     if op == "S" and #words == 8 then

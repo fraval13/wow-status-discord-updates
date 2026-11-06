@@ -59,6 +59,11 @@ W.add({
     ["older version"] = "eldre versjon", ["older version or list sharing off"] = "eldre versjon eller listedeling av",
     ["Never met"] = "Aldri møtt", ["offline"] = "fråkopla", ["XP %d%%"] = "XP %d %%", ["Level %d"] = "Nivå %d",
     ["1 death"] = "1 dødsfall", ["%d deaths"] = "%d dødsfall", ["Groups:"] = "Grupper:",
+    ["Listed"] = "Lista", ["Listed group"] = "Lista gruppe", ["Browse groups"] = "Bla i grupper", ["listed by"] = "lista av",
+    ["Friends in your other groups can see this group under Browse groups and join it. Leave it off for a private group."] =
+        "Vener i dei andre gruppene dine kan sjå denne gruppa under Bla i grupper og bli med. La det vere av for ei privat gruppe.",
+    ["No listed groups yet. Friends list a group by ticking Listed on their Groups page."] =
+        "Ingen lista grupper enno. Vener listar ei gruppe ved å krysse av for Lista på Grupper-sida si.",
     ["Equipped by"] = "Teke i bruk av",
     ["Day:"] = "Dag:", ["Today"] = "I dag", ["Yesterday"] = "I går", ["All days"] = "Alle dagar",
     ["Nothing yet today."] = "Ingenting enno i dag.", ["No activity on this day."] = "Ingen aktivitet denne dagen.",

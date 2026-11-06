@@ -185,3 +185,25 @@ def test_an_empty_today_says_so():
         WoWStatusJournal.show()
         assert(WoWStatusActivityLog.empty.text == "Nothing yet today.")
     ''')
+
+
+def test_groups_page_lists_and_browses_groups():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        WoWStatusGroups.show()
+        local panel = WoWStatusGroupWindow
+        local row = panel.rows[1]
+        assert(row:IsShown() and row.listed and not row.listed:GetChecked())
+        row.listed:SetChecked(true); row.listed.OnClick(row.listed)
+        assert(WoWStatusGroups.isListed(row.id))
+        -- A friend's listing, joined from Browse groups.
+        local id = WoWStatusGroups.key("Secret Garden")
+        WoWStatusDB.roster.listings = {[id] = {name="Secret Garden", by={["0123456789abcdef"]={name="Frank", at=time()}}}}
+        panel.browse.OnClick(panel.browse)
+        local pick = WoWStatusMenu.rows[1]
+        assert(pick.text.text:find("Secret Garden", 1, true) and pick.text.text:find("Frank", 1, true))
+        pick.OnClick(pick)
+        assert(WoWStatusGroups.contains(character(), id))
+        assert(panel.rows[2]:IsShown())
+    ''')

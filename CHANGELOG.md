@@ -15,6 +15,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - A new notification ignores clicks for 1.5 seconds; its buttons are greyed out and count down meanwhile
 - Missed the reaction buttons? A friend's log card offers them for a minute after the notification
 - Clicking a reaction button sends it and closes the notification
+- Browse groups: tick Listed on a group to let friends in your other groups see and join it
 
 ## 1.18.0
 

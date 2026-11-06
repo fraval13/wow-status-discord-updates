@@ -504,3 +504,45 @@ def test_debug_log_leaves_out_ordinary_chat():
     lua.eval('WoWStatusPopups.receive')('WTS Linen Bag cheap', 'Stranger-TestRealm', 'Trade')
     lua.eval('fire')('CHAT_MSG_SYSTEM', 'Stranger has come online.')
     assert lua.eval('#WoWStatusDB.debug_log') == 0
+
+
+def test_listed_groups_can_be_browsed_and_joined_by_friends():
+    mira, thora = pair()
+    mira.execute('WoWStatusGroups.update("dawnwatch\\nSecret Garden", "Frank")')
+    garden = mira.eval('(WoWStatusGroups.key("Secret Garden"))')
+    # Unlisted: the name never leaves Mira's client.
+    sent = pump(mira, thora)
+    assert not any(line.startswith('G ') for line in sent)
+    assert not any('Secret' in line for line in sent)
+    assert len(thora.eval('WoWStatusRoster.listings()')) == 0
+    # Listed: members of her other group can browse it.
+    assert mira.eval(f'WoWStatusGroups.setListed("{garden}", true)')
+    sent = pump(mira, thora, start=300)
+    assert any(line.startswith('G ') for line in sent)
+    listing = thora.eval('WoWStatusRoster.listings()[1]')
+    assert listing.name == 'Secret Garden' and listing.by == 'Frank' and listing.id == garden
+    # Joining from Browse groups.
+    ok, _ = thora.eval('WoWStatusGroups.join("Secret Garden")')
+    assert ok and thora.eval(f'WoWStatusGroups.contains(character(), "{garden}")')
+    assert len(thora.eval('WoWStatusRoster.listings()')) == 0   # joined groups are not offered
+
+
+def test_unlisting_removes_the_listing():
+    mira, thora = pair()
+    mira.execute('WoWStatusGroups.update("dawnwatch\\nSecret Garden", "Frank")')
+    garden = mira.eval('(WoWStatusGroups.key("Secret Garden"))')
+    mira.eval(f'WoWStatusGroups.setListed("{garden}", true)')
+    pump(mira, thora)
+    assert len(thora.eval('WoWStatusRoster.listings()')) == 1
+    mira.eval(f'WoWStatusGroups.setListed("{garden}", false)')
+    sent = pump(mira, thora, start=300)
+    assert any(line.startswith('U ') for line in sent)
+    assert len(thora.eval('WoWStatusRoster.listings()')) == 0
+
+
+def test_a_listing_from_outside_the_group_is_refused():
+    _, thora = pair()
+    hexname = 'Secret Garden'.encode().hex()
+    group = thora.eval('(next(character().group_ids))')
+    ok = thora.eval('WoWStatusRoster.receive')(f'G {group} 0123456789abcdef {hexname}', 'Stranger-TestRealm', 'WHISPER')
+    assert not ok and len(thora.eval('WoWStatusRoster.listings()')) == 0

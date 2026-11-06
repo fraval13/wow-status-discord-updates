@@ -187,6 +187,36 @@ local function update(text, playerName)
     return true, "Groups saved for all characters."
 end
 G.update = update
+-- Listed ("public") groups: the account's own choice, per group. A listed group's
+-- name goes to members of this account's other groups, who can join it from
+-- Browse groups. Unlisted groups are never sent anywhere.
+function G.isListed(id) return database ~= nil and type(database.listed_groups) == "table" and database.listed_groups[id] == true end
+function G.setListed(id, listed)
+    if not database or not (database.account_groups or {})[id] then return false end
+    database.listed_groups = type(database.listed_groups) == "table" and database.listed_groups or {}
+    database.listed_groups[id] = listed == true or nil
+    if WoWStatusRoster and WoWStatusRoster.listingChanged then WoWStatusRoster.listingChanged(id, listed == true) end
+    return true
+end
+-- Listed groups with their names: {[id] = name}.
+function G.listed()
+    local result = {}
+    for id, name in pairs(database and database.account_groups or {}) do
+        if G.isListed(id) then result[id] = name end
+    end
+    return result
+end
+-- Join a group by name (Browse groups).
+function G.join(name)
+    local id, cleaned, reason = G.key(name or "")
+    if not id then return false, reason or "Enter one group ID of up to 80 characters." end
+    if (database.account_groups or {})[id] then return false, "That group is already in your list." end
+    local labels, count = {}, 0
+    for _, label in pairs(database.account_groups or {}) do table.insert(labels, label); count = count + 1 end
+    if count >= MAX_GROUPS then return false, "You can add up to 8 groups. Remove one before adding another." end
+    table.insert(labels, cleaned)
+    return update(table.concat(labels, "\n"), database.player_name or "")
+end
 function G.text(character, multiline)
     local ids = {}
     for id, member in pairs(G.selected(character)) do table.insert(ids, member.label or id) end
@@ -210,7 +240,10 @@ local function renderGroups()
         row.id = group and group.id
         row.fullLabel = group and group.label
         row:SetShown(group ~= nil)
-        if group then row.label:SetText((group.label:gsub("|", "||"))) end
+        if group then
+            row.label:SetText((group.label:gsub("|", "||")))
+            row.listed:SetChecked(G.isListed(group.id))
+        end
     end
 end
 local function saveList(groups)
@@ -291,7 +324,21 @@ function G.show(host)
         panel.input:SetScript("OnEnterPressed", add)
         panel.status = label("", -270)
         panel.status:SetTextColor(1, .82, .25)
-        panel.count = label("", -306)
+        panel.count = label("", -306, 400)
+        -- Groups friends listed, to join with one click.
+        panel.browse = button(panel, "Browse groups", 430, -300, 144, function(self)
+            local list = WoWStatusRoster and WoWStatusRoster.listings and WoWStatusRoster.listings() or {}
+            if #list == 0 then refuse("No listed groups yet. Friends list a group by ticking Listed on their Groups page."); return end
+            local items = {}
+            for _, item in ipairs(list) do
+                items[#items + 1] = {label = item.name:gsub("|", "||") .. "  |cff9d9d9d" .. T("listed by") .. " " .. item.by:gsub("|", "||") .. "|r", value = item.name}
+            end
+            WoWStatusUI.menu(self, items, function(name)
+                local ok, message = G.join(name)
+                refuse(message)
+                if ok then renderGroups() end
+            end)
+        end)
         panel.empty = label("No groups selected. Enter a group ID above and click Add.", -344)
         panel.rows = {}
         for i = 1, MAX_GROUPS do
@@ -299,7 +346,7 @@ function G.show(host)
             row:SetPoint("TOPLEFT", 24, -338 - (i - 1) * 36)
             row:SetSize(550, 32)
             row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-            row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(410)
+            row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(290)
             row.label:SetJustifyH("LEFT"); row.label:SetWordWrap(false)
             row:EnableMouse(true)
             row:SetScript("OnEnter", function(self)
@@ -310,6 +357,20 @@ function G.show(host)
                 end
             end)
             row:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+            -- Listed: friends in your other groups can see and join it.
+            row.listed = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+            row.listed:SetPoint("TOPLEFT", 300, 0); row.listed:SetSize(30, 30)
+            row.listedLabel = row.listed:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            row.listedLabel:SetPoint("TOPLEFT", 32, -8); row.listedLabel:SetText(T("Listed"))
+            row.listed:SetScript("OnClick", function(self) G.setListed(row.id, self:GetChecked() and true or false) end)
+            row.listed:SetScript("OnEnter", function(self)
+                if GameTooltip then
+                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(T("Listed group"))
+                    GameTooltip:AddLine(T("Friends in your other groups can see this group under Browse groups and join it. Leave it off for a private group."), 1, 1, 1, true)
+                    GameTooltip:Show()
+                end
+            end)
+            row.listed:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
             row.remove = button(row, "Remove", 430, 0, 120, function()
                 local retained = {}
                 for _, group in ipairs(groupList()) do
