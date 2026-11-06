@@ -894,6 +894,26 @@ local function entryOf(item)
     local id = item.nonce and WoWStatusJournal.eventID(item.sender, item.nonce)
     return id and WoWStatusJournal.entry(id) or nil
 end
+-- The text a reaction button shows and whispers: in Nynorsk a random line for
+-- GZ!, F and "Enjoy <zone>!", kept for that notification; else the translation.
+function P.reactionText(item, reaction)
+    if type(item) ~= "table" or type(reaction) ~= "string" then return reaction end
+    item.reactionTexts = item.reactionTexts or {}
+    local chosen = item.reactionTexts[reaction]
+    if chosen then return chosen end
+    local pools = WoWStatusLocale.lang() == "nn" and WoWStatusLocale.POOLS or {}
+    local zone = reaction:match("^Enjoy (.+)!$")
+    local pool = zone and pools.Enjoy or pools[reaction]
+    if type(pool) == "table" and #pool > 0 then
+        chosen = pool[math.random(#pool)]
+        if zone then
+            local at = chosen:find("{zone}", 1, true)
+            chosen = chosen:sub(1, at - 1) .. zone .. chosen:sub(at + 6)
+        end
+    else chosen = T(reaction) end
+    item.reactionTexts[reaction] = chosen
+    return chosen
+end
 local reactionButtons
 function P.react(item, text)
     local entry = entryOf(item)
@@ -908,8 +928,10 @@ function P.react(item, text)
         if toast and toast:IsShown() then reactionButtons() end
     end
     if WoWStatusJournal and WoWStatusJournal.redraw then WoWStatusJournal.redraw() end
-    -- Whispered in your chosen language ("Gratulerer!"; GZ!, F and Git Good as long Nynorsk lines).
-    return pcall(send, T(text), "WHISPER", nil, item.sender) == true
+    -- Whispered as the button showed it (Nynorsk: one of many lines).
+    item.whispered = P.reactionText(item, text)
+    if entry then entry.whispered = item.whispered end
+    return pcall(send, item.whispered, "WHISPER", nil, item.sender) == true
 end
 -- Reaction buttons sit top right beside the heading. Long ones (the Nynorsk
 -- lines, "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
@@ -922,11 +944,11 @@ local function guardButtons()
     for _, button in ipairs(toast.reactions) do
         if button:IsShown() and button.reaction then
             if left > 0 then
-                button:SetText(T(button.reaction) .. string.format(" (%.1f)", left))
+                button:SetText((button.label or T(button.reaction)) .. string.format(" (%.1f)", left))
                 if button.Disable then button:Disable() end
                 button.waiting = true
             elseif button.waiting then
-                button:SetText(T(button.reaction))
+                button:SetText(button.label or T(button.reaction))
                 if button.Enable then button:Enable() end
                 button.waiting = nil
             end
@@ -958,8 +980,8 @@ reactionButtons = function()
             end)
             toast.reactions[i] = button
         end
-        local text = T(list[i])
-        button.reaction = list[i]
+        local text = P.reactionText(item, list[i])
+        button.reaction, button.label = list[i], text
         button:SetText(text)
         -- Wide enough for its text, never narrower than 86.
         local label = button.GetFontString and button:GetFontString()

@@ -13,6 +13,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - Long activity-log lines end with "..." instead of wrapping; hover a card to read all of it (no event ID)
+- In Nynorsk, GZ!, F and new-zone buttons pick one of 20 lines at random, and whisper what they show
 
 ## 1.20.0
 

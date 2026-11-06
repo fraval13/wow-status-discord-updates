@@ -989,7 +989,7 @@ local function rowReactions(row,e)
             end)
             row.reactions[i]=button
         end
-        local text=T(reaction)
+        local text=P.reactionText(e,reaction)
         button.entry,button.reaction=e,reaction
         button:SetText(text)
         local label=button.GetFontString and button:GetFontString()
@@ -1038,7 +1038,8 @@ local function render()
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
-            local mine=not e.owner and S.string(e.reacted) and ("  |cffffd100"..T("You whispered").." “"..T(e.reacted).."”|r") or ""
+            local said=S.string(e.whispered) or (S.string(e.reacted) and T(e.reacted))
+            local mine=not e.owner and said and ("  |cffffd100"..T("You whispered").." “"..said:gsub("|","||").."”|r") or ""
             row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or "")..mine)
             -- Reaction buttons for a minute after the notification; the log redraws when they expire.
             if rowReactions(row,e) then
@@ -1215,7 +1216,7 @@ local POSITIVE={profession=true,dungeon=true,raid=true,mount=true,epicmount=true
 local REACTION_WINDOW=900
 function J.reaction(text,sender)
     text,sender=S.string(text),S.string(sender)
-    if not db or not current or not text or not sender or #text>64 or P.isSelf(sender) then return false end
+    if not db or not current or not text or not sender or #text>160 or P.isSelf(sender) then return false end
     local kinds,zone=REACTION_KINDS[text],text:match("^Enjoy (.+)!$") or text:match("^Kos deg i (.+)!$")
     if text=="Congrats!" or text=="Gratulerer!" then kinds=POSITIVE end
     -- "Congrats on the new gear!" and the like, in English or Nynorsk, for that kind only.
@@ -1223,6 +1224,15 @@ function J.reaction(text,sender)
         if text==congrats or text==WoWStatusLocale.NN[congrats] then kinds={[kind]=true} end
     end
     if text:match("^Congrats on level %d+!$") or text:match("^Gratulerer med nivå %d+!$") then kinds={level=true} end
+    -- The random Nynorsk lines: GZ! for level-ups, F for deaths, "{zone}" lines for zones.
+    local pools=WoWStatusLocale.POOLS or {}
+    for _,line in ipairs(pools["GZ!"] or {}) do if text==line then kinds={level=true} end end
+    for _,line in ipairs(pools.F or {}) do if text==line then kinds={death=true} end end
+    for _,line in ipairs(pools.Enjoy or {}) do
+        local pattern="^"..line:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]","%%%0"):gsub("{zone}","(.+)").."$"
+        local found=text:match(pattern)
+        if found then zone,kinds=found,{zone=true} end
+    end
     if zone then kinds={zone=true} end
     if not kinds then return false end
     -- Only group members react through the buttons.
