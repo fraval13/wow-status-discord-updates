@@ -92,6 +92,7 @@ function P.filterNotFound(message)
     local key = whisperKey(name)
     local at = key and whispers[key]
     if not at or time() - at > WHISPER_ECHO then return false end
+    S.debug("whisper bounced (hidden): " .. text)
     for group, known in pairs(knownPeers) do
         for k in pairs(known) do if whisperKey(k) == key then known[k] = nil end end
     end
