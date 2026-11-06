@@ -485,8 +485,11 @@ local function syncGroups()
         end
     end
 end
+local loggedStatus
 local function status(state, event, target)
     prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil, target = target}
+    local line = state .. " " .. tostring(event and event.kind) .. " " .. tostring(target)
+    if line ~= loggedStatus then loggedStatus = line; S.debug("live send status: " .. line) end
 end
 local function clear()
     incoming, outgoing, unverified, active, lastVerify = {}, {}, {}, nil, nil
@@ -720,25 +723,28 @@ local function admit(c, now)
     c.expires = now + VERIFY_SECONDS
     table.insert(unverified, c)
     noteReceive("verifying_sender", c, now)
-    return false
+    return false, "sender not in member list yet (" .. tostring(c.key) .. ")"
 end
 local receiveUpdate
 -- Live updates; the debug log notes each with its result (no group name).
 function P.receive(text, sender, channel)
-    local result = receiveUpdate(text, sender, channel)
+    local result, why = receiveUpdate(text, sender, channel)
     if type(text) == "string" then
-        S.debug("live " .. text:sub(1, 80) .. " from " .. tostring(sender) .. ": " .. (result and "shown" or "dropped"))
+        S.debug("live " .. text:sub(1, 80) .. " from " .. tostring(sender) .. ": "
+            .. (result and "shown" or ("dropped" .. (why and (" (" .. why .. ")") or ""))))
     end
     return result
 end
 receiveUpdate = function(text, sender, channel)
     text, sender, channel = S.string(text), S.string(sender), S.string(channel)
-    if not receiving() or type(text) ~= "string" or #text > 220
-        or type(channel) ~= "string" then return false end
+    if not receiving() then return false, "receiving off" end
+    if type(text) ~= "string" or #text > 220 or type(channel) ~= "string" then return false, "bad packet" end
     local group = channels()[channel:lower()]
-    if not group then return false end
+    if not group then return false, "group not selected on this character" end
     local key = P.senderKey(sender)
-    if not key or P.isSelf(sender) or (group == "legacy" and not prefs.trusted[key]) then return false end
+    if not key then return false, "bad sender" end
+    if P.isSelf(sender) then return false, "taken for yourself (own name " .. tostring(P.ownName()) .. ")" end
+    if group == "legacy" and not prefs.trusted[key] then return false, "legacy" end
     local client, kind, atText, nonce, encoded = text:match("^WSTATUS3 ([%w%-]+) (%a+) (%d+) ([%w%-]+) ([a-f0-9]+)$")
     local raw, automatic, armor, extended = false, false, false, false
     if not client then
@@ -763,7 +769,7 @@ receiveUpdate = function(text, sender, channel)
         local at, now = tonumber(atText), time()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) then return false end
-        if late(sender, kind, at, now) then return false end
+        if late(sender, kind, at, now) then return false, "too old or ahead (clock)" end
         local detail = raw and encoded or encoded:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
         if detail:find(S.CONTROL_OR_PIPE) then return invalidLogData(group,sender) end
         local lootInfo
@@ -1164,6 +1170,7 @@ local function tick()
     local unpackArgs = unpack or table.unpack
     if args[3] == "WHISPER" then P.whispered(args[4]) end
     local result = P.sendResult(pcall(send, unpackArgs(args, 1, 4)))
+    S.debug("live send " .. tostring(item.event and item.event.kind) .. " to " .. tostring(args[4]) .. ": " .. tostring(result))
     -- A throttled whisper goes to the same target again after a pause; only a
     -- send that went out or failed moves on to the next target.
     local wait = P.retryWait(result, item, pacing, now)
