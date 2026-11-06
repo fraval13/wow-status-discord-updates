@@ -1441,7 +1441,7 @@ function F.text(item)
         local hash=5381
         local text=seed..salt
         for i=1,#text do hash=(hash*131+text:byte(i))%4294967291 end
-        return hash%count+1
+        return hash % count + 1
     end
     -- New captions use the chosen personality. Random picks a voice per event,
     -- Classic included; a voice without this kind falls back to classic.
