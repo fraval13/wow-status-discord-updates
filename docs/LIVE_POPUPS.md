@@ -7,7 +7,7 @@ needed. Install the whole client folder and fully restart WoW for the new module
 
 1. Open Options → AddOns → WoW Status. Confirm native settings backgrounds and
    readable controls, a short group-ID instruction, and Groups / Activity log /
-   Preview toasts buttons. No separate Milestones or integration page is shown.
+   Notifications buttons. No separate Milestones or integration page is shown.
 2. Confirm Announce first armor equips and Rare / Epic / Legendary equipment are checked
    on new settings. All milestones are on the main page. Turning off a category
    stops your corresponding announcements; collection/profile choices still apply.
@@ -18,7 +18,8 @@ needed. Install the whole client folder and fully restart WoW for the new module
 5. Activity log has only its title above the cards, with All / Mine / Friends /
    Close below. No technical subtitle or Catch up button is shown. Scroll back
    while new activity arrives and check that the viewed entry stays anchored.
-6. Notification previews contains only toast choices and Close; there is no
+6. Notifications shows the popup settings first and, below a line, the toast
+   previews and Close; there is no
    manual character introduction or bottom character-card demonstration. A Joined
    the WoW Status group preview is available.
 

@@ -50,17 +50,22 @@ function P.show(host)
         for _,entry in ipairs(examples) do
             if entry[1]~="profession" or A.classicProfessionTitles~=false then table.insert(visible,entry) end
         end
-        local options = 150 + #visible * 42
-        local footer = options + 468
+        -- Settings first; below a line, the previews.
+        local options = 150
+        local previews = options + 446
+        local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
-        text(panel,"Notification previews",24,-20)
-        text(panel,"Choose a notification to preview it.",24,-60)
+        text(panel,"Notifications",24,-20)
         panel.guide=button(panel,"Setup guide",24,-96,170,function() WoWStatusGuide.show() end)
         panel.tour=button(panel,"Show me around",210,-96,170,function() WoWStatusGuide.tour() end)
+        panel.divider=panel:CreateTexture(nil,"ARTWORK")
+        panel.divider:SetPoint("TOPLEFT",24,-previews);panel.divider:SetSize(540,1);panel.divider:SetColorTexture(.82,.68,.32,.6)
+        text(panel,"Previews",24,-previews-16)
+        text(panel,"Choose a notification to preview it.",24,-previews-48)
         panel.buttons={}
         for i, entry in ipairs(visible) do
             local kind=entry[1]
-            panel.buttons[kind]=button(panel,kind=="pvp" and A.pvpLabel or entry[2],24,-148-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
+            panel.buttons[kind]=button(panel,kind=="pvp" and A.pvpLabel or entry[2],24,-previews-88-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
         end
         -- Popup placement and big banners (#61). Account-wide.
         local function check(title,y,get,set)

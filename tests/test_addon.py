@@ -1360,3 +1360,16 @@ def test_settings_command_in_combat_uses_standalone_panels(lua):
         SlashCmdList.WOWSTATUS("groups")
         assert(__opened == "Groups")
     ''')
+
+
+def test_notifications_page_has_settings_first_and_previews_below_a_line(lua):
+    lua.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:SetPoint(_, _, y) self.y = y end
+    ''')
+    lua.eval('SlashCmdList.WOWSTATUS')('previews')
+    panel = lua.eval('WoWStatusNotificationPreviews')
+    lowest_setting = min(panel.languageSwitch.y, panel.popupSize.y, panel.unlock.y)
+    assert lowest_setting > panel.divider.y
+    assert all(b.y < panel.divider.y for b in panel.buttons.values())
+    assert panel.close.y < min(b.y for b in panel.buttons.values())

@@ -197,7 +197,7 @@ local function showPanel(host)
         end
         button(panel,"Groups",24,-116,160,function() openSettings("groups") end)
         button(panel,"Activity log",204,-116,160,function() WoWStatusJournal.show() end)
-        button(panel,"Preview toasts",384,-116,170,function() openSettings("previews") end)
+        button(panel,"Notifications",384,-116,170,function() openSettings("previews") end)
         checkbox("enabled","Share my progress",24,-174)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
@@ -328,7 +328,7 @@ local function settingsPage(name, width, show)
     local function display()
         show(scroll)
         local pages = {Groups=WoWStatusGroupWindow, Discord=WoWStatusDiscordSettings,
-            ["Notification previews"]=WoWStatusNotificationPreviews}
+            ["Notifications"]=WoWStatusNotificationPreviews}
         content = pages[name] or WoWStatusSetup
         scroll:SetScrollChild(content)
         resize()
@@ -359,8 +359,8 @@ registerSettings = function()
             discordCategory=Settings.RegisterCanvasLayoutSubcategory(settingsCategory,discord,"Discord (optional)")
             Settings.RegisterAddOnCategory(discordCategory)
         end
-        local previews = settingsPage("Notification previews", 600, WoWStatusPreviews.show)
-        previewsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, previews, "Notification previews")
+        local previews = settingsPage("Notifications", 600, WoWStatusPreviews.show)
+        previewsCategory = Settings.RegisterCanvasLayoutSubcategory(settingsCategory, previews, "Notifications")
         Settings.RegisterAddOnCategory(previewsCategory)
     elseif InterfaceOptions_AddCategory then
         local page = settingsPage("WoW Status", 600, showPanel)
@@ -374,7 +374,7 @@ registerSettings = function()
             local discord=settingsPage("Discord",600,showDiscord)
             discord.parent=page.name;InterfaceOptions_AddCategory(discord);discordCategory=discord
         end
-        local previews = settingsPage("Notification previews", 600, WoWStatusPreviews.show)
+        local previews = settingsPage("Notifications", 600, WoWStatusPreviews.show)
         previews.parent = page.name
         InterfaceOptions_AddCategory(previews)
         previewsCategory = previews

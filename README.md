@@ -56,7 +56,7 @@ a death once when the player releases their spirit.
 ## Language
 
 WoW Status is in English by default. Nynorsk is optional: choose it under
-**Preview toasts → Language** in the settings, or type `/wstatus language nn`
+**Notifications → Language** in the settings, or type `/wstatus language nn`
 (`/wstatus language en` switches back), then `/reload`. Windows, notifications, the
 log, records and all 1,300 captions change; what players send each other stays
 English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
@@ -66,8 +66,8 @@ and the release notes stay English.
 
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed
 quests, new professions and profession title promotions, first dungeon clears, first raid boss kills, first mount,
-reputation ranks, major class unlocks and PvP ranks. **Preview toasts** opens local
-samples. Notifications queue one at a time for six seconds each.
+reputation ranks, major class unlocks and PvP ranks. **Notifications** holds the popup
+settings, with local samples below them. Notifications queue one at a time for six seconds each.
 
 **Screenshots** (per character, all off by default) can take a picture about one
 second after your own level-up or first dungeon clear, optionally with the interface

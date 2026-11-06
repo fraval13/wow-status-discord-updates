@@ -112,7 +112,7 @@ W.add({
     ["Next page"] = "Neste side", ["Refresh"] = "Oppdater", ["Event logs"] = "Hendingslogg",
     ["Level graph"] = "Nivågraf", ["Level times"] = "Nivåtider", ["Character details"] = "Figurdetaljar",
     -- Notification settings
-    ["Notification previews"] = "Førehandsvising av varsel", ["Choose a notification to preview it."] = "Vel eit varsel for å sjå korleis det ser ut.",
+    ["Notifications"] = "Varsel", ["Previews"] = "Førehandsvising", ["Choose a notification to preview it."] = "Vel eit varsel for å sjå korleis det ser ut.",
     ["Setup guide"] = "Oppsettsrettleiing", ["Unlock popup position"] = "Lås opp plasseringa av varsla",
     ["Reset popup position"] = "Tilbakestill plasseringa", ["Big banners for big moments"] = "Store banner for store augneblinkar",
     ["Next theme"] = "Neste tema", ["Smaller"] = "Mindre", ["Larger"] = "Større",
@@ -126,7 +126,7 @@ W.add({
     ["PREVIEW — example character"] = "FØREHANDSVISING — eksempelfigur",
     -- Main settings page
     ["Set the same group ID as your friends to start sharing."] = "Bruk same gruppe-ID som venene dine for å byrje å dele.",
-    ["Activity log"] = "Aktivitetslogg", ["Preview toasts"] = "Førehandsvis varsel", ["Share my progress"] = "Del framgangen min",
+    ["Activity log"] = "Aktivitetslogg", ["Share my progress"] = "Del framgangen min",
     ["Announcements"] = "Kunngjeringar", ["Share my session recaps"] = "Del øktsamandraga mine",
     ["First-time equipment"] = "Utstyr første gong", ["Announce first armor equips"] = "Kunngjer første rustning",
     ["Rare equipment"] = "Sjeldan utstyr", ["Epic equipment"] = "Episk utstyr", ["Legendary equipment"] = "Legendarisk utstyr",

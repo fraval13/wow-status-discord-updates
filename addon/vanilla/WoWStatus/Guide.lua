@@ -1,6 +1,6 @@
 -- First-time setup guide and "Show me around" tour (#64).
 -- The guide appears once on a brand-new account (WoWStatusDB.guide_pending)
--- and can be skipped; Options > Notification previews opens it again.
+-- and can be skipped; Options > Notifications opens it again.
 -- The tour fills the main window with sample friends and events. Sample
 -- entries live only in this file's memory: they are never added to the
 -- saved log, sent to the group, relayed or seen by the companion.
