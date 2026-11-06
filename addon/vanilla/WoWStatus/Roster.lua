@@ -33,8 +33,8 @@ local lastXp, xpSent = 0, nil
 -- The Sync button: usable once a minute; list requests answered once a minute per member.
 R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
--- Members asked for their list this session (at first contact).
-local requested = {}
+-- Members asked for their list this session (at first contact), and /who lookups.
+local requested, whoAsked = {}, {}
 local XP_INTERVAL = 300
 
 -- One key per character for the list. WoW Forever spreads characters over many
@@ -341,9 +341,10 @@ function R.scan()
 end
 
 -- /who: the game's own answer gives an online member's level now, also for
--- members whose version never refreshes a list. Addons may not send a /who
--- (WoW Forever blocks it even from a click), so the results of a /who the
--- player types are read.
+-- members whose version never refreshes a list. The game allows a /who only from
+-- a click, so the Sync button looks up one member each time (those without a
+-- recent list first); results of a /who the player types are read too.
+-- Untested live on WoW Forever: if it blocks this, remove the lookup.
 local MAX_WHO = 200
 local function whoLevels()
     local roster = state()
@@ -386,6 +387,38 @@ function R.readWho()
     end
     if learnt > 0 then R.render() end
     return learnt
+end
+-- The online member to look up: one never looked up this session, members whose
+-- version sends no list requests (or no list) first, then the oldest list.
+function R.whoTarget()
+    if not db or not current then return nil end
+    local lists = {}
+    for _, player in pairs(state().players) do
+        local fresh = S.string(player.version) and R.isNewer(player.version, "1.10.99")
+        for k, c in pairs(player.characters) do lists[k] = {at=S.number(c.at) or 0, fresh=fresh} end
+    end
+    local best, bestScore
+    for group in pairs(WoWStatusGroups.selected(current)) do
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+            local k = key(peer)
+            if k and not whoAsked[k] and not WoWStatusPopups.isSelf(peer) and WoWStatusPopups.fullName(peer) then
+                local list = lists[k]
+                local score = (list and list.fresh and 1e10 or 0) + (list and list.at or 0)
+                if not bestScore or score < bestScore then best, bestScore = peer, score end
+            end
+        end
+    end
+    return best
+end
+function R.whoLookup()
+    local target = R.whoTarget()
+    local F = C_FriendList
+    local send = F and F.SendWho or SendWho
+    if not target or not send then return nil end
+    whoAsked[key(target)] = true
+    local short = target:match("^([^%-]+)")
+    pcall(send, 'n-"' .. short .. '"')
+    return target
 end
 
 -- After a privacy change: tell everyone again (or tell them to forget us).
@@ -988,11 +1021,11 @@ local function build(parent)
     page.hide:SetScript("OnClick", function(self) R.setHidden(current, self:GetChecked() and true or false) end)
     page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
-    page.sync:SetScript("OnClick", function() R.syncNow() end)
+    page.sync:SetScript("OnClick", function() if R.syncNow() then R.whoLookup() end end)
     page.sync:SetScript("OnEnter", function(self)
         if GameTooltip then
             GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Sync with everyone online"))
-            GameTooltip:AddLine(T("Sends your character list, asks for theirs and catches up the activity log. Once a minute."), 1, 1, 1, true)
+            GameTooltip:AddLine(T("Sends your character list, asks for theirs, looks up one friend's level with /who and catches up the activity log. Once a minute."), 1, 1, 1, true)
             GameTooltip:Show()
         end
     end)
@@ -1035,7 +1068,7 @@ function R.init(database, character, reporter)
     R.observe(character)
     -- The list sent at login already carries this XP.
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
-    requested = {}
+    requested, whoAsked = {}, {}
     xpSent = character and character.roster_info and character.roster_info.xp
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register, PREFIX) end
