@@ -31,7 +31,9 @@ be checked against Git and the environment rather than assumed permanently true.
   not restore videos, GIFs, animation assets or preview controls.
 - Make reasonable implementation decisions and finish authorized work without
   repeatedly asking routine questions. Explain consequential choices and delivery
-  limitations in the pull request description. Never claim a push/deployment succeeded
+  limitations in the pull request description. Write commit messages in Nynorsk
+  with a gentle Christian tone, following the `git-commit` skill
+  (`.agents/skills/git-commit/`, mirrored in `.claude/skills/`). Never claim a push/deployment succeeded
   unless verified. Do not send test Discord messages unless requested.
 
 ## Repository map
