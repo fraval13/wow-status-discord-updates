@@ -878,15 +878,19 @@ function P.react(item, text)
     local send = A.chatSender and A.chatSender()
     if not send or A.chatRestricted() then return false end
     item.reacted = text
-    -- Whispered in your chosen language ("Gratulerer!", and GZ! in full Nynorsk); F and Git Good stay.
+    -- Whispered in your chosen language ("Gratulerer!"; GZ!, F and Git Good as long Nynorsk lines).
     return pcall(send, T(text), "WHISPER", nil, item.sender) == true
 end
+-- Reaction buttons sit top right beside the heading. Long ones (the Nynorsk
+-- lines, "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
+-- notification grows to make room.
+local TOAST_HEIGHT, BESIDE_HEADING = 124, 220
 local function reactionButtons()
     local item = toast.item
     local list = item and not item.reacted and P.reactions(item) or {}
-    local x = -12
     for i = #toast.reactions, 1, -1 do toast.reactions[i]:Hide() end
-    for i = #list, 1, -1 do
+    local widths, total = {}, 0
+    for i = 1, #list do
         local button = toast.reactions[i]
         if not button then
             button = CreateFrame("Button", nil, toast, "UIPanelButtonTemplate")
@@ -900,18 +904,33 @@ local function reactionButtons()
             end)
             toast.reactions[i] = button
         end
+        local text = T(list[i])
         button.reaction = list[i]
-        button:SetText(T(list[i]))
-        -- Wide enough for its text ("Enjoy Stranglethorn Vale!"), never narrower than 86.
+        button:SetText(text)
+        -- Wide enough for its text, never narrower than 86.
         local label = button.GetFontString and button:GetFontString()
-        local width = label and label.GetStringWidth and S.number(label:GetStringWidth())
-        button:SetSize(math.min(260, math.max(86, (width or (#list[i] * 7)) + 24)), 24)
-        button:ClearAllPoints(); button:SetPoint("TOPRIGHT", x, -10)
-        x = x - (button.GetWidth and button:GetWidth() or 86) - 4
+        local measured = label and label.GetStringWidth and S.number(label:GetStringWidth())
+        widths[i] = math.max(86, math.max(measured or 0, #text * 6) + 24)
+        total = total + widths[i] + (i > 1 and 4 or 0)
+    end
+    -- Beside the heading; else one row along the bottom; else one row each.
+    local bottom, stacked = total > BESIDE_HEADING, total > 536
+    toast.reactionRow = #list > 0 and (stacked and "stacked" or bottom and "bottom" or "top") or nil
+    local rows = stacked and #list or bottom and 1 or 0
+    toast:SetSize(560, TOAST_HEIGHT + (rows > 0 and rows * 28 + 6 or 0))
+    local x = -12
+    for i = #list, 1, -1 do
+        local button = toast.reactions[i]
+        button:SetSize(math.min(bottom and 536 or 260, widths[i]), 24)
+        button:ClearAllPoints()
+        if stacked then button:SetPoint("BOTTOMRIGHT", -12, 8 + (#list - i) * 28)
+        elseif bottom then button:SetPoint("BOTTOMRIGHT", x, 8)
+        else button:SetPoint("TOPRIGHT", x, -10) end
+        x = x - (button.GetWidth and button:GetWidth() or widths[i]) - 4
         button:Show()
     end
-    -- Short headings ("LEVEL UP!") sit beside the buttons.
-    toast.heading:SetWidth(#list > 0 and math.max(120, 438 + x + 12) or 438)
+    -- Short headings ("LEVEL UP!") sit beside top-row buttons.
+    toast.heading:SetWidth((#list > 0 and not bottom) and math.max(120, 438 + x + 12) or 438)
 end
 -- Whether the mouse is over the visible notification (or one of its buttons).
 function P.hovered()

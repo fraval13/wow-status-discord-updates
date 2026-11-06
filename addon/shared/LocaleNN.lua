@@ -223,7 +223,7 @@ W.add({
     ["killed by"] = "drepen av", ["Falling"] = "fall", ["Drowning"] = "drukning", ["Fatigue"] = "utmatting",
     ["Fire"] = "eld", ["Lava"] = "lava", ["Slime"] = "slim",
     -- Reactions
-    ["from"] = "frå", ["Git Good"] = "Git Good", ["GZ!"] = "Eg ynskjer deg hjarteleg til lukke med det nye nivået!", ["F"] = "F",
+    ["from"] = "frå", ["Git Good"] = "Øv deg litt meir, så døyr du kanskje sjeldnare!", ["GZ!"] = "Eg ynskjer deg hjarteleg til lukke med det nye nivået!", ["F"] = "Eg tek av meg hjelmen og bøyer hovudet i sorg.",
     -- New version notice
     ["is available"] = "er tilgjengeleg", ["you have"] = "du har",
     ["Get it at wow.frankvalde.com; the CurseForge app can take a few hours."] =

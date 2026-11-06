@@ -152,3 +152,50 @@ def test_nynorsk_gz_is_the_long_wish_and_counts_as_gz():
         for _, item in ipairs(WoWStatusJournal.entries()) do if item.owner and item.kind == "level" then e = item end end
         assert(e.reactions["thora-testrealm"].text == "{long_gz}")
     ''')
+
+
+def test_nynorsk_f_and_git_good_are_long_and_count_for_deaths():
+    lines = ['Eg tek av meg hjelmen og bøyer hovudet i sorg.', 'Øv deg litt meir, så døyr du kanskje sjeldnare!']
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    friend.execute('WoWStatusLocale.set("nn")')
+    assert [friend.eval(f'WoWStatusLocale.T("{t}")') for t in ('F', 'Git Good')] == lines
+    own.execute('__peers = {"Mira-TestRealm", "Thora-TestRealm", "Bob-TestRealm"}')
+    own.execute('for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end; for _ = 1, 3 do WoWStatusPopups.tick() end')
+    own.eval('fire')('PLAYER_DEAD')
+    own.execute(f'''
+        fire("CHAT_MSG_WHISPER", "{lines[0]}", "Thora-TestRealm")
+        fire("CHAT_MSG_WHISPER", "{lines[1]}", "Bob-TestRealm")
+        local e
+        for _, item in ipairs(WoWStatusJournal.entries()) do if item.owner and item.kind == "death" then e = item end end
+        assert(e.reactions["thora-testrealm"].text == "{lines[0]}")
+        assert(e.reactions["bob-testrealm"].text == "{lines[1]}")
+    ''')
+
+
+def death_toast(language):
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    friend.execute(f'WoWStatusLocale.set("{language}")')
+    own.eval('fire')('PLAYER_DEAD')
+    deliver_popup(own, friend)
+    friend.eval('WoWStatusPopups.tick')()
+    return friend.eval('WoWStatusLevelPopup')
+
+
+def test_short_reactions_sit_beside_the_heading():
+    toast = death_toast('en')
+    assert toast.reactionRow == 'top' and toast.height == 124
+    assert [toast.reactions[i].text for i in (1, 2)] == ['F', 'Git Good']
+
+
+def test_long_reactions_get_rows_along_the_bottom():
+    toast = death_toast('nn')
+    # Two long lines: one row each, under the text, at full width.
+    assert toast.reactionRow == 'stacked' and toast.height == 124 + 2 * 28 + 6
+    for i, text in ((1, 'Eg tek av meg hjelmen og bøyer hovudet i sorg.'), (2, 'Øv deg litt meir, så døyr du kanskje sjeldnare!')):
+        button = toast.reactions[i]
+        assert button.text == text
+        assert button.width == max(86, len(text.encode()) * 6 + 24) and button.width <= 536
