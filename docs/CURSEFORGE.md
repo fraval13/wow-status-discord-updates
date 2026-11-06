@@ -26,8 +26,8 @@ Without the token the job runs but uploads nothing and prints a notice. Without
 the variable the job is skipped.
 
 The listing's description, summary and categories are edited on CurseForge, not
-here. The text below is the current recommended listing; the original one
-describes only Classic Era and armor loot.
+here: the upload API only accepts files. Paste the text below into the project
+settings after changing it.
 
 ## How uploads work
 
@@ -49,7 +49,7 @@ describes only Classic Era and armor loot.
 **Name:** WoW Status
 
 **Summary** (short description):
-Share levels, deaths, first dungeon clears and other milestones with your friends in game, with a shared activity log.
+See your friends' level-ups, deaths and big firsts pop up in game, cheer with one click, and compare in a group leaderboard.
 
 **Categories:** Chat & Communication (main), Guild, Quests & Leveling, Achievements
 
@@ -63,49 +63,50 @@ Share levels, deaths, first dungeon clears and other milestones with your friend
 ```markdown
 # WoW Status
 
-See your friends' progress in game. Everyone installs WoW Status and enters the
-same **group ID**. There is no website, account or desktop program to set up.
+**Play together, even when you are not in the same zone.**
 
-## What it shares
-- Level-ups, deaths (with a total) and every 100 completed quests
-- First visits to new zones, new professions and profession title promotions
+WoW Status brings your friends' big moments into your game. When someone dings,
+dies, clears their first dungeon or gets their first mount, it pops up on your
+screen, and you can cheer them on with one click.
+
+No website, no account, no extra program. Everyone installs the addon and enters
+the same **group ID**. That is all.
+
+## Never miss a ding
+- Level-ups and deaths
 - First dungeon clears, first raid boss kills, first mount and first epic mount
-- Reputation ranks, major class ability unlocks and PvP ranks
-- The first time you equip rare, epic or legendary armor
+- New zones, new professions, reputation ranks, class unlocks and PvP ranks
+- Every 100 completed quests
+- The first time someone equips rare, epic or legendary armor
 
-Announcements appear one at a time as on-screen notifications with a random
-flavour caption. Click one to dismiss it. Nothing is announced for ordinary
-quest turn-ins, loot or gear swaps.
+Each moment gets its own notification with a cheeky caption. React with
+**GZ!**, **F** or **Congrats!**, and your friend sees who cheered.
 
-## Activity log
-Open it from the minimap book or with `/wstatus activity`. It keeps your own
-and your friends' milestones. When you log in, the addon quietly catches up on
-what you missed from group members who are online, without replaying old
-notifications.
+No spam: ordinary quests, loot and gear swaps stay quiet.
 
-Retail characters also get their earlier level-ups from their level
-achievements, and their lifetime death count from the game's statistics.
+## Your group at a glance
+- **Characters:** every friend's characters with level, XP, deaths, kills, gold
+  and who is online right now
+- **Leaderboard:** one per group, sorted by level, deaths or quests
+- **Records:** who in the group reached each milestone first
+- **Activity log:** everything that happened, filtered by person or type. Missed
+  something while you were offline? It catches up quietly when you log in.
 
-## Also included
-- Firsts medals: who in the group reached each milestone first
-- Private session recaps, which you can choose to share
+## Make it yours
+- Session recaps of your evening
+- Window themes, adjustable notification size and a compact group status line
 - Optional screenshots on level-up and first dungeon clear
-- A character list grouped by player, with class portraits
-- Window themes, a setup guide and a short tour
+- English or Norwegian (Nynorsk)
 
 ## Getting started
-1. Install the addon and log in.
+1. Install WoW Status and log in.
 2. Open **Options → AddOns → WoW Status → Groups**.
 3. Enter the same group ID as your friends.
 
-Treat the group ID like a password: anyone who knows it can join the group.
+Keep your group ID private: anyone who knows it can join your group.
 
-## Editions
-Retail, Classic Era and TBC Anniversary each have their own file. Install
-the one for your game version.
-
-Sharing uses WoW's own addon messages, so the usual realm and faction limits
-apply.
+## Works on
+Retail, Classic Era, TBC Anniversary and WoW Forever. Pick the file for your game.
 ```
 
 Keep this description in step with `README.md` when features change. Do not put
