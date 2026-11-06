@@ -1097,11 +1097,17 @@ local function build(parent)
                 GameTooltip:AddLine(" ");GameTooltip:AddLine(T("Equipped by").." "..(self.entry.sender:match("^[^-]+") or self.entry.sender),.8,.8,.8)
                 GameTooltip:Show()
             elseif GameTooltip and self.entry then
-                GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
-                GameTooltip:AddLine(J.deathText(self.entry),1,1,1,true) -- In full: the card may cut it off.
-                local caption=WoWStatusFlavour.text(self.entry)
+                -- The card's lines in full (they may be cut off with "...").
+                local e=self.entry
+                local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
+                    and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+                GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText((who:gsub("|","||")))
+                GameTooltip:AddLine(WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")),1,1,1,true)
+                local caption=WoWStatusFlavour.text(e)
                 if caption and caption~="" then GameTooltip:AddLine(caption,.8,.8,.8,true) end
-                GameTooltip:AddLine(T("Event ID:").." "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
+                local detail=self.detail and self.detail:GetText()
+                if detail and detail~="" then GameTooltip:AddLine(detail,.6,.6,.6,true) end
+                GameTooltip:Show()
             end
         end)
         row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)

@@ -264,3 +264,22 @@ def test_log_card_lines_end_with_dots_instead_of_wrapping():
         local row = WoWStatusActivityLog.rows[1]
         for _, key in ipairs({"heading", "message", "flavour", "detail"}) do assert(row[key].oneLine, key) end
     ''')
+
+
+def test_hovering_a_log_card_shows_it_in_full_without_the_event_id():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        __tip = {}
+        GameTooltip = {SetOwner=function() __tip = {} end, SetText=function(_, t) __tip.title = t end,
+            AddLine=function(_, t) table.insert(__tip, t) end, Show=function() end, Hide=function() end}
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="death",text="Total deaths: 3",at=time(),group_id=group})
+        WoWStatusJournal.show()
+        local row = WoWStatusActivityLog.rows[1]
+        row.OnEnter(row)
+        assert(__tip.title == "Mira")
+        local all = table.concat(__tip, "\\n")
+        assert(all:find("Total deaths: 3", 1, true) and all:find(row.detail:GetText(), 1, true))
+        assert(not all:find("Event ID", 1, true) and not all:find(row.entry.id, 1, true))
+    ''')

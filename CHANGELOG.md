@@ -12,7 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
-- Long activity-log lines end with "..." instead of wrapping; hover a card to read it in full
+- Long activity-log lines end with "..." instead of wrapping; hover a card to read all of it (no event ID)
 
 ## 1.20.0
 

@@ -50,7 +50,7 @@ W.add({
     ["Your activity"] = "Di aktivitet", ["Caught up via"] = "Henta via", ["a group member"] = "eit gruppemedlem",
     ["passed on by"] = "vidaresendt av", ["Saved group update"] = "Lagra gruppeoppdatering",
     ["Live group update"] = "Direkte gruppeoppdatering", ["No activity yet"] = "Ingen aktivitet enno",
-    ["Event ID:"] = "Hending-ID:",
+
     -- Characters page
     ["Not announced"] = "Ikkje kunngjort", ["Unnamed player"] = "Namnlaus spelar", ["you"] = "deg",
     ["character"] = "figur", ["characters"] = "figurar", ["Sync now"] = "Synk no", ["Sync (%d s)"] = "Synk (%d s)",
