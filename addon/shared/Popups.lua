@@ -914,7 +914,25 @@ end
 -- Reaction buttons sit top right beside the heading. Long ones (the Nynorsk
 -- lines, "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
 -- notification grows to make room.
-local TOAST_HEIGHT, BESIDE_HEADING = 124, 260
+local TOAST_HEIGHT, BESIDE_HEADING, COUNTDOWN_ROOM = 124, 300, 36
+-- During the click guard the buttons are greyed out and count down: "GZ! (1.2)".
+local function guardButtons()
+    if not toast or not toast.reactions then return end
+    local left = toast.shownAt and P.CLICK_GUARD - (clock() - toast.shownAt) or 0
+    for _, button in ipairs(toast.reactions) do
+        if button:IsShown() and button.reaction then
+            if left > 0 then
+                button:SetText(T(button.reaction) .. string.format(" (%.1f)", left))
+                if button.Disable then button:Disable() end
+                button.waiting = true
+            elseif button.waiting then
+                button:SetText(T(button.reaction))
+                if button.Enable then button:Enable() end
+                button.waiting = nil
+            end
+        end
+    end
+end
 reactionButtons = function()
     local item = toast.item
     local entry = entryOf(item)
@@ -946,7 +964,7 @@ reactionButtons = function()
         -- Wide enough for its text, never narrower than 86.
         local label = button.GetFontString and button:GetFontString()
         local measured = label and label.GetStringWidth and S.number(label:GetStringWidth())
-        widths[i] = math.max(86, math.max(measured or 0, #text * 6) + 24)
+        widths[i] = math.max(86, math.max(measured or 0, #text * 6) + 24 + COUNTDOWN_ROOM)
         total = total + widths[i] + (i > 1 and 4 or 0)
     end
     -- Beside the heading; else one row along the bottom; else one row each.
@@ -967,6 +985,7 @@ reactionButtons = function()
     end
     -- Short headings ("LEVEL UP!") sit beside top-row buttons.
     toast.heading:SetWidth((#list > 0 and not bottom) and math.max(120, 438 + x + 12) or 438)
+    guardButtons()
 end
 -- Whether the mouse is over the visible notification (or one of its buttons).
 function P.hovered()
@@ -1038,6 +1057,7 @@ local function show(item, now)
         toast.handle:SetShown(prefs.popup_unlocked == true)
         toast.reactions = {}
         toast:SetScript("OnUpdate", function(self, elapsed)
+            guardButtons()
             if self.dragging then return end -- Hold still and stay visible while being moved.
             -- While the mouse is over it (or its buttons), it stays and does not count down.
             if P.hovered() and (self.age or 0) > .22 then
@@ -1081,9 +1101,9 @@ local function show(item, now)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
+    toast.shownAt = clock()
     reactionButtons()
     toast.age = 0
-    toast.shownAt = clock()
     -- The log card offers the same reactions for a minute after this.
     local entry = not item.preview and entryOf(item)
     if entry and not entry.owner then entry.shown_at = time() end

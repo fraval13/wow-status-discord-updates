@@ -1,5 +1,12 @@
 """Reaction whispers on friends' notifications: GZ!, F / Git Good, Congrats!"""
+import re
+
 from test_journal import actor, clock, deliver_popup
+
+
+def label(button):
+    """A reaction button's text without the click-guard countdown."""
+    return re.sub(r' \(\d\.\d\)$', '', button.text)
 
 
 def sent_whispers(lua):
@@ -17,7 +24,7 @@ def test_level_up_offers_gz_and_whispers_it_once():
     friend.execute('''
         WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
-        assert(toast:IsShown() and toast.reactions[1]:IsShown() and toast.reactions[1].text == "GZ!")
+        assert(toast:IsShown() and toast.reactions[1]:IsShown() and toast.reactions[1].reaction == "GZ!")
         local item = toast.item
         toast.reactions[1].OnClick(toast.reactions[1])
         -- Reacting closes the notification; a second reaction is refused.
@@ -56,7 +63,7 @@ def test_a_hovered_notification_stays_until_the_mouse_leaves():
     friend.execute('''
         WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
-        assert(toast.reactions[1].text == "F" and toast.reactions[2].text == "Git Good")
+        assert(toast.reactions[1].reaction == "F" and toast.reactions[2].reaction == "Git Good")
         local death = toast.item
         __over = true
         function MouseIsOver(frame) return __over and frame == toast end
@@ -69,7 +76,7 @@ def test_a_hovered_notification_stays_until_the_mouse_leaves():
         WoWStatusPopups.tick()
         -- The death notification closed; Mira's "First in the group to die" record follows.
         assert(toast.item ~= death and toast.item.kind == "first")
-        assert(toast.reactions[1].text == "Congrats on the record!")
+        assert(toast.reactions[1].reaction == "Congrats on the record!")
     ''')
 
 
@@ -191,7 +198,7 @@ def death_toast(language):
 def test_short_reactions_sit_beside_the_heading():
     toast = death_toast('en')
     assert toast.reactionRow == 'top' and toast.height == 124
-    assert [toast.reactions[i].text for i in (1, 2)] == ['F', 'Git Good']
+    assert [label(toast.reactions[i]) for i in (1, 2)] == ['F', 'Git Good']
 
 
 def test_long_reactions_get_rows_along_the_bottom():
@@ -200,8 +207,8 @@ def test_long_reactions_get_rows_along_the_bottom():
     assert toast.reactionRow == 'stacked' and toast.height == 124 + 2 * 28 + 6
     for i, text in ((1, 'Eg tek av meg hjelmen og bøyer hovudet i sorg.'), (2, 'Øv deg litt meir, så døyr du kanskje sjeldnare!')):
         button = toast.reactions[i]
-        assert button.text == text
-        assert button.width == max(86, len(text.encode()) * 6 + 24) and button.width <= 536
+        assert label(button) == text
+        assert button.width == max(86, len(text.encode()) * 6 + 24 + 36) and button.width <= 536
 
 
 def test_specific_congrats_link_to_their_own_kind_in_either_language():
@@ -232,7 +239,7 @@ def test_level_up_buttons_fit_beside_the_heading_in_english():
     deliver_popup(own, friend)
     friend.eval('WoWStatusPopups.tick')()
     toast = friend.eval('WoWStatusLevelPopup')
-    assert [toast.reactions[i].text for i in (1, 2)] == ['GZ!', 'Congrats on level 30!']
+    assert [label(toast.reactions[i]) for i in (1, 2)] == ['GZ!', 'Congrats on level 30!']
     assert toast.reactionRow == 'top' and toast.height == 124
 
 
@@ -340,4 +347,29 @@ def test_the_next_notification_follows_after_a_reaction():
         assert(not toast:IsShown())
         WoWStatusPopups.tick()
         assert(toast:IsShown() and toast.item.kind == "death")
+    ''')
+
+
+def test_buttons_are_greyed_and_count_down_during_the_click_guard():
+    own, friend = actor('Mira'), actor('Thora')
+    friend.execute('''
+        local methods = getmetatable(CreateFrame("Button")).__index
+        function methods:Disable() self.disabled = true end
+        function methods:Enable() self.disabled = false end
+    ''')
+    clock(own, 10)
+    clock(friend, 10)
+    own.eval('fire')('PLAYER_LEVEL_UP', 42)
+    deliver_popup(own, friend)
+    friend.execute('''
+        WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        local gz = toast.reactions[1]
+        assert(gz.text == "GZ! (1.5)" and gz.disabled, gz.text)
+        __mono = 11
+        toast.OnUpdate(toast, 1)
+        assert(gz.text == "GZ! (0.5)" and gz.disabled, gz.text)
+        __mono = 11.6
+        toast.OnUpdate(toast, .6)
+        assert(gz.text == "GZ!" and gz.disabled == false, gz.text)
     ''')

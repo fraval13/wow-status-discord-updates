@@ -12,7 +12,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
-- Clicks in the first 1.5 seconds of a notification are ignored, so a stray click cannot dismiss it
+- A new notification ignores clicks for 1.5 seconds; its buttons are greyed out and count down meanwhile
 - Missed the reaction buttons? A friend's log card offers them for a minute after the notification
 - Clicking a reaction button sends it and closes the notification
 
