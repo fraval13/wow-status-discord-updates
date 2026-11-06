@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.19.0
 
 - A new notification ignores clicks for 1.5 seconds; its buttons are greyed out and count down meanwhile
 - Missed the reaction buttons? A friend's log card offers them for a minute after the notification
