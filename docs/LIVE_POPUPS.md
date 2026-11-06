@@ -240,3 +240,22 @@ entry has not loaded yet. A `Clock:` line says how far this PC's clock is from
 realm time. To test: set one PC's clock 15 minutes ahead (without automatic
 time sync), more than the 10-minute window, and send a level-up or milestone both ways; both popups should show. `/run print(time()-GetServerTime())` should print
 about 900 on that PC and about 0 on the other.
+
+## WoW Forever quick check for each release (1.24.0)
+
+Mocked tests cannot see what the real client blocks: registering for the
+combat log and sending `/who` from a timer both raised "blocked from an action
+only available to the Blizzard UI" on WoW Forever. Check these after `/reload`
+with `/wstatus debug on`, then `/reload` again so the log is saved for reading:
+
+1. No "blocked" dialog at login or when clicking Sync now, the Day button, the
+   Type and Person menus, or a reaction button.
+2. A friend's level-up shows live; the debug log has "live update confirmed by"
+   for friends on 1.24.0 or later, and nobody's card says "not reached".
+3. Reaction buttons are greyed with a countdown for 1.5 seconds, then send and
+   close the notification; the friend's log card shows who reacted.
+4. Hovering an armor notification or log card shows the item tooltip, with
+   the suffix ("of the Bear") for items equipped by friends on 1.24.0+.
+5. The calendar and drop-down menus open above the window.
+6. Characters: friends' levels, gold and kills look current; "Not announced"
+   only lists members on versions before 1.17.
