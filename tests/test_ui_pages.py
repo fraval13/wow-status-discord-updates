@@ -283,3 +283,19 @@ def test_hovering_a_log_card_shows_it_in_full_without_the_event_id():
         assert(all:find("Total deaths: 3", 1, true) and all:find(row.detail:GetText(), 1, true))
         assert(not all:find("Event ID", 1, true) and not all:find(row.entry.id, 1, true))
     ''')
+
+
+def test_overview_names_current_gold_in_either_language():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        function GetMoney() return 123456 end
+        WoWStatusProgress.money(character())
+        WoWStatusMainWindow.show("overview")
+        local line = WoWStatusOverviewPage.you.stats2.text
+        assert(line:find("^Current: 12"), line)
+        WoWStatusLocale.set("nn")
+        WoWStatusMainWindow.show("overview")
+        line = WoWStatusOverviewPage.you.stats2.text
+        assert(line:find("^Noverande: 12"), line)
+    ''')

@@ -71,7 +71,7 @@ W.add({
     ["June"] = "juni", ["July"] = "juli", ["August"] = "august", ["September"] = "september", ["October"] = "oktober",
     ["November"] = "november", ["December"] = "desember",
     ["Mo"] = "Må", ["Tu"] = "Ty", ["We"] = "On", ["Th"] = "To", ["Fr"] = "Fr", ["Sa"] = "La", ["Su"] = "Sø",
-    ["1 kill"] = "1 drap", ["%d kills"] = "%d drap", ["Kills:"] = "Drap:", ["Gold:"] = "Gull:", ["Earned:"] = "Tent:",
+    ["1 kill"] = "1 drap", ["%d kills"] = "%d drap", ["Kills:"] = "Drap:", ["Current:"] = "Noverande:", ["Earned:"] = "Tent:",
     ["Played:"] = "Spelt:", ["Gold"] = "Gull", ["Gold earned"] = "Gull tent", ["Monsters killed"] = "Monster drepne",
     ["Played"] = "Spelt", ["Gold and gold earned"] = "Gull og gull tent",
     ["Click to see this character's activity."] = "Klikk for å sjå aktiviteten til figuren.",

@@ -152,7 +152,7 @@ local function renderYou()
     -- Gold now, gold earned and played time.
     local more = {}
     local gold = fields.gold and progress and S.number(progress.gold)
-    if gold then table.insert(more, T("Gold:") .. " " .. UI.money(gold)) end
+    if gold then table.insert(more, T("Current:") .. " " .. UI.money(gold)) end
     if fields.gold and progress and WoWStatusProgress.goldEarned then
         table.insert(more, T("Earned:") .. " " .. UI.money(WoWStatusProgress.goldEarned(character), true))
     end
