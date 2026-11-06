@@ -282,7 +282,8 @@ function UI.calendar(owner, selected, today, counts, onPick)
     local cal = UI.calendarFrame
     if not cal then
         cal = UI.box(UIParent, 254, 252)
-        cal:SetFrameStrata("FULLSCREEN_DIALOG"); cal:EnableMouse(true)
+        -- Above the main window and its cards, which share its layer.
+        cal:SetFrameStrata("TOOLTIP"); cal:EnableMouse(true)
         _G.WoWStatusCalendar = cal
         if UISpecialFrames then table.insert(UISpecialFrames, "WoWStatusCalendar") end
         cal.title = UI.text(cal, "GameFontNormal", 34, -10, 186, "CENTER")
@@ -342,7 +343,12 @@ function UI.calendar(owner, selected, today, counts, onPick)
     cal.today:SetText(tr("Today")); cal.all:SetText(tr("All days"))
     cal.render()
     cal:ClearAllPoints(); cal:SetPoint("BOTTOMRIGHT", owner, "TOPRIGHT", 0, 4) -- Inside the window: the button is at its right edge.
+    -- The window's size setting applies to the calendar too, so it lines up with the button.
+    local own, screen = owner.GetEffectiveScale and S.number(owner:GetEffectiveScale()),
+        UIParent and UIParent.GetEffectiveScale and S.number(UIParent:GetEffectiveScale())
+    cal:SetScale(own and screen and screen > 0 and own / screen or 1)
     cal:Show()
+    if cal.Raise then cal:Raise() end
     return cal
 end
 -- Played time: "3d 4h", "5h 12m" or "12m".
@@ -366,7 +372,7 @@ function UI.menu(owner, items, onPick)
     local menu = UI.menuFrame
     if not menu then
         menu = UI.box(UIParent, 200, 40)
-        menu:SetFrameStrata("FULLSCREEN_DIALOG"); menu:EnableMouse(true)
+        menu:SetFrameStrata("TOOLTIP"); menu:EnableMouse(true) -- Above the main window's cards.
         menu.scroll = CreateFrame("ScrollFrame", nil, menu, "UIPanelScrollFrameTemplate")
         menu.scroll:SetPoint("TOPLEFT", 6, -6)
         menu.list = CreateFrame("Frame", nil, menu.scroll)

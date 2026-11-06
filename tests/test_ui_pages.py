@@ -150,7 +150,7 @@ def test_activity_log_opens_on_today_and_remembers_the_picked_day():
         local log = WoWStatusActivityLog
         -- Today only, by default.
         assert(#log.entriesList == 1 and log.entriesList[1].sender == "Mira-TestRealm")
-        assert(log.dayButton.text == "Day: Today")
+        assert(log.dayButton.text == "Today")
         -- The calendar marks both days in gold and picks the older one.
         log.dayButton.OnClick(log.dayButton)
         local cal = WoWStatusCalendar
@@ -160,21 +160,21 @@ def test_activity_log_opens_on_today_and_remembers_the_picked_day():
         assert(cell.text.text:find("|cffffd100", 1, true))
         cell.OnClick(cell)
         assert(#log.entriesList == 1 and log.entriesList[1].sender == "Bob-TestRealm")
-        assert(log.dayButton.text ~= "Day: Today")
+        assert(log.dayButton.text ~= "Today")
         -- Kept when the log is opened again (until /reload).
         WoWStatusJournal.show()
         assert(#log.entriesList == 1 and log.entriesList[1].sender == "Bob-TestRealm")
         -- All days.
         log.dayButton.OnClick(log.dayButton)
         cal.all.OnClick(cal.all)
-        assert(#log.entriesList == 2 and log.dayButton.text == "Day: All days")
+        assert(#log.entriesList == 2 and log.dayButton.text == "All days")
         -- Back to today; a day without activity says so.
         log.dayButton.OnClick(log.dayButton)
         cal.today.OnClick(cal.today)
-        assert(#log.entriesList == 1 and log.dayButton.text == "Day: Today")
+        assert(#log.entriesList == 1 and log.dayButton.text == "Today")
         -- A character's activity covers every day.
         WoWStatusJournal.showCharacter("Bob-TestRealm")
-        assert(#log.entriesList == 1 and log.dayButton.text == "Day: All days")
+        assert(#log.entriesList == 1 and log.dayButton.text == "All days")
     ''')
 
 
@@ -226,4 +226,31 @@ def test_settings_windows_opened_on_their_own_use_the_window_theme():
         assert(same(WoWStatusNotificationPreviews.background))
         WoWStatusTheme.next()                     -- a theme change reaches them too
         assert(same(groups) and same(WoWStatusNotificationPreviews.background))
+    ''')
+
+
+def test_calendar_and_menus_draw_above_the_window():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:SetFrameStrata(strata) self.strata = strata end
+        WoWStatusJournal.show()
+        local log = WoWStatusActivityLog
+        log.dayButton.OnClick(log.dayButton)
+        assert(WoWStatusCalendar.strata == "TOOLTIP")
+        log.typeButton.OnClick(log.typeButton)
+        assert(WoWStatusMenu.strata == "TOOLTIP")
+    ''')
+
+
+def test_day_button_names_the_day_in_either_language():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        WoWStatusJournal.show()
+        assert(WoWStatusActivityLog.dayButton.text == "Today")
+        WoWStatusLocale.set("nn")
+        WoWStatusJournal.show()
+        assert(WoWStatusActivityLog.dayButton.text == "I dag")
     ''')

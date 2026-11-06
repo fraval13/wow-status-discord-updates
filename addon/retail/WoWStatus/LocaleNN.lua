@@ -65,7 +65,7 @@ W.add({
     ["No listed groups yet. Friends list a group by ticking Listed on their Groups page."] =
         "Ingen lista grupper enno. Vener listar ei gruppe ved å krysse av for Lista på Grupper-sida si.",
     ["Equipped by"] = "Teke i bruk av",
-    ["Day:"] = "Dag:", ["Today"] = "I dag", ["Yesterday"] = "I går", ["All days"] = "Alle dagar",
+    ["Today"] = "I dag", ["Yesterday"] = "I går", ["All days"] = "Alle dagar",
     ["Nothing yet today."] = "Ingenting enno i dag.", ["No activity on this day."] = "Ingen aktivitet denne dagen.",
     ["January"] = "januar", ["February"] = "februar", ["March"] = "mars", ["April"] = "april", ["May"] = "mai",
     ["June"] = "juni", ["July"] = "juli", ["August"] = "august", ["September"] = "september", ["October"] = "oktober",

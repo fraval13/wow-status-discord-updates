@@ -10,6 +10,11 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- The day calendar and the filter menus are no longer hidden behind the window
+- The day button simply says Today, Yesterday, a date or All days
+
 ## 1.19.0
 
 - A new notification ignores clicks for 1.5 seconds; its buttons are greyed out and count down meanwhile

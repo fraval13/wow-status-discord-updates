@@ -1001,7 +1001,7 @@ local function render()
     panel.empty:SetShown(#list==0)
     local day=pickedDay()
     panel.empty:SetText(T(not day and "No activity yet" or day==today() and "Nothing yet today." or "No activity on this day."))
-    panel.dayButton:SetText(T("Day:").." "..WoWStatusUI.dayLabel(day,today(),yesterday()))
+    panel.dayButton:SetText(WoWStatusUI.dayLabel(day,today(),yesterday()))
     -- What the type and person filters show, with Show all to clear them.
     local parts={}
     if panel.typeFilter and J.TYPES[panel.typeFilter] then parts[#parts+1]=T(J.TYPES[panel.typeFilter][1]) end
