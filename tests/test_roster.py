@@ -42,7 +42,7 @@ def pair():
 
 def test_characters_are_announced_once_per_member_and_grouped_by_player():
     mira, thora = pair()
-    sent = pump(mira, thora)
+    sent = [line for line in pump(mira, thora) if not line.startswith('R ')]
     assert len(sent) == 1
     assert sent[0].split(' ')[0] == 'C' and sent[0].endswith('Mira-TestRealm Dwarf 3 WARRIOR 1')
     assert pump(mira, thora, start=200) == []  # not repeated to the same member
@@ -129,7 +129,7 @@ def test_log_senders_without_a_list_show_as_never_met():
         for _, group in ipairs(WoWStatusRoster.groups()) do
             if group.title:find("Not announced", 1, true) then found = group.rows[1] end
         end
-        assert(found and found.name == "Eldrin-TestRealm" and found.level == nil)
+        assert(found and found.name == "Eldrin-TestRealm" and found.level == 8)
         assert(found.latest == "Reached level 8!")
     ''')
 
@@ -178,7 +178,7 @@ def test_members_without_a_list_are_identified_from_their_roster_guid():
             end end
         end
         local row=bob()
-        assert(row.class=="HUNTER" and row.race=="NightElf" and row.sex==2 and row.level==nil)
+        assert(row.class=="HUNTER" and row.race=="NightElf" and row.sex==2 and row.level==5)
         -- Still known after the GUID lookup stops answering (logged off, cache cleared).
         function GetPlayerInfoByGUID() return nil end
         row=bob()
@@ -348,3 +348,58 @@ def test_a_newer_friend_version_is_announced_once():
         WoWStatusMainWindow.show("overview")
         assert(WoWStatusOverviewPage.you.update.text:find("1.17.0", 1, true))
     ''')
+
+
+def level_of(lua, name):
+    return lua.eval(f'''(function()
+        for _, g in pairs(WoWStatusRoster.groups()) do
+            for _, r in ipairs(g.rows) do if r.name == "{name}" then return r.level, r.xp end end
+        end
+    end)()''')
+
+
+def test_each_member_is_asked_for_their_list_once_a_session():
+    # A list a friend sent while this account was offline (a level-up) never
+    # arrived, so a member is asked for theirs at first contact.
+    mira, thora = pair()
+    sent = pump(thora, mira)
+    assert sum(line.startswith('R ') for line in sent) == 1
+    thora.execute('WoWStatusRoster.changed()')
+    assert not any(line.startswith('R ') for line in pump(thora, mira, start=300))
+
+
+def test_level_ups_in_the_log_update_an_older_list():
+    mira, thora = pair()
+    pump(mira, thora)
+    listed = level_of(thora, 'Mira-TestRealm')[0]
+    assert listed
+    thora.execute(f'''table.insert(WoWStatusJournal.entries(), 1, {{id="up", client=WoWStatusAdapter.client_id,
+        sender="Mira-TestRealm", kind="level", level={listed + 2}, at=time(), text="Reached level {listed + 2}!",
+        groups={{}}, origin="catchup"}})''')
+    level, xp = level_of(thora, 'Mira-TestRealm')
+    assert level == listed + 2 and xp is None
+    # An older level-up never lowers it.
+    thora.execute('WoWStatusJournal.entries()[1].level = 1')
+    assert level_of(thora, 'Mira-TestRealm')[0] == listed
+
+
+def test_sync_looks_up_one_member_with_who():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        __who, __results = {}, {}
+        C_FriendList = {
+            SendWho=function(filter) table.insert(__who, filter) end,
+            GetNumWhoResults=function() return #__results end,
+            GetWhoInfo=function(i) return __results[i] end,
+        }
+    ''')
+    assert thora.eval('WoWStatusRoster.whoLookup()') == 'Mira-TestRealm'
+    assert thora.eval('__who[1]') == 'n-"Mira"'
+    # Once a session each: nobody else is online.
+    assert thora.eval('WoWStatusRoster.whoLookup()') is None
+    thora.execute('__results = {{fullName="Mira", level=42}, {fullName="Stranger", level=5}}')
+    thora.eval('fire')('WHO_LIST_UPDATE')
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
+    # Only group members are remembered.
+    assert thora.eval('(function() local n = 0; for _ in pairs(WoWStatusDB.roster.who) do n = n + 1 end; return n end)()') == 1

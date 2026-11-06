@@ -33,6 +33,8 @@ local lastXp, xpSent = 0, nil
 -- The Sync button: usable once a minute; list requests answered once a minute per member.
 R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
+-- Members asked for their list this session (at first contact), and /who lookups.
+local requested, whoAsked, whoAt = {}, {}, nil
 local XP_INTERVAL = 300
 
 -- One key per character for the list. WoW Forever spreads characters over many
@@ -324,8 +326,99 @@ end
 function R.scan()
     if not db or not current then return end
     for group in pairs(WoWStatusGroups.selected(current)) do
-        for _, peer in ipairs(WoWStatusPopups.peers(group)) do noteSeen(group, peer); enqueue(group, peer) end
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+            noteSeen(group, peer); enqueue(group, peer)
+            -- Ask each member once a session for their list: one sent while this
+            -- account was offline (a level-up) never reached it. Older versions ignore it.
+            local k = key(peer)
+            requested[group] = requested[group] or {}
+            if k and not requested[group][k] then
+                requested[group][k] = true
+                table.insert(outgoing, {target=peer, text="R " .. group .. " " .. state().id})
+            end
+        end
     end
+end
+
+-- /who: the game's own answer gives an online member's level now, also for
+-- members whose version never refreshes a list. The game allows a /who only from
+-- a click, so the Sync button looks up one member each time (those without a
+-- recent list first); results of a /who the player runs are read too.
+local MAX_WHO = 200
+local function whoLevels()
+    local roster = state()
+    roster.who = type(roster.who) == "table" and roster.who or {}
+    return roster.who
+end
+local function isMember(k)
+    local seen = state().seen
+    if type(seen) == "table" and seen[k] then return true end
+    for _, player in pairs(state().players) do
+        if player.characters[k] then return true end
+    end
+    return false
+end
+function R.readWho()
+    if not db then return 0 end
+    local F = C_FriendList
+    local count = S.number(F and F.GetNumWhoResults and S.call(F.GetNumWhoResults) or S.call(GetNumWhoResults))
+    if not count then return 0 end
+    local levels, learnt, maximum = whoLevels(), 0, WoWStatusAdapter.max_level or 60
+    for i = 1, math.min(count, 50) do
+        local name, level
+        if F and F.GetWhoInfo then
+            local ok, info = pcall(F.GetWhoInfo, i)
+            if ok and type(info) == "table" then name, level = S.string(info.fullName), S.number(info.level) end
+        elseif GetWhoInfo then
+            local ok, n, _, l = pcall(GetWhoInfo, i)
+            if ok then name, level = S.string(n), S.number(l) end
+        end
+        local k = name and key(name)
+        if k and level and level == math.floor(level) and level >= 1 and level <= maximum and isMember(k) then
+            if not levels[k] then
+                local n, oldest, oldestAt = 0, nil, math.huge
+                for id, item in pairs(levels) do n = n + 1; if (item.at or 0) < oldestAt then oldest, oldestAt = id, item.at or 0 end end
+                if n >= MAX_WHO and oldest then levels[oldest] = nil end
+            end
+            levels[k] = {level=level, at=time()}
+            learnt = learnt + 1
+        end
+    end
+    if learnt > 0 then R.render() end
+    return learnt
+end
+-- The online member to look up: one never looked up this session, members whose
+-- version sends no list requests (or no list) first, then the oldest list.
+function R.whoTarget()
+    if not db or not current then return nil end
+    local lists = {}
+    for _, player in pairs(state().players) do
+        local fresh = S.string(player.version) and R.isNewer(player.version, "1.10.99")
+        for k, c in pairs(player.characters) do lists[k] = {at=S.number(c.at) or 0, fresh=fresh} end
+    end
+    local best, bestScore
+    for group in pairs(WoWStatusGroups.selected(current)) do
+        for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+            local k = key(peer)
+            if k and not whoAsked[k] and not WoWStatusPopups.isSelf(peer) and WoWStatusPopups.fullName(peer) then
+                local list = lists[k]
+                local score = (list and list.fresh and 1e10 or 0) + (list and list.at or 0)
+                if not bestScore or score < bestScore then best, bestScore = peer, score end
+            end
+        end
+    end
+    return best
+end
+function R.whoLookup()
+    local target = R.whoTarget()
+    local F = C_FriendList
+    local send = F and F.SendWho or SendWho
+    if not target or not send then return nil end
+    whoAsked[key(target)] = true
+    whoAt = GetTime and GetTime() or time()
+    local short = target:match("^([^%-]+)")
+    pcall(send, 'n-"' .. short .. '"')
+    return target
 end
 
 -- After a privacy change: tell everyone again (or tell them to forget us).
@@ -569,8 +662,15 @@ function R.groups()
             if k then online[k] = true; share(k, group); noteSeen(group, peer) end
         end
     end
+    -- Newer levels than a member's last list: their level-ups in the log, and /who.
+    local fresher = {}
+    for k, item in pairs(whoLevels()) do
+        if type(item) == "table" and S.number(item.level) then fresher[k] = item.level end
+    end
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local k = key(e.sender)
+        local level = k and e.kind == "level" and S.number(e.level)
+        if level and (not fresher[k] or level > fresher[k]) then fresher[k] = level end
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         -- A friend's total deaths, from their newest death announcement.
         if k and deaths[k] == nil and e.kind == "death" then
@@ -611,6 +711,8 @@ function R.groups()
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
+            local newer = fresher[key(character.name) or ""]
+            if newer and newer > (S.number(character.level) or 0) then character.level, character.xp = newer, nil end
         end
         -- WoW Forever: first-name-only characters come from older versions; your
         -- current character stays even before its full name is known.
@@ -919,11 +1021,11 @@ local function build(parent)
     page.hide:SetScript("OnClick", function(self) R.setHidden(current, self:GetChecked() and true or false) end)
     page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
-    page.sync:SetScript("OnClick", function() R.syncNow() end)
+    page.sync:SetScript("OnClick", function() if R.syncNow() then R.whoLookup() end end)
     page.sync:SetScript("OnEnter", function(self)
         if GameTooltip then
             GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Sync with everyone online"))
-            GameTooltip:AddLine(T("Sends your character list, asks for theirs and catches up the activity log. Once a minute."), 1, 1, 1, true)
+            GameTooltip:AddLine(T("Sends your character list, asks for theirs, looks up one friend's level with /who and catches up the activity log. Once a minute."), 1, 1, 1, true)
             GameTooltip:Show()
         end
     end)
@@ -966,14 +1068,21 @@ function R.init(database, character, reporter)
     R.observe(character)
     -- The list sent at login already carries this XP.
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
+    requested, whoAsked, whoAt = {}, {}, nil
     xpSent = character and character.roster_info and character.roster_info.xp
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register, PREFIX) end
 end
 
 local frame = CreateFrame("Frame")
-for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE"}) do pcall(frame.RegisterEvent, frame, event) end
+for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE", "WHO_LIST_UPDATE", "CHAT_MSG_SYSTEM"}) do pcall(frame.RegisterEvent, frame, event) end
 frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sender)
+    -- A short /who answer arrives as a chat line; its results are readable then.
+    if event == "WHO_LIST_UPDATE" or (event == "CHAT_MSG_SYSTEM" and whoAt
+        and (GetTime and GetTime() or time()) - whoAt < 10) then
+        R.readWho()
+        return
+    end
     if event == "PLAYER_LEVEL_UP" or event == "PLAYER_XP_UPDATE" then
         if not current then return end
         R.observe(current)
