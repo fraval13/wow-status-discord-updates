@@ -16,6 +16,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - Clicking a notification only dismisses it; it no longer opens the activity log
 - In Nynorsk, F and Git Good are long lines too; long reaction buttons get their own row under the text
 - Congrats say what for: "Congrats on the new gear!", "Congrats on level 30!" and more, also in Nynorsk
+- Armor updates show the item's icon and coloured name; hover the notification or log card for its stats
 
 ## 1.17.0
 

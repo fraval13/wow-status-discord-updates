@@ -981,7 +981,7 @@ local function render()
             row.heading:SetText(T(heading))
             local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
                 and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
-            row.message:SetText(who:gsub("|","||").." — "..J.deathText(e):gsub("|","||"))
+            row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")))
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
                 or e.origin=="legacy" and T("Saved group update") or T("Live group update"))
@@ -1037,7 +1037,11 @@ local function build(parent)
         row.message=label(row,"GameFontHighlightLarge",88,-36,570);row.message:SetHeight(42)
         row:EnableMouse(true)
         row:SetScript("OnEnter",function(self)
-            if GameTooltip and self.entry then
+            -- Armor: the item's own tooltip, with who equipped it.
+            if self.entry and WoWStatusPresentation.itemTooltip(self,self.entry) then
+                GameTooltip:AddLine(" ");GameTooltip:AddLine(T("Equipped by").." "..(self.entry.sender:match("^[^-]+") or self.entry.sender),.8,.8,.8)
+                GameTooltip:Show()
+            elseif GameTooltip and self.entry then
                 GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
                 GameTooltip:AddLine(self.entry.text,1,1,1,true)
                 GameTooltip:AddLine(T("Event ID:").." "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()

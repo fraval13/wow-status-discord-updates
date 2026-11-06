@@ -969,6 +969,11 @@ local function show(item, now)
                 end
             end
         end)
+        -- Hovering armor shows the item's tooltip with its stats.
+        toast:SetScript("OnEnter", function(self) WoWStatusPresentation.itemTooltip(self, self.item, "ANCHOR_TOP") end)
+        toast:SetScript("OnLeave", function(self)
+            if GameTooltip and GameTooltip.GetOwner and GameTooltip:GetOwner() == self then GameTooltip:Hide() end
+        end)
         toast:SetScript("OnMouseUp",function(self,button)
             if self.moved then self.moved = false; return end -- The end of a drag, not a click.
             -- Any click dismisses the toast (it does not open the log).
@@ -1042,7 +1047,7 @@ local function show(item, now)
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
-    detail = T(detail)
+    detail = WoWStatusPresentation.colourItem(item, T(detail))
     toast.message:SetText(name .. ((item.level or item.kind=="guard") and " " or " — ") .. detail)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)

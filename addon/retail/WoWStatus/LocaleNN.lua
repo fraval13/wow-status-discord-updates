@@ -59,6 +59,7 @@ W.add({
     ["older version"] = "eldre versjon", ["older version or list sharing off"] = "eldre versjon eller listedeling av",
     ["Never met"] = "Aldri møtt", ["offline"] = "fråkopla", ["XP %d%%"] = "XP %d %%", ["Level %d"] = "Nivå %d",
     ["1 death"] = "1 dødsfall", ["%d deaths"] = "%d dødsfall", ["Groups:"] = "Grupper:",
+    ["Equipped by"] = "Teke i bruk av",
     ["Day:"] = "Dag:", ["Today"] = "I dag", ["Yesterday"] = "I går", ["All days"] = "Alle dagar",
     ["Nothing yet today."] = "Ingenting enno i dag.", ["No activity on this day."] = "Ingen aktivitet denne dagen.",
     ["January"] = "januar", ["February"] = "februar", ["March"] = "mars", ["April"] = "april", ["May"] = "mai",

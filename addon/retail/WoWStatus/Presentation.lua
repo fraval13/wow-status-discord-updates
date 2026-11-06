@@ -1,5 +1,42 @@
 -- One visual vocabulary for live toasts and the persistent activity log.
 WoWStatusPresentation = {}
+local W = WoWStatusPresentation
+-- Armor: the item's own icon, its name in quality colour and its game tooltip,
+-- from the item ID the update carries (the base item: no random suffix or enchant).
+local function itemID(item)
+    return type(item) == "table" and (item.kind == "loot" or item.kind == "equipment") and tonumber(item.item_id) or nil
+end
+function W.itemIcon(item)
+    local id = itemID(item)
+    local get = (C_Item and C_Item.GetItemIconByID) or GetItemIcon
+    if not id or not get then return nil end
+    local ok, icon = pcall(get, id)
+    icon = ok and WoWStatusSafe.value(icon)
+    if (type(icon) == "number" and icon > 0) or (type(icon) == "string" and icon ~= "") then return icon end
+    return nil
+end
+local QUALITY = {[2]="ff1eff00", [3]="ff0070dd", [4]="ffa335ee", [5]="ffff8000"}
+-- The shown text with the item name in its quality colour ("Equipped |cffa335eeRobe|r").
+function W.colourItem(item, shown)
+    local colour = itemID(item) and QUALITY[tonumber(item.quality)]
+    local name = colour and type(item.text) == "string" and item.text:match("^Equipped (.+)$")
+    if not name or type(shown) ~= "string" then return shown end
+    name = name:gsub("|", "||")
+    local first, last = shown:find(name, 1, true)
+    if not first then return shown end
+    return shown:sub(1, first - 1) .. "|c" .. colour .. name .. "|r" .. shown:sub(last + 1)
+end
+-- The item's game tooltip (stats included); false when there is no item.
+function W.itemTooltip(owner, item, anchor)
+    local id = itemID(item)
+    if not id or not GameTooltip then return false end
+    GameTooltip:SetOwner(owner, anchor or "ANCHOR_RIGHT")
+    local ok = GameTooltip.SetItemByID and pcall(GameTooltip.SetItemByID, GameTooltip, id)
+    if not ok and GameTooltip.SetHyperlink then ok = pcall(GameTooltip.SetHyperlink, GameTooltip, "item:" .. id) end
+    if not ok then GameTooltip:Hide(); return false end
+    GameTooltip:Show()
+    return true
+end
 function WoWStatusPresentation.theme(item)
     local themes = {
         level={"level-arrow",1,.82,.2,"LEVEL UP!"},
@@ -45,6 +82,6 @@ function WoWStatusPresentation.theme(item)
         icon = professionIcons[profession] or "Trade_BlackSmithing"
     end
     local texture = item.level and "Interface\\AddOns\\WoWStatus\\Textures\\LevelUp"
-        or ("Interface\\Icons\\" .. icon)
+        or W.itemIcon(item) or ("Interface\\Icons\\" .. icon)
     return texture, theme[2], theme[3], theme[4], item.kind=="professionprogress" and "PROFESSION PROGRESS" or theme[5]
 end
