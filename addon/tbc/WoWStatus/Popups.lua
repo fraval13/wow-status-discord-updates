@@ -711,8 +711,18 @@ local function verifyPending(now, members)
         end
     end
 end
+-- Delivery confirmations: a member who gets a live update answers "WSACK <nonce>"
+-- (older versions ignore it). A sender that hears nothing tries once more, and a
+-- member on a confirming version who still never answers is shown as not reached.
+P.ACK_WAIT = 20 -- Seconds; the first confirming version is WoWStatusRoster.ACK_VERSION.
+local function acknowledge(c)
+    if not c.nonce or c.group == "legacy" or A.chatRestricted() then return end
+    local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
+    if send then pcall(send, ADDON_PREFIX, c.group .. " WSACK " .. c.nonce, "WHISPER", c.sender) end
+end
 local function admit(c, now)
     local members = c.group ~= "legacy" and memberKeys(c.group)
+    if members and members[c.key] then acknowledge(c) end
     if not members or members[c.key] then
         verifyPending(now, members and {[c.group] = members}) -- Earlier updates that waited go first.
         local queued = commit(c, now)
@@ -1211,6 +1221,7 @@ local function tick()
                 or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
         end
     end
+    P.checkDeliveries(now)
     if #outgoing == 0 or now < nextSend then return end
     local item, character = outgoing[1], getCharacter()
     -- Every target is tried until receivers would drop the packet as stale,
@@ -1286,6 +1297,7 @@ local function tick()
     if result == "sent" and item.event and args[3] == "WHISPER" then
         deliveredTo[item.event] = deliveredTo[item.event] or {}
         deliveredTo[item.event][P.senderKey(args[4]) or ""] = true
+        P.awaitDelivery(item, args[4], now)
     end
     if result == "sent" then status("attempted_no_receipt", item.event, args[4])
     elseif result == "offline" then status("peer_offline", item.event, args[4])
@@ -1298,6 +1310,53 @@ local function tick()
     end
 end
 
+-- Sent live updates waiting for a confirmation: {nonce, target, key, group, message, at, tries}.
+local pending = {}
+function P.pendingDeliveries() return pending end
+local function supportsAcks(target)
+    local R = WoWStatusRoster
+    local version = R and R.versionOf and R.versionOf(target)
+    return version ~= nil and R.ACK_VERSION ~= nil and (version == R.ACK_VERSION or R.isNewer(version, R.ACK_VERSION))
+end
+function P.awaitDelivery(item, target, now)
+    local nonce = item.event and P.eventNonce(item.event)
+    local key = P.senderKey(target)
+    if not nonce or not key or not item.group_id then return end
+    if #pending >= 200 then table.remove(pending, 1) end
+    table.insert(pending, {nonce=nonce, target=target, key=key, group=item.group_id, message=item.message, at=now, tries=1})
+end
+function P.delivered(sender, nonce)
+    local key = P.senderKey(sender)
+    if not key then return false end
+    for i = #pending, 1, -1 do
+        if pending[i].key == key and pending[i].nonce == nonce then table.remove(pending, i) end
+    end
+    if WoWStatusRoster and WoWStatusRoster.reached then WoWStatusRoster.reached(sender) end
+    S.debug("live update confirmed by " .. tostring(sender))
+    return true
+end
+function P.checkDeliveries(now)
+    for i = #pending, 1, -1 do
+        local item = pending[i]
+        if now - item.at >= P.ACK_WAIT then
+            if not supportsAcks(item.target) then
+                table.remove(pending, i) -- Older versions never confirm.
+            elseif item.tries < 2 then
+                item.tries, item.at = 2, now
+                local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
+                if send and not A.chatRestricted() then
+                    P.whispered(item.target)
+                    pcall(send, ADDON_PREFIX, item.group .. " " .. item.message, "WHISPER", item.target)
+                end
+                S.debug("live update not confirmed by " .. item.target .. ": sent again")
+            else
+                table.remove(pending, i)
+                if WoWStatusRoster and WoWStatusRoster.unreached then WoWStatusRoster.unreached(item.target) end
+                S.debug("live update never confirmed by " .. item.target)
+            end
+        end
+    end
+end
 local ticking = false
 function P.tick()
     if ticking then return end
@@ -1503,7 +1562,10 @@ frame:SetScript("OnEvent", function(_, event, ...)
         prefix, text, distribution = S.string(prefix), S.string(text), S.string(distribution)
         if prefix ~= ADDON_PREFIX or distribution ~= "WHISPER" or not text or #text > 243 then return end
         local group, message = text:match("^([a-f0-9]+) (.+)$")
-        if group and WoWStatusGroups.valid(group) and WoWStatusGroups.contains(getCharacter(), group) then
+        local ack = message and message:match("^WSACK ([%w%-]+)$")
+        if ack and group and WoWStatusGroups.contains(getCharacter(), group) then
+            if #ack <= 64 then P.delivered(S.string(sender), ack) end
+        elseif group and WoWStatusGroups.valid(group) and WoWStatusGroups.contains(getCharacter(), group) then
             P.receive(message, sender, WoWStatusGroups.channel(group))
         else
             S.debug("live update for another group from " .. tostring(S.string(sender)))

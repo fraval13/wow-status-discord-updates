@@ -59,6 +59,9 @@ W.add({
     ["older version"] = "eldre versjon", ["older version or list sharing off"] = "eldre versjon eller listedeling av",
     ["Never met"] = "Aldri møtt", ["offline"] = "fråkopla", ["XP %d%%"] = "XP %d %%", ["Level %d"] = "Nivå %d",
     ["1 death"] = "1 dødsfall", ["%d deaths"] = "%d dødsfall", ["Groups:"] = "Grupper:",
+    ["not reached"] = "ikkje nådd",
+    ["Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."] =
+        "Direkteoppdateringane dine nådde ikkje denne figuren. Be dei skrive /reload, eller sjekk at de er på same type rike.",
     ["Listed"] = "Lista", ["Listed group"] = "Lista gruppe", ["Browse groups"] = "Bla i grupper", ["listed by"] = "lista av",
     ["Friends in your other groups can see this group under Browse groups and join it. Leave it off for a private group."] =
         "Vener i dei andre gruppene dine kan sjå denne gruppa under Bla i grupper og bli med. La det vere av for ei privat gruppe.",

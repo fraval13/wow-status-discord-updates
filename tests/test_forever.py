@@ -105,8 +105,9 @@ def test_forever_popups_reject_vanilla_packets_and_use_namespaced_chat(forever_l
     assert receive('WSTATUS2 forever LEVEL 25 1793000000 e1', 'Eldrin-TestRealm', channel) is True
     command('popup send on')
     lua.eval('fire')('PLAYER_LEVEL_UP', 2)
-    assert ' WSTATUS2 forever LEVEL 2 ' in lua.eval('__sent[1].text')
-    assert lua.eval('__sent[1].kind') == 'WHISPER'
+    # The level-up packet (a delivery confirmation for Eldrin's update may come first).
+    packet = next(p for p in lua.eval('__sent').values() if ' WSTATUS2 forever LEVEL 2 ' in p['text'])
+    assert packet['kind'] == 'WHISPER'
 
 
 def test_forever_missing_modern_chat_does_not_fall_back_to_legacy(forever_lua):

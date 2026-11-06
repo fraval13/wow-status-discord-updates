@@ -511,6 +511,38 @@ function R.listingChanged(id, listed)
     end
 end
 
+-- The first version that confirms live updates (WSACK).
+R.ACK_VERSION = "1.24.0"
+-- A member's addon version, from their list ("1.24.0"), or nil.
+function R.versionOf(name)
+    local k = db and key(name)
+    if not k then return nil end
+    for _, player in pairs(state().players) do
+        if player.characters[k] then return S.string(player.version) end
+    end
+    return nil
+end
+-- Members whose client never confirmed a live update (it was sent twice):
+-- {[key] = time}. Cleared when they confirm one.
+local function unreachable()
+    local roster = state()
+    roster.unreachable = type(roster.unreachable) == "table" and roster.unreachable or {}
+    return roster.unreachable
+end
+function R.unreached(name)
+    local k = db and key(name)
+    if k then unreachable()[k] = time(); R.render() end
+end
+function R.reached(name)
+    local k = db and key(name)
+    if k and unreachable()[k] then unreachable()[k] = nil; R.render() end
+end
+function R.isUnreachable(name)
+    local k = db and key(name)
+    local at = k and unreachable()[k]
+    return at ~= nil and time() - at < 86400
+end
+
 -- After a privacy change: tell everyone again (or tell them to forget us).
 function R.changed()
     if not db or not current then return end
@@ -996,6 +1028,9 @@ local function card(index)
             line("Gold earned", S.number(character.earned) and UI.money(character.earned))
             line("Monsters killed", S.number(character.kills) and tostring(character.kills))
             line("Played", S.number(character.played) and UI.duration(character.played))
+            if R.isUnreachable(character.name) then
+                GameTooltip:AddLine(T("Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."), 1, .4, .4, true)
+            end
             GameTooltip:AddLine(T("Click to see this character's activity."), 1, 1, 1, true); GameTooltip:Show()
         end
     end)
@@ -1151,7 +1186,9 @@ function R.render()
                     local online = character.status == "online"
                     c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
                     local gold = S.number(character.gold) and UI.money(character.gold, true)
-                    c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or ""))
+                    -- Live updates did not reach them (their client never confirmed).
+                    local lost = not group.self and R.isUnreachable(character.name) and ("   |cffff5555" .. T("not reached") .. "|r") or ""
+                    c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or "") .. lost)
                     local xp = S.number(character.xp)
                     c.xp:SetProgress(xp and xp / 1000, xp and TF("XP %d%%", math.floor(xp / 10)))
                     -- Level and total deaths at the end of the card.
