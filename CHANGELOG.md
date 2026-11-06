@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- The activity log opens on today; a Day button opens a calendar to pick another day or all days
+
 ## 1.17.0
 
 - Leaderboard per group on the Records page: level, deaths and quests, with sorting

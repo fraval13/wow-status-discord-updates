@@ -126,3 +126,62 @@ def test_activity_filters_by_type_and_person_combine():
         log.showAll.OnClick(log.showAll)
         assert(#log.entriesList == 3 and log.typeButton.text == "Type: All")
     ''')
+
+
+def test_calendar_dates_are_right():
+    from test_journal import actor
+    lua = actor('Thora')
+    assert lua.eval('WoWStatusUI.weekday(2026, 11, 6)') == 5   # a Friday
+    assert lua.eval('WoWStatusUI.weekday(2026, 11, 1)') == 7   # a Sunday
+    assert lua.eval('WoWStatusUI.weekday(2024, 2, 29)') == 4   # leap day, a Thursday
+    assert lua.eval('WoWStatusUI.daysIn(2024, 2)') == 29 and lua.eval('WoWStatusUI.daysIn(2100, 2)') == 28
+
+
+def test_activity_log_opens_on_today_and_remembers_the_picked_day():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        local group = next(character().group_ids)
+        local r = WoWStatusJournal.received
+        local now = S_now and S_now() or WoWStatusSafe.now()
+        r({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=5,at=now,group_id=group})
+        r({sender="Bob-TestRealm",nonce="1-2-b",kind="death",text="Died",at=now-2*86400,group_id=group})
+        WoWStatusJournal.show()
+        local log = WoWStatusActivityLog
+        -- Today only, by default.
+        assert(#log.entriesList == 1 and log.entriesList[1].sender == "Mira-TestRealm")
+        assert(log.dayButton.text == "Day: Today")
+        -- The calendar marks both days in gold and picks the older one.
+        log.dayButton.OnClick(log.dayButton)
+        local cal = WoWStatusCalendar
+        local older = WoWStatusHistory.oslo(now-2*86400):sub(1,10)
+        local cell
+        for _, c in ipairs(cal.cells) do if c.key == older then cell = c end end
+        assert(cell.text.text:find("|cffffd100", 1, true))
+        cell.OnClick(cell)
+        assert(#log.entriesList == 1 and log.entriesList[1].sender == "Bob-TestRealm")
+        assert(log.dayButton.text ~= "Day: Today")
+        -- Kept when the log is opened again (until /reload).
+        WoWStatusJournal.show()
+        assert(#log.entriesList == 1 and log.entriesList[1].sender == "Bob-TestRealm")
+        -- All days.
+        log.dayButton.OnClick(log.dayButton)
+        cal.all.OnClick(cal.all)
+        assert(#log.entriesList == 2 and log.dayButton.text == "Day: All days")
+        -- Back to today; a day without activity says so.
+        log.dayButton.OnClick(log.dayButton)
+        cal.today.OnClick(cal.today)
+        assert(#log.entriesList == 1 and log.dayButton.text == "Day: Today")
+        -- A character's activity covers every day.
+        WoWStatusJournal.showCharacter("Bob-TestRealm")
+        assert(#log.entriesList == 1 and log.dayButton.text == "Day: All days")
+    ''')
+
+
+def test_an_empty_today_says_so():
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        WoWStatusJournal.show()
+        assert(WoWStatusActivityLog.empty.text == "Nothing yet today.")
+    ''')

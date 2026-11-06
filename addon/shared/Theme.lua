@@ -238,6 +238,104 @@ function UI.money(copper, short)
     table.insert(parts, c .. coin("Copper"))
     return table.concat(parts, " ")
 end
+local function tr(text) return WoWStatusLocale.T(text) end
+-- Dates as "YYYY-MM-DD" day keys, for the Activity log's day picker.
+UI.MONTHS = {"January", "February", "March", "April", "May", "June", "July", "August", "September",
+    "October", "November", "December"}
+local WEEKDAYS = {"Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"}
+function UI.daysIn(year, month)
+    if month == 2 then return (year % 4 == 0 and (year % 100 ~= 0 or year % 400 == 0)) and 29 or 28 end
+    return ({31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31})[month]
+end
+-- Weekday of a date, Monday = 1 ... Sunday = 7 (Zeller's congruence).
+function UI.weekday(year, month, day)
+    if month < 3 then month, year = month + 12, year - 1 end
+    local k, j = year % 100, math.floor(year / 100)
+    local h = (day + math.floor(13 * (month + 1) / 5) + k + math.floor(k / 4) + math.floor(j / 4) + 5 * j) % 7
+    return (h + 5) % 7 + 1
+end
+function UI.dayKey(year, month, day) return string.format("%04d-%02d-%02d", year, month, day) end
+-- "Today", "Yesterday" or "6 November" (with the year when it is not this year).
+function UI.dayLabel(key, today, yesterday)
+    if not key then return tr("All days") end
+    if key == today then return tr("Today") end
+    if key == yesterday then return tr("Yesterday") end
+    local y, m, d = key:match("^(%d+)-(%d+)-(%d+)$")
+    if not y then return key end
+    local label = tonumber(d) .. " " .. tr(UI.MONTHS[tonumber(m)])
+    if today and today:sub(1, 4) ~= y then label = label .. " " .. y end
+    return label
+end
+-- A month calendar under owner. Days with activity (counts[key] > 0) are gold,
+-- the picked day is highlighted; the arrows change month. onPick(key), or
+-- onPick(nil) for all days.
+function UI.calendar(owner, selected, today, counts, onPick)
+    local cal = UI.calendarFrame
+    if not cal then
+        cal = UI.box(UIParent, 254, 252)
+        cal:SetFrameStrata("FULLSCREEN_DIALOG"); cal:EnableMouse(true)
+        _G.WoWStatusCalendar = cal
+        if UISpecialFrames then table.insert(UISpecialFrames, "WoWStatusCalendar") end
+        cal.title = UI.text(cal, "GameFontNormal", 34, -10, 186, "CENTER")
+        local function shift(step)
+            cal.month = cal.month + step
+            if cal.month < 1 then cal.month, cal.year = 12, cal.year - 1 end
+            if cal.month > 12 then cal.month, cal.year = 1, cal.year + 1 end
+            cal.render()
+        end
+        cal.previous = CreateFrame("Button", nil, cal, "UIPanelButtonTemplate")
+        cal.previous:SetPoint("TOPLEFT", 8, -6); cal.previous:SetSize(26, 22); cal.previous:SetText("<")
+        cal.previous:SetScript("OnClick", function() shift(-1) end)
+        cal.next = CreateFrame("Button", nil, cal, "UIPanelButtonTemplate")
+        cal.next:SetPoint("TOPLEFT", 220, -6); cal.next:SetSize(26, 22); cal.next:SetText(">")
+        cal.next:SetScript("OnClick", function() shift(1) end)
+        for i, name in ipairs(WEEKDAYS) do
+            local label = UI.text(cal, "GameFontDisableSmall", 8 + (i - 1) * 34, -36, 32, "CENTER")
+            label:SetText(tr(name))
+        end
+        cal.cells = {}
+        for i = 1, 42 do
+            local cell = UI.box(cal, 32, 24, "Button")
+            cell:SetPoint("TOPLEFT", 8 + ((i - 1) % 7) * 34, -52 - math.floor((i - 1) / 7) * 26)
+            cell.text = UI.text(cell, "GameFontHighlightSmall", 0, -6, 32, "CENTER")
+            cell:SetScript("OnClick", function(self) cal:Hide(); if cal.onPick then cal.onPick(self.key) end end)
+            cell:SetScript("OnEnter", function(self) UI.tint(self, true) end)
+            cell:SetScript("OnLeave", function(self) UI.tint(self, self.key == cal.selected) end)
+            cal.cells[i] = cell
+        end
+        cal.today = CreateFrame("Button", nil, cal, "UIPanelButtonTemplate")
+        cal.today:SetPoint("TOPLEFT", 8, -214); cal.today:SetSize(116, 26)
+        cal.today:SetScript("OnClick", function() cal:Hide(); if cal.onPick then cal.onPick(cal.todayKey) end end)
+        cal.all = CreateFrame("Button", nil, cal, "UIPanelButtonTemplate")
+        cal.all:SetPoint("TOPLEFT", 130, -214); cal.all:SetSize(116, 26)
+        cal.all:SetScript("OnClick", function() cal:Hide(); if cal.onPick then cal.onPick(nil) end end)
+        function cal.render()
+            cal.title:SetText(tr(UI.MONTHS[cal.month]) .. " " .. cal.year)
+            local first, days = UI.weekday(cal.year, cal.month, 1), UI.daysIn(cal.year, cal.month)
+            for i, cell in ipairs(cal.cells) do
+                local day = i - first + 1
+                if day >= 1 and day <= days then
+                    local key = UI.dayKey(cal.year, cal.month, day)
+                    local colour = (cal.counts[key] or 0) > 0 and "|cffffd100" or key == cal.todayKey and "|cffffffff" or "|cff808080"
+                    cell.key = key
+                    cell.text:SetText(colour .. day .. "|r")
+                    UI.tint(cell, key == cal.selected)
+                    cell:Show()
+                else cell.key = nil; cell:Hide() end
+            end
+        end
+        UI.calendarFrame = cal
+    end
+    if cal:IsShown() and cal.owner == owner then cal:Hide(); return cal end
+    local start = selected or today or "2026-01-01"
+    cal.year, cal.month = tonumber(start:sub(1, 4)), tonumber(start:sub(6, 7))
+    cal.owner, cal.selected, cal.todayKey, cal.counts, cal.onPick = owner, selected, today, counts or {}, onPick
+    cal.today:SetText(tr("Today")); cal.all:SetText(tr("All days"))
+    cal.render()
+    cal:ClearAllPoints(); cal:SetPoint("BOTTOMLEFT", owner, "TOPLEFT", 0, 4)
+    cal:Show()
+    return cal
+end
 -- Played time: "3d 4h", "5h 12m" or "12m".
 function UI.duration(seconds)
     seconds = tonumber(seconds)

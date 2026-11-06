@@ -918,7 +918,22 @@ J.TYPES={
     {"Mounts",{mount=true,epicmount=true}}, {"Armor",{loot=true,equipment=true}}, {"Reputation",{reputation=true}},
     {"Class abilities",{unlock=true}}, {"PvP",{pvp=true}}, {"Joins",{introduction=true}}, {"Recaps",{recap=true}},
 }
-local function visibleEntries()
+-- The day an entry belongs to, in the log's own (Oslo) time: "YYYY-MM-DD".
+local dayCache=setmetatable({},{__mode="k"})
+local function dayOf(e)
+    local day=dayCache[e]
+    if not day and S.number(e.at) then day=WoWStatusHistory.oslo(e.at):sub(1,10);dayCache[e]=day end
+    return day
+end
+local function today() return WoWStatusHistory.oslo(S.now()):sub(1,10) end
+local function yesterday() return WoWStatusHistory.oslo(S.now()-86400):sub(1,10) end
+-- The picked day: "today" (the default, so the log stays fresh), a day key, or
+-- nil for all days. It lasts until the next /reload.
+local function pickedDay()
+    if panel.day=="today" then return today() end
+    return panel.day
+end
+local function visibleEntries(allDays)
     local list={}
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
     local kinds=panel.typeFilter and J.TYPES[panel.typeFilter] and J.TYPES[panel.typeFilter][2]
@@ -932,12 +947,21 @@ local function visibleEntries()
         for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
         table.sort(list,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
     end
+    local day=not allDays and not samples and pickedDay()
+    if day then
+        local kept={}
+        for _,e in ipairs(list) do if dayOf(e)==day then kept[#kept+1]=e end end
+        list=kept
+    end
     return list
 end
 local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
     panel.empty:SetShown(#list==0)
+    local day=pickedDay()
+    panel.empty:SetText(T(not day and "No activity yet" or day==today() and "Nothing yet today." or "No activity on this day."))
+    panel.dayButton:SetText(T("Day:").." "..WoWStatusUI.dayLabel(day,today(),yesterday()))
     -- What the type and person filters show, with Show all to clear them.
     local parts={}
     if panel.typeFilter and J.TYPES[panel.typeFilter] then parts[#parts+1]=T(J.TYPES[panel.typeFilter][1]) end
@@ -1004,7 +1028,7 @@ local function build(parent)
     panel.child=CreateFrame("Frame",nil,panel.scroll);panel.child:SetSize(686,420);panel.scroll:SetScrollChild(panel.child)
     panel.empty=label(panel.child,"GameFontHighlightLarge",24,-180,620)
     panel.empty:SetJustifyH("CENTER");panel.empty:SetText(T("No activity yet"))
-    panel.rows={};panel.filter="all"
+    panel.rows={};panel.filter="all";panel.day="today"
     for i=1,6 do
         local row=WoWStatusUI.box(panel.child,680,124)
         row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT",4,-4);row.accent:SetSize(672,2)
@@ -1050,6 +1074,15 @@ local function build(parent)
             panel.scroll:SetVerticalScroll(0);render()
         end)
     end)
+    -- Day picker: a month calendar; days with activity (for the other filters) in gold.
+    panel.dayButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.dayButton:SetPoint("TOPLEFT",572,-522);panel.dayButton:SetSize(160,24)
+    panel.dayButton:SetScript("OnClick",function(self)
+        local counts={}
+        for _,e in ipairs(visibleEntries(true)) do local d=dayOf(e);if d then counts[d]=(counts[d] or 0)+1 end end
+        WoWStatusUI.calendar(self,pickedDay(),today(),counts,function(key)
+            panel.day=key==today() and "today" or key;panel.scroll:SetVerticalScroll(0);render()
+        end)
+    end)
     panel.showing=label(panel,"GameFontHighlight",24,-528,420)
     panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
     panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
@@ -1070,6 +1103,7 @@ function J.showCharacter(name)
     if not db or not P.senderKey(name) then return false end
     WoWStatusMainWindow.show("activity")
     panel.filter,panel.character,panel.characterName="all",P.senderKey(name),name:match("^[^-]+") or name
+    panel.day=nil -- A character's activity on every day.
     panel.scroll:SetVerticalScroll(0);render()
     return true
 end
@@ -1078,6 +1112,8 @@ function J.focus(id)
     if not db or not index[id] then return false end
     WoWStatusMainWindow.show("activity")
     panel.filter="all"
+    local day=dayOf(index[id])
+    panel.day=day==today() and "today" or day
     for i,e in ipairs(visibleEntries()) do
         if e.id==id then panel.scroll:SetVerticalScroll((i-1)*132);render();return true end
     end

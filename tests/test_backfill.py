@@ -100,6 +100,8 @@ def test_retail_imports_dated_level_achievements_quietly_and_lifetime_deaths():
         -- Never a medal: friends' logs do not hold this history.
         assert(next((WoWStatusFirsts.compute(WoWStatusJournal.entries())))==nil)
         WoWStatusJournal.show()
+        WoWStatusActivityLog.day=nil -- All days: the log opens on today.
+        WoWStatusJournal.show()
         local found
         for _,row in ipairs(WoWStatusActivityLog.rows) do
             if row.entry and row.entry.imported then
