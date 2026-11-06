@@ -209,6 +209,26 @@ local function combat()
     end
     return InCombatLockdown and InCombatLockdown() and true or false
 end
+-- Quiet mode (off by default): notifications wait while you are in the kinds of
+-- instance ticked (battlegrounds and arenas, raids, dungeons) and show afterwards.
+function P.quietSettings()
+    if not prefs then return {} end
+    prefs.quiet = type(prefs.quiet) == "table" and prefs.quiet or {pvp=true, raid=true, party=true}
+    return prefs.quiet
+end
+function P.setQuiet(key, value)
+    if not prefs or (key ~= "enabled" and key ~= "pvp" and key ~= "raid" and key ~= "party") then return false end
+    P.quietSettings()[key] = value == true
+    return true
+end
+local INSTANCE = {pvp="pvp", arena="pvp", raid="raid", party="party", scenario="party"}
+function P.quiet()
+    local quiet = P.quietSettings()
+    if not quiet.enabled or not IsInInstance then return false end
+    local ok, inside, kind = pcall(IsInInstance)
+    local group = ok and S.value(inside) and INSTANCE[S.string(kind) or ""]
+    return group ~= nil and group ~= false and quiet[group] == true
+end
 local function groupMode(character)
     character = character or (getCharacter and getCharacter())
     return character and next(WoWStatusGroups.selected(character)) ~= nil
@@ -1206,7 +1226,9 @@ local function tick()
     end
     -- Combat only holds what is shown. Sending carries on: addon messages are not
     -- combat-protected, and holding them let queued updates expire unsent.
-    if combat() then
+    -- Quiet mode holds them too (previews from the settings still show).
+    local quietNow = P.quiet() and not (active and active.preview) and not (incoming[1] and incoming[1].preview)
+    if combat() or quietNow then
         if active then
             table.insert(incoming, 1, active)
             active = nil

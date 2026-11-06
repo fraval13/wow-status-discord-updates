@@ -59,6 +59,8 @@ W.add({
     ["older version"] = "eldre versjon", ["older version or list sharing off"] = "eldre versjon eller listedeling av",
     ["Never met"] = "Aldri møtt", ["offline"] = "fråkopla", ["XP %d%%"] = "XP %d %%", ["Level %d"] = "Nivå %d",
     ["1 death"] = "1 dødsfall", ["%d deaths"] = "%d dødsfall", ["Groups:"] = "Grupper:",
+    ["Quiet mode: hold notifications in"] = "Stille modus: hald att varsel i", ["Battlegrounds"] = "Slagmarker", ["Raids"] = "Raid",
+    ["Dungeons"] = "Fangehol",
     ["not reached"] = "ikkje nådd",
     ["Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."] =
         "Direkteoppdateringane dine nådde ikkje denne figuren. Be dei skrive /reload, eller sjekk at de er på same type rike.",

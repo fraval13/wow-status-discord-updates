@@ -53,7 +53,7 @@ function P.show(host)
         end
         -- Settings first; below a line, the previews.
         local options = 150
-        local previews = options + 488
+        local previews = options + 560
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -122,6 +122,17 @@ function P.show(host)
         end)
         panel.reload=button(panel,"",450,-options-384,130,function() if ReloadUI then ReloadUI() end end)
         panel.reload:Hide()
+        -- Quiet mode: notifications wait in the instances ticked (off by default).
+        panel.quiet=check("Quiet mode: hold notifications in",-options-474,function() return WoWStatusPopups.quietSettings().enabled end,
+            function(value) WoWStatusPopups.setQuiet("enabled",value) end)
+        panel.quietKinds={}
+        for i,entry in ipairs({{"pvp","Battlegrounds"},{"raid","Raids"},{"party","Dungeons"}}) do
+            local key=entry[1]
+            local widget=check(entry[2],-options-510,function() return WoWStatusPopups.quietSettings()[key] end,
+                function(value) WoWStatusPopups.setQuiet(key,value) end)
+            widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-510)
+            panel.quietKinds[key]=widget
+        end
         -- The switch names its target in that language, so each reader finds it.
         function panel.refreshLanguage()
             local nn=WoWStatusLocale.lang()=="nn"
@@ -143,6 +154,8 @@ function P.show(host)
     for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.themePopups:SetChecked(panel.themePopups.get())
+    panel.quiet:SetChecked(panel.quiet.get() == true)
+    for _,widget in pairs(panel.quietKinds) do widget:SetChecked(widget.get() == true) end
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.refreshLanguage()
     panel.theme:SetText(WoWStatusTheme.label())
