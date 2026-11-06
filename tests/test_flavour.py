@@ -110,6 +110,7 @@ def test_profession_banks_and_unknown_kinds():
 
 def test_previews_randomize_locally_and_do_not_repeat_immediately():
     lua = make_lua()
+    lua.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     lua.execute('''
         WoWStatusPopups.preview("death")
         local first=WoWStatusLevelPopup.detail.text

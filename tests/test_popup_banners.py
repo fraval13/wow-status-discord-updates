@@ -66,6 +66,7 @@ def test_big_banners_still_queue_one_at_a_time():
 
 def test_previews_do_not_open_the_log():
     lua = actor('Thora')
+    lua.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     clock(lua, 10)
     lua.execute('''
         WoWStatusPopups.preview("level")
@@ -123,6 +124,7 @@ def test_preview_page_has_the_popup_options():
 def test_left_click_dismisses_without_opening_the_log():
     from test_journal import actor, clock, deliver_popup
     own, friend = actor('Mira'), actor('Thora')
+    friend.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     clock(own, 10)
     clock(friend, 10)
     own.eval('fire')('PLAYER_LEVEL_UP', 42)

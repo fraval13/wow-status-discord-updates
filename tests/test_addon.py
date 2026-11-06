@@ -1102,6 +1102,7 @@ def test_rapid_friend_levelups_each_get_their_own_queued_notification(lua):
 
 
 def test_click_dismisses_only_current_popup_and_keeps_log_and_queue(lua):
+    lua.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     from wow_status.group_routing import group_key
     lua.eval('WoWStatusGroups.update')('dawnwatch', '')
     receive=lua.eval('WoWStatusPopups.receive')

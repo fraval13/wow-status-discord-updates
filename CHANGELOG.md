@@ -10,6 +10,11 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Clicks in the first 1.5 seconds of a notification are ignored, so a stray click cannot dismiss it
+- Missed the reaction buttons? A friend's log card offers them for a minute after the notification
+
 ## 1.18.0
 
 - The activity log opens on today; a Day button opens a calendar to pick another day or all days

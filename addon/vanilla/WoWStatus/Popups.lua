@@ -881,11 +881,33 @@ function P.reactions(item)
     if POSITIVE[item.kind] then return {P.CONGRATS[item.kind] or "Congrats!"} end
     return {}
 end
+-- Clicks in the first 1.5 seconds are ignored: a click meant for something else
+-- must not dismiss a notification that just appeared, or whisper a reaction.
+P.CLICK_GUARD = 1.5
+local function clock() return GetTime and S.number(GetTime()) or time() end
+local function guarded() return toast ~= nil and toast.shownAt ~= nil and clock() - toast.shownAt < P.CLICK_GUARD end
+-- The log entry for a notification (or the entry itself), where a reaction is
+-- remembered, so the notification and the log never whisper the same update twice.
+local function entryOf(item)
+    if type(item) ~= "table" or item.preview or not WoWStatusJournal or not WoWStatusJournal.entry then return nil end
+    if item.id and item.client then return item end
+    local id = item.nonce and WoWStatusJournal.eventID(item.sender, item.nonce)
+    return id and WoWStatusJournal.entry(id) or nil
+end
+local reactionButtons
 function P.react(item, text)
-    if type(item) ~= "table" or item.reacted then return false end
+    local entry = entryOf(item)
+    if type(item) ~= "table" or item.reacted or (entry and entry.reacted) then return false end
     local send = A.chatSender and A.chatSender()
     if not send or A.chatRestricted() then return false end
     item.reacted = text
+    if entry then entry.reacted = text end
+    -- Reacted from the log while the notification is still up: its buttons go too.
+    if entry and active and active ~= item and entryOf(active) == entry then
+        active.reacted = text
+        if toast and toast:IsShown() then reactionButtons() end
+    end
+    if WoWStatusJournal and WoWStatusJournal.redraw then WoWStatusJournal.redraw() end
     -- Whispered in your chosen language ("Gratulerer!"; GZ!, F and Git Good as long Nynorsk lines).
     return pcall(send, T(text), "WHISPER", nil, item.sender) == true
 end
@@ -893,9 +915,10 @@ end
 -- lines, "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
 -- notification grows to make room.
 local TOAST_HEIGHT, BESIDE_HEADING = 124, 260
-local function reactionButtons()
+reactionButtons = function()
     local item = toast.item
-    local list = item and not item.reacted and P.reactions(item) or {}
+    local entry = entryOf(item)
+    local list = item and not item.reacted and not (entry and entry.reacted) and P.reactions(item) or {}
     for i = #toast.reactions, 1, -1 do toast.reactions[i]:Hide() end
     local widths, total = {}, 0
     for i = 1, #list do
@@ -904,6 +927,7 @@ local function reactionButtons()
             button = CreateFrame("Button", nil, toast, "UIPanelButtonTemplate")
             button:SetSize(86, 24)
             button:SetScript("OnClick", function(self)
+                if guarded() then return end
                 local shown = toast.item
                 if shown and P.react(shown, self.reaction) then
                     toast.detail:SetText(T("You whispered") .. " “" .. T(self.reaction) .. "”"); toast.detail:Show()
@@ -976,6 +1000,7 @@ local function show(item, now)
         end)
         toast:SetScript("OnMouseUp",function(self,button)
             if self.moved then self.moved = false; return end -- The end of a drag, not a click.
+            if guarded() then return end
             -- Any click dismisses the toast (it does not open the log).
             if button=="LeftButton" or button=="RightButton" then
                 self:Hide();active=nil
@@ -1054,6 +1079,10 @@ local function show(item, now)
     toast.detail:SetShown(flavour~="")
     reactionButtons()
     toast.age = 0
+    toast.shownAt = clock()
+    -- The log card offers the same reactions for a minute after this.
+    local entry = not item.preview and entryOf(item)
+    if entry and not entry.owner then entry.shown_at = time() end
     toast:SetAlpha(0)
     toast:Show()
     item.hide_at = now + 6

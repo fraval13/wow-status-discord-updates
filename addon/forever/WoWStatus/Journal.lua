@@ -421,6 +421,8 @@ end
 function J.shared(kind) return sharedKinds[kind]==true end
 function J.entries() return db and db.journal.entries or {} end
 function J.contains(id) return id and index[id]~=nil end
+function J.entry(id) return id and index[id] or nil end
+function J.redraw() if refresh then refresh() end end
 function J.groupsChanged()
     if not db then return end
     requests,sessions,sendQueue,cursors={},{},{},{}
@@ -955,9 +957,47 @@ local function visibleEntries(allDays)
     end
     return list
 end
+-- A friend's update whose notification appeared less than a minute ago, not
+-- yet reacted to: its log card offers the same reaction buttons.
+J.REACT_WINDOW=60
+function J.canReact(e)
+    local shown=type(e)=="table" and S.number(e.shown_at)
+    return shown~=nil and shown~=false and not e.owner and not e.sample and not e.reacted
+        and time()>=shown and time()-shown<J.REACT_WINDOW
+end
+local function rowReactions(row,e)
+    row.reactions=row.reactions or {}
+    for _,button in ipairs(row.reactions) do button:Hide() end
+    local list=J.canReact(e) and P.reactions(e) or {}
+    local widest=0
+    for i,reaction in ipairs(list) do
+        local button=row.reactions[i]
+        if not button then
+            button=CreateFrame("Button",nil,row,"UIPanelButtonTemplate")
+            button:SetScript("OnClick",function(self)
+                if self.entry and J.canReact(self.entry) then P.react(self.entry,self.reaction) end
+                if refresh then refresh() end
+            end)
+            row.reactions[i]=button
+        end
+        local text=T(reaction)
+        button.entry,button.reaction=e,reaction
+        button:SetText(text)
+        local label=button.GetFontString and button:GetFontString()
+        local measured=label and label.GetStringWidth and S.number(label:GetStringWidth())
+        local width=math.min(300,math.max(86,math.max(measured or 0,#text*6)+24))
+        widest=math.max(widest,width)
+        button:SetSize(width,24);button:ClearAllPoints();button:SetPoint("TOPRIGHT",-10,-10-(i-1)*28);button:Show()
+    end
+    -- The heading and message make room for the buttons.
+    local width=#list>0 and 570-widest-8 or 570
+    row.heading:SetWidth(width);row.message:SetWidth(width)
+    return #list>0
+end
 local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
+    panel.reactUntil=nil
     panel.empty:SetShown(#list==0)
     local day=pickedDay()
     panel.empty:SetText(T(not day and "No activity yet" or day==today() and "Nothing yet today." or "No activity on this day."))
@@ -989,7 +1029,13 @@ local function render()
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
-            row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or ""))
+            local mine=not e.owner and S.string(e.reacted) and ("  |cffffd100"..T("You whispered").." “"..T(e.reacted).."”|r") or ""
+            row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or "")..mine)
+            -- Reaction buttons for a minute after the notification; the log redraws when they expire.
+            if rowReactions(row,e) then
+                local expires=S.number(e.shown_at)+J.REACT_WINDOW
+                panel.reactUntil=math.min(panel.reactUntil or expires,expires)
+            end
             row.event_id=e.id;row.entry=e;row:Show()
         else row.event_id=nil;row:Hide() end
     end
@@ -1052,6 +1098,13 @@ local function build(parent)
         row.detail=label(row,"GameFontHighlightSmall",88,-102,570)
         panel.rows[i]=row
     end
+    local waited=0
+    panel:SetScript("OnUpdate",function(_,delta)
+        waited=waited+(delta or 0)
+        if waited<1 then return end
+        waited=0
+        if panel.reactUntil and time()>=panel.reactUntil then render() end
+    end)
     if panel.scroll.HookScript then panel.scroll:HookScript("OnVerticalScroll",render)
     else panel.scroll:SetScript("OnVerticalScroll",render) end
     local buttons={{"All","all"},{"Mine","mine"},{"Friends","friends"}}

@@ -9,6 +9,7 @@ def sent_whispers(lua):
 
 def test_level_up_offers_gz_and_whispers_it_once():
     own, friend = actor('Mira'), actor('Thora')
+    friend.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     clock(own, 10)
     clock(friend, 10)
     own.eval('fire')('PLAYER_LEVEL_UP', 42)
@@ -132,6 +133,7 @@ def test_death_details_show_zone_and_killer_for_you_and_your_friends():
 def test_nynorsk_gz_is_the_long_wish_and_counts_as_gz():
     long_gz = 'Eg ynskjer deg hjarteleg til lukke med det nye nivået!'
     own, friend = actor('Mira'), actor('Thora')
+    friend.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     clock(own, 10)
     clock(friend, 10)
     friend.execute('WoWStatusLocale.set("nn")')
@@ -232,3 +234,93 @@ def test_level_up_buttons_fit_beside_the_heading_in_english():
     toast = friend.eval('WoWStatusLevelPopup')
     assert [toast.reactions[i].text for i in (1, 2)] == ['GZ!', 'Congrats on level 30!']
     assert toast.reactionRow == 'top' and toast.height == 124
+
+
+def level_up_shown(level=42):
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    own.eval('fire')('PLAYER_LEVEL_UP', level)
+    deliver_popup(own, friend)
+    friend.eval('WoWStatusPopups.tick')()
+    return friend
+
+
+def test_clicks_in_the_first_moments_are_ignored():
+    friend = level_up_shown()
+    friend.execute('''
+        local toast = WoWStatusLevelPopup
+        __mono = 11   -- one second after it appeared: a stray click
+        toast.reactions[1].OnClick(toast.reactions[1])
+        toast.OnMouseUp(toast, "LeftButton")
+        assert(toast:IsShown() and toast.reactions[1]:IsShown())
+        __mono = 11.6 -- after 1.5 seconds clicks count
+        toast.reactions[1].OnClick(toast.reactions[1])
+        assert(not toast.reactions[1]:IsShown())
+        toast.OnMouseUp(toast, "LeftButton")
+        assert(not toast:IsShown())
+    ''')
+    assert sent_whispers(friend) == [('GZ!', 'Mira-TestRealm')]
+
+
+def log_card(friend):
+    friend.execute('WoWStatusJournal.show()')
+    return friend.eval('''(function()
+        for _, row in ipairs(WoWStatusActivityLog.rows) do
+            if row:IsShown() and row.entry.kind == "level" and not row.entry.owner then return row end
+        end
+    end)()''')
+
+
+def test_the_log_card_offers_the_reactions_for_a_minute():
+    friend = level_up_shown()
+    row = log_card(friend)
+    assert row.reactions[1].text == 'GZ!' and row.reactions[2].text == 'Congrats on level 42!'
+    friend.execute('__now = __now + 30')
+    row = log_card(friend)
+    row.reactions[2].OnClick(row.reactions[2])
+    assert sent_whispers(friend) == [('Congrats on level 42!', 'Mira-TestRealm')]
+    row = log_card(friend)
+    assert not row.reactions[1].IsShown(row.reactions[1])
+    assert 'You whispered “Congrats on level 42!”' in row.detail.text
+    # The notification still on screen lost its buttons too: no second whisper.
+    friend.execute('''
+        local toast = WoWStatusLevelPopup
+        __mono = 20
+        if toast.reactions[1]:IsShown() then toast.reactions[1].OnClick(toast.reactions[1]) end
+    ''')
+    assert len(sent_whispers(friend)) == 1
+
+
+def test_log_buttons_expire_after_a_minute():
+    friend = level_up_shown()
+    assert log_card(friend).reactions[1].IsShown(log_card(friend).reactions[1])
+    friend.execute('__now = __now + 61')
+    row = log_card(friend)
+    assert not row.reactions[1].IsShown(row.reactions[1])
+
+
+def test_reacting_on_the_notification_removes_the_log_buttons():
+    friend = level_up_shown()
+    friend.execute('''
+        __mono = 12
+        local toast = WoWStatusLevelPopup
+        toast.reactions[1].OnClick(toast.reactions[1])
+    ''')
+    row = log_card(friend)
+    first = row.reactions and row.reactions[1]
+    assert first is None or not first.IsShown(first)
+    assert 'You whispered “GZ!”' in row.detail.text
+
+
+def test_caught_up_entries_have_no_reaction_buttons():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=5,at=time(),group_id=group})
+        WoWStatusJournal.show()
+        local row = WoWStatusActivityLog.rows[1]
+        assert(row.entry.kind == "level")
+        assert(not row.reactions or not row.reactions[1] or not row.reactions[1]:IsShown())
+    ''')
