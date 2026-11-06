@@ -851,12 +851,6 @@ function P.setBigBanners(value) if prefs then prefs.big_banners = value ~= false
 function P.options()
     return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or prefs.big_banners ~= false}
 end
--- Left-click opens the toast's activity-log entry; any click dismisses it.
-local function entryID(item)
-    if not item or item.preview or not item.nonce or not WoWStatusJournal then return nil end
-    local id = WoWStatusJournal.eventID(item.sender, item.nonce)
-    return id and WoWStatusJournal.contains(id) and id or nil
-end
 
 -- Reaction whispers offered on a friend's notification: a real chat whisper,
 -- sent only when you click, at most once per notification.
@@ -950,11 +944,10 @@ local function show(item, now)
         end)
         toast:SetScript("OnMouseUp",function(self,button)
             if self.moved then self.moved = false; return end -- The end of a drag, not a click.
+            -- Any click dismisses the toast (it does not open the log).
             if button=="LeftButton" or button=="RightButton" then
-                local id = button=="LeftButton" and entryID(self.item)
                 self:Hide();active=nil
                 lastDisplay=time()-7 -- Advance on the next tick, without dropping queued entries.
-                if id then WoWStatusJournal.focus(id) end
             end
         end)
         local bg = toast:CreateTexture(nil, "BACKGROUND")

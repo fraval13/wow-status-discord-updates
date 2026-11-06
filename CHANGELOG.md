@@ -13,6 +13,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - The activity log opens on today; a Day button opens a calendar to pick another day or all days
+- Clicking a notification only dismisses it; it no longer opens the activity log
 
 ## 1.17.0
 

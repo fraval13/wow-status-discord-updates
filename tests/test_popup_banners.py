@@ -64,28 +64,6 @@ def test_big_banners_still_queue_one_at_a_time():
     assert seen == ['LEVEL 20!', 'A NEW FIRST!', 'LEVEL 30!', 'A NEW FIRST!']
 
 
-def test_left_click_opens_the_log_entry_and_right_click_only_dismisses():
-    lua = received(13)
-    lua.execute('''
-        local toast = WoWStatusLevelPopup
-        toast.OnMouseUp(toast, "RightButton")
-        assert(not toast:IsShown())
-        assert(WoWStatusMainWindow.active() == nil)
-    ''')
-    lua = received(14)
-    lua.execute('''
-        local toast = WoWStatusLevelPopup
-        local id = WoWStatusJournal.eventID(toast.item.sender, toast.item.nonce)
-        assert(WoWStatusJournal.contains(id))
-        toast.OnMouseUp(toast, "LeftButton")
-        assert(not toast:IsShown())
-        assert(WoWStatusMainWindow.active() == "activity")
-        local index
-        for i, e in ipairs(WoWStatusActivityLog.entriesList) do if e.id == id then index = i end end
-        assert(index and WoWStatusActivityLog.scroll.scroll == (index - 1) * 132)
-    ''')
-
-
 def test_previews_do_not_open_the_log():
     lua = actor('Thora')
     clock(lua, 10)
@@ -139,4 +117,21 @@ def test_preview_page_has_the_popup_options():
         WoWStatusDB.popups.popup_position = {point="TOP", x=1, y=2}
         panel.reset.OnClick(panel.reset)
         assert(WoWStatusDB.popups.popup_position == nil)
+    ''')
+
+
+def test_left_click_dismisses_without_opening_the_log():
+    from test_journal import actor, clock, deliver_popup
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    own.eval('fire')('PLAYER_LEVEL_UP', 42)
+    deliver_popup(own, friend)
+    friend.execute('''
+        WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        assert(toast:IsShown())
+        toast.OnMouseUp(toast, "LeftButton")
+        assert(not toast:IsShown())
+        assert(WoWStatusMainWindow.active() == nil)
     ''')
