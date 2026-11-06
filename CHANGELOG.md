@@ -13,12 +13,14 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - Leaderboard per group on the Records page: level, deaths and quests, with sorting
-- Deaths show where you died, also for friends: Died · Duskwood. On Classic Era and TBC also what killed you (WoW Forever and Retail keep the combat log from addons)
+- Deaths show where you died, for you and friends; on Classic Era and TBC also what killed you
 - Your log cards show who reacted with GZ!, F or Congrats!
 - Filter the activity log by type and by person
 - You are told when a friend runs a newer version of WoW Status
-- Friends' levels stay current: their level-ups in the log update the list, each friend is asked for a fresh list when you log in, and Sync now looks one friend up with /who
-- Gold, gold earned, monsters killed and played time on the Overview and on every character card (hover a card for all of them). Gold earned and kills count from installation, or use the game's lifetime statistics where it has them; each can be turned off under Character details
+- Friends' levels stay current: log level-ups update the list, and Sync now looks a friend up with /who
+- Gold, gold earned, kills and played time on the Overview and on character cards (hover for all)
+- WoW Forever: friends' character lists are accepted again, so nobody stays in Not announced
+- In Nynorsk, GZ! is now a full wish: Eg ynskjer deg hjarteleg til lukke med det nye nivået!
 - The "Preview toasts" settings page is now called Notifications, with its settings first and the previews below them
 
 ## 1.16.0
