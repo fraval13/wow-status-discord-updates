@@ -63,3 +63,42 @@ def test_other_updates_keep_their_usual_icon_and_tooltip():
         assert(not WoWStatusPresentation.itemTooltip(UIParent, item))
         assert(WoWStatusPresentation.colourItem({kind="loot", text="Equipped X", item_id=1}, "Equipped X") == "Equipped X")
     ''')
+
+
+def heading(lua, quality, slot):
+    return lua.eval(f'select(5, WoWStatusPresentation.theme({{kind="loot", quality={quality}, equip_loc="{slot}"}}))')
+
+
+def test_armor_headings_name_the_piece():
+    lua = actor('Mira')
+    assert heading(lua, 3, 'INVTYPE_FINGER') == 'RARE RING EQUIPPED!'
+    assert heading(lua, 4, 'INVTYPE_TRINKET') == 'EPIC TRINKET EQUIPPED!'
+    assert heading(lua, 5, 'INVTYPE_CHEST') == 'LEGENDARY CHESTPIECE EQUIPPED!'
+    assert heading(lua, 3, 'INVTYPE_SOMETHING_NEW') == 'RARE ARMOR EQUIPPED!'
+
+
+def test_nynorsk_armor_headings_agree_with_the_piece():
+    lua = actor('Mira')
+    lua.execute('WoWStatusLocale.set("nn")')
+    t = lua.eval('WoWStatusLocale.T')
+    assert t('RARE RING EQUIPPED!') == 'SJELDAN RING PÅ!'           # masculine
+    assert t('RARE SHIELD EQUIPPED!') == 'SJELDANT SKJOLD PÅ!'       # neuter
+    assert t('RARE GLOVES EQUIPPED!') == 'SJELDNE HANSKAR PÅ!'       # plural
+    assert t('EPIC CHESTPIECE EQUIPPED!') == 'EPISK BRYSTPANSAR PÅ!'
+    assert t('LEGENDARY BOOTS EQUIPPED!') == 'LEGENDARISKE STØVLAR PÅ!'
+    assert t('RARE ARMOR EQUIPPED!') == 'SJELDAN RUSTNING PÅ!'
+
+
+def test_every_armor_slot_has_a_name_in_both_languages():
+    import re
+    from pathlib import Path
+    root = Path(__file__).parents[1] / 'addon/shared'
+    slots = re.findall(r'(INVTYPE_\w+)=true', (root / 'Loot.lua').read_text(encoding='utf-8'))
+    assert len(slots) >= 18
+    lua = actor('Mira')
+    lua.execute('WoWStatusLocale.set("nn")')
+    for slot in slots:
+        for quality in (3, 4, 5):
+            english = heading(lua, quality, slot)
+            assert 'ARMOR' not in english, slot
+            assert lua.eval(f'WoWStatusLocale.T("{english}")').endswith(' PÅ!'), english

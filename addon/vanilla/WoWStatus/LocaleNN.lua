@@ -356,6 +356,22 @@ W.add({
     {"^(Tonight)(.+)$", function(a, b) return recap(a .. b) end},
 })
 
+-- Armor headings by slot: the adjective follows the noun's gender and number
+-- (masculine/feminine, neuter, plural): "SJELDAN RING", "SJELDANT SKJOLD", "SJELDNE HANSKAR".
+do
+    local ADJECTIVES = {RARE={"SJELDAN", "SJELDANT", "SJELDNE"}, EPIC={"EPISK", "EPISK", "EPISKE"},
+        LEGENDARY={"LEGENDARISK", "LEGENDARISK", "LEGENDARISKE"}}
+    local PIECES = {HELMET={"HJELM", 1}, NECKLACE={"HALSSMYKKE", 2}, SHOULDERS={"SKULDERPLATER", 3},
+        SHIRT={"SKJORTE", 1}, CHESTPIECE={"BRYSTPANSAR", 2}, ROBE={"KJORTEL", 1}, BELT={"BELTE", 2},
+        LEGGINGS={"BUKSER", 3}, BOOTS={"STØVLAR", 3}, BRACERS={"ARMVERN", 3}, GLOVES={"HANSKAR", 3},
+        RING={"RING", 1}, TRINKET={"TALISMAN", 1}, CLOAK={"KAPPE", 1}, SHIELD={"SKJOLD", 2},
+        ["OFF-HAND"]={"HANDGJENSTAND", 1}, TABARD={"VÅPENKJOLE", 1}, RELIC={"RELIKVIE", 1}, ARMOR={"RUSTNING", 1}}
+    WoWStatusLocale.add({}, {{"^(%u+) ([%u%-]+) EQUIPPED!$", function(quality, piece)
+        local adjective, noun = ADJECTIVES[quality], PIECES[piece]
+        if adjective and noun then return adjective[noun[2]] .. " " .. noun[1] .. " PÅ!" end
+    end}})
+end
+
 -- Nynorsk reaction whispers: each notification's button shows one of these at
 -- random, and that line is whispered. "{zone}" stands for the zone's name. A
 -- friend's client links every line to its kind of event, in either language.

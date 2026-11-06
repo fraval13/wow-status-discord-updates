@@ -37,6 +37,12 @@ function W.itemTooltip(owner, item, anchor)
     GameTooltip:Show()
     return true
 end
+-- Armor slots by name, for the headings of first armor equips.
+W.SLOTS = {INVTYPE_HEAD="HELMET", INVTYPE_NECK="NECKLACE", INVTYPE_SHOULDER="SHOULDERS", INVTYPE_BODY="SHIRT",
+    INVTYPE_CHEST="CHESTPIECE", INVTYPE_ROBE="ROBE", INVTYPE_WAIST="BELT", INVTYPE_LEGS="LEGGINGS",
+    INVTYPE_FEET="BOOTS", INVTYPE_WRIST="BRACERS", INVTYPE_HAND="GLOVES", INVTYPE_FINGER="RING",
+    INVTYPE_TRINKET="TRINKET", INVTYPE_CLOAK="CLOAK", INVTYPE_SHIELD="SHIELD", INVTYPE_HOLDABLE="OFF-HAND",
+    INVTYPE_TABARD="TABARD", INVTYPE_RELIC="RELIC"}
 function WoWStatusPresentation.theme(item)
     local themes = {
         level={"level-arrow",1,.82,.2,"LEVEL UP!"},
@@ -63,9 +69,11 @@ function WoWStatusPresentation.theme(item)
     themes.questprogress={"INV_Misc_Book_09",1,.8,.2,"QUEST COMPLETED"}
     themes.equipment={"INV_Chest_Plate04",.3,.7,1,"EQUIPMENT"}
     if item.kind=="loot" then
-        local rarities={[3]={0,.44,.87,"RARE ARMOR EQUIPPED!"},[4]={.64,.21,.93,"EPIC ARMOR EQUIPPED!"},[5]={1,.5,0,"LEGENDARY ARMOR EQUIPPED!"}}
+        local rarities={[3]={0,.44,.87,"RARE"},[4]={.64,.21,.93,"EPIC"},[5]={1,.5,0,"LEGENDARY"}}
         local rarity=rarities[item.quality]
-        if rarity then themes.loot={"INV_Chest_Plate04",rarity[1],rarity[2],rarity[3],rarity[4]} end
+        -- The piece by its slot ("RARE RING EQUIPPED!"); "ARMOR" when the slot is unknown.
+        local piece=W.SLOTS[item.equip_loc] or "ARMOR"
+        if rarity then themes.loot={"INV_Chest_Plate04",rarity[1],rarity[2],rarity[3],rarity[4].." "..piece.." EQUIPPED!"} end
     end
     if item.kind=="pvp" and (item.text or ""):match("^Reached honor level ") then themes.pvp[5]="HONOR LEVEL UP!" end
     local kind = ({professionprogress="profession"})[item.kind] or item.kind
