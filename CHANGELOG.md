@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## 1.24.0
+
+- Legg til skillen git-commit for commit-meldingar
+
 ## 1.23.0
 
 - The Overview calls your gold Current (Noverande in Nynorsk), next to Earned
