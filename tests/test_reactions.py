@@ -137,8 +137,11 @@ def test_death_details_show_zone_and_killer_for_you_and_your_friends():
     ''')
 
 
-def test_nynorsk_gz_is_the_long_wish_and_counts_as_gz():
-    long_gz = 'Eg ynskjer deg hjarteleg til lukke med det nye nivået!'
+def pool(lua, key):
+    return list(lua.eval(f'WoWStatusLocale.POOLS["{key}"]').values())
+
+
+def test_nynorsk_gz_whispers_the_line_its_button_shows_and_counts_as_gz():
     own, friend = actor('Mira'), actor('Thora')
     friend.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     clock(own, 10)
@@ -146,21 +149,24 @@ def test_nynorsk_gz_is_the_long_wish_and_counts_as_gz():
     friend.execute('WoWStatusLocale.set("nn")')
     own.eval('fire')('PLAYER_LEVEL_UP', 42)
     deliver_popup(own, friend)
-    friend.execute('''
+    shown = friend.eval('''(function()
         WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
+        local text = toast.reactions[1].label
         toast.reactions[1].OnClick(toast.reactions[1])
-    ''')
-    assert sent_whispers(friend) == [(long_gz, 'Mira-TestRealm')]
-    # An English-speaking friend's client links the long wish to the level-up.
+        return text
+    end)()''')
+    assert shown in pool(friend, 'GZ!')
+    assert sent_whispers(friend) == [(shown, 'Mira-TestRealm')]
+    # An English-speaking friend's client links any of the lines to the level-up.
     own.execute(f'''
         __peers = {{"Mira-TestRealm", "Thora-TestRealm"}}
         for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
         for _ = 1, 3 do WoWStatusPopups.tick() end
-        fire("CHAT_MSG_WHISPER", "{long_gz}", "Thora-TestRealm")
+        fire("CHAT_MSG_WHISPER", "{shown}", "Thora-TestRealm")
         local e
         for _, item in ipairs(WoWStatusJournal.entries()) do if item.owner and item.kind == "level" then e = item end end
-        assert(e.reactions["thora-testrealm"].text == "{long_gz}")
+        assert(e.reactions["thora-testrealm"].text == "{shown}")
     ''')
 
 
@@ -203,12 +209,12 @@ def test_short_reactions_sit_beside_the_heading():
 
 def test_long_reactions_get_rows_along_the_bottom():
     toast = death_toast('nn')
-    # Two long lines: one row each, under the text, at full width.
-    assert toast.reactionRow == 'stacked' and toast.height == 124 + 2 * 28 + 6
-    for i, text in ((1, 'Eg tek av meg hjelmen og bøyer hovudet i sorg.'), (2, 'Øv deg litt meir, så døyr du kanskje sjeldnare!')):
+    # Long lines go under the text, one row or one each, at full width.
+    assert toast.reactionRow in ('bottom', 'stacked') and toast.height > 124
+    for i in (1, 2):
         button = toast.reactions[i]
-        assert label(button) == text
-        assert button.width == max(86, len(text.encode()) * 6 + 24 + 36) and button.width <= 536
+        assert label(button) == button.label
+        assert button.width == max(86, len(button.label.encode()) * 6 + 24 + 36) and button.width <= 536
 
 
 def test_specific_congrats_link_to_their_own_kind_in_either_language():
@@ -373,3 +379,43 @@ def test_buttons_are_greyed_and_count_down_during_the_click_guard():
         toast.OnUpdate(toast, .6)
         assert(gz.text == "GZ!" and gz.disabled == false, gz.text)
     ''')
+
+
+def test_the_nynorsk_lines_are_twenty_each_and_fit_a_whisper():
+    lua = actor('Thora')
+    for key in ('GZ!', 'F', 'Enjoy'):
+        lines = pool(lua, key)
+        assert len(lines) == 20 and len(set(lines)) == 20, key
+        for line in lines:
+            assert len(line.replace('{zone}', 'x' * 48).encode()) <= 160, line
+            if key == 'Enjoy':
+                assert line.count('{zone}') == 1, line
+
+
+def test_random_lines_link_to_their_event_and_zone():
+    lua = actor('Thora')
+    clock(lua, 10)
+    zone_line = pool(lua, 'Enjoy')[3].replace('{zone}', 'Elwynn Forest')
+    f_line = pool(lua, 'F')[7]
+    lua.execute(f'''
+        __peers = {{"Thora-TestRealm", "Mira-TestRealm", "Bob-TestRealm"}}
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+        for _ = 1, 3 do WoWStatusPopups.tick() end
+        function GetRealZoneText() return "Elwynn Forest" end
+        fire("ZONE_CHANGED_NEW_AREA")
+        fire("PLAYER_DEAD")
+        fire("CHAT_MSG_WHISPER", "{zone_line}", "Mira-TestRealm")
+        fire("CHAT_MSG_WHISPER", "{f_line}", "Bob-TestRealm")
+        local zone, death
+        for _, e in ipairs(WoWStatusJournal.entries()) do
+            if e.owner and e.kind == "zone" then zone = e end
+            if e.owner and e.kind == "death" then death = e end
+        end
+        assert(zone and zone.reactions and zone.reactions["mira-testrealm"], "zone")
+        assert(death.reactions["bob-testrealm"].text == "{f_line}")
+    ''')
+
+
+def test_english_buttons_keep_their_one_line():
+    toast = death_toast('en')
+    assert [toast.reactions[i].label for i in (1, 2)] == ['F', 'Git Good']

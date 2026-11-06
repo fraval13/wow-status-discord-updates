@@ -16,6 +16,11 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - Nine new personalities with 300 lines per event, from Wholesome and Epic bard to Jealous friend and Drama queen
 - /wstatus personality <name> switches from chat; captions already in your log keep their wording
 
+## 1.21.0
+
+- Long activity-log lines end with "..." instead of wrapping; hover a card to read all of it (no event ID)
+- In Nynorsk, GZ!, F and new-zone buttons pick one of 20 lines at random, and whisper what they show
+
 ## 1.20.0
 
 - The day calendar and the filter menus are no longer hidden behind the window

@@ -893,6 +893,15 @@ end
 local function label(parent,font,x,y,width)
     local f=parent:CreateFontString(nil,"OVERLAY",font);f:SetPoint("TOPLEFT",x,y);f:SetWidth(width);f:SetJustifyH("LEFT");return f
 end
+-- One line; the game ends a text that does not fit with "..." (the card's
+-- tooltip has it in full) instead of wrapping it.
+local function oneLine(f)
+    f:SetWordWrap(false)
+    if f.SetNonSpaceWrap then f:SetNonSpaceWrap(false) end
+    if f.SetMaxLines then f:SetMaxLines(1) end
+    f.oneLine=true
+    return f
+end
 -- The tour (#64) shows sample entries instead of the real log, display only.
 function J.displayEntries()
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
@@ -980,7 +989,7 @@ local function rowReactions(row,e)
             end)
             row.reactions[i]=button
         end
-        local text=T(reaction)
+        local text=P.reactionText(e,reaction)
         button.entry,button.reaction=e,reaction
         button:SetText(text)
         local label=button.GetFontString and button:GetFontString()
@@ -1029,7 +1038,8 @@ local function render()
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
-            local mine=not e.owner and S.string(e.reacted) and ("  |cffffd100"..T("You whispered").." “"..T(e.reacted).."”|r") or ""
+            local said=S.string(e.whispered) or (S.string(e.reacted) and T(e.reacted))
+            local mine=not e.owner and said and ("  |cffffd100"..T("You whispered").." “"..said:gsub("|","||").."”|r") or ""
             row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or "")..mine)
             -- Reaction buttons for a minute after the notification; the log redraws when they expire.
             if rowReactions(row,e) then
@@ -1079,8 +1089,8 @@ local function build(parent)
         local row=WoWStatusUI.box(panel.child,680,124)
         row.accent=row:CreateTexture(nil,"OVERLAY");row.accent:SetPoint("TOPLEFT",4,-4);row.accent:SetSize(672,2)
         row.iconFrame=WoWStatusUI.icon(row,60);row.iconFrame:SetPoint("TOPLEFT",12,-20);row.icon=row.iconFrame.texture
-        row.heading=label(row,"GameFontNormalLarge",88,-12,570)
-        row.message=label(row,"GameFontHighlightLarge",88,-36,570);row.message:SetHeight(42)
+        row.heading=oneLine(label(row,"GameFontNormalLarge",88,-12,570))
+        row.message=oneLine(label(row,"GameFontHighlightLarge",88,-40,570));row.message:SetHeight(22)
         row:EnableMouse(true)
         row:SetScript("OnEnter",function(self)
             -- Armor: the item's own tooltip, with who equipped it.
@@ -1088,14 +1098,22 @@ local function build(parent)
                 GameTooltip:AddLine(" ");GameTooltip:AddLine(T("Equipped by").." "..(self.entry.sender:match("^[^-]+") or self.entry.sender),.8,.8,.8)
                 GameTooltip:Show()
             elseif GameTooltip and self.entry then
-                GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText(self.entry.sender)
-                GameTooltip:AddLine(self.entry.text,1,1,1,true)
-                GameTooltip:AddLine(T("Event ID:").." "..self.entry.id,.6,.6,.6,true);GameTooltip:Show()
+                -- The card's lines in full (they may be cut off with "...").
+                local e=self.entry
+                local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
+                    and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+                GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText((who:gsub("|","||")))
+                GameTooltip:AddLine(WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")),1,1,1,true)
+                local caption=WoWStatusFlavour.text(e)
+                if caption and caption~="" then GameTooltip:AddLine(caption,.8,.8,.8,true) end
+                local detail=self.detail and self.detail:GetText()
+                if detail and detail~="" then GameTooltip:AddLine(detail,.6,.6,.6,true) end
+                GameTooltip:Show()
             end
         end)
         row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
-        row.flavour=label(row,"GameFontHighlightSmall",88,-80,570)
-        row.detail=label(row,"GameFontHighlightSmall",88,-102,570)
+        row.flavour=oneLine(label(row,"GameFontHighlightSmall",88,-74,570))
+        row.detail=oneLine(label(row,"GameFontHighlightSmall",88,-98,570))
         panel.rows[i]=row
     end
     local waited=0
@@ -1198,7 +1216,7 @@ local POSITIVE={profession=true,dungeon=true,raid=true,mount=true,epicmount=true
 local REACTION_WINDOW=900
 function J.reaction(text,sender)
     text,sender=S.string(text),S.string(sender)
-    if not db or not current or not text or not sender or #text>64 or P.isSelf(sender) then return false end
+    if not db or not current or not text or not sender or #text>160 or P.isSelf(sender) then return false end
     local kinds,zone=REACTION_KINDS[text],text:match("^Enjoy (.+)!$") or text:match("^Kos deg i (.+)!$")
     if text=="Congrats!" or text=="Gratulerer!" then kinds=POSITIVE end
     -- "Congrats on the new gear!" and the like, in English or Nynorsk, for that kind only.
@@ -1206,6 +1224,15 @@ function J.reaction(text,sender)
         if text==congrats or text==WoWStatusLocale.NN[congrats] then kinds={[kind]=true} end
     end
     if text:match("^Congrats on level %d+!$") or text:match("^Gratulerer med nivå %d+!$") then kinds={level=true} end
+    -- The random Nynorsk lines: GZ! for level-ups, F for deaths, "{zone}" lines for zones.
+    local pools=WoWStatusLocale.POOLS or {}
+    for _,line in ipairs(pools["GZ!"] or {}) do if text==line then kinds={level=true} end end
+    for _,line in ipairs(pools.F or {}) do if text==line then kinds={death=true} end end
+    for _,line in ipairs(pools.Enjoy or {}) do
+        local pattern="^"..line:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]","%%%0"):gsub("{zone}","(.+)").."$"
+        local found=text:match(pattern)
+        if found then zone,kinds=found,{zone=true} end
+    end
     if zone then kinds={zone=true} end
     if not kinds then return false end
     -- Only group members react through the buttons.
