@@ -1,0 +1,2802 @@
+[
+ {
+  "en": "Death came for the death knight. Awkward reunion.",
+  "nn": "Døden kom for dødsriddaren. Eit kleint gjensyn.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The runeblade sighed. Even the undead must rest.",
+  "nn": "Runesverdet sukka. Sjølv dei vandøde treng kvile.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Sing of the knight who died again. A sequel!",
+  "nn": "Syng om riddaren som døydde på nytt. Ein oppfølgjar!",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Lo, the frozen heart stopped. More than usual.",
+  "nn": "Sjå, det frosne hjartet stogga. Meir enn vanleg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Perhaps a Death Grip on fate next time?",
+  "nn": "Kanskje eit dødsgrep på lagnaden neste gong?",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The bard notes: dying is a death knight's comfort zone.",
+  "nn": "Skalden merkar seg: å døy er heimebane for ein dødsriddar.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The ghoul waits loyally by the corpse, as ballads demand.",
+  "nn": "Ghoulen ventar trufast ved liket, slik kvada krev.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Even Anti-Magic Shell cannot shield one from destiny.",
+  "nn": "Sjølv eit antimagisk skal kan ikkje skjerme mot lagnaden.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Death and Decay, mostly the second one today.",
+  "nn": "Død og forfall, mest det siste i dag.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Risen once, fallen twice. The saga continues!",
+  "nn": "Reist ein gong, falle to. Soga held fram!",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Back to the grave, old friend. Briefly.",
+  "nn": "Attende til grava, gamle ven. Ei lita stund.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Blind, yet foresaw nothing. A tragic verse!",
+  "nn": "Blind, men såg ingenting kome. Eit tragisk vers!",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The wings of fel folded at last. For now.",
+  "nn": "Fel-vengene falda seg til slutt. For no.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "A Fel Rush straight into the afterlife!",
+  "nn": "Eit fel-rush rett inn i etterlivet!",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Sing of the hunter who glided too boldly!",
+  "nn": "Syng om jegaren som gleid for djervt!",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The demon within sighs: we were not prepared.",
+  "nn": "Demonen inni sukkar: me var ikkje budde.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Perhaps Metamorphosis into something less dead?",
+  "nn": "Kanskje ei forvandling til noko mindre daudt?",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The blindfold could not hide this defeat.",
+  "nn": "Bindet for auga kunne ikkje løyne dette nederlaget.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Warglaives clatter to the ground. Most dramatic!",
+  "nn": "Glavane klirrar mot bakken. Svært dramatisk!",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Sacrificed so much, and then this. Poetic.",
+  "nn": "Ofra så mykje, og so dette. Poetisk.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Even Vengeful Retreat could not retreat from fate.",
+  "nn": "Sjølv eit hemngjerrig tilbaketog kom ikkje unna lagnaden.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The tattoos glow on, the hunter does not.",
+  "nn": "Tatoveringane gløder vidare, jegaren gjer ikkje det.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Nature reclaims its child. Briefly.",
+  "nn": "Naturen tek att barnet sitt. Ei lita stund.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Perhaps the bear form next time, brave one?",
+  "nn": "Kanskje bjørneham neste gong, modige?",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The tree of life wilts in sorrow.",
+  "nn": "Livstreet visnar av sorg.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Sing of the shapeshifter who shifted into a corpse!",
+  "nn": "Syng om hamskiftaren som skifte ham til eit lik!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The moonkin weeps a single feathery tear.",
+  "nn": "Moonkinen gret ei einsleg fjørkledd tåre.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Rebirth awaits, if only someone would cast it!",
+  "nn": "Gjenfødsel ventar, om berre nokon ville kaste han!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The forest falls silent. A squirrel tips its hat.",
+  "nn": "Skogen vert stille. Eit ekorn lettar på hatten.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Even the roots of the world mourn this druid.",
+  "nn": "Sjølv røtene til verda sørgjer over denne druiden.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Cat form was swift, but fate was swifter.",
+  "nn": "Katteham var snøgg, men lagnaden var snøggare.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The circle of life completes another lap.",
+  "nn": "Livssirkelen fullfører endå ein runde.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "A travel form to the spirit healer, then!",
+  "nn": "Ein reiseham til åndelækjaren, då!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The dragonflight mourns its fallen scion!",
+  "nn": "Drakeflokken sørgjer over den falne ætlingen!",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Wings spread wide, then spread rather flat.",
+  "nn": "Vengene breidde seg ut, so vart dei ganske flate.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Sing of the dragon who forgot to fly away!",
+  "nn": "Syng om draken som gløymde å fly sin veg!",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Perhaps a Hover would have helped? A gentle hint.",
+  "nn": "Kanskje ei sveving hadde hjelpt? Eit varsamt hint.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The breath of fire, now the breath of none.",
+  "nn": "Eldpusten, no utan pust.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Even an Emerald Blossom wilts sometimes.",
+  "nn": "Sjølv ein smaragdblom visnar av og til.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The Aspects weep; the egg was so promising.",
+  "nn": "Aspekta gret; egget var so lovande.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Lo, the wyrm is felled! Sequel pending.",
+  "nn": "Sjå, ormen er felt! Oppfølgjar kjem.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Soar now to the spirit healer, noble drake!",
+  "nn": "Svev no til åndelækjaren, edle drake!",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Ancient scales, modern defeat.",
+  "nn": "Eldgamle skjel, moderne nederlag.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The pet stands guard, wondering who'll feed it.",
+  "nn": "Kjæledyret held vakt og lurer på kven som skal fore det.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Feign Death works better when feigned, brave hunter.",
+  "nn": "Spela død fungerer betre når han er spela, modige jeger.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Sing of the archer whose last arrow flew true. Mostly.",
+  "nn": "Syng om skyttaren som siste pila trefte. Stort sett.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The quarry turned hunter. A classic twist!",
+  "nn": "Byttet vart jegeren. Ei klassisk vending!",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Perhaps a Disengage next time, wise one?",
+  "nn": "Kanskje eit hopp attover neste gong, kloke?",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The faithful beast howls at the moon in grief!",
+  "nn": "Det trufaste dyret ylar mot månen i sorg!",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Aspect of the Turtle, or the turtle aspect of failure.",
+  "nn": "Skilpaddeaspektet, eller skilpaddeaspektet ved tapet.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The bow lies still. The ballad laments.",
+  "nn": "Bogen ligg still. Kvadet klagar.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Mend Pet was cast, but who mends the hunter?",
+  "nn": "Lækjedyret vart kasta, men kven lækjer jegeren?",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Even eagle eyes miss a doom or two.",
+  "nn": "Sjølv ørneauga oversåg ein undergang eller to.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Ice Block was just there. Right there!",
+  "nn": "Isblokka var like ved. Like ved!",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Sing of the wizard who forgot to Blink!",
+  "nn": "Syng om trollmannen som gløymde å blinke!",
+  "tag": "MAGE"
+ },
+ {
+  "en": "A spell gone sideways, a mage gone down.",
+  "nn": "Ein trolldom som gjekk på skeiva, ein magiker som gjekk i bakken.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "The arcane arts are mighty, and also fragile.",
+  "nn": "Dei arkane kunstene er mektige, og skjøre.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Perhaps a portal home would ease the shame?",
+  "nn": "Kanskje ein portal heim kan lette skamma?",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Conjured water could not help this time.",
+  "nn": "Trylla vatn kunne ikkje hjelpe denne gongen.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Lo, the robes were not, in fact, armor.",
+  "nn": "Sjå, kappene var visst ikkje rustning.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Polymorph thy fate into a sheep next time!",
+  "nn": "Forvandle lagnaden din til ein sau neste gong!",
+  "tag": "MAGE"
+ },
+ {
+  "en": "The spellbook closes with a sorrowful thud.",
+  "nn": "Trolldomsboka lèt seg att med eit sørgjeleg dunk.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Too much fire, too little fleeing. A tale as old as time.",
+  "nn": "For mykje eld, for lite flukt. Ei soge so gamal som tida.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Roll, roll, roll away, sang no bard in time.",
+  "nn": "Rull, rull, rull deg bort, song ingen skald i tide.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Inner peace achieved. Outer peace, too. Very peaceful.",
+  "nn": "Indre fred oppnådd. Ytre fred òg. Svært fredeleg.",
+  "tag": "MONK"
+ },
+ {
+  "en": "The brew was strong, but fate was stronger.",
+  "nn": "Brygget var sterkt, men lagnaden var sterkare.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Sing of the monk who meditated a little too deeply!",
+  "nn": "Syng om munken som mediterte litt for djupt!",
+  "tag": "MONK"
+ },
+ {
+  "en": "Touch of Karma? More like touch of bad karma.",
+  "nn": "Karmaberøring? Meir som dårleg karma.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Perhaps Fortifying Brew would have fortified?",
+  "nn": "Kanskje eit styrkjebrygg hadde styrkt?",
+  "tag": "MONK"
+ },
+ {
+  "en": "The staff is set down. The bards hum softly.",
+  "nn": "Staven er lagd ned. Skaldane nynnar mjukt.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Stagger, then stumble, then sleep.",
+  "nn": "Stagge, so snåve, so sove.",
+  "tag": "MONK"
+ },
+ {
+  "en": "The serpent rests, the tiger naps, the monk sleeps.",
+  "nn": "Ormen kviler, tigeren blundar, munken søv.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Flying kicks are glorious, landing less so.",
+  "nn": "Flygande spark er herlege, landinga mindre so.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Divine Shield took a lunch break, it seems.",
+  "nn": "Det guddommelege skjoldet tok visst lunsjpause.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The Light flickers, but shall shine again!",
+  "nn": "Ljoset flakkar, men skal skine att!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Sing of the holy knight, now very horizontal!",
+  "nn": "Syng om den heilage riddaren, no svært vassrett!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Lay on Hands was right there. A footnote of regret.",
+  "nn": "Handpålegging var like ved. Ei fotnote av anger.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The bubble burst. A tragedy in shining armor.",
+  "nn": "Bobla sprakk. Ein tragedie i skinande rustning.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Even the righteous must sometimes lie down.",
+  "nn": "Sjølv dei rettferdige må av og til leggje seg ned.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The hammer of justice falls... on the floor.",
+  "nn": "Rettferdshammaren fell... i golvet.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Perhaps a blessing of protection on oneself?",
+  "nn": "Kanskje ei vernesigning på seg sjølv?",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The Light shall restore this champion anon!",
+  "nn": "Ljoset skal reise denne kjempa att om ei stund!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Plate armor, alas, is not plate immortality.",
+  "nn": "Platerustning er dessverre ikkje platefast udøyelegheit.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The healer fell. Who heals the healer? A riddle!",
+  "nn": "Lækjaren fall. Kven lækjer lækjaren? Ei gåte!",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "A shield of power, shattered by fate!",
+  "nn": "Eit maktskjold, knust av lagnaden!",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Sing of the priest who prayed a tad too long!",
+  "nn": "Syng om presten som bad litt for lenge!",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Spirit of Redemption, a most dignified exit.",
+  "nn": "Forløysingsånda, ei høgst verdig utgang.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The shadows whisper: that went poorly.",
+  "nn": "Skuggane kviskrar: det gjekk dårleg.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Perhaps Fade would have faded the danger?",
+  "nn": "Kanskje ei bleiking hadde bleikt faren?",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The holy word for this is... oops.",
+  "nn": "Det heilage ordet for dette er... uff.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Even the faithful must meet the spirit healer.",
+  "nn": "Sjølv dei truande må møte åndelækjaren.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Psychic Scream was the right idea, just too late.",
+  "nn": "Psykisk skrik var rett tanke, berre for seint.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The prayer books mourn their reader.",
+  "nn": "Bønebøkene sørgjer over lesaren sin.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Vanish was the plan. The plan vanished.",
+  "nn": "Forsvinn var planen. Planen forsvann.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Sing of the shadow who met a bigger shadow!",
+  "nn": "Syng om skuggen som møtte ein større skugge!",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The daggers rest, the rogue rests, the ballad does not.",
+  "nn": "Dolkane kviler, tjuven kviler, kvadet gjer ikkje det.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Perhaps a Sprint away from doom next time?",
+  "nn": "Kanskje ein sprint frå undergangen neste gong?",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Stealthy until the very end. Very end.",
+  "nn": "Snikande heilt til siste slutt. Heilt siste.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Evasion evaded nothing this time.",
+  "nn": "Unnvikinga unngjekk ingenting denne gongen.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Even poisoned blades cannot poison fate.",
+  "nn": "Sjølv forgifta blad kan ikkje forgifte lagnaden.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Cheated death once. Death remembered.",
+  "nn": "Lurte døden ein gong. Døden hugsa det.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The pockets were picked. By fate.",
+  "nn": "Lommene vart rana. Av lagnaden.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "A Cloak of Shadows, but the shadows had other plans.",
+  "nn": "Ei skuggekappe, men skuggane hadde andre planar.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The elements wept, and also the totems.",
+  "nn": "Elementa gret, og totemane òg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Reincarnation is ready, as the ancestors foretold!",
+  "nn": "Gjenfødinga er klar, slik forfedrane spådde!",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Sing of the shaman who called the storm upon themself!",
+  "nn": "Syng om sjamanen som kalla stormen over seg sjølv!",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The spirits whisper: next time, Astral Shift?",
+  "nn": "Åndene kviskrar: neste gong, astralskifte?",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The totems stand guard over the fallen. Loyal sticks.",
+  "nn": "Totemane held vakt over den falne. Lojale pinnar.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Ghost Wolf form, but the wrong kind of ghost.",
+  "nn": "Spøkjelsesulv-ham, men feil slags spøkjelse.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Earth, wind, fire, water... and floor.",
+  "nn": "Jord, vind, eld, vatn... og golv.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The ancestors greet a visitor. Brief visit.",
+  "nn": "Forfedrane helsar ein gjest. Kort vitjing.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Lightning struck twice. Once on the enemy.",
+  "nn": "Lynet slo ned to gonger. Ein gong på fienden.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The chain heal broke at the weakest link.",
+  "nn": "Kjedelækjinga brast i det veikaste leddet.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The demons snicker. The soulstone stirs.",
+  "nn": "Demonane fnisar. Sjelesteinen rører seg.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Sing of the warlock whose pact had fine print!",
+  "nn": "Syng om heksemeisteren som pakta hadde liten skrift!",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Perhaps a soulstone, wise one? A friendly reminder.",
+  "nn": "Kanskje ein sjelestein, kloke? Ei venleg påminning.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The imp asks if it can have the robes now.",
+  "nn": "Imp-en spør om han kan få kappene no.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Life Tap tapped a bit too much.",
+  "nn": "Livstappinga tappa litt for mykje.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The fel flames gutter and die down. Briefly.",
+  "nn": "Fel-eldane flakkar og sloknar. For ei stund.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Dark pacts, darker endings. A gloomy verse!",
+  "nn": "Mørke pakter, mørkare endar. Eit dystert vers!",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The voidwalker weeps into its own void.",
+  "nn": "Tomrom-vandraren gret inn i sitt eige tomrom.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Unending Resolve, it turned out, ended.",
+  "nn": "Uendeleg vilje, viste det seg, tok slutt.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Drained of life, a rare reversal of roles!",
+  "nn": "Tømd for liv, ei sjeldan rollebyting!",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Charged in gloriously. Stayed in permanently.",
+  "nn": "Stormde inn herleg. Vart verande for godt.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Sing of the warrior who would not retreat!",
+  "nn": "Syng om krigaren som ikkje ville trekkje seg attende!",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "The rage burned bright, then simply burned out.",
+  "nn": "Raseriet brann klart, og so brann det ut.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Perhaps Shield Wall next time, brave one?",
+  "nn": "Kanskje skjoldmur neste gong, modige?",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "A battle cry, then a battle sigh.",
+  "nn": "Eit stridsrop, so eit stridssukk.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Die by the Sword? Taken a bit literally.",
+  "nn": "Døy for sverdet? Teke litt for bokstaveleg.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "The axe rests. The legend snores.",
+  "nn": "Øksa kviler. Segna snorkar.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Fell like a mighty oak, loudly and with flair!",
+  "nn": "Fall som ei mektig eik, høglydt og med stil!",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Heroic Leap, landing on the wrong side of fate.",
+  "nn": "Heltemodig sprang, landa på feil side av lagnaden.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "No retreat, no surrender, no pulse.",
+  "nn": "Inga flukt, inga overgjeving, ingen puls.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "And lo, the hero fell, as heroes sometimes do.",
+  "nn": "Og sjå, helten fall, slik heltar av og til gjer.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Sing, O tavern, a lament most dramatic!",
+  "nn": "Syng, du kro, ei høgst dramatisk klage!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Let it be written: a valiant, if brief, stand.",
+  "nn": "Lat det stå skrive: ein tapper, om enn kort, kamp.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The bards prepare a dirge. A short one.",
+  "nn": "Skaldane gjer klar ein sorgsong. Ein kort ein.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Hark! A hero rests upon the cold earth.",
+  "nn": "Høyr! Ein helt kviler på den kalde jorda.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A noble death, worthy of three verses at least!",
+  "nn": "Ein edel død, verdig minst tre vers!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fallen, but the saga goes on!",
+  "nn": "Fallen, men soga held fram!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even legends must visit the spirit healer.",
+  "nn": "Sjølv segner må vitje åndelækjaren.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Mourn, O realm! Then wait for the corpse run.",
+  "nn": "Sørg, du rike! Vent so på likløpet.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tragic chapter every great saga needs!",
+  "nn": "Det tragiske kapitlet kvar stor soge treng!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is but a pause in the ballad.",
+  "nn": "Døden er berre ein pause i kvadet.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The ravens circle, and the bards take notes.",
+  "nn": "Ramnane sirklar, og skaldane skriv notat.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero's fall, painted in the boldest colors!",
+  "nn": "Fallet til ein helt, måla i dei djervaste fargane!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The repair bill shall be legendary, too.",
+  "nn": "Reparasjonsrekninga vert òg legendarisk.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Thus ended the battle. Not the way we wanted.",
+  "nn": "Slik enda slaget. Ikkje slik me ville.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The gods weep, then hand out a res.",
+  "nn": "Gudane gret, og deler so ut ein gjenoppliving.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fear not! Heroes return. It's in the contract.",
+  "nn": "Frykt ikkje! Heltar kjem att. Det står i kontrakten.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The minstrels strike a minor chord.",
+  "nn": "Spelemennene slår ein mollakkord.",
+  "tag": "ANY"
+ },
+ {
+  "en": "O cruel fate, thou dost love a plot twist!",
+  "nn": "Å grumme lagnad, du elskar ei vending!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Behold the most heroic faceplant of the age!",
+  "nn": "Sjå det mest heltemodige magaplasket i vår tid!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A fall worthy of an epic ballad!",
+  "nn": "Eit fall verdig eit episk kvad!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Rest, brave soul, but not for long.",
+  "nn": "Kvil, modige sjel, men ikkje for lenge.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The floor received the hero most graciously.",
+  "nn": "Golvet tok imot helten svært nådig.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tale needed a dramatic low point. Here it is!",
+  "nn": "Soga trong eit dramatisk lågpunkt. Her er det!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Lo! The spirit wanders forth, seeking its body.",
+  "nn": "Sjå! Ånda vandrar ut og leitar etter kroppen sin.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Sing of the hero who fought until the very last hit point!",
+  "nn": "Syng om helten som kjempa til siste livspoeng!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death came. The hero was unimpressed.",
+  "nn": "Døden kom. Helten var lite imponert.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The bards say it was a strategic nap.",
+  "nn": "Skaldane seier det var ein strategisk lur.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A temporary setback in a permanent legend!",
+  "nn": "Eit mellombels tilbakesteg i ei evig segn!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Tragedy! Woe! Durability loss!",
+  "nn": "Tragedie! Ve! Slitasje på utstyret!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Every great hero has a death scene. This was a good one.",
+  "nn": "Kvar stor helt har ei dødsscene. Denne var god.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The angel of rezzing awaits!",
+  "nn": "Gjenopplivingsengelen ventar!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Mourn not, for the corpse run is a quest of its own!",
+  "nn": "Sørg ikkje, for likløpet er eit oppdrag i seg sjølv!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The shadows claimed them, but only on loan.",
+  "nn": "Skuggane tok dei, men berre til låns.",
+  "tag": "ANY"
+ },
+ {
+  "en": "And the tavern raised a glass to the fallen.",
+  "nn": "Og kroa lyfte eit glas for den falne.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The legend pauses for a dramatic breath.",
+  "nn": "Segna tek ein dramatisk pust.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Woe! Woe upon the land! Then a respawn.",
+  "nn": "Ve! Ve over landet! Og so ein respawn.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The enemy wins a battle, but not the war!",
+  "nn": "Fienden vinn eit slag, men ikkje krigen!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A death most noble, a revival most certain!",
+  "nn": "Ein høgst edel død, ei høgst sikker oppvakning!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The skald strums a sorrowful tune.",
+  "nn": "Skalden klimprar ein sorgfull tone.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Thus spoke the floor: welcome back.",
+  "nn": "Slik tala golvet: velkomen att.",
+  "tag": "ANY"
+ },
+ {
+  "en": "It was a glorious battle until it wasn't.",
+  "nn": "Det var eit herleg slag til det ikkje var det.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero's death is just a hero's intermission.",
+  "nn": "Ein heltedød er berre ein heltepause.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even the mightiest stumble on the path!",
+  "nn": "Sjølv dei mektigaste snåvar på vegen!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The epic needed tension. Delivered!",
+  "nn": "Eposet trong spenning. Levert!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Lament, O lute! Wail, O harp!",
+  "nn": "Klag, du lut! Kvein, du harpe!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The ground has claimed a champion. For a moment.",
+  "nn": "Bakken har teke ei kjempe. For ei stund.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The saga dips into tragedy before the triumph!",
+  "nn": "Soga dukkar ned i tragedie før sigeren!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fear not, for death in Azeroth is a mere inconvenience.",
+  "nn": "Frykt ikkje, for døden i Azeroth er berre eit lite bry.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A dramatic exit! Encore expected!",
+  "nn": "Ein dramatisk utgang! Ekstranummer venta!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Heroes fall so that heroes may rise again!",
+  "nn": "Heltar fell slik at heltar kan reise seg att!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The mournful horn sounds once. Then the res timer.",
+  "nn": "Sorghornet ljomar ein gong. So tidtakaren for gjenoppliving.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A grievous blow! The bards are shaken!",
+  "nn": "Eit hardt slag! Skaldane er rysta!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down, but never out of the saga!",
+  "nn": "Nede, men aldri ute av soga!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The ballad takes a somber turn.",
+  "nn": "Kvadet tek ei dyster vending.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A fall that shook the very heavens! Slightly.",
+  "nn": "Eit fall som rista sjølve himmelen! Litt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The spirit rises, the hero shall follow!",
+  "nn": "Ånda stig, helten skal følgje etter!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Such valor! Such courage! Such poor timing!",
+  "nn": "For eit mot! For ei djervskap! For ei dårleg timing!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Write it down: a heroic sacrifice. Probably.",
+  "nn": "Skriv det ned: eit heltemodig offer. Truleg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "And the hero lay down upon the field of honor.",
+  "nn": "Og helten la seg ned på ærefeltet.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is temporary. Glory is forever.",
+  "nn": "Døden er mellombels. Æra er evig.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The enemy shall pay for this! Eventually.",
+  "nn": "Fienden skal betale for dette! Etter kvart.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A setback for the hero, a gift for the bard.",
+  "nn": "Eit tilbakeslag for helten, ei gåve til skalden.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The skies darken in mourning. Mostly cloud cover.",
+  "nn": "Himmelen mørknar i sorg. Mest skydekke.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The final stand was very final. For now.",
+  "nn": "Den siste kampen var svært siste. For no.",
+  "tag": "ANY"
+ },
+ {
+  "en": "O spirit healer, receive this weary soul!",
+  "nn": "Å åndelækjar, ta imot denne trøytte sjela!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tale grows darker, and therefore better!",
+  "nn": "Soga vert mørkare, og difor betre!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Grief grips the guild! Then someone makes a joke.",
+  "nn": "Sorga grip gilda! So kjem nokon med ein vits.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The battle was lost, but the dignity... also lost.",
+  "nn": "Slaget var tapt, men verdigheita... òg tapt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero falls, a legend grows!",
+  "nn": "Ein helt fell, ei segn veks!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Mighty was the foe, and mightier the faceplant!",
+  "nn": "Mektig var fienden, og mektigare magaplasket!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Let the dirge be sung, then quickly forgotten!",
+  "nn": "Lat sorgsongen bli sungen, og so fort gløymd!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The legend shall rise again, slightly less shiny.",
+  "nn": "Segna skal reise seg att, litt mindre blank.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The bards hush. A moment of silence. Okay, done.",
+  "nn": "Skaldane tystar. Eit augneblink stille. Ok, ferdig.",
+  "tag": "ANY"
+ },
+ {
+  "en": "An heroic end, an unheroic run back.",
+  "nn": "Ein heltemodig slutt, eit lite heltemodig løp attende.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Through death's door, and out again shortly!",
+  "nn": "Gjennom dødens dør, og snart ut att!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tale of the fall shall be sung with pathos!",
+  "nn": "Soga om fallet skal syngjast med patos!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Their sword was mighty, their health bar less so.",
+  "nn": "Sverdet var mektig, livslinja mindre so.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Brave to the end. The end was just early.",
+  "nn": "Modig til det siste. Det siste kom berre tidleg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Gone to the great graveyard in the sky! Temporarily!",
+  "nn": "Gått til den store kyrkjegarden i himmelen! Mellombels!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A sad verse, but every saga has one!",
+  "nn": "Eit trist vers, men kvar soge har eitt!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Heroes don't die. They take scenic detours.",
+  "nn": "Heltar døyr ikkje. Dei tek naturskjønne omvegar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The foe gloats now. The foe shall regret this.",
+  "nn": "Fienden hoverer no. Fienden skal angre.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Valhalla called. The hero declined politely.",
+  "nn": "Valhall ringde. Helten takka høfleg nei.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero's sacrifice, sung in the minor key!",
+  "nn": "Eit heltemodig offer, sunge i moll!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fallen like a star, bright and sudden!",
+  "nn": "Falle som ei stjerne, klar og brå!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tale of woe begins! Briefly.",
+  "nn": "Soga om ve tek til! Kort.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The armor will need repairs. The pride, too.",
+  "nn": "Rustninga treng reparasjon. Stoltheita òg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A mighty clash ended in mighty silence.",
+  "nn": "Eit mektig samanstøyt enda i mektig togn.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Gone to the shadowlands for a quick visit!",
+  "nn": "Gått til skuggelanda på ei kort vitjing!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is but a chapter break!",
+  "nn": "Døden er berre eit kapittelskift!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fear not, fair friends, the ghost shall walk back!",
+  "nn": "Frykt ikkje, kjære vener, gjenferdet skal gå attende!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Lo, the hero kneels before fate. Then trips.",
+  "nn": "Sjå, helten kneler for lagnaden. Og snåvar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even in death, they looked heroic. Mostly.",
+  "nn": "Sjølv i døden såg dei heltemodige ut. Stort sett.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Their last words? Probably something bold!",
+  "nn": "Dei siste orda? Truleg noko djervt!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Heroic defeat! The best kind of defeat!",
+  "nn": "Heltemodig nederlag! Den beste typen nederlag!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Sound the horn of mourning. Just a short toot.",
+  "nn": "Blås i sorghornet. Berre eit kort tut.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The bard shall embellish this. Significantly.",
+  "nn": "Skalden skal pynte på dette. Betydeleg.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Rest a moment, champion. The world will wait.",
+  "nn": "Kvil eit augneblink, kjempe. Verda ventar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Thus fell the bravest in a blaze of mild glory!",
+  "nn": "Slik fall den modigaste i ein blaff av mild ære!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The epic poem now has a tearjerker stanza!",
+  "nn": "Kvadet har no ei strofe som får tårene fram!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Not a death, but a strategic return to the graveyard!",
+  "nn": "Ikkje ein død, men ein strategisk retur til kyrkjegarden!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The world mourns! The world also respawns!",
+  "nn": "Verda sørgjer! Verda respawnar òg!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A cruel twist, but the hero shall return!",
+  "nn": "Ei grum vending, men helten skal kome att!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death took the hero, but not the legend!",
+  "nn": "Døden tok helten, men ikkje segna!",
+  "tag": "ANY"
+ },
+ {
+  "en": "And the foes cheered, briefly and foolishly.",
+  "nn": "Og fiendane jubla, kort og dumt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The great saga dips its banner in respect.",
+  "nn": "Den store soga senkar fana i respekt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The skald drafts a heroic retelling. Facts optional.",
+  "nn": "Skalden skriv eit heltemodig utkast. Fakta valfritt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "O fallen one, rise and run!",
+  "nn": "Å du falne, reis deg og spring!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Courageous charge, disappointing outcome!",
+  "nn": "Modig åtak, skuffande utfall!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The grim reaper got lucky. That's all.",
+  "nn": "Mannen med ljåen var heldig. Det er alt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even the greatest tales have their tragic acts!",
+  "nn": "Sjølv dei største sogene har sine tragiske akter!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero tumbles, a saga rumbles on!",
+  "nn": "Ein helt tumlar, ei soge rullar vidare!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The fall was epic. The bards insist.",
+  "nn": "Fallet var episk. Skaldane held fast på det.",
+  "tag": "ANY"
+ },
+ {
+  "en": "They died as they lived: dramatically.",
+  "nn": "Dei døydde slik dei levde: dramatisk.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The spirit wanders, seeking its noble shell!",
+  "nn": "Ånda vandrar og leitar etter det edle skalet sitt!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Mourning period: approximately one corpse run.",
+  "nn": "Sorgtid: omtrent eitt likløp.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death, thou hast won a skirmish. Not the war!",
+  "nn": "Død, du har vunne ei trefning. Ikkje krigen!",
+  "tag": "ANY"
+ },
+ {
+  "en": "And the bards sang: it was the enemy's fault.",
+  "nn": "Og skaldane song: det var fienden si skuld.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A fall, a flourish, a fond farewell. For now.",
+  "nn": "Eit fall, ein sving, eit kjærleg farvel. For no.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Let the dirge be loud, and the res be swift!",
+  "nn": "Lat sorgsongen vere høg, og gjenopplivinga snøgg!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The hero has gone to argue with the spirit healer.",
+  "nn": "Helten har gått for å krangle med åndelækjaren.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Woe to the realm that lost its champion briefly!",
+  "nn": "Ve det riket som mista kjempa si for ei stund!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A noble sacrifice, or a tactical miscalculation. History will decide.",
+  "nn": "Eit edelt offer, eller ein taktisk feilrekning. Historia avgjer.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Their deeds outlive their hit points!",
+  "nn": "Dådene lever lenger enn livspoenga!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Hear the sorrowful lute! Twang.",
+  "nn": "Høyr den sorgfulle luten! Plong.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The great book records: a valiant tumble.",
+  "nn": "Den store boka skriv: eit tappert fall.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The hero sleeps the long sleep. Short version.",
+  "nn": "Helten søv den lange svevnen. Kortversjonen.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Thus endeth the battle. Long live the hero!",
+  "nn": "Slik endar slaget. Lenge leve helten!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Fear not, the ghost knows the way back.",
+  "nn": "Frykt ikkje, gjenferdet kjenner vegen attende.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A legend's tale is incomplete without a tragedy!",
+  "nn": "Ei segn er ikkje fullstendig utan ein tragedie!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Down they went, but up they'll come!",
+  "nn": "Ned gjekk dei, men opp skal dei kome!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Mourn ye not; the bards shall spin this as victory.",
+  "nn": "Sørg ikkje; skaldane skal vri dette til ein siger.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tale is not over. It's never over.",
+  "nn": "Soga er ikkje slutt. Ho er aldri slutt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero's breath stilled. The bard's breath quickened!",
+  "nn": "Pusten til helten stogga. Pusten til skalden auka!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Even the strongest wall can fall!",
+  "nn": "Sjølv den sterkaste muren kan falle!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The enemy celebrates. Fools.",
+  "nn": "Fienden feirar. Tullingar.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Rise, champion! The saga awaits thy return!",
+  "nn": "Reis deg, kjempe! Soga ventar på at du kjem att!",
+  "tag": "ANY"
+ },
+ {
+  "en": "O woeful day! O dramatic swoon!",
+  "nn": "Å sorgfulle dag! Å dramatiske svime!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A tragic interlude in an otherwise glorious tale!",
+  "nn": "Eit tragisk mellomspel i ei elles herleg soge!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The ghost now begins its heroic jog back.",
+  "nn": "Gjenferdet tek no til på den heltemodige joggeturen attende.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A fall befitting the grandest of epics!",
+  "nn": "Eit fall som høver for det største eposet!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The bards will call this a cunning feint.",
+  "nn": "Skaldane kjem til å kalle dette ei lur finte.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The final curtain? No! An intermission!",
+  "nn": "Siste teppefall? Nei! Ein pause!",
+  "tag": "ANY"
+ },
+ {
+  "en": "They gave their all. Their all ran out.",
+  "nn": "Dei gav alt. Alt tok slutt.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The spirit healer greets an old acquaintance.",
+  "nn": "Åndelækjaren helsar på ein gamal kjenning.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Oh, the drama! Oh, the durability!",
+  "nn": "Å, dramatikken! Å, slitasjen!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The realm holds its breath. Then exhales.",
+  "nn": "Riket held pusten. So pustar det ut.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A heroic stand, a less heroic lie-down.",
+  "nn": "Eit heltemodig standpunkt, ei mindre heltemodig kvilestilling.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Their spirit is unbroken. Their body, less so.",
+  "nn": "Ånda er ubroten. Kroppen, mindre so.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Sing the sad song, then the comeback song!",
+  "nn": "Syng den triste songen, og so comeback-songen!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Death is merely the bard's favorite plot device.",
+  "nn": "Døden er berre skalden sitt yndlingsgrep.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The scrolls record a hero's fall with flourish!",
+  "nn": "Rullane skriv ned fallet til helten med sving!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Brave beyond reason. Reason won.",
+  "nn": "Modig over all fornuft. Fornufta vann.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Ah, the noble art of falling down!",
+  "nn": "Ah, den edle kunsten å falle!",
+  "tag": "ANY"
+ },
+ {
+  "en": "A hero's end? Pfah! A hero's pit stop!",
+  "nn": "Endelikt for ein helt? Pøh! Ein helts depotstopp!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The enemy shall be sung of as villains forever!",
+  "nn": "Fienden skal syngjast om som skurkar for alltid!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The legend takes a knee. And then a full lie-down.",
+  "nn": "Segna går ned på kne. Og so heilt ned.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Gallant to the last. The last came soon.",
+  "nn": "Gjæv til det siste. Det siste kom snart.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The foe struck true, the bard writes it false.",
+  "nn": "Fienden trefte, skalden skriv det annleis.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The tavern dims its lanterns in honor.",
+  "nn": "Kroa dempar lyktene til ære.",
+  "tag": "ANY"
+ },
+ {
+  "en": "The skald notes: the floor is undefeated.",
+  "nn": "Skalden merkar seg: golvet er ubeseira.",
+  "tag": "ANY"
+ },
+ {
+  "en": "And so the hero rested, as all heroes must.",
+  "nn": "Og slik kvilte helten, slik alle heltar må.",
+  "tag": "ANY"
+ },
+ {
+  "en": "A fearsome battle, a fearsome fall!",
+  "nn": "Eit fryktinngytande slag, eit fryktinngytande fall!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Grieve, then gather! The run back awaits!",
+  "nn": "Sørg, og samle dykk so! Løpet attende ventar!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The spirit stirs. The comeback begins!",
+  "nn": "Ånda rører seg. Comebacket tek til!",
+  "tag": "ANY"
+ },
+ {
+  "en": "Woe! A hero's light dims. It will relight.",
+  "nn": "Ve! Ljoset til helten dimmast. Det vert tent att.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Pride before the fall, and a fall after.",
+  "nn": "Stoltheit før fallet, og eit fall etterpå.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Valiant, fearless, and now quite dead.",
+  "nn": "Tapper, fryktlaus, og no ganske daud.",
+  "tag": "ANY"
+ },
+ {
+  "en": "Their sacrifice shall fuel a thousand ballads!",
+  "nn": "Offeret skal nøre tusen kvad!",
+  "tag": "ANY"
+ },
+ {
+  "en": "The Lich King's old pupil, schooled once more by the floor.",
+  "nn": "Den gamle eleven til Lichkongen, nok ein gong lært opp av golvet.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "A runic power surge, then a runic power nap.",
+  "nn": "Ein runemaktstraum, so ein runemaktlur.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Sing, O crypt, of the knight who outlasted nothing!",
+  "nn": "Syng, du gravkammer, om riddaren som ikkje varte lenger enn noko!",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Perhaps Icebound Fortitude, next verse?",
+  "nn": "Kanskje isbunden uthald i neste vers?",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Frost Fever cooled, and so did the knight.",
+  "nn": "Frostfeberen kjølna, og det gjorde riddaren òg.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Raise Dead would come in handy right about now.",
+  "nn": "Reis dei døde hadde kome godt med akkurat no.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Blood Boil boiled; the knight simmered down.",
+  "nn": "Blodkoket kokte; riddaren roa seg ned.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The Ebon Blade lies quiet. The bards hum a dirge in plate.",
+  "nn": "Ibenholtbladet ligg stille. Skaldane nynnar ein sorgsong i plate.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Death Strike, they cried. Death struck back.",
+  "nn": "Dødsslag, ropa dei. Døden slo attende.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Not the first grave, nor the last. Merely the latest.",
+  "nn": "Ikkje den første grava, ikkje den siste. Berre den nyaste.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Army of the Dead? Army of one, now resting.",
+  "nn": "Dei dødes hær? Ein einmannshær, no i kvile.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Even the plague in their veins took a breather.",
+  "nn": "Sjølv pesten i årene tok ein pause.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The rune-forge mourns its finest client.",
+  "nn": "Runesmia sørgjer over den beste kunden sin.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "A Dark Command was issued. Fate did not obey.",
+  "nn": "Ein mørk ordre vart gjeven. Lagnaden lydde ikkje.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Lichborne pride, humbled by the living.",
+  "nn": "Lichfødd stoltheit, audmjuka av dei levande.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "The cold grave greets its dearest tenant.",
+  "nn": "Den kalde grava helsar sin kjæraste leigebuar.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Their undead horse waits patiently. It's used to this.",
+  "nn": "Den vandøde hesten ventar tolmodig. Han er van med dette.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Remorseless Winter met a surprisingly warm ending.",
+  "nn": "Den nådelause vinteren fekk ein overraskande varm slutt.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Death Gate leads home. The spirit healer leads back.",
+  "nn": "Dødsporten fører heim. Åndelækjaren fører attende.",
+  "tag": "DEATHKNIGHT"
+ },
+ {
+  "en": "Illidari training did not cover this chapter.",
+  "nn": "Illidari-treninga dekte ikkje dette kapitlet.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Double jump, double trouble, single defeat.",
+  "nn": "Dobbelhopp, dobbelt bry, eitt nederlag.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Sing of spectral sight that failed to spot the floor!",
+  "nn": "Syng om åndesynet som ikkje såg golvet!",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Perhaps Blur would have blurred the danger?",
+  "nn": "Kanskje sløring hadde sløra faren?",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The Eye Beam glared; fate glared back harder.",
+  "nn": "Augestrålen glodde; lagnaden glodde hardare attende.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Soul fragments scattered, then quietly regrouped.",
+  "nn": "Sjelebrot spreidde seg, og samla seg stilt att.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Chaos Strike! Chaos won.",
+  "nn": "Kaosslag! Kaoset vann.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Fel wings, meet gravity. Gravity, the floor.",
+  "nn": "Fel-venger, møt tyngdekrafta. Tyngdekraft, golvet.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The hunted became the haunted. Briefly.",
+  "nn": "Den jaga vart eit gjenferd. Ei lita stund.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Immolation Aura burned bright, then burned out.",
+  "nn": "Brennauraen logna klart, so brann ho ut.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "They gave up their sight, and still missed that boss swing.",
+  "nn": "Dei gav opp synet, og såg likevel ikkje slaget frå sjefen.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The demon inside asks for a refund.",
+  "nn": "Demonen inni ber om pengane attende.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "A Throw Glaive, a gasp, a graceful collapse!",
+  "nn": "Eit glavekast, eit gisp, eit grasiøst samanbrot!",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Glide on, spirit, the healer is that way.",
+  "nn": "Gli vidare, ånd, lækjaren er den vegen.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Darkness was cast. Unfortunately, also upon them.",
+  "nn": "Mørker vart kasta. Dessverre òg over dei.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Ten thousand years of vigil, and then a trip.",
+  "nn": "Ti tusen år med vakt, og so eit snåv.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Netherwalk next time, perhaps? Just a whisper.",
+  "nn": "Nethervandring neste gong, kanskje? Berre eit kviskr.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "The horns droop. The tattoos dim. The bards sigh.",
+  "nn": "Horna heng. Tatoveringane dimmast. Skaldane sukkar.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "They hunted demons. Something hunted them first.",
+  "nn": "Dei jakta på demonar. Noko jakta på dei først.",
+  "tag": "DEMONHUNTER"
+ },
+ {
+  "en": "Barkskin was skin-deep after all.",
+  "nn": "Barkhuda var visst berre overflatisk.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The owls hoot a mournful hoot.",
+  "nn": "Uglene uler eit sorgfullt ul.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Sing, O grove, of roots that could not hold!",
+  "nn": "Syng, du lund, om røter som ikkje heldt!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Perhaps Survival Instincts deserved a listen?",
+  "nn": "Kanskje overlevingsinstinktet fortente å bli lytta til?",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Starfall fell. So did the druid.",
+  "nn": "Stjernefallet fall. Det gjorde druiden òg.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Regrowth will regrow. In time. Eventually.",
+  "nn": "Gjenveksten skal veksa att. Med tida. Etter kvart.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Mother Nature sighs and reaches for her watering can.",
+  "nn": "Moder Natur sukkar og tek vasskanna.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The wild shape found its final shape: flat.",
+  "nn": "Villhamen fann sin siste ham: flat.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Entangling Roots tangled the wrong feet.",
+  "nn": "Viklande røter vikla feil føter.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Even the mightiest oak falls. Then sprouts again!",
+  "nn": "Sjølv den mektigaste eika fell. So spirer ho att!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Moonfire blazed; the moon was unimpressed.",
+  "nn": "Måneelden logna; månen var lite imponert.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Dash would have dashed them to safety. A gentle hint.",
+  "nn": "Spurten kunne ha spurta dei i tryggleik. Eit varsamt hint.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Bear, cat, tree, bird... and now ghost form!",
+  "nn": "Bjørn, katt, tre, fugl... og no gjenferdsham!",
+  "tag": "DRUID"
+ },
+ {
+  "en": "The flowers bow their heads. Then keep growing.",
+  "nn": "Blomane bøyer hovudet. Og held fram å veksa.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Swiftmend was swift, but not swift enough.",
+  "nn": "Snøgglækjinga var snøgg, men ikkje snøgg nok.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Composted, but only metaphorically.",
+  "nn": "Kompostert, men berre biletleg.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Lo, a druid joins the leaf litter for a spell.",
+  "nn": "Sjå, ein druide blir ein del av lauvdekket for ei stund.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Hibernate was meant for enemies, not oneself.",
+  "nn": "Dvale var meint for fiendar, ikkje for ein sjølv.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Thorns could not prick the pride of fate.",
+  "nn": "Tornar kunne ikkje stikke hol på stoltheita til lagnaden.",
+  "tag": "DRUID"
+ },
+ {
+  "en": "Sing of scales that shone, then fell!",
+  "nn": "Syng om skjel som skein, og so fall!",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Disintegrate disintegrated. So did morale.",
+  "nn": "Oppløysinga oppløyste seg. Det gjorde moralen òg.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Perhaps Obsidian Scales was worth a press?",
+  "nn": "Kanskje obsidianskjel var verd eit trykk?",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Empowered spell, unempowered landing.",
+  "nn": "Forsterka trolldom, uforsterka landing.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Fire Breath! A dramatic last gasp!",
+  "nn": "Eldpust! Eit dramatisk siste gisp!",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The Dracthyr kin shake their horned heads.",
+  "nn": "Dracthyr-frendane ristar på dei horna hovuda.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Ancient wings, modern faceplant.",
+  "nn": "Eldgamle venger, moderne magaplask.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The Isles remember; they also chuckle.",
+  "nn": "Øyane hugsar; dei fnisar òg.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Rescue was for allies. A tragic irony!",
+  "nn": "Redning var for allierte. Ein tragisk ironi!",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Charged up, then simply down.",
+  "nn": "Lada opp, og so berre nede.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Even dragons need a nap now and then.",
+  "nn": "Sjølv drakar treng ein lur av og til.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Renewing Blaze, perhaps? A soft draconic suggestion.",
+  "nn": "Fornyande flamme, kanskje? Eit mjukt drakeforslag.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Visage form, ghost form, same proud snout.",
+  "nn": "Andletsham, gjenferdsham, same stolte snute.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Time Spiral could not spiral back this time.",
+  "nn": "Tidsspiralen kunne ikkje spiralere attende denne gongen.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The hoard of glory stays safe; the hoarder, less so.",
+  "nn": "Æreskatten er trygg; samlaren, mindre so.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Deep Breath, and then, well, no breath.",
+  "nn": "Djupt andedrag, og so, vel, ikkje noko andedrag.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The flight soars on; one drake rests below.",
+  "nn": "Flokken svevar vidare; éin drake kviler under.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "A dragon falls! The skalds have waited ages for this verse.",
+  "nn": "Ein drake fell! Skaldane har venta i aldrar på dette verset.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Dream Breath, then dreams. Wake soon, dragonkin.",
+  "nn": "Draumepust, so draumar. Vakn snart, drakeætt.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "Lava, flame, and stubborn pride, all cooling now.",
+  "nn": "Lava, flamme og sta stoltheit, alt kjølnar no.",
+  "tag": "EVOKER"
+ },
+ {
+  "en": "The quiver is full; the hunter, rather empty.",
+  "nn": "Koggeret er fullt; jegeren, heller tom.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Sing of the tracker who tracked straight into doom!",
+  "nn": "Syng om sporaren som spora rett inn i undergangen!",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Misdirection pointed the danger the wrong way.",
+  "nn": "Feilleiinga peika faren feil veg.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The pet sits by the body, waiting for a treat.",
+  "nn": "Dyret sit ved kroppen og ventar på ein godbit.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Perhaps Exhilaration would have exhilarated?",
+  "nn": "Kanskje oppkvikking hadde kvikka opp?",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "A Freezing Trap was laid. Someone forgot where.",
+  "nn": "Ei frysefelle vart lagd. Nokon gløymde kvar.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Hunter's Mark marked the hunter. A twist!",
+  "nn": "Jegermerket merka jegeren. Ei vending!",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Rapid Fire, rapid fall.",
+  "nn": "Snøggskyting, snøgt fall.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Even the scope could not foresee this.",
+  "nn": "Sjølv kikkertsiktet kunne ikkje sjå dette kome.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The arrows fly on in their memory.",
+  "nn": "Pilene flyg vidare til minne om dei.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Call Pet? Now the pet must call for help.",
+  "nn": "Kall på dyret? No må dyret kalle på hjelp.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Kill Command was given. The wrong side obeyed it.",
+  "nn": "Drapsordren vart gjeven. Feil side lydde.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "They kited and kited, and the string snapped.",
+  "nn": "Dei drog og drog, og snøret slitna.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The beast howls, the bow weeps, the bard composes.",
+  "nn": "Dyret ylar, bogen gret, skalden diktar.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Camouflage hid them from everything but fate.",
+  "nn": "Kamuflasjen gøymde dei for alt utanom lagnaden.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The wild roams free. The hunter, lies still.",
+  "nn": "Villmarka streifar fritt. Jegeren ligg still.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Ammo spent, luck spent, health spent.",
+  "nn": "Ammunisjon brukt, lukke brukt, helse brukt.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "A Flare would have lit the way out. Ah, well.",
+  "nn": "Eit lysblus kunne ha lyst opp vegen ut. Ah, vel.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "The faithful companion stands guard, as songs foretold.",
+  "nn": "Den trufaste følgjesvenen held vakt, slik songane sa.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Bestial Wrath, meet fateful wrath.",
+  "nn": "Dyrisk vreide, møt lagnadsvreide.",
+  "tag": "HUNTER"
+ },
+ {
+  "en": "Mirror Image fooled everyone but the boss.",
+  "nn": "Spegelbiletet lurte alle utanom sjefen.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Sing, O library, of the scholar who forgot to run!",
+  "nn": "Syng, du bibliotek, om lærde som gløymde å springe!",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Frost Nova froze them. Now everyone is still.",
+  "nn": "Frostnovaen fraus dei fast. No er alle stille.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Perhaps Alter Time could alter this? Just a thought.",
+  "nn": "Kanskje tidsendring kunne endre dette? Berre ein tanke.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Arcane Intellect, and yet.",
+  "nn": "Arkan intelligens, og likevel.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "A Fireball of glory, a fizzle of an ending.",
+  "nn": "Ei eldkule av ære, ein fus av ein slutt.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "The scrolls of power scatter in the wind.",
+  "nn": "Maktrullane spreier seg i vinden.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Slow Fall was the spell. Fast fall was the result.",
+  "nn": "Sakte fall var trolldomen. Snøgt fall var resultatet.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Counterspell could not counter destiny.",
+  "nn": "Motgaldren kunne ikkje motverke lagnaden.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "The pointy hat lies still. A tragic silhouette.",
+  "nn": "Den spisse hatten ligg still. Ein tragisk silhuett.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Pyroblast took too long; the foe did not.",
+  "nn": "Pyroeksplosjonen tok for lang tid; fienden gjorde ikkje det.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Arcane Explosion, arcane implosion.",
+  "nn": "Arkan eksplosjon, arkan implosjon.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Time Warp could not warp back these moments.",
+  "nn": "Tidsvridinga kunne ikkje vri desse augneblinka attende.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "The mana ran dry before the heroics did.",
+  "nn": "Manaen tømdest før heltemotet gjorde det.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "A Portal home? No, a portal to the graveyard.",
+  "nn": "Ein portal heim? Nei, ein portal til kyrkjegarden.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Greater Invisibility would have hidden this shame.",
+  "nn": "Større usynlegheit kunne ha gøymt denne skamma.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Even sorcery bows to a sufficiently large axe.",
+  "nn": "Sjølv trolldom bøyer seg for ei stor nok øks.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Cone of Cold, cone of sorrow.",
+  "nn": "Kuldekjegle, sorgkjegle.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "The arcane orbs blink out one by one.",
+  "nn": "Dei arkane kulene sloknar ei etter ei.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Conjured food for the wake, at least.",
+  "nn": "Trylla mat til minnestunda, i det minste.",
+  "tag": "MAGE"
+ },
+ {
+  "en": "Sing of the monk whose chi went for a walk!",
+  "nn": "Syng om munken som chi-en gjekk seg ein tur!",
+  "tag": "MONK"
+ },
+ {
+  "en": "Diffuse Magic diffused nothing this time.",
+  "nn": "Spreidd magi spreidde ingenting denne gongen.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Perhaps Dampen Harm would have dampened this?",
+  "nn": "Kanskje dempa skade hadde dempa dette?",
+  "tag": "MONK"
+ },
+ {
+  "en": "The Jade Serpent weeps a single jade tear.",
+  "nn": "Jadeormen gret ei einsleg jadetåre.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Rising Sun Kick, setting sun monk.",
+  "nn": "Spark av den stigande sola, munken av den synkande.",
+  "tag": "MONK"
+ },
+ {
+  "en": "A balanced life, an unbalanced landing.",
+  "nn": "Eit balansert liv, ei ubalansert landing.",
+  "tag": "MONK"
+ },
+ {
+  "en": "The keg is still full. A true tragedy.",
+  "nn": "Fatet er framleis fullt. Ein sann tragedie.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Transcendence, but not the useful kind.",
+  "nn": "Transcendens, men ikkje den nyttige sorten.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Fists of Fury, then a pause of peace.",
+  "nn": "Raseriknyttnevar, so ein fredspause.",
+  "tag": "MONK"
+ },
+ {
+  "en": "The temple bells toll softly. Then ring for return.",
+  "nn": "Tempelklokkene kimar mjukt. So ringjer dei for retur.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Expel Harm could not expel this much harm.",
+  "nn": "Driv ut skade kunne ikkje drive ut so mykje skade.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Paralysis was cast on fate. Fate shrugged.",
+  "nn": "Lamming vart kasta på lagnaden. Lagnaden trekte på skuldrene.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Mist and mantra, now just mist.",
+  "nn": "Skodde og mantra, no berre skodde.",
+  "tag": "MONK"
+ },
+ {
+  "en": "The wise monk accepts the floor as a teacher.",
+  "nn": "Den vise munken godtek golvet som lærar.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Chi Torpedo! Straight into the afterlife.",
+  "nn": "Chi-torpedo! Rett inn i etterlivet.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Zen Meditation, maximum zen achieved.",
+  "nn": "Zen-meditasjon, maksimal zen oppnådd.",
+  "tag": "MONK"
+ },
+ {
+  "en": "The white tiger yawns. The monk naps too.",
+  "nn": "Den kvite tigeren gjespar. Munken tek ein lur òg.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Leg Sweep swept, and then the monk was swept.",
+  "nn": "Beinsveipet sveipa, og so vart munken sveipa.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Ox and crane and tiger all look away politely.",
+  "nn": "Oksen og trana og tigeren ser alle høfleg vekk.",
+  "tag": "MONK"
+ },
+ {
+  "en": "Rest now, then roll back with style!",
+  "nn": "Kvil no, og rull so attende med stil!",
+  "tag": "MONK"
+ },
+ {
+  "en": "Sing of the crusader who crusaded floorward!",
+  "nn": "Syng om korsfararen som fór mot golvet!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Consecration consecrated their final resting spot.",
+  "nn": "Vigslinga vigsla den siste kvileplassen deira.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Perhaps Divine Protection next time, noble knight?",
+  "nn": "Kanskje guddommeleg vern neste gong, edle riddar?",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The Light says: I'll be right back.",
+  "nn": "Ljoset seier: eg kjem straks att.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Avenging Wrath avenged nothing today.",
+  "nn": "Hemnande vreide hemna ingenting i dag.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Their charger waits outside, polishing its hooves.",
+  "nn": "Gangaren ventar utanfor og pussar hovane.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Blessing of Freedom freed them from life, alas.",
+  "nn": "Fridomssigninga fridde dei frå livet, dessverre.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The libram closes on a solemn chapter.",
+  "nn": "Librammet lèt seg att over eit høgtideleg kapittel.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Shield of the Righteous, yet fate was more righteous.",
+  "nn": "Rettferdsskjoldet, men lagnaden var meir rettferdig.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Hammer of Wrath swung. Wrath swung harder.",
+  "nn": "Vreidehammaren vart svinga. Vreiden svinga hardare.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Holy Light, holy fright, holy floor.",
+  "nn": "Heilag ljos, heilag skrekk, heilagt golv.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Even saints stumble on the stairs of fate.",
+  "nn": "Sjølv helgenar snåvar i lagnadstrappa.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Devotion Aura, devoted to the very end.",
+  "nn": "Hengivnadsaura, hengiven til siste slutt.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Judgment was passed. Upon the paladin, oddly.",
+  "nn": "Domen fall. Over paladinen, merkeleg nok.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The Light flickers, then promises a comeback.",
+  "nn": "Ljoset flakkar, og lovar so eit comeback.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "A noble kneel, then a less noble sprawl.",
+  "nn": "Eit edelt kne, so ei mindre edel utstrekning.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "The sacred oath remains; only the knight lies down.",
+  "nn": "Den heilage eiden står; berre riddaren legg seg.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Word of Glory, unspoken in time.",
+  "nn": "Æresordet, ikkje sagt i tide.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Shining plate, now a very shiny rug.",
+  "nn": "Skinande plate, no eit svært skinande golvteppe.",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Redemption awaits. Someone fetch a fellow paladin!",
+  "nn": "Forløysinga ventar. Nokon hent ein paladin til!",
+  "tag": "PALADIN"
+ },
+ {
+  "en": "Sing of the shepherd who forgot to shepherd themself!",
+  "nn": "Syng om gjetaren som gløymde å gjete seg sjølv!",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Pain Suppression suppressed all but the pain.",
+  "nn": "Smertedemping dempa alt utanom smerta.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Perhaps Desperate Prayer was the prayer to pray?",
+  "nn": "Kanskje den desperate bøna var bøna å be?",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Guardian Spirit was guarding someone else.",
+  "nn": "Vernaånda verna nokon annan.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The Void whispers: bad timing, friend.",
+  "nn": "Tomrommet kviskrar: dårleg timing, ven.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Renew will renew. Eventually.",
+  "nn": "Fornying skal fornye. Etter kvart.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Mind Blast blasted; fate was unimpressed.",
+  "nn": "Tankesprengjinga sprengde; lagnaden var lite imponert.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Holy Nova, holy no-va.",
+  "nn": "Heilag nova, heilag nei-va.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The candles flicker for the fallen cleric.",
+  "nn": "Ljosa flakkar for den falne presten.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Leap of Faith pulled the wrong person to safety.",
+  "nn": "Trusspranget drog feil person i tryggleik.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Shadowform, shadow-fallen.",
+  "nn": "Skuggeham, skuggefallen.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Even the most devout must visit the angel.",
+  "nn": "Sjølv dei mest truande må vitje engelen.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Power Word: Oops.",
+  "nn": "Maktord: Uff.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Prayer of Mending mended everyone but its sender.",
+  "nn": "Lækjebøna lækte alle utanom avsendaren.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The hymnbook falls open to the sad page.",
+  "nn": "Salmeboka fell opp på den triste sida.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Vampiric Embrace embraced the floor instead.",
+  "nn": "Vampyrfamnen famna golvet i staden.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "A heal was cast. Just slightly too late.",
+  "nn": "Ei lækjing vart kasta. Berre litt for seint.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Mass Dispel dispelled hope, briefly.",
+  "nn": "Massefordriving fordreiv vona, kort.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Resurrection is their own trade. Ironic, isn't it?",
+  "nn": "Gjenoppliving er deira eige fag. Ironisk, ikkje sant?",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "The faithful one rests; the faith marches on.",
+  "nn": "Den truande kviler; trua marsjerer vidare.",
+  "tag": "PRIEST"
+ },
+ {
+  "en": "Sing of the shadow who stepped on a creaky board!",
+  "nn": "Syng om skuggen som trakka på eit knirkande bord!",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Kidney Shot, kidney not.",
+  "nn": "Nyreslag, nyre-nei.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Perhaps Crimson Vial was the vial to drink?",
+  "nn": "Kanskje det raude hettegløset var gløset å drikke?",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The coin purse remains. Small mercies.",
+  "nn": "Myntpungen er att. Små nådegåver.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Sap was meant for the enemy. A rare slip!",
+  "nn": "Kloss var meint for fienden. Eit sjeldan feilgrep!",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Ambush planned, ambush received.",
+  "nn": "Bakhald planlagt, bakhald motteke.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Shadowstep stepped into deeper shadow.",
+  "nn": "Skuggesteget steig inn i djupare skugge.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The lockpicks lie unpicked. A silent tragedy.",
+  "nn": "Dirkane ligg urørte. Ein stille tragedie.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Feint feinted. Fate did not fall for it.",
+  "nn": "Finta finta. Lagnaden gjekk ikkje på ho.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "A master of shadows, mastered by them.",
+  "nn": "Ein meister over skuggar, meistra av dei.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Blade Flurry, then a flurry of regret.",
+  "nn": "Klingekav, so eit kav av anger.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Garrote garroted. Then fate garroted back.",
+  "nn": "Strupesnøra strupa. So strupa lagnaden attende.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The cloak of night now covers them literally.",
+  "nn": "Nattkappa dekkjer dei no bokstaveleg.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Combo points spent, life points spent.",
+  "nn": "Kombopoeng brukte, livspoeng brukte.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Blind was cast, yet fate saw everything.",
+  "nn": "Blinding vart kasta, men lagnaden såg alt.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Stealth broken, heart broken, rogue broken.",
+  "nn": "Snikinga broten, hjartet brote, tjuven broten.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "The bards were not supposed to see that.",
+  "nn": "Skaldane skulle ikkje ha sett det.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "A Smoke Bomb would have clouded this verse.",
+  "nn": "Ei røykbombe kunne ha skyma til dette verset.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "They stole the show, then fate stole them back.",
+  "nn": "Dei stal showet, og so stal lagnaden dei attende.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Silent as always, even now.",
+  "nn": "Stille som alltid, sjølv no.",
+  "tag": "ROGUE"
+ },
+ {
+  "en": "Sing of the storm-caller whose storm called back!",
+  "nn": "Syng om stormkallaren som stormen ringde attende til!",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Healing Stream Totem streamed, but not enough.",
+  "nn": "Lækjestraumtotemet strøymde, men ikkje nok.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Perhaps Earth Elemental would have stood guard?",
+  "nn": "Kanskje jordelementalen hadde halde vakt?",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Bloodlust lusted; the shaman, rested.",
+  "nn": "Blodtørsten tørsta; sjamanen, kvilte.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Flame Shock shocked them both.",
+  "nn": "Flammesjokket sjokkerte dei begge.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Wind Shear sheared everything but doom.",
+  "nn": "Vindskjeret skar alt utanom undergangen.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The spirit wolves howl in sorrowful chorus.",
+  "nn": "Åndeulvane ylar i sorgfullt kor.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Thunderstorm! A crash! A collapse!",
+  "nn": "Tordenvêr! Eit brak! Eit samanbrot!",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Stormstrike struck; the storm struck back.",
+  "nn": "Stormslaget slo; stormen slo attende.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Earth Shield cracked like old pottery.",
+  "nn": "Jordskjoldet sprakk som gamal leirkrukke.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The fire elemental warms the corpse. Kindly meant.",
+  "nn": "Eldelementalen varmar liket. Godt meint.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Hex turned a foe to a frog. Fate stayed fate.",
+  "nn": "Forheksinga gjorde ein fiende til frosk. Lagnaden vart verande lagnad.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The ancestors pour a cup of tea and wait.",
+  "nn": "Forfedrane skjenkjer ein kopp te og ventar.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Lava Burst burst, and so did the bubble of hope.",
+  "nn": "Lavautbrotet braut ut, og det gjorde vonbobla òg.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Water Walking walked into deep trouble.",
+  "nn": "Vassvandringa vandra inn i djupe vanskar.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Spirit Link linked them all to a bad decision.",
+  "nn": "Åndebandet batt dei alle til ei dårleg avgjerd.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Totems toppled, drums silent, spirits patient.",
+  "nn": "Totemane velta, trommene tause, åndene tolmodige.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "The elements will gossip about this for ages.",
+  "nn": "Elementa kjem til å sladre om dette i aldrar.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Ascendance! Then descendance.",
+  "nn": "Oppstiging! So nedstiging.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "A shaman returns to the earth, temporarily.",
+  "nn": "Ein sjaman vender attende til jorda, mellombels.",
+  "tag": "SHAMAN"
+ },
+ {
+  "en": "Sing of the warlock who bargained one time too many!",
+  "nn": "Syng om heksemeisteren som tinga ein gong for mykje!",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Fear sent the foe running. Back again, sadly.",
+  "nn": "Frykt fekk fienden til å springe. Attende igjen, dessverre.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Perhaps Dark Pact was the pact to make?",
+  "nn": "Kanskje den mørke pakta var pakta å inngå?",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The felhunter sniffs the body, unimpressed.",
+  "nn": "Felhunden snusar på kroppen, lite imponert.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Chaos Bolt! Chaos received.",
+  "nn": "Kaosbolt! Kaos motteke.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Healthstone was in the bag, unwrapped.",
+  "nn": "Livssteinen låg i sekken, uopna.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Corruption corrupted the wrong target today.",
+  "nn": "Korrupsjonen korrumperte feil mål i dag.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The succubus files her nails, waiting.",
+  "nn": "Succubusen filar neglene medan ho ventar.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Shadow Bolt, shadow fall, shadow nap.",
+  "nn": "Skuggebolt, skuggefall, skuggelur.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Demonic Circle was just over there. Right there.",
+  "nn": "Demonsirkelen var like der borte. Like der.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The grimoire snaps shut in protest.",
+  "nn": "Grimoaren smell att i protest.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Summon Infernal, summon regret.",
+  "nn": "Påkall infernal, påkall anger.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The pact's fine print has a clause about this.",
+  "nn": "Den vesle skrifta i pakta har ein klausul om dette.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Agony, but the wrong kind.",
+  "nn": "Pine, men feil sort.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Drain Life drained, then life drained back.",
+  "nn": "Livstapping tappa, so tappa livet attende.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The demons hold a small, cheerful wake.",
+  "nn": "Demonane held ei lita, lystig minnestund.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Rain of Fire rained; then came the drizzle of defeat.",
+  "nn": "Eldregnet regna; so kom nederlagsyret.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Soul shards jingle sadly in the satchel.",
+  "nn": "Sjeleskårene klirrar trist i veska.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Banish banished nothing but their luck.",
+  "nn": "Forvising forviste ingenting anna enn lukka.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "The soul returns, for they've plenty spare.",
+  "nn": "Sjela kjem att, dei har mange i reserve.",
+  "tag": "WARLOCK"
+ },
+ {
+  "en": "Sing of the warrior who shouted and was answered!",
+  "nn": "Syng om krigaren som ropa og fekk svar!",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Bladestorm stormed; the warrior got blown over.",
+  "nn": "Klingestormen stormde; krigaren vart blåsen over ende.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Perhaps Last Stand was a stand worth taking?",
+  "nn": "Kanskje den siste skansen var verd å stå på?",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Execute! Executed. The wrong one.",
+  "nn": "Avrett! Avretta. Feil person.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "The battle shout echoes over an empty helm.",
+  "nn": "Stridsropet ljomar over ein tom hjelm.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Mortal Strike, mortally ironic.",
+  "nn": "Dødsslag, dødeleg ironisk.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Rallying Cry rallied everyone but them.",
+  "nn": "Samlingsropet samla alle utanom dei.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Whirlwind spun them right into the dirt.",
+  "nn": "Kvervelvinden snurra dei rett ned i jorda.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Taunt taunted. The boss accepted, gladly.",
+  "nn": "Utfordringa utfordra. Sjefen tok imot, gladeleg.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "The shield lies on top like a proud tombstone.",
+  "nn": "Skjoldet ligg oppå som ein stolt gravstein.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Spell Reflection reflected on its life choices.",
+  "nn": "Trolldomsrefleksjonen reflekterte over livsvala sine.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Berserker Rage raged on, minus the berserker.",
+  "nn": "Bersekergangen raste vidare, utan berserken.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Victory Rush rushed off without the victory.",
+  "nn": "Sigersrushet rusha av garde utan sigeren.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Thunder Clap, then a thunderous thud.",
+  "nn": "Tordenklapp, so eit dundrande dunk.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Enraged Regeneration was enraged, not regenerated.",
+  "nn": "Rasande regenerering var rasande, ikkje regenerert.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Pummel pummeled; fate pummeled harder.",
+  "nn": "Bankinga banka; lagnaden banka hardare.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "The berserkers of old raise a horn to a worthy fall.",
+  "nn": "Bersekane i gamal tid lyfter eit horn for eit verdig fall.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "The axe still glints in the mud. Pick it up soon!",
+  "nn": "Øksa glitrar framleis i gjørma. Plukk ho opp snart!",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Intervene! Too late, but very brave.",
+  "nn": "Grip inn! For seint, men svært modig.",
+  "tag": "WARRIOR"
+ },
+ {
+  "en": "Rage depleted. A first, truly historic moment!",
+  "nn": "Raseriet oppbrukt. Eit første, verkeleg historisk augneblink!",
+  "tag": "WARRIOR"
+ }
+]

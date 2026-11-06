@@ -150,6 +150,13 @@ FRIEND_STUBS = STUBS.replace('return "Thora" end', 'return "Eldrin" end').replac
     '__peers = {"Eldrin-TestRealm"}', '__peers = {"Thora-TestRealm"}')
 
 
+# Caption personalities, in TOC order after FlavourNN.lua.
+PERSONALITY_FILES = ('Personalities.lua', 'FlavourWholesome.lua', 'FlavourBard.lua', 'FlavourVeteran.lua',
+                     'FlavourGoblin.lua', 'FlavourChristian.lua', 'FlavourSmug.lua',
+                     'FlavourDwarf.lua', 'FlavourJealous.lua',
+                     'FlavourDrama.lua')
+
+
 def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
@@ -172,6 +179,8 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     runtime.execute((root / 'Share.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Flavour.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'FlavourNN.lua').read_text(encoding='utf-8'))
+    for name in PERSONALITY_FILES:
+        runtime.execute((root / name).read_text(encoding='utf-8'))
     runtime.execute((root / 'Theme.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'MainWindow.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Overview.lua').read_text(encoding='utf-8'))

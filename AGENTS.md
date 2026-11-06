@@ -47,6 +47,12 @@ be checked against Git and the environment rather than assumed permanently true.
 - `docs/notification-flavour-text.md`: complete 1,300-line caption catalogue,
   100 for each of 13 preview categories. Match this with every `Flavour.lua` and
   the four banks in `website/flavour.js` when editing copy.
+- `Personalities.lua`, `Flavour<Name>.lua`: optional caption personalities (300
+  lines per category, English and Nynorsk pairs). The Lua is generated from
+  `docs/caption-personalities/<id>/*.json` by `scripts/build_personalities.py`;
+  edit the JSON, rebuild, then sync. See `docs/caption-personalities/README.md`.
+  To add or extend a personality, follow the `caption-personality` skill
+  (`.agents/skills/caption-personality/`, mirrored in `.claude/skills/`).
 - `src/wow_status/`: preserved Python companion, ingestion, Discord and storage.
 - `tests/`: Python tests and mocked Lua clients/transports. Mocks do not establish
   live game API availability, rendering or cross-realm delivery.

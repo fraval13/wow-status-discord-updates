@@ -62,6 +62,18 @@ log, records and all 1,300 captions change; what players send each other stays
 English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
 and the release notes stay English.
 
+## Caption personalities
+
+The funny line under each notification comes from a **Random** personality by
+default: each notification picks one of the voices below, Classic included. Under
+**Notifications → Next personality**, or with `/wstatus personality <name>`, you can
+stick to one voice instead: Classic, Wholesome, Epic bard, Grumpy veteran, Goblin
+merchant, Christian, Condescending Christian, Dwarf, Jealous friend or Drama queen.
+Each has 300 captions per event, plus 30 death roasts for each class, in English and
+Nynorsk. The choice is yours alone (friends can pick their own), applies to new
+notifications, and captions already in your log keep their wording. See
+`docs/caption-personalities/README.md` to edit or add one.
+
 ## Announcements
 
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed

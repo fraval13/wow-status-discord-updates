@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "New territory! Have you scouted for shop locations?",
+  "nn": "Nytt territorium! Har du sett etter butikklokale?"
+ },
+ {
+  "en": "Ooh, fresh market. Untapped customers everywhere.",
+  "nn": "Å, ein fersk marknad. Uutnytta kundar overalt."
+ },
+ {
+  "en": "Welcome to the area. Tourist tax is payable to me.",
+  "nn": "Velkomen til området. Turistskatten betalast til meg."
+ },
+ {
+  "en": "Lovely place! I’d build a casino right over there.",
+  "nn": "Fin stad! Eg ville bygd eit kasino rett der borte."
+ },
+ {
+  "en": "New zone, new opportunities. Mostly real estate.",
+  "nn": "Ny sone, nye moglegheiter. Mest eigedom."
+ },
+ {
+  "en": "I smell ore in those hills. And profit.",
+  "nn": "Eg luktar malm i dei åsane. Og forteneste."
+ },
+ {
+  "en": "Explorer’s fee: a modest cut of everything you find.",
+  "nn": "Utforskaravgift: ein liten del av alt du finn."
+ },
+ {
+  "en": "Fresh land! Let’s strip-mine it. Kidding. Partially.",
+  "nn": "Nytt land! Vi grev det ut. Tuller. Delvis."
+ },
+ {
+  "en": "Pretty views. Views can be sold, you know.",
+  "nn": "Fin utsikt. Utsikt kan seljast, veit du."
+ },
+ {
+  "en": "A new region! Please leave a review for the locals.",
+  "nn": "Ein ny region! Legg gjerne igjen ei vurdering til dei lokale."
+ },
+ {
+  "en": "Got a map? Mine’s twenty gold and mostly accurate.",
+  "nn": "Har du kart? Mitt kostar tjue gull og er stort sett rett."
+ },
+ {
+  "en": "I see potential here. A goblin outpost, perhaps.",
+  "nn": "Eg ser potensial her. Ein goblinutpost, kanskje."
+ },
+ {
+  "en": "Unexplored? Unexploited!",
+  "nn": "Uutforska? Uutnytta!"
+ },
+ {
+  "en": "Nice scenery. Shame nobody’s charging admission yet.",
+  "nn": "Fin natur. Synd ingen tek inngangspengar enno."
+ },
+ {
+  "en": "Check the local prices. Then come back to mine.",
+  "nn": "Sjekk dei lokale prisane. Så kjem du tilbake til mine."
+ },
+ {
+  "en": "New land discovered. Have you claimed the mineral rights?",
+  "nn": "Nytt land oppdaga. Har du sikra deg mineralrettane?"
+ },
+ {
+  "en": "That place looks lucrative. Or dangerous. Usually both.",
+  "nn": "Den staden ser lønsam ut. Eller farleg. Vanlegvis begge delar."
+ },
+ {
+  "en": "A new zone! Postcards available for three silver.",
+  "nn": "Ei ny sone! Postkort til tre sølv."
+ },
+ {
+  "en": "I hear the locals pay well for imported goods.",
+  "nn": "Eg høyrer at dei lokale betaler godt for importvarer."
+ },
+ {
+  "en": "First visit? Let me sell you a guidebook. Unwritten yet.",
+  "nn": "Første besøk? Lat meg selje deg ei reisehandbok. Ikkje skriven enno."
+ },
+ {
+  "en": "Fresh horizons! Fresh customers!",
+  "nn": "Nye horisontar! Nye kundar!"
+ },
+ {
+  "en": "Survey the land, find the gold. Simple business.",
+  "nn": "Kartlegg landet, finn gullet. Enkel forretning."
+ },
+ {
+  "en": "Stake your claim before the gnomes do.",
+  "nn": "Set ned påla før gnomane gjer det."
+ },
+ {
+  "en": "Look at all that untouched land. Practically begging for a factory.",
+  "nn": "Sjå på alt det urørte landet. Det ropar nesten etter ein fabrikk."
+ },
+ {
+  "en": "A new frontier! Frontiers mean high prices.",
+  "nn": "Ei ny grense! Grenser betyr høge prisar."
+ },
+ {
+  "en": "Interesting area. I’ll send my scouts. And my salesmen.",
+  "nn": "Interessant område. Eg sender speidarane mine. Og seljarane."
+ },
+ {
+  "en": "Did you spot any treasure? Finder’s fees apply.",
+  "nn": "Såg du nokon skattar? Finnarløn gjeld."
+ },
+ {
+  "en": "New zone! Mind the local wildlife. Repellent for sale.",
+  "nn": "Ny sone! Pass deg for dyrelivet. Avstøytingsmiddel til sals."
+ },
+ {
+  "en": "That’s prime real estate. Shall I draw up a deed?",
+  "nn": "Det er førsteklasses eigedom. Skal eg skrive eit skøyte?"
+ },
+ {
+  "en": "Explore away! Every corner is a business opportunity.",
+  "nn": "Utforsk i veg! Kvar krok er ei forretningsmoglegheit."
+ },
+ {
+  "en": "Ahh, a fresh market with no goblins yet. Paradise.",
+  "nn": "Å, ein fersk marknad utan goblinar enno. Paradis."
+ },
+ {
+  "en": "New place, new prices. I’ll adjust accordingly.",
+  "nn": "Ny stad, nye prisar. Eg justerer deretter."
+ },
+ {
+  "en": "The air smells like opportunity. And swamp, maybe.",
+  "nn": "Lufta luktar moglegheiter. Og myr, kanskje."
+ },
+ {
+  "en": "I’d put a toll booth on that road. Instant profit.",
+  "nn": "Eg ville sett ein bomstasjon på den vegen. Straks forteneste."
+ },
+ {
+  "en": "Pretty scenery is wasted without a gift shop.",
+  "nn": "Fin natur er bortkasta utan gåvebutikk."
+ },
+ {
+  "en": "New zone! Don’t forget to haggle with the locals.",
+  "nn": "Ny sone! Ikkje gløym å prute med dei lokale."
+ },
+ {
+  "en": "Arrived somewhere new? The flight master owes me money.",
+  "nn": "Komen ein ny stad? Flygemeisteren skuldar meg pengar."
+ },
+ {
+  "en": "A whole new map to monetize!",
+  "nn": "Eit heilt nytt kart å tene pengar på!"
+ },
+ {
+  "en": "Explorer’s instinct, goblin’s wallet. Perfect combo.",
+  "nn": "Utforskarinstinkt, goblinlommebok. Perfekt kombinasjon."
+ },
+ {
+  "en": "Any good inns? Inns mean hungry travellers. Hungry means buyers.",
+  "nn": "Nokre gode vertshus? Vertshus betyr svoltne reisande. Svoltne betyr kjøparar."
+ },
+ {
+  "en": "New lands always need explosives. Just a hunch.",
+  "nn": "Nye land treng alltid sprengstoff. Berre ei kjensle."
+ },
+ {
+  "en": "Don’t drink the water. Buy my bottled water instead.",
+  "nn": "Ikkje drikk vatnet. Kjøp flaskevatnet mitt i staden."
+ },
+ {
+  "en": "New zone unlocked! I’ve already raised prices there.",
+  "nn": "Ny sone låst opp! Eg har alt heva prisane der."
+ },
+ {
+  "en": "Sightseeing? Sightseeing tours, five gold a head.",
+  "nn": "Sightseeing? Omvisingar, fem gull per hovud."
+ },
+ {
+  "en": "Cartographers hate this one trick: just walking there.",
+  "nn": "Kartteiknarar hatar dette eine trikset: å berre gå dit."
+ },
+ {
+  "en": "I’d invest in that zone. After you check it’s safe.",
+  "nn": "Eg ville investert i den sona. Etter at du har sjekka at ho er trygg."
+ },
+ {
+  "en": "Fresh soil! Perfect for planting a franchise.",
+  "nn": "Fersk jord! Perfekt for å plante ein franchise."
+ },
+ {
+  "en": "Every new zone needs a goblin merchant. Tell them I’m coming.",
+  "nn": "Kvar ny sone treng ein goblinkremmar. Sei at eg kjem."
+ },
+ {
+  "en": "That place has excellent foot traffic potential.",
+  "nn": "Den staden har framifrå potensial for fottrafikk."
+ },
+ {
+  "en": "New area! Remember to collect rare souvenirs for me.",
+  "nn": "Nytt område! Hugs å samle sjeldne suvenirar til meg."
+ },
+ {
+  "en": "Ooh, exotic. Exotic means expensive.",
+  "nn": "Å, eksotisk. Eksotisk betyr dyrt."
+ },
+ {
+  "en": "A new place to sell rockets to. Splendid.",
+  "nn": "Ein ny stad å selje rakettar til. Flott."
+ },
+ {
+  "en": "Look around carefully. I want a full inventory report.",
+  "nn": "Sjå deg godt rundt. Eg vil ha ein full lagerrapport."
+ },
+ {
+  "en": "The monsters there look rich. Well, their loot does.",
+  "nn": "Monstera der ser rike ut. Vel, looten deira gjer."
+ },
+ {
+  "en": "First time here? Mind the pickpockets. That’s my job.",
+  "nn": "Første gong her? Pass deg for lommetjuvar. Det er jobben min."
+ },
+ {
+  "en": "New zone! Is there a bank? Asking for a friend. Me.",
+  "nn": "Ny sone! Finst det ein bank? Spør for ein venn. Meg."
+ },
+ {
+  "en": "I see mountains. Mountains have mines. Mines have gold.",
+  "nn": "Eg ser fjell. Fjell har gruver. Gruver har gull."
+ },
+ {
+  "en": "Ahh, the thrill of new territory and untaxed goods.",
+  "nn": "Å, spenninga ved nytt territorium og uskatta varer."
+ },
+ {
+  "en": "That zone has a terrible lack of goblin vending machines.",
+  "nn": "Den sona manglar sårt goblinautomatar."
+ },
+ {
+  "en": "Explore, plunder, report back with profits!",
+  "nn": "Utforsk, plyndre, rapporter tilbake med forteneste!"
+ },
+ {
+  "en": "Lovely. Do they accept goblin currency there?",
+  "nn": "Fint. Tek dei imot goblinvaluta der?"
+ },
+ {
+  "en": "New zone! Did you pack my brochures?",
+  "nn": "Ny sone! Pakka du brosjyrane mine?"
+ },
+ {
+  "en": "A fresh place to get lost in. Maps are on special.",
+  "nn": "Ein ny stad å gå seg vill på. Kart er på tilbod."
+ },
+ {
+  "en": "Discoverer’s rights! Very lucrative, I hear.",
+  "nn": "Oppdagarrettar! Svært lukrativt, har eg høyrt."
+ },
+ {
+  "en": "Land ho! Er, zone ho! Whatever. Profit ho!",
+  "nn": "Land i sikte! Eh, sone i sikte! Same det. Forteneste i sikte!"
+ },
+ {
+  "en": "I’ll open a branch office there next week.",
+  "nn": "Eg opnar eit avdelingskontor der neste veke."
+ },
+ {
+  "en": "That region looks underdeveloped. I can fix that. With dynamite.",
+  "nn": "Den regionen ser underutvikla ut. Det kan eg fikse. Med dynamitt."
+ },
+ {
+  "en": "New zone! Check the fine print on the local laws.",
+  "nn": "Ny sone! Sjekk småskrifta i dei lokale lovene."
+ },
+ {
+  "en": "Ah, adventure tourism. A booming industry.",
+  "nn": "Å, eventyrturisme. Ein bransje i vekst."
+ },
+ {
+  "en": "Any wealthy nobles around? Asking for business reasons.",
+  "nn": "Nokre rike adelsfolk der? Spør av forretningsgrunnar."
+ },
+ {
+  "en": "Wander wisely. The best deals hide in odd corners.",
+  "nn": "Vandre klokt. Dei beste kjøpa gøymer seg i rare krokar."
+ },
+ {
+  "en": "New area! I hope you mapped every shop.",
+  "nn": "Nytt område! Eg håpar du kartla kvar butikk."
+ },
+ {
+  "en": "The locals look friendly. Friendly people buy more.",
+  "nn": "Dei lokale ser venlege ut. Venlege folk kjøper meir."
+ },
+ {
+  "en": "A new zone? I’ll mark it on my profit map.",
+  "nn": "Ei ny sone? Eg merkar ho på profittkartet mitt."
+ },
+ {
+  "en": "That place is crying out for a zeppelin tower.",
+  "nn": "Den staden ropar etter eit zeppelintårn."
+ },
+ {
+  "en": "Beautiful landscape! Imagine it with billboards.",
+  "nn": "Vakkert landskap! Tenk det med reklameskilt."
+ },
+ {
+  "en": "New zone, same old me, selling things.",
+  "nn": "Ny sone, same gamle meg, som sel ting."
+ },
+ {
+  "en": "Hope you brought gold. New places mean new temptations.",
+  "nn": "Håpar du har med gull. Nye stader betyr nye freistingar."
+ },
+ {
+  "en": "First steps somewhere new! Steps are free. For now.",
+  "nn": "Første steg ein ny stad! Steg er gratis. Førebels."
+ },
+ {
+  "en": "Wildlife, scenery, adventure. Where’s the market stall?",
+  "nn": "Dyreliv, natur, eventyr. Kvar er marknadsboda?"
+ },
+ {
+  "en": "I’ll need a full report on local commodity prices.",
+  "nn": "Eg treng ein full rapport om lokale råvareprisar."
+ },
+ {
+  "en": "This region has potential. Lots of it. All mine.",
+  "nn": "Denne regionen har potensial. Masse. Alt mitt."
+ },
+ {
+  "en": "Brave explorer! Brave investors follow brave explorers.",
+  "nn": "Modig utforskar! Modige investorar følgjer modige utforskarar."
+ },
+ {
+  "en": "New zone! I bet the herbs there fetch a fortune.",
+  "nn": "Ny sone! Eg vedd på at urtene der gir ein formue."
+ },
+ {
+  "en": "I’d sell you a compass, but you seem to manage.",
+  "nn": "Eg ville selt deg eit kompass, men du ser ut til å klare deg."
+ },
+ {
+  "en": "Exploring is free. Getting home costs a flight fee.",
+  "nn": "Å utforske er gratis. Å kome heim kostar flyavgift."
+ },
+ {
+  "en": "A new land! The tax office hasn’t found it yet. Hurry!",
+  "nn": "Eit nytt land! Skattekontoret har ikkje funne det enno. Skund deg!"
+ },
+ {
+  "en": "Discovered somewhere new? Copyright it before the gnomes.",
+  "nn": "Oppdaga ein ny stad? Ta opphavsrett før gnomane."
+ },
+ {
+  "en": "Look at that untouched beauty. Let’s put a price on it.",
+  "nn": "Sjå den urørte skjønnheita. La oss setje ein pris på ho."
+ },
+ {
+  "en": "New zone! Watch for bandits. They’re terrible competition.",
+  "nn": "Ny sone! Sjå opp for bandittar. Dei er elendig konkurranse."
+ },
+ {
+  "en": "I can almost hear the cash registers that aren’t there yet.",
+  "nn": "Eg høyrer nesten kassaapparata som ikkje er der enno."
+ },
+ {
+  "en": "That place has a strong market for umbrellas, I suspect.",
+  "nn": "Den staden har ein sterk marknad for paraplyar, mistenkjer eg."
+ },
+ {
+  "en": "Breathtaking! I’d charge for the breath, too.",
+  "nn": "Pustetakande! Eg ville teke betalt for pusten òg."
+ },
+ {
+  "en": "Another zone, another chance to strike it rich.",
+  "nn": "Endå ei sone, endå ein sjanse til å bli rik."
+ },
+ {
+  "en": "Remember: if it’s not nailed down, it’s for sale.",
+  "nn": "Hugs: om det ikkje er spikra fast, er det til sals."
+ },
+ {
+  "en": "New zone! Look for chests. Chests are my favourite furniture.",
+  "nn": "Ny sone! Sjå etter kister. Kister er yndlingsmøblane mine."
+ },
+ {
+  "en": "A whole new zone and not one goblin bank. Tragic.",
+  "nn": "Ei heil ny sone og ikkje éin goblinbank. Tragisk."
+ },
+ {
+  "en": "You’ve arrived! Time to open a tab with the local innkeeper.",
+  "nn": "Du er komen! Tid for å opne rekning hjå vertshusverten."
+ },
+ {
+  "en": "What a view! I’d rent out that hilltop.",
+  "nn": "For ei utsikt! Eg ville leigd ut den haugen."
+ },
+ {
+  "en": "A new frontier, just waiting for goblin ingenuity.",
+  "nn": "Ei ny grense som berre ventar på goblinoppfinnsemd."
+ },
+ {
+  "en": "New place, new rumours. Rumours are a currency too.",
+  "nn": "Ny stad, nye rykte. Rykte er òg ein valuta."
+ },
+ {
+  "en": "I sense a gold rush coming. You’re early!",
+  "nn": "Eg merkar eit gullrush på veg. Du er tidleg ute!"
+ },
+ {
+  "en": "Explored! Excellent. Now, about those mining permits…",
+  "nn": "Utforska! Framifrå. No, det med gruveløyva …"
+ },
+ {
+  "en": "That’s a lovely zone. Lovely zones have lovely markups.",
+  "nn": "Det er ei fin sone. Fine soner har fine påslag."
+ },
+ {
+  "en": "First visit? Ask the locals about hidden treasure. Then tell me.",
+  "nn": "Første besøk? Spør dei lokale om løynde skattar. Så fortel du meg."
+ },
+ {
+  "en": "A new zone discovered! The real estate agents rejoice.",
+  "nn": "Ei ny sone oppdaga! Eigedomsmeklarane jublar."
+ },
+ {
+  "en": "Get the lay of the land. Then sell the land.",
+  "nn": "Lær deg landskapet. Så sel du landskapet."
+ },
+ {
+  "en": "Fresh territory for the trade empire!",
+  "nn": "Nytt territorium til handelsimperiet!"
+ },
+ {
+  "en": "New zone? Better check if they sell anything I don’t.",
+  "nn": "Ny sone? Best å sjekke om dei sel noko eg ikkje sel."
+ },
+ {
+  "en": "That place looks expensive to live in. Good sign.",
+  "nn": "Den staden ser dyr ut å bu i. Godt teikn."
+ },
+ {
+  "en": "Ooh, swamps? Swamps have rare herbs. Rare means pricey.",
+  "nn": "Å, myrar? Myrar har sjeldne urter. Sjeldan betyr dyrt."
+ },
+ {
+  "en": "Exploring is just shopping for land.",
+  "nn": "Å utforske er berre å handle land."
+ },
+ {
+  "en": "A new region! The goblin guild of surveyors salutes you.",
+  "nn": "Ein ny region! Goblinlauget for landmålarar helsar deg."
+ },
+ {
+  "en": "Venturing into the unknown! Insurance recommended.",
+  "nn": "Ut i det ukjende! Forsikring tilrådd."
+ },
+ {
+  "en": "New zone! The perfect place for a pop-up shop.",
+  "nn": "Ny sone! Den perfekte staden for ein pop-up-butikk."
+ },
+ {
+  "en": "Map updated. Profit projections updated too.",
+  "nn": "Kart oppdatert. Overskotsprognosar òg oppdatert."
+ },
+ {
+  "en": "Nice place! Are the locals the gullible kind? Asking for business.",
+  "nn": "Fin stad! Er dei lokale av den godtruande typen? Spør for forretninga."
+ },
+ {
+  "en": "I bet there’s treasure buried somewhere. Dig carefully.",
+  "nn": "Eg vedd på at det ligg ein skatt nedgraven ein stad. Grav varsamt."
+ },
+ {
+  "en": "A new destination! Travel agencies, take note.",
+  "nn": "Eit nytt reisemål! Reisebyrå, legg merke til det."
+ },
+ {
+  "en": "Look, more land for my factories to dream about.",
+  "nn": "Sjå, meir land for fabrikkane mine å drøyme om."
+ },
+ {
+  "en": "Arrived safely? Good. Safety is a premium product.",
+  "nn": "Komen trygt fram? Bra. Tryggleik er eit premiumprodukt."
+ },
+ {
+  "en": "A whole zone of untapped buyers. My heart flutters.",
+  "nn": "Ei heil sone med uutnytta kjøparar. Hjartet mitt flagrar."
+ },
+ {
+  "en": "New location! I need you to scout for gold veins.",
+  "nn": "Ny stad! Eg treng at du speidar etter gullårer."
+ },
+ {
+  "en": "Wherever you go, remember: there’s a deal waiting.",
+  "nn": "Kvar du enn går, hugs: det ventar ein handel."
+ },
+ {
+  "en": "A grand vista! Perfect spot for my luxury resort.",
+  "nn": "Ei storslått utsikt! Perfekt stad for luksusresorten min."
+ },
+ {
+  "en": "Exotic flora, exotic fauna, exotic profit margins.",
+  "nn": "Eksotisk flora, eksotisk fauna, eksotiske forteneste-marginar."
+ },
+ {
+  "en": "New zone. New smells. Mostly money. And monsters.",
+  "nn": "Ny sone. Nye lukter. Mest pengar. Og monster."
+ },
+ {
+  "en": "Fresh land, fresh loot. The goblin dream.",
+  "nn": "Nytt land, ny loot. Goblindraumen."
+ },
+ {
+  "en": "Have a look around. Note any unguarded vaults.",
+  "nn": "Sjå deg rundt. Noter alle hvelv utan vakt."
+ },
+ {
+  "en": "New region discovered! My cartographers are jealous.",
+  "nn": "Ny region oppdaga! Kartteiknarane mine er sjalu."
+ },
+ {
+  "en": "Every inch of that zone has a price. Find it!",
+  "nn": "Kvar tomme av den sona har ein pris. Finn han!"
+ },
+ {
+  "en": "What’s the local currency? Gold? Perfect, same as mine.",
+  "nn": "Kva er den lokale valutaen? Gull? Perfekt, same som min."
+ },
+ {
+  "en": "Seeing the world, one sales territory at a time.",
+  "nn": "Ser verda, eitt salsdistrikt om gongen."
+ },
+ {
+  "en": "That zone’s a diamond in the rough. Let’s polish it.",
+  "nn": "Den sona er ein uslipt diamant. La oss pusse ho."
+ },
+ {
+  "en": "A new zone! Locals might need a goblin consultant.",
+  "nn": "Ei ny sone! Dei lokale treng kanskje ein goblinkonsulent."
+ },
+ {
+  "en": "Ah, new places! New places mean new suckers. Er, customers.",
+  "nn": "Å, nye stader! Nye stader betyr nye godtruande. Eh, kundar."
+ },
+ {
+  "en": "I heard rumours of riches there. Find them for me.",
+  "nn": "Eg har høyrt rykte om rikdom der. Finn han for meg."
+ },
+ {
+  "en": "Wonderful! Take notes on any market gaps.",
+  "nn": "Herleg! Noter alle hol i marknaden."
+ },
+ {
+  "en": "New zone! I sold maps there once. They were upside down.",
+  "nn": "Ny sone! Eg selde kart der ein gong. Dei var opp ned."
+ },
+ {
+  "en": "That place is wild. Wild places need civilized shopping.",
+  "nn": "Den staden er vill. Ville stader treng sivilisert handel."
+ },
+ {
+  "en": "Fresh frontier! Let’s make it a trade hub.",
+  "nn": "Ny grense! Vi gjer det til eit handelsknutepunkt."
+ },
+ {
+  "en": "Exploration bonus? I mean, I’ll take a bonus.",
+  "nn": "Utforskingsbonus? Eg meiner, eg tek gjerne ein bonus."
+ },
+ {
+  "en": "A new zone? Remember, every hill hides a deal.",
+  "nn": "Ei ny sone? Hugs, kvar haug gøymer ein handel."
+ },
+ {
+  "en": "That land would look better with a goblin skyline.",
+  "nn": "Det landet ville sett betre ut med ein goblinsiluett."
+ },
+ {
+  "en": "Scouting new markets? You’re a natural entrepreneur.",
+  "nn": "Speidar etter nye marknader? Du er ein fødd gründer."
+ },
+ {
+  "en": "Tell the locals I offer fair prices. Then don’t look at my prices.",
+  "nn": "Sei til dei lokale at eg har rimelege prisar. Så ikkje sjå på prisane mine."
+ },
+ {
+  "en": "New ground broken! Bring a shovel next time. For gold.",
+  "nn": "Ny grunn broten! Ta med spade neste gong. Til gull."
+ },
+ {
+  "en": "Hope the monsters there drop coins. Lots of coins.",
+  "nn": "Håpar monstera der slepp myntar. Mange myntar."
+ },
+ {
+  "en": "Good spot for a fireworks stand. Every spot is, really.",
+  "nn": "God stad for ei fyrverkeribu. Alle stader er det, eigentleg."
+ },
+ {
+  "en": "New zone, fresh herbs, fresh ore, fresh deals.",
+  "nn": "Ny sone, ferske urter, fersk malm, ferske avtalar."
+ },
+ {
+  "en": "Wander far, friend. The farther you go, the more you’ll buy.",
+  "nn": "Vandre langt, venn. Di lenger du går, di meir kjøper du."
+ },
+ {
+  "en": "That zone isn’t on my price list yet. Update incoming!",
+  "nn": "Den sona er ikkje på prislista mi enno. Oppdatering kjem!"
+ },
+ {
+  "en": "Ahh, new frontiers. Where every goblin dreams of monopolies.",
+  "nn": "Å, nye grenser. Der kvar goblin drøymer om monopol."
+ },
+ {
+  "en": "Exploring is like shopping, but with more walking.",
+  "nn": "Å utforske er som å handle, berre med meir gåing."
+ },
+ {
+  "en": "A new zone! Make sure to pick up any shiny rocks.",
+  "nn": "Ei ny sone! Hugs å plukke opp alle blanke steinar."
+ },
+ {
+  "en": "Spot any good deals? No? Look harder.",
+  "nn": "Såg du nokre gode kjøp? Nei? Sjå betre etter."
+ },
+ {
+  "en": "New land! Shall I set up a trading post? Say yes.",
+  "nn": "Nytt land! Skal eg setje opp ein handelsstasjon? Sei ja."
+ },
+ {
+  "en": "Look at that! A whole world of buyers you haven’t met.",
+  "nn": "Sjå der! Ei heil verd av kjøparar du ikkje har møtt."
+ },
+ {
+  "en": "Got lost yet? Directions are my side business.",
+  "nn": "Gått deg vill enno? Vegvising er bigeskjeften min."
+ },
+ {
+  "en": "New place, same goal: profit.",
+  "nn": "Ny stad, same mål: forteneste."
+ },
+ {
+  "en": "That landscape? I see a theme park.",
+  "nn": "Det landskapet? Eg ser ein fornøyelsespark."
+ },
+ {
+  "en": "New zone! Be sure to tip the guards. Bribes, I mean tips.",
+  "nn": "Ny sone! Hugs å gi vaktene tips. Bestikkingar, eg meiner tips."
+ },
+ {
+  "en": "I’ll want a cut of whatever you find there. Standard fee.",
+  "nn": "Eg vil ha ein del av alt du finn der. Standardavgift."
+ },
+ {
+  "en": "Hope the inn has a gift shop. Every inn should.",
+  "nn": "Håpar vertshuset har gåvebutikk. Alle vertshus burde ha det."
+ },
+ {
+  "en": "New horizons! Horizons are infinite, like my markups.",
+  "nn": "Nye horisontar! Horisontar er uendelege, som påslaga mine."
+ },
+ {
+  "en": "A new zone! The goblins of tomorrow thank you for scouting.",
+  "nn": "Ei ny sone! Morgondagens goblinar takkar deg for speidinga."
+ },
+ {
+  "en": "Fresh ground for fresh business. I like it.",
+  "nn": "Ny grunn for nye forretningar. Eg likar det."
+ },
+ {
+  "en": "Exploring pays off! Usually in loot.",
+  "nn": "Utforsking lønner seg! Vanlegvis i loot."
+ },
+ {
+  "en": "Did you leave a business card? You should always leave a card.",
+  "nn": "La du igjen eit visittkort? Du bør alltid leggje igjen kort."
+ },
+ {
+  "en": "That zone could use a good goblin road. With tolls.",
+  "nn": "Den sona treng ein god goblinveg. Med bom."
+ },
+ {
+  "en": "Wow, so remote! Remote places pay extra for delivery.",
+  "nn": "Jøss, så avsides! Avsidesliggjande stader betaler ekstra for levering."
+ },
+ {
+  "en": "A new world of profits opens up!",
+  "nn": "Ei ny verd av forteneste opnar seg!"
+ },
+ {
+  "en": "New zone! Watch your step. And your purse.",
+  "nn": "Ny sone! Pass steget. Og pungen."
+ },
+ {
+  "en": "Mysterious place! Mystery boxes sell great there, I bet.",
+  "nn": "Mystisk stad! Mysterieboksar sel sikkert godt der."
+ },
+ {
+  "en": "Every zone is a goldmine if you squint hard enough.",
+  "nn": "Kvar sone er ei gullgruve om du myser godt nok."
+ },
+ {
+  "en": "The perfect place for a rocket launch pad. Just saying.",
+  "nn": "Den perfekte staden for ei rakettrampe. Berre så det er sagt."
+ },
+ {
+  "en": "I sense riches. Or a monster. Go check.",
+  "nn": "Eg merkar rikdom. Eller eit monster. Gå og sjekk."
+ },
+ {
+  "en": "Seen the sights? Now sell the sights.",
+  "nn": "Sett severdigheitene? No sel du dei."
+ },
+ {
+  "en": "Uncharted? Unpriced! Let’s fix that.",
+  "nn": "Ukartlagt? Uprisa! Det fiksar vi."
+ },
+ {
+  "en": "Visiting new lands is good for business. And for the soul, I guess.",
+  "nn": "Å besøkje nye land er bra for forretninga. Og for sjela, truleg."
+ },
+ {
+  "en": "The flight master there charges how much? Robbery! I approve.",
+  "nn": "Kor mykje tek flygemeisteren der? Ran! Eg godkjenner."
+ },
+ {
+  "en": "New zone! Have you seen their auction house? Is it rigged?",
+  "nn": "Ny sone! Har du sett auksjonshuset deira? Er det rigga?"
+ },
+ {
+  "en": "Lovely land. A bit short on vendors, though.",
+  "nn": "Fint land. Litt få seljarar, rett nok."
+ },
+ {
+  "en": "You’re a trailblazer! Trails need toll booths.",
+  "nn": "Du er ein stifinnar! Stiar treng bomstasjonar."
+ },
+ {
+  "en": "New area! Locals might need fireworks. Everyone needs fireworks.",
+  "nn": "Nytt område! Dei lokale treng kanskje fyrverkeri. Alle treng fyrverkeri."
+ },
+ {
+  "en": "Find me something valuable there. Anything. Rocks, even.",
+  "nn": "Finn noko verdfullt til meg der. Kva som helst. Til og med steinar."
+ },
+ {
+  "en": "That zone’s scenery: five stars. Shopping: zero stars.",
+  "nn": "Naturen i den sona: fem stjerner. Handel: null stjerner."
+ },
+ {
+  "en": "New zone! The rarest commodity is getting there first.",
+  "nn": "Ny sone! Den sjeldnaste vara er å kome først."
+ },
+ {
+  "en": "Exploring builds character. Character builds trust. Trust builds sales.",
+  "nn": "Utforsking byggjer karakter. Karakter byggjer tillit. Tillit byggjer sal."
+ },
+ {
+  "en": "A fresh zone! Let’s plant a goblin flag and a price tag.",
+  "nn": "Ei fersk sone! Vi plantar eit goblinflagg og ein prislapp."
+ },
+ {
+  "en": "I’ll be waiting for your market report. Due by morning.",
+  "nn": "Eg ventar på marknadsrapporten din. Frist i morgon tidleg."
+ },
+ {
+  "en": "Wonderful place to visit. Better place to invest in.",
+  "nn": "Fin stad å besøkje. Betre stad å investere i."
+ },
+ {
+  "en": "That region looks rich in resources and naive in pricing.",
+  "nn": "Den regionen ser rik ut på ressursar og naiv på prising."
+ },
+ {
+  "en": "Adventure and real estate. Two great tastes!",
+  "nn": "Eventyr og eigedom. To gode smakar!"
+ },
+ {
+  "en": "New zone? I’ll start drafting my expansion plans.",
+  "nn": "Ny sone? Eg byrjar å teikne ekspansjonsplanane mine."
+ },
+ {
+  "en": "Watch out for local merchants. They’re not as honest as me.",
+  "nn": "Pass deg for lokale kremmarar. Dei er ikkje like ærlege som meg."
+ },
+ {
+  "en": "Exploring new zones is like opening presents. Pricey presents.",
+  "nn": "Å utforske nye soner er som å opne gåver. Dyre gåver."
+ },
+ {
+  "en": "Ah, new terrain! Wear sturdy boots. I sell sturdy boots.",
+  "nn": "Å, nytt terreng! Bruk solide støvlar. Eg sel solide støvlar."
+ },
+ {
+  "en": "Nice zone! Is the beer cheap there? For research.",
+  "nn": "Fin sone! Er ølet billeg der? For forsking."
+ },
+ {
+  "en": "New lands, new markets, new mischief!",
+  "nn": "Nye land, nye marknader, nye skøyerstrekar!"
+ },
+ {
+  "en": "Every journey begins with a step, and a travel budget.",
+  "nn": "Kvar reise byrjar med eit steg, og eit reisebudsjett."
+ },
+ {
+  "en": "Another zone on your map. Another pin on my sales board.",
+  "nn": "Endå ei sone på kartet ditt. Endå ein nål på salstavla mi."
+ },
+ {
+  "en": "Ooh, is that a cave? Caves have treasure. Or bats.",
+  "nn": "Å, er det ei hole? Holer har skattar. Eller flaggermus."
+ },
+ {
+  "en": "New zone discovered. Commission paid to the explorer: zero.",
+  "nn": "Ny sone oppdaga. Provisjon til utforskaren: null."
+ },
+ {
+  "en": "I can practically smell the unclaimed gold from here.",
+  "nn": "Eg luktar nesten det ukravde gullet herifrå."
+ },
+ {
+  "en": "What a find! A zone without a single goblin franchise.",
+  "nn": "For eit funn! Ei sone utan ein einaste goblinfranchise."
+ },
+ {
+  "en": "You go explore. I’ll go calculate.",
+  "nn": "Du utforskar. Eg reknar."
+ },
+ {
+  "en": "The wilderness is just a market that hasn’t opened yet.",
+  "nn": "Villmarka er berre ein marknad som ikkje har opna enno."
+ },
+ {
+  "en": "New zone! Do they need a goblin mayor? I’m available.",
+  "nn": "Ny sone! Treng dei ein goblinordførar? Eg er ledig."
+ },
+ {
+  "en": "Ah, the smell of fresh adventure and freshly unregulated trade.",
+  "nn": "Å, lukta av ferskt eventyr og fersk uregulert handel."
+ },
+ {
+  "en": "That zone needs more neon. Everything needs more neon.",
+  "nn": "Den sona treng meir neon. Alt treng meir neon."
+ },
+ {
+  "en": "Fresh ground! Time to make a name. And a fortune.",
+  "nn": "Ny grunn! Tid for å skape seg eit namn. Og ein formue."
+ },
+ {
+  "en": "I’ll trade you a map of my shop for your map of that zone.",
+  "nn": "Eg byter eit kart over butikken min mot kartet ditt over den sona."
+ },
+ {
+  "en": "Every zone has a secret. The secret is usually gold.",
+  "nn": "Kvar sone har ein løyndom. Løyndomen er som regel gull."
+ },
+ {
+  "en": "Visiting? Great! Spending? Even better!",
+  "nn": "På besøk? Flott! Brukar pengar? Endå betre!"
+ },
+ {
+  "en": "New area! Don’t sign anything the locals hand you. Only my contracts.",
+  "nn": "Nytt område! Ikkje skriv under på noko dei lokale gir deg. Berre kontraktane mine."
+ },
+ {
+  "en": "That place is just waiting for a goblin grand opening.",
+  "nn": "Den staden ventar berre på ei storslått goblinopning."
+ },
+ {
+  "en": "Explorer! Pioneer! Potential investor!",
+  "nn": "Utforskar! Pioner! Mogleg investor!"
+ },
+ {
+  "en": "New zone! Bring back samples. Of everything. I’ll price them.",
+  "nn": "Ny sone! Ta med prøver. Av alt. Eg set pris på dei."
+ },
+ {
+  "en": "I bet that zone has a hidden market. Find it!",
+  "nn": "Eg vedd på at den sona har ein løynd marknad. Finn han!"
+ },
+ {
+  "en": "Beautiful! Can I bottle the air and sell it?",
+  "nn": "Vakkert! Kan eg tappe lufta på flaske og selje ho?"
+ },
+ {
+  "en": "New zone! Keep your coin purse close and your eyes open.",
+  "nn": "Ny sone! Hald pungen nær og augo opne."
+ },
+ {
+  "en": "Somewhere new to spend my money. I mean your money.",
+  "nn": "Ein ny stad å bruke pengane mine. Eg meiner pengane dine."
+ },
+ {
+  "en": "The more you explore, the more I can sell you maps.",
+  "nn": "Di meir du utforskar, di fleire kart kan eg selje deg."
+ },
+ {
+  "en": "New zone! Trade routes, here we come.",
+  "nn": "Ny sone! Handelsruter, her kjem vi."
+ },
+ {
+  "en": "A delightful zone! Delightfully under-commercialized.",
+  "nn": "Ei herleg sone! Herleg lite kommersialisert."
+ },
+ {
+  "en": "That place has a lot of empty space. Empty space is opportunity.",
+  "nn": "Den staden har mykje tom plass. Tom plass er moglegheit."
+ },
+ {
+  "en": "Exploring pays. Not in gold, but in bragging rights. Sell those!",
+  "nn": "Utforsking lønner seg. Ikkje i gull, men i skryterett. Sel han!"
+ },
+ {
+  "en": "New zone visited! Shall I commission a statue?",
+  "nn": "Ny sone besøkt! Skal eg bestille ein statue?"
+ },
+ {
+  "en": "The undiscovered country? Not anymore. Now it’s marketable.",
+  "nn": "Det uoppdaga landet? Ikkje lenger. No kan det marknadsførast."
+ },
+ {
+  "en": "Check under rocks. Goblins hide savings there.",
+  "nn": "Sjekk under steinar. Goblinar gøymer sparepengar der."
+ },
+ {
+  "en": "New zone! Is the scenery for sale? Everything’s for sale.",
+  "nn": "Ny sone! Er naturen til sals? Alt er til sals."
+ },
+ {
+  "en": "Ah, the call of the wild. And the call of the wallet.",
+  "nn": "Å, kallet frå villmarka. Og kallet frå lommeboka."
+ },
+ {
+  "en": "That region is ripe for a hostile takeover. Kidding!",
+  "nn": "Den regionen er moden for eit fiendtleg oppkjøp. Tuller!"
+ },
+ {
+  "en": "Exploring is the best way to find buyers. And bears.",
+  "nn": "Utforsking er den beste måten å finne kjøparar. Og bjørnar."
+ },
+ {
+  "en": "A new zone means new vendors to undercut.",
+  "nn": "Ei ny sone betyr nye seljarar å underby."
+ },
+ {
+  "en": "Nice! What’s the local specialty? I want exclusive rights.",
+  "nn": "Fint! Kva er den lokale spesialiteten? Eg vil ha einerett."
+ },
+ {
+  "en": "Venture forth! Ventures are my specialty.",
+  "nn": "Dra ut! Satsingar er spesialiteten min."
+ },
+ {
+  "en": "Any natives looking for explosive solutions? Ask around.",
+  "nn": "Nokon lokale som ser etter eksplosive løysingar? Spør rundt."
+ },
+ {
+  "en": "That zone looks magical. Magic sells.",
+  "nn": "Den sona ser magisk ut. Magi sel."
+ },
+ {
+  "en": "Fresh zone! Remember the goblin rule: look for loot first.",
+  "nn": "Fersk sone! Hugs goblinregelen: sjå etter loot først."
+ },
+ {
+  "en": "A new land of opportunity! Every land is, if you’re me.",
+  "nn": "Eit nytt land med moglegheiter! Alle land er det, om du er meg."
+ },
+ {
+  "en": "You’ve entered new territory. Territory means taxes. Whose? Mine.",
+  "nn": "Du er i nytt territorium. Territorium betyr skatt. Kven sin? Min."
+ },
+ {
+  "en": "Nice zone. I’ll name a product line after it.",
+  "nn": "Fin sone. Eg kallar opp ei produktline etter ho."
+ },
+ {
+  "en": "New area! Find the cheapest inn and tell me. I’ll buy it.",
+  "nn": "Nytt område! Finn det billegaste vertshuset og fortel meg det. Eg kjøper det."
+ },
+ {
+  "en": "That zone is now officially on the goblin radar.",
+  "nn": "Den sona er no offisielt på goblinradaren."
+ },
+ {
+  "en": "Exploring is just window shopping with swords.",
+  "nn": "Å utforske er berre vindaugsshopping med sverd."
+ },
+ {
+  "en": "Did you meet anyone rich? Introduce me!",
+  "nn": "Møtte du nokon rike? Presenter meg!"
+ },
+ {
+  "en": "Footprints in fresh dirt! I’ll sell plaster casts of them.",
+  "nn": "Fotspor i fersk jord! Eg sel gipsavtrykk av dei."
+ },
+ {
+  "en": "Quick, plant a sign: Coming soon, goblin megastore.",
+  "nn": "Fort, set opp eit skilt: Kjem snart, goblinvaruhus."
+ },
+ {
+  "en": "Somebody’s been sightseeing. Was there a souvenir stand? No? Opportunity!",
+  "nn": "Nokon har vore på sightseeing. Var det ei suvenirbu? Nei? Moglegheit!"
+ },
+ {
+  "en": "Strange new lands. Strange new customers. I love it.",
+  "nn": "Rare nye land. Rare nye kundar. Eg elskar det."
+ },
+ {
+  "en": "Well travelled already! Frequent traveller discount: denied.",
+  "nn": "Godt bereist alt! Rabatt for hyppige reisande: avslått."
+ },
+ {
+  "en": "Another pin on the map! My investors love pins.",
+  "nn": "Endå ei nål på kartet! Investorane mine elskar nåler."
+ },
+ {
+  "en": "Scenic! I’d install coin-operated telescopes everywhere.",
+  "nn": "Naturskjønt! Eg ville sett opp myntteleskop overalt."
+ },
+ {
+  "en": "A brand-new zone, smelling of adventure and unpaid tariffs.",
+  "nn": "Ei splitter ny sone som luktar eventyr og ubetalt toll."
+ },
+ {
+  "en": "Good find! The goblin chamber of commerce will want minutes.",
+  "nn": "Godt funne! Det goblinske handelskammeret vil ha referat."
+ },
+ {
+  "en": "New place? Lovely. Count the chests, skip the trees.",
+  "nn": "Ny stad? Fint. Tel kistene, hopp over trea."
+ },
+ {
+  "en": "Ah, wanderlust. A very profitable condition.",
+  "nn": "Å, reiselyst. Ein svært lønsam tilstand."
+ },
+ {
+  "en": "Mark the vendors, mark the vaults, mark the exits.",
+  "nn": "Merk seljarane, merk hvelva, merk utgangane."
+ },
+ {
+  "en": "The locals stared at you? That’s brand awareness!",
+  "nn": "Dei lokale stirde på deg? Det er merkevaremedvit!"
+ },
+ {
+  "en": "Unspoiled nature! Give me a week and a bulldozer.",
+  "nn": "Urørt natur! Gi meg ei veke og ein bulldosar."
+ },
+ {
+  "en": "Lovely zone. I’d price the sunsets at a premium.",
+  "nn": "Fin sone. Eg ville sett premiumpris på solnedgangane."
+ },
+ {
+  "en": "A new place to haggle in! My favourite kind of tourism.",
+  "nn": "Ein ny stad å prute på! Den beste typen turisme."
+ },
+ {
+  "en": "You’ve gone where no goblin has gone. Yet.",
+  "nn": "Du har gått dit ingen goblin har gått. Enno."
+ },
+ {
+  "en": "Find the tavern, find the gossip, find the money.",
+  "nn": "Finn kroa, finn sladderen, finn pengane."
+ },
+ {
+  "en": "New zone! I hope you kept the receipt for the trip.",
+  "nn": "Ny sone! Eg håpar du tok vare på kvitteringa for turen."
+ },
+ {
+  "en": "New scenery, old habits: check the loot first.",
+  "nn": "Ny natur, gamle vanar: sjekk looten først."
+ },
+ {
+  "en": "That’s one more region in your portfolio. Diversified!",
+  "nn": "Det er endå ein region i porteføljen din. Spreidd!"
+ },
+ {
+  "en": "Off the beaten path? Paths are where tolls go.",
+  "nn": "Utanfor allfarveg? Det er på vegane bommane står."
+ },
+ {
+  "en": "The locals don’t know my prices yet. Perfect time to visit.",
+  "nn": "Dei lokale kjenner ikkje prisane mine enno. Perfekt tid for besøk."
+ },
+ {
+  "en": "Excellent scouting! Your expense report is under review.",
+  "nn": "Framifrå speiding! Utgiftsrapporten din er til vurdering."
+ },
+ {
+  "en": "Strange place. Smells like sulfur and opportunity.",
+  "nn": "Rar stad. Luktar svovel og moglegheiter."
+ },
+ {
+  "en": "Look at those trees! Lumber, my friend. Lumber.",
+  "nn": "Sjå dei trea! Tømmer, venn. Tømmer."
+ },
+ {
+  "en": "A zone with no merchant guild? Lawless! Delicious!",
+  "nn": "Ei sone utan kremmarlaug? Lovlaust! Deilig!"
+ },
+ {
+  "en": "I’ll need the coordinates of every shiny thing you saw.",
+  "nn": "Eg treng koordinatane til alt blankt du såg."
+ },
+ {
+  "en": "Arrived in one piece? Excellent. Pieces are expensive to replace.",
+  "nn": "Kom du fram heil? Framifrå. Delar er dyre å byte ut."
+ },
+ {
+  "en": "Fresh ground underfoot! Mind the quicksand. Or sell it.",
+  "nn": "Ny grunn under føtene! Pass deg for kvikksanden. Eller sel han."
+ },
+ {
+  "en": "New zone! It’s like a catalogue, but you can walk in it.",
+  "nn": "Ny sone! Det er som ein katalog, men du kan gå i han."
+ },
+ {
+  "en": "Pretty place. Goblin-proof? We’ll see.",
+  "nn": "Fin stad. Goblinsikker? Vi får sjå."
+ },
+ {
+  "en": "Did you claim it in the name of commerce? You should.",
+  "nn": "Kravde du det i handelen sitt namn? Det burde du."
+ },
+ {
+  "en": "One more place where my coupons aren’t accepted. Yet.",
+  "nn": "Endå ein stad der kupongane mine ikkje gjeld. Enno."
+ },
+ {
+  "en": "Exploring is free advertising for your boots.",
+  "nn": "Utforsking er gratis reklame for støvlane dine."
+ },
+ {
+  "en": "The view’s gorgeous. The rent will be too.",
+  "nn": "Utsikta er nydeleg. Husleiga kjem til å bli det òg."
+ },
+ {
+  "en": "New zone! Any goblins there? If not, I call dibs.",
+  "nn": "Ny sone! Nokon goblinar der? Om ikkje, så er det mitt."
+ },
+ {
+  "en": "I sense untapped trade routes. My nose never lies.",
+  "nn": "Eg merkar uutnytta handelsruter. Nasen min lyg aldri."
+ },
+ {
+  "en": "That zone has charm. Charm sells. Ask me how.",
+  "nn": "Den sona har sjarm. Sjarm sel. Spør meg korleis."
+ },
+ {
+  "en": "New territory! Bring me back a rock. I’ll call it artisanal.",
+  "nn": "Nytt territorium! Ta med ein stein til meg. Eg kallar han handlaga."
+ },
+ {
+  "en": "Look sharp, explorer. Every bush might be a business.",
+  "nn": "Ver vaken, utforskar. Kvar busk kan vere ei forretning."
+ },
+ {
+  "en": "Another place to never pay full price.",
+  "nn": "Endå ein stad der du aldri betaler full pris."
+ },
+ {
+  "en": "Exploring? Excellent. Exploiting? Even better. Gently.",
+  "nn": "Utforskar? Framifrå. Utnyttar? Endå betre. Varsamt."
+ },
+ {
+  "en": "That land looks fertile. For profits, mostly.",
+  "nn": "Det landet ser fruktbart ut. For forteneste, mest."
+ },
+ {
+  "en": "A new zone on the books! The accountants are giddy.",
+  "nn": "Ei ny sone i bøkene! Rekneskapsførarane er ørne av glede."
+ },
+ {
+  "en": "Explored? Good. Now mark where the good loot spawns.",
+  "nn": "Utforska? Bra. Merk no kvar den gode looten dukkar opp."
+ },
+ {
+  "en": "New zone! Is there a mine? Please say there’s a mine.",
+  "nn": "Ny sone! Er det ei gruve der? Sei at det er ei gruve."
+ },
+ {
+  "en": "I hear the fish there are worth their weight in silver.",
+  "nn": "Eg høyrer at fisken der er verd vekta si i sølv."
+ },
+ {
+  "en": "Even the dirt there looks expensive. Promising!",
+  "nn": "Sjølv jorda der ser dyr ut. Lovande!"
+ },
+ {
+  "en": "Fresh region! Fresh rumours! Fresh business cards!",
+  "nn": "Fersk region! Ferske rykte! Ferske visittkort!"
+ },
+ {
+  "en": "Strolling around new lands? Strolling is billable, you know.",
+  "nn": "Ruslar du rundt i nye land? Rusling kan fakturerast, veit du."
+ },
+ {
+  "en": "New zone reached! Keep the explorer spirit, sell the explorer stories.",
+  "nn": "Ny sone nådd! Behald utforskarånda, sel utforskarsogene."
+ }
+]

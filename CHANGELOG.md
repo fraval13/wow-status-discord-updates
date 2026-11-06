@@ -10,6 +10,13 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Caption personalities: pick a voice for the line under each notification in Notifications settings
+- New default Random: every notification draws its caption from a random personality, Classic included
+- Nine new personalities with 300 lines per event, from Wholesome and Epic bard to Jealous friend and Drama queen
+- /wstatus personality <name> switches from chat; captions already in your log keep their wording
+
 ## 1.21.0
 
 - Long activity-log lines end with "..." instead of wrapping; hover a card to read all of it (no event ID)

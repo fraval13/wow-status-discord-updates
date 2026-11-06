@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "Honor earned! Honor is a currency. I accept it at a terrible rate.",
+  "nn": "Ære tent! Ære er ein valuta. Eg tek imot han til elendig kurs."
+ },
+ {
+  "en": "Ranked up! The arms dealers salute you. I’m an arms dealer.",
+  "nn": "Rang opp! Våpenhandlarane helsar deg. Eg er våpenhandlar."
+ },
+ {
+  "en": "War is bad. War profits are good. Congrats!",
+  "nn": "Krig er ille. Krigsforteneste er bra. Gratulerer!"
+ },
+ {
+  "en": "New rank! Your enemies’ wallets feel lighter already.",
+  "nn": "Ny rang! Lommebøkene til fiendane dine kjennest alt lettare."
+ },
+ {
+  "en": "Honor milestone! Shall I engrave it on a medal? Gold-plated, of course.",
+  "nn": "Milepæl i ære! Skal eg gravere det på ei medalje? Gullbelagd, sjølvsagt."
+ },
+ {
+  "en": "Battlegrounds are just markets with more shouting.",
+  "nn": "Slagmarker er berre marknader med meir roping."
+ },
+ {
+  "en": "You’ve beaten players! Players are the toughest customers.",
+  "nn": "Du har slått spelarar! Spelarar er dei tøffaste kundane."
+ },
+ {
+  "en": "A PvP milestone! I sell to both sides, you know.",
+  "nn": "Ein PvP-milepæl! Eg sel til begge sider, veit du."
+ },
+ {
+  "en": "Rank achieved! The goblin neutrality fund is proud.",
+  "nn": "Rang oppnådd! Det goblinske nøytralitetsfondet er stolt."
+ },
+ {
+  "en": "Honor up! Now spend it wisely. On gear. From the honor vendor. Then me.",
+  "nn": "Ære opp! Bruk han no klokt. På utstyr. Frå æresseljaren. Så meg."
+ },
+ {
+  "en": "New rank! The other faction just updated their wanted posters.",
+  "nn": "Ny rang! Den andre fraksjonen oppdaterte nett etterlysingsplakatane sine."
+ },
+ {
+  "en": "Victory pays! Mostly in honor. Honor pays in gear.",
+  "nn": "Siger lønner seg! Mest i ære. Ære lønner seg i utstyr."
+ },
+ {
+  "en": "Glory! Glory is the shiniest product there is.",
+  "nn": "Ære og berømmelse! Det er det blankaste produktet som finst."
+ },
+ {
+  "en": "You’ve got a reputation on the battlefield now. Bodyguard rates just went up.",
+  "nn": "Du har eit rykte på slagmarka no. Livvaktprisane gjekk nett opp."
+ },
+ {
+  "en": "PvP progress! Conflict is great for business.",
+  "nn": "Framgang i PvP! Konflikt er bra for forretningane."
+ },
+ {
+  "en": "Rank up! Your title now strikes fear. Fear sells.",
+  "nn": "Rang opp! Tittelen din skaper no frykt. Frykt sel."
+ },
+ {
+  "en": "Honor milestone! I’ve upgraded you to premium combat client.",
+  "nn": "Milepæl i ære! Eg har oppgradert deg til premium kampkunde."
+ },
+ {
+  "en": "New PvP title! Business cards need reprinting. Again.",
+  "nn": "Ny PvP-tittel! Visittkorta må trykkjast på nytt. Igjen."
+ },
+ {
+  "en": "You’re climbing the military ladder. Rungs made of defeated foes.",
+  "nn": "Du klatrar på den militære stigen. Trinna er laga av slegne fiendar."
+ },
+ {
+  "en": "Honor! The only currency I can’t counterfeit. Yet.",
+  "nn": "Ære! Den einaste valutaen eg ikkje kan forfalske. Enno."
+ },
+ {
+  "en": "Rank achieved! Now you’re a premium mercenary. Name your price.",
+  "nn": "Rang oppnådd! No er du ein premiumleigesoldat. Set din pris."
+ },
+ {
+  "en": "War hero! War heroes make the best spokespeople.",
+  "nn": "Krigshelt! Krigsheltar er dei beste talspersonane."
+ },
+ {
+  "en": "A PvP milestone! I’ll stock extra bandages for you.",
+  "nn": "Ein PvP-milepæl! Eg skaffar ekstra bandasjar til deg."
+ },
+ {
+  "en": "Honor gained! The opposing faction just filed a complaint. With me.",
+  "nn": "Ære vunnen! Den andre fraksjonen har nett klaga. Til meg."
+ },
+ {
+  "en": "Ranked! Your combat stock is trading at a premium.",
+  "nn": "Rangert! Kampaksjen din blir handla med premie."
+ },
+ {
+  "en": "More honor, more gear, more glory, more invoices.",
+  "nn": "Meir ære, meir utstyr, meir glans, fleire fakturaer."
+ },
+ {
+  "en": "Rank up! You make battle look like a sound investment.",
+  "nn": "Rang opp! Du får kamp til å sjå ut som ei sikker investering."
+ },
+ {
+  "en": "That’s battlefield success! Arena fees, by the way, are payable to me.",
+  "nn": "Det er suksess på slagmarka! Arenaavgifta betalast forresten til meg."
+ },
+ {
+  "en": "Honor milestone! I knew you had a competitive spirit.",
+  "nn": "Milepæl i ære! Eg visste du hadde konkurranseinstinkt."
+ },
+ {
+  "en": "A new rank! Your title just added prestige and a markup.",
+  "nn": "Ein ny rang! Tittelen din fekk nett prestisje og påslag."
+ },
+ {
+  "en": "Glory achieved! Glory looks good on a résumé.",
+  "nn": "Ære oppnådd! Ære ser bra ut på CV-en."
+ },
+ {
+  "en": "You’re a terror on the battlefield. Terror is very marketable.",
+  "nn": "Du er ein skrekk på slagmarka. Skrekk er svært salbart."
+ },
+ {
+  "en": "Honor up! Enemy morale down. Market balanced.",
+  "nn": "Ære opp! Fiendemoral ned. Marknaden i balanse."
+ },
+ {
+  "en": "New rank! I’ll sell commemorative mugs with your face.",
+  "nn": "Ny rang! Eg sel minnekoppar med fjeset ditt."
+ },
+ {
+  "en": "PvP progress! Bounty hunters want your autograph.",
+  "nn": "Framgang i PvP! Dusørjegerar vil ha autografen din."
+ },
+ {
+  "en": "Ranked up! You’ve proven you’re worth your weight in gold.",
+  "nn": "Rang opp! Du har vist at du er verd vekta di i gull."
+ },
+ {
+  "en": "Honor earned! Spend it before inflation hits.",
+  "nn": "Ære tent! Bruk han før inflasjonen slår til."
+ },
+ {
+  "en": "That’s a military promotion! Officers get better prices. Not from me.",
+  "nn": "Det er ei militær forfremjing! Offiserar får betre prisar. Ikkje frå meg."
+ },
+ {
+  "en": "Victory in combat! Their loss is your gain. My favourite equation.",
+  "nn": "Siger i kamp! Tapet deira er vinsten din. Yndlingslikninga mi."
+ },
+ {
+  "en": "Honor milestone! You’re officially dangerous. And insurable at high rates.",
+  "nn": "Milepæl i ære! Du er offisielt farleg. Og forsikringsbar til høge satsar."
+ },
+ {
+  "en": "A new title! Fear and respect, a great brand combo.",
+  "nn": "Ein ny tittel! Frykt og respekt, ein flott merkevarekombinasjon."
+ },
+ {
+  "en": "Rank up! You win fights like I win negotiations.",
+  "nn": "Rang opp! Du vinn kampar slik eg vinn forhandlingar."
+ },
+ {
+  "en": "PvP milestone! Enemies drop honor. Honor drops gear. Gear drops prices? No.",
+  "nn": "PvP-milepæl! Fiendar gir ære. Ære gir utstyr. Utstyr gir lågare prisar? Nei."
+ },
+ {
+  "en": "Honor gained! Remember, I sell to both sides. Neutrality pays.",
+  "nn": "Ære vunnen! Hugs, eg sel til begge sider. Nøytralitet lønner seg."
+ },
+ {
+  "en": "New rank! The war economy thanks you for your service.",
+  "nn": "Ny rang! Krigsøkonomien takkar deg for tenesta."
+ },
+ {
+  "en": "Fighting players? Riskier than monsters. Better returns.",
+  "nn": "Slåst mot spelarar? Meir risikabelt enn monster. Betre avkastning."
+ },
+ {
+  "en": "Rank achieved! Your combat skills have appreciated.",
+  "nn": "Rang oppnådd! Kampferdigheitene dine har stige i verdi."
+ },
+ {
+  "en": "Honor! Like gold, but with more bruises.",
+  "nn": "Ære! Som gull, berre med fleire blåmerke."
+ },
+ {
+  "en": "A PvP promotion! Want a sword with your title engraved?",
+  "nn": "Ei PvP-forfremjing! Vil du ha eit sverd med tittelen din gravert?"
+ },
+ {
+  "en": "Victory! The other side will need my potions. I’ll charge them double.",
+  "nn": "Siger! Den andre sida treng eliksirane mine. Eg tek dobbelt av dei."
+ },
+ {
+  "en": "Honor milestone! I’m adjusting your hero valuation. Upward.",
+  "nn": "Milepæl i ære! Eg justerer heltetaksten din. Oppover."
+ },
+ {
+  "en": "New rank! You’re officially a high-value asset on the battlefield.",
+  "nn": "Ny rang! Du er offisielt ein verdfull ressurs på slagmarka."
+ },
+ {
+  "en": "You’re racking up honor like I rack up profits.",
+  "nn": "Du samlar ære slik eg samlar forteneste."
+ },
+ {
+  "en": "Rank up! Battle is just aggressive negotiation.",
+  "nn": "Rang opp! Kamp er berre aggressiv forhandling."
+ },
+ {
+  "en": "Honor achieved! Your enemies now tremble. Trembling customers pay faster.",
+  "nn": "Ære oppnådd! Fiendane dine skjelv no. Skjelvande kundar betaler raskare."
+ },
+ {
+  "en": "A new title! That’s worth framing. In gold.",
+  "nn": "Ein ny tittel! Det er verdt å ramme inn. I gull."
+ },
+ {
+  "en": "PvP progress! Do you need armor repairs? You need armor repairs.",
+  "nn": "Framgang i PvP! Treng du reparasjon av rustninga? Du treng reparasjon av rustninga."
+ },
+ {
+  "en": "Rank achieved! Every victory is a sale to the bandage industry.",
+  "nn": "Rang oppnådd! Kvar siger er eit sal for bandasjebransjen."
+ },
+ {
+  "en": "Honor gained! Did you loot their pockets too? Just checking.",
+  "nn": "Ære vunnen! Tømde du lommene deira òg? Berre sjekkar."
+ },
+ {
+  "en": "You’ve risen through the ranks! Rise further, I’ll sell you a ladder.",
+  "nn": "Du har stige i gradene! Stig vidare, eg sel deg ein stige."
+ },
+ {
+  "en": "Honor milestone! The arena announcer knows your name now.",
+  "nn": "Milepæl i ære! Arenakunngjeraren kan namnet ditt no."
+ },
+ {
+  "en": "New rank! You’re one tough customer. Literally.",
+  "nn": "Ny rang! Du er ein tøff kunde. Bokstaveleg."
+ },
+ {
+  "en": "Combat glory! I’ll sell your story to the bards.",
+  "nn": "Kampglans! Eg sel soga di til bardane."
+ },
+ {
+  "en": "Rank up! Fear is the best marketing campaign.",
+  "nn": "Rang opp! Frykt er den beste marknadsføringskampanjen."
+ },
+ {
+  "en": "Honor earned! Exchange rate: very favourable to the honor vendor.",
+  "nn": "Ære tent! Vekslingskurs: svært gunstig for æresseljaren."
+ },
+ {
+  "en": "A PvP achievement! Should I start selling your highlight reel?",
+  "nn": "Ei PvP-bragd! Skal eg byrje å selje høgdepunkta dine?"
+ },
+ {
+  "en": "Victory! Their defeat is great for my bandage sales.",
+  "nn": "Siger! Nederlaget deira er flott for bandasjesalet mitt."
+ },
+ {
+  "en": "Honor up! You’re practically a celebrity warrior.",
+  "nn": "Ære opp! Du er nesten ein kjendiskrigar."
+ },
+ {
+  "en": "New rank! Your enemies are reconsidering their careers.",
+  "nn": "Ny rang! Fiendane dine vurderer karrieren sin på nytt."
+ },
+ {
+  "en": "PvP milestone! You make conflict look profitable.",
+  "nn": "PvP-milepæl! Du får konflikt til å sjå lønsamt ut."
+ },
+ {
+  "en": "Rank achieved! Officers dine at my table. Bring gold.",
+  "nn": "Rang oppnådd! Offiserar et ved mitt bord. Ta med gull."
+ },
+ {
+  "en": "Honor! Their faction’s loss is your gain. And mine, somehow.",
+  "nn": "Ære! Tapet til fraksjonen deira er vinsten din. Og min, på eit vis."
+ },
+ {
+  "en": "A new title! I’ll update my threat assessment. And my price list.",
+  "nn": "Ein ny tittel! Eg oppdaterer trusselvurderinga mi. Og prislista."
+ },
+ {
+  "en": "War hero status! Statues cost extra.",
+  "nn": "Krigsheltstatus! Statuar kostar ekstra."
+ },
+ {
+  "en": "Rank up! Your battle record reads like a profit report.",
+  "nn": "Rang opp! Kamphistoria di les seg som ein forteneste-rapport."
+ },
+ {
+  "en": "Honor milestone! Glory doesn’t pay the bills. Honor gear sort of does.",
+  "nn": "Milepæl i ære! Ære betaler ikkje rekningane. Æresutstyr gjer det nesten."
+ },
+ {
+  "en": "New rank! You’re a force to be reckoned with. And invoiced.",
+  "nn": "Ny rang! Du er ei kraft å rekne med. Og fakturere."
+ },
+ {
+  "en": "PvP progress! The more you fight, the more you’ll need from me.",
+  "nn": "Framgang i PvP! Di meir du slåst, di meir treng du frå meg."
+ },
+ {
+  "en": "Victory! Battlegrounds: where heroes go to earn and burn.",
+  "nn": "Siger! Slagmarker: der heltar tener og brenn."
+ },
+ {
+  "en": "Honor gained! The opposing faction’s morale just crashed. Buy low!",
+  "nn": "Ære vunnen! Moralen til motparten krasja nett. Kjøp lågt!"
+ },
+ {
+  "en": "Rank achieved! Military service with excellent benefits.",
+  "nn": "Rang oppnådd! Militærteneste med framifrå fordelar."
+ },
+ {
+  "en": "New title! It sounds expensive. I approve.",
+  "nn": "Ny tittel! Han høyrest dyr ut. Eg godkjenner."
+ },
+ {
+  "en": "Honor up! I knew you were a fighter. Fighters are big spenders.",
+  "nn": "Ære opp! Eg visste du var ein kjempar. Kjemparar brukar mykje pengar."
+ },
+ {
+  "en": "A PvP milestone! I’d bet on you. I did. I won.",
+  "nn": "Ein PvP-milepæl! Eg ville satsa på deg. Eg gjorde det. Eg vann."
+ },
+ {
+  "en": "Rank up! Your enemies called. They want a rematch and a discount.",
+  "nn": "Rang opp! Fiendane dine ringde. Dei vil ha omkamp og rabatt."
+ },
+ {
+  "en": "Honor milestone! Every duel is a transaction. You won the transaction.",
+  "nn": "Milepæl i ære! Kvar duell er ein transaksjon. Du vann transaksjonen."
+ },
+ {
+  "en": "New rank! Wear it proudly. Rank insignia sold here.",
+  "nn": "Ny rang! Ber han med stoltheit. Rangsmerke seljast her."
+ },
+ {
+  "en": "Battle-hardened! Hardened goods last longer.",
+  "nn": "Kampherda! Herda varer varer lenger."
+ },
+ {
+  "en": "Rank achieved! War is hell. Profitable hell.",
+  "nn": "Rang oppnådd! Krig er eit helvete. Eit lønsamt helvete."
+ },
+ {
+  "en": "Honor earned! Their loss column, your gain column.",
+  "nn": "Ære tent! Deira tapskolonne, din vinstkolonne."
+ },
+ {
+  "en": "A new PvP title! I’ll add it to your file under impressive.",
+  "nn": "Ein ny PvP-tittel! Eg legg han i mappa di under imponerande."
+ },
+ {
+  "en": "Victory! Bet the losers are shopping for better gear. From me.",
+  "nn": "Siger! Eg vedd på at taparane handlar betre utstyr. Frå meg."
+ },
+ {
+  "en": "Honor up! Your name echoes across the battlefield. Echoes are free advertising.",
+  "nn": "Ære opp! Namnet ditt ekkoar over slagmarka. Ekko er gratis reklame."
+ },
+ {
+  "en": "Rank up! You’re a real asset in combat.",
+  "nn": "Rang opp! Du er ein verkeleg ressurs i kamp."
+ },
+ {
+  "en": "PvP milestone! All that fighting has paid off. In honor, mostly.",
+  "nn": "PvP-milepæl! All den kjempinga har lønt seg. Mest i ære."
+ },
+ {
+  "en": "New rank! The other side is drafting a strongly worded letter.",
+  "nn": "Ny rang! Den andre sida skriv eit skarpt formulert brev."
+ },
+ {
+  "en": "Honor achieved! You fight like a goblin haggles. Relentlessly.",
+  "nn": "Ære oppnådd! Du slåst slik ein goblin prutar. Nådelaust."
+ },
+ {
+  "en": "Rank achieved! Military titles impress the bankers.",
+  "nn": "Rang oppnådd! Militære titlar imponerer bankfolka."
+ },
+ {
+  "en": "A new honor milestone! Spend it all at once. Very satisfying.",
+  "nn": "Ein ny milepæl i ære! Bruk alt på ein gong. Svært tilfredsstillande."
+ },
+ {
+  "en": "Victory! Even I’d pay to watch you fight. Not much.",
+  "nn": "Siger! Sjølv eg ville betalt for å sjå deg slåst. Ikkje mykje."
+ },
+ {
+  "en": "Rank up! You’re making enemies. Enemies buy weapons. Thank you.",
+  "nn": "Rang opp! Du skaffar deg fiendar. Fiendar kjøper våpen. Takk."
+ },
+ {
+  "en": "Honor gained! The arena is your marketplace.",
+  "nn": "Ære vunnen! Arenaen er marknadsplassen din."
+ },
+ {
+  "en": "New rank! I’ll arrange a parade. Parade permits are pricey.",
+  "nn": "Ny rang! Eg arrangerer ei parade. Paradeløyve er dyre."
+ },
+ {
+  "en": "PvP progress! You’re the best return on investment in the battlegrounds.",
+  "nn": "Framgang i PvP! Du er den beste avkastninga på slagmarkene."
+ },
+ {
+  "en": "Honor milestone! Your enemies’ insurance claims are piling up.",
+  "nn": "Milepæl i ære! Forsikringskrava til fiendane dine hopar seg opp."
+ },
+ {
+  "en": "Rank achieved! A soldier with style and savings.",
+  "nn": "Rang oppnådd! Ein soldat med stil og sparepengar."
+ },
+ {
+  "en": "Glory acquired! Glory is great, but have you seen gold?",
+  "nn": "Ære skaffa! Ære er flott, men har du sett gull?"
+ },
+ {
+  "en": "New title! Your combat credentials just went premium.",
+  "nn": "Ny tittel! Kampkvalifikasjonane dine vart nett premium."
+ },
+ {
+  "en": "Honor up! I’m stocking up on bandages. You’ll need them.",
+  "nn": "Ære opp! Eg fyller lageret med bandasjar. Du kjem til å trenge dei."
+ },
+ {
+  "en": "Rank up! The warlords of commerce salute you.",
+  "nn": "Rang opp! Handelens krigsherrar helsar deg."
+ },
+ {
+  "en": "PvP milestone! You turned fights into fortune. Well done.",
+  "nn": "PvP-milepæl! Du har gjort kampar om til formue. Godt gjort."
+ },
+ {
+  "en": "Honor earned! I hear the honor vendor has new stock. Go!",
+  "nn": "Ære tent! Eg høyrer æresseljaren har nye varer. Gå!"
+ },
+ {
+  "en": "New rank! Rank comes with responsibilities. And repair bills.",
+  "nn": "Ny rang! Rang kjem med ansvar. Og reparasjonsrekningar."
+ },
+ {
+  "en": "Victory! I sold popcorn to the spectators. Thanks for the show.",
+  "nn": "Siger! Eg selde popkorn til tilskodarane. Takk for showet."
+ },
+ {
+  "en": "Rank achieved! You’re climbing faster than gold prices in wartime.",
+  "nn": "Rang oppnådd! Du klatrar raskare enn gullprisane i krigstid."
+ },
+ {
+  "en": "Honor gained! Their defeat was very good for my sales.",
+  "nn": "Ære vunnen! Nederlaget deira var svært bra for salet mitt."
+ },
+ {
+  "en": "A new PvP rank! You’ve got the killer instinct. And the business one?",
+  "nn": "Ein ny PvP-rang! Du har drapsinstinktet. Og forretningsinstinktet?"
+ },
+ {
+  "en": "Honor milestone! I’ll sell you a trophy case. You’ll need it.",
+  "nn": "Milepæl i ære! Eg sel deg eit trofeskap. Du kjem til å trenge det."
+ },
+ {
+  "en": "Rank up! Your battle record is the best advertisement I’ve seen.",
+  "nn": "Rang opp! Kamphistoria di er den beste reklamen eg har sett."
+ },
+ {
+  "en": "New honor level! Spend it on something shiny.",
+  "nn": "Nytt æresnivå! Bruk det på noko blankt."
+ },
+ {
+  "en": "PvP progress! You’re the most bankable hero on the battlefield.",
+  "nn": "Framgang i PvP! Du er den mest bankbare helten på slagmarka."
+ },
+ {
+  "en": "Honor achieved! Your fame grows. So does the price on your head. Ha!",
+  "nn": "Ære oppnådd! Berømmelsen din veks. Det gjer dusøren òg. Ha!"
+ },
+ {
+  "en": "Rank achieved! War chests are filling. Is yours?",
+  "nn": "Rang oppnådd! Krigskassene fyllest. Er di full?"
+ },
+ {
+  "en": "Victory after victory! You’ve cornered the market on winning.",
+  "nn": "Siger på siger! Du har teke monopol på å vinne."
+ },
+ {
+  "en": "Honor up! The arena crowds love you. Crowds buy snacks. From me.",
+  "nn": "Ære opp! Arenapublikummet elskar deg. Publikum kjøper snacks. Frå meg."
+ },
+ {
+  "en": "New rank! That’s a promotion worth celebrating. With fireworks. Mine.",
+  "nn": "Ny rang! Det er ei forfremjing verdt å feire. Med fyrverkeri. Mitt."
+ },
+ {
+  "en": "Rank up! You’ve made a name for yourself. Names sell.",
+  "nn": "Rang opp! Du har skapt deg eit namn. Namn sel."
+ },
+ {
+  "en": "Honor gained! Remember, the best fights end with loot.",
+  "nn": "Ære vunnen! Hugs, dei beste kampane endar med loot."
+ },
+ {
+  "en": "A PvP milestone! I’ll be your weapons supplier. Exclusive deal?",
+  "nn": "Ein PvP-milepæl! Eg blir våpenleverandøren din. Eksklusiv avtale?"
+ },
+ {
+  "en": "Honor milestone! You’re turning battlegrounds into gold mines.",
+  "nn": "Milepæl i ære! Du gjer slagmarker om til gullgruver."
+ },
+ {
+  "en": "Rank achieved! You fight for honor. I fight for profit. We’re a team.",
+  "nn": "Rang oppnådd! Du kjempar for ære. Eg kjempar for forteneste. Vi er eit lag."
+ },
+ {
+  "en": "New title! Shall I print a banner? Banners are very persuasive.",
+  "nn": "Ny tittel! Skal eg trykkje eit banner? Banner er svært overtydande."
+ },
+ {
+  "en": "Victory! The other faction is restocking at my shop as we speak.",
+  "nn": "Siger! Den andre fraksjonen fyller opp i butikken min medan vi snakkar."
+ },
+ {
+  "en": "Rank up! You’ve got clout. Clout gets discounts. Not here.",
+  "nn": "Rang opp! Du har tyngd. Tyngd gir rabattar. Ikkje her."
+ },
+ {
+  "en": "Honor! Like loyalty points, but with more yelling.",
+  "nn": "Ære! Som lojalitetspoeng, berre med meir roping."
+ },
+ {
+  "en": "New rank! Your name strikes fear. Fear is good for negotiations.",
+  "nn": "Ny rang! Namnet ditt skaper frykt. Frykt er bra for forhandlingar."
+ },
+ {
+  "en": "PvP progress! Every win is a dividend.",
+  "nn": "Framgang i PvP! Kvar siger er eit utbyte."
+ },
+ {
+  "en": "Honor gained! That’s the sweet sound of victory and vendor gear.",
+  "nn": "Ære vunnen! Det er den søte lyden av siger og seljarutstyr."
+ },
+ {
+  "en": "Rank achieved! War profiteers everywhere tip their hats.",
+  "nn": "Rang oppnådd! Krigsprofitørar overalt lettar på hatten."
+ },
+ {
+  "en": "Honor milestone! Your combat brand is building nicely.",
+  "nn": "Milepæl i ære! Kampmerkevara di veks fint."
+ },
+ {
+  "en": "A new rank! I see more battles, more glory, more repair bills.",
+  "nn": "Ein ny rang! Eg ser fleire slag, meir ære, fleire reparasjonsrekningar."
+ },
+ {
+  "en": "Victory! Ka-ching! Sorry, ka-pow! Wrong sound effect.",
+  "nn": "Siger! Ka-tsjing! Orsak, ka-pang! Feil lydeffekt."
+ },
+ {
+  "en": "Somebody’s been busy on the battlefield. Bandage sales are up!",
+  "nn": "Nokon har hatt travelt på slagmarka. Bandasjesalet går opp!"
+ },
+ {
+  "en": "I sold your opponents their armor. Clearly not my best stock.",
+  "nn": "Eg selde motstandarane dine rustninga deira. Openbert ikkje det beste lageret mitt."
+ },
+ {
+  "en": "That’s a lot of foes humbled. Humble foes buy more potions.",
+  "nn": "Det er mange fiendar audmjuka. Audmjuke fiendar kjøper fleire eliksirar."
+ },
+ {
+  "en": "You fight like someone with a payment due. I respect that.",
+  "nn": "Du slåst som ein med ei rekning som forfell. Det respekterer eg."
+ },
+ {
+  "en": "Medals look better in gold. Gold-plating service available.",
+  "nn": "Medaljar ser betre ut i gull. Forgylling tilgjengeleg."
+ },
+ {
+  "en": "The battlefield is your office now. Nice corner office.",
+  "nn": "Slagmarka er kontoret ditt no. Fint hjørnekontor."
+ },
+ {
+  "en": "Your war record is spotless. Your armor isn’t. Repairs?",
+  "nn": "Krigshistoria di er plettfri. Rustninga di er ikkje det. Reparasjon?"
+ },
+ {
+  "en": "Rivals crushed, ego polished, bags filled. Excellent quarter.",
+  "nn": "Rivalar knuste, ego pussa, bagar fylte. Framifrå kvartal."
+ },
+ {
+  "en": "Your sword arm just earned a promotion. The rest of you too.",
+  "nn": "Sverdarmen din vart nett forfremja. Resten av deg òg."
+ },
+ {
+  "en": "Opponents defeated! They’re welcome to shop with me. Neutral ground.",
+  "nn": "Motstandarar slegne! Dei er velkomne til å handle hjå meg. Nøytral grunn."
+ },
+ {
+  "en": "Glory looks good on you. Glory polish, five silver.",
+  "nn": "Ære kler deg. Ærespuss, fem sølv."
+ },
+ {
+  "en": "I bet the scoreboard loves you. Scoreboards are my second favourite boards.",
+  "nn": "Eg vedd på at resultattavla elskar deg. Resultattavler er nest beste tavlene mine."
+ },
+ {
+  "en": "Battle-tested and market-ready!",
+  "nn": "Kamptesta og marknadsklar!"
+ },
+ {
+  "en": "You’ve got the swagger of a champion. Swagger insurance?",
+  "nn": "Du har gangen til ein meister. Forsikring for gangen?"
+ },
+ {
+  "en": "That’s some serious combat capital you’ve built up.",
+  "nn": "Det er seriøs kampkapital du har bygd opp."
+ },
+ {
+  "en": "The bards will sing of this. I’ll sell the songbooks.",
+  "nn": "Bardane kjem til å syngje om dette. Eg sel songbøkene."
+ },
+ {
+  "en": "Banners raised, enemies razed, profits praised.",
+  "nn": "Banner heisa, fiendar knuste, forteneste lovprisa."
+ },
+ {
+  "en": "Your victories are piling up like coins in a vault.",
+  "nn": "Sigrane dine hopar seg opp som myntar i eit hvelv."
+ },
+ {
+  "en": "Opponents beware: this hero is now premium-grade.",
+  "nn": "Motstandarar, ver på vakt: denne helten er no av premiumklasse."
+ },
+ {
+  "en": "Combat milestone! Shall I commission a heroic statue? Payment upfront.",
+  "nn": "Kampmilepæl! Skal eg bestille ein heltestatue? Betaling på førehand."
+ },
+ {
+  "en": "Every duel won is a business lesson for the loser.",
+  "nn": "Kvar vunnen duell er ein forretningsleksjon for taparen."
+ },
+ {
+  "en": "That’s quite the kill count. I mean honor count. Same thing.",
+  "nn": "Det er litt av eit drapstal. Eg meiner æretal. Same sak."
+ },
+ {
+  "en": "You’re the reason the other side keeps buying healing potions. Thank you!",
+  "nn": "Du er grunnen til at den andre sida stadig kjøper lækjeeliksirar. Takk!"
+ },
+ {
+  "en": "Military rank, merchant mindset. Unbeatable combo.",
+  "nn": "Militær rang, kremmartankegang. Uslåeleg kombinasjon."
+ },
+ {
+  "en": "Their faction’s treasury weeps. Mine rejoices.",
+  "nn": "Skattkammeret til fraksjonen deira græt. Mitt jublar."
+ },
+ {
+  "en": "Fearsome! I’d sell fear as a perfume. Eau de you.",
+  "nn": "Fryktinngytande! Eg ville selt frykt som parfyme. Eau de deg."
+ },
+ {
+  "en": "Your opponents just learned a costly lesson. You taught it for free. Never again!",
+  "nn": "Motstandarane dine lærte nett ei dyr lekse. Du lærte dei ho gratis. Aldri meir!"
+ },
+ {
+  "en": "You’re getting expensive to beat. Excellent pricing strategy.",
+  "nn": "Du blir dyr å slå. Framifrå prisstrategi."
+ },
+ {
+  "en": "That kind of grit can’t be bought. I’ve checked my catalogue.",
+  "nn": "Slik stå-på-vilje kan ikkje kjøpast. Eg har sjekka katalogen min."
+ },
+ {
+  "en": "The battlefield ledger shows a healthy surplus in your favour.",
+  "nn": "Rekneskapen frå slagmarka viser eit sunt overskot i din favør."
+ },
+ {
+  "en": "I hear the losers are blaming their gear. Smart ones buy better.",
+  "nn": "Eg høyrer taparane skuldar på utstyret. Dei smarte kjøper betre."
+ },
+ {
+  "en": "Defeated foes make excellent repeat customers. Bring them by!",
+  "nn": "Slegne fiendar blir framifrå gjengangarkundar. Ta dei med innom!"
+ },
+ {
+  "en": "More fame, more fights, more wonderful wear and tear.",
+  "nn": "Meir berømmelse, fleire kampar, meir herleg slitasje."
+ },
+ {
+  "en": "You’re the hero they warn new recruits about. Great branding.",
+  "nn": "Du er helten dei åtvarar nye rekruttar mot. Flott merkevare."
+ },
+ {
+  "en": "War paint, war gold, war glory. You have them all.",
+  "nn": "Krigsmåling, krigsgull, krigsære. Du har alt."
+ },
+ {
+  "en": "The arena should pay you appearance fees. Negotiate!",
+  "nn": "Arenaen burde betale deg for å stille opp. Forhandle!"
+ },
+ {
+  "en": "That’s battlefield equity, friend. Build it up.",
+  "nn": "Det er eigenkapital frå slagmarka, venn. Byggj han opp."
+ },
+ {
+  "en": "Somewhere, an enemy is updating their will.",
+  "nn": "Ein stad oppdaterer ein fiende testamentet sitt."
+ },
+ {
+  "en": "Duels won, glory gained, gold-plating recommended.",
+  "nn": "Duellar vunne, ære vunnen, forgylling tilrådd."
+ },
+ {
+  "en": "A warrior’s reputation is the best shield. Second best: mine, for sale.",
+  "nn": "Ryktet til ein krigar er det beste skjoldet. Nest best: mitt, til sals."
+ },
+ {
+  "en": "Their side surrendered gold. Your side banked glory.",
+  "nn": "Deira side gav frå seg gull. Di side sette ære i banken."
+ },
+ {
+  "en": "You’ve earned bragging rights. I sell megaphones.",
+  "nn": "Du har tent deg skryterett. Eg sel megafonar."
+ },
+ {
+  "en": "Rank and file? You’re rank and profit.",
+  "nn": "Menige? Du er rang og forteneste."
+ },
+ {
+  "en": "Opponents fold faster than cheap goblin tents around you.",
+  "nn": "Motstandarar fell saman fortare enn billege goblintelt rundt deg."
+ },
+ {
+  "en": "Victory parades are free. Confetti isn’t. Sold here!",
+  "nn": "Sigersparader er gratis. Konfetti er ikkje det. Seljast her!"
+ },
+ {
+  "en": "That title makes you sound like a very expensive mercenary.",
+  "nn": "Den tittelen får deg til å høyrast ut som ein svært dyr leigesoldat."
+ },
+ {
+  "en": "Combat prowess this good should be licensed.",
+  "nn": "Så god kampdugleik burde vere lisensiert."
+ },
+ {
+  "en": "I knew your fighting spirit would pay off. Not in gold, but still.",
+  "nn": "Eg visste at kampånda di ville løne seg. Ikkje i gull, men likevel."
+ },
+ {
+  "en": "The other faction sends regards. And a bill for therapy.",
+  "nn": "Den andre fraksjonen helsar. Og sender rekning for terapi."
+ },
+ {
+  "en": "More honor than I have receipts. That’s a lot.",
+  "nn": "Meir ære enn eg har kvitteringar. Det er mykje."
+ },
+ {
+  "en": "That’s a war chest worth guarding. Locks for sale!",
+  "nn": "Det er ei krigskasse verdt å vakte. Låsar til sals!"
+ },
+ {
+  "en": "Battle on, hero! Every victory lowers enemy stock prices.",
+  "nn": "Kjemp vidare, helt! Kvar siger senkar aksjekursen til fienden."
+ },
+ {
+  "en": "Your weapons are earning their keep. Sharpening service, two silver.",
+  "nn": "Våpena dine gjer seg fortente til kosten. Kvessing, to sølv."
+ },
+ {
+  "en": "You won glory. I won bets on you. Everybody wins!",
+  "nn": "Du vann ære. Eg vann veddemål på deg. Alle vinn!"
+ },
+ {
+  "en": "The bigger your title, the bigger your target. Body armor sale!",
+  "nn": "Di større tittel, di større blink. Sal på rustning!"
+ },
+ {
+  "en": "Strategist, fighter, future tycoon. Impressive résumé.",
+  "nn": "Strateg, kjempar, framtidig magnat. Imponerande CV."
+ },
+ {
+  "en": "You’ve been promoted in the army of awesome.",
+  "nn": "Du er forfremja i den fantastiske hæren."
+ },
+ {
+  "en": "Fierce! The opposing faction is now buying my best armor. Thanks!",
+  "nn": "Hard! Den andre fraksjonen kjøper no den beste rustninga mi. Takk!"
+ },
+ {
+  "en": "Combat milestone reached! Shall I start a fan club? Membership dues.",
+  "nn": "Kampmilepæl nådd! Skal eg starte ein fanklubb? Medlemsavgift."
+ },
+ {
+  "en": "War is chaos. You make it look organized. And profitable.",
+  "nn": "Krig er kaos. Du får det til å sjå organisert ut. Og lønsamt."
+ },
+ {
+  "en": "Your foes are learning. Slowly. Expensively.",
+  "nn": "Fiendane dine lærer. Sakte. Dyrt."
+ },
+ {
+  "en": "That’s a title even goblin generals would envy.",
+  "nn": "Det er ein tittel sjølv goblingeneralar ville misunnt."
+ },
+ {
+  "en": "Arena glory! Spectator tickets sold out. I sold them.",
+  "nn": "Arenaære! Billettane til tilskodarane er utselde. Eg selde dei."
+ },
+ {
+  "en": "You’ve got a talent for turning enemies into statistics.",
+  "nn": "Du har talent for å gjere fiendar om til statistikk."
+ },
+ {
+  "en": "Your faction owes you. Collect in gold if you can.",
+  "nn": "Fraksjonen din skuldar deg. Krev inn i gull om du kan."
+ },
+ {
+  "en": "Battlefield champion! I sponsor champions. Logo on your shield?",
+  "nn": "Meister på slagmarka! Eg sponsar meistrar. Logo på skjoldet ditt?"
+ },
+ {
+  "en": "Each victory adds a shine to your name. Polish it often.",
+  "nn": "Kvar siger gir namnet ditt meir glans. Puss det ofte."
+ },
+ {
+  "en": "Foes vanquished! Their loot is unfortunately not transferable.",
+  "nn": "Fiendar slegne! Looten deira kan dessverre ikkje overførast."
+ },
+ {
+  "en": "You’ve become a tactical asset. Assets appreciate.",
+  "nn": "Du har vorte ein taktisk ressurs. Ressursar stig i verdi."
+ },
+ {
+  "en": "Excellent fighting! The war economy is booming thanks to you.",
+  "nn": "Framifrå kjemping! Krigsøkonomien blomstrar takka vere deg."
+ },
+ {
+  "en": "That’s a lot of foes sent back to the graveyard. The spirit healer thanks you.",
+  "nn": "Det er mange fiendar sende tilbake til gravplassen. Åndelækjaren takkar deg."
+ },
+ {
+  "en": "Tough fights, tougher hero, toughest prices. Mine.",
+  "nn": "Tøffe kampar, tøffare helt, tøffaste prisar. Mine."
+ },
+ {
+  "en": "War stories sell. Yours would be a bestseller.",
+  "nn": "Krigssoger sel. Di ville vorte ein bestseljar."
+ },
+ {
+  "en": "You’re climbing the battle charts. Charts going up is my favourite thing.",
+  "nn": "Du klatrar på kamplistene. Kurver som går opp er yndlingstinga mi."
+ },
+ {
+  "en": "Your shield has seen things. Mostly victories.",
+  "nn": "Skjoldet ditt har sett ting. Mest sigrar."
+ },
+ {
+  "en": "Bring me your broken weapons. Victories are hard on gear.",
+  "nn": "Kom med dei øydelagde våpena dine. Sigrar er harde mot utstyr."
+ },
+ {
+  "en": "That’s a commanding performance. Commanders tip well.",
+  "nn": "Det er ei kommanderande framføring. Kommandantar gir godt tips."
+ },
+ {
+  "en": "Champions don’t haggle. Please don’t start.",
+  "nn": "Meistrar prutar ikkje. Ver snill og ikkje byrj."
+ },
+ {
+  "en": "You’ve proven your worth in battle. Your worth is now higher.",
+  "nn": "Du har vist verdien din i kamp. Verdien din er no høgare."
+ },
+ {
+  "en": "Combat hero! Combat heroes get a free cup of tea. Tea is free. Cup isn’t.",
+  "nn": "Kamphelt! Kampheltar får ein gratis kopp te. Teen er gratis. Koppen er ikkje det."
+ },
+ {
+  "en": "The other faction’s bards are writing sad songs about you.",
+  "nn": "Bardane til den andre fraksjonen skriv triste songar om deg."
+ },
+ {
+  "en": "Your battle cry is now a brand. Trademark it!",
+  "nn": "Kampropet ditt er no ei merkevare. Registrer det!"
+ },
+ {
+  "en": "Victory is sweet. Victory with loot is sweeter.",
+  "nn": "Siger er søtt. Siger med loot er søtare."
+ },
+ {
+  "en": "That kind of dominance deserves a medal. And a markup.",
+  "nn": "Slik dominans fortener ei medalje. Og eit påslag."
+ },
+ {
+  "en": "More wins than my last ten business ventures. Combined.",
+  "nn": "Fleire sigrar enn dei ti siste forretningsføretaka mine. Til saman."
+ },
+ {
+  "en": "Your enemies are now customers of the spirit healer. Repeat customers.",
+  "nn": "Fiendane dine er no kundar hjå åndelækjaren. Gjengangarkundar."
+ },
+ {
+  "en": "Keep fighting! I’m running a bandage loyalty program.",
+  "nn": "Kjemp vidare! Eg har eit lojalitetsprogram for bandasjar."
+ },
+ {
+  "en": "The battle ledger balances in your favour. Beautiful.",
+  "nn": "Kamprekneskapen går opp i din favør. Vakkert."
+ },
+ {
+  "en": "You’ve got honor to burn. Burn it at the honor vendor.",
+  "nn": "Du har ære å brenne. Brenn han hjå æresseljaren."
+ },
+ {
+  "en": "Your opponents just got a free lesson in humility. Free! I’d have charged.",
+  "nn": "Motstandarane fekk ein gratis leksjon i audmjukskap. Gratis! Eg ville teke betalt."
+ },
+ {
+  "en": "Combat legend in the making! Legends sell merchandise.",
+  "nn": "Kamplegende i emning! Legender sel varer."
+ },
+ {
+  "en": "Your arena stats look like my dream profit chart.",
+  "nn": "Arenastatsane dine liknar på draumeprofittkurva mi."
+ },
+ {
+  "en": "That’s a fine military career. Pension plans available.",
+  "nn": "Det er ei fin militærkarriere. Pensjonsordningar tilgjengelege."
+ },
+ {
+  "en": "Another step toward legendary warlord. Warlords tip generously.",
+  "nn": "Endå eit steg mot legendarisk krigsherre. Krigsherrar gir rikeleg med tips."
+ },
+ {
+  "en": "Strength, strategy, savings. The three S of success.",
+  "nn": "Styrke, strategi, sparepengar. Dei tre S-ane bak suksess."
+ },
+ {
+  "en": "Your enemies are paying the price. In honor. To you.",
+  "nn": "Fiendane dine betaler prisen. I ære. Til deg."
+ },
+ {
+  "en": "Splendid fighting! Shall I sell your strategy guide?",
+  "nn": "Strålande kjemping! Skal eg selje strategiguiden din?"
+ },
+ {
+  "en": "You’ve got a battlefield reputation now. Reputations are bankable.",
+  "nn": "Du har eit rykte på slagmarka no. Rykte er bankbare."
+ },
+ {
+  "en": "Glory gathered, foes scattered, wallet... let’s work on the wallet.",
+  "nn": "Ære samla, fiendar spreidde, lommebok ... la oss jobbe med lommeboka."
+ },
+ {
+  "en": "A war hero! Discount on war bonds? No such thing.",
+  "nn": "Ein krigshelt! Rabatt på krigsobligasjonar? Det finst ikkje."
+ },
+ {
+  "en": "The battle drums beat your name. Drums sold separately.",
+  "nn": "Krigstrommene slår namnet ditt. Trommer seljast separat."
+ },
+ {
+  "en": "You’ve earned your stripes. Stripes look good in gold thread.",
+  "nn": "Du har tent stripene dine. Striper ser bra ut i gulltråd."
+ },
+ {
+  "en": "Your combat stock is up. I’m buying!",
+  "nn": "Kampaksjen din er opp. Eg kjøper!"
+ },
+ {
+  "en": "Foes defeated, ranks climbed, gear demanded.",
+  "nn": "Fiendar slegne, gradar klatra, utstyr kravd."
+ },
+ {
+  "en": "Keep winning! It’s great for the wartime economy. And morale.",
+  "nn": "Hald fram å vinne! Det er bra for krigsøkonomien. Og moralen."
+ },
+ {
+  "en": "Victory looks great on you. Matching cloak, ten gold.",
+  "nn": "Siger kler deg. Matchande kappe, ti gull."
+ },
+ {
+  "en": "That’s a soldier’s dream: honor, glory and a full bag.",
+  "nn": "Det er ein soldatdraum: ære, glans og ein full bag."
+ },
+ {
+  "en": "You won so much, the other side is considering bribes. Accept!",
+  "nn": "Du vann så mykje at den andre sida vurderer bestikking. Ta imot!"
+ },
+ {
+  "en": "War is just a very loud negotiation. You won it.",
+  "nn": "Krig er berre ei svært høglydt forhandling. Du vann ho."
+ },
+ {
+  "en": "The arena loves a winner. The vendors love a spender. Be both!",
+  "nn": "Arenaen elskar ein vinnar. Seljarane elskar ein som brukar pengar. Ver begge!"
+ },
+ {
+  "en": "You’re the most feared customer in my shop now.",
+  "nn": "Du er den mest frykta kunden i butikken min no."
+ },
+ {
+  "en": "Your honor bar is full. Your shopping bag should be too.",
+  "nn": "Ærebaren din er full. Handleposen din burde vere det òg."
+ },
+ {
+  "en": "Combat glory: priceless. Combat repairs: very priced.",
+  "nn": "Kampære: uvurderleg. Kampreparasjonar: svært prisa."
+ },
+ {
+  "en": "Promoted on the battlefield! No pay raise, but great hats.",
+  "nn": "Forfremja på slagmarka! Ingen lønnsauke, men flotte hattar."
+ },
+ {
+  "en": "You fight with flair. Flair sells tickets.",
+  "nn": "Du slåst med stil. Stil sel billettar."
+ },
+ {
+  "en": "Their defeat, your feat, my profit. Lovely chain.",
+  "nn": "Deira nederlag, di bragd, mi forteneste. Fin kjede."
+ },
+ {
+  "en": "That’s a fierce reputation. Ferocity is a fine export.",
+  "nn": "Det er eit hardt rykte. Hardheit er ei fin eksportvare."
+ },
+ {
+  "en": "The battlegrounds know your name. Royalties pending.",
+  "nn": "Slagmarkene kjenner namnet ditt. Royalties kjem."
+ },
+ {
+  "en": "You’ve earned your place among the fighters. Fighters need supplies!",
+  "nn": "Du har tent plassen din blant kjemparane. Kjemparar treng forsyningar!"
+ },
+ {
+  "en": "Victory dance! Dance lessons, three silver.",
+  "nn": "Sigersdans! Dansetimar, tre sølv."
+ },
+ {
+  "en": "That rank looks good on you. Like a fine suit of armor.",
+  "nn": "Den rangen kler deg. Som ei fin rustning."
+ },
+ {
+  "en": "Another battle won, another reason for the enemy to shop with me.",
+  "nn": "Endå eit slag vunne, endå ein grunn for fienden til å handle hjå meg."
+ },
+ {
+  "en": "Fearsome and fabulous. A winning combination.",
+  "nn": "Fryktinngytande og fabelaktig. Ein vinnande kombinasjon."
+ },
+ {
+  "en": "You’re officially a battlefield blue chip. Strong buy!",
+  "nn": "Du er offisielt ein blue chip på slagmarka. Sterkt kjøp!"
+ },
+ {
+  "en": "That honor will buy you something shiny. Spend it boldly.",
+  "nn": "Den æra kjøper deg noko blankt. Bruk ho djervt."
+ },
+ {
+  "en": "A champion of the battlefield! Chewing gum of champions, one silver.",
+  "nn": "Ein meister på slagmarka! Meistertyggis, eitt sølv."
+ },
+ {
+  "en": "Every rival you beat makes my armor easier to sell.",
+  "nn": "Kvar rival du slår gjer rustninga mi lettare å selje."
+ },
+ {
+  "en": "Glory and gold, the goblin dream. You’ve got half of it.",
+  "nn": "Ære og gull, goblindraumen. Du har halvparten."
+ },
+ {
+  "en": "Fight on! Your progress chart is a thing of beauty.",
+  "nn": "Kjemp vidare! Framgangskurva di er vakker å sjå."
+ },
+ {
+  "en": "The battlefield is your market, and business is booming.",
+  "nn": "Slagmarka er marknaden din, og forretningane blomstrar."
+ },
+ {
+  "en": "Your foes keep coming back. So do my best customers.",
+  "nn": "Fiendane dine kjem stadig tilbake. Det gjer dei beste kundane mine òg."
+ },
+ {
+  "en": "War hero today, war tycoon tomorrow!",
+  "nn": "Krigshelt i dag, krigsmagnat i morgon!"
+ },
+ {
+  "en": "Look at you, collecting victories like rare coins.",
+  "nn": "Sjå på deg, du samlar sigrar som sjeldne myntar."
+ },
+ {
+  "en": "That’s premium-grade valor. I’d stock it if I could.",
+  "nn": "Det er mot av premiumklasse. Eg ville hatt det på lager om eg kunne."
+ },
+ {
+  "en": "The enemy’s war budget just took a hit. Nice work.",
+  "nn": "Krigsbudsjettet til fienden fekk seg ein smell. Godt arbeid."
+ },
+ {
+  "en": "Whatever they paid for their gear, it wasn’t enough.",
+  "nn": "Kva dei enn betalte for utstyret sitt, så var det ikkje nok."
+ },
+ {
+  "en": "Your combat portfolio is looking very diversified.",
+  "nn": "Kampporteføljen din ser svært spreidd ut."
+ },
+ {
+  "en": "Soldiers whisper about you in the barracks. Gossip is free PR.",
+  "nn": "Soldatar kviskrar om deg i brakkene. Sladder er gratis PR."
+ },
+ {
+  "en": "You turn chaos into credentials. Impressive.",
+  "nn": "Du gjer kaos om til kvalifikasjonar. Imponerande."
+ },
+ {
+  "en": "That victory streak deserves a frame. Frames on aisle four.",
+  "nn": "Den sigersrekkja fortener ei ramme. Rammer i hylle fire."
+ },
+ {
+  "en": "Battle-scarred and brilliant! Scar cream for sale.",
+  "nn": "Kamparra og strålande! Arrkrem til sals."
+ },
+ {
+  "en": "The war room has your portrait now. Did they pay royalties?",
+  "nn": "Krigsrommet har portrettet ditt no. Betalte dei royalties?"
+ },
+ {
+  "en": "Your enemies just ordered extra shields. From me. Thanks!",
+  "nn": "Fiendane dine bestilte nett ekstra skjold. Frå meg. Takk!"
+ },
+ {
+  "en": "Glory is temporary. Gear is forever. Go shopping!",
+  "nn": "Ære er mellombels. Utstyr er for alltid. Gå og handle!"
+ },
+ {
+  "en": "You’ve outfought, outlasted and outclassed. Now outspend!",
+  "nn": "Du har slåst betre, halde lenger ut og vore i ein annan klasse. Bruk no meir!"
+ },
+ {
+  "en": "A fighter with a future and a full honor bar.",
+  "nn": "Ein kjempar med framtid og full ærebar."
+ },
+ {
+  "en": "That rank comes with a shiny title and shinier expectations.",
+  "nn": "Den rangen kjem med ein blank tittel og blankare forventningar."
+ },
+ {
+  "en": "The battleground scoreboard needs a bigger font for your name.",
+  "nn": "Resultattavla på slagmarka treng større skrift for namnet ditt."
+ },
+ {
+  "en": "Heroic deeds make great sales stories. Mind if I borrow yours?",
+  "nn": "Heltedåd blir gode salshistorier. Kan eg låne din?"
+ },
+ {
+  "en": "Opponents beaten fair and square. Mostly square.",
+  "nn": "Motstandarar slegne ærleg og redeleg. Mest redeleg."
+ },
+ {
+  "en": "That’s a rank worth saluting. Salutes are free. Today.",
+  "nn": "Det er ein rang verdt å helse. Helsingar er gratis. I dag."
+ },
+ {
+  "en": "Glory, gear, and a growing legend. Splendid investment.",
+  "nn": "Ære, utstyr og ei veksande legende. Flott investering."
+ },
+ {
+  "en": "Your victories echo. Echo chambers rented by the hour.",
+  "nn": "Sigrane dine ekkoar. Ekkokammer leigast ut per time."
+ },
+ {
+  "en": "The other faction needs a new strategy. And new armor. I sell both.",
+  "nn": "Den andre fraksjonen treng ein ny strategi. Og ny rustning. Eg sel begge delar."
+ },
+ {
+  "en": "War is loud. Your progress is louder.",
+  "nn": "Krig er høglydt. Framgangen din er høgare."
+ },
+ {
+  "en": "Champion material! I’d sponsor your next season.",
+  "nn": "Meistermateriale! Eg ville sponsa neste sesong."
+ },
+ {
+  "en": "Your blade earns better than most bankers.",
+  "nn": "Bladet ditt tener betre enn dei fleste bankfolk."
+ },
+ {
+  "en": "Honor collected! Now collect compliments. And interest.",
+  "nn": "Ære samla inn! Samle no komplimentar. Og renter."
+ }
+]

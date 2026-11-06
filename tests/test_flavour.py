@@ -48,6 +48,7 @@ def test_all_banks_have_100_lines_and_generated_editions_match(monkeypatch, defa
 def test_class_roasts_only_match_known_sender_not_armor_class():
     lua = make_lua()
     lua.execute('''
+        WoWStatusPersonalities.set("classic")  -- these check the Classic banks; Random is the default
         local general,paladin={},{}
         for _,line in ipairs(WoWStatusFlavour.banks.death) do
             local tag,copy=line:match("^%[([A-Z]+)%] (.+)$")
@@ -98,6 +99,7 @@ def test_event_draw_stable_across_reload_and_distinct_events_vary():
 def test_profession_banks_and_unknown_kinds():
     lua = make_lua()
     lua.execute('''
+        WoWStatusPersonalities.set("classic")  -- these check the Classic banks; Random is the default
         local learned,promoted={},{}
         for _,line in ipairs(WoWStatusFlavour.banks.profession_learned) do learned[line]=true end
         for _,line in ipairs(WoWStatusFlavour.banks.profession) do promoted[line]=true end

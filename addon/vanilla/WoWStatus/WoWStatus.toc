@@ -20,6 +20,16 @@ Groups.lua
 Share.lua
 Flavour.lua
 FlavourNN.lua
+Personalities.lua
+FlavourWholesome.lua
+FlavourBard.lua
+FlavourVeteran.lua
+FlavourGoblin.lua
+FlavourChristian.lua
+FlavourSmug.lua
+FlavourDwarf.lua
+FlavourJealous.lua
+FlavourDrama.lua
 Theme.lua
 MainWindow.lua
 Overview.lua
