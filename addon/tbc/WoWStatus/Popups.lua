@@ -884,7 +884,7 @@ function P.react(item, text)
     local send = A.chatSender and A.chatSender()
     if not send or A.chatRestricted() then return false end
     item.reacted = text
-    -- Whispered in your chosen language ("Gratulerer!"); GZ!, F and Git Good stay.
+    -- Whispered in your chosen language ("Gratulerer!", and GZ! in full Nynorsk); F and Git Good stay.
     return pcall(send, T(text), "WHISPER", nil, item.sender) == true
 end
 local function reactionButtons()

@@ -126,3 +126,29 @@ def test_death_details_show_zone_and_killer_for_you_and_your_friends():
         for _, entry in ipairs(WoWStatusJournal.entries()) do if entry.kind == "death" then e = entry end end
         assert(WoWStatusJournal.deathText(e) == "Total deaths: 1 · Westfall · killed by Defias Pillager", WoWStatusJournal.deathText(e))
     ''')
+
+
+def test_nynorsk_gz_is_the_long_wish_and_counts_as_gz():
+    long_gz = 'Eg ynskjer deg hjarteleg til lukke med det nye nivået!'
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    friend.execute('WoWStatusLocale.set("nn")')
+    own.eval('fire')('PLAYER_LEVEL_UP', 42)
+    deliver_popup(own, friend)
+    friend.execute('''
+        WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        toast.reactions[1].OnClick(toast.reactions[1])
+    ''')
+    assert sent_whispers(friend) == [(long_gz, 'Mira-TestRealm')]
+    # An English-speaking friend's client links the long wish to the level-up.
+    own.execute(f'''
+        __peers = {{"Mira-TestRealm", "Thora-TestRealm"}}
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+        for _ = 1, 3 do WoWStatusPopups.tick() end
+        fire("CHAT_MSG_WHISPER", "{long_gz}", "Thora-TestRealm")
+        local e
+        for _, item in ipairs(WoWStatusJournal.entries()) do if item.owner and item.kind == "level" then e = item end end
+        assert(e.reactions["thora-testrealm"].text == "{long_gz}")
+    ''')

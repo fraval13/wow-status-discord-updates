@@ -1097,7 +1097,7 @@ local frame=CreateFrame("Frame")
 -- Reaction whispers ("GZ!", "F", "Congrats!" ... from the buttons on friends'
 -- notifications, English or Nynorsk) are linked to this character's matching
 -- event of the last 15 minutes, and shown on its log card ("GZ! from Mira").
-local REACTION_KINDS={["GZ!"]={level=true},["F"]={death=true},["Git Good"]={death=true},
+local REACTION_KINDS={["GZ!"]={level=true},["Eg ynskjer deg hjarteleg til lukke med det nye nivået!"]={level=true},["F"]={death=true},["Git Good"]={death=true},
     ["Welcome!"]={introduction=true},["Velkomen!"]={introduction=true}}
 local POSITIVE={profession=true,dungeon=true,raid=true,mount=true,epicmount=true,reputation=true,unlock=true,pvp=true,
     quest=true,loot=true}
