@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.37.0
 
 - Nynorsk: Back buttons say Tilbake again; the cloak slot has its own label
 
