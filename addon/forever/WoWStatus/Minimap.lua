@@ -88,6 +88,20 @@ function M.init(database)
         if GameTooltip then
             GameTooltip:SetOwner(self,"ANCHOR_LEFT");GameTooltip:SetText("WoW Status")
             local T=WoWStatusLocale.T
+            -- Who is online, and the newest thing a friend did.
+            local names=WoWStatusRoster and WoWStatusRoster.onlineNames and WoWStatusRoster.onlineNames() or {}
+            local shown={}
+            for i=1,math.min(#names,8) do shown[i]=names[i]:gsub("|","||") end
+            local list=#names==0 and T("nobody") or (table.concat(shown,", ")..(#names>8 and (" +"..(#names-8)) or ""))
+            GameTooltip:AddLine(T("Online now:").." "..list,.4,1,.4,true)
+            local latest=WoWStatusJournal and WoWStatusJournal.latestFriend and WoWStatusJournal.latestFriend()
+            if latest then
+                local minutes=math.max(0,math.floor((time()-(latest.at or time()))/60))
+                local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
+                local who=(latest.sender:match("^[^-]+") or latest.sender):gsub("|","||")
+                GameTooltip:AddLine(T("Latest:").." "..who.." — "..WoWStatusJournal.deathText(latest):gsub("|","||").." · "..when,1,.82,0,true)
+            end
+            GameTooltip:AddLine(" ")
             GameTooltip:AddLine(T("Left-click: Activity log"),1,1,1)
             GameTooltip:AddLine(T("Right-click: Options"),1,1,1)
             GameTooltip:AddLine(T("Drag to move"),.7,.7,.7);GameTooltip:Show()

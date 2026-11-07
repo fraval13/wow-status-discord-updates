@@ -83,3 +83,29 @@ def test_distance_can_be_adjusted_reset_and_reported(client):
     # A corrupt saved value falls back to the default distance.
     lua.execute('WoWStatusDB.minimap_offset=1000; Minimap.OnShow()')
     assert lua.eval('WoWStatusMinimapButton.point[4]') == base
+
+
+def test_tooltip_shows_who_is_online_and_the_latest_friend_entry():
+    from test_roster import pair, pump
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:RegisterForClicks() end
+        function methods:HookScript(event, fn) self[event] = fn end
+        Minimap=CreateFrame("Frame","Minimap",UIParent)
+        function Minimap:GetCenter() return 0,0 end
+        function Minimap:GetEffectiveScale() return 1 end
+        WoWStatusMinimap.init(WoWStatusDB)
+        __tip = {}
+        GameTooltip = {SetOwner=function() __tip = {} end, SetText=function() end,
+            AddLine=function(_, t) table.insert(__tip, t) end, Show=function() end, Hide=function() end}
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=30,at=time()-300,group_id=group})
+        local button = WoWStatusMinimapButton
+        button.OnEnter(button)
+        local all = table.concat(__tip, "\\n")
+        assert(all:find("Online now: Mira", 1, true), all)
+        assert(all:find("Latest: Mira — Reached level 30! · 5 min", 1, true), all)
+        assert(all:find("Left-click: Activity log", 1, true))
+    ''')

@@ -1220,6 +1220,14 @@ function J.focus(id)
     return false
 end
 function J.visible(entry) return db~=nil and (entry.sample==true or permitted(entry)) end
+-- A friend's newest entry (not recaps), for the minimap tooltip.
+function J.latestFriend()
+    local latest
+    for _,e in ipairs(J.entries()) do
+        if not e.owner and e.kind~="recap" and permitted(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
+    end
+    return latest
+end
 -- A private recap has no group scopes and is never sent or offered to peers.
 function J.recordRecap(character,at,text,flavour)
     if not db or type(text)~="string" or text=="" then return false end

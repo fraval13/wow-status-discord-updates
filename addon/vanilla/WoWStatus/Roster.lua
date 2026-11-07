@@ -526,6 +526,24 @@ function R.listingChanged(id, listed)
     end
 end
 
+-- Friends online now (not your own characters), for the minimap tooltip.
+function R.onlineNames()
+    if not db or not current then return {} end
+    local names, seen = {}, {}
+    for _, entry in ipairs(R.groups()) do
+        if not entry.self then
+            for _, row in ipairs(entry.rows) do
+                local k = key(row.name)
+                if row.status == "online" and k and not seen[k] then
+                    seen[k] = true
+                    names[#names + 1] = row.name:match("^[^-]+") or row.name
+                end
+            end
+        end
+    end
+    table.sort(names)
+    return names
+end
 -- The first version that confirms live updates (WSACK).
 R.ACK_VERSION = "1.24.0"
 -- A member's addon version, from their list ("1.24.0"), or nil.

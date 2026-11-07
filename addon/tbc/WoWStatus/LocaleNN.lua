@@ -59,6 +59,7 @@ W.add({
     ["older version"] = "eldre versjon", ["older version or list sharing off"] = "eldre versjon eller listedeling av",
     ["Never met"] = "Aldri møtt", ["offline"] = "fråkopla", ["XP %d%%"] = "XP %d %%", ["Level %d"] = "Nivå %d",
     ["1 death"] = "1 dødsfall", ["%d deaths"] = "%d dødsfall", ["Groups:"] = "Grupper:",
+    ["Online now:"] = "Pålogga no:", ["nobody"] = "ingen", ["Latest:"] = "Sist:",
     ["Sounds"] = "Lydar", ["New zones"] = "Nye område", ["Everything else"] = "Alt anna", ["None"] = "Ingen",
     ["Soft chime"] = "Mjuk klokke", ["Level-up fanfare"] = "Nivåfanfare", ["Quest complete"] = "Oppdrag fullført",
     ["Ready check"] = "Klar-sjekk", ["Raid warning"] = "Raid-åtvaring", ["Alarm"] = "Alarm",
