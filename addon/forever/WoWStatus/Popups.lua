@@ -394,13 +394,37 @@ function P.notePeer(group,target)
         count=count+1;if item.at<oldestAt then oldest,oldestAt=k,item.at end
     end
     if count>=64 and not knownPeers[group][key] and oldest then knownPeers[group][oldest]=nil end
-    knownPeers[group][key]={name=target,at=time()}
+    local vouched=knownPeers[group][key] and knownPeers[group][key].vouched
+    knownPeers[group][key]={name=target,at=time(),vouched=vouched}
+end
+-- When the game shows this character alone in a group's channel (WoW Forever
+-- did, while friends in it kept messaging), members who message us with the
+-- group's ID are trusted as members for 30 minutes after each message: their
+-- lists and updates are taken, and ours are sent to them. With a normal member
+-- list the check stays as strict as before.
+local VOUCHED_SECONDS=1800
+local function lonely(group)
+    local cached=rosterCache[group]
+    return cached~=nil and (cached.count or 0)<=1
+end
+function P.vouch(group,sender)
+    sender=S.string(sender)
+    if not group or not sender or not lonely(group) or not WoWStatusGroups.contains(getCharacter(),group) then return false end
+    local key=P.senderKey(sender)
+    if not key or P.isSelf(sender) then return false end
+    local known=knownPeers[group] and knownPeers[group][key]
+    if not (known and known.vouched) then
+        S.debug("member list "..tostring(group):sub(1,4).."…: trusting "..sender.." (the game shows you alone in the channel)")
+    end
+    P.notePeer(group,sender)
+    knownPeers[group][key].vouched=true
+    return true
 end
 local function withKnown(group,roster)
     local result,seen={},{}
     for _,name in ipairs(roster or {}) do local key=P.senderKey(name);if key then seen[key]=true;result[#result+1]=name end end
     for key,item in pairs(knownPeers[group] or {}) do
-        if time()-item.at>300 then knownPeers[group][key]=nil
+        if time()-item.at>(item.vouched and VOUCHED_SECONDS or 300) then knownPeers[group][key]=nil
         elseif not seen[key] and #result<64 then seen[key]=true;result[#result+1]=item.name end
     end
     return result
@@ -1648,6 +1672,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if ack and group and WoWStatusGroups.contains(getCharacter(), group) then
             if #ack <= 64 then P.delivered(S.string(sender), ack) end
         elseif group and WoWStatusGroups.valid(group) and WoWStatusGroups.contains(getCharacter(), group) then
+            P.vouch(group, S.string(sender))
             P.receive(message, sender, WoWStatusGroups.channel(group))
         else
             S.debug("live update for another group from " .. tostring(S.string(sender)))

@@ -729,6 +729,7 @@ receive = function(message, sender, distribution)
     -- Membership is by full name with realm, as the member list keeps it (the
     -- roster's own key leaves the realm out on WoW Forever, and never matched).
     local member = WoWStatusPopups.senderKey(sender)
+    if WoWStatusPopups.vouch then WoWStatusPopups.vouch(group, sender) end
     if not WoWStatusPopups.isPeer(group, member) then
         WoWStatusPopups.peers(group) -- Refresh the member list once before rejecting.
         if not WoWStatusPopups.isPeer(group, member) then return false, "not a member (" .. tostring(member) .. ")" end

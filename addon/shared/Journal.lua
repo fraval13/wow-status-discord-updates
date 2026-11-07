@@ -685,6 +685,8 @@ end
 function J.receive(message,sender,distribution)
     if not db or distribution~="WHISPER" or type(message)~="string" or #message>243 then return false end
     local group,op,t,body=message:match("^J2 ([a-f0-9]+) (%u) ([%w%-]+) (.*)$")
+    -- An addon message carrying the group's ID (see WoWStatusPopups.vouch).
+    if group and WoWStatusGroups.valid(group) and groupMember(group) and P.vouch then P.vouch(group,sender) end
     if not group or not WoWStatusGroups.valid(group) or not groupMember(group) or #t>32 or not peer(group,sender) then return false end
     local key=P.senderKey(sender)
     -- Reports from older versions are ignored; nothing is shown for them.
