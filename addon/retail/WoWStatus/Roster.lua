@@ -1212,7 +1212,8 @@ function R.leaderboard(group)
                             q = S.number(current.snapshot and current.snapshot.quests_completed) or q
                         end
                         table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
-                            deaths=S.number(row.deaths), quests=q, online=row.status == "online", own=own})
+                            deaths=S.number(row.deaths), quests=q, online=row.status == "online", own=own,
+                            gold=S.number(row.gold), kills=S.number(row.kills)})
                     end
                 end
             end

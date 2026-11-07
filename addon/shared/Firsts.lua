@@ -198,40 +198,187 @@ local function renderBoard(chosen)
     page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or "Level"))
 end
 
+-- This week (Monday to Sunday, the log's Oslo time) in one group, or an earlier
+-- week (offset 1, 2, ...): highlights and one line per person.
+local function dayOf(at) return WoWStatusHistory.oslo(at):sub(1, 10) end
+local function shortName(sender) return (tostring(sender):match("^[^-]+") or tostring(sender)) end
+function F.weekRange(offset)
+    local UI = WoWStatusUI
+    local t = S.now() - (offset or 0) * 7 * 86400
+    local hour = tonumber(WoWStatusHistory.oslo(t):sub(12, 13)) or 12
+    t = t - (hour - 12) * 3600 -- Noon, so a daylight-saving hour cannot change the date.
+    local y, m, d = dayOf(t):match("^(%d+)-(%d+)-(%d+)$")
+    local weekday = UI.weekday(tonumber(y), tonumber(m), tonumber(d))
+    return dayOf(t - (weekday - 1) * 86400), dayOf(t + (7 - weekday) * 86400)
+end
+local function inGroup(e, group) return type(e.groups) == "table" and e.groups[group] == true end
+function F.week(group, offset)
+    local first, last = F.weekRange(offset)
+    local people, order = {}, {}
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        local day = S.number(e.at) and dayOf(e.at)
+        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e) then
+            local name = shortName(e.sender)
+            local p = people[name]
+            if not p then p = {name=name, level=0, death=0, zone=0, loot=0, quest=0}; people[name] = p; order[#order + 1] = p end
+            if p[e.kind] then p[e.kind] = p[e.kind] + 1 end
+        end
+    end
+    table.sort(order, function(a, b) return a.level ~= b.level and a.level > b.level or a.name < b.name end)
+    local lines = {}
+    local function best(key, label)
+        local top
+        for _, p in ipairs(order) do if p[key] > 0 and (not top or p[key] > top[key]) then top = p end end
+        if top then lines[#lines + 1] = "|cffffd100" .. T(label) .. "|r " .. top.name:gsub("|", "||") .. " (" .. top[key] .. ")" end
+    end
+    best("level", "Most levels:"); best("death", "Most deaths:"); best("zone", "Most explored:"); best("loot", "Most new armor:")
+    if #lines > 0 then lines[#lines + 1] = " " end
+    for _, p in ipairs(order) do
+        local parts = {}
+        if p.level > 0 then parts[#parts + 1] = "+" .. p.level .. " " .. T(p.level == 1 and "level" or "levels") end
+        if p.death > 0 then parts[#parts + 1] = p.death .. " " .. T(p.death == 1 and "death" or "deaths") end
+        if p.zone > 0 then parts[#parts + 1] = p.zone .. " " .. T(p.zone == 1 and "zone" or "zones") end
+        if p.loot > 0 then parts[#parts + 1] = p.loot .. " " .. T("armor") end
+        if p.quest > 0 then parts[#parts + 1] = (p.quest * 100) .. " " .. T("quests") end
+        lines[#lines + 1] = p.name:gsub("|", "||") .. ": " .. table.concat(parts, " · ")
+    end
+    return lines, first, last
+end
+
+-- Fun records in one group, only when they are remarkable (high thresholds).
+F.FUN = {zone_deaths=5, life_days=3, evening_levels=4, deaths=25, kills=1000, gold=1000000, armor=5}
+function F.funRecords(group)
+    local deathsIn, lastDeath, longest, evenings, armor = {}, {}, {}, {}, {}
+    local entries = {}
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        if inGroup(e, group) and WoWStatusJournal.visible(e) and S.number(e.at) then entries[#entries + 1] = e end
+    end
+    table.sort(entries, function(a, b) return a.at < b.at end)
+    local firstSeen = {}
+    for _, e in ipairs(entries) do
+        local name = shortName(e.sender)
+        firstSeen[name] = firstSeen[name] or e.at
+        if e.kind == "death" then
+            local d = WoWStatusJournal.details(e)
+            if d and d.zone then deathsIn[d.zone] = (deathsIn[d.zone] or 0) + 1 end
+            local since = lastDeath[name] or firstSeen[name]
+            longest[name] = math.max(longest[name] or 0, e.at - since)
+            lastDeath[name] = e.at
+        elseif e.kind == "level" then
+            local k = name .. "|" .. dayOf(e.at)
+            evenings[k] = (evenings[k] or 0) + 1
+        elseif e.kind == "loot" then
+            armor[name] = (armor[name] or 0) + 1
+        end
+    end
+    for name, at in pairs(lastDeath) do longest[name] = math.max(longest[name] or 0, S.now() - at) end
+    local lines = {}
+    local function add(label, who, value)
+        lines[#lines + 1] = "|cffffd100" .. T(label) .. "|r " .. tostring(who):gsub("|", "||") .. " — " .. value
+    end
+    local zone, count = nil, 0
+    for z, n in pairs(deathsIn) do if n > count then zone, count = z, n end end
+    if zone and count >= F.FUN.zone_deaths then add("Most dangerous zone:", zone, count .. " " .. T("deaths")) end
+    local who, span = nil, 0
+    for name, s in pairs(longest) do if s > span then who, span = name, s end end
+    if who and span >= F.FUN.life_days * 86400 then add("Longest without dying:", who, math.floor(span / 86400) .. " " .. T("days")) end
+    local best, levels = nil, 0
+    for k, n in pairs(evenings) do if n > levels then best, levels = k, n end end
+    if best and levels >= F.FUN.evening_levels then
+        local name, day = best:match("^(.-)|(.+)$")
+        add("Best evening:", name, levels .. " " .. T("levels") .. " (" .. day .. ")")
+    end
+    local mostArmor, pieces = nil, 0
+    for name, n in pairs(armor) do if n > pieces then mostArmor, pieces = name, n end end
+    if mostArmor and pieces >= F.FUN.armor then add("Most armor firsts:", mostArmor, tostring(pieces)) end
+    local board = WoWStatusRoster.leaderboard(group)
+    local function top(field)
+        local t
+        for _, row in ipairs(board) do if row[field] and (not t or row[field] > t[field]) then t = row end end
+        return t
+    end
+    local d = top("deaths")
+    if d and d.deaths >= F.FUN.deaths then add("Most deaths:", shortName(d.name), tostring(d.deaths)) end
+    local k = top("kills")
+    if k and k.kills >= F.FUN.kills then add("Most monsters killed:", shortName(k.name), tostring(k.kills)) end
+    local g = top("gold")
+    if g and g.gold >= F.FUN.gold then add("Richest:", shortName(g.name), WoWStatusUI.money(g.gold, true)) end
+    return lines
+end
+
+-- Lines of text for the This week and Fun records views.
+local function textView(lines, empty)
+    local UI = WoWStatusUI
+    page.textRows = page.textRows or {}
+    if #lines == 0 then lines = {"|cff808080" .. T(empty) .. "|r"} end
+    for i, text in ipairs(lines) do
+        local row = page.textRows[i]
+        if not row then row = UI.text(page.list, "GameFontHighlight", 8, 0, 660); page.textRows[i] = row end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, -(i - 1) * 24)
+        row:SetText(text); row:Show()
+    end
+    for i = #lines + 1, #page.textRows do page.textRows[i]:Hide() end
+    page.list:SetHeight(math.max(1, #lines * 24))
+end
+
 local function render()
     if not page then return end
     local UI = WoWStatusUI
     local groups = F.groups()
     local chosen = selectedGroup(groups)
     local top = tabs(groups, chosen)
-    -- Firsts or Leaderboard, remembered.
+    -- Firsts, Leaderboard, This week or Fun records, remembered.
     local data = state() or {}
-    local board = data.view == "leaderboard"
-    UI.call(page.viewFirsts, "SetEnabled", board); UI.call(page.viewBoard, "SetEnabled", not board)
-    page.viewFirsts:ClearAllPoints(); page.viewFirsts:SetPoint("TOPLEFT", 430, -4 - top)
-    page.viewBoard:ClearAllPoints(); page.viewBoard:SetPoint("TOPLEFT", 540, -4 - top)
-    page.sort:ClearAllPoints(); page.sort:SetPoint("TOPLEFT", 280, -4 - top)
+    local view = data.view or "firsts"
+    local board = view == "leaderboard"
+    for i, b in ipairs({{page.viewFirsts, "firsts"}, {page.viewBoard, "leaderboard"}, {page.viewWeek, "week"}, {page.viewFun, "fun"}}) do
+        UI.call(b[1], "SetEnabled", view ~= b[2])
+        b[1]:ClearAllPoints(); b[1]:SetPoint("TOPLEFT", ({250, 354, 472, 586})[i], -4 - top)
+    end
+    page.sort:ClearAllPoints(); page.sort:SetPoint("TOPLEFT", 570, -32 - top)
     page.sort:SetShown(board); page.boardHeader:SetShown(false); page.boardEmpty:SetShown(false)
+    page.weekBack:SetShown(view == "week"); page.weekNext:SetShown(view == "week")
     if page.board then for _, row in ipairs(page.board) do row:Hide() end end
-    for _, row in ipairs(page.rows) do row:SetShown(not board) end
-    if page.recapBox then page.recapBox:SetShown(not board) end
+    if page.textRows then for _, row in ipairs(page.textRows) do row:Hide() end end
+    for _, row in ipairs(page.rows) do row:SetShown(view == "firsts") end
+    if page.recapBox then page.recapBox:SetShown(view == "firsts") end
+    page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -36 - top)
+    page.group = chosen and chosen.id
+    local label = chosen and chosen.label:gsub("|", "||")
+    if not chosen then
+        page.heading:SetText(T("Join a group to compete for records with your friends."))
+    end
     if board then
-        page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -8 - top)
-        page.heading:SetText(chosen and (T("Leaderboard") .. " · " .. chosen.label:gsub("|", "||"))
-            or T("Join a group to compete for records with your friends."))
-        page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -38 - top)
-        page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -60 - top)
-        page.scroll:SetHeight(470 - top)
-        page.group = chosen and chosen.id
+        if chosen then page.heading:SetText(T("Leaderboard") .. " · " .. label) end
+        page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -66 - top)
+        page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -88 - top)
+        page.scroll:SetHeight(442 - top)
         renderBoard(chosen)
         return
     end
-    page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -8 - top)
-    page.heading:SetText(chosen and (T("Firsts in") .. " " .. chosen.label:gsub("|", "||"))
-        or T("Join a group to compete for records with your friends."))
-    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -36 - top)
-    page.scroll:SetHeight(494 - top)
-    page.group = chosen and chosen.id
+    if view == "week" or view == "fun" then
+        page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -66 - top)
+        page.scroll:SetHeight(464 - top)
+        if view == "week" then
+            page.weekOffset = page.weekOffset or 0
+            local lines, first, last = F.week(chosen and chosen.id or "", page.weekOffset)
+            if chosen then
+                page.heading:SetText((page.weekOffset == 0 and T("This week") or T("Week")) .. " · " .. label
+                    .. "  |cff9d9d9d" .. first .. " – " .. last .. "|r")
+            end
+            page.weekBack:ClearAllPoints(); page.weekBack:SetPoint("TOPLEFT", 570, -32 - top)
+            page.weekNext:ClearAllPoints(); page.weekNext:SetPoint("TOPLEFT", 640, -32 - top)
+            UI.call(page.weekNext, "SetEnabled", page.weekOffset > 0)
+            textView(lines, "Nothing happened in this group this week.")
+        else
+            if chosen then page.heading:SetText(T("Fun records") .. " · " .. label) end
+            textView(F.funRecords(chosen and chosen.id or ""), "No fun records yet. They appear when someone does something remarkable.")
+        end
+        return
+    end
+    if chosen then page.heading:SetText(T("Firsts in") .. " " .. label) end
+    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -64 - top)
+    page.scroll:SetHeight(466 - top)
     local result, medals = F.compute(WoWStatusJournal.entries(), chosen and chosen.id or "")
     for i, medal in ipairs(medals) do
         local c = page.rows[i] or card(i)
@@ -336,8 +483,13 @@ function F.buildRecords(parent)
         b:SetSize(width, 24); b:SetText(T(label)); b:SetScript("OnClick", fn)
         return b
     end
-    page.viewFirsts = button("Firsts", 104, function() local d = state(); if d then d.view = "firsts" end; F.render() end)
-    page.viewBoard = button("Leaderboard", 120, function() local d = state(); if d then d.view = "leaderboard" end; F.render() end)
+    page.viewFirsts = button("Firsts", 100, function() local d = state(); if d then d.view = "firsts" end; F.render() end)
+    page.viewBoard = button("Leaderboard", 114, function() local d = state(); if d then d.view = "leaderboard" end; F.render() end)
+    page.viewWeek = button("This week", 110, function() local d = state(); if d then d.view = "week" end; page.weekOffset = 0; F.render() end)
+    page.viewFun = button("Fun records", 124, function() local d = state(); if d then d.view = "fun" end; F.render() end)
+    -- Earlier weeks (until /reload the view starts at this week).
+    page.weekBack = button("<", 64, function() page.weekOffset = (page.weekOffset or 0) + 1; F.render() end)
+    page.weekNext = button(">", 64, function() page.weekOffset = math.max(0, (page.weekOffset or 0) - 1); F.render() end)
     page.sort = button("", 140, function()
         local d = state()
         if not d then return end
