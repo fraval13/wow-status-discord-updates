@@ -91,6 +91,15 @@ jobs:
           "$release/.venv/bin/python" -c 'import wow_status.cli'
       - name: Check every addon TOC declares the pyproject version
         run: python scripts/sync_version.py --check
+      # The homepage ships website/ as it stands, so a script that does not parse
+      # would deploy and break the page with nothing red here (#121). The font
+      # licence is third-party text and keeps its own trailing spaces.
+      - name: Lint, parse the website scripts and check whitespace
+        shell: bash
+        run: |
+          ruff check src tests scripts
+          for script in website/*.js; do node --check "$script"; done
+          git diff --check "$(git hash-object -t tree /dev/null)" HEAD -- . ':(exclude)website/assets/fonts'
       # The slowest tests are listed, so a slow runner (Windows) shows where time goes.
       - run: python -m pytest -q --durations=15
         env:
