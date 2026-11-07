@@ -229,3 +229,9 @@ def test_repository_editions_mirror_shared_files_both_ways():
         files = mirrored(ROOT / 'addon' / edition / 'WoWStatus')
         assert {PurePosixPath(name) for name in owned} <= files, edition
         assert files - {PurePosixPath(name) for name in owned} == shared, edition
+
+
+def test_key_bindings_are_mirrored_like_shared_lua():
+    assert sync.in_scope(PurePosixPath('Bindings.xml'))
+    assert not sync.in_scope(PurePosixPath('Other.xml'))
+    assert not sync.in_scope(PurePosixPath('Libs/Bindings.xml'))

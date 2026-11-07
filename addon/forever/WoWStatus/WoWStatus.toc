@@ -49,4 +49,5 @@ StatusLine.lua
 Previews.lua
 Screenshots.lua
 Milestones.lua
+Gamepad.lua
 WoWStatus.lua

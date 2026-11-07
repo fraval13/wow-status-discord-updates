@@ -1,9 +1,9 @@
 """Maintainer tool: mirror canonical shared addon files into every edition folder.
 
 The source of truth is the set of Git-tracked files in ``addon/shared``: top-level
-``*.lua`` files and everything under ``Textures/`` (subfolders included). Dotfiles
+``*.lua`` files, ``Bindings.xml`` and everything under ``Textures/`` (subfolders included). Dotfiles
 and untracked files are never copied. In each ``addon/<edition>/WoWStatus`` folder
-the same scope (top-level ``*.lua`` and ``Textures/``) is made to match exactly:
+the same scope (top-level ``*.lua``, ``Bindings.xml`` and ``Textures/``) is made to match exactly:
 changed files are rewritten and tracked copies whose shared source is gone are
 deleted. Edition-owned files (the adapter Lua and the TOC) are left alone.
 
@@ -64,7 +64,8 @@ def in_scope(relative: PurePosixPath) -> bool:
     if any(part.startswith('.') for part in relative.parts):
         return False
     if len(relative.parts) == 1:
-        return relative.suffix == '.lua'
+        # Bindings.xml: key bindings, which the game loads without a TOC line.
+        return relative.suffix == '.lua' or relative.name == 'Bindings.xml'
     return relative.parts[0] == 'Textures'
 
 
@@ -86,6 +87,8 @@ def _git_files(repo: Path, folder: Path, *options: str) -> set[PurePosixPath]:
 def _scoped_files(folder: Path) -> set[PurePosixPath]:
     """Mirrored-scope files present on disk under ``folder``."""
     found = {PurePosixPath(path.name) for path in folder.glob('*.lua') if path.is_file()}
+    if (folder / 'Bindings.xml').is_file():
+        found.add(PurePosixPath('Bindings.xml'))
     textures = folder / 'Textures'
     if textures.is_dir():
         found |= {

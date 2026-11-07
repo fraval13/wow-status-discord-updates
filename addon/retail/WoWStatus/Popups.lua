@@ -1168,6 +1168,14 @@ end
 function P.hovered()
     return toast ~= nil and toast:IsShown() and MouseIsOver ~= nil and MouseIsOver(toast) == true
 end
+-- Hide the shown notification; the next queued one follows on the next tick.
+-- A click and the Dismiss key binding (a controller button) both land here.
+function P.dismiss()
+    if not (toast and toast:IsShown()) then return false end
+    toast:Hide(); active = nil
+    lastDisplay = time() - 7 -- Advance on the next tick, without dropping queued entries.
+    return true
+end
 local function show(item, now)
     if not toast then
         toast = CreateFrame("Frame", "WoWStatusLevelPopup", UIParent)
@@ -1202,10 +1210,7 @@ local function show(item, now)
             if self.moved then self.moved = false; return end -- The end of a drag, not a click.
             if guarded() then return end
             -- Any click dismisses the toast (it does not open the log).
-            if button=="LeftButton" or button=="RightButton" then
-                self:Hide();active=nil
-                lastDisplay=time()-7 -- Advance on the next tick, without dropping queued entries.
-            end
+            if button=="LeftButton" or button=="RightButton" then P.dismiss() end
         end)
         local bg = toast:CreateTexture(nil, "BACKGROUND")
         bg:SetAllPoints(); bg:SetColorTexture(.025, .035, .065, .96)
