@@ -71,8 +71,8 @@ def test_every_personality_has_paired_banks_of_300_and_30_deaths_per_class():
     lua = make_lua()
     lua.execute('''
         local P=WoWStatusPersonalities
-        assert(#P.order==11 and P.order[1]=="random" and P.order[2]=="classic" and P.current()=="random")
-        assert(#P.voices()==10 and P.voices()[1]=="classic" and not P.banks("random") and not P.banks("classic"))
+        assert(#P.order==13 and P.order[1]=="random" and P.order[2]=="classic" and P.current()=="random")
+        assert(#P.voices()==12 and P.voices()[1]=="classic" and not P.banks("random") and not P.banks("classic"))
         for i=3,#P.order do
             local en,nn=P.banks(P.order[i])
             local count=0
@@ -228,7 +228,7 @@ def test_random_is_the_default_and_mixes_every_voice_per_event():
         end
         local voices=0
         for _ in pairs(seen) do voices=voices+1 end
-        assert(voices==10 and classic>0, voices)
+        assert(voices==12 and classic>0, voices)
         -- Previews draw a fresh voice and line each time.
         local captions={}
         for i=1,30 do captions[F.text({kind="level",level=10,preview=true})]=true end

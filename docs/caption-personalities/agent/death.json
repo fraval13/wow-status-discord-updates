@@ -1,0 +1,2802 @@
+[
+  {
+    "tag": "ANY",
+    "en": "An untidy exit, agent. Headquarters will tidy the file.",
+    "nn": "Ein uryddig sorti, agent. Hovudkvarteret ryddar i mappa."
+  },
+  {
+    "tag": "ANY",
+    "en": "A slight setback. Adjust the cufflinks and carry on.",
+    "nn": "Eit lite tilbakeslag. Rett på mansjettknappane og hald fram."
+  },
+  {
+    "tag": "ANY",
+    "en": "The mission went sideways. Do try to come back upright.",
+    "nn": "Oppdraget gjekk på skeive. Prøv å kome tilbake på beina."
+  },
+  {
+    "tag": "ANY",
+    "en": "Dead? How terribly inconvenient for the paperwork.",
+    "nn": "Død? Så forferdeleg upraktisk for papirarbeidet."
+  },
+  {
+    "tag": "ANY",
+    "en": "Not quite the dramatic escape we discussed in the briefing.",
+    "nn": "Ikkje heilt den dramatiske flukta vi gjekk gjennom på orienteringa."
+  },
+  {
+    "tag": "ANY",
+    "en": "The Ministry will want a full report. Do keep it brief.",
+    "nn": "Departementet vil ha full rapport. Hald han kort."
+  },
+  {
+    "tag": "ANY",
+    "en": "Even the best agents occasionally lie down on the job.",
+    "nn": "Sjølv dei beste agentane legg seg ned i tenesta av og til."
+  },
+  {
+    "tag": "ANY",
+    "en": "A minor complication. Nothing a fresh tuxedo won't fix.",
+    "nn": "Ein liten komplikasjon. Ingenting ein ny smoking ikkje løyser."
+  },
+  {
+    "tag": "ANY",
+    "en": "One does hate to see good tailoring wasted like that.",
+    "nn": "Det er synd å sjå godt skreddarsaum gå til spille slik."
+  },
+  {
+    "tag": "ANY",
+    "en": "Stand up, dust off the lapels, and look unbothered.",
+    "nn": "Reis deg, børst av jakkeslaga og sjå uanfekta ut."
+  },
+  {
+    "tag": "ANY",
+    "en": "The villain got lucky. Villains always think that lasts.",
+    "nn": "Skurken hadde flaks. Skurkar trur alltid at det varer."
+  },
+  {
+    "tag": "ANY",
+    "en": "Headquarters has marked this one as a training exercise.",
+    "nn": "Hovudkvarteret har merkt denne som ei treningsøving."
+  },
+  {
+    "tag": "ANY",
+    "en": "A rather abrupt end to the evening. Shall we go again?",
+    "nn": "Ein brå slutt på kvelden. Skal vi ta ein runde til?"
+  },
+  {
+    "tag": "ANY",
+    "en": "Your codename remains active. Your pulse, less so.",
+    "nn": "Kodenamnet ditt er framleis aktivt. Pulsen din, mindre så."
+  },
+  {
+    "tag": "ANY",
+    "en": "Nobody said the field was safe. They said it was stylish.",
+    "nn": "Ingen sa at feltet var trygt. Dei sa det var stilig."
+  },
+  {
+    "tag": "ANY",
+    "en": "I'll tell your handler you were merely resting your eyes.",
+    "nn": "Eg seier til agentføraren at du berre kvilte augo."
+  },
+  {
+    "tag": "ANY",
+    "en": "Dying in the field. How very dramatic of you, agent.",
+    "nn": "Å døy ute i felten. Så dramatisk av deg, agent."
+  },
+  {
+    "tag": "ANY",
+    "en": "A brief loss of composure. It happens to the best of us.",
+    "nn": "Du miste fatninga ei lita stund. Det hender dei beste."
+  },
+  {
+    "tag": "ANY",
+    "en": "The dossier now reads: briefly deceased, otherwise fine.",
+    "nn": "Mappa seier no: kortvarig avliden, elles i fin form."
+  },
+  {
+    "tag": "ANY",
+    "en": "One fall does not end a career. Several might.",
+    "nn": "Eitt fall endar ikkje ein karriere. Fleire kan hende."
+  },
+  {
+    "tag": "ANY",
+    "en": "A bit of a mess, agent. The cleaners have been notified.",
+    "nn": "Litt rot, agent. Reinhaldarane er varsla."
+  },
+  {
+    "tag": "ANY",
+    "en": "Even an ejector seat could not have saved that one.",
+    "nn": "Ikkje eingong eit katapultsete kunne ha redda den."
+  },
+  {
+    "tag": "ANY",
+    "en": "Shame about the suit. The tailor will be devastated.",
+    "nn": "Synd med dressen. Skreddaren blir knust."
+  },
+  {
+    "tag": "ANY",
+    "en": "Rise and shine, agent. The world still needs saving.",
+    "nn": "Opp og stå, agent. Verda treng framleis å bli redda."
+  },
+  {
+    "tag": "ANY",
+    "en": "A setback, not a defeat. Agents call it an intermission.",
+    "nn": "Eit tilbakeslag, ikkje eit nederlag. Agentar kallar det ein pause."
+  },
+  {
+    "tag": "ANY",
+    "en": "The odds were poor. You played the hand anyway. Admirable.",
+    "nn": "Oddsen var dårleg. Du spelte korta likevel. Beundringsverdig."
+  },
+  {
+    "tag": "ANY",
+    "en": "Lost that round at the table. The night is still young.",
+    "nn": "Tapte den runden ved bordet. Natta er ung enno."
+  },
+  {
+    "tag": "ANY",
+    "en": "The house won this hand. Deal again, agent.",
+    "nn": "Huset vann denne gongen. Del ut på nytt, agent."
+  },
+  {
+    "tag": "ANY",
+    "en": "You bet everything on red. It came up rather black.",
+    "nn": "Du sette alt på raudt. Det vart heller svart."
+  },
+  {
+    "tag": "ANY",
+    "en": "Calmly done, if a touch fatal.",
+    "nn": "Roleg gjort, sjølv om det var litt dødeleg."
+  },
+  {
+    "tag": "ANY",
+    "en": "I trust you at least kept the drink from spilling.",
+    "nn": "Eg går ut frå at du i det minste ikkje sølte drinken."
+  },
+  {
+    "tag": "ANY",
+    "en": "A gentleman never panics. He simply returns, discreetly.",
+    "nn": "Ein gentleman får aldri panikk. Han kjem berre diskré attende."
+  },
+  {
+    "tag": "ANY",
+    "en": "The volcano lair wins this round. Note it for later.",
+    "nn": "Vulkanbasen vann denne runden. Noter det til seinare."
+  },
+  {
+    "tag": "ANY",
+    "en": "Somewhere, a villain is stroking a white cat rather smugly.",
+    "nn": "Ein stad sit ein skurk og strygjer ein kvit katt, svært nøgd."
+  },
+  {
+    "tag": "ANY",
+    "en": "Into the shark tank, were we? Most unsporting.",
+    "nn": "Rett i haitanken, var det? Svært usportsleg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Fret not. The Ministry has spare agents. None quite like you.",
+    "nn": "Ikkje ver redd. Departementet har reserveagentar. Ingen som deg, då."
+  },
+  {
+    "tag": "ANY",
+    "en": "That was not in the mission plan. Improvise, agent.",
+    "nn": "Det stod ikkje i oppdragsplanen. Improviser, agent."
+  },
+  {
+    "tag": "ANY",
+    "en": "A dead drop is for messages, agent, not for you.",
+    "nn": "Ei død postkasse er for meldingar, agent, ikkje for deg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Mission status: paused. Agent status: horizontal.",
+    "nn": "Oppdragsstatus: på pause. Agentstatus: vassrett."
+  },
+  {
+    "tag": "ANY",
+    "en": "Perhaps the exploding pen was meant for them, not you.",
+    "nn": "Kanskje den eksploderande pennen var meint for dei, ikkje deg."
+  },
+  {
+    "tag": "ANY",
+    "en": "The wristwatch laser has a manual. Do read it sometime.",
+    "nn": "Laserklokka har ei bruksrettleiing. Les henne ein gong."
+  },
+  {
+    "tag": "ANY",
+    "en": "The gadget works, they say. Results suggest otherwise.",
+    "nn": "Dingsen verkar, seier dei. Resultatet tyder på noko anna."
+  },
+  {
+    "tag": "ANY",
+    "en": "A clean getaway would have been preferable. Noted.",
+    "nn": "Ei rein flukt hadde vore å føretrekkje. Notert."
+  },
+  {
+    "tag": "ANY",
+    "en": "Back to the briefing room. Bring your own coffee.",
+    "nn": "Tilbake til orienteringsrommet. Ta med eigen kaffi."
+  },
+  {
+    "tag": "ANY",
+    "en": "Exotic location, lovely view, deeply unfortunate ending.",
+    "nn": "Eksotisk stad, nydeleg utsikt, svært uheldig slutt."
+  },
+  {
+    "tag": "ANY",
+    "en": "You went out in style. Do try to come back in it too.",
+    "nn": "Du forsvann med stil. Prøv å kome att med stil òg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Composure intact. Health, regrettably, misplaced.",
+    "nn": "Fatninga er intakt. Helsa er dessverre forlagd."
+  },
+  {
+    "tag": "ANY",
+    "en": "Rule one of the service: never die before the finale.",
+    "nn": "Regel nummer ein i tenesta: døy aldri før finalen."
+  },
+  {
+    "tag": "ANY",
+    "en": "Let's call it a tactical lie-down, shall we?",
+    "nn": "Skal vi kalle det ein taktisk kvilepause?"
+  },
+  {
+    "tag": "ANY",
+    "en": "The ski chase ended at the tree, I see.",
+    "nn": "Skijakta enda ved treet, ser eg."
+  },
+  {
+    "tag": "ANY",
+    "en": "A spectacular fall. The judges award full marks.",
+    "nn": "Eit spektakulært fall. Dommarane gjev full poengsum."
+  },
+  {
+    "tag": "ANY",
+    "en": "Hold still. A medic from Section Four is on the way.",
+    "nn": "Ligg i ro. Ein lækjar frå Seksjon fire er på veg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Even death can't ruffle a well-pressed collar.",
+    "nn": "Ikkje eingong døden får ein velpressa krage i ulage."
+  },
+  {
+    "tag": "ANY",
+    "en": "Rather sloppy, agent. I expected a cleaner finish.",
+    "nn": "Litt slurvete, agent. Eg venta ein reinare avslutning."
+  },
+  {
+    "tag": "ANY",
+    "en": "File it under minor embarrassments and move along.",
+    "nn": "Legg det i mappa for pinlege episodar og gå vidare."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your cover is blown. Rather literally, it seems.",
+    "nn": "Dekket ditt gjekk i lufta. Bokstavleg talt, ser det ut til."
+  },
+  {
+    "tag": "ANY",
+    "en": "The enemy has your attention now. Return the favour.",
+    "nn": "Fienden har merksemda di no. Gjengjeld tenesta."
+  },
+  {
+    "tag": "ANY",
+    "en": "A mission gone wrong is just a mission with a sequel.",
+    "nn": "Eit oppdrag som gjekk gale er berre eit oppdrag med oppfølgjar."
+  },
+  {
+    "tag": "ANY",
+    "en": "No sense crying over a spilt martini. Up you get.",
+    "nn": "Ingen grunn til å gråte over ein sølt drink. Opp med deg."
+  },
+  {
+    "tag": "ANY",
+    "en": "The spirit healer will see you now. Bring your dossier.",
+    "nn": "Åndelækjaren tek imot deg no. Ta med mappa di."
+  },
+  {
+    "tag": "ANY",
+    "en": "A graveyard sprint in a tuxedo. Very dashing.",
+    "nn": "Ein spurt frå gravplassen i smoking. Svært elegant."
+  },
+  {
+    "tag": "ANY",
+    "en": "Ghost form suits you, agent. Discreet, at least.",
+    "nn": "Åndeforma kler deg, agent. Diskré, i alle fall."
+  },
+  {
+    "tag": "ANY",
+    "en": "Invisible and silent. Ideal for spying, poor for living.",
+    "nn": "Usynleg og stille. Ideelt for spionasje, dårleg for å leve."
+  },
+  {
+    "tag": "ANY",
+    "en": "Do run back to your body. It's frightfully lonely.",
+    "nn": "Spring tilbake til kroppen din. Han er forferdeleg einsam."
+  },
+  {
+    "tag": "ANY",
+    "en": "A brief detour through the afterlife. Very well travelled.",
+    "nn": "Ein liten omveg om etterlivet. Du er godt bereist."
+  },
+  {
+    "tag": "ANY",
+    "en": "Down, but not out of the game. Never out of the game.",
+    "nn": "Nede, men ikkje ute av spelet. Aldri ute av spelet."
+  },
+  {
+    "tag": "ANY",
+    "en": "Our enemies will gloat. Let them. It makes them careless.",
+    "nn": "Fiendane våre kjem til å hovere. La dei. Det gjer dei uvørne."
+  },
+  {
+    "tag": "ANY",
+    "en": "Remain calm. Panic is for henchmen.",
+    "nn": "Hald deg roleg. Panikk er for handlangarane."
+  },
+  {
+    "tag": "ANY",
+    "en": "A mere henchman got the better of you? How mortifying.",
+    "nn": "Ein simpel handlangar tok deg? Så pinleg."
+  },
+  {
+    "tag": "ANY",
+    "en": "The henchmen will be insufferable about this.",
+    "nn": "Handlangarane kjem til å vere uuthaldelege etter dette."
+  },
+  {
+    "tag": "ANY",
+    "en": "That trap door was not on the floor plan. We'll update the map.",
+    "nn": "Den falluka stod ikkje på planteikninga. Vi oppdaterer kartet."
+  },
+  {
+    "tag": "ANY",
+    "en": "Classified: the agent's dignity, for the time being.",
+    "nn": "Hemmelegstempla: verdigheita til agenten, inntil vidare."
+  },
+  {
+    "tag": "ANY",
+    "en": "This incident stays strictly between us. And the guild.",
+    "nn": "Denne hendinga blir strengt mellom oss. Og guilden."
+  },
+  {
+    "tag": "ANY",
+    "en": "Strictly classified: one agent, slightly dead.",
+    "nn": "Strengt gradert: éin agent, litt død."
+  },
+  {
+    "tag": "ANY",
+    "en": "Top secret: you are not invincible after all.",
+    "nn": "Topphemmeleg: du er ikkje uovervinneleg likevel."
+  },
+  {
+    "tag": "ANY",
+    "en": "A dramatic fall from a great height. Very cinematic.",
+    "nn": "Eit dramatisk fall frå stor høgd. Svært filmatisk."
+  },
+  {
+    "tag": "ANY",
+    "en": "The getaway car was parked elsewhere, I gather.",
+    "nn": "Fluktbilen stod parkert ein annan stad, skjønar eg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Next time, agent, read the fine print on the mission.",
+    "nn": "Neste gong, agent, les det med liten skrift i oppdraget."
+  },
+  {
+    "tag": "ANY",
+    "en": "Ah. That's going in the debriefing.",
+    "nn": "Å ja. Det kjem med i debriefinga."
+  },
+  {
+    "tag": "ANY",
+    "en": "Death is merely a cover story, agent. Onwards.",
+    "nn": "Døden er berre ei dekkhistorie, agent. Vidare."
+  },
+  {
+    "tag": "ANY",
+    "en": "Lie low for a moment. Then return with a vengeance.",
+    "nn": "Ligg lågt ei lita stund. Kom så tilbake med full kraft."
+  },
+  {
+    "tag": "ANY",
+    "en": "A temporary retirement. The service never lets go.",
+    "nn": "Ein mellombels pensjon. Tenesta slepp aldri taket."
+  },
+  {
+    "tag": "ANY",
+    "en": "A quiet word: that was not your finest hour.",
+    "nn": "Eit lite ord: det var ikkje di stoltaste stund."
+  },
+  {
+    "tag": "ANY",
+    "en": "The cufflinks survived. That's something.",
+    "nn": "Mansjettknappane overlevde. Det er då noko."
+  },
+  {
+    "tag": "ANY",
+    "en": "The bow tie is still straight. Priorities intact.",
+    "nn": "Sløyfa sit framleis rett. Prioriteringane er i orden."
+  },
+  {
+    "tag": "ANY",
+    "en": "Not every mission ends with champagne. This one ended in mud.",
+    "nn": "Ikkje alle oppdrag endar med champagne. Dette enda i gjørme."
+  },
+  {
+    "tag": "ANY",
+    "en": "You took one for the team. Several, actually.",
+    "nn": "Du tok støyten for laget. Fleire støytar, faktisk."
+  },
+  {
+    "tag": "ANY",
+    "en": "An occupational hazard. The pension plan is excellent.",
+    "nn": "Ein yrkesrisiko. Pensjonsordninga er framifrå."
+  },
+  {
+    "tag": "ANY",
+    "en": "Mild peril has turned into rather serious peril.",
+    "nn": "Litt fare vart til ganske alvorleg fare."
+  },
+  {
+    "tag": "ANY",
+    "en": "They shot first. Rude, but effective.",
+    "nn": "Dei skaut først. Uhøfleg, men effektivt."
+  },
+  {
+    "tag": "ANY",
+    "en": "The enemy forgot their manners. You forgot to duck.",
+    "nn": "Fienden gløymde folkeskikken. Du gløymde å dukke."
+  },
+  {
+    "tag": "ANY",
+    "en": "A spy in the wrong place at the wrong time. Classic.",
+    "nn": "Ein spion på feil stad til feil tid. Klassisk."
+  },
+  {
+    "tag": "ANY",
+    "en": "The villain monologued. You should have left during it.",
+    "nn": "Skurken heldt monolog. Du burde ha gått medan han heldt på."
+  },
+  {
+    "tag": "ANY",
+    "en": "Never trust a villain who offers you tea.",
+    "nn": "Stol aldri på ein skurk som bed deg på te."
+  },
+  {
+    "tag": "ANY",
+    "en": "The trap was obvious. To everyone but the agent.",
+    "nn": "Fella var openberr. For alle andre enn agenten."
+  },
+  {
+    "tag": "ANY",
+    "en": "Most agents would sulk. You, I trust, will simply return.",
+    "nn": "Dei fleste agentar ville surna. Du, reknar eg med, kjem berre att."
+  },
+  {
+    "tag": "ANY",
+    "en": "In this line of work, one learns to fall gracefully.",
+    "nn": "I dette yrket lærer ein å falle med ynde."
+  },
+  {
+    "tag": "ANY",
+    "en": "Well, that's one way to leave a party early.",
+    "nn": "Vel, det er ein måte å gå tidleg frå festen på."
+  },
+  {
+    "tag": "ANY",
+    "en": "Fashionably late? No, agent, unfashionably early.",
+    "nn": "Fasjonabelt sein? Nei, agent, ufasjonabelt tidleg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your handler sighs and reaches for another file.",
+    "nn": "Agentføraren sukkar og tek fram ei ny mappe."
+  },
+  {
+    "tag": "ANY",
+    "en": "The Ministry regrets nothing. Except perhaps that.",
+    "nn": "Departementet angrar ingenting. Bortsett frå det, kanskje."
+  },
+  {
+    "tag": "ANY",
+    "en": "A field promotion to ghost. Congratulations, sort of.",
+    "nn": "Forfremja i felten til ånd. Gratulerer, på ein måte."
+  },
+  {
+    "tag": "ANY",
+    "en": "One good fall deserves a better comeback.",
+    "nn": "Eit godt fall fortener eit endå betre comeback."
+  },
+  {
+    "tag": "ANY",
+    "en": "You were outnumbered. Normally a mere detail.",
+    "nn": "Du var i mindretal. Normalt berre ein detalj."
+  },
+  {
+    "tag": "ANY",
+    "en": "Keep the tuxedo. Return the body to working order.",
+    "nn": "Behald smokingen. Set kroppen i stand att."
+  },
+  {
+    "tag": "ANY",
+    "en": "The section chief says: try not to make a habit of it.",
+    "nn": "Seksjonssjefen seier: prøv å ikkje gjere det til ein vane."
+  },
+  {
+    "tag": "ANY",
+    "en": "That landing could use some polish, agent.",
+    "nn": "Den landinga treng litt finpuss, agent."
+  },
+  {
+    "tag": "ANY",
+    "en": "A mission only fails if you stay down.",
+    "nn": "Eit oppdrag er berre mislukka om du blir liggjande."
+  },
+  {
+    "tag": "ANY",
+    "en": "Pity. You were having such a pleasant evening.",
+    "nn": "Synd. Du hadde ein så triveleg kveld."
+  },
+  {
+    "tag": "ANY",
+    "en": "The car's ejector seat was for emergencies. Like that one.",
+    "nn": "Katapultsetet i bilen var for naudsituasjonar. Som den der."
+  },
+  {
+    "tag": "ANY",
+    "en": "Diplomatic immunity does not cover that, I'm afraid.",
+    "nn": "Diplomatisk immunitet dekkjer dessverre ikkje det."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your alibi for tonight: deceased. Very convincing.",
+    "nn": "Alibiet ditt for i kveld: avliden. Svært truverdig."
+  },
+  {
+    "tag": "ANY",
+    "en": "Remarkable poise for someone so thoroughly dead.",
+    "nn": "Imponerande haldning for nokon som er så grundig død."
+  },
+  {
+    "tag": "ANY",
+    "en": "Death by misadventure. Headquarters has a form for that.",
+    "nn": "Død ved ulukke. Hovudkvarteret har eit skjema for det."
+  },
+  {
+    "tag": "ANY",
+    "en": "A tactical retreat would have been the elegant choice.",
+    "nn": "Ein taktisk retrett hadde vore det elegante valet."
+  },
+  {
+    "tag": "ANY",
+    "en": "Calm down. The world has not ended. Only you, briefly.",
+    "nn": "Ta det roleg. Verda gjekk ikkje under. Berre du, ei lita stund."
+  },
+  {
+    "tag": "ANY",
+    "en": "The briefing said to avoid that. It was in bold.",
+    "nn": "Orienteringa sa du skulle unngå det. Det stod med feit skrift."
+  },
+  {
+    "tag": "ANY",
+    "en": "Pull yourself together, agent. Quite literally.",
+    "nn": "Ta deg saman, agent. Heilt bokstavleg."
+  },
+  {
+    "tag": "ANY",
+    "en": "The opposition scores a point. They rarely score two.",
+    "nn": "Motstandarane får eitt poeng. Dei får sjeldan to."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your expense report must now include a funeral.",
+    "nn": "Utgiftsrapporten din må no òg dekkje ei gravferd."
+  },
+  {
+    "tag": "ANY",
+    "en": "Keep calm. Spies have nine lives. Spend them wisely.",
+    "nn": "Ta det med ro. Spionar har ni liv. Bruk dei klokt."
+  },
+  {
+    "tag": "ANY",
+    "en": "Abort, abort. Too late, I see.",
+    "nn": "Avbryt, avbryt. For seint, ser eg."
+  },
+  {
+    "tag": "ANY",
+    "en": "A dramatic pause before the third act. Splendid.",
+    "nn": "Ein dramatisk pause før tredje akt. Strålande."
+  },
+  {
+    "tag": "ANY",
+    "en": "Not the cleanest exit from a casino I've seen.",
+    "nn": "Ikkje den reinaste utgangen frå eit kasino eg har sett."
+  },
+  {
+    "tag": "ANY",
+    "en": "The croupier took your chips and, regrettably, you.",
+    "nn": "Croupieren tok sjetongane dine og, dessverre, deg òg."
+  },
+  {
+    "tag": "ANY",
+    "en": "You folded at the worst moment. Ante up and play again.",
+    "nn": "Du kasta korta på verste tidspunkt. Legg inn og spel igjen."
+  },
+  {
+    "tag": "ANY",
+    "en": "Mission accomplished? Not quite. Ask again shortly.",
+    "nn": "Oppdraget fullført? Ikkje heilt. Spør igjen om litt."
+  },
+  {
+    "tag": "ANY",
+    "en": "That villain has a very poor sense of hospitality.",
+    "nn": "Den skurken har svært dårleg sans for gjestfridom."
+  },
+  {
+    "tag": "ANY",
+    "en": "I suppose the self-destruct button was mislabelled.",
+    "nn": "Sjølvøydeleggingsknappen var vel feilmerkt, går eg ut frå."
+  },
+  {
+    "tag": "ANY",
+    "en": "A word from the Ministry: please stop doing that.",
+    "nn": "Eit ord frå departementet: ver så snill og slutt med det."
+  },
+  {
+    "tag": "ANY",
+    "en": "A noble sacrifice. Possibly an unnecessary one.",
+    "nn": "Eit edelt offer. Om enn kanskje unødvendig."
+  },
+  {
+    "tag": "ANY",
+    "en": "The safe house is that way. Walk, don't haunt.",
+    "nn": "Det trygge huset ligg den vegen. Gå, ikkje gå igjen."
+  },
+  {
+    "tag": "ANY",
+    "en": "You fell for it, agent. The oldest trick in the dossier.",
+    "nn": "Du gjekk rett i fella, agent. Det eldste trikset i mappa."
+  },
+  {
+    "tag": "ANY",
+    "en": "Do get up before someone reports you missing.",
+    "nn": "Reis deg før nokon melder deg sakna."
+  },
+  {
+    "tag": "ANY",
+    "en": "A temporary setback in an otherwise glittering career.",
+    "nn": "Eit mellombels tilbakeslag i ein elles glitrande karriere."
+  },
+  {
+    "tag": "ANY",
+    "en": "Grace under pressure. Then just pressure.",
+    "nn": "Ynde under press. Så berre press."
+  },
+  {
+    "tag": "ANY",
+    "en": "The heroic last stand was, regrettably, quite final.",
+    "nn": "Det heroiske siste standhaldet vart, dessverre, verkeleg det siste."
+  },
+  {
+    "tag": "ANY",
+    "en": "Someone call the tailor. And possibly a priest.",
+    "nn": "Nokon må ringje skreddaren. Og kanskje ein prest."
+  },
+  {
+    "tag": "ANY",
+    "en": "I'll have the details redacted. All of them.",
+    "nn": "Eg får detaljane sladda. Alle saman."
+  },
+  {
+    "tag": "ANY",
+    "en": "Strictly between agents: that was rather silly.",
+    "nn": "Mellom oss agentar: det var litt tåpeleg."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your watch has stopped. So, briefly, have you.",
+    "nn": "Klokka di har stoppa. Det har du òg, ei lita stund."
+  },
+  {
+    "tag": "ANY",
+    "en": "The enemy knew you were coming. Next time, arrive unannounced.",
+    "nn": "Fienden visste du kom. Neste gong kjem du uanmeldt."
+  },
+  {
+    "tag": "ANY",
+    "en": "Back on your feet, agent. Villains don't foil themselves.",
+    "nn": "Opp på beina, agent. Skurkar stoppar ikkje seg sjølve."
+  },
+  {
+    "tag": "ANY",
+    "en": "That was more dramatic than strictly necessary.",
+    "nn": "Det var meir dramatisk enn strengt naudsynt."
+  },
+  {
+    "tag": "ANY",
+    "en": "Such a fuss. Brush it off and order another round.",
+    "nn": "For eit oppstyr. Rist det av deg og bestill ein runde til."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your enemies have mistaken a pause for a victory.",
+    "nn": "Fiendane dine har forveksla ein pause med ein siger."
+  },
+  {
+    "tag": "ANY",
+    "en": "You'll need a new identity. Ideally a living one.",
+    "nn": "Du treng ein ny identitet. Helst ein levande ein."
+  },
+  {
+    "tag": "ANY",
+    "en": "Bad intelligence, I suspect. Somebody will be reassigned.",
+    "nn": "Dårleg etterretning, mistenkjer eg. Nokon blir omplassert."
+  },
+  {
+    "tag": "ANY",
+    "en": "One does not die in a dinner jacket. One rests stylishly.",
+    "nn": "Ein døyr ikkje i smoking. Ein kviler stilfullt."
+  },
+  {
+    "tag": "ANY",
+    "en": "Your next assignment: stop being dead.",
+    "nn": "Neste oppdrag ditt: slutt å vere død."
+  },
+  {
+    "tag": "ANY",
+    "en": "The plan was flawless. The execution, less so.",
+    "nn": "Planen var feilfri. Gjennomføringa, mindre så."
+  },
+  {
+    "tag": "ANY",
+    "en": "Back to headquarters with you. On foot, as a ghost.",
+    "nn": "Tilbake til hovudkvarteret med deg. Til fots, som ånd."
+  },
+  {
+    "tag": "ANY",
+    "en": "Agent down. Repeat: agent down. Agent mildly annoyed.",
+    "nn": "Agent nede. Gjentek: agent nede. Agent litt irritert."
+  },
+  {
+    "tag": "ANY",
+    "en": "A cool head, a warm heart, and a very cold body.",
+    "nn": "Kaldt hovud, varmt hjarte og ein svært kald kropp."
+  },
+  {
+    "tag": "ANY",
+    "en": "This goes in the training manual. Under things not to do.",
+    "nn": "Dette kjem med i opplæringsboka. Under ting du ikkje skal gjere."
+  },
+  {
+    "tag": "ANY",
+    "en": "Remember, agent: the floor is not a hiding place.",
+    "nn": "Hugs, agent: golvet er ikkje ein gøymestad."
+  },
+  {
+    "tag": "ANY",
+    "en": "You were in over your head. Quite deep, in fact.",
+    "nn": "Du var ute på djupt vatn. Ganske djupt, faktisk."
+  },
+  {
+    "tag": "ANY",
+    "en": "Even legends take a tumble. Tonight was your turn.",
+    "nn": "Sjølv legender fell av og til. I kveld var det din tur."
+  },
+  {
+    "tag": "ANY",
+    "en": "An excellent performance, marred only by the ending.",
+    "nn": "Ei glimrande framføring, øydelagd berre av slutten."
+  },
+  {
+    "tag": "ANY",
+    "en": "The mission clock is still ticking. Up you hop.",
+    "nn": "Oppdragsklokka tikkar framleis. Opp og hopp."
+  },
+  {
+    "tag": "ANY",
+    "en": "Charming to the last. And then a little beyond.",
+    "nn": "Sjarmerande til det siste. Og litt forbi det."
+  },
+  {
+    "tag": "ANY",
+    "en": "You may have lost the battle. The tie is unwrinkled.",
+    "nn": "Du tapte kanskje slaget. Slipset er utan ei krøll."
+  },
+  {
+    "tag": "ANY",
+    "en": "Do keep the dying discreet. The neighbours talk.",
+    "nn": "Hald døyinga diskré. Naboane snakkar."
+  },
+  {
+    "tag": "ANY",
+    "en": "Retreat, regroup, reapply hair oil. Then return.",
+    "nn": "Trekk deg tilbake, samle deg, ta på litt hårvoks. Kom så att."
+  },
+  {
+    "tag": "ANY",
+    "en": "Not quite the grand entrance into the afterlife I'd have planned.",
+    "nn": "Ikkje heilt den store inngangen til etterlivet eg ville ha planlagt."
+  },
+  {
+    "tag": "ANY",
+    "en": "Some missions end with a bang. Yours ended with a thud.",
+    "nn": "Nokre oppdrag endar med eit smell. Ditt enda med eit dunk."
+  },
+  {
+    "tag": "ANY",
+    "en": "Luckily, the service believes in second chances.",
+    "nn": "Heldigvis trur tenesta på andre sjansar."
+  },
+  {
+    "tag": "ANY",
+    "en": "A villain's laugh echoes somewhere. Spoil it by returning.",
+    "nn": "Ein skurkelatter ekkoar ein stad. Øydelegg han ved å kome att."
+  },
+  {
+    "tag": "ANY",
+    "en": "Mind the gap between brave and reckless, agent.",
+    "nn": "Pass på skilnaden mellom modig og uvøren, agent."
+  },
+  {
+    "tag": "ANY",
+    "en": "That's a red stamp on the file. Nothing to fuss about.",
+    "nn": "Det blir eit raudt stempel i mappa. Ikkje noko å bry seg om."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Perhaps Icebound Fortitude next time, agent?",
+    "nn": "Kanskje Icebound Fortitude neste gong, agent?"
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Anti-Magic Shell was in your kit. Do consider unpacking it.",
+    "nn": "Anti-Magic Shell låg i utstyret ditt. Vurder å pakke det ut."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Already undead and still managed to die. Impressive tradecraft.",
+    "nn": "Alt udøyd, og likevel klarte du å døy. Imponerande agenthandverk."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "A Death Grip might have brought the villain to you instead.",
+    "nn": "Eit Death Grip kunne ha drege skurken til deg i staden."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Your runes appear to be on a coffee break.",
+    "nn": "Runene dine ser ut til å ha kaffipause."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Death and the death knight: a long, complicated relationship.",
+    "nn": "Døden og dødsriddaren: eit langt og innvikla forhold."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "One would think a death knight had the afterlife sorted.",
+    "nn": "Ein skulle tru ein dødsriddar hadde etterlivet under kontroll."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Army of the Dead, agent. Recruit them before you join them.",
+    "nn": "Army of the Dead, agent. Rekrutter dei før du blir med dei."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Death Strike heals, agent. It says so in the manual.",
+    "nn": "Death Strike lækjer, agent. Det står i bruksrettleiinga."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Your ghoul is waiting rather awkwardly. Do rise.",
+    "nn": "Ghoulen din ventar litt kleint. Reis deg no."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "The Lich King would have expected better posture.",
+    "nn": "Lich King ville ha venta betre haldning."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Cold blood, cold armour, cold floor. Up you get.",
+    "nn": "Kaldt blod, kald rustning, kaldt golv. Opp med deg."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Mind Freeze the villain's monologue next time.",
+    "nn": "Mind Freeze monologen til skurken neste gong."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Vampiric Blood keeps a death knight topped up. Worth a thought.",
+    "nn": "Vampiric Blood held ein dødsriddar oppe. Verdt ein tanke."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Death Gate home to Acherus and have a quiet word with yourself.",
+    "nn": "Ta Death Gate heim til Acherus og ta ein prat med deg sjølv."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "A runeblade and a frosty stare. Use both next time.",
+    "nn": "Eit runesverd og eit iskaldt blikk. Bruk begge neste gong."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Lichborne, agent. The name alone should be a hint.",
+    "nn": "Lichborne, agent. Namnet åleine burde vere eit hint."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Dying is somewhat redundant for a death knight, surely.",
+    "nn": "Å døy er vel litt overflødig for ein dødsriddar."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "The plague did not spread as planned, I gather.",
+    "nn": "Pesten spreidde seg visst ikkje som planlagt."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Rune weapons should not be left on the floor, agent.",
+    "nn": "Runevåpen skal ikkje liggje på golvet, agent."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "A Dancing Rune Weapon could have taken that hit for you.",
+    "nn": "Eit Dancing Rune Weapon kunne ha teke den smellen for deg."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Second death this lifetime, or third? I've lost the file.",
+    "nn": "Andre død i dette livet, eller tredje? Eg har mista mappa."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Undead, unbowed, and briefly unconscious.",
+    "nn": "Udøyd, ubøygd og ei lita stund medvitslaus."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "The Ebon Blade will hear of this. Discreetly, of course.",
+    "nn": "Ebon Blade kjem til å høyre om dette. Diskré, sjølvsagt."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Rise again, agent. You do it professionally, after all.",
+    "nn": "Stå opp att, agent. Du gjer det jo profesjonelt."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Cold as ice under pressure. Rather too cold, now.",
+    "nn": "Iskald under press. No litt for kald."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "A Death Pact with your ghoul might have saved the evening.",
+    "nn": "Ein Death Pact med ghoulen din kunne ha redda kvelden."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Even a frost wyrm would wince at that landing.",
+    "nn": "Sjølv ein frostdrake ville ha grøssa over den landinga."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "Your runic power appears to have been withdrawn by the bank.",
+    "nn": "Runekrafta di ser ut til å vere teken ut av banken."
+  },
+  {
+    "tag": "DEATHKNIGHT",
+    "en": "A death knight on the floor? Unthinkable. Stand at once.",
+    "nn": "Ein dødsriddar på golvet? Utenkjeleg. Reis deg med ein gong."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Blur, agent. Evasive, elusive, and very you.",
+    "nn": "Blur, agent. Unnvikande, glatt og svært deg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Vengeful Retreat is right there. Retreating is no disgrace.",
+    "nn": "Vengeful Retreat er rett der. Det er inga skam å trekkje seg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "A blindfold is for style, agent, not for crossing traffic.",
+    "nn": "Bindet for auga er for stilen, agent, ikkje for å krysse vegen."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Spectral Sight might have spotted that coming.",
+    "nn": "Spectral Sight kunne kanskje ha sett det kome."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Metamorphosis was an option. Do keep it in mind.",
+    "nn": "Metamorphosis var eit alternativ. Hugs på det."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Fel Rush is for escapes as well as entrances, agent.",
+    "nn": "Fel Rush er for flukt òg, agent, ikkje berre for store inngangar."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Netherwalk, agent. It's hard to hit what isn't quite there.",
+    "nn": "Netherwalk, agent. Det er vanskeleg å treffe det som ikkje heilt er der."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Glide out of trouble next time. The wings are not decorative.",
+    "nn": "Svev ut av knipa neste gong. Vengene er ikkje pynt."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Darkness might have hidden you rather nicely, agent.",
+    "nn": "Darkness kunne ha gøymt deg ganske fint, agent."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "All that fel power and no Demon Spikes? Curious.",
+    "nn": "All den felkrafta og ingen Demon Spikes? Merkeleg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "The Illidari will want a report. Keep it short and sharp.",
+    "nn": "Illidari vil ha ein rapport. Hald han kort og skarp."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Eye Beam the problem next time, agent. Before it beams you.",
+    "nn": "Eye Beam problemet neste gong, agent. Før det tek deg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Twin glaives, one agent, zero dodges.",
+    "nn": "To glaivar, éin agent, null unnamanøvrar."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Imprison the villain before he becomes a problem.",
+    "nn": "Imprison skurken før han blir eit problem."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "You sacrificed a great deal for power. Not your life, I hope.",
+    "nn": "Du ofra mykje for makt. Eg håpar livet ikkje var med."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "The demon inside you is sulking. Wake it up.",
+    "nn": "Demonen inni deg surmular. Vekk han."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Soul Cleave heals, agent. Cleave more souls next time.",
+    "nn": "Soul Cleave lækjer, agent. Kløyv fleire sjeler neste gong."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "A demon hunter with no getaway plan. Do draft one.",
+    "nn": "Ein demonjeger utan fluktplan. Lag deg ein."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Double jump, agent. Ideally away from the danger.",
+    "nn": "Dobbelthopp, agent. Helst vekk frå faren."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Tattoos glowing, pride slightly dimmed. Up you get.",
+    "nn": "Tatoveringane lyser, stoltheita er litt dempa. Opp med deg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "A sigil underfoot might have slowed them down.",
+    "nn": "Ein sigil under føtene kunne ha bremsa dei."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "You hunted demons. Something hunted back.",
+    "nn": "Du jakta på demonar. Noko jakta tilbake."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Agility and wings, and still caught. Most unusual.",
+    "nn": "Smidigheit og venger, og likevel teken. Svært uvanleg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "One agent, one blindfold, one rather unfortunate wall.",
+    "nn": "Éin agent, eitt bind for auga, éin uheldig vegg."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "A demon hunter on the floor. Do look the other way, everyone.",
+    "nn": "Ein demonjeger på golvet. Sjå ein annan veg, alle saman."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Keep Blur and Netherwalk where you can reach them, agent.",
+    "nn": "Ha Blur og Netherwalk der du når dei, agent."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Fel burns bright, agent. Tonight it flickered.",
+    "nn": "Fel brenn sterkt, agent. I kveld flakra det."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Mysterious, brooding, and briefly deceased. Classic look.",
+    "nn": "Mystisk, grublande og kort tid avliden. Klassisk stil."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "Consume Magic before the magic consumes you, agent.",
+    "nn": "Consume Magic før magien et deg, agent."
+  },
+  {
+    "tag": "DEMONHUNTER",
+    "en": "The demons are laughing. Make them stop, agent.",
+    "nn": "Demonane ler. Få dei til å slutte, agent."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Barkskin, agent. Tailoring by Mother Nature, very durable.",
+    "nn": "Barkskin, agent. Skreddarsaum frå Moder Natur, svært slitesterk."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Bear Form has very thick fur. Do wear it to dangerous parties.",
+    "nn": "Bear Form har svært tjukk pels. Bruk han i farlege selskap."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Travel Form is an excellent getaway car, agent.",
+    "nn": "Travel Form er ein framifrå fluktbil, agent."
+  },
+  {
+    "tag": "DRUID",
+    "en": "A cat that prowls should also know when to slink away.",
+    "nn": "Ein katt som sniker seg fram bør òg vite når han skal liste seg vekk."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Rebirth is a lovely trick. Shame it only works on others.",
+    "nn": "Rebirth er eit fint triks. Synd det berre verkar på andre."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Entangling Roots, agent. Let them admire the scenery a while.",
+    "nn": "Entangling Roots, agent. La dei beundre utsikta ei stund."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Regrowth on yourself, agent. Healing is not only for friends.",
+    "nn": "Regrowth på deg sjølv, agent. Heling er ikkje berre for vener."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Shapeshifter extraordinaire, and still spotted.",
+    "nn": "Hamskiftar i særklasse, og likevel oppdaga."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Frenzied Regeneration might have kept the fur on.",
+    "nn": "Frenzied Regeneration kunne kanskje ha halde pelsen på."
+  },
+  {
+    "tag": "DRUID",
+    "en": "A moonkin on the floor is a sorry sight, agent.",
+    "nn": "Ein moonkin på golvet er eit trist syn, agent."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Hibernate the villain's pet and the odds improve nicely.",
+    "nn": "Hibernate kjæledyret til skurken, så blir oddsen mykje betre."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Nature is calm and patient. You were neither, I suspect.",
+    "nn": "Naturen er roleg og tolmodig. Du var ingen av delane, mistenkjer eg."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Too many forms, not enough escape plans.",
+    "nn": "For mange skjema, for få fluktplanar."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Moonfire is lovely, but it rarely stops a charging brute.",
+    "nn": "Moonfire er fint, men det stoppar sjeldan ein stormande bølle."
+  },
+  {
+    "tag": "DRUID",
+    "en": "The Cenarion Circle sends its regards. And a fern.",
+    "nn": "Cenarion Circle sender helsing. Og ein bregne."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Cat Form, Prowl, and slip quietly out the back next time.",
+    "nn": "Cat Form, Prowl og smett stille ut bakdøra neste gong."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Even an ancient oak falls eventually. You did so early.",
+    "nn": "Sjølv ei gammal eik fell til slutt. Du gjorde det tidleg."
+  },
+  {
+    "tag": "DRUID",
+    "en": "A druid, a disguise, and a dismal outcome.",
+    "nn": "Ein druide, ei forkledning og eit trist utfall."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Rejuvenation ticks slowly, agent. Begin earlier.",
+    "nn": "Rejuvenation tikkar sakte, agent. Start tidlegare."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Turn into something sturdier before the trouble starts.",
+    "nn": "Bli til noko sterkare før bråket startar."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Dash, agent. It's called that for a reason.",
+    "nn": "Dash, agent. Det heiter det av ein grunn."
+  },
+  {
+    "tag": "DRUID",
+    "en": "The Emerald Dream can wait. The mission cannot.",
+    "nn": "Den smaragdgrøne draumen kan vente. Oppdraget kan ikkje det."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Fur, feathers, leaves. Every disguise but a living one.",
+    "nn": "Pels, fjør, lauv. Alle forkledningar utanom ein levande ein."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Nature reclaims all things. Do not let it start with you.",
+    "nn": "Naturen tek tilbake alt. Ikkje la han starte med deg."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Swiftmend, agent. Swift being the operative word.",
+    "nn": "Swiftmend, agent. Snøgt er stikkordet."
+  },
+  {
+    "tag": "DRUID",
+    "en": "A bear that falls over is still a bear. Up, agent.",
+    "nn": "Ein bjørn som dett er framleis ein bjørn. Opp, agent."
+  },
+  {
+    "tag": "DRUID",
+    "en": "The owls of Moonglade will gossip about this for weeks.",
+    "nn": "Uglene i Moonglade kjem til å sladre om dette i vekevis."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Aquatic Form might have escaped by sea. Just a thought.",
+    "nn": "Aquatic Form kunne ha rømt sjøvegen. Berre ein tanke."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Master of every shape but the shape of a survivor.",
+    "nn": "Meister i alle skapnader, unnateke den som overlever."
+  },
+  {
+    "tag": "DRUID",
+    "en": "Gardens grow back slowly. So, apparently, do druids.",
+    "nn": "Hagar gror sakte att. Det gjer visst druidar òg."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Obsidian Scales: the finest armour money can't buy.",
+    "nn": "Obsidian Scales: den finaste rustninga pengar ikkje kan kjøpe."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Renewing Blaze would have kept you warm and alive.",
+    "nn": "Renewing Blaze kunne ha halde deg varm og i live."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Hover is for escaping, agent, not for loitering.",
+    "nn": "Hover er til å rømme med, agent, ikkje til å slenge rundt."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "A dragon in a dinner jacket should never land that hard.",
+    "nn": "Ein drake i smoking skal aldri lande så hardt."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Deep Breath, agent. Then fly away from the volcano.",
+    "nn": "Deep Breath, agent. Fly så vekk frå vulkanen."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Rewind, agent. Ideally to just before that happened.",
+    "nn": "Rewind, agent. Helst til like før det skjedde."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Wing Buffet them away next time. Politely, of course.",
+    "nn": "Wing Buffet dei vekk neste gong. Høfleg, sjølvsagt."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Emerald Blossom on yourself is not vanity. It is survival.",
+    "nn": "Emerald Blossom på deg sjølv er ikkje forfengeleg. Det er overleving."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Scales, wings and fire. And yet, the floor.",
+    "nn": "Skjel, venger og eld. Og likevel golvet."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "The Dragon Aspects would raise a collective eyebrow.",
+    "nn": "Drakeaspekta ville lyfte augebryna i kor."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "A dracthyr agent should always have an escape route by air.",
+    "nn": "Ein dracthyr-agent bør alltid ha ei fluktrute gjennom lufta."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Soar next time. Dramatic exits are your speciality.",
+    "nn": "Bruk Soar neste gong. Dramatiske sortiar er jo spesialiteten din."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Fire Breath is wonderful at range. Do keep some range.",
+    "nn": "Fire Breath er fantastisk på avstand. Hald litt avstand."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Verdant Embrace yourself, agent. Self-care is tradecraft.",
+    "nn": "Verdant Embrace deg sjølv, agent. Eigenomsorg er agenthandverk."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "A Cauterizing Flame might have burned that trouble away.",
+    "nn": "Ein Cauterizing Flame kunne ha brent bort det bryet."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Time Dilation, agent. More seconds, more style.",
+    "nn": "Time Dilation, agent. Fleire sekund, meir stil."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Asleep for ages, awake for this. Most unfortunate.",
+    "nn": "Sov i tidsaldrar, vakna for dette. Svært uheldig."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "A dragon should never be grounded, agent. Not even briefly.",
+    "nn": "Ein drake skal aldri ha flygeforbod, agent. Ikkje eingong kort."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Tail Swipe them off their feet before they return the favour.",
+    "nn": "Tail Swipe dei over ende før dei gjer det same mot deg."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Living Flame, agent. Note the word living.",
+    "nn": "Living Flame, agent. Legg merke til ordet living."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "A cool head is wise when one breathes fire.",
+    "nn": "Eit kaldt hovud er klokt når ein pustar eld."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Zephyr, agent. A gentle breeze can save a life.",
+    "nn": "Zephyr, agent. Ein mild bris kan redde eit liv."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "You can empower a spell. Do empower the dodge as well.",
+    "nn": "Du kan gje ein trolldom ekstra kraft. Gjer det same med unnamanøveren."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "The Forbidden Reach was safer, apparently.",
+    "nn": "Forbidden Reach var visst tryggare."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Every dragon needs an escape hatch. Find yours.",
+    "nn": "Kvar drake treng ei rømingsluke. Finn di."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Scaled, winged and fireproof. Mostly fireproof.",
+    "nn": "Skjelkledd, bevinga og brannsikker. For det meste."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Your breath weapon is formidable. Your footwork, less so.",
+    "nn": "Pustevåpenet ditt er formidabelt. Fotarbeidet, mindre så."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "A grounded dragon is just a very elegant lizard. Rise.",
+    "nn": "Ein drake på bakken er berre ei svært elegant øgle. Reis deg."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "Keep a little essence in reserve for the getaway.",
+    "nn": "Spar litt essence til flukta."
+  },
+  {
+    "tag": "EVOKER",
+    "en": "The dragonflights will hear nothing of this. You have my word.",
+    "nn": "Drakeflokkane får ikkje høyre noko om dette. Du har mitt ord."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Perhaps Feign Death next time, agent? Same pose, better outcome.",
+    "nn": "Kanskje Feign Death neste gong, agent? Same positur, betre utfall."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Disengage, agent. A graceful backwards leap out of trouble.",
+    "nn": "Disengage, agent. Eit elegant sprang baklengs ut av knipa."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Your pet is guarding your body admirably. Do rejoin it.",
+    "nn": "Kjæledyret ditt vaktar kroppen din flott. Kom deg tilbake til det."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A Freezing Trap would have put the villain on ice.",
+    "nn": "Ei Freezing Trap kunne ha sett skurken på is."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Aspect of the Cheetah is ideal for a hasty exit.",
+    "nn": "Aspect of the Cheetah er ideelt for ein brå sorti."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Your pet looks rather embarrassed on your behalf.",
+    "nn": "Kjæledyret ditt ser flaut ut på dine vegner."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Shoot first, ask questions later. Also dodge, at some point.",
+    "nn": "Skyt først, spør etterpå. Og dukk, på eit tidspunkt."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Hunter's Mark on the villain, not a target on your back.",
+    "nn": "Hunter's Mark på skurken, ikkje ei skyteskive på ryggen din."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A marksman should keep a respectful distance, agent.",
+    "nn": "Ein skarpskyttar bør halde respektfull avstand, agent."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "The hunted became the hunter. Then the hunted again.",
+    "nn": "Den jaga vart jegeren. Så den jaga att."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Concussive Shot slows a charging brute to a polite amble.",
+    "nn": "Concussive Shot får ein stormande bølle ned i høfleg rusletempo."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Range is your friend, agent. Melee is merely an acquaintance.",
+    "nn": "Avstand er venen din, agent. Nærkamp er berre ein kjenning."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Plenty of shots left, agent. Fewer hit points, sadly.",
+    "nn": "Mange skot att, agent. Færre livspoeng, dessverre."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A Flare might have revealed the ambush. Just a thought.",
+    "nn": "Ein Flare kunne ha avslørt bakhaldet. Berre ein tanke."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "The pet will need counselling after watching that.",
+    "nn": "Kjæledyret treng nok samtaleterapi etter å ha sett det."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A sniper's nest is meant to be high up and far away.",
+    "nn": "Eit snikskyttarreir skal vere høgt oppe og langt unna."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Track Humanoids next time. Then track down the exit.",
+    "nn": "Track Humanoids neste gong. Spor så opp utgangen."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "You tamed the beast. The villain was another matter.",
+    "nn": "Du temde udyret. Skurken var ei anna sak."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Perhaps let the pet take the first blow next time.",
+    "nn": "Kanskje du lèt kjæledyret ta det første slaget neste gong."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Lovely shooting. Shame about the bit afterwards.",
+    "nn": "Fin skyting. Synd med det som kom etterpå."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Feign Death and Disengage: a hunter's escape kit. Do pack it.",
+    "nn": "Feign Death og Disengage: fluktutstyret til ein jeger. Pakk det med."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A trap goes in front of the enemy, agent, not behind you.",
+    "nn": "Ei felle skal framfor fienden, agent, ikkje bak deg."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Even the finest tracker can walk into an ambush.",
+    "nn": "Sjølv den beste sporaren kan gå rett i eit bakhald."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A hunter is patient. The ambush, apparently, more so.",
+    "nn": "Ein jeger er tolmodig. Bakhaldet var visst endå meir tolmodig."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Your pet would like a word about leadership.",
+    "nn": "Kjæledyret ditt vil gjerne ha ein prat om leiarskap."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Wing Clip the brute and stroll away. Very civilised.",
+    "nn": "Wing Clip bølla og spaser vekk. Svært sivilisert."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Eagle eyes, agent, but nobody watching your back.",
+    "nn": "Ørneauge, agent, men ingen som passa på ryggen din."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "A hunter should never be the one who gets caught.",
+    "nn": "Ein jeger skal aldri vere den som blir fanga."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "The beast mastery was impeccable. The self-preservation, not.",
+    "nn": "Dyrebeherskinga var feilfri. Sjølvbevaringa var det ikkje."
+  },
+  {
+    "tag": "HUNTER",
+    "en": "Lovely aim, agent. Now aim for the spirit healer.",
+    "nn": "Fin sikting, agent. Sikt no mot åndelækjaren."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Perhaps Ice Block next time, agent? Very cool. Quite literally.",
+    "nn": "Kanskje Ice Block neste gong, agent? Svært kjølig. Bokstavleg talt."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Blink, agent. A short, elegant hop away from danger.",
+    "nn": "Blink, agent. Eit kort, elegant hopp bort frå faren."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Polymorph the villain into a sheep. Sheep rarely win.",
+    "nn": "Polymorph skurken til ein sau. Sauer vinn sjeldan."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Frost Nova, then walk away briskly. The classic exit.",
+    "nn": "Frost Nova, og gå så raskt vekk. Den klassiske sortien."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Counterspell the villain mid-sentence. They hate that.",
+    "nn": "Counterspell skurken midt i setninga. Det hatar dei."
+  },
+  {
+    "tag": "MAGE",
+    "en": "A portal home would have been terribly convenient.",
+    "nn": "Ein portal heim hadde vore forferdeleg praktisk."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Brilliant mind, flimsy robe. A familiar story.",
+    "nn": "Briljant hovud, tynn kjortel. Ei kjend historie."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Slow Fall exists, agent. I simply mention it.",
+    "nn": "Slow Fall finst, agent. Eg berre nemner det."
+  },
+  {
+    "tag": "MAGE",
+    "en": "All that intellect, and nobody thought of running.",
+    "nn": "All den intelligensen, og ingen tenkte på å springe."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Conjure a drink, sit down, and rethink the plan.",
+    "nn": "Tryll fram ein drikk, set deg ned og tenk planen på nytt."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Mana Shield or Ice Barrier, agent. Anything but bare cloth.",
+    "nn": "Mana Shield eller Ice Barrier, agent. Alt anna enn berre tøy."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Invisibility: the discreet agent's favourite exit.",
+    "nn": "Invisibility: favorittutgangen til den diskré agenten."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Evocation is restful. Death is restful too, but less useful.",
+    "nn": "Evocation er avslappande. Døden òg, men han er mindre nyttig."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Fire, frost or arcane, and none of it pointed at the exit.",
+    "nn": "Eld, frost eller arkan, og ingenting av det peika mot utgangen."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Cold Snap, then a second Ice Block. Thorough is good.",
+    "nn": "Cold Snap og så ein ekstra Ice Block. Grundig er bra."
+  },
+  {
+    "tag": "MAGE",
+    "en": "A mage in a tuxedo is still made of paper, agent.",
+    "nn": "Ein magikar i smoking er framleis laga av papir, agent."
+  },
+  {
+    "tag": "MAGE",
+    "en": "The Kirin Tor will pretend not to have seen that.",
+    "nn": "Kirin Tor kjem til å late som dei ikkje såg det."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Arcane Intellect on, survival instinct off. Curious.",
+    "nn": "Arcane Intellect på, overlevingsinstinkt av. Merkeleg."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Teleport to the capital and order something warm.",
+    "nn": "Teleporter deg til hovudstaden og bestill noko varmt."
+  },
+  {
+    "tag": "MAGE",
+    "en": "A long cast time is a luxury in the field, agent.",
+    "nn": "Lang kastetid er ein luksus i felten, agent."
+  },
+  {
+    "tag": "MAGE",
+    "en": "The robe survived. The wizard inside, not quite.",
+    "nn": "Kjortelen overlevde. Trollmannen inni, ikkje heilt."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Frostbolt their legs, agent. Then make a stylish getaway.",
+    "nn": "Frostbolt beina deira, agent. Ta så ei stilfull flukt."
+  },
+  {
+    "tag": "MAGE",
+    "en": "A magical genius, outwitted by a brute. Delicious irony.",
+    "nn": "Eit magisk geni, overlista av ein bølle. Herleg ironi."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Spellbooks rarely cover dodging. A curious omission.",
+    "nn": "Trolldomsbøker dekkjer sjeldan unnamanøvrar. Ein merkeleg mangel."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Ice Block: the mage's ejector seat. Do pull the lever.",
+    "nn": "Ice Block: katapultsetet til magikaren. Dra i spaken."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Perhaps keep a Blink in the cufflinks for emergencies.",
+    "nn": "Kanskje du skal ha ein Blink i mansjettknappane til naudsituasjonar."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Even a brilliant mage cannot out-think a very large axe.",
+    "nn": "Sjølv ein briljant magikar kan ikkje tenkje seg forbi ei svært stor øks."
+  },
+  {
+    "tag": "MAGE",
+    "en": "A frosty reception, agent. Not the kind you hand out.",
+    "nn": "Ei kjølig mottaking, agent. Ikkje den typen du deler ut."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Spell power: immense. Hit points: regrettably modest.",
+    "nn": "Trolldomskraft: enorm. Livspoeng: dessverre beskjedne."
+  },
+  {
+    "tag": "MAGE",
+    "en": "Cast first, think later? Perhaps reverse that, agent.",
+    "nn": "Kaste først, tenkje etterpå? Kanskje snu på det, agent."
+  },
+  {
+    "tag": "MONK",
+    "en": "Fortifying Brew: the only drink I'd prescribe mid-mission.",
+    "nn": "Fortifying Brew: den einaste drikken eg skriv ut midt i eit oppdrag."
+  },
+  {
+    "tag": "MONK",
+    "en": "Roll away, agent. Twice, if necessary.",
+    "nn": "Bruk Roll, agent. To gonger om det trengst."
+  },
+  {
+    "tag": "MONK",
+    "en": "Touch of Karma would have sent that damage back with interest.",
+    "nn": "Touch of Karma kunne ha sendt den skaden tilbake med renter."
+  },
+  {
+    "tag": "MONK",
+    "en": "Transcendence: a monk's dead drop. Do use it to escape.",
+    "nn": "Transcendence: den døde postkassa til munken. Bruk ho til å rømme."
+  },
+  {
+    "tag": "MONK",
+    "en": "Inner peace intact. Outer health, not so much.",
+    "nn": "Den indre freden er intakt. Den ytre helsa, ikkje heilt."
+  },
+  {
+    "tag": "MONK",
+    "en": "Paralysis on the villain. Then a polite exit.",
+    "nn": "Paralysis på skurken. Og så ein høfleg sorti."
+  },
+  {
+    "tag": "MONK",
+    "en": "Leg Sweep them, agent. Few villains plan for their ankles.",
+    "nn": "Leg Sweep dei, agent. Få skurkar har ein plan for anklane."
+  },
+  {
+    "tag": "MONK",
+    "en": "Diffuse Magic, agent. A polite no thank you to any spell.",
+    "nn": "Diffuse Magic, agent. Eit høfleg nei takk til alle trolldommar."
+  },
+  {
+    "tag": "MONK",
+    "en": "Balance, focus, discipline. And a slight oversight.",
+    "nn": "Balanse, fokus, disiplin. Og ein liten glipp."
+  },
+  {
+    "tag": "MONK",
+    "en": "A martial artist knows when to bow out. Earlier, ideally.",
+    "nn": "Ein kampkunstnar veit når han skal bukke og gå. Helst tidlegare."
+  },
+  {
+    "tag": "MONK",
+    "en": "Stagger is meant to slow the damage, not you.",
+    "nn": "Stagger skal bremse skaden, ikkje deg."
+  },
+  {
+    "tag": "MONK",
+    "en": "Expel Harm, agent. There was clearly plenty to expel.",
+    "nn": "Expel Harm, agent. Det var tydelegvis nok å ta av."
+  },
+  {
+    "tag": "MONK",
+    "en": "A Life Cocoon is a cosy place to wait out trouble.",
+    "nn": "Ein Life Cocoon er ein koseleg stad å vente ut bråket."
+  },
+  {
+    "tag": "MONK",
+    "en": "Dampen Harm softens the blow. The floor does not.",
+    "nn": "Dampen Harm dempar slaget. Golvet gjer ikkje det."
+  },
+  {
+    "tag": "MONK",
+    "en": "Meditate on this one, agent. Briefly, then get up.",
+    "nn": "Mediter over denne, agent. Kort, og reis deg så."
+  },
+  {
+    "tag": "MONK",
+    "en": "The brew is meant to be drunk before the fight, agent.",
+    "nn": "Brygget skal drikkast før kampen, agent."
+  },
+  {
+    "tag": "MONK",
+    "en": "Flying Serpent Kick is an excellent way to leave a room.",
+    "nn": "Flying Serpent Kick er ein framifrå måte å forlate eit rom på."
+  },
+  {
+    "tag": "MONK",
+    "en": "Chi flows like water. Yours seems to have drained away.",
+    "nn": "Chi flyt som vatn. Ditt ser ut til å ha rent ut."
+  },
+  {
+    "tag": "MONK",
+    "en": "Even a serene monk can be caught off guard.",
+    "nn": "Sjølv ein harmonisk munk kan bli teken på senga."
+  },
+  {
+    "tag": "MONK",
+    "en": "Your stance was perfect. Your timing, slightly less so.",
+    "nn": "Stillinga di var perfekt. Timinga, litt mindre."
+  },
+  {
+    "tag": "MONK",
+    "en": "Pandaria teaches patience. The villain had less of it.",
+    "nn": "Pandaria lærer tolmod. Skurken hadde mindre av det."
+  },
+  {
+    "tag": "MONK",
+    "en": "Zen Meditation, agent. Serenity makes a fine shield.",
+    "nn": "Zen Meditation, agent. Sinnsro er eit godt skjold."
+  },
+  {
+    "tag": "MONK",
+    "en": "Vivify yourself, agent. Charity begins at home.",
+    "nn": "Vivify deg sjølv, agent. Nestekjærleik byrjar heime."
+  },
+  {
+    "tag": "MONK",
+    "en": "Kicks and punches galore, and not one sidestep.",
+    "nn": "Spark og slag i bøtter og spann, og ikkje eitt sidesteg."
+  },
+  {
+    "tag": "MONK",
+    "en": "The monastery would advise a deep breath. Then a retreat.",
+    "nn": "Klosteret ville rådd deg til å trekkje pusten djupt. Så retrett."
+  },
+  {
+    "tag": "MONK",
+    "en": "Fists of fury, feet of clay. Do work on that.",
+    "nn": "Knyttnevar fulle av raseri, føter av leire. Jobb med det."
+  },
+  {
+    "tag": "MONK",
+    "en": "A monk on the floor is technically still in a stance.",
+    "nn": "Ein munk på golvet står teknisk sett framleis i ei stilling."
+  },
+  {
+    "tag": "MONK",
+    "en": "Tiger Palm, Blackout Kick, and rather too few escapes.",
+    "nn": "Tiger Palm, Blackout Kick og litt for få fluktvegar."
+  },
+  {
+    "tag": "MONK",
+    "en": "A wandering monk should wander away from danger, ideally.",
+    "nn": "Ein vandrande munk bør helst vandre bort frå faren."
+  },
+  {
+    "tag": "MONK",
+    "en": "Your inner calm can carry you back. Off you go.",
+    "nn": "Den indre roa di kan bere deg tilbake. Av garde med deg."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Perhaps Divine Shield next time, agent? Bubbles are very fashionable.",
+    "nn": "Kanskje Divine Shield neste gong, agent? Bobler er svært moderne."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Lay on Hands is a rare luxury. Tonight qualified.",
+    "nn": "Lay on Hands er ein sjeldan luksus. I kveld var ein slik kveld."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Hammer of Justice the villain, then lecture him at leisure.",
+    "nn": "Hammer of Justice skurken, og hald så ei preike for han i ro og mak."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Plate armour, holy light, and still flat on the floor. Remarkable.",
+    "nn": "Platerustning, heilag lys, og likevel flat på golvet. Merkeleg."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Bubble and hearth, agent. The paladin's classic getaway.",
+    "nn": "Boble og hearthstone, agent. Den klassiske paladinflukta."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Holy Light on yourself is not selfish. It's sensible.",
+    "nn": "Holy Light på deg sjølv er ikkje sjølvisk. Det er fornuftig."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Blessing of Protection: rather useful, if remembered.",
+    "nn": "Blessing of Protection: svært nyttig, om ein hugsar det."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "The Light works in mysterious ways. That was one of them.",
+    "nn": "Lyset verkar på mystiske måtar. Det var ein av dei."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Righteous to the end, and the end came promptly.",
+    "nn": "Rettferdig til det siste, og det siste kom fort."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Consecrate the ground, agent, then avoid lying on it.",
+    "nn": "Consecrate bakken, agent, og unngå så å liggje på han."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "A shining knight in shining armour, briefly dimmed.",
+    "nn": "Ein skinande riddar i skinande rustning, kort dempa."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Divine Protection is for tricky moments, agent. Like that one.",
+    "nn": "Divine Protection er for vanskelege augneblikk, agent. Som det der."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Your aura is still splendid. Your pulse is missing.",
+    "nn": "Auraen din er framleis praktfull. Pulsen manglar."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Flash of Light is quick. Quicker than the floor, ideally.",
+    "nn": "Flash of Light er snøgg. Helst snøggare enn golvet."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Even the Silver Hand trips on occasion.",
+    "nn": "Sjølv Silver Hand snublar av og til."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "All that heavy armour, and it simply wasn't enough. Pity.",
+    "nn": "All den tunge rustninga, og det var rett og slett ikkje nok. Synd."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Blessing of Freedom: for slipping out of sticky situations.",
+    "nn": "Blessing of Freedom: til å smette ut av klissete situasjonar."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Redemption is for others. Self-preservation is for you.",
+    "nn": "Redemption er for andre. Sjølvbevaring er for deg."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "The Light has a rather dry sense of humour tonight.",
+    "nn": "Lyset har ein ganske tørr humor i kveld."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Judge the villain swiftly next time, before he judges you.",
+    "nn": "Døm skurken snøgt neste gong, før han dømer deg."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Holy armour, impeccable manners, untimely nap.",
+    "nn": "Heilag rustning, plettfri framferd, ein ubeleiteg blund."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Lay on Hands and a stiff upper lip, agent. Both next time.",
+    "nn": "Lay on Hands og ei stiv overleppe, agent. Begge neste gong."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "A paladin face down is a poor advert for the Light.",
+    "nn": "Ein paladin med nasen ned er dårleg reklame for Lyset."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "A little wisdom alongside the righteousness, next time.",
+    "nn": "Litt visdom saman med rettferda, neste gong."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Your charger was right there, agent. Ride off nobly next time.",
+    "nn": "Stridshesten din stod rett der, agent. Rid edelt av garde neste gong."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "Faith, plate and a hammer. A fine kit, nearly enough.",
+    "nn": "Tru, plate og ein hammar. Fint utstyr, nesten nok."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "The righteous deserve a dramatic escape plan too.",
+    "nn": "Dei rettferdige fortener òg ein dramatisk fluktplan."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "A bubble would have been undignified. So, frankly, was that.",
+    "nn": "Ei boble hadde vore lite verdig. Det var for så vidt det der òg."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "The Light will forgive you. The repair bill will not.",
+    "nn": "Lyset tilgjev deg. Reparasjonsrekninga gjer ikkje det."
+  },
+  {
+    "tag": "PALADIN",
+    "en": "A holy warrior should leave with a halo, not as a ghost.",
+    "nn": "Ein heilag krigar skal gå med glorie, ikkje som ånd."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Power Word: Shield, agent. On yourself, for once.",
+    "nn": "Power Word: Shield, agent. På deg sjølv, for ein gongs skuld."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Psychic Scream would have cleared the room rather nicely.",
+    "nn": "Psychic Scream kunne ha tømt rommet ganske effektivt."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Fade into the background, agent. Spies love a background.",
+    "nn": "Bruk Fade og forsvinn i bakgrunnen, agent. Spionar elskar ein bakgrunn."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "A healer should heal themself first, agent. Airline rules.",
+    "nn": "Ein healer bør heale seg sjølv først, agent. Same regel som på fly."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Renew ticks gently. Perhaps start it before the trouble.",
+    "nn": "Renew tikkar mildt. Kanskje start det før bråket."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Mind Control the villain and have him walk off a cliff.",
+    "nn": "Mind Control skurken og la han gå utfor eit stup."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Levitate, agent. Gravity has no say over the faithful.",
+    "nn": "Levitate, agent. Tyngdekrafta har inga makt over dei truande."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Everyone else is healthy. How very generous of you.",
+    "nn": "Alle andre er friske. Så gavmildt av deg."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Shadowform is ever so flattering. And somewhat protective.",
+    "nn": "Shadowform kler deg så godt. Og vernar litt òg."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Flash Heal is for emergencies. That counted as one.",
+    "nn": "Flash Heal er til naudsituasjonar. Det der var éin."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "You saved everyone but yourself. Terribly noble. Terribly dead.",
+    "nn": "Du redda alle utanom deg sjølv. Svært edelt. Og svært død."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Desperate Prayer is a fine name for what that needed.",
+    "nn": "Desperate Prayer er eit godt namn på det som trongst der."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "The faithful rarely panic. The faithful rarely dodge, either.",
+    "nn": "Dei truande får sjeldan panikk. Dei dukkar sjeldan heller."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "The healer is down. Somebody fetch a healer.",
+    "nn": "Healeren er nede. Nokon må hente ein healer."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Fear Ward, agent. Courage in a bottle, minus the bottle.",
+    "nn": "Fear Ward, agent. Mot på flaske, utan flaska."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Shadow or holy, agent, both prefer you upright.",
+    "nn": "Skugge eller heilag, agent, begge likar deg best oppreist."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Dispel the bad news, agent. Then dispel the villain.",
+    "nn": "Dispel dei dårlege nyheitene, agent. Og så skurken."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "A robe and a prayer. Lovely, but the prayer needed armour.",
+    "nn": "Ein kjortel og ei bøn. Fint, men bøna trong rustning."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Even Power Word: Fortitude has its limits, it seems.",
+    "nn": "Sjølv Power Word: Fortitude har sine grenser, ser det ut til."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Somebody has to heal the healer. Tonight, nobody did.",
+    "nn": "Nokon må heale healeren. I kveld gjorde ingen det."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Bless the floor for catching you so faithfully.",
+    "nn": "Velsigna vere golvet som tok imot deg så trufast."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "You were the support. Now you need some.",
+    "nn": "Du var støtta. No treng du litt sjølv."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Mind Blast your way out, perhaps? Discreet it is not.",
+    "nn": "Mind Blast deg ut, kanskje? Diskré er det ikkje."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "A brief audience with the spirit healer. Professional courtesy.",
+    "nn": "Ein kort audiens hos åndelækjaren. Kollegial høflegheit."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Holy words, steady hands, and a rather unholy outcome.",
+    "nn": "Heilage ord, stødige hender og eit nokså uheilag utfall."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "The shadows are for hiding in, agent, not for lying in.",
+    "nn": "Skuggane er til å gøyme seg i, agent, ikkje til å liggje i."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "A priest should save one heal for themselves. Just one.",
+    "nn": "Ein prest bør spare eitt heal til seg sjølv. Berre eitt."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Psychic Scream, then leave in the confusion. Very spy.",
+    "nn": "Psychic Scream, og gå så i forvirringa. Svært spionaktig."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Your faith is unshaken. Your health is slightly shaken.",
+    "nn": "Trua di står fast. Helsa di vaklar litt."
+  },
+  {
+    "tag": "PRIEST",
+    "en": "Saints lose a round now and then, agent. Rise and resume.",
+    "nn": "Helgenar tapar ein runde av og til, agent. Reis deg og hald fram."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Perhaps Vanish next time, agent? It's very much your style.",
+    "nn": "Kanskje Vanish neste gong, agent? Det er heilt din stil."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Evasion, agent. Dodging is a gentleman's art.",
+    "nn": "Evasion, agent. Å unngå slag er ein gentlemannskunst."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "A rogue caught in the open. The Ministry is mortified.",
+    "nn": "Ein rogue teken på open mark. Departementet skjemmest."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Sprint for the exit next time. Very cinematic.",
+    "nn": "Sprint mot utgangen neste gong. Svært filmatisk."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Stealth is a lifestyle, agent, not an occasional hobby.",
+    "nn": "Stealth er ein livsstil, agent, ikkje ein hobby av og til."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Blind the villain and slip away. Ungentlemanly, but effective.",
+    "nn": "Blind skurken og smett vekk. Lite gentlemannsaktig, men effektivt."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Sap the guard, agent. Quietly, before the tea is served.",
+    "nn": "Sap vakta, agent. Stille, før teen blir servert."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "A Kidney Shot might have kept him busy for a moment.",
+    "nn": "Eit Kidney Shot kunne ha halde han oppteken ei stund."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Splendid poisons, agent. A pity about the exit strategy.",
+    "nn": "Framifrå gifter, agent. Synd med fluktplanen."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Cloak of Shadows would have shrugged that spell off.",
+    "nn": "Cloak of Shadows kunne ha riste av seg den trolldommen."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Gouge buys a moment. Moments are an agent's currency.",
+    "nn": "Gouge kjøper eit augneblikk. Augneblikk er valutaen til ein agent."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "A spy in the shadows should stay in the shadows.",
+    "nn": "Ein spion i skuggane bør halde seg i skuggane."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Pick their pockets, agent, not a fight.",
+    "nn": "Tøm lommene deira, agent, ikkje start ein slåsskamp."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Feint, agent. Misdirection is the soul of espionage.",
+    "nn": "Feint, agent. Villeiing er sjela i spionasjen."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "The one class built for espionage, and still spotted.",
+    "nn": "Den eine klassen laga for spionasje, og likevel oppdaga."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Distract them with a coin, then disappear. Elementary.",
+    "nn": "Distract dei med ein mynt, og forsvinn så. Elementært."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "A backstab is meant to go in one direction, agent.",
+    "nn": "Eit stikk i ryggen skal gå éin veg, agent."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Cheap Shot first, agent. Etiquette can wait.",
+    "nn": "Cheap Shot først, agent. Folkeskikken kan vente."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Lockpicking is lovely. Picking your battles is lovelier.",
+    "nn": "Låsdirking er fint. Å velje kampane sine er finare."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Daggers out, cloak on, and still in the obituaries.",
+    "nn": "Dolkane framme, kappa på, og likevel i dødsannonsane."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "The shadows let you down. Have words with them.",
+    "nn": "Skuggane svikta deg. Ta ein prat med dei."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Cheat Death sounds like your sort of thing, agent.",
+    "nn": "Cheat Death høyrest ut som noko for deg, agent."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Vanish, change jackets, reappear as someone else. Standard.",
+    "nn": "Vanish, byt jakke, dukk opp som ein annan. Standard prosedyre."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "A master of disguise, caught without one. Tsk.",
+    "nn": "Ein meister i forkledning, teken utan. Tsk."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Never fight fair, agent. You seem to have forgotten.",
+    "nn": "Slåst aldri ærleg, agent. Du ser ut til å ha gløymt det."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Combat is what happens when stealth has failed.",
+    "nn": "Kamp er det som skjer når snikinga har slått feil."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Kick that spell before it lands, agent.",
+    "nn": "Kick den trolldommen før han treffer, agent."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "A rogue's best weapon is the exit. Use it.",
+    "nn": "Det beste våpenet til ein rogue er utgangen. Bruk han."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Sneaky, slippery, stylish, and, for now, deceased.",
+    "nn": "Lur, glatt, stilig og, for augneblikket, avliden."
+  },
+  {
+    "tag": "ROGUE",
+    "en": "Your dossier says unseen. Tonight it says otherwise.",
+    "nn": "Mappa di seier usett. I kveld seier ho noko anna."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Reincarnation is a shaman's spare life. Do keep it handy.",
+    "nn": "Reincarnation er reservelivet til ein sjaman. Ha det klart."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Ghost Wolf is the getaway car of the spirit world.",
+    "nn": "Ghost Wolf er fluktbilen i åndeverda."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "An Earthbind Totem would have slowed the pursuit nicely.",
+    "nn": "Ein Earthbind Totem kunne ha bremsa forfølgjarane fint."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Totems are for planting before the fight, agent.",
+    "nn": "Totemar skal plantast før kampen, agent."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Healing Wave on yourself is no breach of protocol.",
+    "nn": "Healing Wave på deg sjølv er ikkje brot på protokollen."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "The elements were consulted. They had other plans.",
+    "nn": "Elementa vart spurde. Dei hadde andre planar."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Lightning Bolt them before they get close. Simple physics.",
+    "nn": "Lightning Bolt dei før dei kjem nær. Enkel fysikk."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "The spirits are amused. The Ministry, slightly less.",
+    "nn": "Åndene er underhaldne. Departementet, litt mindre."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Water Walking, agent, for the dramatic lake escape.",
+    "nn": "Water Walking, agent, til den dramatiske flukta over sjøen."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Earth, fire, water and air, and not one escape route.",
+    "nn": "Jord, eld, vatn og luft, og ikkje éin fluktveg."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Frost Shock their feet. Slow villains are polite villains.",
+    "nn": "Frost Shock føtene deira. Treige skurkar er høflege skurkar."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "A Grounding Totem would have caught that spell for you.",
+    "nn": "Ein Grounding Totem kunne ha fanga den trolldommen for deg."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Purge their shields, agent, then purge them.",
+    "nn": "Purge skjolda deira, agent, og så dei sjølve."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Your totems stand guard over the body. Very loyal.",
+    "nn": "Totemane dine står vakt over kroppen. Svært lojale."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "An Earth Elemental makes a superb bodyguard.",
+    "nn": "Ein Earth Elemental er ein framifrå livvakt."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Heroism or Bloodlust, agent, then a brisk exit.",
+    "nn": "Heroism eller Bloodlust, agent, og så ein rask sorti."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "A storm caller struck by misfortune. How poetic.",
+    "nn": "Ein stormkallar råka av ulukke. Så poetisk."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "The ancestors are shaking their heads. Softly, but shaking.",
+    "nn": "Forfedrane ristar på hovudet. Stille, men dei ristar."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Healing Stream Totem down first, agent. Then the heroics.",
+    "nn": "Healing Stream Totem ned først, agent. Så heltedåda."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "The wolf spirit was ready to run. You were not.",
+    "nn": "Ulveånda var klar til å springe. Det var ikkje du."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Thunder and lightning, very impressive. Footwork, not so.",
+    "nn": "Tore og lyn, svært imponerande. Fotarbeidet, ikkje så mykje."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "A shaman can come back on their own. Very self-reliant.",
+    "nn": "Ein sjaman kan kome tilbake på eiga hand. Svært sjølvhjelpen."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Wind Shear the villain mid-cackle next time.",
+    "nn": "Wind Shear skurken midt i latteren neste gong."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Astral Shift takes the sting out of most villains.",
+    "nn": "Astral Shift tek brodden av dei fleste skurkar."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "The elements send their condolences. Briefly.",
+    "nn": "Elementa sender kondolansar. Kort."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Lightning Shield on, agent. Villains hate a static shock.",
+    "nn": "Lightning Shield på, agent. Skurkar hatar statisk elektrisitet."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Chain Heal everyone, agent. Including the one in the mirror.",
+    "nn": "Chain Heal alle, agent. Inkludert den i spegelen."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Your spirit is strong. Your body briefly disagreed.",
+    "nn": "Ånda di er sterk. Kroppen var kort usamd."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Storms pause too, agent. Then they return louder.",
+    "nn": "Stormar tek pause òg, agent. Så kjem dei att, høgare."
+  },
+  {
+    "tag": "SHAMAN",
+    "en": "Call the storm, ride the wolf, and leave before the ending.",
+    "nn": "Kall på stormen, ri ulven og gå før slutten."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "A Soulstone in advance, agent. Insurance is so civilised.",
+    "nn": "Ein Soulstone på førehand, agent. Forsikring er så sivilisert."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "A Healthstone in the breast pocket, agent. Always.",
+    "nn": "Ein Healthstone i brystlomma, agent. Alltid."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "A Voidwalker exists to take the hits, agent.",
+    "nn": "Ein Voidwalker finst for å ta imot slaga, agent."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Fear the villain, agent. Let him run screaming for once.",
+    "nn": "Fear skurken, agent. La han springe skrikande for ein gongs skuld."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Death Coil, agent. A little gift with a lovely return policy.",
+    "nn": "Death Coil, agent. Ei lita gåve med god returrett."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Drain Life, agent. Other people's life. That's the point.",
+    "nn": "Drain Life, agent. Livet til andre. Det er heile poenget."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "A pact with demons and still no escape clause. Careless.",
+    "nn": "Ein pakt med demonar og framleis ingen rømingsklausul. Uvørent."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "The imp is laughing. Do not let the imp laugh.",
+    "nn": "Impen ler. Ikkje la impen le."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Demonic Circle: the villain's lair has a back door after all.",
+    "nn": "Demonic Circle: skurkebasen har ei bakdør likevel."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Unending Resolve, agent. The name says it all.",
+    "nn": "Unending Resolve, agent. Namnet seier alt."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Banish the problem to another dimension. Very tidy.",
+    "nn": "Banish problemet til ein annan dimensjon. Svært ryddig."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Your soul shards will be ever so disappointed.",
+    "nn": "Sjelesplintane dine blir forferdeleg skuffa."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Dark powers, dark suit, dark outcome. Consistent, at least.",
+    "nn": "Mørke krefter, mørk dress, mørkt utfall. Konsekvent, i det minste."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "A warlock should always have a minion to blame.",
+    "nn": "Ein warlock bør alltid ha ein undersått å skulde på."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Howl of Terror makes a crowded room feel spacious.",
+    "nn": "Howl of Terror får eit fullt rom til å kjennast romsleg."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Life Tap is a loan, agent, not a way of life.",
+    "nn": "Life Tap er eit lån, agent, ikkje ein måte å leve på."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Even dark pacts, it seems, come with surprises.",
+    "nn": "Sjølv mørke pakter kjem visst med overraskingar."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "The demons will gossip in the Twisting Nether. Let them.",
+    "nn": "Demonane kjem til å sladre i Twisting Nether. La dei."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Summon your Felhunter, agent. It eats magic for breakfast.",
+    "nn": "Kall opp Felhunteren din, agent. Han et magi til frukost."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Demonic Gateway, agent: the stylish exit.",
+    "nn": "Demonic Gateway, agent: den stilige sortien."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "All that forbidden knowledge, and nothing on dodging.",
+    "nn": "All den forbodne kunnskapen, og ingenting om å dukke."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Shadow and flame obey you. Gravity, apparently, does not.",
+    "nn": "Skugge og eld lyder deg. Tyngdekrafta gjer visst ikkje det."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Curse of Exhaustion on the pursuers. Let them dawdle.",
+    "nn": "Curse of Exhaustion på forfølgjarane. La dei somle."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "A villain with a volcano lair. A warlock should feel at home.",
+    "nn": "Ein skurk med vulkanbase. Ein warlock burde kjenne seg heime."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Soulstone first, mischief second. Always in that order.",
+    "nn": "Soulstone først, fanteri etterpå. Alltid i den rekkjefølgja."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Your demon has filed a complaint about working conditions.",
+    "nn": "Demonen din har klaga på arbeidstilhøva."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Sacrifice the Voidwalker, agent. He knew the job.",
+    "nn": "Ofra Voidwalkeren, agent. Han visste kva jobben var."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Dark magic is no excuse for poor self-preservation.",
+    "nn": "Mørk magi er inga orsaking for dårleg sjølvbevaring."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "Even a master of shadow can be caught in the light.",
+    "nn": "Sjølv ein meister i skuggar kan bli teken i lyset."
+  },
+  {
+    "tag": "WARLOCK",
+    "en": "The Burning Legion would be rather unimpressed, agent.",
+    "nn": "Burning Legion ville vore lite imponert, agent."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Shield Wall exists, agent. Walls are famously sturdy.",
+    "nn": "Shield Wall finst, agent. Murar er kjende for å vere solide."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Last Stand is meant for standing, agent, not lying down.",
+    "nn": "Last Stand er meint for å stå, agent, ikkje for å liggje."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Charge in, agent, by all means. But do plan to charge out.",
+    "nn": "Storm inn, agent, for all del. Men planlegg å storme ut att òg."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Hamstring the brute. He can't chase what he can't reach.",
+    "nn": "Hamstring bølla. Han kan ikkje jage det han ikkje når."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Spell Reflection would have returned that to sender.",
+    "nn": "Spell Reflection kunne ha sendt det i retur til avsendaren."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Berserker Rage, agent. A little fury never hurt a tuxedo.",
+    "nn": "Berserker Rage, agent. Litt raseri har aldri skada ein smoking."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "All the armour in the world, and none of it on your pride.",
+    "nn": "Alle rustningar i verda, og ingen av dei på stoltheita."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Rage is a resource, agent. So is retreating.",
+    "nn": "Raseri er ein ressurs, agent. Det er retrett òg."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Shield Block, agent. The shield is not merely decorative.",
+    "nn": "Shield Block, agent. Skjoldet er ikkje berre pynt."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "The front line is honourable. The back line is alive.",
+    "nn": "Frontlinja er ærefull. Baklinja er i live."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "A Victory Rush needs a victory first, agent.",
+    "nn": "Victory Rush krev ein siger først, agent."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Taunt one villain at a time, agent. Not the whole lair.",
+    "nn": "Terg éin skurk om gongen, agent. Ikkje heile basen."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Steel nerves, steel armour, steel floor. Unfortunate.",
+    "nn": "Stålnervar, stålrustning, stålgolv. Uheldig."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Enraged Regeneration might have patched you up mid-brawl.",
+    "nn": "Enraged Regeneration kunne ha lappa deg saman midt i slagsmålet."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Die by the Sword is a technique, agent, not a plan.",
+    "nn": "Die by the Sword er ein teknikk, agent, ikkje ein plan."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "A warrior should exit through the enemy, not the floor.",
+    "nn": "Ein krigar skal gå ut gjennom fienden, ikkje gjennom golvet."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Intervene for a friend, agent. Or let a friend do it for you.",
+    "nn": "Intervene for ein venn, agent. Eller la ein venn gjere det for deg."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Rallying Cry, agent. Courage for the whole team, on the house.",
+    "nn": "Rallying Cry, agent. Mot til heile laget, på huset."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Muscle and mettle, agent. Add a measure of caution.",
+    "nn": "Musklar og mot, agent. Legg til ei klype varsemd."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "The bigger the sword, the bigger the thud. Science, agent.",
+    "nn": "Jo større sverd, jo større dunk. Vitskap, agent."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "The toughest soldier still packs a bandage, agent.",
+    "nn": "Den tøffaste soldaten har likevel med seg ein bandasje, agent."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Perhaps Defensive Stance next time? It's in the name.",
+    "nn": "Kanskje Defensive Stance neste gong? Det står i namnet."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Plate armour is stylish, but it's no ejector seat.",
+    "nn": "Platerustning er stilig, men det er ikkje noko katapultsete."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Glorious combat, inglorious ending. That's the trade.",
+    "nn": "Ærerik kamp, lite ærerik slutt. Slik er yrket."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "The battle cry was superb. Shame about the battle.",
+    "nn": "Kampropet var framifrå. Synd med kampen."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Intimidating Shout, agent. Send them scattering.",
+    "nn": "Intimidating Shout, agent. Send dei på flukt."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "A warrior never retreats. A clever agent sometimes does.",
+    "nn": "Ein krigar trekkjer seg aldri. Ein klok agent gjer det av og til."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Brute strength, admirable. Brute luck, absent.",
+    "nn": "Rå styrke, beundringsverdig. Rå flaks, fråverande."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Two-handed sword, one-way ticket. Do book a return.",
+    "nn": "Tohandssverd, einvegsbillett. Bestill ein retur."
+  },
+  {
+    "tag": "WARRIOR",
+    "en": "Pummel the villain's spell before it finishes, agent.",
+    "nn": "Pummel trolldommen til skurken før han er ferdig, agent."
+  }
+]

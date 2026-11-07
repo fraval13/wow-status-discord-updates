@@ -154,7 +154,7 @@ FRIEND_STUBS = STUBS.replace('return "Thora" end', 'return "Eldrin" end').replac
 PERSONALITY_FILES = ('Personalities.lua', 'FlavourWholesome.lua', 'FlavourBard.lua', 'FlavourVeteran.lua',
                      'FlavourGoblin.lua', 'FlavourChristian.lua', 'FlavourSmug.lua',
                      'FlavourDwarf.lua', 'FlavourJealous.lua',
-                     'FlavourDrama.lua')
+                     'FlavourDrama.lua', 'FlavourAgent.lua', 'FlavourLegend.lua')
 
 
 _COMPILED = {}

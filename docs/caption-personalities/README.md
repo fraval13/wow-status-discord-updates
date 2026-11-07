@@ -23,6 +23,8 @@ same event. **Classic** is the original bank (`docs/notification-flavour-text.md
 | `dwarf` | Dwarf | Dverg | Ale, beards, forges and stone |
 | `jealous` | Jealous friend | Sjalu venn | Petty, envious congratulations through gritted teeth |
 | `drama` | Drama queen | Dramadronning | Every milestone is the most emotional event ever |
+| `agent` | Secret agent | Hemmeleg agent | Suave gentleman spy: tuxedos, gadgets, villains' lairs, dry one-liners |
+| `legend` | Middle-school legend | Ungdomsskulelegende | Old man who peaked at middle school and steers every milestone back to it |
 
 ## Format
 
