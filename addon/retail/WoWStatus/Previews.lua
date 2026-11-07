@@ -53,7 +53,7 @@ function P.show(host)
         end
         -- Settings first; below a line, the previews.
         local options = 150
-        local previews = options + 760
+        local previews = options + 802
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -123,13 +123,13 @@ function P.show(host)
         panel.reload=button(panel,"",450,-options-384,130,function() if ReloadUI then ReloadUI() end end)
         panel.reload:Hide()
         -- Quiet mode: notifications wait in the instances ticked (off by default).
-        panel.quiet=check("Quiet mode: hold notifications in",-options-474,function() return WoWStatusPopups.quietSettings().enabled end,
+        panel.quiet=check("Quiet mode: hold notifications in",-options-516,function() return WoWStatusPopups.quietSettings().enabled end,
             function(value) WoWStatusPopups.setQuiet("enabled",value) end)
         -- Sounds, one per kind of notification; picking one plays it.
-        text(panel,"Sounds",24,-options-556,300)
+        text(panel,"Sounds",24,-options-598,300)
         panel.sounds={}
         for i,entry in ipairs(WoWStatusPopups.SOUND_KINDS) do
-            local kind,y=entry[1],-options-590-(i-1)*34
+            local kind,y=entry[1],-options-632-(i-1)*34
             text(panel,entry[2],44,y-4,200)
             local widget=button(panel,"",250,y,200,function(self)
                 local items={}
@@ -145,9 +145,9 @@ function P.show(host)
         panel.quietKinds={}
         for i,entry in ipairs({{"pvp","Battlegrounds"},{"raid","Raids"},{"party","Dungeons"}}) do
             local key=entry[1]
-            local widget=check(entry[2],-options-510,function() return WoWStatusPopups.quietSettings()[key] end,
+            local widget=check(entry[2],-options-552,function() return WoWStatusPopups.quietSettings()[key] end,
                 function(value) WoWStatusPopups.setQuiet(key,value) end)
-            widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-510)
+            widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-552)
             panel.quietKinds[key]=widget
         end
         -- The switch names its target in that language, so each reader finds it.
@@ -165,6 +165,13 @@ function P.show(host)
             panel.personality:SetText(WoWStatusPersonalities.label())
             WoWStatusPopups.preview("level")
         end)
+        -- Reaction voice: how the GZ!/F/Congrats! whispers to friends sound. Its own
+        -- setting (Classic by default), since these are sent in your name.
+        panel.reactionVoice=text(panel,WoWStatusPersonalities.reactionLabel(),24,-options-474,300)
+        panel.reactionVoiceNext=button(panel,"Next voice",330,-options-468,180,function()
+            WoWStatusPersonalities.nextReaction()
+            panel.reactionVoice:SetText(WoWStatusPersonalities.reactionLabel())
+        end)
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
@@ -178,6 +185,7 @@ function P.show(host)
     panel.refreshLanguage()
     panel.theme:SetText(WoWStatusTheme.label())
     panel.personality:SetText(WoWStatusPersonalities.label())
+    panel.reactionVoice:SetText(WoWStatusPersonalities.reactionLabel())
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)

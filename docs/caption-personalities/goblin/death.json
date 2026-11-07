@@ -26,12 +26,12 @@
  },
  {
   "en": "Undying, they said. I’d ask for a refund.",
-  "nn": "Udøyeleg, sa dei. Eg ville kravd pengane tilbake.",
+  "nn": "Udøyeleg, sa dei. Eg hadde kravd pengane tilbake.",
   "tag": "DEATHKNIGHT"
  },
  {
   "en": "Frost on the armor, dirt on the face. Cleaning fee applies.",
-  "nn": "Frost på rustninga, jord i fjeset. Reinsavgift gjeld.",
+  "nn": "Frost på rustninga, jord i fjeset. Reinhaldsgebyr kjem i tillegg.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -46,7 +46,7 @@
  },
  {
   "en": "Plague and decay didn’t save you. My potions might have.",
-  "nn": "Pest og forfall berga deg ikkje. Eliksirane mine kunne gjort det.",
+  "nn": "Pest og forfall berga deg ikkje. Eliksirane mine kunne ha gjort det.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -61,7 +61,7 @@
  },
  {
   "en": "Glided straight into trouble. Gliding lessons available.",
-  "nn": "Glei rett inn i trøbbel. Glidekurs tilgjengeleg.",
+  "nn": "Glei rett inn i trøbbel. Eg har glidekurs på tilbod.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -71,12 +71,12 @@
  },
  {
   "en": "Metamorphosis into a corpse? Not the upgrade I’d sell.",
-  "nn": "Metamorfose til lik? Ikkje oppgraderinga eg ville selt.",
+  "nn": "Metamorfose til lik? Ikkje ei oppgradering eg ville ha selt.",
   "tag": "DEMONHUNTER"
  },
  {
   "en": "Double-jumped right off the profit margin.",
-  "nn": "Dobbelthoppa rett ut over forteneste-kanten.",
+  "nn": "Dobbelthoppa rett ut over fortenestemarginen.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -91,7 +91,7 @@
  },
  {
   "en": "Should have fel rushed to my shop instead.",
-  "nn": "Du burde ha rusa til butikken min i staden.",
+  "nn": "Du burde heller ha storma til butikken min.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -101,7 +101,7 @@
  },
  {
   "en": "Bear form didn’t bear the load. Bulk armor sale today!",
-  "nn": "Bjørneham bar ikkje lasta. Sal på rustning i dag!",
+  "nn": "Bjørnehammen bar ikkje børa. Stort rustningssal i dag!",
   "tag": "DRUID"
  },
  {
@@ -181,7 +181,7 @@
  },
  {
   "en": "Scales chipped? I do touch-ups. Gold leaf extra.",
-  "nn": "Avskala skjel? Eg reparerer. Bladgull ekstra.",
+  "nn": "Avskala skjel? Eg flikkar. Bladgull kostar ekstra.",
   "tag": "EVOKER"
  },
  {
@@ -196,7 +196,7 @@
  },
  {
   "en": "Hover over to my shop next time. Healing on sale.",
-  "nn": "Sveva over til butikken min neste gong. Lækjing på tilbod.",
+  "nn": "Svev over til butikken min neste gong. Lækjing på tilbod.",
   "tag": "EVOKER"
  },
  {
@@ -231,12 +231,12 @@
  },
  {
   "en": "Aimed shot, missed opportunity.",
-  "nn": "Sikta skot, tapt moglegheit.",
+  "nn": "Sikta skot, forspilt sjanse.",
   "tag": "HUNTER"
  },
  {
   "en": "Should’ve tamed a bigger bodyguard. I rent those.",
-  "nn": "Du burde ha temja ein større livvakt. Eg leiger ut slike.",
+  "nn": "Du burde ha temt ein større livvakt. Eg leiger ut slike.",
   "tag": "HUNTER"
  },
  {
@@ -251,12 +251,12 @@
  },
  {
   "en": "Blinked the wrong way? Directions cost a silver.",
-  "nn": "Blinka feil veg? Vegbeskriving kostar eitt sølv.",
+  "nn": "Blinka feil veg? Vegforklaring kostar eitt sølv.",
   "tag": "MAGE"
  },
  {
   "en": "Ice block melted? Freezer upgrades available.",
-  "nn": "Isblokka smelta? Frysaroppgraderingar tilgjengelege.",
+  "nn": "Isblokka smelta? Eg sel betre frysarar.",
   "tag": "MAGE"
  },
  {
@@ -266,7 +266,7 @@
  },
  {
   "en": "Conjured food can’t fix this. My potions can.",
-  "nn": "Trylla mat fiksar ikkje dette. Eliksirane mine kan.",
+  "nn": "Framtrylla mat fiksar ikkje dette. Eliksirane mine kan.",
   "tag": "MAGE"
  },
  {
@@ -341,7 +341,7 @@
  },
  {
   "en": "Chi flows, health doesn’t. I sell the second one.",
-  "nn": "Chi flyt, helsa gjer det ikkje. Eg sel det andre.",
+  "nn": "Chi flyt, helsa gjer det ikkje. Eg sel det siste.",
   "tag": "MONK"
  },
  {
@@ -366,7 +366,7 @@
  },
  {
   "en": "Lay on Hands on cooldown? Lay on gold instead.",
-  "nn": "Handspålegging på nedkøyring? Legg på gull i staden.",
+  "nn": "Handspålegging på cooldown? Legg på gull i staden.",
   "tag": "PALADIN"
  },
  {
@@ -451,7 +451,7 @@
  },
  {
   "en": "Vanished? Not quite enough, it seems.",
-  "nn": "Forsvann? Ikkje heilt nok, ser det ut til.",
+  "nn": "Forsvann? Ikkje grundig nok, ser det ut til.",
   "tag": "ROGUE"
  },
  {
@@ -461,7 +461,7 @@
  },
  {
   "en": "Picked a pocket, lost a life. Bad exchange rate.",
-  "nn": "Tømde ei lomme, miste eit liv. Dårleg vekslingskurs.",
+  "nn": "Tømde ei lomme, mista eit liv. Dårleg vekslingskurs.",
   "tag": "ROGUE"
  },
  {
@@ -471,7 +471,7 @@
  },
  {
   "en": "Backstab gone wrong? Front stab, I guess.",
-  "nn": "Rygg-stikk som gjekk gale? Framstikk, då.",
+  "nn": "Ryggstikk som gjekk gale? Framstikk, då.",
   "tag": "ROGUE"
  },
  {
@@ -491,12 +491,12 @@
  },
  {
   "en": "Sneaky death. Nobody saw it coming. Including you.",
-  "nn": "Snikande død. Ingen såg ho kome. Ikkje du heller.",
+  "nn": "Snikande død. Ingen såg han kome. Ikkje du heller.",
   "tag": "ROGUE"
  },
  {
   "en": "Evasion failed. Tax evasion would’ve been safer. Kidding!",
-  "nn": "Unnamanøveren feila. Skatteunndraging hadde vore tryggare. Tuller!",
+  "nn": "Unnamanøveren slo feil. Skatteunndraging hadde vore tryggare. Tuller!",
   "tag": "ROGUE"
  },
  {
@@ -556,7 +556,7 @@
  },
  {
   "en": "Your demon is now unemployed. I’m hiring!",
-  "nn": "Demonen din er arbeidsledig no. Eg tilset!",
+  "nn": "Demonen din er arbeidsledig no. Eg har ledige stillingar!",
   "tag": "WARLOCK"
  },
  {
@@ -571,7 +571,7 @@
  },
  {
   "en": "Healthstone eaten? Next time, eat two.",
-  "nn": "Helsestein eten? Neste gong, et to.",
+  "nn": "Helsestein eten? Neste gong et du to.",
   "tag": "WARLOCK"
  },
  {
@@ -611,7 +611,7 @@
  },
  {
   "en": "Last stand turned into last lie-down.",
-  "nn": "Siste stand vart til siste kvil.",
+  "nn": "Siste skanse vart til siste kvilestad.",
   "tag": "WARRIOR"
  },
  {
@@ -621,7 +621,7 @@
  },
  {
   "en": "Big sword, big swing, big repair bill.",
-  "nn": "Stort sverd, stort sving, stor reparasjonsrekning.",
+  "nn": "Stort sverd, stort slag, stor reparasjonsrekning.",
   "tag": "WARRIOR"
  },
  {
@@ -651,7 +651,7 @@
  },
  {
   "en": "Death is bad for business. Please stop doing it.",
-  "nn": "Død er dårleg for forretningane. Ver snill og slutt med det.",
+  "nn": "Døden er dårleg for forretningane. Ver snill og slutt med det.",
   "tag": "ANY"
  },
  {
@@ -676,7 +676,7 @@
  },
  {
   "en": "The spirit healer charges less than me. For now.",
-  "nn": "Åndelækjaren tek mindre enn meg. Førebels.",
+  "nn": "Åndelækjaren tek mindre betalt enn meg. Førebels.",
   "tag": "ANY"
  },
  {
@@ -716,7 +716,7 @@
  },
  {
   "en": "Run back fast. Time spent dead is profit lost.",
-  "nn": "Spring fort tilbake. Tid som død er tapt forteneste.",
+  "nn": "Spring fort tilbake. Kvar stund som død er tapt forteneste.",
   "tag": "ANY"
  },
  {
@@ -731,7 +731,7 @@
  },
  {
   "en": "Down but not out! Well, out. Briefly.",
-  "nn": "Nede men ikkje ute! Vel, ute. Kort.",
+  "nn": "Nede, men ikkje ute! Jau, ute. Ei lita stund.",
   "tag": "ANY"
  },
  {
@@ -741,12 +741,12 @@
  },
  {
   "en": "That’s a write-off. Luckily you’re fully reusable.",
-  "nn": "Det er avskrive. Heldigvis kan du brukast om att.",
+  "nn": "Det må avskrivast. Heldigvis kan du brukast om att.",
   "tag": "ANY"
  },
  {
   "en": "Hey, no dying on my watch! Unless you’ve paid.",
-  "nn": "Hei, inga døying på min vakt! Om du ikkje har betalt.",
+  "nn": "Hei, inga døying på mi vakt! Med mindre du har betalt.",
   "tag": "ANY"
  },
  {
@@ -796,7 +796,7 @@
  },
  {
   "en": "The monsters won that round. They don’t tip, either.",
-  "nn": "Monstera vann den runden. Dei gir ikkje tips heller.",
+  "nn": "Monstera vann den runden. Dei gir ikkje drikkepengar heller.",
   "tag": "ANY"
  },
  {
@@ -811,7 +811,7 @@
  },
  {
   "en": "Fell over? My rocket boots would’ve prevented that.",
-  "nn": "Fall du? Rakettstøvlane mine ville hindra det.",
+  "nn": "Datt du? Rakettstøvlane mine hadde hindra det.",
   "tag": "ANY"
  },
  {
@@ -826,7 +826,7 @@
  },
  {
   "en": "Your durability took a hit. My profits took a bow.",
-  "nn": "Slitestyrken din fekk seg ein smell. Forteneste mi bukka.",
+  "nn": "Slitestyrken din fekk seg ein smell. Fortenesta mi bukka.",
   "tag": "ANY"
  },
  {
@@ -906,17 +906,17 @@
  },
  {
   "en": "Ah well. Every adventurer has an off day. Or off life.",
-  "nn": "Nå ja. Alle eventyrarar har ein dårleg dag. Eller eit dårleg liv.",
+  "nn": "Nåvel. Alle eventyrarar har ein dårleg dag. Eller eit dårleg liv.",
   "tag": "ANY"
  },
  {
   "en": "Your corpse is in excellent condition. Mint, even.",
-  "nn": "Liket ditt er i framifrå stand. Nesten nytt.",
+  "nn": "Liket ditt er i framifrå stand. Som nytt, jamvel.",
   "tag": "ANY"
  },
  {
   "en": "Dead again? I’ll start a loyalty card for the graveyard.",
-  "nn": "Død igjen? Eg lagar eit lojalitetskort for gravplassen.",
+  "nn": "Død igjen? Eg lagar eit stempelkort for gravplassen til deg.",
   "tag": "ANY"
  },
  {
@@ -931,12 +931,12 @@
  },
  {
   "en": "Dying? Not on my balance sheet, please.",
-  "nn": "Døy? Ikkje i balansen min, takk.",
+  "nn": "Døyr du? Ikkje på balansen min, takk.",
   "tag": "ANY"
  },
  {
   "en": "Smell that? It’s the scent of repair costs.",
-  "nn": "Luktar du? Det er lukta av reparasjonskostnader.",
+  "nn": "Kjenner du lukta? Det er lukta av reparasjonskostnader.",
   "tag": "ANY"
  },
  {
@@ -946,7 +946,7 @@
  },
  {
   "en": "Bad luck! Good news: luck charms are on sale.",
-  "nn": "Uflaks! Gode nyheiter: lukkeamulettar er på tilbod.",
+  "nn": "Uflaks! Godt nytt: lukkeamulettar er på tilbod.",
   "tag": "ANY"
  },
  {
@@ -971,7 +971,7 @@
  },
  {
   "en": "Sad news. Your armor durability is in mourning.",
-  "nn": "Triste nyheiter. Slitestyrken på rustninga di er i sorg.",
+  "nn": "Trist nytt. Slitestyrken på rustninga di er i sorg.",
   "tag": "ANY"
  },
  {
@@ -986,7 +986,7 @@
  },
  {
   "en": "Death is just nature’s way of saying: buy more potions.",
-  "nn": "Døden er berre naturen sin måte å seie: kjøp fleire eliksirar.",
+  "nn": "Døden er berre naturen sin måte å seie det på: kjøp fleire eliksirar.",
   "tag": "ANY"
  },
  {
@@ -1011,7 +1011,7 @@
  },
  {
   "en": "I’d send a rescue team, but they bill hourly.",
-  "nn": "Eg ville sendt eit redningslag, men dei tek timebetalt.",
+  "nn": "Eg hadde sendt eit redningslag, men dei tek timebetalt.",
   "tag": "ANY"
  },
  {
@@ -1031,7 +1031,7 @@
  },
  {
   "en": "You’re worth nothing to me dead. Get back up, champ!",
-  "nn": "Du er ingenting verd for meg som død. Opp med deg, mester!",
+  "nn": "Død er du ingenting verd for meg. Opp med deg, meister!",
   "tag": "ANY"
  },
  {
@@ -1061,7 +1061,7 @@
  },
  {
   "en": "You dropped this: your life. Want it back? Small fee.",
-  "nn": "Du miste dette: livet ditt. Vil du ha det tilbake? Lita avgift.",
+  "nn": "Du mista dette: livet ditt. Vil du ha det tilbake? Lita avgift.",
   "tag": "ANY"
  },
  {
@@ -1071,7 +1071,7 @@
  },
  {
   "en": "Death detected. Initiating sales pitch for armor.",
-  "nn": "Død oppdaga. Startar salspitch for rustning.",
+  "nn": "Død oppdaga. Startar salstale for rustning.",
   "tag": "ANY"
  },
  {
@@ -1116,7 +1116,7 @@
  },
  {
   "en": "Lesson learned. Tuition paid in repair costs.",
-  "nn": "Lærdom teken. Skulepengar betalte i reparasjonar.",
+  "nn": "Det har du lært. Skulepengane gjekk til reparasjonar.",
   "tag": "ANY"
  },
  {
@@ -1126,7 +1126,7 @@
  },
  {
   "en": "Rough day at the office, huh?",
-  "nn": "Tøff dag på kontoret, hm?",
+  "nn": "Tung dag på kontoret, hæ?",
   "tag": "ANY"
  },
  {
@@ -1161,12 +1161,12 @@
  },
  {
   "en": "Out of the game, briefly. Out of pocket, definitely.",
-  "nn": "Ute av spelet, kort. Utlegg, heilt sikkert.",
+  "nn": "Ute av spelet ei stund. Pengar ut av lomma, heilt sikkert.",
   "tag": "ANY"
  },
  {
   "en": "Your life just hit rock bottom. Literally.",
-  "nn": "Livet ditt traff botnen. Bokstaveleg.",
+  "nn": "Livet ditt traff botnen. Bokstaveleg talt.",
   "tag": "ANY"
  },
  {
@@ -1191,7 +1191,7 @@
  },
  {
   "en": "Nothing a few gold and a bandage can’t fix.",
-  "nn": "Ingenting nokre gull og ein bandasje ikkje kan fikse.",
+  "nn": "Ingenting som nokre gull og ein bandasje ikkje kan fikse.",
   "tag": "ANY"
  },
  {
@@ -1216,12 +1216,12 @@
  },
  {
   "en": "Quick, revive before your armor rusts!",
-  "nn": "Fort, bli vekt opp før rustninga rustar!",
+  "nn": "Fort, stå opp att før rustninga rustar!",
   "tag": "ANY"
  },
  {
   "en": "That boss got the better end of the deal.",
-  "nn": "Den bossen fekk den beste delen av avtalen.",
+  "nn": "Den bossen kom best ut av den handelen.",
   "tag": "ANY"
  },
  {
@@ -1236,7 +1236,7 @@
  },
  {
   "en": "I’d hold a moment of silence, but silence doesn’t sell.",
-  "nn": "Eg ville halde eit minutts stille, men stille sel ikkje.",
+  "nn": "Eg hadde halde eitt minutts stille, men stille sel ikkje.",
   "tag": "ANY"
  },
  {
@@ -1251,7 +1251,7 @@
  },
  {
   "en": "Faceplant achieved. Not an achievement I’d sell.",
-  "nn": "Fjeset i bakken. Ikkje ei bragd eg ville selt.",
+  "nn": "Fjeset i bakken. Ikkje ei bragd eg ville ha selt.",
   "tag": "ANY"
  },
  {
@@ -1291,7 +1291,7 @@
  },
  {
   "en": "Next adventure, budget for bandages.",
-  "nn": "Neste eventyr, budsjetter for bandasjar.",
+  "nn": "Neste eventyr: set av pengar til bandasjar.",
   "tag": "ANY"
  },
  {
@@ -1371,17 +1371,17 @@
  },
  {
   "en": "Should’ve sprung for the deluxe life package.",
-  "nn": "Du skulle ha spandert på deluxe-livspakka.",
+  "nn": "Du skulle ha spandert deluxe-livspakka på deg.",
   "tag": "ANY"
  },
  {
   "en": "Well, that went straight in the red.",
-  "nn": "Vel, det gjekk rett i raudt.",
+  "nn": "Vel, det gjekk rett i minus.",
   "tag": "ANY"
  },
  {
   "en": "Down and out? Up and about soon, I hope. Customers needed!",
-  "nn": "Nede og ute? Oppe og går snart, håpar eg. Treng kundar!",
+  "nn": "Nede og ute? Oppe og går snart, håpar eg. Eg treng kundar!",
   "tag": "ANY"
  },
  {
@@ -1401,12 +1401,12 @@
  },
  {
   "en": "Explosive ending! Not one of mine, I swear.",
-  "nn": "Eksplosiv slutt! Ikkje ein av mine, eg sver.",
+  "nn": "Eksplosiv slutt! Ikkje ein av mine, det sver eg.",
   "tag": "ANY"
  },
  {
   "en": "Death comes for us all. Taxes come first, though.",
-  "nn": "Døden kjem for oss alle. Skatten kjem først, likevel.",
+  "nn": "Døden kjem for oss alle. Men skatten kjem først.",
   "tag": "ANY"
  },
  {
@@ -1421,7 +1421,7 @@
  },
  {
   "en": "Lost your life? Check the lost-and-found. Retrieval fee applies.",
-  "nn": "Mista livet? Sjekk hittegodset. Henteavgift gjeld.",
+  "nn": "Mista livet? Sjekk hittegodset. Henteavgift kjem i tillegg.",
   "tag": "ANY"
  },
  {
@@ -1491,17 +1491,17 @@
  },
  {
   "en": "Your hit points were overdrawn. Bounced, really.",
-  "nn": "Livspoenga dine var overtrekte. Sprett, rett og slett.",
+  "nn": "Livspoenga dine vart overtrekte. Dei sprett, rett og slett.",
   "tag": "ANY"
  },
  {
   "en": "The way back is long. Rocket rides available.",
-  "nn": "Vegen tilbake er lang. Raketturar tilgjengelege.",
+  "nn": "Vegen tilbake er lang. Rakettskyss kan bestillast.",
   "tag": "ANY"
  },
  {
   "en": "Anti-magic shell, anti-profit outcome.",
-  "nn": "Antimagiskal, antiforteneste-resultat.",
+  "nn": "Antimagisk skal, antilønsamt resultat.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1521,7 +1521,7 @@
  },
  {
   "en": "Icebound fortitude melted. Refrigeration services available.",
-  "nn": "Isbunden styrke smelta. Kjøleteneste tilgjengeleg.",
+  "nn": "Isbunden styrke smelta. Kjøleservice kan bestillast.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1551,7 +1551,7 @@
  },
  {
   "en": "Raise ally needs an ally. Rent one from me.",
-  "nn": "Gjenreis allierte krev ein allierte. Leig ein av meg.",
+  "nn": "Gjenreis alliert krev ein alliert. Leig ein av meg.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1566,7 +1566,7 @@
  },
  {
   "en": "The scourge would be disappointed. I’m just disappointed in sales.",
-  "nn": "Svøpa ville vore skuffa. Eg er berre skuffa over salet.",
+  "nn": "Svøpa hadde vore skuffa. Eg er berre skuffa over salet.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1596,7 +1596,7 @@
  },
  {
   "en": "Pestilence spread, you didn’t. Wait, you did. On the floor.",
-  "nn": "Pesten spreidde seg, ikkje du. Vent, du gjorde. Utover golvet.",
+  "nn": "Pesten spreidde seg, ikkje du. Vent, det gjorde du. Utover golvet.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1631,7 +1631,7 @@
  },
  {
   "en": "Soul fragments everywhere. Want me to sweep them up? Fee.",
-  "nn": "Sjelefragment overalt. Vil du at eg feiar dei opp? Avgift.",
+  "nn": "Sjelefragment overalt. Skal eg feie dei opp? Mot avgift.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1641,7 +1641,7 @@
  },
  {
   "en": "Tattoos glowing, life dimming. Not a good look.",
-  "nn": "Tatoveringar lyser, livet dimmar. Ikkje fint.",
+  "nn": "Tatoveringane lyser, livet slokknar. Ikkje pent.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1706,7 +1706,7 @@
  },
  {
   "en": "Rebirth on cooldown? Bad timing, leafy friend.",
-  "nn": "Gjenfødsel på nedkøyring? Dårleg timing, lauvrike venn.",
+  "nn": "Gjenfødsel på cooldown? Dårleg timing, lauvkledde venn.",
   "tag": "DRUID"
  },
  {
@@ -1721,12 +1721,12 @@
  },
  {
   "en": "Your bear went into hibernation. A long one.",
-  "nn": "Bjørnen din gjekk i hi. Eit langt eitt.",
+  "nn": "Bjørnen din gjekk i hi. Eit langt hi.",
   "tag": "DRUID"
  },
  {
   "en": "Herbs everywhere, yet no herbal remedy. Buy mine!",
-  "nn": "Urter overalt, men inga urtemedisin. Kjøp mi!",
+  "nn": "Urter overalt, men inga urtemedisin. Kjøp mine!",
   "tag": "DRUID"
  },
  {
@@ -1791,7 +1791,7 @@
  },
  {
   "en": "Ironbark? More like paper bark.",
-  "nn": "Jernbark? Meir som papirbark.",
+  "nn": "Jernbark? Papirbark, heller.",
   "tag": "DRUID"
  },
  {
@@ -1811,12 +1811,12 @@
  },
  {
   "en": "Deep breath, then no breath. Respiratory insurance?",
-  "nn": "Djupt pust, så inkje pust. Pusteforsikring?",
+  "nn": "Djupt pust, så ingen pust. Pusteforsikring?",
   "tag": "EVOKER"
  },
  {
   "en": "Obsidian scales chipped. Polish costs extra.",
-  "nn": "Obsidianskjel avskala. Puss kostar ekstra.",
+  "nn": "Obsidianskjel avskala. Polering kostar ekstra.",
   "tag": "EVOKER"
  },
  {
@@ -1936,7 +1936,7 @@
  },
  {
   "en": "Your bow is fine. You’re not. Funny how that works.",
-  "nn": "Bogen din er fin. Det er ikkje du. Rart korleis det blir.",
+  "nn": "Bogen din er fin. Det er ikkje du. Rart korleis det går.",
   "tag": "HUNTER"
  },
  {
@@ -1946,7 +1946,7 @@
  },
  {
   "en": "Your pet will need a new owner. I’m accepting applications.",
-  "nn": "Kjæledyret ditt treng ny eigar. Eg tek imot søknader.",
+  "nn": "Kjæledyret ditt treng ein ny eigar. Eg tek imot søknader.",
   "tag": "HUNTER"
  },
  {
@@ -1971,7 +1971,7 @@
  },
  {
   "en": "Tame beast, untamed outcome.",
-  "nn": "Temja dyr, utemt utfall.",
+  "nn": "Temt dyr, utemt utfall.",
   "tag": "HUNTER"
  },
  {
@@ -1981,12 +1981,12 @@
  },
  {
   "en": "Steady focus, unsteady survival.",
-  "nn": "Stø fokus, ustø overleving.",
+  "nn": "Stødig fokus, ustødig overleving.",
   "tag": "HUNTER"
  },
  {
   "en": "Bring your pet to my shop. Pets get treats. Owners get invoices.",
-  "nn": "Ta med kjæledyret til butikken min. Dyr får godbitar. Eigarar får fakturaer.",
+  "nn": "Ta med kjæledyret til butikken min. Dyr får godbitar. Eigarar får rekningar.",
   "tag": "HUNTER"
  },
  {
@@ -2001,7 +2001,7 @@
  },
  {
   "en": "Mirror image? The real you was the weak one.",
-  "nn": "Spegelbilete? Den ekte deg var den svake.",
+  "nn": "Spegelbilete? Den ekte utgåva av deg var den svake.",
   "tag": "MAGE"
  },
  {
@@ -2056,12 +2056,12 @@
  },
  {
   "en": "Frozen orb rolled away. So did your life.",
-  "nn": "Frosne kula rulla vekk. Det gjorde livet ditt òg.",
+  "nn": "Den frosne kula rulla vekk. Det gjorde livet ditt òg.",
   "tag": "MAGE"
  },
  {
   "en": "Invisibility on cooldown? Now you’re a ghost. Same effect.",
-  "nn": "Usynlegheit på nedkøyring? No er du spøkjelse. Same verknad.",
+  "nn": "Usynlegheit på cooldown? No er du eit spøkjelse. Same verknad.",
   "tag": "MAGE"
  },
  {
@@ -2081,7 +2081,7 @@
  },
  {
   "en": "Blizzard everywhere and still no cool head.",
-  "nn": "Snøstorm overalt og likevel ikkje kaldt hovud.",
+  "nn": "Snøstorm overalt, og likevel heldt du ikkje hovudet kaldt.",
   "tag": "MAGE"
  },
  {
@@ -2251,7 +2251,7 @@
  },
  {
   "en": "Your hammer dropped. So did you. Matching set!",
-  "nn": "Hammaren din fall. Det gjorde du òg. Matchande sett!",
+  "nn": "Hammaren din fall. Det gjorde du òg. Dei passar saman!",
   "tag": "PALADIN"
  },
  {
@@ -2271,7 +2271,7 @@
  },
  {
   "en": "Guardian of ancient kings couldn’t guard you.",
-  "nn": "Vaktaren til dei gamle kongane klarte ikkje vakte deg.",
+  "nn": "Vaktaren til dei gamle kongane klarte ikkje å verne deg.",
   "tag": "PALADIN"
  },
  {
@@ -2346,7 +2346,7 @@
  },
  {
   "en": "Fade? You faded all the way.",
-  "nn": "Blekne? Du bleikna heilt bort.",
+  "nn": "Bleikne? Du bleikna heilt bort.",
   "tag": "PRIEST"
  },
  {
@@ -2376,12 +2376,12 @@
  },
  {
   "en": "Mind control? Couldn’t control the outcome.",
-  "nn": "Sinnskontroll? Klarte ikkje kontrollere utfallet.",
+  "nn": "Sinnskontroll? Klarte ikkje å kontrollere utfallet.",
   "tag": "PRIEST"
  },
  {
   "en": "The healer is down! Everyone panic and buy potions.",
-  "nn": "Lækjaren er nede! Alle får panikk og kjøper eliksirar.",
+  "nn": "Lækjaren er nede! Alle saman: få panikk og kjøp eliksirar!",
   "tag": "PRIEST"
  },
  {
@@ -2396,7 +2396,7 @@
  },
  {
   "en": "Your flock will miss you. Briefly. Rez fast!",
-  "nn": "Flokken din kjem til å sakne deg. Kort. Bli vekt opp fort!",
+  "nn": "Flokken din kjem til å sakne deg. Ei lita stund. Kom deg opp att, fort!",
   "tag": "PRIEST"
  },
  {
@@ -2446,7 +2446,7 @@
  },
  {
   "en": "Feint failed. Death was real.",
-  "nn": "Fintet feila. Døden var ekte.",
+  "nn": "Finta feila. Døden var ekte.",
   "tag": "ROGUE"
  },
  {
@@ -2466,7 +2466,7 @@
  },
  {
   "en": "Crimson vial emptied. Refills at my counter!",
-  "nn": "Den raude flaska tom. Påfyll ved disken min!",
+  "nn": "Den raude flaska er tom. Påfyll ved disken min!",
   "tag": "ROGUE"
  },
  {
@@ -2481,7 +2481,7 @@
  },
  {
   "en": "You pickpocketed death? Death charged interest.",
-  "nn": "Du rana døden? Døden kravde renter.",
+  "nn": "Du stal frå lomma til døden? Døden kravde renter.",
   "tag": "ROGUE"
  },
  {
@@ -2511,12 +2511,12 @@
  },
  {
   "en": "Spirit walk walked you right to the graveyard.",
-  "nn": "Åndevandringa vandra rett til gravplassen.",
+  "nn": "Åndevandringa vandra deg rett til gravplassen.",
   "tag": "SHAMAN"
  },
  {
   "en": "Hex turned them into a frog. Then the frog won.",
-  "nn": "Forhekseinga gjorde dei til frosk. Så vann frosken.",
+  "nn": "Forheksinga gjorde dei til frosk. Så vann frosken.",
   "tag": "SHAMAN"
  },
  {
@@ -2586,7 +2586,7 @@
  },
  {
   "en": "Riptide swept you out to sea. Permanently-ish.",
-  "nn": "Strømmen tok deg til havs. Nesten for godt.",
+  "nn": "Straumen tok deg til havs. Nesten for godt.",
   "tag": "SHAMAN"
  },
  {
@@ -2761,7 +2761,7 @@
  },
  {
   "en": "Recklessness lived up to its name.",
-  "nn": "Hensynsløysa levde opp til namnet.",
+  "nn": "Omsynsløysa levde opp til namnet.",
   "tag": "WARRIOR"
  },
  {

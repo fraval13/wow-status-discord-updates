@@ -35,6 +35,12 @@ character's own attitude, never on a real group, faith or person.
 
 ## Each line
 
+Every line is **hand-written** as a complete line, in both languages. Scripts may
+convert hand-written text to JSON and check it, never build lines by combining
+openers, closers or other fragments. The Nynorsk matters most: write it as a
+native speaker would, and have it proofread line by line afterwards.
+
+
 - **Generic**: fits any level, zone, item, profession or rank of its category; the
   factual line carries names, numbers and facts.
 - **Short**: one or two sentences, 25–65 characters (90 at most), ending in
@@ -51,7 +57,8 @@ character's own attitude, never on a real group, faith or person.
 
 Write idiomatic Nynorsk (*ikkje, eg, dei, kva, korleis, fekk, nivå, oppdrag,
 ridedyr, fangehol, omdøme*) and adapt idioms rather than translating word for word.
-Common gaming loanwords (raid, PvP, loot, XP, tank, heal) stay English. After
+Common gaming loanwords (raid, PvP, loot, XP, tank, heal) stay English. Never use *Heil* as a greeting or
+exclamation (it reads as the Nazi salute); write *Ære vere …*, *Hei* or *Velkomen*. After
 each file, scan the `nn` lines for Bokmål forms (*jeg, ikke, hva, også, -ene*
 plurals of masculine nouns) and fix them. Flag the Nynorsk for a native
 speaker's review in the pull request.
@@ -64,3 +71,16 @@ what it reports. The work is done when the only report left is that the
 personality's Lua file is stale.
 For many personalities at once, give each its own agent with this brief, the
 personality's voice and its `id`, so they write in parallel into separate folders.
+
+## Reactions
+
+A reaction is a **whisper the player sends to a friend** by clicking GZ!, F or
+Congrats! on the friend's notification, so write it as the player speaking to the
+friend ("you" is the friend, "I" is the player). Each of the 18 types in
+`<id>/reactions/` (listed in `docs/caption-personalities/README.md`) gets 300
+pairs. `level` lines hold `{level}` and `enjoy` lines hold `{zone}` exactly once,
+in both languages; no other braces. Vary the openings as much as
+the endings: the build check allows at most 30 lines per file, per language, that
+open with the same two words (so at most 30 *"Level {level}!"* or *"GZ, you"*). Snarky voices stay friendly teasing between
+friends, and F lines are sincere respects in the voice. The same line rules and
+Nynorsk checks as captions apply.

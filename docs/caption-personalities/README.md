@@ -42,9 +42,33 @@ sender's class is known. `death.json` has 170 `ANY` lines and 30 for each of the
 13 classes. Lines are at most 90 characters, have no `"`, `\`, `|`,
 tabs or newlines, and are unique within their file in each language.
 
+## Reactions
+
+A personality can also have a **reaction voice**: the whispers its reaction
+buttons (GZ!, F, Congrats!…) send to a friend. These are sent in the player's
+name, so they have their own setting, **Notifications → Next voice** or
+`/wstatus voice <name>`, and default to the gentle **Wholesome** voice
+(`P.REACTION_DEFAULT`; Classic, today's GZ!/F/Congrats! texts, when Wholesome is
+not loaded). Classic and Random are choices there too: Random picks Classic or
+one of the voices for each reaction. Only personalities listed in
+`REACTION_VOICES` in `scripts/build_personalities.py` ship reaction voices; the
+others keep captions only until their reactions are written and proofread.
+The button keeps its short label; only the whisper changes.
+
+`<id>/reactions/<type>.json` holds 300 pairs for each of 18 reaction types, in the
+same format as captions (no `tag`). The types follow `P.reactionKey` in
+`Popups.lua`: `gz`, `level` (holds `{level}` once), `f`, `gitgood`, `welcome`,
+`enjoy` (holds `{zone}` once), `congrats`, and `congrats_<kind>` for `loot`,
+`quest`, `profession`, `dungeon`, `raid`, `mount`, `epicmount`, `reputation`,
+`unlock`, `pvp` and `first`. For variety, at most 30 lines of a reaction file
+may open with the same two words, in each language (checked by the build script). A whisper is picked at random in the player's
+language with the slot filled in. A friend's client on this version recognises
+every voice's lines, in either language, and counts them as that reaction on
+the log card; older versions show them as an ordinary whisper.
+
 ## Editing
 
-1. Edit the JSON.
+1. Edit the JSON (captions in `<id>/`, reactions in `<id>/reactions/`).
 2. `python scripts/build_personalities.py` regenerates `addon/shared/Flavour<Name>.lua`
    (`--check` reports stale or invalid files without writing).
 3. `python scripts/sync_addons.py` copies them into the four editions.

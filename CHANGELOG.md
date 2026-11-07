@@ -10,6 +10,12 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Reactions now whisper a warm Wholesome line; pick Christian, Dwarf, Drama queen, Random or Classic
+- /wstatus voice <name> picks the reaction voice from chat; captions keep their own personality setting
+- Hundreds of Nynorsk caption lines corrected: grammar, word choice and a few unfortunate greetings
+
 ## 1.30.0
 
 - Gjer testane raskare: frå om lag 230 til 19 sekund (#127)

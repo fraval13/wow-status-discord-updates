@@ -46,7 +46,7 @@
  },
  {
   "en": "Risen once, fallen twice. The saga continues!",
-  "nn": "Reist ein gong, falle to. Soga held fram!",
+  "nn": "Reist éin gong, falt to gonger. Soga held fram!",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -61,7 +61,7 @@
  },
  {
   "en": "The wings of fel folded at last. For now.",
-  "nn": "Fel-vengene falda seg til slutt. For no.",
+  "nn": "Fel-vengene falda seg saman til slutt. For no.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -71,7 +71,7 @@
  },
  {
   "en": "Sing of the hunter who glided too boldly!",
-  "nn": "Syng om jegaren som gleid for djervt!",
+  "nn": "Syng om jegeren som gleid for djervt!",
   "tag": "DEMONHUNTER"
  },
  {
@@ -81,7 +81,7 @@
  },
  {
   "en": "Perhaps Metamorphosis into something less dead?",
-  "nn": "Kanskje ei forvandling til noko mindre daudt?",
+  "nn": "Kanskje ei forvandling til noko mindre dødt?",
   "tag": "DEMONHUNTER"
  },
  {
@@ -96,7 +96,7 @@
  },
  {
   "en": "Sacrificed so much, and then this. Poetic.",
-  "nn": "Ofra så mykje, og so dette. Poetisk.",
+  "nn": "Ofra so mykje, og so dette. Poetisk.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -106,7 +106,7 @@
  },
  {
   "en": "The tattoos glow on, the hunter does not.",
-  "nn": "Tatoveringane gløder vidare, jegaren gjer ikkje det.",
+  "nn": "Tatoveringane gløder vidare, jegeren gjer ikkje det.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -221,12 +221,12 @@
  },
  {
   "en": "Feign Death works better when feigned, brave hunter.",
-  "nn": "Spela død fungerer betre når han er spela, modige jeger.",
+  "nn": "Spel død verkar betre når ein faktisk spelar død, modige jeger.",
   "tag": "HUNTER"
  },
  {
   "en": "Sing of the archer whose last arrow flew true. Mostly.",
-  "nn": "Syng om skyttaren som siste pila trefte. Stort sett.",
+  "nn": "Syng om skyttaren der siste pila fór beint. Stort sett.",
   "tag": "HUNTER"
  },
  {
@@ -251,7 +251,7 @@
  },
  {
   "en": "The bow lies still. The ballad laments.",
-  "nn": "Bogen ligg still. Kvadet klagar.",
+  "nn": "Bogen ligg stille. Kvadet klagar.",
   "tag": "HUNTER"
  },
  {
@@ -336,7 +336,7 @@
  },
  {
   "en": "Touch of Karma? More like touch of bad karma.",
-  "nn": "Karmaberøring? Meir som dårleg karma.",
+  "nn": "Karmaberøring? Snarare dårleg karma.",
   "tag": "MONK"
  },
  {
@@ -351,7 +351,7 @@
  },
  {
   "en": "Stagger, then stumble, then sleep.",
-  "nn": "Stagge, so snåve, so sove.",
+  "nn": "Vakling, so snåving, so svevn.",
   "tag": "MONK"
  },
  {
@@ -411,7 +411,7 @@
  },
  {
   "en": "Plate armor, alas, is not plate immortality.",
-  "nn": "Platerustning er dessverre ikkje platefast udøyelegheit.",
+  "nn": "Platerustning er dessverre ikkje det same som udøyelegdom.",
   "tag": "PALADIN"
  },
  {
@@ -431,7 +431,7 @@
  },
  {
   "en": "Spirit of Redemption, a most dignified exit.",
-  "nn": "Forløysingsånda, ei høgst verdig utgang.",
+  "nn": "Forløysingsånda, ein høgst verdig utgang.",
   "tag": "PRIEST"
  },
  {
@@ -441,7 +441,7 @@
  },
  {
   "en": "Perhaps Fade would have faded the danger?",
-  "nn": "Kanskje ei bleiking hadde bleikt faren?",
+  "nn": "Kanskje Fade hadde fått faren til å bleikne?",
   "tag": "PRIEST"
  },
  {
@@ -571,7 +571,7 @@
  },
  {
   "en": "Sing of the warlock whose pact had fine print!",
-  "nn": "Syng om heksemeisteren som pakta hadde liten skrift!",
+  "nn": "Syng om heksemeisteren som ikkje las det med liten skrift i pakta!",
   "tag": "WARLOCK"
  },
  {
@@ -601,7 +601,7 @@
  },
  {
   "en": "The voidwalker weeps into its own void.",
-  "nn": "Tomrom-vandraren gret inn i sitt eige tomrom.",
+  "nn": "Tomromsvandraren gret inn i sitt eige tomrom.",
   "tag": "WARLOCK"
  },
  {
@@ -656,7 +656,7 @@
  },
  {
   "en": "Heroic Leap, landing on the wrong side of fate.",
-  "nn": "Heltemodig sprang, landa på feil side av lagnaden.",
+  "nn": "Sprang heltemodig, landa på feil side av lagnaden.",
   "tag": "WARRIOR"
  },
  {
@@ -681,7 +681,7 @@
  },
  {
   "en": "The bards prepare a dirge. A short one.",
-  "nn": "Skaldane gjer klar ein sorgsong. Ein kort ein.",
+  "nn": "Skaldane gjer klar ein sorgsong. Ein kort ein, då.",
   "tag": "ANY"
  },
  {
@@ -741,7 +741,7 @@
  },
  {
   "en": "The gods weep, then hand out a res.",
-  "nn": "Gudane gret, og deler so ut ein gjenoppliving.",
+  "nn": "Gudane gret, og deler so ut ei gjenoppliving.",
   "tag": "ANY"
  },
  {
@@ -856,7 +856,7 @@
  },
  {
   "en": "A death most noble, a revival most certain!",
-  "nn": "Ein høgst edel død, ei høgst sikker oppvakning!",
+  "nn": "Ein høgst edel død, ei høgst sikker oppvaking!",
   "tag": "ANY"
  },
  {
@@ -951,7 +951,7 @@
  },
  {
   "en": "Such valor! Such courage! Such poor timing!",
-  "nn": "For eit mot! For ei djervskap! For ei dårleg timing!",
+  "nn": "For eit mot! For ein djervskap! For ei dårleg timing!",
   "tag": "ANY"
  },
  {
@@ -1001,7 +1001,7 @@
  },
  {
   "en": "Grief grips the guild! Then someone makes a joke.",
-  "nn": "Sorga grip gilda! So kjem nokon med ein vits.",
+  "nn": "Sorga grip gildet! So kjem nokon med ein vits.",
   "tag": "ANY"
  },
  {
@@ -1031,7 +1031,7 @@
  },
  {
   "en": "The bards hush. A moment of silence. Okay, done.",
-  "nn": "Skaldane tystar. Eit augneblink stille. Ok, ferdig.",
+  "nn": "Skaldane tagnar. Stille eit augneblink. Ok, ferdig.",
   "tag": "ANY"
  },
  {
@@ -1091,7 +1091,7 @@
  },
  {
   "en": "Fallen like a star, bright and sudden!",
-  "nn": "Falle som ei stjerne, klar og brå!",
+  "nn": "Fall som ei stjerne, klår og brå!",
   "tag": "ANY"
  },
  {
@@ -1356,7 +1356,7 @@
  },
  {
   "en": "O woeful day! O dramatic swoon!",
-  "nn": "Å sorgfulle dag! Å dramatiske svime!",
+  "nn": "Å sorgfulle dag! Å dramatiske svimeanfall!",
   "tag": "ANY"
  },
  {
@@ -1406,7 +1406,7 @@
  },
  {
   "en": "A heroic stand, a less heroic lie-down.",
-  "nn": "Eit heltemodig standpunkt, ei mindre heltemodig kvilestilling.",
+  "nn": "Ein heltemodig motstand, ei mindre heltemodig kvilestilling.",
   "tag": "ANY"
  },
  {
@@ -1441,7 +1441,7 @@
  },
  {
   "en": "A hero's end? Pfah! A hero's pit stop!",
-  "nn": "Endelikt for ein helt? Pøh! Ein helts depotstopp!",
+  "nn": "Endelikt for ein helt? Pøh! Berre ein depotstopp!",
   "tag": "ANY"
  },
  {
@@ -1496,7 +1496,7 @@
  },
  {
   "en": "Woe! A hero's light dims. It will relight.",
-  "nn": "Ve! Ljoset til helten dimmast. Det vert tent att.",
+  "nn": "Ve! Ljoset til helten falmar. Det vert tent att.",
   "tag": "ANY"
  },
  {
@@ -1506,7 +1506,7 @@
  },
  {
   "en": "Valiant, fearless, and now quite dead.",
-  "nn": "Tapper, fryktlaus, og no ganske daud.",
+  "nn": "Tapper, fryktlaus, og no ganske død.",
   "tag": "ANY"
  },
  {
@@ -1516,7 +1516,7 @@
  },
  {
   "en": "The Lich King's old pupil, schooled once more by the floor.",
-  "nn": "Den gamle eleven til Lichkongen, nok ein gong lært opp av golvet.",
+  "nn": "Den gamle eleven til Lichkongen, endå ein gong lært opp av golvet.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1526,7 +1526,7 @@
  },
  {
   "en": "Sing, O crypt, of the knight who outlasted nothing!",
-  "nn": "Syng, du gravkammer, om riddaren som ikkje varte lenger enn noko!",
+  "nn": "Syng, du gravkammer, om riddaren som ikkje overlevde noko som helst!",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1646,7 +1646,7 @@
  },
  {
   "en": "Fel wings, meet gravity. Gravity, the floor.",
-  "nn": "Fel-venger, møt tyngdekrafta. Tyngdekraft, golvet.",
+  "nn": "Fel-venger, møt tyngdekrafta. Tyngdekraft, møt golvet.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1676,7 +1676,7 @@
  },
  {
   "en": "Glide on, spirit, the healer is that way.",
-  "nn": "Gli vidare, ånd, lækjaren er den vegen.",
+  "nn": "Gli vidare, ånd, lækjaren er der borte.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1686,17 +1686,17 @@
  },
  {
   "en": "Ten thousand years of vigil, and then a trip.",
-  "nn": "Ti tusen år med vakt, og so eit snåv.",
+  "nn": "Ti tusen år med vakt, og so eit feilsteg.",
   "tag": "DEMONHUNTER"
  },
  {
   "en": "Netherwalk next time, perhaps? Just a whisper.",
-  "nn": "Nethervandring neste gong, kanskje? Berre eit kviskr.",
+  "nn": "Nethervandring neste gong, kanskje? Berre ei kviskring.",
   "tag": "DEMONHUNTER"
  },
  {
   "en": "The horns droop. The tattoos dim. The bards sigh.",
-  "nn": "Horna heng. Tatoveringane dimmast. Skaldane sukkar.",
+  "nn": "Horna heng. Tatoveringane falmar. Skaldane sukkar.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1711,7 +1711,7 @@
  },
  {
   "en": "The owls hoot a mournful hoot.",
-  "nn": "Uglene uler eit sorgfullt ul.",
+  "nn": "Uglene ular eit sorgfullt ul.",
   "tag": "DRUID"
  },
  {
@@ -1731,7 +1731,7 @@
  },
  {
   "en": "Regrowth will regrow. In time. Eventually.",
-  "nn": "Gjenveksten skal veksa att. Med tida. Etter kvart.",
+  "nn": "Gjenveksten skal vekse att. Med tida. Etter kvart.",
   "tag": "DRUID"
  },
  {
@@ -1771,7 +1771,7 @@
  },
  {
   "en": "The flowers bow their heads. Then keep growing.",
-  "nn": "Blomane bøyer hovudet. Og held fram å veksa.",
+  "nn": "Blomane bøyer hovudet. Og held fram å vekse.",
   "tag": "DRUID"
  },
  {
@@ -1826,7 +1826,7 @@
  },
  {
   "en": "The Dracthyr kin shake their horned heads.",
-  "nn": "Dracthyr-frendane ristar på dei horna hovuda.",
+  "nn": "Dracthyr-frendane ristar på dei horna hovuda sine.",
   "tag": "EVOKER"
  },
  {
@@ -1866,7 +1866,7 @@
  },
  {
   "en": "Time Spiral could not spiral back this time.",
-  "nn": "Tidsspiralen kunne ikkje spiralere attende denne gongen.",
+  "nn": "Tidsspiralen kunne ikkje snu tida denne gongen.",
   "tag": "EVOKER"
  },
  {
@@ -1976,7 +1976,7 @@
  },
  {
   "en": "The wild roams free. The hunter, lies still.",
-  "nn": "Villmarka streifar fritt. Jegeren ligg still.",
+  "nn": "Villmarka streifar fritt. Jegeren ligg stille.",
   "tag": "HUNTER"
  },
  {
@@ -1986,7 +1986,7 @@
  },
  {
   "en": "A Flare would have lit the way out. Ah, well.",
-  "nn": "Eit lysblus kunne ha lyst opp vegen ut. Ah, vel.",
+  "nn": "Eit lysblus kunne ha lyst opp vegen ut. Ja, ja.",
   "tag": "HUNTER"
  },
  {
@@ -2026,7 +2026,7 @@
  },
  {
   "en": "A Fireball of glory, a fizzle of an ending.",
-  "nn": "Ei eldkule av ære, ein fus av ein slutt.",
+  "nn": "Ei eldkule av ære, ein slutt som berre fresa ut.",
   "tag": "MAGE"
  },
  {
@@ -2046,7 +2046,7 @@
  },
  {
   "en": "The pointy hat lies still. A tragic silhouette.",
-  "nn": "Den spisse hatten ligg still. Ein tragisk silhuett.",
+  "nn": "Den spisse hatten ligg stille. Ein tragisk silhuett.",
   "tag": "MAGE"
  },
  {
@@ -2101,7 +2101,7 @@
  },
  {
   "en": "Sing of the monk whose chi went for a walk!",
-  "nn": "Syng om munken som chi-en gjekk seg ein tur!",
+  "nn": "Syng om munken der chi-en gjekk seg ein tur!",
   "tag": "MONK"
  },
  {
@@ -2231,7 +2231,7 @@
  },
  {
   "en": "Blessing of Freedom freed them from life, alas.",
-  "nn": "Fridomssigninga fridde dei frå livet, dessverre.",
+  "nn": "Fridomssigninga frigjorde dei frå livet, dessverre.",
   "tag": "PALADIN"
  },
  {
@@ -2261,7 +2261,7 @@
  },
  {
   "en": "Devotion Aura, devoted to the very end.",
-  "nn": "Hengivnadsaura, hengiven til siste slutt.",
+  "nn": "Trugskapsaura, trugen til siste slutt.",
   "tag": "PALADIN"
  },
  {
@@ -2316,7 +2316,7 @@
  },
  {
   "en": "Guardian Spirit was guarding someone else.",
-  "nn": "Vernaånda verna nokon annan.",
+  "nn": "Verneånda verna nokon annan.",
   "tag": "PRIEST"
  },
  {
@@ -2401,7 +2401,7 @@
  },
  {
   "en": "Sing of the shadow who stepped on a creaky board!",
-  "nn": "Syng om skuggen som trakka på eit knirkande bord!",
+  "nn": "Syng om skuggen som trakka på eit knirkande golvbord!",
   "tag": "ROGUE"
  },
  {
@@ -2411,7 +2411,7 @@
  },
  {
   "en": "Perhaps Crimson Vial was the vial to drink?",
-  "nn": "Kanskje det raude hettegløset var gløset å drikke?",
+  "nn": "Kanskje den raude flaska var flaska å drikke?",
   "tag": "ROGUE"
  },
  {
@@ -2421,7 +2421,7 @@
  },
  {
   "en": "Sap was meant for the enemy. A rare slip!",
-  "nn": "Kloss var meint for fienden. Eit sjeldan feilgrep!",
+  "nn": "Sap var meint for fienden. Eit sjeldan feilgrep!",
   "tag": "ROGUE"
  },
  {
@@ -2546,7 +2546,7 @@
  },
  {
   "en": "Earth Shield cracked like old pottery.",
-  "nn": "Jordskjoldet sprakk som gamal leirkrukke.",
+  "nn": "Jordskjoldet sprakk som ei gamal leirkrukke.",
   "tag": "SHAMAN"
  },
  {
@@ -2606,7 +2606,7 @@
  },
  {
   "en": "Fear sent the foe running. Back again, sadly.",
-  "nn": "Frykt fekk fienden til å springe. Attende igjen, dessverre.",
+  "nn": "Frykt fekk fienden til å springe. Rett attende, dessverre.",
   "tag": "WARLOCK"
  },
  {
@@ -2756,7 +2756,7 @@
  },
  {
   "en": "Berserker Rage raged on, minus the berserker.",
-  "nn": "Bersekergangen raste vidare, utan berserken.",
+  "nn": "Berserksgangen raste vidare, utan berserken.",
   "tag": "WARRIOR"
  },
  {
@@ -2781,7 +2781,7 @@
  },
  {
   "en": "The berserkers of old raise a horn to a worthy fall.",
-  "nn": "Bersekane i gamal tid lyfter eit horn for eit verdig fall.",
+  "nn": "Berserkane i gamal tid lyfter eit horn for eit verdig fall.",
   "tag": "WARRIOR"
  },
  {

@@ -89,6 +89,13 @@ Nynorsk. The choice is yours alone (friends can pick their own), applies to new
 notifications, and captions already in your log keep their wording. See
 `docs/caption-personalities/README.md` to edit or add one.
 
+The same voices can also speak your **reactions**: the whisper a friend gets when you
+click GZ!, F or Congrats! on their notification. These go out in your name, so they
+have their own setting, **Notifications → Next voice** or `/wstatus voice <name>`. The
+default is the gentle **Wholesome** voice; you can also pick Christian, Dwarf, Drama queen,
+Random or **Classic** (the plain GZ!/F/Congrats! texts). More voices follow. Each voice has 300
+whispers for every reaction; the button keeps its short label.
+
 ## Announcements
 
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed

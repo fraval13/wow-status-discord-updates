@@ -1,7 +1,7 @@
 [
  {
   "en": "A death knight dying. Again. You'd think you'd be used to it.",
-  "nn": "Ein dødsriddar som døyr. Igjen. Du burde vere vand med det.",
+  "nn": "Ein dødsriddar som døyr. Igjen. Du skulle tru du var van med det.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -41,12 +41,12 @@
  },
  {
   "en": "Try a little more Death Strike and a little less standing there.",
-  "nn": "Prøv litt meir Death Strike og litt mindre ståing.",
+  "nn": "Prøv litt meir Death Strike og litt mindre stilleståing.",
   "tag": "DEATHKNIGHT"
  },
  {
   "en": "Rise again, kid. You know the drill.",
-  "nn": "Reis deg igjen, valp. Du kan rutinen.",
+  "nn": "Reis deg igjen, valp. Du kan dette.",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -86,7 +86,7 @@
  },
  {
   "en": "Spectral sight and you still didn't see that coming.",
-  "nn": "Spektralsyn, og du såg likevel ikkje det kome.",
+  "nn": "Spektralsyn, og du såg det likevel ikkje kome.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -171,12 +171,12 @@
  },
  {
   "en": "Charge your breath faster, hatchling.",
-  "nn": "Lad pusten raskare, klekking.",
+  "nn": "Lad pusten raskare, drakeunge.",
   "tag": "EVOKER"
  },
  {
   "en": "A dracthyr down. The Aspects would tut.",
-  "nn": "Ein dracthyr i bakken. Aspekta ville ha klukka misnøgd.",
+  "nn": "Ein dracthyr i bakken. Aspekta ville ha sukka oppgitt.",
   "tag": "EVOKER"
  },
  {
@@ -221,12 +221,12 @@
  },
  {
   "en": "Disengage the other direction next time.",
-  "nn": "Disengage i andre retninga neste gong.",
+  "nn": "Disengage i motsett retning neste gong.",
   "tag": "HUNTER"
  },
  {
   "en": "The beast was supposed to tank, not watch.",
-  "nn": "Udyret skulle tanke, ikkje sjå på.",
+  "nn": "Dyret skulle tanke, ikkje sjå på.",
   "tag": "HUNTER"
  },
  {
@@ -266,7 +266,7 @@
  },
  {
   "en": "Back in my day mages carried their own reagents. And died anyway.",
-  "nn": "På mi tid bar magarane sine eigne reagensar. Og døydde likevel.",
+  "nn": "På mi tid bar magikarane sine eigne reagensar. Og døydde likevel.",
   "tag": "MAGE"
  },
  {
@@ -286,7 +286,7 @@
  },
  {
   "en": "Conjure a little caution next time.",
-  "nn": "Trylle fram litt varsemd neste gong.",
+  "nn": "Tryll fram litt varsemd neste gong.",
   "tag": "MAGE"
  },
  {
@@ -296,7 +296,7 @@
  },
  {
   "en": "Fire mages and fire. A tale as old as time.",
-  "nn": "Eldmagarar og eld. Ei soge like gammal som tida.",
+  "nn": "Eldmagikarar og eld. Ei soge like gammal som tida.",
   "tag": "MAGE"
  },
  {
@@ -311,7 +311,7 @@
  },
  {
   "en": "Touch of Karma? More like a hug from the floor.",
-  "nn": "Touch of Karma? Meir som ein klem frå golvet.",
+  "nn": "Touch of Karma? Heller ein klem frå golvet.",
   "tag": "MONK"
  },
  {
@@ -331,7 +331,7 @@
  },
  {
   "en": "Fists of fury, face of the floor.",
-  "nn": "Fury-nevar, ansikt i golvet.",
+  "nn": "Rasande nevar, andletet i golvet.",
   "tag": "MONK"
  },
  {
@@ -341,7 +341,7 @@
  },
  {
   "en": "Patience, young one. Also maybe dodging.",
-  "nn": "Tolmod, unge venn. Og kanskje unnvikingar.",
+  "nn": "Tolmod, unge ven. Og kanskje litt meir vike unna.",
   "tag": "MONK"
  },
  {
@@ -411,7 +411,7 @@
  },
  {
   "en": "Healed everyone except the one who mattered. You.",
-  "nn": "Healte alle unntatt den som betydde noko. Deg.",
+  "nn": "Healte alle unnateke den som betydde noko. Deg.",
   "tag": "PRIEST"
  },
  {
@@ -461,7 +461,7 @@
  },
  {
   "en": "Rogues are meant to stab and leave. Leaving was the part you skipped.",
-  "nn": "Tjuvar skal stikke og gå. Det var gåinga du hoppa over.",
+  "nn": "Tjuvar skal stikke og stikke av. Den siste delen hoppa du over.",
   "tag": "ROGUE"
  },
  {
@@ -481,7 +481,7 @@
  },
  {
   "en": "Poisoned your blades and forgot your armour?",
-  "nn": "Forgifta bladene og gløymde rustninga?",
+  "nn": "Forgifta blada og gløymde rustninga?",
   "tag": "ROGUE"
  },
  {
@@ -506,7 +506,7 @@
  },
  {
   "en": "Reincarnation's there for a reason. Go on, use it.",
-  "nn": "Reincarnation er der av ein grunn. Gå på, bruk det.",
+  "nn": "Reincarnation er der av ein grunn. Kom igjen, bruk det.",
   "tag": "SHAMAN"
  },
  {
@@ -566,7 +566,7 @@
  },
  {
   "en": "Hmph. Some of us farmed soul shards in the snow. You can't even keep one.",
-  "nn": "Hm. Somme av oss samla sjelskår i snøen. Du klarer ikkje eingong å halde på eitt.",
+  "nn": "Hm. Somme av oss samla sjelskår i snøen. Du klarar ikkje eingong å halde på eitt.",
   "tag": "WARLOCK"
  },
  {
@@ -826,7 +826,7 @@
  },
  {
   "en": "Let me guess. You thought you could take them all.",
-  "nn": "La meg gjette. Du trudde du kunne ta dei alle.",
+  "nn": "La meg gjette. Du trudde du kunne ta alle saman.",
   "tag": "ANY"
  },
  {
@@ -896,7 +896,7 @@
  },
  {
   "en": "Get up, get up. Sleeping on the job, honestly.",
-  "nn": "Opp, opp. Søv på jobben, altså.",
+  "nn": "Opp, opp. Sove på jobben, altså.",
   "tag": "ANY"
  },
  {
@@ -906,7 +906,7 @@
  },
  {
   "en": "Death's a great teacher. Terrible bedside manner, though.",
-  "nn": "Døden er ein god lærar. Elendig framferd ved sengekanten, rett nok.",
+  "nn": "Døden er ein god lærar. Elendig ved sjukesenga, riktig nok.",
   "tag": "ANY"
  },
  {
@@ -956,7 +956,7 @@
  },
  {
   "en": "I'd help, but I'm busy disapproving.",
-  "nn": "Eg skulle hjelpt, men eg er oppteken med å misbillige.",
+  "nn": "Eg skulle ha hjelpt, men eg er oppteken med å misbillige.",
   "tag": "ANY"
  },
  {
@@ -986,7 +986,7 @@
  },
  {
   "en": "Next time, maybe bring a friend. Or three.",
-  "nn": "Neste gong, ta kanskje med ein ven. Eller tre.",
+  "nn": "Neste gong bør du kanskje ta med ein ven. Eller tre.",
   "tag": "ANY"
  },
  {
@@ -1021,7 +1021,7 @@
  },
  {
   "en": "Should've drunk that potion. They're not decorations.",
-  "nn": "Burde ha drukke den drikken. Dei er ikkje pynt.",
+  "nn": "Burde ha drukke den trylledrikken. Dei er ikkje pynt.",
   "tag": "ANY"
  },
  {
@@ -1086,7 +1086,7 @@
  },
  {
   "en": "Dead? Don't sulk. Run back and show them who's boss.",
-  "nn": "Død? Ikkje surm. Spring tilbake og vis dei kven som er sjefen.",
+  "nn": "Død? Ikkje furt. Spring tilbake og vis dei kven som er sjefen.",
   "tag": "ANY"
  },
  {
@@ -1146,12 +1146,12 @@
  },
  {
   "en": "I'd send flowers, but you'll be back in a minute.",
-  "nn": "Eg skulle sendt blomar, men du er tilbake om eit minutt.",
+  "nn": "Eg skulle ha sendt blomar, men du er tilbake om eit minutt.",
   "tag": "ANY"
  },
  {
   "en": "Death's a rite of passage. You're very well passaged.",
-  "nn": "Døden er ein overgangsrite. Du er svært godt overgått.",
+  "nn": "Døden er ein overgangsrite. Du har gått over mange gonger.",
   "tag": "ANY"
  },
  {
@@ -1161,7 +1161,7 @@
  },
  {
   "en": "Should've kept your health bar up. It's the red one. Wait, green.",
-  "nn": "Burde ha halde helsebaren oppe. Det er den raude. Vent, grøne.",
+  "nn": "Burde ha halde helsebaren oppe. Det er den raude. Vent, den grøne.",
   "tag": "ANY"
  },
  {
@@ -1186,7 +1186,7 @@
  },
  {
   "en": "That? We'd have called that a warm-up. Sigh.",
-  "nn": "Det? Det ville vi kalla ei oppvarming. Sukk.",
+  "nn": "Det? Det ville vi ha kalla ei oppvarming. Sukk.",
   "tag": "ANY"
  },
  {
@@ -1201,7 +1201,7 @@
  },
  {
   "en": "That's your ancestors calling. They want you to try harder.",
-  "nn": "Det er forfedrane dine som ringjer. Dei vil at du prøver hardare.",
+  "nn": "Det er forfedrane dine som ringjer. Dei vil at du skal prøve hardare.",
   "tag": "ANY"
  },
  {
@@ -1261,7 +1261,7 @@
  },
  {
   "en": "Death is just the world's way of saying slow down.",
-  "nn": "Døden er berre verda sin måte å seie ro ned.",
+  "nn": "Døden er berre verda sin måte å seie at du skal roe ned.",
   "tag": "ANY"
  },
  {
@@ -1276,7 +1276,7 @@
  },
  {
   "en": "Hm. Not your finest moment. Not your worst, either.",
-  "nn": "Hm. Ikkje ditt beste augneblink. Ikkje ditt verste heller.",
+  "nn": "Hm. Ikkje din beste augeblink. Ikkje din verste heller.",
   "tag": "ANY"
  },
  {
@@ -1396,7 +1396,7 @@
  },
  {
   "en": "Should've backed off. Backing off is a skill too.",
-  "nn": "Burde ha trekt deg tilbake. Det er òg ein ferdigheit.",
+  "nn": "Burde ha trekt deg tilbake. Det er òg ei ferdigheit.",
   "tag": "ANY"
  },
  {
@@ -1676,7 +1676,7 @@
  },
  {
   "en": "Imprison the dangerous one. Not your common sense.",
-  "nn": "Imprison den farlege. Ikkje sunn fornuft.",
+  "nn": "Imprison den farlege. Ikkje den sunne fornufta di.",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1736,7 +1736,7 @@
  },
  {
   "en": "A feral cat with no survival instinct. Rare breed.",
-  "nn": "Ein villkatt utan overlevingsinstinkt. Sjeldan rase.",
+  "nn": "Ein villkatt utan overlevingsinstinkt. Sjeldsynt rase.",
   "tag": "DRUID"
  },
  {
@@ -1771,7 +1771,7 @@
  },
  {
   "en": "Aquatic form would've kept you out of that fight. Swim more.",
-  "nn": "Vassform ville halde deg utanfor den kampen. Sym meir.",
+  "nn": "Vassform ville ha halde deg utanfor den kampen. Sym meir.",
   "tag": "DRUID"
  },
  {
@@ -1786,7 +1786,7 @@
  },
  {
   "en": "Ironbark on the tank, nothing on yourself? Selfless. Silly.",
-  "nn": "Ironbark på tanken, ingenting på deg sjølv? Uegennyttig. Tåpeleg.",
+  "nn": "Ironbark på tanken, ingenting på deg sjølv? Oppofrande. Tåpeleg.",
   "tag": "DRUID"
  },
  {
@@ -1831,7 +1831,7 @@
  },
  {
   "en": "Your wings are for leaving bad ideas behind. Practise.",
-  "nn": "Vengene dine er for å etterlate dårlege idéar. Øv.",
+  "nn": "Vengene dine er til å fly frå dårlege idéar med. Øv.",
   "tag": "EVOKER"
  },
  {
@@ -1841,7 +1841,7 @@
  },
  {
   "en": "Hatchlings learn fast or not at all. Get up and learn.",
-  "nn": "Klekkingar lærer fort eller ikkje i det heile. Reis deg og lær.",
+  "nn": "Drakeungar lærer fort eller ikkje i det heile. Reis deg og lær.",
   "tag": "EVOKER"
  },
  {
@@ -1856,7 +1856,7 @@
  },
  {
   "en": "You can glide off cliffs. That was not a glide.",
-  "nn": "Du kan glide utfor stup. Det der var ikkje glid.",
+  "nn": "Du kan glide utfor stup. Det der var ikkje å glide.",
   "tag": "EVOKER"
  },
  {
@@ -2011,7 +2011,7 @@
  },
  {
   "en": "Mages used to beg me for water. Now look at you. On the floor.",
-  "nn": "Magarar tagg meg om vatn før. Sjå på deg no. På golvet.",
+  "nn": "Magikarar tagg meg om vatn før. Sjå på deg no. På golvet.",
   "tag": "MAGE"
  },
  {
@@ -2081,7 +2081,7 @@
  },
  {
   "en": "In the old days, mages ran out of mana. You ran out of luck.",
-  "nn": "I gamle dagar gjekk magarane tom for mana. Du gjekk tom for flaks.",
+  "nn": "I gamle dagar gjekk magikarane tomme for mana. Du gjekk tom for flaks.",
   "tag": "MAGE"
  },
  {
@@ -2126,7 +2126,7 @@
  },
  {
   "en": "The tiger palm, meet the floor face.",
-  "nn": "Tigerhanda, møt golvansiktet.",
+  "nn": "Tigerhanda, møt golvet. Andletet først.",
   "tag": "MONK"
  },
  {
@@ -2161,12 +2161,12 @@
  },
  {
   "en": "Ox Statue would've taken that hit. Ox statues don't mind.",
-  "nn": "Okse-statuen ville ha teke det slaget. Okse-statuar bryr seg ikkje.",
+  "nn": "Oksestatuen ville ha teke det slaget. Oksestatuar bryr seg ikkje.",
   "tag": "MONK"
  },
  {
   "en": "The way of the fist. Not the way of the face.",
-  "nn": "Nevens veg. Ikkje andletets veg.",
+  "nn": "Vegen til neven. Ikkje vegen til andletet.",
   "tag": "MONK"
  },
  {
@@ -2191,17 +2191,17 @@
  },
  {
   "en": "Your master would assign you a thousand push-ups. I'll settle for one.",
-  "nn": "Meisteren din ville gitt deg tusen armhevingar. Eg nøyer meg med éi.",
+  "nn": "Meisteren din ville ha gjeve deg tusen armhevingar. Eg nøyer meg med éi.",
   "tag": "MONK"
  },
  {
   "en": "Get up, have a brew, try again with more dodging.",
-  "nn": "Reis deg, ta eit brygg, prøv igjen med meir unnviking.",
+  "nn": "Reis deg, ta eit brygg, prøv igjen og vik meir unna.",
   "tag": "MONK"
  },
  {
   "en": "Divine Shield exists for a reason. That reason was this moment.",
-  "nn": "Divine Shield finst av ein grunn. Den grunnen var dette augneblinket.",
+  "nn": "Divine Shield finst av ein grunn. Den grunnen var denne augeblinken.",
   "tag": "PALADIN"
  },
  {
@@ -2236,7 +2236,7 @@
  },
  {
   "en": "Divine Steed was for running away. It said so on the tin.",
-  "nn": "Divine Steed var for å ri vekk. Det stod på boksen.",
+  "nn": "Divine Steed var for å ri vekk. Det seier jo namnet.",
   "tag": "PALADIN"
  },
  {
@@ -2316,7 +2316,7 @@
  },
  {
   "en": "Desperate Prayer was named for exactly that moment.",
-  "nn": "Desperate Prayer vart kalla opp etter nettopp det augneblinket.",
+  "nn": "Desperate Prayer fekk namnet sitt etter nettopp den augeblinken.",
   "tag": "PRIEST"
  },
  {
@@ -2336,7 +2336,7 @@
  },
  {
   "en": "Guardian Spirit for the tank, nothing for you? Saintly. Silly.",
-  "nn": "Guardian Spirit på tanken, ingenting for deg? Helgonaktig. Tåpeleg.",
+  "nn": "Guardian Spirit på tanken, ingenting for deg? Helgenaktig. Tåpeleg.",
   "tag": "PRIEST"
  },
  {
@@ -2361,7 +2361,7 @@
  },
  {
   "en": "Dispersion was right there. Dissolve, don't dissolve.",
-  "nn": "Dispersion var rett der. Løys deg opp, ikkje oppløys deg.",
+  "nn": "Dispersion var rett der. Løys deg opp. Ikkje på denne måten.",
   "tag": "PRIEST"
  },
  {
@@ -2386,7 +2386,7 @@
  },
  {
   "en": "Flash Heal is fast. Faster than your reflexes, evidently.",
-  "nn": "Flash Heal er rask. Raskare enn reflaksane dine, openbert.",
+  "nn": "Flash Heal er rask. Raskare enn refleksane dine, openbert.",
   "tag": "PRIEST"
  },
  {
@@ -2456,7 +2456,7 @@
  },
  {
   "en": "Kick the caster, not the bucket.",
-  "nn": "Kick castaren, ikkje bøtta.",
+  "nn": "Kick castaren. Ikkje parker tøflane.",
   "tag": "ROGUE"
  },
  {
@@ -2506,12 +2506,12 @@
  },
  {
   "en": "Smart shamans drop a totem and stand behind it. Try smart.",
-  "nn": "Kloke shamanar set ned ein totem og står bak han. Prøv klok.",
+  "nn": "Kloke shamanar set ned ein totem og står bak han. Prøv å vere klok.",
   "tag": "SHAMAN"
  },
  {
   "en": "Earthbind them, kid. Slow them down. Not you.",
-  "nn": "Earthbind dei, valp. Sakk dei ned. Ikkje deg.",
+  "nn": "Earthbind dei, valp. Få dei til å sakke. Ikkje deg.",
   "tag": "SHAMAN"
  },
  {
@@ -2556,7 +2556,7 @@
  },
  {
   "en": "Even the water spirits are tutting.",
-  "nn": "Sjølv vassåndene klukkar misnøgd.",
+  "nn": "Sjølv vassåndene sukkar oppgitt.",
   "tag": "SHAMAN"
  },
  {
@@ -2631,7 +2631,7 @@
  },
  {
   "en": "All those dots ticking and your own health ticking faster.",
-  "nn": "Alle dei dottane som tikkar, og di eiga helse tikka fortare.",
+  "nn": "Alle dei dottane som tikkar, og di eiga helse tikkar fortare.",
   "tag": "WARLOCK"
  },
  {
@@ -2646,7 +2646,7 @@
  },
  {
   "en": "Do you know what summons used to cost us? Shards. Lots of them. Show respect.",
-  "nn": "Veit du kva kallingar kosta oss? Skår. Mange. Vis respekt.",
+  "nn": "Veit du kva innkallingar kosta oss før? Skår. Mange. Vis respekt.",
   "tag": "WARLOCK"
  },
  {
@@ -2716,7 +2716,7 @@
  },
  {
   "en": "Taunt them, then live. The second part matters.",
-  "nn": "Hånt dei, og overlev så. Den andre delen betyr noko.",
+  "nn": "Hån dei, og overlev så. Den andre delen betyr noko.",
   "tag": "WARRIOR"
  },
  {
@@ -2726,7 +2726,7 @@
  },
  {
   "en": "Last Stand was meant to be a stand, not a lie-down.",
-  "nn": "Last Stand skulle vere eit standpunkt, ikkje ei liggjestilling.",
+  "nn": "Last Stand skulle vere å stå, ikkje å liggje.",
   "tag": "WARRIOR"
  },
  {
@@ -2771,7 +2771,7 @@
  },
  {
   "en": "The berserker went berserk. The berserker went down.",
-  "nn": "Bersekaren gjekk berserk. Bersekaren gjekk i bakken.",
+  "nn": "Berserken gjekk berserk. Berserken gjekk i bakken.",
   "tag": "WARRIOR"
  },
  {

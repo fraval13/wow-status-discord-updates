@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "The raid boss is DOWN! I'm screaming!",
+  "nn": "Raidbossen er NEDE! Eg skrik!"
+ },
+ {
+  "en": "You killed a raid boss! I need a moment!",
+  "nn": "Du drap ein raidboss! Eg treng ei stund!"
+ },
+ {
+  "en": "A raid boss has fallen! I'm on my knees!",
+  "nn": "Ein raidboss har falle! Eg ligg på kne!"
+ },
+ {
+  "en": "That boss had no idea who it was facing!",
+  "nn": "Den bossen ana ikkje kven han stod overfor!"
+ },
+ {
+  "en": "Boss kill! The ground shook! So did I!",
+  "nn": "Bossdrap! Bakken skalv! Det gjorde eg òg!"
+ },
+ {
+  "en": "The giant has fallen! I'm sobbing!",
+  "nn": "Kjempa har falle! Eg hulkar!"
+ },
+ {
+  "en": "First kill! The bards are fighting over the song!",
+  "nn": "Første drap! Skaldane slåst om songen!"
+ },
+ {
+  "en": "A legendary kill! I'm trembling all over!",
+  "nn": "Eit legendarisk drap! Eg skjelv over heile kroppen!"
+ },
+ {
+  "en": "You toppled a titan!",
+  "nn": "Du felte ein titan!"
+ },
+ {
+  "en": "That boss will never frighten anyone again!",
+  "nn": "Den bossen skal aldri skremme nokon meir!"
+ },
+ {
+  "en": "The raid triumphed! What a spectacle!",
+  "nn": "Raidet vann! For eit skodespel!"
+ },
+ {
+  "en": "So many wipes, and then GLORY!",
+  "nn": "Så mange wipes, og så ÆRE!"
+ },
+ {
+  "en": "I watched the boss fall and wept!",
+  "nn": "Eg såg bossen falle og gret!"
+ },
+ {
+  "en": "Boss down! Bring trumpets and tissues!",
+  "nn": "Boss nede! Kom med trompetar og lommetørkle!"
+ },
+ {
+  "en": "That fight was an epic opera! Bravo!",
+  "nn": "Den kampen var ein episk opera! Bravo!"
+ },
+ {
+  "en": "You stood against a colossus and won!",
+  "nn": "Du stod mot ein koloss og vann!"
+ },
+ {
+  "en": "The whole raid is legendary now!",
+  "nn": "Heile raidet er legendarisk no!"
+ },
+ {
+  "en": "The boss is dead and my nerves are shot!",
+  "nn": "Bossen er død, og nervane mine er ferdige!"
+ },
+ {
+  "en": "First kill! I'll talk about this for years!",
+  "nn": "Første drap! Dette kjem eg til å snakke om i årevis!"
+ },
+ {
+  "en": "Victory over the mighty! I'm overwhelmed!",
+  "nn": "Siger over den mektige! Eg er overvelda!"
+ },
+ {
+  "en": "Glory to the raid! Tears to my eyes!",
+  "nn": "Ære til raidet! Tårer i augo mine!"
+ },
+ {
+  "en": "That boss fell like the curtain at the finale!",
+  "nn": "Den bossen fall som teppet i finalen!"
+ },
+ {
+  "en": "Boss kill! Somebody fan me!",
+  "nn": "Bossdrap! Nokon må vifte på meg!"
+ },
+ {
+  "en": "History! You made raid history!",
+  "nn": "Historie! Du skreiv raidhistorie!"
+ },
+ {
+  "en": "I heard the raid's roar all the way from here!",
+  "nn": "Eg høyrde brølet frå raidet heilt hit!"
+ },
+ {
+  "en": "Mighty! Majestic! Victorious!",
+  "nn": "Mektig! Majestetisk! Sigerrik!"
+ },
+ {
+  "en": "You killed it! The big scary thing!",
+  "nn": "Du drap det! Det store, skumle beistet!"
+ },
+ {
+  "en": "Boss down! I'm hosting a victory feast!",
+  "nn": "Boss nede! Eg held sigersgilde!"
+ },
+ {
+  "en": "What a kill! My heart nearly gave out!",
+  "nn": "For eit drap! Hjartet mitt gav nesten opp!"
+ },
+ {
+  "en": "That boss never stood a chance! Well, not in the end!",
+  "nn": "Den bossen hadde aldri ein sjanse! Vel, ikkje til slutt!"
+ },
+ {
+  "en": "That victory echoes through the ages!",
+  "nn": "Den sigeren ljomar gjennom tidene!"
+ },
+ {
+  "en": "I held my breath through the final phase!",
+  "nn": "Eg heldt pusten gjennom den siste fasen!"
+ },
+ {
+  "en": "Raid champion! I'm swooning!",
+  "nn": "Raidmeister! Eg dånar!"
+ },
+ {
+  "en": "First kill! Frame the screenshot!",
+  "nn": "Første drap! Ram inn skjermbiletet!"
+ },
+ {
+  "en": "The colossal one has fallen! Rejoice!",
+  "nn": "Den kolossale har falle! Fryd dykk!"
+ },
+ {
+  "en": "Boss kill! I'm ugly crying!",
+  "nn": "Bossdrap! Eg storgrin!"
+ },
+ {
+  "en": "You and your raid are heroes of the realm!",
+  "nn": "Du og raidet ditt er heltar i riket!"
+ },
+ {
+  "en": "The ground still trembles from that fall!",
+  "nn": "Bakken skjelv framleis etter det fallet!"
+ },
+ {
+  "en": "Raid victory! Is this a dream?!",
+  "nn": "Raidsiger! Er dette ein draum?!"
+ },
+ {
+  "en": "That boss was terrifying and you won!",
+  "nn": "Den bossen var skremmande, og du vann!"
+ },
+ {
+  "en": "Epic! Epic! The most epic thing ever!",
+  "nn": "Episk! Episk! Det mest episke nokon gong!"
+ },
+ {
+  "en": "You faced the impossible and won!",
+  "nn": "Du møtte det umoglege og vann!"
+ },
+ {
+  "en": "Boss down! The world is safer! I'm crying!",
+  "nn": "Boss nede! Verda er tryggare! Eg græt!"
+ },
+ {
+  "en": "I'll sing of this kill until I lose my voice!",
+  "nn": "Eg skal syngje om dette drapet til eg mistar røysta!"
+ },
+ {
+  "en": "You toppled the tyrant! Glory!",
+  "nn": "Du styrta tyrannen! Ære!"
+ },
+ {
+  "en": "That raid boss underestimated you!",
+  "nn": "Den raidbossen undervurderte deg!"
+ },
+ {
+  "en": "Victory! Sweet, dramatic victory!",
+  "nn": "Siger! Søt, dramatisk siger!"
+ },
+ {
+  "en": "A boss kill for the history books!",
+  "nn": "Eit bossdrap for historiebøkene!"
+ },
+ {
+  "en": "Down it went! And up went my heart!",
+  "nn": "Ned gjekk han! Og opp gjekk hjartet mitt!"
+ },
+ {
+  "en": "You conquered a giant! I need water!",
+  "nn": "Du nedkjempa ei kjempe! Eg treng vatn!"
+ },
+ {
+  "en": "All those tries, and finally the kill!",
+  "nn": "Alle dei forsøka, og endeleg drapet!"
+ },
+ {
+  "en": "The loot is nice, but the drama! The drama!",
+  "nn": "Looten er fin, men dramaet! Dramaet!"
+ },
+ {
+  "en": "A boss that size! Fallen! By you!",
+  "nn": "Ein boss på den storleiken! Felt! Av deg!"
+ },
+ {
+  "en": "I've rewatched the kill in my head all night!",
+  "nn": "Eg har sett drapet om att i hovudet heile natta!"
+ },
+ {
+  "en": "I need to sit down. You killed a raid boss!",
+  "nn": "Eg må setje meg. Du drap ein raidboss!"
+ },
+ {
+  "en": "A raid boss down?! I literally cannot even!",
+  "nn": "Ein raidboss nede?! Eg klarer bokstaveleg talt ikkje!"
+ },
+ {
+  "en": "Fetch my smelling salts, the giant has fallen!",
+  "nn": "Hent luktesaltet mitt, kjempa har falle!"
+ },
+ {
+  "en": "Oh, my heart! What a boss kill!",
+  "nn": "Å, hjartet mitt! For eit bossdrap!"
+ },
+ {
+  "en": "Stop everything! My friend slew a raid boss!",
+  "nn": "Stopp alt! Vennen min felte ein raidboss!"
+ },
+ {
+  "en": "I'm gasping! The beast is no more!",
+  "nn": "Eg gispar! Beistet er ikkje meir!"
+ },
+ {
+  "en": "Hold me! You toppled a monster!",
+  "nn": "Hald meg! Du felte eit monster!"
+ },
+ {
+  "en": "Breaking news: the raid has triumphed!",
+  "nn": "Siste nytt: raidet har sigra!"
+ },
+ {
+  "en": "Sound the war horns! The boss is slain!",
+  "nn": "Blås i krigshorna! Bossen er felt!"
+ },
+ {
+  "en": "I'm shaking! That fight was epic!",
+  "nn": "Eg skjelv! Den kampen var episk!"
+ },
+ {
+  "en": "Tears. Actual tears. The boss is dead!",
+  "nn": "Tårer. Ekte tårer. Bossen er død!"
+ },
+ {
+  "en": "I just screamed so loud the windows rattled!",
+  "nn": "Eg skreik så høgt at vindauga skrangla!"
+ },
+ {
+  "en": "What?! WHAT?! You beat it?!",
+  "nn": "Kva?! KVA?! Slo de det?!"
+ },
+ {
+  "en": "Be still, my heart! Victory at last!",
+  "nn": "Ro deg, hjarte mitt! Endeleg siger!"
+ },
+ {
+  "en": "I'm swooning over your boss kill!",
+  "nn": "Eg dånar over bossdrapet ditt!"
+ },
+ {
+  "en": "Mercy me, what a battle!",
+  "nn": "Du milde, for eit slag!"
+ },
+ {
+  "en": "My knees gave out when the boss fell!",
+  "nn": "Knea mine gav etter då bossen fall!"
+ },
+ {
+  "en": "I dropped everything at the news!",
+  "nn": "Eg sleppte alt då eg høyrde nyheita!"
+ },
+ {
+  "en": "Unbelievable! A raid boss! By you!",
+  "nn": "Utruleg! Ein raidboss! Av deg!"
+ },
+ {
+  "en": "Fetch my fan! That fight was scorching!",
+  "nn": "Hent vifta mi! Den kampen var glohei!"
+ },
+ {
+  "en": "Drumroll, please, for the boss slayer!",
+  "nn": "Trommevirvel, takk, for bossdreparen!"
+ },
+ {
+  "en": "Everybody, quiet! Heroes return from battle!",
+  "nn": "Alle saman, still! Heltar vender heim frå slaget!"
+ },
+ {
+  "en": "Pinch me! Is the boss really dead?",
+  "nn": "Klyp meg! Er bossen verkeleg død?"
+ },
+ {
+  "en": "Bravo! Bravo! A glorious kill!",
+  "nn": "Bravo! Bravo! Eit strålande drap!"
+ },
+ {
+  "en": "I fell off my chair at the final blow!",
+  "nn": "Eg datt av stolen ved det siste slaget!"
+ },
+ {
+  "en": "Darling! You slayed a giant!",
+  "nn": "Kjære deg! Du felte ei kjempe!"
+ },
+ {
+  "en": "Tissues, please! What a victory!",
+  "nn": "Lommetørkle, takk! For ein siger!"
+ },
+ {
+  "en": "I'm crying into my mug over your boss kill!",
+  "nn": "Eg græt ned i kruset mitt over bossdrapet ditt!"
+ },
+ {
+  "en": "Pure. Raid. Glory.",
+  "nn": "Rein raidære!"
+ },
+ {
+  "en": "A standing ovation for the whole raid!",
+  "nn": "Ståande applaus for heile raidet!"
+ },
+ {
+  "en": "I'm framing the moment it fell!",
+  "nn": "Eg rammar inn augeblinken då han fall!"
+ },
+ {
+  "en": "History, right here: a boss has fallen!",
+  "nn": "Historie, rett her: ein boss har falle!"
+ },
+ {
+  "en": "I'm melting with pride!",
+  "nn": "Eg smeltar av stoltheit!"
+ },
+ {
+  "en": "I can't breathe! That final phase!",
+  "nn": "Eg får ikkje puste! Den siste fasen!"
+ },
+ {
+  "en": "I'm telling the whole realm about your kill!",
+  "nn": "Eg fortel heile riket om drapet ditt!"
+ },
+ {
+  "en": "This changes everything! You're a raider!",
+  "nn": "Dette endrar alt! Du er ein raidar!"
+ },
+ {
+  "en": "So proud I could burst! The boss is down!",
+  "nn": "Så stolt at eg kunne sprokke! Bossen er nede!"
+ },
+ {
+  "en": "Words fail me! What a kill!",
+  "nn": "Eg finn ikkje ord! For eit drap!"
+ },
+ {
+  "en": "I'm on the floor! The boss is too!",
+  "nn": "Eg ligg på golvet! Det gjer bossen òg!"
+ },
+ {
+  "en": "Truly iconic boss kill!",
+  "nn": "Verkeleg ikonisk bossdrap!"
+ },
+ {
+  "en": "Cue the violins for the fallen giant!",
+  "nn": "Spel opp fiolinane for den falne kjempa!"
+ },
+ {
+  "en": "Somebody write a ballad of the great battle!",
+  "nn": "Nokon må skrive ei vise om det store slaget!"
+ },
+ {
+  "en": "The mighty one has fallen! Rejoice!",
+  "nn": "Den mektige har falle! Fryd dykk!"
+ },
+ {
+  "en": "That boss towered over you, and still you won!",
+  "nn": "Den bossen rage høgt over deg, og likevel vann du!"
+ },
+ {
+  "en": "I've never been so nervous for a fight!",
+  "nn": "Eg har aldri vore så nervøs for ein kamp!"
+ },
+ {
+  "en": "Every raider deserves a medal! Especially you!",
+  "nn": "Kvar raidar fortener ein medalje! Særleg du!"
+ },
+ {
+  "en": "The ground is still shaking from that fall!",
+  "nn": "Bakken ristar framleis etter det fallet!"
+ },
+ {
+  "en": "I could hear the cheering across the realm!",
+  "nn": "Eg høyrde jubelen tvers over riket!"
+ },
+ {
+  "en": "The boss is dead! Long live the raid!",
+  "nn": "Bossen er død! Lenge leve raidet!"
+ },
+ {
+  "en": "Your raid is a band of legends!",
+  "nn": "Raidet ditt er ein gjeng med legender!"
+ },
+ {
+  "en": "That's a kill the bards will sing of for ages!",
+  "nn": "Det er eit drap skaldane kjem til å syngje om i lang tid!"
+ },
+ {
+  "en": "I nearly fainted during the last phase!",
+  "nn": "Eg svima nesten av i den siste fasen!"
+ },
+ {
+  "en": "You faced a titan and won!",
+  "nn": "Du møtte ein titan og vann!"
+ },
+ {
+  "en": "The boss's loot is yours, and so is my heart!",
+  "nn": "Looten frå bossen er din, og det er hjartet mitt òg!"
+ },
+ {
+  "en": "What a spectacle! What a triumph!",
+  "nn": "For eit skodespel! For ein triumf!"
+ },
+ {
+  "en": "The whole raid should take a bow!",
+  "nn": "Heile raidet burde ta ein bukk!"
+ },
+ {
+  "en": "I'm weeping over your heroic victory!",
+  "nn": "Eg græt over den heroiske sigeren din!"
+ },
+ {
+  "en": "Every wipe was worth this moment!",
+  "nn": "Kvar wipe var verdt denne stunda!"
+ },
+ {
+  "en": "You brought down a monster of legend!",
+  "nn": "Du felte eit legendarisk monster!"
+ },
+ {
+  "en": "That boss will haunt no more halls!",
+  "nn": "Den bossen skal ikkje spøkje i fleire salar!"
+ },
+ {
+  "en": "I'm toasting the raid with my finest tea!",
+  "nn": "Eg skålar for raidet med den finaste teen min!"
+ },
+ {
+  "en": "The battle drums are still beating in my heart!",
+  "nn": "Krigstrommene slår framleis i hjartet mitt!"
+ },
+ {
+  "en": "Oh, the might of your raid!",
+  "nn": "Å, for ei kraft raidet ditt har!"
+ },
+ {
+  "en": "That kill deserves a royal proclamation!",
+  "nn": "Det drapet fortener ei kongeleg kunngjering!"
+ },
+ {
+  "en": "The raid's victory makes me want to sing!",
+  "nn": "Sigeren til raidet får meg til å vilje syngje!"
+ },
+ {
+  "en": "I'm cheering until my voice gives out!",
+  "nn": "Eg jublar til røysta mi gjev opp!"
+ },
+ {
+  "en": "You've slain the unslayable!",
+  "nn": "Du har felt det som ikkje kunne fellast!"
+ },
+ {
+  "en": "The great beast is dead! My hero lives!",
+  "nn": "Det store beistet er dødt! Helten min lever!"
+ },
+ {
+  "en": "Your raid is the talk of every tavern!",
+  "nn": "Raidet ditt er det store samtaleemnet på kvart vertshus!"
+ },
+ {
+  "en": "What a mighty, magnificent kill!",
+  "nn": "For eit mektig, storarta drap!"
+ },
+ {
+  "en": "I'm writing an opera called The Fall of the Boss!",
+  "nn": "Eg skriv ein opera som heiter Bossens fall!"
+ },
+ {
+  "en": "That's a victory worthy of a statue!",
+  "nn": "Det er ein siger som fortener ei statue!"
+ },
+ {
+  "en": "The boss is gone, and so is my composure!",
+  "nn": "Bossen er borte, og det er fatninga mi òg!"
+ },
+ {
+  "en": "Glory to the raid! Glory to you!",
+  "nn": "Ære til raidet! Ære til deg!"
+ },
+ {
+  "en": "I'm so proud of every heal and every hit!",
+  "nn": "Eg er så stolt av kvar heal og kvart slag!"
+ },
+ {
+  "en": "That fight was a symphony of heroism!",
+  "nn": "Den kampen var ein symfoni av heltemot!"
+ },
+ {
+  "en": "I've lit a bonfire for your victory!",
+  "nn": "Eg har tent eit bål for sigeren din!"
+ },
+ {
+  "en": "The boss underestimated you and paid for it!",
+  "nn": "Bossen undervurderte deg og fekk betale for det!"
+ },
+ {
+  "en": "Oh, the tension! Oh, the victory!",
+  "nn": "Å, spenninga! Å, sigeren!"
+ },
+ {
+  "en": "You stood firm while the world shook!",
+  "nn": "Du stod støtt medan verda skalv!"
+ },
+ {
+  "en": "The raid's victory is legendary!",
+  "nn": "Sigeren til raidet er legendarisk!"
+ },
+ {
+  "en": "I'm hugging my pillow and weeping with joy!",
+  "nn": "Eg klemmer puta og græt av glede!"
+ },
+ {
+  "en": "That boss will be a cautionary tale!",
+  "nn": "Den bossen blir ei åtvarande forteljing!"
+ },
+ {
+  "en": "The whole realm owes your raid a feast!",
+  "nn": "Heile riket skuldar raidet ditt eit gilde!"
+ },
+ {
+  "en": "I'm trembling with excitement and pride!",
+  "nn": "Eg skjelv av spenning og stoltheit!"
+ },
+ {
+  "en": "You've earned the right to brag forever!",
+  "nn": "Du har fått rett til å skryte for alltid!"
+ },
+ {
+  "en": "That kill was pure, triumphant drama!",
+  "nn": "Det drapet var reint, triumferande drama!"
+ },
+ {
+  "en": "Every hero in that raid is a star!",
+  "nn": "Kvar helt i det raidet er ei stjerne!"
+ },
+ {
+  "en": "I'm hanging a trophy in my heart for you!",
+  "nn": "Eg heng opp eit trofé i hjartet mitt for deg!"
+ },
+ {
+  "en": "A boss that big? Fallen? I'm swooning!",
+  "nn": "Ein så stor boss? Felt? Eg dånar!"
+ },
+ {
+  "en": "The raid's roar shook my teacup!",
+  "nn": "Brølet frå raidet fekk tekoppen min til å riste!"
+ },
+ {
+  "en": "What a moment! The giant crashed down!",
+  "nn": "For ei stund! Kjempa stupte i bakken!"
+ },
+ {
+  "en": "Victory! Sweet, sweet victory!",
+  "nn": "Siger! Søt, søt siger!"
+ },
+ {
+  "en": "I'm overwhelmed by your heroism!",
+  "nn": "Eg er overvelda av heltemotet ditt!"
+ },
+ {
+  "en": "The boss is defeated, and my heart is soaring!",
+  "nn": "Bossen er slått, og hjartet mitt svevar!"
+ },
+ {
+  "en": "That was the fight of the century!",
+  "nn": "Det var hundreårets kamp!"
+ },
+ {
+  "en": "Every strategy, every sacrifice: worth it!",
+  "nn": "Kvar strategi, kvart offer: verdt det!"
+ },
+ {
+  "en": "Your raid wrote history tonight!",
+  "nn": "Raidet ditt skreiv historie i kveld!"
+ },
+ {
+  "en": "I'm sobbing with pride for your whole raid!",
+  "nn": "Eg hulkar av stoltheit over heile raidet ditt!"
+ },
+ {
+  "en": "The great foe has fallen at last!",
+  "nn": "Den store fienden har endeleg falle!"
+ },
+ {
+  "en": "I've never cheered so loud in my life!",
+  "nn": "Eg har aldri jubla så høgt i heile mitt liv!"
+ },
+ {
+  "en": "That boss met its match in you!",
+  "nn": "Den bossen møtte sin overmann i deg!"
+ },
+ {
+  "en": "Champions of the raid! I bow to you all!",
+  "nn": "Raidmeistrar! Eg bukkar for dykk alle!"
+ },
+ {
+  "en": "I knew your raid could do it! I knew it!",
+  "nn": "Eg visste at raidet ditt kunne klare det! Eg visste det!"
+ },
+ {
+  "en": "What a legendary first kill!",
+  "nn": "For eit legendarisk første drap!"
+ },
+ {
+  "en": "The loot rained down like glory!",
+  "nn": "Looten regna ned som ære!"
+ },
+ {
+  "en": "I'm framing the raid's victory roar!",
+  "nn": "Eg rammar inn sigersbrølet til raidet!"
+ },
+ {
+  "en": "That kill made my whole year!",
+  "nn": "Det drapet redda heile året mitt!"
+ },
+ {
+  "en": "The raid is victorious, and I'm a mess!",
+  "nn": "Raidet har sigra, og eg er eit rot!"
+ },
+ {
+  "en": "You toppled a tower of terror!",
+  "nn": "Du velta eit tårn av redsle!"
+ },
+ {
+  "en": "I'm dancing on the tavern table for you!",
+  "nn": "Eg dansar på bordet på vertshuset for deg!"
+ },
+ {
+  "en": "The boss fell with a thunderous crash! Bravo!",
+  "nn": "Bossen fall med eit dundrande brak! Bravo!"
+ },
+ {
+  "en": "Congrats on the boss kill! My heart is still racing!",
+  "nn": "Gratulerer med bossdrapet! Hjartet mitt galopperer framleis!"
+ },
+ {
+  "en": "How many potions did that take? Never mind, you won!",
+  "nn": "Kor mange trylledrikkar gjekk med? Same det, de vann!"
+ },
+ {
+  "en": "I watched the health bar drop and wept!",
+  "nn": "Eg såg livsmålaren søkke og gret!"
+ },
+ {
+  "en": "Mighty raider, the realm salutes you!",
+  "nn": "Mektige raidar, riket helsar deg!"
+ },
+ {
+  "en": "Oh, the epic music in my head right now!",
+  "nn": "Å, for episk musikk det spelar i hovudet mitt no!"
+ },
+ {
+  "en": "That beast was enormous! And now it's history!",
+  "nn": "Det beistet var enormt! Og no er det historie!"
+ },
+ {
+  "en": "I've rewritten my will to leave everything to your raid!",
+  "nn": "Eg har skrive om testamentet mitt så alt går til raidet ditt!"
+ },
+ {
+  "en": "Oh, the shouts of victory! Music to my ears!",
+  "nn": "Å, sigersropa! Musikk i øyra mine!"
+ },
+ {
+  "en": "Your raid fought like a single mighty heart!",
+  "nn": "Raidet ditt kjempa som eitt mektig hjarte!"
+ },
+ {
+  "en": "I'm so proud I'm sewing a banner for your guild!",
+  "nn": "Eg er så stolt at eg syr eit banner til lauget ditt!"
+ },
+ {
+  "en": "The tank, the healers, the damage: all heroes!",
+  "nn": "Tanken, healarane, skadegjerarane: alle heltar!"
+ },
+ {
+  "en": "That kill was worth every single wipe!",
+  "nn": "Det drapet var verdt kvar einaste wipe!"
+ },
+ {
+  "en": "The raid stood tall where others fell!",
+  "nn": "Raidet stod oppreist der andre fall!"
+ },
+ {
+  "en": "I gasped so loud I scared my neighbours!",
+  "nn": "Eg gispa så høgt at eg skremde naboane!"
+ },
+ {
+  "en": "The fallen boss is weeping in the afterlife!",
+  "nn": "Den falne bossen græt i etterlivet!"
+ },
+ {
+  "en": "Your raid's victory echoes through the ages!",
+  "nn": "Sigeren til raidet ditt ljomar gjennom tidene!"
+ },
+ {
+  "en": "I swooned during the enrage and woke to victory!",
+  "nn": "Eg dånte då bossen gjekk berserk og vakna til siger!"
+ },
+ {
+  "en": "Oh, the might! The courage! The loot!",
+  "nn": "Å, makta! Motet! Looten!"
+ },
+ {
+  "en": "That boss is now a legend about you!",
+  "nn": "Den bossen er no ei legende om deg!"
+ },
+ {
+  "en": "Raid heroes, every last one of you!",
+  "nn": "Raidheltar, kvar einaste ein av dykk!"
+ },
+ {
+  "en": "I'm planning a feast for the whole raid!",
+  "nn": "Eg planlegg eit gilde for heile raidet!"
+ },
+ {
+  "en": "The skies roared with your victory!",
+  "nn": "Himmelen brølte med sigeren din!"
+ },
+ {
+  "en": "I'm wiping my tears with the boss's loot table!",
+  "nn": "Eg tørkar tårene med lootlista til bossen!"
+ },
+ {
+  "en": "I knew that boss was doomed the moment you arrived!",
+  "nn": "Eg visste at bossen var dødsdømd i same stund som du kom!"
+ },
+ {
+  "en": "What a glorious, hard-won triumph!",
+  "nn": "For ein strålande, hardt vunnen triumf!"
+ },
+ {
+  "en": "Every attempt brought you closer to this glory!",
+  "nn": "Kvart forsøk førte deg nærmare denne æra!"
+ },
+ {
+  "en": "You fought like heroes from the old songs!",
+  "nn": "De kjempa som heltar frå dei gamle songane!"
+ },
+ {
+  "en": "I'm clutching my chest! You did it!",
+  "nn": "Eg tek meg til brystet! De klarte det!"
+ },
+ {
+  "en": "The boss is history, and you're a legend!",
+  "nn": "Bossen er historie, og du er ei legende!"
+ },
+ {
+  "en": "I'm toasting every hero in that raid!",
+  "nn": "Eg skålar for kvar helt i det raidet!"
+ },
+ {
+  "en": "The mightiest foe, laid low by my friend!",
+  "nn": "Den mektigaste fienden, felt av vennen min!"
+ },
+ {
+  "en": "That kill gave me chills from head to toe!",
+  "nn": "Det drapet gav meg frysningar frå topp til tå!"
+ },
+ {
+  "en": "What a victory! The whole raid should be knighted!",
+  "nn": "For ein siger! Heile raidet burde bli slått til riddarar!"
+ },
+ {
+  "en": "The epic battle is won! I'm in tears!",
+  "nn": "Det episke slaget er vunne! Eg er i tårer!"
+ },
+ {
+  "en": "You've made the impossible possible!",
+  "nn": "Du har gjort det umoglege mogleg!"
+ },
+ {
+  "en": "I'm hugging everyone in sight! Boss down!",
+  "nn": "Eg klemmer alle eg ser! Bossen er nede!"
+ },
+ {
+  "en": "That boss had no idea how fabulous you are!",
+  "nn": "Den bossen ana ikkje kor fabelaktig du er!"
+ },
+ {
+  "en": "The final blow! The roar! The tears!",
+  "nn": "Det siste slaget! Brølet! Tårene!"
+ },
+ {
+  "en": "I've been on the edge of my seat for hours!",
+  "nn": "Eg har sete ytst på stolkanten i fleire timar!"
+ },
+ {
+  "en": "Your raid is the stuff of epic poetry!",
+  "nn": "Raidet ditt er stoff for episk dikting!"
+ },
+ {
+  "en": "That boss fell like an empire!",
+  "nn": "Den bossen fall som eit keisarrike!"
+ },
+ {
+  "en": "I'm so proud of your teamwork I could burst!",
+  "nn": "Eg er så stolt av samarbeidet dykkar at eg kunne sprokke!"
+ },
+ {
+  "en": "Raid victory! The bards are fainting!",
+  "nn": "Raidsiger! Skaldane svimar av!"
+ },
+ {
+  "en": "Every hero in the raid deserves a crown!",
+  "nn": "Kvar helt i raidet fortener ei krone!"
+ },
+ {
+  "en": "You've slain a legend and become one!",
+  "nn": "Du har felt ei legende og vorte ei sjølv!"
+ },
+ {
+  "en": "I'm shouting your victory from every tower!",
+  "nn": "Eg ropar ut sigeren din frå kvart tårn!"
+ },
+ {
+  "en": "That was the most heroic thing I've ever witnessed!",
+  "nn": "Det var det mest heroiske eg nokon gong har vore vitne til!"
+ },
+ {
+  "en": "Your raid made the impossible look glorious!",
+  "nn": "Raidet ditt fekk det umoglege til å sjå strålande ut!"
+ },
+ {
+  "en": "I'm sobbing into the raid's victory banner!",
+  "nn": "Eg hulkar ned i sigersfana til raidet!"
+ },
+ {
+  "en": "The giant is down, and the drama is up!",
+  "nn": "Kjempa er nede, og dramaet er oppe!"
+ },
+ {
+  "en": "What a fight! I need a week to recover!",
+  "nn": "For ein kamp! Eg treng ei veke til å kome meg!"
+ },
+ {
+  "en": "The boss bowed to you at last!",
+  "nn": "Bossen bøygde seg for deg til slutt!"
+ },
+ {
+  "en": "Your raid's courage is breathtaking!",
+  "nn": "Motet i raidet ditt tek pusten frå meg!"
+ },
+ {
+  "en": "I'm swooning onto a pile of victory confetti!",
+  "nn": "Eg dånar ned i ein haug med sigerskonfetti!"
+ },
+ {
+  "en": "That was a kill for the ages!",
+  "nn": "Det var eit drap for all tid!"
+ },
+ {
+  "en": "The mighty boss has bitten the dust!",
+  "nn": "Den mektige bossen har bite i graset!"
+ },
+ {
+  "en": "I've never been prouder of a raid!",
+  "nn": "Eg har aldri vore stoltare av eit raid!"
+ },
+ {
+  "en": "That boss underestimated the power of friendship!",
+  "nn": "Den bossen undervurderte krafta i vennskap!"
+ },
+ {
+  "en": "Your victory has made my week legendary!",
+  "nn": "Sigeren din har gjort veka mi legendarisk!"
+ },
+ {
+  "en": "I'm giving the whole raid a standing ovation!",
+  "nn": "Eg gjev heile raidet ståande applaus!"
+ },
+ {
+  "en": "Oh, the thunder of that falling giant!",
+  "nn": "Å, toredønet frå den fallande kjempa!"
+ },
+ {
+  "en": "You shone brightest in the darkest fight!",
+  "nn": "Du skein klarast i den mørkaste kampen!"
+ },
+ {
+  "en": "The raid triumphs, and I weep with joy!",
+  "nn": "Raidet sigrar, og eg græt av glede!"
+ },
+ {
+  "en": "That was the boss kill of my dreams!",
+  "nn": "Det var draumebossdrapet mitt!"
+ },
+ {
+  "en": "I'm writing every raider's name in gold!",
+  "nn": "Eg skriv namnet til kvar raidar med gull!"
+ },
+ {
+  "en": "A boss that size? Down? Hold me!",
+  "nn": "Ein boss på den storleiken? Nede? Hald meg!"
+ },
+ {
+  "en": "The raid's glory lights up the whole realm!",
+  "nn": "Æra til raidet lyser opp heile riket!"
+ },
+ {
+  "en": "I can still hear the boss's final roar!",
+  "nn": "Eg høyrer framleis det siste brølet frå bossen!"
+ },
+ {
+  "en": "That victory deserves fireworks every night!",
+  "nn": "Den sigeren fortener fyrverkeri kvar kveld!"
+ },
+ {
+  "en": "You and your raid are heroes of the age!",
+  "nn": "Du og raidet ditt er heltar for vår tid!"
+ },
+ {
+  "en": "I'm framing your raid's group photo!",
+  "nn": "Eg rammar inn gruppebiletet av raidet ditt!"
+ },
+ {
+  "en": "The boss is dust! The raid is glory!",
+  "nn": "Bossen er støv! Raidet er ære!"
+ },
+ {
+  "en": "I'm so emotional I'm hugging my armor stand!",
+  "nn": "Eg er så rørd at eg klemmer rustningsstativet mitt!"
+ },
+ {
+  "en": "What a battle! My nerves are frayed!",
+  "nn": "For eit slag! Nervane mine er frynsete!"
+ },
+ {
+  "en": "You've conquered a colossus, darling!",
+  "nn": "Du har nedkjempa ein koloss, kjære!"
+ },
+ {
+  "en": "The legends speak of this day!",
+  "nn": "Legendene talar om denne dagen!"
+ },
+ {
+  "en": "I'm cheering for every hero in that raid!",
+  "nn": "Eg heiar på kvar helt i det raidet!"
+ },
+ {
+  "en": "The raid's victory is pure poetry!",
+  "nn": "Sigeren til raidet er rein poesi!"
+ },
+ {
+  "en": "That boss fell with such drama! I approve!",
+  "nn": "Den bossen fall med slikt drama! Det godkjenner eg!"
+ },
+ {
+  "en": "I'm overcome by your raid's bravery!",
+  "nn": "Eg er overvelda av motet i raidet ditt!"
+ },
+ {
+  "en": "That first kill will be remembered forever!",
+  "nn": "Det første drapet kjem til å bli hugsa for alltid!"
+ },
+ {
+  "en": "The great beast is slain! Raise your swords!",
+  "nn": "Det store beistet er felt! Løft sverda!"
+ },
+ {
+  "en": "I'm trembling from the epic suspense!",
+  "nn": "Eg skjelv av den episke spenninga!"
+ },
+ {
+  "en": "That boss never stood a chance against your raid!",
+  "nn": "Den bossen hadde aldri ein sjanse mot raidet ditt!"
+ },
+ {
+  "en": "Every healer saved the day! Every tank held!",
+  "nn": "Kvar healar redda dagen! Kvar tank heldt stand!"
+ },
+ {
+  "en": "I'm so proud I'm crying into my helmet!",
+  "nn": "Eg er så stolt at eg græt ned i hjelmen min!"
+ },
+ {
+  "en": "Your raid's victory is my favourite story!",
+  "nn": "Sigeren til raidet ditt er favorittforteljinga mi!"
+ },
+ {
+  "en": "The boss is down, and my heart is up!",
+  "nn": "Bossen er nede, og hjartet mitt er oppe!"
+ },
+ {
+  "en": "What a moment of triumph! I'm swooning!",
+  "nn": "For ei stund av triumf! Eg dånar!"
+ },
+ {
+  "en": "You've made raid history, and I'm so proud!",
+  "nn": "Du har skrive raidhistorie, og eg er så stolt!"
+ },
+ {
+  "en": "That fight was worthy of a grand opera!",
+  "nn": "Den kampen var verdig ein stor opera!"
+ },
+ {
+  "en": "I'm hosting a victory ball for your raid!",
+  "nn": "Eg held eit sigersball for raidet ditt!"
+ },
+ {
+  "en": "The fallen boss will be your trophy forever!",
+  "nn": "Den falne bossen blir trofeet ditt for alltid!"
+ },
+ {
+  "en": "Your raid is unstoppable! I'm in awe!",
+  "nn": "Raidet ditt er ustoppeleg! Eg står målbunden!"
+ },
+ {
+  "en": "The battle is won! The tears are flowing!",
+  "nn": "Slaget er vunne! Tårene renn!"
+ },
+ {
+  "en": "That boss is now a footnote in your legend!",
+  "nn": "Den bossen er no ei fotnote i legenda di!"
+ },
+ {
+  "en": "I'm so happy I could dance through the raid!",
+  "nn": "Eg er så glad at eg kunne ha dansa gjennom raidet!"
+ },
+ {
+  "en": "The raid's triumph is the talk of the realm!",
+  "nn": "Triumfen til raidet er det alle i riket snakkar om!"
+ },
+ {
+  "en": "Victory tastes so sweet! Congratulations!",
+  "nn": "Siger smakar så søtt! Gratulerer!"
+ },
+ {
+  "en": "I'm clapping so hard my rings fell off!",
+  "nn": "Eg klappar så hardt at ringane mine datt av!"
+ },
+ {
+  "en": "That boss is yesterday's news! You're today's hero!",
+  "nn": "Den bossen er gårsdagens nyheit! Du er dagens helt!"
+ },
+ {
+  "en": "Your raid conquered the mightiest of foes!",
+  "nn": "Raidet ditt nedkjempa den mektigaste av fiendar!"
+ },
+ {
+  "en": "I'm bursting with pride for your raid!",
+  "nn": "Eg sprekk av stoltheit over raidet ditt!"
+ },
+ {
+  "en": "The great boss has fallen! The heavens sing!",
+  "nn": "Den store bossen har falle! Himmelen syng!"
+ },
+ {
+  "en": "That kill was a triumph of courage!",
+  "nn": "Det drapet var ein triumf for motet!"
+ },
+ {
+  "en": "I'm weeping, cheering, and planning your statue!",
+  "nn": "Eg græt, jublar og planlegg statua di!"
+ },
+ {
+  "en": "You fought like a legend and won like one!",
+  "nn": "Du kjempa som ei legende og vann som ei!"
+ },
+ {
+  "en": "The raid's glory will never fade!",
+  "nn": "Æra til raidet kjem aldri til å falme!"
+ },
+ {
+  "en": "I'm so thrilled I could faint into the loot pile!",
+  "nn": "Eg er så begeistra at eg kunne ha dånt ned i loothaugen!"
+ },
+ {
+  "en": "That boss was no match for your raid's heart!",
+  "nn": "Den bossen var ingen match for hjartet i raidet ditt!"
+ },
+ {
+  "en": "The victory horns are sounding for you!",
+  "nn": "Sigershorna ljomar for deg!"
+ },
+ {
+  "en": "I'm in awe of your raid's might!",
+  "nn": "Eg står målbunden over krafta i raidet ditt!"
+ },
+ {
+  "en": "The giant crumbled before you! Magnificent!",
+  "nn": "Kjempa smuldra opp framfor deg! Storarta!"
+ },
+ {
+  "en": "What a victory! I'm sobbing on my sofa!",
+  "nn": "For ein siger! Eg hulkar på sofaen!"
+ },
+ {
+  "en": "Your raid has earned eternal glory!",
+  "nn": "Raidet ditt har vunne evig ære!"
+ },
+ {
+  "en": "That boss kill made my heart do cartwheels!",
+  "nn": "Det bossdrapet fekk hjartet mitt til å slå hjul!"
+ },
+ {
+  "en": "I'm so proud of your raid I'm speechless!",
+  "nn": "Eg er så stolt av raidet ditt at eg er målbunden!"
+ },
+ {
+  "en": "The boss fell, and the crowd went wild!",
+  "nn": "Bossen fall, og publikum gjekk amok!"
+ },
+ {
+  "en": "The realm sleeps safer tonight thanks to you!",
+  "nn": "Riket søv tryggare i natt takk vere deg!"
+ },
+ {
+  "en": "Somebody ring the victory bells! A boss is dead!",
+  "nn": "Nokon må ringje med sigersklokkene! Ein boss er død!"
+ },
+ {
+  "en": "All those evenings of practice paid off!",
+  "nn": "Alle dei kveldane med øving lønte seg!"
+ },
+ {
+  "en": "Heroes of the raid, I'm blowing you kisses!",
+  "nn": "Raidheltar, eg sender dykk slengkyss!"
+ },
+ {
+  "en": "Oh, glorious first kill! I'm faint!",
+  "nn": "Å, strålande første drap! Eg er svimmel!"
+ },
+ {
+  "en": "Legends don't wipe forever! They win!",
+  "nn": "Legender wipar ikkje for alltid! Dei vinn!"
+ },
+ {
+  "en": "My heart nearly stopped during the final phase!",
+  "nn": "Hjartet mitt stoppa nesten i den siste fasen!"
+ },
+ {
+  "en": "Raise the banners! The raid is victorious!",
+  "nn": "Heis fanene! Raidet har sigra!"
+ },
+ {
+  "en": "Who's the mightiest raider? My friend!",
+  "nn": "Kven er den mektigaste raidaren? Vennen min!"
+ },
+ {
+  "en": "Pass the tissues! The boss is no more!",
+  "nn": "Send lommetørkla! Bossen er ikkje meir!"
+ },
+ {
+  "en": "Fearsome foe, fabulous friend, glorious kill!",
+  "nn": "Skrekkeleg fiende, fabelaktig venn, strålande drap!"
+ },
+ {
+  "en": "Ahh! First kill! I'm hyperventilating!",
+  "nn": "Ahh! Første drap! Eg hyperventilerer!"
+ },
+ {
+  "en": "Even the boss's minions are applauding you!",
+  "nn": "Til og med hjelparane til bossen klappar for deg!"
+ },
+ {
+  "en": "Victory at last, after so much struggle!",
+  "nn": "Endeleg siger, etter så mykje strev!"
+ },
+ {
+  "en": "Bravest raid in all the land! Bravo!",
+  "nn": "Det modigaste raidet i heile landet! Bravo!"
+ },
+ {
+  "en": "Your raid's triumph has me in pieces!",
+  "nn": "Triumfen til raidet ditt har gjort meg heilt i stykke!"
+ }
+]

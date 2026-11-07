@@ -177,7 +177,8 @@ def run_addon_file(runtime, path):
     return runtime.eval('loadstring or load')(_COMPILED[key])()
 
 
-def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False):
+def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False,
+             reaction_default='classic'):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
@@ -235,6 +236,10 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     # Most tests isolate other events from the automatic group-join announcement.
     if not join_announcements:
         runtime.execute('WoWStatusGroups.announce=nil')
+    # Reaction tests check Classic's exact whispers; the shipped default
+    # (Wholesome) is tested with reaction_default=None.
+    if reaction_default:
+        runtime.globals().WoWStatusPersonalities['REACTION_DEFAULT'] = reaction_default
     return runtime
 
 

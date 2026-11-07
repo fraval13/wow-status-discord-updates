@@ -37,7 +37,8 @@ def test_generated_files_match_their_json_and_every_edition():
 
 def test_the_builder_rejects_broken_sources(tmp_path):
     build = builder()
-    personality = build.PERSONALITIES[0]
+    # A personality without reaction voices: this test is about the caption files.
+    personality = next(p for p in build.PERSONALITIES if p.id not in build.REACTION_VOICES)
     folder = tmp_path / personality.id
     folder.mkdir()
     rows = [{'en': f'Line {i}.', 'nn': f'Line {i} på nynorsk.'} for i in range(560)]
@@ -47,7 +48,7 @@ def test_the_builder_rejects_broken_sources(tmp_path):
     for kind in KINDS:
         data = deaths if kind == 'death' else rows
         (folder / f'{kind}.json').write_text(json.dumps(data), encoding='utf-8')
-    assert 'register("wholesome"' in build.render(personality, tmp_path)
+    assert f'register("{personality.id}"' in build.render(personality, tmp_path)
     broken = {
         'level': rows[:299],
         'loot': rows[:299] + [{'en': 'Line 0.', 'nn': 'Unik.'}],
