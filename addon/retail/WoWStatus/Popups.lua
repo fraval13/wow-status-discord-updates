@@ -407,14 +407,21 @@ local function lonely(group)
     local cached=rosterCache[group]
     return cached~=nil and (cached.count or 0)<=1
 end
+-- Also trusted: a member whose character list already came through this group
+-- (WoW Forever's member lists went wrong for some and not others).
+local function knownMember(group,sender)
+    return WoWStatusRoster and WoWStatusRoster.knownMember and WoWStatusRoster.knownMember(group,sender) or false
+end
 function P.vouch(group,sender)
     sender=S.string(sender)
-    if not group or not sender or not lonely(group) or not WoWStatusGroups.contains(getCharacter(),group) then return false end
+    if not group or not sender or not WoWStatusGroups.contains(getCharacter(),group) then return false end
+    if not lonely(group) and not knownMember(group,sender) then return false end
     local key=P.senderKey(sender)
     if not key or P.isSelf(sender) then return false end
     local known=knownPeers[group] and knownPeers[group][key]
     if not (known and known.vouched) then
-        S.debug("member list "..tostring(group):sub(1,4).."…: trusting "..sender.." (the game shows you alone in the channel)")
+        S.debug("member list "..tostring(group):sub(1,4).."…: trusting "..sender
+            ..(lonely(group) and " (the game shows you alone in the channel)" or " (their list came through this group)"))
     end
     P.notePeer(group,sender)
     knownPeers[group][key].vouched=true

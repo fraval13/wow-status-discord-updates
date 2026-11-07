@@ -12,7 +12,8 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 ## Unreleased
 
-- When WoW shows you alone in a group channel, friends who message you still count as online
+- Friends whose list came through a group count as members even when WoW's channel list misses them
+- When WoW shows you alone in a group channel, your updates go straight to friends from their lists
 
 ## 1.25.0
 

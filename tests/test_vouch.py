@@ -82,3 +82,16 @@ def test_on_forever_updates_are_whispered_to_the_plain_name():
     lua.eval('WoWStatusRoster.receive')(
         f'C {group} 4d6972614d697261 Frank Mira_Stone-CAMWOWEU5Realm7PvE Dwarf 3 WARRIOR 12', 'Mira Stone', 'WHISPER')
     assert list(lua.eval('WoWStatusRoster.recentMembers')(group).values()) == ['Mira Stone']
+
+
+def test_a_member_whose_list_came_through_the_group_is_trusted_even_when_not_listed():
+    from test_roster import pair, pump
+    mira, thora = pair()
+    pump(mira, thora)                       # Mira's list arrives through the group.
+    group = thora.eval('(next(character().group_ids))')
+    # Later the game's member list no longer shows her, but others are listed.
+    thora.execute('__peers = {"Thora-TestRealm", "Bob-TestRealm"}; for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end')
+    assert thora.eval('WoWStatusPopups.vouch')(group, 'Mira-TestRealm')
+    assert thora.eval(f'WoWStatusPopups.isPeer("{group}", WoWStatusPopups.senderKey("Mira-TestRealm"))')
+    # A stranger is not.
+    assert not thora.eval('WoWStatusPopups.vouch')(group, 'Stranger-TestRealm')

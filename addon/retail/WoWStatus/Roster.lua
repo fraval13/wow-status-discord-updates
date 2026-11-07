@@ -574,6 +574,16 @@ function R.invite(name, id)
     table.insert(outgoing, {target=target, text=table.concat({"N", via, state().id, hex}, " ")})
     return true, "Invite sent."
 end
+-- Whether a sender's character list has come through this group (a member the
+-- game's channel list may fail to show).
+function R.knownMember(group, sender)
+    local k = db and key(sender)
+    if not k then return false end
+    for _, player in pairs(state().players) do
+        if type(player.groups) == "table" and player.groups[group] and player.characters[k] then return true end
+    end
+    return false
+end
 -- Characters of friends whose list came through a group in the last 12 hours
 -- (at most 30), for sending when the game shows nobody in the group's channel.
 function R.recentMembers(group)
