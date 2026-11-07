@@ -1,5 +1,9 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.26.0", notes={
+        "Friends whose list came through a group count as members even when WoW's channel list misses them",
+        "When WoW shows you alone in a group channel, your updates go straight to friends from their lists",
+    }},
     {version="1.25.0", notes={
         "Armor headings name the piece: RARE RING EQUIPPED!, EPIC TRINKET EQUIPPED! (SJELDAN RING PÅ! in Nynorsk)",
         "Click a character card for their profile: stats, level-ups, recent activity and recent gear",
@@ -17,8 +21,5 @@ WoWStatusWhatsNewData = {
     }},
     {version="1.24.0", notes={
         "Legg til skillen git-commit for commit-meldingar",
-    }},
-    {version="1.23.0", notes={
-        "The Overview calls your gold Current (Noverande in Nynorsk), next to Earned",
     }},
 }
