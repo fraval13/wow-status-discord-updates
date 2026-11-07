@@ -113,3 +113,25 @@ def test_cut_off_moves_at_login_but_not_at_reload_and_includes_synced_entries():
         fire("PLAYER_ENTERING_WORLD", false, true)
         assert(WoWStatusDB.overview.since == 5000)
     ''')
+
+
+def test_the_truncation_line_is_translated_and_counts_what_it_left_out():
+    """It was built from bare literals and stayed English on a Nynorsk client (#120)."""
+    for language, expected, wrong in (
+            ('en', '…and 3 more lines in the Activity tab.', 'fleire linjer'),
+            ('nn', '…og 3 fleire linjer i Aktivitet-fana.', 'more lines')):
+        lua = make_lua(OVERVIEW)
+        lua.execute(f'''
+            WoWStatusLocale.set("{language}")
+            WoWStatusDB.overview = {{since = 1000}}
+            -- 21 people, a heading and one fact each: 42 rows against a cap of 40.
+            for i = 1, 21 do
+                friend("P" .. i .. "-TestRealm", "level", 1500 + i, {{level = 20 + i}})
+            end
+            WoWStatusMainWindow.show("overview")
+            local rows = WoWStatusOverviewPage.rows
+            assert(#rows == 40, "expected the 40-row cap, got " .. #rows)
+            assert(rows[40].text == "{expected}", rows[40].text)
+            assert(not rows[40].text:find("{wrong}", 1, true), rows[40].text)
+            assert(rows[40].id == nil, "the summary line links nowhere")
+        ''')

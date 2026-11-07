@@ -235,7 +235,7 @@ local function render()
     if #rows > MAX_LINES then
         local hidden = #rows - MAX_LINES + 1
         for i = #rows, MAX_LINES, -1 do rows[i] = nil end
-        rows[MAX_LINES] = {text="…and " .. hidden .. " more lines in the Activity tab."}
+        rows[MAX_LINES] = {text=TF("…and %d more lines in the Activity tab.", hidden)}
     end
     page.empty:SetText(not since and T("This summary starts after your next logout.")
         or T("Nothing new from your group since you were last here."))

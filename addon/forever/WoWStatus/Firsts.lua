@@ -472,7 +472,8 @@ end
 function F.buildRecords(parent)
     page = CreateFrame("Frame", "WoWStatusRecordsPage", parent); page:SetAllPoints(parent)
     page.heading = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    page.heading:SetPoint("TOPLEFT", 24, -4); page.heading:SetText("Firsts in your group")
+    -- render() sets the heading for every view, so none is needed here.
+    page.heading:SetPoint("TOPLEFT", 24, -4)
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 24, -32); page.scroll:SetSize(710, 494)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)

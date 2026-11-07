@@ -289,6 +289,7 @@ W.add({
     ["Since you were last here"] = "Sidan du var her sist",
     ["This summary starts after your next logout."] = "Samandraget startar etter at du loggar ut neste gong.",
     ["Nothing new from your group since you were last here."] = "Ikkje noko nytt frå gruppa di sidan du var her sist.",
+    ["…and %d more lines in the Activity tab."] = "…og %d fleire linjer i Aktivitet-fana.",
     ["Your group"] = "Gruppa di", ["Latest records"] = "Nyaste rekordar",
     ["No records yet. The first to reach a milestone in your group earns it."] = "Ingen rekordar enno. Den første i gruppa som når eit mål, får han.", ["All"] = "Alle", ["Mine"] = "Mine", ["Friends"] = "Vener", ["Show all"] = "Vis alle",
     -- Popup headings
