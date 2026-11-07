@@ -1017,13 +1017,38 @@ local function entryOf(item)
     local id = item.nonce and WoWStatusJournal.eventID(item.sender, item.nonce)
     return id and WoWStatusJournal.entry(id) or nil
 end
--- The text a reaction button shows and whispers: in Nynorsk a random line for
--- GZ!, F and "Enjoy <zone>!", kept for that notification; else the translation.
+-- A reaction button's key in the voices' reaction banks, and its level or zone.
+local function reactionKey(reaction)
+    if reaction == "GZ!" then return "gz" end
+    if reaction == "F" then return "f" end
+    if reaction == "Git Good" then return "gitgood" end
+    if reaction == "Welcome!" then return "welcome" end
+    if reaction == "Congrats!" then return "congrats" end
+    local level = reaction:match("^Congrats on level ([0-9]+)!$")
+    if level then return "level", level end
+    local zone = reaction:match("^Enjoy (.+)!$")
+    if zone then return "enjoy", zone end
+    for kind, text in pairs(P.CONGRATS) do
+        if text == reaction then return "congrats_" .. kind end
+    end
+end
+P.reactionKey = reactionKey
+-- The text a reaction whispers, kept for that notification: a line in the chosen
+-- reaction voice, or Classic: in Nynorsk a random line for GZ!, F and
+-- "Enjoy <zone>!" (shown on the button too), else the translation.
 function P.reactionText(item, reaction)
     if type(item) ~= "table" or type(reaction) ~= "string" then return reaction end
     item.reactionTexts = item.reactionTexts or {}
     local chosen = item.reactionTexts[reaction]
     if chosen then return chosen end
+    local key, value = reactionKey(reaction)
+    local voiced = key and WoWStatusPersonalities and WoWStatusPersonalities.reactionLine(key, value)
+    if voiced then
+        item.reactionVoiced = item.reactionVoiced or {}
+        item.reactionVoiced[reaction] = true
+        item.reactionTexts[reaction] = voiced
+        return voiced
+    end
     local pools = WoWStatusLocale.lang() == "nn" and WoWStatusLocale.POOLS or {}
     local zone = reaction:match("^Enjoy (.+)!$")
     local pool = zone and pools.Enjoy or pools[reaction]
@@ -1036,6 +1061,13 @@ function P.reactionText(item, reaction)
     else chosen = T(reaction) end
     item.reactionTexts[reaction] = chosen
     return chosen
+end
+-- What a reaction button shows: the short reaction when a voice whispers a line
+-- of its own, else the whispered text itself (Classic Nynorsk shows its line).
+function P.reactionLabel(item, reaction)
+    local text = P.reactionText(item, reaction)
+    if type(item) == "table" and item.reactionVoiced and item.reactionVoiced[reaction] then return T(reaction) end
+    return text
 end
 local reactionButtons
 function P.react(item, text)
@@ -1103,7 +1135,7 @@ reactionButtons = function()
             end)
             toast.reactions[i] = button
         end
-        local text = P.reactionText(item, list[i])
+        local text = P.reactionLabel(item, list[i])
         button.reaction, button.label = list[i], text
         button:SetText(text)
         -- Wide enough for its text, never narrower than 86.

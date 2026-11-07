@@ -33,6 +33,28 @@ CATEGORIES = ('level', 'introduction', 'loot', 'death', 'zone', 'quest', 'profes
 CLASSES = ('DEATHKNIGHT', 'DEMONHUNTER', 'DRUID', 'EVOKER', 'HUNTER', 'MAGE', 'MONK', 'PALADIN',
            'PRIEST', 'ROGUE', 'SHAMAN', 'WARLOCK', 'WARRIOR')
 FORBIDDEN = re.compile(r'[\\"\n\r\t|]')
+# Reaction whispers (docs/caption-personalities/<id>/reactions/<type>.json): the
+# text a reaction button whispers to a friend, in the chosen personality's voice.
+# Keys follow Popups.lua: gz = GZ!, level = Congrats on level N!, f = F,
+# gitgood = Git Good, welcome = Welcome!, enjoy = Enjoy <zone>!, congrats =
+# Congrats!, congrats_<kind> = P.CONGRATS[kind].
+REACTIONS = ('gz', 'level', 'f', 'gitgood', 'welcome', 'enjoy', 'congrats', 'congrats_loot', 'congrats_quest',
+             'congrats_profession', 'congrats_dungeon', 'congrats_raid', 'congrats_mount', 'congrats_epicmount',
+             'congrats_reputation', 'congrats_unlock', 'congrats_pvp', 'congrats_first')
+LINES_PER_REACTION = 300
+# Personalities whose reaction voices ship. The others keep captions only until
+# their reactions are written and proofread; their reactions/ folders are ignored.
+REACTION_VOICES = ('wholesome', 'christian', 'dwarf', 'drama')
+# The value filled in when whispering; each line of these types holds it exactly once.
+PLACEHOLDERS = {'level': '{level}', 'enjoy': '{zone}'}
+# Variety: at most this many lines of a reaction file may open with the same two
+# words (letters only, any case; a placeholder counts as a word), per language.
+MAX_SAME_OPENING = 30
+
+
+def _opening(text: str) -> str:
+    words = re.findall(r"\{\w+\}|[^\W\d_]+(?:['\u2019][^\W\d_]+)*", text.casefold())
+    return ' '.join(words[:2])
 
 
 @dataclass(frozen=True)
@@ -60,6 +82,44 @@ PERSONALITIES = (
 
 class PersonalityError(ValueError):
     """A caption source file breaks the format; nothing has been written."""
+
+
+def _validate_reactions(personality: Personality, reaction: str, rows: object) -> list[tuple[str, str]]:
+    where = f'{personality.id}/reactions/{reaction}.json'
+    if not isinstance(rows, list) or len(rows) != LINES_PER_REACTION:
+        count = len(rows) if isinstance(rows, list) else 'no'
+        raise PersonalityError(f'{where}: {count} lines, need {LINES_PER_REACTION}')
+    placeholder = PLACEHOLDERS.get(reaction)
+    seen: dict[str, set[str]] = {'en': set(), 'nn': set()}
+    result = []
+    for number, row in enumerate(rows, 1):
+        if not isinstance(row, dict) or set(row) != {'en', 'nn'}:
+            raise PersonalityError(f'{where}#{number}: need exactly en and nn')
+        for lang in ('en', 'nn'):
+            text = row[lang]
+            if not isinstance(text, str) or not text.strip() or text != text.strip():
+                raise PersonalityError(f'{where}#{number}: empty or padded {lang} line')
+            if len(text) > MAX_LENGTH or FORBIDDEN.search(text):
+                raise PersonalityError(f'{where}#{number}: {lang} line is too long or has a forbidden character')
+            braces = text.replace(placeholder, '') if placeholder else text
+            if placeholder and text.count(placeholder) != 1:
+                raise PersonalityError(f'{where}#{number}: {lang} line needs {placeholder} exactly once')
+            if '{' in braces or '}' in braces:
+                raise PersonalityError(f'{where}#{number}: {lang} line has a stray brace')
+            if text.casefold() in seen[lang]:
+                raise PersonalityError(f'{where}#{number}: duplicate {lang} line {text!r}')
+            seen[lang].add(text.casefold())
+        result.append((row['en'], row['nn']))
+    for lang, index in (('en', 0), ('nn', 1)):
+        openings: dict[str, int] = {}
+        for row in result:
+            key = _opening(row[index])
+            openings[key] = openings.get(key, 0) + 1
+        common, count = max(openings.items(), key=lambda item: item[1])
+        if count > MAX_SAME_OPENING:
+            raise PersonalityError(f'{where}: {count} {lang} lines open with {common!r}; '
+                                   f'at most {MAX_SAME_OPENING}, vary the openings')
+    return result
 
 
 def _validate(personality: Personality, category: str, rows: object) -> list[tuple[str, str, str]]:
@@ -114,10 +174,21 @@ def render(personality: Personality, source: Path = SOURCE) -> str:
         except json.JSONDecodeError as error:
             raise PersonalityError(f'{personality.id}/{category}.json: {error}') from error
         banks[category] = _validate(personality, category, rows)
+    reactions = {}
+    for reaction in REACTIONS if personality.id in REACTION_VOICES else ():
+        path = source / personality.id / 'reactions' / f'{reaction}.json'
+        if not path.is_file():
+            raise PersonalityError(f'{personality.id}: missing reactions/{reaction}.json')
+        try:
+            rows = json.loads(path.read_text(encoding='utf-8'))
+        except json.JSONDecodeError as error:
+            raise PersonalityError(f'{personality.id}/reactions/{reaction}.json: {error}') from error
+        reactions[reaction] = _validate_reactions(personality, reaction, rows)
     out = [
         f'-- Generated from docs/caption-personalities/{personality.id}/ by',
         '-- scripts/build_personalities.py. Do not edit; edit the JSON and rebuild.',
-        '-- Presentation only; never sent as chat. Nynorsk line i translates English line i.',
+        '-- Captions are presentation only; reactions are whispered to a friend when a',
+        '-- reaction button is clicked. Nynorsk line i translates English line i.',
         'if not WoWStatusPersonalities then return end',
         f'WoWStatusPersonalities.register("{personality.id}", {{',
         f'    name = {_lua(personality.name)}, nn_name = {_lua(personality.nn_name)},',
@@ -131,8 +202,24 @@ def render(personality: Personality, source: Path = SOURCE) -> str:
                 out.append(f'            {_lua(prefix + row[index])},')
             out.append('        },')
         out.append('    },')
+    if reactions:
+        out.extend(_render_reactions(reactions))
     out.append('})')
     return '\n'.join(out) + '\n'
+
+
+def _render_reactions(reactions: dict[str, list[tuple[str, str]]]) -> list[str]:
+    out = ['    reactions = {']
+    for lang, index in (('en', 0), ('nn', 1)):
+        out.append(f'        {lang} = {{')
+        for reaction in REACTIONS:
+            out.append(f'            {reaction} = {{')
+            for row in reactions[reaction]:
+                out.append(f'                {_lua(row[index])},')
+            out.append('            },')
+        out.append('        },')
+    out.append('    },')
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:

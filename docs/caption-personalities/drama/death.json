@@ -21,7 +21,7 @@
  },
  {
   "en": "Why?! WHY?! Somebody tell me why!",
-  "nn": "Kvifor?! KVIFOR?! Nokon fortel meg kvifor!",
+  "nn": "Kvifor?! KVIFOR?! Nokon må fortelje meg kvifor!",
   "tag": "ANY"
  },
  {
@@ -31,12 +31,12 @@
  },
  {
   "en": "Such tragedy! Such loss! Such a long corpse run!",
-  "nn": "For ein tragedie! For eit tap! For ein lang likløpstur!",
+  "nn": "For ein tragedie! For eit tap! For ein lang tur som spøkjelse!",
   "tag": "ANY"
  },
  {
   "en": "I've fainted onto their gravestone. Dramatically.",
-  "nn": "Eg har svime av over gravsteinen deira. Dramatisk.",
+  "nn": "Eg har svima av over gravsteinen deira. Dramatisk.",
   "tag": "ANY"
  },
  {
@@ -66,7 +66,7 @@
  },
  {
   "en": "Somebody fetch a bard! This tragedy needs a ballad!",
-  "nn": "Nokon hent ein skald! Denne tragedien treng ein ballade!",
+  "nn": "Hent ein skald, nokon! Denne tragedien treng ein ballade!",
   "tag": "ANY"
  },
  {
@@ -96,7 +96,7 @@
  },
  {
   "en": "Lower the flags! Silence the bells! Pass the tissues!",
-  "nn": "Senk flagga! Stilne klokkene! Send lommetørkla!",
+  "nn": "Senk flagga! Stogg klokkene! Send lommetørkla!",
   "tag": "ANY"
  },
  {
@@ -111,7 +111,7 @@
  },
  {
   "en": "A moment of silence. No, a moment of SCREAMING.",
-  "nn": "Eit minutts stille. Nei, eit minutts SKRIKING.",
+  "nn": "Eitt minutt stille. Nei, eitt minutt SKRIKING.",
   "tag": "ANY"
  },
  {
@@ -121,7 +121,7 @@
  },
  {
   "en": "Grief has struck me like a falling anvil.",
-  "nn": "Sorga har trefte meg som ein fallande ambolt.",
+  "nn": "Sorga har treft meg som ein fallande ambolt.",
   "tag": "ANY"
  },
  {
@@ -131,7 +131,7 @@
  },
  {
   "en": "I'm draping myself over the nearest fainting couch.",
-  "nn": "Eg legg meg over næraste besvimingssofa.",
+  "nn": "Eg sig dramatisk ned på næraste sjeselong.",
   "tag": "ANY"
  },
  {
@@ -191,7 +191,7 @@
  },
  {
   "en": "Oh, the agony of the ghostly walk back!",
-  "nn": "Å, kvalen på den spøkjelsesaktige turen tilbake!",
+  "nn": "Å, kvalen ved den lange spøkjelsesturen tilbake!",
   "tag": "ANY"
  },
  {
@@ -221,7 +221,7 @@
  },
  {
   "en": "Every bard in the inn just switched to a sad song.",
-  "nn": "Kvar skald i kroa gjekk nettopp over til ein trist song.",
+  "nn": "Alle skaldane i kroa gjekk nettopp over til ein trist song.",
   "tag": "ANY"
  },
  {
@@ -241,12 +241,12 @@
  },
  {
   "en": "I'm in mourning. Please address me as the Bereaved.",
-  "nn": "Eg er i sorg. Tiltal meg som Den sørgjande.",
+  "nn": "Eg er i sorg. Kall meg Den sørgjande.",
   "tag": "ANY"
  },
  {
   "en": "Someone bring black roses. And a resurrection.",
-  "nn": "Nokon kom med svarte roser. Og ei oppvekking.",
+  "nn": "Kom med svarte roser, nokon. Og ei oppvekking.",
   "tag": "ANY"
  },
  {
@@ -261,7 +261,7 @@
  },
  {
   "en": "I wept so much the spirit healer offered me a towel.",
-  "nn": "Eg grét så mykje at åndelækjaren gav meg eit handkle.",
+  "nn": "Eg gret så mykje at åndelækjaren gav meg eit handkle.",
   "tag": "ANY"
  },
  {
@@ -306,7 +306,7 @@
  },
  {
   "en": "Somebody hold me while I scream into the void.",
-  "nn": "Nokon hald meg medan eg skrik ut i tomrommet.",
+  "nn": "Hald rundt meg, nokon, medan eg skrik ut i tomrommet.",
   "tag": "ANY"
  },
  {
@@ -316,7 +316,7 @@
  },
  {
   "en": "The tragedy of the century just happened. Again.",
-  "nn": "Hundreårets tragedie skjedde nettopp. Igjen.",
+  "nn": "Hundreårets tragedie hende nettopp. Igjen.",
   "tag": "ANY"
  },
  {
@@ -356,7 +356,7 @@
  },
  {
   "en": "My knees gave way at the news. The floor and I are friends now.",
-  "nn": "Knea mine svikta ved nyhenda. Golvet og eg er vener no.",
+  "nn": "Knea mine svikta då eg fekk høyre det. Golvet og eg er vener no.",
   "tag": "ANY"
  },
  {
@@ -371,7 +371,7 @@
  },
  {
   "en": "They're a ghost now and I'm a puddle.",
-  "nn": "Dei er eit spøkjelse no, og eg er ein dam.",
+  "nn": "Dei er eit spøkjelse no, og eg er ein tårepytt.",
   "tag": "ANY"
  },
  {
@@ -396,7 +396,7 @@
  },
  {
   "en": "Nobody speak to me. I'm grieving theatrically.",
-  "nn": "Ingen snakk til meg. Eg sørgjer teatralsk.",
+  "nn": "Ikkje snakk til meg. Eg sørgjer teatralsk.",
   "tag": "ANY"
  },
  {
@@ -471,12 +471,12 @@
  },
  {
   "en": "Dearest diary, today a hero fell and I wept buckets.",
-  "nn": "Kjære dagbok, i dag fall ein helt, og eg grét bøttevis.",
+  "nn": "Kjære dagbok, i dag fall ein helt, og eg gret bøttevis.",
   "tag": "ANY"
  },
  {
   "en": "The tragic heroics! The noble splat!",
-  "nn": "Dei tragiske heltedåadane! Det edle plasket!",
+  "nn": "Dei tragiske heltedådane! Det edle plasket!",
   "tag": "ANY"
  },
  {
@@ -521,7 +521,7 @@
  },
  {
   "en": "The tears! The sobs! The tragic little ghost run!",
-  "nn": "Tårene! Hulka! Den tragiske vesle spøkjelsesturen!",
+  "nn": "Tårene! Hulkinga! Den tragiske vesle spøkjelsesturen!",
   "tag": "ANY"
  },
  {
@@ -566,12 +566,12 @@
  },
  {
   "en": "Grief strikes! I'm going full opera about this.",
-  "nn": "Sorga slår til! Eg går full opera på dette.",
+  "nn": "Sorga slår til! Dette krev full opera.",
   "tag": "ANY"
  },
  {
   "en": "I've fainted at the graveyard. Someone res me too.",
-  "nn": "Eg har svime av på gravplassen. Nokon vekk meg opp òg.",
+  "nn": "Eg har svima av på gravplassen. Nokon vekk meg opp òg.",
   "tag": "ANY"
  },
  {
@@ -586,12 +586,12 @@
  },
  {
   "en": "Their final words were probably oops. So poetic.",
-  "nn": "Dei siste orda deira var truleg ops. Så poetisk.",
+  "nn": "Dei siste orda deira var truleg «oi». Så poetisk.",
   "tag": "ANY"
  },
  {
   "en": "I'm overcome with grief and mild second-hand embarrassment.",
-  "nn": "Eg er overvelda av sorg og litt flauheit på deira vegner.",
+  "nn": "Eg er overvelda av sorg og litt flauskap på deira vegner.",
   "tag": "ANY"
  },
  {
@@ -616,7 +616,7 @@
  },
  {
   "en": "This loss will haunt me until they're back in a minute.",
-  "nn": "Dette tapet kjem til å hjemsøkje meg til dei er tilbake om eit minutt.",
+  "nn": "Dette tapet kjem til å heimsøkje meg til dei er tilbake om eit minutt.",
   "tag": "ANY"
  },
  {
@@ -651,7 +651,7 @@
  },
  {
   "en": "I'm crying! The innkeeper is crying! The rat is crying!",
-  "nn": "Eg grin! Vertshusvertinna grin! Rotta grin!",
+  "nn": "Eg grin! Krovertinna grin! Rotta grin!",
   "tag": "ANY"
  },
  {
@@ -661,7 +661,7 @@
  },
  {
   "en": "Somebody play a dirge! A loud one! With drums!",
-  "nn": "Nokon spel ein sørgjesong! Ein høg ein! Med trommer!",
+  "nn": "Spel ein sørgjesong, nokon! Høgt! Med trommer!",
   "tag": "ANY"
  },
  {
@@ -711,7 +711,7 @@
  },
  {
   "en": "A noble end for a noble soul. Until the respawn timer.",
-  "nn": "Ein edel slutt for ei edel sjel. Fram til gjenoppstodtida.",
+  "nn": "Ein edel slutt for ei edel sjel. Fram til oppvekkinga.",
   "tag": "ANY"
  },
  {
@@ -761,7 +761,7 @@
  },
  {
   "en": "The world lost a little sparkle today. Briefly.",
-  "nn": "Verda miste litt glans i dag. Kort.",
+  "nn": "Verda mista litt glans i dag. Ei lita stund.",
   "tag": "ANY"
  },
  {
@@ -771,7 +771,7 @@
  },
  {
   "en": "The sad trombone of destiny has sounded.",
-  "nn": "Lagnaden sin triste trombone har ljoma.",
+  "nn": "Den triste trombonen til lagnaden har ljoma.",
   "tag": "ANY"
  },
  {
@@ -791,7 +791,7 @@
  },
  {
   "en": "Every tear I cry has their name on it.",
-  "nn": "Kvar tåre eg grin har namnet deira på seg.",
+  "nn": "Kvar tåre eg feller, ber namnet deira.",
   "tag": "ANY"
  },
  {
@@ -881,7 +881,7 @@
  },
  {
   "en": "Not even an Anti-Magic Shell for a broken heart!",
-  "nn": "Ikkje eingong eit antimagiskal for eit knust hjarte!",
+  "nn": "Ikkje eingong eit antimagisk skal vernar mot eit knust hjarte!",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1041,7 +1041,7 @@
  },
  {
   "en": "Their wings folded in a heartbreaking final bow!",
-  "nn": "Vengene deira falda seg i ein hjarteskjerande siste buk!",
+  "nn": "Vengene deira falda seg i ein hjarteskjerande siste bukk!",
   "tag": "EVOKER"
  },
  {
@@ -1076,7 +1076,7 @@
  },
  {
   "en": "Somebody feed their pet! It's grieving!",
-  "nn": "Nokon gi kjæledyret mat! Det sørgjer!",
+  "nn": "Gi kjæledyret mat, nokon! Det sørgjer!",
   "tag": "HUNTER"
  },
  {
@@ -1126,12 +1126,12 @@
  },
  {
   "en": "Their last fireball was so beautiful. Then darkness.",
-  "nn": "Den siste eldkula deira var så vakker. Så mørker.",
+  "nn": "Den siste eldkula deira var så vakker. Så vart det mørkt.",
   "tag": "MAGE"
  },
  {
   "en": "Polymorph the grief away! Please! I'll pay!",
-  "nn": "Forvandle sorga vekk! Ver så snill! Eg betaler!",
+  "nn": "Forvandl sorga til ein sau! Ver så snill! Eg betaler!",
   "tag": "MAGE"
  },
  {
@@ -1171,12 +1171,12 @@
  },
  {
   "en": "They kicked so beautifully. The landing, less so.",
-  "nn": "Dei sparka så vakkert. Landinga, mindre så.",
+  "nn": "Dei sparka så vakkert. Landinga var mindre vakker.",
   "tag": "MONK"
  },
  {
   "en": "Harmony shattered! Chi scattered! Tears unleashed!",
-  "nn": "Harmonien knust! Chien spreidd! Tårene sleppte laus!",
+  "nn": "Harmonien knust! Chien spreidd! Tårene renn fritt!",
   "tag": "MONK"
  },
  {
@@ -1241,7 +1241,7 @@
  },
  {
   "en": "Justice was served. Unfortunately, to them.",
-  "nn": "Rettferda vart servert. Diverre til dei.",
+  "nn": "Rettferda vart servert. Diverre var det dei som fekk ho.",
   "tag": "PALADIN"
  },
  {
@@ -1321,7 +1321,7 @@
  },
  {
   "en": "They snuck up on everything except their own demise!",
-  "nn": "Dei sneik seg innpå alt unntatt sin eigen undergang!",
+  "nn": "Dei sneik seg innpå alt unnateke sin eigen undergang!",
   "tag": "ROGUE"
  },
  {
@@ -1346,7 +1346,7 @@
  },
  {
   "en": "Even their pickpocketed coins are crying.",
-  "nn": "Sjølv myntane dei lomma til seg grin.",
+  "nn": "Sjølv myntane dei stakk i lomma, grin.",
   "tag": "ROGUE"
  },
  {
@@ -1376,7 +1376,7 @@
  },
  {
   "en": "All those totems and not one marked Do Not Die!",
-  "nn": "Alle dei totemane, og ikkje eitt merkt Ikkje døy!",
+  "nn": "Alle dei totemane, og ikkje eitt merkt «Ikkje døy»!",
   "tag": "SHAMAN"
  },
  {
@@ -1391,7 +1391,7 @@
  },
  {
   "en": "The water spirit offers healing tears. All mine, actually.",
-  "nn": "Vassånda tilbyr lækjande tårer. Eigentleg er alle mine.",
+  "nn": "Vassånda tilbyr lækjande tårer. Eigentleg er dei alle mine.",
   "tag": "SHAMAN"
  },
  {
@@ -1416,7 +1416,7 @@
  },
  {
   "en": "All those dark pacts, and fate still came to collect!",
-  "nn": "Alle dei mørke pakta, og lagnaden kom likevel for å krevje inn!",
+  "nn": "Alle dei mørke paktene, og lagnaden kom likevel for å krevje inn!",
   "tag": "WARLOCK"
  },
  {
@@ -1476,12 +1476,12 @@
  },
  {
   "en": "A warrior's final stand! A warrior's final faceplant!",
-  "nn": "Krigarens siste stand! Krigarens siste magaplask!",
+  "nn": "Krigaren sin siste stand! Krigaren sitt siste magaplask!",
   "tag": "WARRIOR"
  },
  {
   "en": "They feared nothing. Maybe they should have feared a little.",
-  "nn": "Dei frykta ingenting. Kanskje dei burde frykta litt.",
+  "nn": "Dei frykta ingenting. Kanskje dei burde ha frykta litt.",
   "tag": "WARRIOR"
  },
  {
@@ -1526,7 +1526,7 @@
  },
  {
   "en": "The Ebon Blade lowers its banners! I lower my veil!",
-  "nn": "Den ibenholtsvarte klinga senkar banera! Eg senkar sløret!",
+  "nn": "Ebonklinga senkar banera sine! Eg senkar sløret mitt!",
   "tag": "DEATHKNIGHT"
  },
  {
@@ -1606,7 +1606,7 @@
  },
  {
   "en": "Their spectral sight saw everything except this coming!",
-  "nn": "Det spektrale synet deira såg alt unntatt dette!",
+  "nn": "Det spektrale synet deira såg alt unnateke dette!",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1636,7 +1636,7 @@
  },
  {
   "en": "Those horns! That cape of wings! Now lying in the dust! Sob!",
-  "nn": "Dei horna! Den vengekappa! No liggjande i støvet! Hulk!",
+  "nn": "Dei horna! Den vengekappa! No ligg dei i støvet! Hulk!",
   "tag": "DEMONHUNTER"
  },
  {
@@ -1776,7 +1776,7 @@
  },
  {
   "en": "Starfall rained down beautifully, then so did their health!",
-  "nn": "Stjernefallet regna så vakkert, og så gjorde livet deira det òg!",
+  "nn": "Stjernefallet regna så vakkert, og så rann livet deira ut!",
   "tag": "DRUID"
  },
  {
@@ -1846,7 +1846,7 @@
  },
  {
   "en": "Their visage form was flawless. Their dodge, less so!",
-  "nn": "Andletsforma deira var feilfri. Unnamanøveren, mindre så!",
+  "nn": "Andletsforma deira var feilfri. Unnamanøveren var det ikkje!",
   "tag": "EVOKER"
  },
  {
@@ -1861,7 +1861,7 @@
  },
  {
   "en": "Time Dilation, please! Slow this tragedy down!",
-  "nn": "Tidsutviding, ver så snill! Sakk ned denne tragedien!",
+  "nn": "Tidsutviding, ver så snill! Få denne tragedien til å gå seinare!",
   "tag": "EVOKER"
  },
  {
@@ -1886,7 +1886,7 @@
  },
  {
   "en": "A spark of dragonfire, extinguished! I need a fainting couch!",
-  "nn": "Ein gnist av drakeeld, sløkt! Eg treng ein besvimingssofa!",
+  "nn": "Ein gnist av drakeeld, sløkt! Eg treng ein sjeselong å svime av på!",
   "tag": "EVOKER"
  },
  {
@@ -1896,7 +1896,7 @@
  },
  {
   "en": "They breathed fire on everything except their own bad luck!",
-  "nn": "Dei pusta eld på alt unntatt si eiga uflaks!",
+  "nn": "Dei pusta eld på alt unnateke si eiga uflaks!",
   "tag": "EVOKER"
  },
  {
@@ -1961,7 +1961,7 @@
  },
  {
   "en": "They kept their distance from everything except doom!",
-  "nn": "Dei heldt avstand til alt unntatt undergangen!",
+  "nn": "Dei heldt avstand til alt unnateke undergangen!",
   "tag": "HUNTER"
  },
  {
@@ -1976,7 +1976,7 @@
  },
  {
   "en": "They were a beast master. The beast had other plans!",
-  "nn": "Dei var dyremeister. Dyret hadde andre planar!",
+  "nn": "Dei var meister over dyra. Dyret hadde andre planar!",
   "tag": "HUNTER"
  },
  {
@@ -2021,7 +2021,7 @@
  },
  {
   "en": "The spellbook falls open to a page titled Oops!",
-  "nn": "Trolldomsboka fell opp på ei side med tittelen Ops!",
+  "nn": "Trolldomsboka fell opp på ei side med tittelen «Oi»!",
   "tag": "MAGE"
  },
  {
@@ -2031,7 +2031,7 @@
  },
  {
   "en": "They studied for years and the floor taught them in seconds!",
-  "nn": "Dei studerte i årevis, og golvet lærte dei på sekund!",
+  "nn": "Dei studerte i årevis, og golvet lærte dei det på nokre sekund!",
   "tag": "MAGE"
  },
  {
@@ -2191,7 +2191,7 @@
  },
  {
   "en": "Transcendence, darling! Transcend back to life!",
-  "nn": "Transcendens, kjære! Transcender tilbake til livet!",
+  "nn": "Transcendens, kjære! Stig over til livet att!",
   "tag": "MONK"
  },
  {
@@ -2316,12 +2316,12 @@
  },
  {
   "en": "Fade, darling! You were supposed to FADE, not fall!",
-  "nn": "Kvervle bort, kjære! Du skulle FORSVINNE, ikkje falle!",
+  "nn": "Blekn bort, kjære! Du skulle FORSVINNE, ikkje falle!",
   "tag": "PRIEST"
  },
  {
   "en": "They renewed everyone's hope but their own! Tragic!",
-  "nn": "Dei fornya håpet til alle unntatt sitt eige! Tragisk!",
+  "nn": "Dei fornya håpet til alle unnateke sitt eige! Tragisk!",
   "tag": "PRIEST"
  },
  {
@@ -2356,7 +2356,7 @@
  },
  {
   "en": "They mended every wound except the one that mattered!",
-  "nn": "Dei lækte kvart sår unntatt det som betydde noko!",
+  "nn": "Dei lækte kvart sår unnateke det som verkeleg galdt!",
   "tag": "PRIEST"
  },
  {
@@ -2386,7 +2386,7 @@
  },
  {
   "en": "They resurrected so many! Now someone return the favour!",
-  "nn": "Dei har vekt opp så mange! No må nokon gjengjelde tenesta!",
+  "nn": "Dei har vekt opp så mange! No må nokon gjere gjengjeld!",
   "tag": "PRIEST"
  },
  {
@@ -2426,7 +2426,7 @@
  },
  {
   "en": "They backstabbed everything, then fate frontstabbed them!",
-  "nn": "Dei stakk alt i ryggen, så stakk lagnaden dei i fronten!",
+  "nn": "Dei stakk alt i ryggen, så stakk lagnaden dei framanfrå!",
   "tag": "ROGUE"
  },
  {
@@ -2461,7 +2461,7 @@
  },
  {
   "en": "A master of stealth, now a master of ghost-walking!",
-  "nn": "Ein meister i snikande, no ein meister i spøkjelsesgange!",
+  "nn": "Ein meister i å snike, no ein meister i spøkjelsesgang!",
   "tag": "ROGUE"
  },
  {
@@ -2471,7 +2471,7 @@
  },
  {
   "en": "The shadows have lost their favourite resident!",
-  "nn": "Skuggane har mista favorittbebuaren sin!",
+  "nn": "Skuggane har mista favorittbuaren sin!",
   "tag": "ROGUE"
  },
  {
@@ -2526,7 +2526,7 @@
  },
  {
   "en": "The chain heal skipped them! Every bounce! The betrayal!",
-  "nn": "Kjedelækjinga hoppa over dei! Kvart sprett! For eit svik!",
+  "nn": "Kjedelækjinga hoppa over dei! Kvart einaste hopp! For eit svik!",
   "tag": "SHAMAN"
  },
  {
@@ -2586,7 +2586,7 @@
  },
  {
   "en": "The Earthen Ring will hold a candlelit drum circle!",
-  "nn": "Jordringen skal halde ein trommering med ljos!",
+  "nn": "Jordringen skal halde ein trommesirkel med levande ljos!",
   "tag": "SHAMAN"
  },
  {
@@ -2621,7 +2621,7 @@
  },
  {
   "en": "Their summoning circle sits empty and forlorn!",
-  "nn": "Påkallingsringen deira står tom og forlaten!",
+  "nn": "Påkallingsringen deira står tom og øyde!",
   "tag": "WARLOCK"
  },
  {
@@ -2666,7 +2666,7 @@
  },
  {
   "en": "A pact with darkness, and the darkness read the fine print!",
-  "nn": "Ein pakt med mørkret, og mørkret las det med liten skrift!",
+  "nn": "Ein pakt med mørkret, og mørkret hadde lese det med småskrift!",
   "tag": "WARLOCK"
  },
  {

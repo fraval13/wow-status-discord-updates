@@ -1015,7 +1015,7 @@ local function rowReactions(row,e)
             end)
             row.reactions[i]=button
         end
-        local text=P.reactionText(e,reaction)
+        local text=P.reactionLabel(e,reaction)
         button.entry,button.reaction=e,reaction
         button:SetText(text)
         local label=button.GetFontString and button:GetFontString()
@@ -1270,6 +1270,16 @@ function J.reaction(text,sender)
         local pattern="^"..line:gsub("[%^%$%(%)%%%.%[%]%*%+%-%?]","%%%0"):gsub("{zone}","(.+)").."$"
         local found=text:match(pattern)
         if found then zone,kinds=found,{zone=true} end
+    end
+    -- A line in one of the reaction voices (any personality, either language).
+    if not kinds and WoWStatusPersonalities and WoWStatusPersonalities.matchReaction then
+        local key,value=WoWStatusPersonalities.matchReaction(text)
+        if key=="gz" or key=="level" then kinds={level=true}
+        elseif key=="f" or key=="gitgood" then kinds={death=true}
+        elseif key=="welcome" then kinds={introduction=true}
+        elseif key=="enjoy" then zone=value
+        elseif key=="congrats" then kinds=POSITIVE
+        elseif key and key:sub(1,9)=="congrats_" then kinds={[key:sub(10)]=true} end
     end
     if zone then kinds={zone=true} end
     if not kinds then return false end

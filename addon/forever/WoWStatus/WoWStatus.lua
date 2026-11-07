@@ -746,6 +746,16 @@ SlashCmdList.WOWSTATUS = function(message)
         else
             say(T("Caption personalities:") .. " " .. P.names() .. ". " .. T("Use /wstatus personality <name>."))
         end
+    elseif command == "voice" then
+        -- Reaction voice: /wstatus voice <name> (either language), or the list.
+        local P = WoWStatusPersonalities
+        local id = (rest or "") ~= "" and P.findReaction(rest)
+        if id then
+            P.setReaction(id)
+            say(T("Reaction voice:") .. " " .. P.name(id) .. ".")
+        else
+            say(T("Reaction voices:") .. " " .. P.reactionNames() .. ". " .. T("Use /wstatus voice <name>."))
+        end
     elseif command == "debug" then
         local value = rest:lower()
         if value == "on" or value == "off" then
