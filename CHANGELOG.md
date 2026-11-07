@@ -13,6 +13,16 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - Armor headings name the piece: RARE RING EQUIPPED!, EPIC TRINKET EQUIPPED! (SJELDAN RING PÅ! in Nynorsk)
+- Click a character card for their profile: stats, level-ups, recent activity and armor firsts
+- Invite a friend to one of your groups from their profile; they get a Join / Decline popup
+- Records: This week shows the week's highlights per group, with earlier weeks one click away
+- Records: Fun records, only for remarkable feats like the most dangerous zone or the best evening
+- Friends confirm live updates; one that never arrives is sent again, and the card says not reached
+- Quiet mode (off by default): hold notifications in battlegrounds, raids or dungeons
+- Pick a sound for level-ups, deaths, armor, new zones and the rest, or none
+- The minimap button's tooltip shows who is online and a friend's latest news
+- Honorable kills, dungeons cleared and mounts on character cards and profiles
+- Armor tooltips show the full item with its suffix and enchant
 
 ## 1.24.0
 
