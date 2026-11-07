@@ -492,7 +492,7 @@ W.add({
     ["Melee critical strike"] = "Kritisk nærkampstreff", ["Spell critical strike"] = "Kritisk trylletreff",
     ["Dodge"] = "Unnviking", ["Parry"] = "Parering", ["Block"] = "Blokkering",
     ["Haste"] = "Hast", ["Mastery"] = "Meistring", ["Versatility"] = "Allsidigheit",
-    ["Head"] = "Hovud", ["Neck"] = "Hals", ["Shoulders"] = "Skuldrer", ["Back"] = "Rygg",
+    ["Head"] = "Hovud", ["Neck"] = "Hals", ["Shoulders"] = "Skuldrer", ["Cloak"] = "Kappe",
     ["Chest"] = "Bryst", ["Shirt"] = "Skjorte", ["Tabard"] = "Våpenkjortel", ["Wrists"] = "Handledd",
     ["Hands"] = "Hender", ["Waist"] = "Liv", ["Legs"] = "Bein", ["Feet"] = "Føter",
     ["Finger 1"] = "Finger 1", ["Finger 2"] = "Finger 2", ["Trinket 1"] = "Prydgjenstand 1",
