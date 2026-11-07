@@ -192,6 +192,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     runtime.execute((root / 'WhatsNew.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Firsts.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Recaps.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'Equipment.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Roster.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Profile.lua').read_text(encoding='utf-8'))
     runtime.execute((root / 'Minimap.lua').read_text(encoding='utf-8'))

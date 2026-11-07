@@ -53,6 +53,21 @@ a death once when the player releases their spirit.
    `/wstatus share <name>`. It whispers the download link, at most once per person
    per hour, and is never sent automatically.
 
+Click a character card, then scroll below the recent activity and gear to see
+their equipped items in a character-sheet layout. Hover a slot for the item's
+full tooltip, including its enchant and random suffix. Available combat stats
+appear underneath. The timestamp marks the last reported snapshot; stats can
+include buffs. A visible unit can supply a live 3D model; offline characters use
+their race portrait beside their saved equipment.
+
+Friends fetch equipment when you open a profile, at most once a minute per
+character. The owner needs the updated addon and must be online on one of their
+characters to provide a snapshot. Previously received gear remains available
+offline. Characters must log in with this version before their own gear can be
+saved. **Character details → Equipment and combat stats** controls this sharing;
+hidden characters and accounts with character-list sharing off do not send gear.
+See [equipment profiles and live checks](docs/EQUIPMENT_PROFILES.md).
+
 ## Language
 
 WoW Status is in English by default. Nynorsk is optional: choose it under
@@ -121,7 +136,9 @@ alarms in live play. See [invalid log data](docs/LOG_GUARD.md).
 
 The scrollable log uses the same icons and colours as popups, with **All**, **Mine**
 and **Friends** filters. Individual quest turn-ins are omitted; only hundred-quest
-achievements appear. Detailed personal equipment and profession activity stays private; only eligible announcements are exchanged with group members.
+achievements appear. Detailed profession and equipment-change activity stays
+private. Eligible announcements and requested equipment snapshots are exchanged
+with group members according to the character's sharing settings.
 
 At login, the addon greets available group members and both sides automatically
 exchange missing announcement IDs. An already-online friend also recovers saved

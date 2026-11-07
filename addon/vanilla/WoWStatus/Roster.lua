@@ -41,6 +41,8 @@ local syncedAt, answered = nil, {}
 -- Members asked for their list this session (at first contact), and /who lookups.
 local requested, whoAsked = {}, {}
 local XP_INTERVAL = 300
+local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
+local equipmentSendState = {}
 
 -- One key per character for the list. WoW Forever spreads characters over many
 -- internal realms ("CAMWOWEU4Realm3PvE") while chat and rosters name them without
@@ -180,6 +182,7 @@ R.identify = identify
 -- Public facts about the logged-in character, saved for the list.
 function R.observe(character)
     if not character then return end
+    if WoWStatusEquipment then WoWStatusEquipment.capture(character) end
     local _, race = S.call(UnitRace, "player")
     local _, class = S.call(UnitClass, "player")
     local level = WoWStatusAdapter.level()
@@ -691,6 +694,136 @@ function R.setHidden(character, hidden)
     R.changed()
 end
 
+-- Equipment is requested only when opening a profile. An online character on
+-- the owner's account can answer for a saved alt, with that alt's own privacy.
+local function ownEquipmentCharacter(name)
+    local wanted = key(name)
+    for _, character in pairs(db.characters or {}) do
+        if character.identity and character.identity.client == WoWStatusAdapter.client_id
+            and key(WoWStatusPopups.characterName(character)) == wanted then return character end
+    end
+end
+function R.equipment(name)
+    if not db then return nil end
+    if WoWStatusGuide and WoWStatusGuide.touring() then return nil end
+    local own = ownEquipmentCharacter(name)
+    if own then
+        if not (own.settings and own.settings.fields and own.settings.fields.gear) then return nil, true end
+        return own.equipment_profile
+    end
+    for _, player in pairs(state().players) do
+        local character = player.characters[key(name) or ""]
+        if character then return character.equipment_profile, character.equipment_hidden end
+    end
+end
+local function expireEquipment(map, age)
+    local count = 0
+    for id, item in pairs(map) do
+        local at = type(item) == "table" and item.at or item
+        if time() - at >= age then map[id] = nil else count = count + 1 end
+    end
+    return count
+end
+function R.requestEquipment(name)
+    if not db or not current then return false end
+    if WoWStatusGuide and WoWStatusGuide.touring() then return false end
+    local own = ownEquipmentCharacter(name)
+    if own then
+        if own == current then WoWStatusEquipment.capture(own) end
+        return true
+    end
+    if expireEquipment(equipmentPending, 180) >= 8 or #outgoing >= 256 then return false end
+    expireEquipment(equipmentAsked, 60)
+    local wanted = key(name)
+    for pid, player in pairs(state().players) do
+        local character = player.characters[wanted or ""]
+        local requestKey = pid .. ":" .. (wanted or "")
+        if character and not equipmentAsked[requestKey] then
+            for group in pairs(type(player.groups) == "table" and player.groups or {}) do
+                if WoWStatusGroups.contains(current, group) then
+                    for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                        if player.characters[key(peer) or ""] then
+                            local token = string.format("%08x", math.random(0, 1073741823))
+                            -- A late reply to an earlier refresh must not replace
+                            -- the newer snapshot or undo a privacy response.
+                            for old, request in pairs(equipmentPending) do
+                                if request.pid == pid and request.name == wanted then equipmentPending[old] = nil end
+                            end
+                            equipmentPending[token] = {pid=pid, peer=key(peer), group=group, name=wanted, at=time(), parts={}, count=0}
+                            equipmentAsked[requestKey] = time()
+                            local target = WoWStatusAdapter.full_names and (peer:match("^[^-]+") or peer) or peer
+                            table.insert(outgoing, {target=target, equipmentGroup=group, equipmentAt=time(), text=table.concat({"D", group, state().id,
+                                character.name:gsub(" ", "_"), token}, " ")})
+                            return true
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return false
+end
+function R.equipmentWaiting(name)
+    expireEquipment(equipmentPending, 180)
+    for _, request in pairs(equipmentPending) do if request.name == key(name) then return true end end
+    return false
+end
+local function equipmentMessage(words, sender)
+    local op, group, pid, name, token = words[1], words[2], words[3], words[4], words[5]
+    if not name or #name > 64 or name:find(S.CONTROL_OR_PIPE) or not name:match("^[^%-]+%-[^%-]+$")
+        or not token or #token ~= 8 or not token:match("^[0-9a-f]+$") then return false end
+    name = name:gsub("_", " ")
+    local player = state().players[pid]
+    if op == "D" and #words == 5 then
+        if not state().share then return false end
+        local character = ownEquipmentCharacter(name)
+        if not character then return false end
+        if expireEquipment(equipmentAnswered, 60) >= 128 then return false end
+        local answerKey = (key(sender) or "") .. ":" .. (key(name) or "")
+        if equipmentAnswered[answerKey] then return false end
+        if character == current then WoWStatusEquipment.capture(character) end
+        local allowed = not character.hide_from_list and character.settings and character.settings.fields and character.settings.fields.gear
+        local parts = WoWStatusEquipment.parts(allowed and character.equipment_profile or nil, not allowed)
+        if #outgoing + #parts > 256 then return false end
+        local messages = {}
+        for _, part in ipairs(parts) do
+            local text = table.concat({"E", group, state().id, name:gsub(" ", "_"), token, part[1], part[2]}, " ")
+            if #text > 250 then return false end
+            local target = WoWStatusAdapter.full_names and (sender:match("^[^-]+") or sender) or sender
+            messages[#messages + 1] = {target=target, text=text, equipmentGroup=group, equipmentAt=time(),
+                equipmentOwner=(part[1] ~= "x" and part[1] ~= "n") and character or nil}
+        end
+        equipmentAnswered[answerKey] = time()
+        for _, message in ipairs(messages) do table.insert(outgoing, message) end
+        return true
+    end
+    if op ~= "E" or #words ~= 7 then return false end
+    if not player or not player.characters[key(sender) or ""] then return false end
+    expireEquipment(equipmentPending, 180)
+    local request = equipmentPending[token]
+    local character = player.characters[key(name) or ""]
+    if not request or not character or request.pid ~= pid or request.group ~= group
+        or request.peer ~= key(sender) or request.name ~= key(name) then return false end
+    local part, text = words[6], words[7]
+    local value = WoWStatusEquipment.part(part, text)
+    if value == nil or value == false then return false end
+    if part == "x" or part == "n" then
+        character.equipment_profile, character.equipment_hidden = nil, part == "x" or nil
+        equipmentPending[token] = nil
+    else
+        if request.parts[part] then return true end
+        request.parts[part], request.count = value, request.count + 1
+        if request.count ~= 23 then return true end
+        local snapshot = {at=request.parts.t, items={}, stats={}}
+        for slot = 0, 19 do snapshot.items[slot] = request.parts[tostring(slot)] end
+        for _, block in ipairs({"a", "b"}) do for field, n in pairs(request.parts[block]) do snapshot.stats[field] = n end end
+        character.equipment_profile, character.equipment_hidden = snapshot, nil
+        equipmentPending[token] = nil
+    end
+    if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
+    return true
+end
+
 function R.tick()
     if not db or not current then return end
     if page and page.sync and page:IsShown() then updateSyncButton() end
@@ -724,13 +857,23 @@ function R.tick()
         end
     end
     if #outgoing == 0 or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
+    if outgoing[1].notBefore and now < outgoing[1].notBefore then return end
     local item = table.remove(outgoing, 1)
+    if item.equipmentAt and time() - item.equipmentAt >= 180 then return end
+    if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
+    -- A privacy change can happen while a snapshot is queued for transmission.
+    local owner = item.equipmentOwner
+    if owner and (not state().share or owner.hide_from_list or not owner.settings.fields.gear) then return end
     local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if send then
         lastSend = now
         S.debug("send " .. redacted(item.text) .. " to " .. tostring(item.target))
         WoWStatusPopups.whispered(item.target)
-        pcall(send, PREFIX, item.text, "WHISPER", item.target)
+        if item.equipmentGroup then
+            local result = WoWStatusPopups.sendResult(pcall(send, PREFIX, item.text, "WHISPER", item.target))
+            local wait = WoWStatusPopups.retryWait(result, item, equipmentSendState, now)
+            if wait then item.notBefore = now + wait; table.insert(outgoing, 1, item) end
+        else pcall(send, PREFIX, item.text, "WHISPER", item.target) end
     end
 end
 
@@ -767,7 +910,13 @@ receive = function(message, sender, distribution)
     end
     if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false, "bad player ID" end
     local players = state().players
-    if op == "X" and #words == 3 then players[pid] = nil; R.render(); return true end
+    if op == "D" or op == "E" then return equipmentMessage(words, sender) end
+    if op == "X" and #words == 3 then
+        players[pid] = nil
+        R.render()
+        if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
+        return true
+    end
     -- "R": a member asks for this account's list again (their Sync button).
     if op == "R" and #words == 3 then
         local k, now = key(sender), time()
@@ -936,6 +1085,10 @@ receive = function(message, sender, distribution)
         if count >= MAX_CHARACTERS and oldest then player.characters[oldest] = nil end
     end
     character.at = time()
+    local previous = player.characters[characterKey]
+    if previous then
+        character.equipment_profile, character.equipment_hidden = previous.equipment_profile, previous.equipment_hidden
+    end
     player.characters[characterKey] = character
     -- A full name replaces the first-name-only entry an older client announced.
     local first = character.name:match("^([^ %-]+) [^%-]+%-")
@@ -1426,6 +1579,8 @@ function R.init(database, character, reporter)
     -- The list sent at login already carries this XP.
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
     requested, whoAsked = {}, {}
+    equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
+    equipmentSendState = {}
     xpSent = character and character.roster_info and character.roster_info.xp
     statsSent = character and character.roster_info and R.statsLine(character.roster_info)
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
