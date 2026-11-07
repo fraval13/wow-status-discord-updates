@@ -49,7 +49,7 @@
  },
  {
   "en": "Go buy your level {level} spells, then.",
-  "nn": "Gå og kjøp trolla for nivå {level}, då."
+  "nn": "Gå og kjøp trolldomsorda for nivå {level}, då."
  },
  {
   "en": "Mind the trainer bill at {level}.",
@@ -81,7 +81,7 @@
  },
  {
   "en": "Proud. Don't spread it around. Congrats on {level}.",
-  "nn": "Stolt. Ikkje spreie det. Gratulerer med {level}."
+  "nn": "Stolt. Ikkje spreid det. Gratulerer med {level}."
  },
  {
   "en": "{level}, finally. My tea went cold.",
@@ -97,7 +97,7 @@
  },
  {
   "en": "About time, kid. Level {level}.",
-  "nn": "På tide, gut. Nivå {level}."
+  "nn": "På tide, valp. Nivå {level}."
  },
  {
   "en": "Mind your mana bar at {level}.",
@@ -193,7 +193,7 @@
  },
  {
   "en": "Keep your head down at {level}, kid.",
-  "nn": "Hald hovudet lågt på {level}, gut."
+  "nn": "Hald hovudet lågt på {level}, valp."
  },
  {
   "en": "The world's slightly safer with you at {level}.",
@@ -245,7 +245,7 @@
  },
  {
   "en": "Old bones approve of {level}.",
-  "nn": "Gamle knokar godkjenner {level}."
+  "nn": "Gamle knoklar godkjenner {level}."
  },
  {
   "en": "Rest, eat, then grind past {level}.",
@@ -345,7 +345,7 @@
  },
  {
   "en": "Doing alright, kid. Level {level}.",
-  "nn": "Du klarer deg bra, gut. Nivå {level}."
+  "nn": "Du klarar deg bra, valp. Nivå {level}."
  },
  {
   "en": "Not every day I say well done. Well done on {level}.",
@@ -361,7 +361,7 @@
  },
  {
   "en": "Bags full at {level}? Thought so.",
-  "nn": "Fulle bagar på {level}? Tenkte meg det."
+  "nn": "Fulle vesker på {level}? Tenkte meg det."
  },
  {
   "en": "Don't go soft now you're {level}.",
@@ -369,7 +369,7 @@
  },
  {
   "en": "Respectable effort, kid. {level}.",
-  "nn": "Respektabel innsats, gut. {level}."
+  "nn": "Respektabel innsats, valp. {level}."
  },
  {
   "en": "I nearly dozed off waiting for {level}.",
@@ -393,7 +393,7 @@
  },
  {
   "en": "I'd clap for {level}, but my hands are cold.",
-  "nn": "Eg skulle klappa for {level}, men hendene mine er kalde."
+  "nn": "Eg skulle ha klappa for {level}, men hendene mine er kalde."
  },
  {
   "en": "Let's not make a song of {level}.",
@@ -457,7 +457,7 @@
  },
  {
   "en": "I'll raise my mug halfway for {level}.",
-  "nn": "Eg lyftar kruset halvvegs for {level}."
+  "nn": "Eg løftar kruset halvvegs for {level}."
  },
  {
   "en": "You reached {level} without asking me. Typical.",
@@ -473,7 +473,7 @@
  },
  {
   "en": "You don't smell like a newbie at {level}. Wet dog, mostly.",
-  "nn": "Du luktar ikkje nybegynnar på {level}. Mest våt hund."
+  "nn": "Du luktar ikkje nybyrjar på {level}. Mest våt hund."
  },
  {
   "en": "Watch your step after {level}. It gets darker.",
@@ -501,11 +501,11 @@
  },
  {
   "en": "One eyebrow raised in approval of {level}.",
-  "nn": "Eitt augebryn lyfta i godkjenning av {level}."
+  "nn": "Eitt augebryn løfta i godkjenning av {level}."
  },
  {
   "en": "Didn't think you'd reach {level} today.",
-  "nn": "Trudde ikkje du ville nå {level} i dag."
+  "nn": "Eg trudde ikkje du ville nå {level} i dag."
  },
  {
   "en": "You surprised me with {level}. Don't do it often.",
@@ -557,7 +557,7 @@
  },
  {
   "en": "Stubbornness pays. {level}.",
-  "nn": "Stahei lønner seg. {level}."
+  "nn": "Staheit løner seg. {level}."
  },
  {
   "en": "Been there. Twice. Level {level}.",
@@ -589,7 +589,7 @@
  },
  {
   "en": "Ugh, now I have to be nice. {level}.",
-  "nn": "Uff, no må eg vere hyggeleg. {level}."
+  "nn": "Uff, no må eg vere hyggjeleg. {level}."
  },
  {
   "en": "Consider yourself complimented on {level}.",
@@ -613,15 +613,15 @@
  },
  {
   "en": "I was going to complain about {level}. I forgot.",
-  "nn": "Eg skulle klage over {level}. Eg gløymde det."
+  "nn": "Eg hadde tenkt å klage over {level}. Eg gløymde det."
  },
  {
   "en": "You'll need a bigger bag at {level}.",
-  "nn": "Du treng ein større bag på {level}."
+  "nn": "Du treng ei større veske på {level}."
  },
  {
   "en": "Bigger bag, bigger problems. That's {level} for you.",
-  "nn": "Større bag, større problem. Slik er {level}."
+  "nn": "Større veske, større problem. Slik er {level}."
  },
  {
   "en": "Took the scenic route to {level}, I see.",
@@ -693,7 +693,7 @@
  },
  {
   "en": "Hard work pays. Who knew. {level}.",
-  "nn": "Hardt arbeid lønner seg. Kven skulle tru. {level}."
+  "nn": "Hardt arbeid løner seg. Kven skulle tru. {level}."
  },
  {
   "en": "The old guard tips its hat to {level}.",
@@ -709,7 +709,7 @@
  },
  {
   "en": "That's more like it. {level}.",
-  "nn": "Det er meir likt det. {level}."
+  "nn": "Det var betre. {level}."
  },
  {
   "en": "I knew you'd stick with it to {level}. Mostly.",
@@ -765,11 +765,11 @@
  },
  {
   "en": "My back hurts just thinking about {level}.",
-  "nn": "Ryggen min verkjer berre eg tenkjer på {level}."
+  "nn": "Ryggen min verkjer berre av å tenkje på {level}."
  },
  {
   "en": "Earned a sit-down at {level}. A short one.",
-  "nn": "Fortent ein kvil på {level}. Ein kort ein."
+  "nn": "Du har fortent ei kvil på {level}. Ei kort ei."
  },
  {
   "en": "Can't complain about {level}. Won't stop me.",
@@ -785,11 +785,11 @@
  },
  {
   "en": "I'd buy you a drink for {level}. Water.",
-  "nn": "Eg skulle spandert ein drink for {level}. Vatn."
+  "nn": "Eg skulle ha spandert ein drink på deg for {level}. Vatn."
  },
  {
   "en": "The murlocs fear you a bit more at {level}.",
-  "nn": "Murlockane fryktar deg litt meir på {level}."
+  "nn": "Murlocane fryktar deg litt meir på {level}."
  },
  {
   "en": "Fine. Better than fine. {level}.",
@@ -837,7 +837,7 @@
  },
  {
   "en": "I'll stop calling you rookie soon. {level} is close.",
-  "nn": "Eg sluttar snart å kalle deg nybegynnar. {level} er nær."
+  "nn": "Eg sluttar snart å kalle deg nybyrjar. {level} er nær."
  },
  {
   "en": "Tough road to {level}. You walked it.",
@@ -877,7 +877,7 @@
  },
  {
   "en": "Tell your mum about {level}. I'll tell nobody.",
-  "nn": "Sei det til mor di om {level}. Eg seier det ikkje til nokon."
+  "nn": "Fortel mor di om {level}. Eg seier det ikkje til nokon."
  },
  {
   "en": "I might tell a few people about {level}.",
@@ -917,7 +917,7 @@
  },
  {
   "en": "Not crying. It's dust. {level}.",
-  "nn": "Grin ikkje. Det er støv. {level}."
+  "nn": "Eg grin ikkje. Det er støv. {level}."
  },
  {
   "en": "Fine, I'm a bit proud of {level}.",
@@ -1013,7 +1013,7 @@
  },
  {
   "en": "Stubborn bones got you to {level}. Good.",
-  "nn": "Sta knokar fekk deg til {level}. Bra."
+  "nn": "Sta knoklar fekk deg til {level}. Bra."
  },
  {
   "en": "It's not a race to {level}. You'd lose. Kidding.",
@@ -1081,7 +1081,7 @@
  },
  {
   "en": "Well, well. {level}, eh?",
-  "nn": "Nei, nei. {level}, ja?"
+  "nn": "Jaså. {level}, ja?"
  },
  {
   "en": "You've earned {level} and a nap.",
@@ -1109,7 +1109,7 @@
  },
  {
   "en": "{level} at last. Keep going, kid.",
-  "nn": "{level} endeleg. Hald fram, gut."
+  "nn": "{level} endeleg. Hald fram, valp."
  },
  {
   "en": "Grand. {level}. Now hush.",
@@ -1157,7 +1157,7 @@
  },
  {
   "en": "Hmph. Congrats on {level}, kid.",
-  "nn": "Hm. Gratulerer med {level}, gut."
+  "nn": "Hm. Gratulerer med {level}, valp."
  },
  {
   "en": "Somewhere a trainer is counting your coins. You're {level}.",
@@ -1181,11 +1181,11 @@
  },
  {
   "en": "Ha. {level}. I was sure you'd quit at ten.",
-  "nn": "Ha. {level}. Eg var viss på at du ville gje opp på ti."
+  "nn": "Ha. {level}. Eg var viss på at du ville gje opp på nivå ti."
  },
  {
   "en": "Up you go to {level}. Mind your head.",
-  "nn": "Opp til {level} med deg. Pass hovudet."
+  "nn": "Opp til {level} med deg. Pass på hovudet."
  },
  {
   "en": "Honestly, {level} is a decent effort.",
@@ -1197,6 +1197,6 @@
  },
  {
   "en": "Quietly impressed by {level}. Very quietly.",
-  "nn": "Stilt imponert over {level}. Svært stilt."
+  "nn": "Stille imponert over {level}. Svært stille."
  }
 ]

@@ -1,0 +1,1202 @@
+[
+  {
+    "en": "New reputation! Good standing means good credit. Let’s use it.",
+    "nn": "Nytt omdøme! Godt rykte betyr god kreditt. Lat oss bruke han."
+  },
+  {
+    "en": "Congrats on the rep! Their quartermaster owes you discounts. Share them.",
+    "nn": "Gratulerer med omdømet! Kvartermeisteren deira skuldar deg rabattar. Del dei."
+  },
+  {
+    "en": "A new rank! Reputation is the only currency I can’t counterfeit.",
+    "nn": "Ein ny grad! Omdøme er den einaste valutaen eg ikkje kan forfalske."
+  },
+  {
+    "en": "Congrats! Now introduce me to their merchants. I’ll bring samples.",
+    "nn": "Gratulerer! No må du presentere meg for kremmarane deira. Eg tek med prøver."
+  },
+  {
+    "en": "New reputation! A good name is worth more than gold. Almost.",
+    "nn": "Nytt omdøme! Eit godt namn er verd meir enn gull. Nesten."
+  },
+  {
+    "en": "Congrats on the rep! Can I borrow your good name for a deal?",
+    "nn": "Gratulerer med omdømet! Kan eg låne det gode namnet ditt til ein handel?"
+  },
+  {
+    "en": "Higher standing! Their recipes are mine to resell now, right?",
+    "nn": "Høgare rang! Oppskriftene deira er mine å selje vidare no, ikkje sant?"
+  },
+  {
+    "en": "Congrats! You’re so well liked. Teach me how. I’ll pay. A bit.",
+    "nn": "Gratulerer! Du er så godt likt. Lær meg korleis. Eg betaler. Litt."
+  },
+  {
+    "en": "New reputation! Their tabard would look great in my shop window.",
+    "nn": "Nytt omdøme! Våpenkjolen deira hadde sett flott ut i vindauget mitt."
+  },
+  {
+    "en": "Congrats on the rank! All those turn-ins finally paid off. Literally.",
+    "nn": "Gratulerer med graden! Alle dei innleveringane lønte seg endeleg. Bokstavleg."
+  },
+  {
+    "en": "New rep! I tried that faction once. They banned my sales cart.",
+    "nn": "Nytt omdøme! Eg prøvde den fraksjonen ein gong. Dei forbaud salsvogna mi."
+  },
+  {
+    "en": "Congrats! Friends in high places are great for business.",
+    "nn": "Gratulerer! Vener på høge stader er bra for forretninga."
+  },
+  {
+    "en": "Reputation up! Your reference letter will open doors. Mine, mostly.",
+    "nn": "Omdømet stig! Tilrådingsbrevet ditt opnar dører. Mine, mest."
+  },
+  {
+    "en": "Congrats on the rep! Did they throw in a loyalty discount? I want it.",
+    "nn": "Gratulerer med omdømet! Fekk du lojalitetsrabatt? Eg vil ha han."
+  },
+  {
+    "en": "Rep up! Everyone likes you. That’s worth more than gold. Almost.",
+    "nn": "Betre omdøme! Alle likar deg. Det er verd meir enn gull. Nesten."
+  },
+  {
+    "en": "Well liked, you! Liked heroes get the best vendor prices. Share them.",
+    "nn": "Godt likt, du! Likte heltar får dei beste seljarprisane. Del dei."
+  },
+  {
+    "en": "Look who’s popular! Popularity is a currency. Spend it at my shop.",
+    "nn": "Sjå kven som er populær! Popularitet er ein valuta. Bruk han i butikken min."
+  },
+  {
+    "en": "Friends in high places! High places have deep pockets.",
+    "nn": "Vener på høge stader! Høge stader har djupe lommer."
+  },
+  {
+    "en": "Congrats, diplomat! Diplomacy and sales are the same skill. Teach me.",
+    "nn": "Gratulerer, diplomat! Diplomati og sal er same dugleiken. Lær meg."
+  },
+  {
+    "en": "They love you! Love is free. Their quartermaster isn’t.",
+    "nn": "Dei elskar deg! Kjærleik er gratis. Kvartermeisteren deira er ikkje det."
+  },
+  {
+    "en": "What a reputation! Reputations like that open vaults. Not mine, though.",
+    "nn": "For eit omdøme! Slike omdøme opnar kvelv. Ikkje mitt, rett nok."
+  },
+  {
+    "en": "Respected now! Respect is the only thing I can’t sell. Yet.",
+    "nn": "Respektert no! Respekt er det einaste eg ikkje kan selje. Enno."
+  },
+  {
+    "en": "New rank, partner! Let’s use your new connections. For good. And profit.",
+    "nn": "Ny grad, makker! Lat oss bruke dei nye kontaktane dine. Til godt. Og forteneste."
+  },
+  {
+    "en": "Congrats, ambassador! Ambassadors get gifts. I wrap gifts.",
+    "nn": "Gratulerer, ambassadør! Ambassadørar får gåver. Eg pakkar inn gåver."
+  },
+  {
+    "en": "Admired at last! Admiration is the best currency. After gold.",
+    "nn": "Beundra til slutt! Beundring er den beste valutaen. Etter gull."
+  },
+  {
+    "en": "Fame and favour! Use them wisely. Use them at my shop.",
+    "nn": "Ry og gunst! Bruk dei klokt. Bruk dei i butikken min."
+  },
+  {
+    "en": "A good name! Good names are worth more than gold. I’d still like gold.",
+    "nn": "Eit godt namn! Gode namn er verd meir enn gull. Eg vil likevel gjerne ha gull."
+  },
+  {
+    "en": "Reputation rising! Rising reputations need fancy tabards. I have some.",
+    "nn": "Omdømet stig! Stigande omdøme treng fine våpenkjolar. Eg har nokre."
+  },
+  {
+    "en": "Everyone’s favourite! Including mine. Especially mine.",
+    "nn": "Favoritten til alle! Min òg. Særleg min."
+  },
+  {
+    "en": "Trusted at last! Trust is the foundation of every good deal.",
+    "nn": "Tiltrudd til slutt! Tillit er grunnmuren i kvar god handel."
+  },
+  {
+    "en": "Honoured and adored! The adored get the best seats at my tavern.",
+    "nn": "Æra og elska! Dei elska får dei beste plassane på kroa mi."
+  },
+  {
+    "en": "Well-connected now! Connections are my favourite merchandise.",
+    "nn": "Godt kopla no! Kontaktar er favorittvarene mine."
+  },
+  {
+    "en": "Look at that standing! Standing ovation, two silver. Kidding. One.",
+    "nn": "Sjå på den rangen! Ståande applaus, to sølv. Tullar. Eitt."
+  },
+  {
+    "en": "Big name now! Big names should have big business cards.",
+    "nn": "Stort namn no! Store namn bør ha store visittkort."
+  },
+  {
+    "en": "Congrats, local hero! Local heroes get local discounts. Tiny ones.",
+    "nn": "Gratulerer, lokal helt! Lokale heltar får lokale rabattar. Bittesmå."
+  },
+  {
+    "en": "Popular you! Popularity makes great marketing. Can I use your face?",
+    "nn": "Du populære! Popularitet er god marknadsføring. Kan eg bruke andletet ditt?"
+  },
+  {
+    "en": "Charm pays off! I’ve been trying for years.",
+    "nn": "Sjarm løner seg! Eg har prøvd i årevis."
+  },
+  {
+    "en": "Exalted vibes! The air smells of reputation. And recipes.",
+    "nn": "Opphøgde vibbar! Lufta luktar omdøme. Og oppskrifter."
+  },
+  {
+    "en": "So well regarded! I regard you highly too. And your wallet.",
+    "nn": "Så høgt akta! Eg aktar deg høgt òg. Og lommeboka di."
+  },
+  {
+    "en": "Ooh, new standing! Standing out is good for business.",
+    "nn": "Å, ny rang! Å skilje seg ut er bra for forretninga."
+  },
+  {
+    "en": "VIP status! Very Important Purchaser. I knew it.",
+    "nn": "VIP-status! Veldig Viktig Kjøpar. Eg visste det."
+  },
+  {
+    "en": "Respect earned! Respect can’t be bought. Believe me, I asked.",
+    "nn": "Respekt fortent! Respekt kan ikkje kjøpast. Tru meg, eg har spurt."
+  },
+  {
+    "en": "Congrats, crowd favourite! Crowds buy souvenirs.",
+    "nn": "Gratulerer, publikumsfavoritt! Folkemengder kjøper suvenirar."
+  },
+  {
+    "en": "Beloved by all! I’m adding a little heart next to your name.",
+    "nn": "Elska av alle! Eg set eit lite hjarte ved namnet ditt."
+  },
+  {
+    "en": "Your name rings bells now! Bells cost a silver each.",
+    "nn": "Namnet ditt ringjer bjøller no! Bjøller kostar eitt sølv stykket."
+  },
+  {
+    "en": "Esteemed friend! Esteem looks good on you. So would my scarves.",
+    "nn": "Høgt akta venn! Aktinga kler deg. Det hadde skjerfa mine òg gjort."
+  },
+  {
+    "en": "Liked and trusted! The two best things a merchant can be. Teach me.",
+    "nn": "Likt og tiltrudd! Dei to beste tinga ein kremmar kan vere. Lær meg."
+  },
+  {
+    "en": "Prestige up! Prestige is great for raising prices. Raise yours.",
+    "nn": "Meir prestisje! Prestisje er bra for å setje opp prisane. Set opp dine."
+  },
+  {
+    "en": "That faction must adore you. Factions that adore you sell cheap.",
+    "nn": "Den fraksjonen må forgude deg. Fraksjonar som forgudar deg, sel billeg."
+  },
+  {
+    "en": "I’ve always said you were likable. Now it’s official.",
+    "nn": "Eg har alltid sagt du var likandes. No er det offisielt."
+  },
+  {
+    "en": "Your new rank comes with perks. Perks are my favourite word.",
+    "nn": "Den nye graden din kjem med fordelar. Fordelar er favorittordet mitt."
+  },
+  {
+    "en": "A friend of the faction is a friend of mine. Especially with discounts.",
+    "nn": "Ein venn av fraksjonen er ein venn av meg. Særleg med rabattar."
+  },
+  {
+    "en": "You’ve earned their trust. Now earn me a meeting with their merchants.",
+    "nn": "Du har vunne tilliten deira. Skaff meg no eit møte med kremmarane deira."
+  },
+  {
+    "en": "That standing took a lot of work. Work pays. Literally, in rep.",
+    "nn": "Den rangen kravde mykje arbeid. Arbeid løner seg. Bokstavleg, i omdøme."
+  },
+  {
+    "en": "They trust you now. Lend me some of that trust? Short-term.",
+    "nn": "Dei stoler på deg no. Lån meg litt av den tilliten? På kort sikt."
+  },
+  {
+    "en": "How many turn-ins did that take? Don’t tell me. I’ll feel lazy.",
+    "nn": "Kor mange innleveringar kravde det? Ikkje sei det. Eg kjem til å kjenne meg lat."
+  },
+  {
+    "en": "Your reputation precedes you. Mine follows with an invoice.",
+    "nn": "Ryktet ditt går føre deg. Mitt følgjer etter med ein faktura."
+  },
+  {
+    "en": "A respected hero! Respected heroes get respected prices. Higher ones.",
+    "nn": "Ein respektert helt! Respekterte heltar får respekterte prisar. Høgare."
+  },
+  {
+    "en": "Look at you, hobnobbing with factions! Hobnobbing is half of commerce.",
+    "nn": "Sjå på deg, du omgåst fraksjonar! Omgang er halve handelen."
+  },
+  {
+    "en": "That new standing must unlock lovely recipes. Recipes are worth a fortune.",
+    "nn": "Den nye rangen må låse opp nydelege oppskrifter. Oppskrifter er verd ein formue."
+  },
+  {
+    "en": "I hear the quartermaster smiles at you now. Ask him for a discount. For me.",
+    "nn": "Eg høyrer kvartermeisteren smiler til deg no. Be han om rabatt. For meg."
+  },
+  {
+    "en": "Your reputation is solid gold. Mine is gold-plated.",
+    "nn": "Omdømet ditt er massivt gull. Mitt er gullbelagt."
+  },
+  {
+    "en": "Congrats on the rep! Now you can buy things I can’t. Buy me one?",
+    "nn": "Gratulerer med omdømet! No kan du kjøpe ting eg ikkje kan. Kjøp eitt til meg?"
+  },
+  {
+    "en": "Respect like that takes ages to build. You did it. Bravo.",
+    "nn": "Slik respekt tek evig tid å byggje opp. Du klarte det. Bravo."
+  },
+  {
+    "en": "I’ve updated your file: well connected, highly regarded, excellent customer.",
+    "nn": "Eg har oppdatert mappa di: godt kopla, høgt akta, framifrå kunde."
+  },
+  {
+    "en": "They used to frown at you. Now they bow. Lovely.",
+    "nn": "Dei pleidde å rynke på nasen av deg. No bukkar dei. Herleg."
+  },
+  {
+    "en": "Your name is a password now. Passwords are valuable.",
+    "nn": "Namnet ditt er eit passord no. Passord er verdifulle."
+  },
+  {
+    "en": "I’d like to sell to that faction. Can you introduce me? Nicely?",
+    "nn": "Eg vil gjerne selje til den fraksjonen. Kan du presentere meg? Pent?"
+  },
+  {
+    "en": "New reputation, new doors open. New shops, I hope.",
+    "nn": "Nytt omdøme, nye dører opnar seg. Nye butikkar, håpar eg."
+  },
+  {
+    "en": "Your rep is so good, they might name a holiday after you. I’ll sell decorations.",
+    "nn": "Omdømet ditt er så godt at dei kanskje kallar opp ei høgtid etter deg. Eg sel pynt."
+  },
+  {
+    "en": "They’ve rolled out the red carpet for you. Carpet cleaning, my specialty.",
+    "nn": "Dei har rulla ut den raude løparen for deg. Reinsing av løparar er spesialiteten min."
+  },
+  {
+    "en": "Highly esteemed hero! Esteem increases your market value. Noted.",
+    "nn": "Høgt akta helt! Akting aukar marknadsverdien din. Notert."
+  },
+  {
+    "en": "That’s a lot of goodwill. Goodwill is a business asset. I’d know.",
+    "nn": "Det er mykje velvilje. Velvilje er eit forretningsaktivum. Det veit eg."
+  },
+  {
+    "en": "You must have done a lot of favours. Favours are my second currency.",
+    "nn": "Du må ha gjort mange tenester. Tenester er den andre valutaen min."
+  },
+  {
+    "en": "Your loyalty paid off! Loyalty usually pays me. Now it pays you.",
+    "nn": "Lojaliteten din lønte seg! Vanlegvis løner han seg for meg. No for deg."
+  },
+  {
+    "en": "Faction favourite! Favourites get favours. Share some.",
+    "nn": "Fraksjonsfavoritt! Favorittar får tenester. Del litt."
+  },
+  {
+    "en": "They adore you now. Adoration is wonderful for negotiations.",
+    "nn": "Dei forgudar deg no. Forguding er framifrå i forhandlingar."
+  },
+  {
+    "en": "Your reputation glows like polished gold. I polish gold. Professionally.",
+    "nn": "Omdømet ditt gløder som pussa gull. Eg pussar gull. Profesjonelt."
+  },
+  {
+    "en": "Now you’re one of them! Do they have a membership card? I collect those.",
+    "nn": "No er du ein av dei! Har dei medlemskort? Eg samlar på slike."
+  },
+  {
+    "en": "Popular and powerful! The ideal customer.",
+    "nn": "Populær og mektig! Den ideelle kunden."
+  },
+  {
+    "en": "The faction leaders know your name now. Make it sound expensive.",
+    "nn": "Fraksjonsleiarane kjenner namnet ditt no. Få det til å høyrast dyrt ut."
+  },
+  {
+    "en": "Your standing just jumped. So did my opinion of you. It was already high.",
+    "nn": "Rangen din hoppa nett. Det gjorde meininga mi om deg òg. Ho var alt høg."
+  },
+  {
+    "en": "Reputation is like interest. It grows if you keep at it.",
+    "nn": "Omdøme er som renter. Det veks om du held fram."
+  },
+  {
+    "en": "They’ll sell you their best gear now. Bring me their catalogue.",
+    "nn": "No sel dei deg det beste utstyret sitt. Ta med katalogen deira til meg."
+  },
+  {
+    "en": "What a social climb! Climbing gear, aisle six.",
+    "nn": "For ei sosial klatring! Klatreutstyr, hylle seks."
+  },
+  {
+    "en": "Bravo! Your name is welcome in their halls. Mine is banned. Long story.",
+    "nn": "Bravo! Namnet ditt er velkome i hallane deira. Mitt er bannlyst. Lang historie."
+  },
+  {
+    "en": "That’s a lot of trust. I’d never trust anyone that much. Except you.",
+    "nn": "Det er mykje tillit. Eg hadde aldri stolt så mykje på nokon. Bortsett frå deg."
+  },
+  {
+    "en": "Being liked is a skill. You’ve mastered it. I’m still a novice.",
+    "nn": "Å vere likt er ein dugleik. Du har meistra han. Eg er framleis nybyrjar."
+  },
+  {
+    "en": "They used to call you stranger. Now they call you friend. I call you customer.",
+    "nn": "Dei kalla deg framand før. No kallar dei deg venn. Eg kallar deg kunde."
+  },
+  {
+    "en": "You’ve won hearts! Hearts are hard to price. I’ve tried.",
+    "nn": "Du har vunne hjarte! Hjarte er vanskelege å prise. Eg har prøvd."
+  },
+  {
+    "en": "Look at that tabard! Tabards from that faction sell for a fortune.",
+    "nn": "Sjå på den våpenkjolen! Våpenkjolar frå den fraksjonen sel for ein formue."
+  },
+  {
+    "en": "Their vendors will love you now. I love you too. In a business way.",
+    "nn": "Seljarane deira kjem til å elske deg no. Eg elskar deg òg. Forretningsmessig."
+  },
+  {
+    "en": "A higher rank means rarer goods. Rarer goods mean richer me.",
+    "nn": "Høgare grad betyr sjeldnare varer. Sjeldnare varer betyr rikare meg."
+  },
+  {
+    "en": "Your reputation is going places. So is my sales pitch about you.",
+    "nn": "Omdømet ditt kjem langt. Det gjer salstalen min om deg òg."
+  },
+  {
+    "en": "Respect from that faction is rare. You’re rare. I love rare.",
+    "nn": "Respekt frå den fraksjonen er sjeldan. Du er sjeldan. Eg elskar det sjeldne."
+  },
+  {
+    "en": "You’re officially in their good books. I keep good books too. Ledgers.",
+    "nn": "No står du offisielt i dei gode bøkene deira. Eg fører gode bøker òg. Rekneskap."
+  },
+  {
+    "en": "Hooray for your good name! I’ll engrave it on a mug.",
+    "nn": "Hurra for det gode namnet ditt! Eg graverer det på ein kopp."
+  },
+  {
+    "en": "Your popularity is contagious. I’m catching it. Customers are noticing.",
+    "nn": "Populariteten din smittar. Eg blir smitta. Kundane legg merke til det."
+  },
+  {
+    "en": "That reputation took real dedication. Dedication sells.",
+    "nn": "Det omdømet kravde ekte iherdigheit. Iherdigheit sel."
+  },
+  {
+    "en": "You must have charmed the whole faction. Charm lessons? You teach, I sell tickets.",
+    "nn": "Du må ha sjarmert heile fraksjonen. Sjarmkurs? Du underviser, eg sel billettar."
+  },
+  {
+    "en": "The faction’s gates are open for you. Gates open for profit too.",
+    "nn": "Portane til fraksjonen står opne for deg. Portar opnar seg for forteneste òg."
+  },
+  {
+    "en": "Now you’re a person of influence. Influence is the best kind of gold.",
+    "nn": "No er du ein person med innverknad. Innverknad er den beste typen gull."
+  },
+  {
+    "en": "That faction is famously picky. They picked you. Smart faction.",
+    "nn": "Den fraksjonen er kjend for å vere kresen. Dei valde deg. Smart fraksjon."
+  },
+  {
+    "en": "Your standing will open doors. Bring me through one.",
+    "nn": "Rangen din kjem til å opne dører. Ta meg med gjennom ei."
+  },
+  {
+    "en": "I’m so proud. My little customer, all grown up and respected.",
+    "nn": "Eg er så stolt. Den vesle kunden min, vaksen og respektert."
+  },
+  {
+    "en": "Reputation is a long game. You’re winning it.",
+    "nn": "Omdøme er eit langt spel. Du vinn det."
+  },
+  {
+    "en": "I bet you got a fancy title out of it. Fancy titles sell well.",
+    "nn": "Eg veddar på at du fekk ein fin tittel av det. Fine titlar sel godt."
+  },
+  {
+    "en": "Their merchants must be thrilled. Mine is thrilled too. That’s me.",
+    "nn": "Kremmarane deira må vere i ekstase. Min er òg i ekstase. Det er meg."
+  },
+  {
+    "en": "That’s a reputation worth framing. Framed reputations look great by the door.",
+    "nn": "Det er eit omdøme verd å ramme inn. Innramma omdøme ser flotte ut ved døra."
+  },
+  {
+    "en": "You’re practically family to them now. Family discounts!",
+    "nn": "No er du nærast familie for dei. Familierabatt!"
+  },
+  {
+    "en": "You worked hard for those smiles. Every smile is a future discount.",
+    "nn": "Du jobba hardt for dei smila. Kvart smil er ein framtidig rabatt."
+  },
+  {
+    "en": "Faction friendship achieved! I sell friendship bracelets.",
+    "nn": "Fraksjonsvennskap oppnådd! Eg sel vennskapsarmband."
+  },
+  {
+    "en": "You’re now on first-name terms with their leaders. Name-drop me.",
+    "nn": "No er du på fornamn med leiarane deira. Nemn namnet mitt."
+  },
+  {
+    "en": "They trust you with their secrets now. Secrets are worth a lot. Just saying.",
+    "nn": "Dei deler løyndomane sine med deg no. Løyndomar er verd mykje. Berre så du veit."
+  },
+  {
+    "en": "A new reputation rank! I’ll toast you with my reputable wine.",
+    "nn": "Ein ny omdømegrad! Eg skålar for deg med den respektable vinen min."
+  },
+  {
+    "en": "They finally see what I always saw: a fine hero with deep pockets.",
+    "nn": "Dei ser endeleg det eg alltid såg: ein fin helt med djupe lommer."
+  },
+  {
+    "en": "You’ve gone from nobody to somebody. Somebodies shop at premium shops.",
+    "nn": "Du har gått frå ingen til nokon. Nokon handlar i premiumbutikkar."
+  },
+  {
+    "en": "Your good deeds paid off in good standing. And maybe good loot.",
+    "nn": "Dei gode gjerningane dine lønte seg i god rang. Og kanskje god loot."
+  },
+  {
+    "en": "I love a hero with connections. Connections lead to deals.",
+    "nn": "Eg elskar ein helt med kontaktar. Kontaktar fører til avtalar."
+  },
+  {
+    "en": "That rank comes with rewards. Rewards come to my shop eventually.",
+    "nn": "Den graden kjem med påskjøningar. Påskjøningar hamnar i butikken min til slutt."
+  },
+  {
+    "en": "Now they’ll let you into their fanciest markets. Bring me a sample.",
+    "nn": "No slepp dei deg inn på dei finaste marknadene sine. Ta med ei prøve til meg."
+  },
+  {
+    "en": "You’re the faction’s new darling. Darlings get gifts. Gifts get resold.",
+    "nn": "Du er den nye yndlingen til fraksjonen. Yndlingar får gåver. Gåver blir selde vidare."
+  },
+  {
+    "en": "A milestone in trust! Trust is my rarest commodity.",
+    "nn": "Ein milepæl i tillit! Tillit er den sjeldnaste vara mi."
+  },
+  {
+    "en": "You did it! They respect you. They might even respect me now, by association.",
+    "nn": "Du klarte det! Dei respekterer deg. Kanskje dei respekterer meg òg no, ved tilknyting."
+  },
+  {
+    "en": "Look at that reputation bar! Fuller than my vault. Almost.",
+    "nn": "Sjå på omdømebaren! Fullare enn kvelvet mitt. Nesten."
+  },
+  {
+    "en": "Your hard work earned you friends. Friends who sell things. Introduce me.",
+    "nn": "Det harde arbeidet gav deg vener. Vener som sel ting. Presenter meg."
+  },
+  {
+    "en": "The faction cheers your name. I sell cheering sticks.",
+    "nn": "Fraksjonen jublar for namnet ditt. Eg sel heiastavar."
+  },
+  {
+    "en": "You must be exhausted from all that hand-shaking. Hand cream, aisle two.",
+    "nn": "Du må vere utsliten av all handhelsinga. Handkrem, hylle to."
+  },
+  {
+    "en": "That’s a good reputation to have. Reputations like that never go out of style.",
+    "nn": "Det er eit godt omdøme å ha. Slike omdøme går aldri av moten."
+  },
+  {
+    "en": "Their best recipes are yours now. Share the profits? Share the recipes? Both?",
+    "nn": "Dei beste oppskriftene deira er dine no. Dele forteneste? Dele oppskrifter? Begge?"
+  },
+  {
+    "en": "I knew you’d win them over. You won me over. I’m much harder.",
+    "nn": "Eg visste du ville vinne dei over. Du vann meg over. Eg er mykje vanskelegare."
+  },
+  {
+    "en": "Your standing is now the envy of every adventurer. And one goblin.",
+    "nn": "Alle eventyrarar misunner deg rangen din no. Og éin goblin."
+  },
+  {
+    "en": "That’s the kind of rep that buys respect. And good tables at inns.",
+    "nn": "Det er den typen omdøme som kjøper respekt. Og gode bord på vertshus."
+  },
+  {
+    "en": "You’ve been accepted! Acceptance feels great. Acceptance letters cost a silver.",
+    "nn": "Du er godteken! Det kjennest godt. Godtakingsbrev kostar eitt sølv."
+  },
+  {
+    "en": "Now that’s networking! Networking is how I got rich.",
+    "nn": "Det kallar eg nettverksbygging! Det var slik eg vart rik."
+  },
+  {
+    "en": "Congratulations on being liked! I’m still working on it.",
+    "nn": "Gratulerer med at folk likar deg! Eg jobbar framleis med saka."
+  },
+  {
+    "en": "Every faction needs a hero. This one picked you. Good taste.",
+    "nn": "Kvar fraksjon treng ein helt. Denne valde deg. God smak."
+  },
+  {
+    "en": "Reputation like yours should be insured. I sell reputation insurance.",
+    "nn": "Eit slikt omdøme burde ha vore forsikra. Eg sel omdømeforsikring."
+  },
+  {
+    "en": "Your name is golden now. Golden names make golden deals.",
+    "nn": "Namnet ditt er gyllent no. Gylne namn gir gylne avtalar."
+  },
+  {
+    "en": "You’ve won them over! Winning people over is my dream. You make it look easy.",
+    "nn": "Du har vunne dei over! Å vinne folk over er draumen min. Du får det til å sjå lett ut."
+  },
+  {
+    "en": "Faction rank up! Faction loyalty means faction gear. Gorgeous gear.",
+    "nn": "Fraksjonsgrad opp! Fraksjonslojalitet betyr fraksjonsutstyr. Nydeleg utstyr."
+  },
+  {
+    "en": "The faction’s vendors will bow to you. Ask them to bow to me too.",
+    "nn": "Seljarane til fraksjonen kjem til å bukke for deg. Be dei bukke for meg òg."
+  },
+  {
+    "en": "Your reputation is soaring. Mind the altitude. Oxygen potions, two silver.",
+    "nn": "Omdømet ditt stig til vêrs. Pass deg for høgda. Oksygendrikkar, to sølv."
+  },
+  {
+    "en": "That standing will get you everywhere. Even my VIP lounge.",
+    "nn": "Den rangen tek deg overalt. Sjølv inn i VIP-salongen min."
+  },
+  {
+    "en": "Fancy new title from your faction? Wear it everywhere. Especially here.",
+    "nn": "Ny fin tittel frå fraksjonen? Ber han overalt. Særleg her."
+  },
+  {
+    "en": "You’re the toast of the faction! Toast, two copper.",
+    "nn": "Du er stjerna i fraksjonen! Rista brød, to kopar skiva."
+  },
+  {
+    "en": "Hard-won reputation! That’s the best kind. The kind I can’t sell. Shame.",
+    "nn": "Hardt tent omdøme! Det er den beste typen. Den typen eg ikkje kan selje. Synd."
+  },
+  {
+    "en": "Look at you, mingling with the elite! Elite customers are my favourite.",
+    "nn": "Sjå på deg, du omgåst eliten! Elitekundar er favorittane mine."
+  },
+  {
+    "en": "Congrats! Every rank brings you closer to their best treasures.",
+    "nn": "Gratulerer! Kvar grad fører deg nærare dei beste skattane deira."
+  },
+  {
+    "en": "You must be the most famous face in their camp. Famous faces sell posters.",
+    "nn": "Du må vere det mest kjende fjeset i leiren deira. Kjende fjes sel plakatar."
+  },
+  {
+    "en": "Your standing is impressive. Impressive standing needs impressive boots.",
+    "nn": "Rangen din er imponerande. Imponerande rang treng imponerande støvlar."
+  },
+  {
+    "en": "I’d bow to you too, but goblins bow only to gold. You’re close.",
+    "nn": "Eg hadde bukka for deg òg, men goblinar bukkar berre for gull. Du er nær."
+  },
+  {
+    "en": "They’ll write songs about your loyalty. I’ll print the lyrics.",
+    "nn": "Dei kjem til å skrive songar om lojaliteten din. Eg trykkjer teksten."
+  },
+  {
+    "en": "I’m adding your faction to my list of potential partners. Thanks to you.",
+    "nn": "Eg set fraksjonen din på lista over moglege partnarar. Takka vere deg."
+  },
+  {
+    "en": "What a promotion in their eyes! Eyes are the window to the wallet.",
+    "nn": "For eit opprykk i auga deira! Auga er vindauget til lommeboka."
+  },
+  {
+    "en": "Reputation is everything. Well, gold is everything. Reputation is close.",
+    "nn": "Omdøme er alt. Vel, gull er alt. Omdøme er nær."
+  },
+  {
+    "en": "Your new rank deserves a celebration. Celebrations are my business.",
+    "nn": "Den nye graden din fortener ei feiring. Feiringar er forretninga mi."
+  },
+  {
+    "en": "I knew those turn-ins would add up. They always do. Like interest.",
+    "nn": "Eg visste dei innleveringane ville bli mykje. Det blir dei alltid. Som renter."
+  },
+  {
+    "en": "They used to be wary of you. Now they’re wary of losing you.",
+    "nn": "Dei var skeptiske til deg før. No er dei redde for å miste deg."
+  },
+  {
+    "en": "You’re the kind of friend factions dream of. And merchants.",
+    "nn": "Du er den typen venn fraksjonar drøymer om. Og kremmarar."
+  },
+  {
+    "en": "That’s a lot of good will. Good will plus gold equals great will.",
+    "nn": "Det er mykje velvilje. Velvilje pluss gull blir storvilje."
+  },
+  {
+    "en": "Your faction reputation is a treasure. Guard it well.",
+    "nn": "Omdømet ditt hos fraksjonen er ein skatt. Pass godt på han."
+  },
+  {
+    "en": "A new rank of trust! I trust you too. Not with my vault, but still.",
+    "nn": "Ein ny grad av tillit! Eg stoler på deg òg. Ikkje med kvelvet mitt, men likevel."
+  },
+  {
+    "en": "Hooray! You’re officially a friend of the faction. Friends get freebies.",
+    "nn": "Hurra! No er du offisielt ein venn av fraksjonen. Vener får gratissaker."
+  },
+  {
+    "en": "Wow! A whole faction thinks you’re wonderful. I agree.",
+    "nn": "Oi! Ein heil fraksjon synest du er fantastisk. Eg er samd."
+  },
+  {
+    "en": "Your diplomacy skills are legendary. Teach me. For a fee. My fee.",
+    "nn": "Diplomatidugleiken din er legendarisk. Lær meg. Mot betaling. Mi betaling."
+  },
+  {
+    "en": "With that reputation, every door is open. Every till too, hopefully.",
+    "nn": "Med det omdømet står kvar dør open. Kvar kasse òg, forhåpentleg."
+  },
+  {
+    "en": "They think you’re a hero. I think you’re a hero and a valued customer.",
+    "nn": "Dei synest du er ein helt. Eg synest du er ein helt og ein verdsett kunde."
+  },
+  {
+    "en": "Good reputation, good business. Let’s do some business.",
+    "nn": "Godt omdøme, god forretning. Lat oss gjere litt forretning."
+  },
+  {
+    "en": "I’ll spread word of your reputation. Word-of-mouth marketing, very cheap.",
+    "nn": "Eg skal spreie ryktet om omdømet ditt. Jungeltelegraf, svært billeg."
+  },
+  {
+    "en": "A great rank for a great friend! May your standing never fall.",
+    "nn": "Ein flott grad til ein flott venn! Måtte rangen din aldri falle."
+  },
+  {
+    "en": "You’ve made them proud. You’ve made me proud. You’ve made my ledger hopeful.",
+    "nn": "Du har gjort dei stolte. Du har gjort meg stolt. Du har gjort rekneskapen min håpefull."
+  },
+  {
+    "en": "That faction is lucky to have you. I’m lucky too. Different reasons.",
+    "nn": "Den fraksjonen er heldig som har deg. Eg er heldig òg. Av andre grunnar."
+  },
+  {
+    "en": "I can hear the faction cheering from here. Or is that the sound of discounts?",
+    "nn": "Eg høyrer fraksjonen juble heilt hit. Eller er det lyden av rabattar?"
+  },
+  {
+    "en": "The respected walk taller. You look a full inch taller. New cloak?",
+    "nn": "Dei respekterte går rakare. Du ser ein heil tomme høgare ut. Ny kappe?"
+  },
+  {
+    "en": "That’s one very good name you’ve built. Names like that last forever.",
+    "nn": "Det er eit svært godt namn du har bygt. Slike namn varer evig."
+  },
+  {
+    "en": "Exalted, revered, or just honoured, you’re my favourite.",
+    "nn": "Opphøgd, æra eller berre heidra, du er favoritten min."
+  },
+  {
+    "en": "Every faction rank is a victory. Victories are good for business.",
+    "nn": "Kvar fraksjonsgrad er ein siger. Sigrar er bra for forretninga."
+  },
+  {
+    "en": "You’ve made some powerful friends. Powerful friends need powerful gifts.",
+    "nn": "Du har fått mektige vener. Mektige vener treng mektige gåver."
+  },
+  {
+    "en": "That reputation must have taken ages. Ages of good deeds. Admirable.",
+    "nn": "Det omdømet må ha teke evig tid. Evig tid med gode gjerningar. Beundringsverdig."
+  },
+  {
+    "en": "You’re now officially VIP to an entire faction. That’s VIP times a thousand.",
+    "nn": "No er du offisielt VIP for ein heil fraksjon. Det er VIP gongar tusen."
+  },
+  {
+    "en": "Their trust is yours. Use it wisely. And profitably.",
+    "nn": "Tilliten deira er din. Bruk han klokt. Og lønsamt."
+  },
+  {
+    "en": "I always knew you were well-liked. Now the faction knows too.",
+    "nn": "Eg visste alltid at du var godt likt. No veit fraksjonen det òg."
+  },
+  {
+    "en": "Your new standing is a treasure. Treasures belong in vaults. Or on display.",
+    "nn": "Den nye rangen din er ein skatt. Skattar høyrer heime i kvelv. Eller i monter."
+  },
+  {
+    "en": "A higher rank means better rewards. Better rewards mean more for me to buy.",
+    "nn": "Høgare grad betyr betre påskjøningar. Det betyr meir for meg å kjøpe."
+  },
+  {
+    "en": "So proud of your hard-earned reputation!",
+    "nn": "Så stolt av det hardt tente omdømet ditt!"
+  },
+  {
+    "en": "Your good name is now great. Great names deserve a fanfare. I rent trumpets.",
+    "nn": "Det gode namnet ditt er no stort. Store namn fortener fanfare. Eg leiger ut trompetar."
+  },
+  {
+    "en": "They like you. They really like you. And I like that you’re rich.",
+    "nn": "Dei likar deg. Dei likar deg verkeleg. Og eg likar at du er rik."
+  },
+  {
+    "en": "You’re so trusted now they’d lend you their treasury. Ask! For me!",
+    "nn": "Dei stoler så mykje på deg no at dei hadde lånt deg skattkammeret. Spør! For meg!"
+  },
+  {
+    "en": "Reputation unlocked! Now unlock that faction’s merchant contacts for me.",
+    "nn": "Omdøme låst opp! Lås no opp kremmarkontaktane til fraksjonen for meg."
+  },
+  {
+    "en": "I heard they threw you a feast. I sold them the plates.",
+    "nn": "Eg høyrde dei heldt gjestebod for deg. Eg selde dei tallerkane."
+  },
+  {
+    "en": "You charmed a whole faction. Charm is priceless. I’d still put a price on it.",
+    "nn": "Du sjarmerte ein heil fraksjon. Sjarm er uvurderleg. Eg prisar han likevel."
+  },
+  {
+    "en": "The faction just promoted you in their hearts. Hearts are hard to win. Well done.",
+    "nn": "Fraksjonen har nett forfremja deg i hjarta sine. Hjarte er vanskelege å vinne. Godt gjort."
+  },
+  {
+    "en": "A shining reputation! I sell polish for reputations too. Very discreet.",
+    "nn": "Eit skinande omdøme! Eg sel puss for omdøme òg. Svært diskret."
+  },
+  {
+    "en": "That faction is lucky you chose them. I’m lucky you chose me.",
+    "nn": "Den fraksjonen er heldig at du valde dei. Eg er heldig at du valde meg."
+  },
+  {
+    "en": "Your loyalty is legendary. Legendary loyalty deserves legendary perks.",
+    "nn": "Lojaliteten din er legendarisk. Legendarisk lojalitet fortener legendariske fordelar."
+  },
+  {
+    "en": "You’ve become someone they rely on. Reliable heroes are rare. Rare is valuable.",
+    "nn": "Du har vorte ein dei stoler på. Pålitelege heltar er sjeldne. Det sjeldne er verdifullt."
+  },
+  {
+    "en": "Respect at last! It only took a few hundred favours.",
+    "nn": "Respekt til slutt! Det kravde berre nokre hundre tenester."
+  },
+  {
+    "en": "Your faction standing is now as high as my prices. That’s high.",
+    "nn": "Rangen din hos fraksjonen er no like høg som prisane mine. Det er høgt."
+  },
+  {
+    "en": "You’ve got friends everywhere now. Friends everywhere means customers everywhere.",
+    "nn": "Du har vener overalt no. Vener overalt betyr kundar overalt."
+  },
+  {
+    "en": "Bravo on the rep! Reputation is the one treasure thieves can’t steal.",
+    "nn": "Bravo for omdømet! Omdøme er den einaste skatten tjuvar ikkje kan stele."
+  },
+  {
+    "en": "That faction would follow you anywhere now. Lead them to my shop.",
+    "nn": "Den fraksjonen hadde følgt deg kvar som helst no. Lei dei til butikken min."
+  },
+  {
+    "en": "A new reputation rank is a new chapter. Chapters are good for business.",
+    "nn": "Ein ny omdømegrad er eit nytt kapittel. Kapittel er bra for forretninga."
+  },
+  {
+    "en": "Their leader probably knows your name by heart now. Use it.",
+    "nn": "Leiaren deira kan nok namnet ditt utanåt no. Bruk det."
+  },
+  {
+    "en": "You’re living proof that good deeds pay off. Pay me off too. Kidding.",
+    "nn": "Du er levande prov på at gode gjerningar løner seg. Løn meg òg. Tullar."
+  },
+  {
+    "en": "Rank up with the faction! May your tabard always be clean and your purse always full.",
+    "nn": "Grad opp hos fraksjonen! Måtte våpenkjolen alltid vere rein og pungen alltid full."
+  },
+  {
+    "en": "Everyone deserves a hero like you. Every merchant deserves a customer like you.",
+    "nn": "Alle fortener ein helt som deg. Kvar kremmar fortener ein kunde som deg."
+  },
+  {
+    "en": "Fresh standing! Fresh as my morning bread. Two copper a loaf.",
+    "nn": "Fersk rang! Fersk som morgonbrødet mitt. To kopar brødet."
+  },
+  {
+    "en": "I bet they’ll give you a parade. I’ll sell the flags.",
+    "nn": "Eg veddar på at dei held parade for deg. Eg sel flagga."
+  },
+  {
+    "en": "Congrats! Their respect is earned, my admiration is given, my prices are fixed.",
+    "nn": "Gratulerer! Respekten deira er fortent, beundringa mi er gitt, prisane mine er faste."
+  },
+  {
+    "en": "Being revered must be lovely. I’m revered too. By my creditors.",
+    "nn": "Å vere æra må vere herleg. Eg er æra òg. Av kreditorane mine."
+  },
+  {
+    "en": "You’re climbing the ladder of trust. Ladders, aisle nine.",
+    "nn": "Du klatrar på tillitsstigen. Stigar, hylle ni."
+  },
+  {
+    "en": "New standing! You’ve made the faction better just by being in it.",
+    "nn": "Ny rang! Du har gjort fraksjonen betre berre ved å vere med."
+  },
+  {
+    "en": "Hats off to the faction’s favourite. Hats on sale too.",
+    "nn": "Hatten av for favoritten til fraksjonen. Hattar er på tilbod òg."
+  },
+  {
+    "en": "I’ve heard great things about you from that faction. And bought some of their stuff.",
+    "nn": "Eg har høyrt store ting om deg frå den fraksjonen. Og kjøpt nokre av tinga deira."
+  },
+  {
+    "en": "Your reputation shines brighter than polished brass. Brass polish, aisle four.",
+    "nn": "Omdømet ditt skin klarare enn pussa messing. Messingpuss, hylle fire."
+  },
+  {
+    "en": "The faction honours you. I honour you. My ledger honours you with a gold star.",
+    "nn": "Fraksjonen hedrar deg. Eg hedrar deg. Rekneskapen min hedrar deg med ei gullstjerne."
+  },
+  {
+    "en": "You make being admired look effortless. I know it took effort. Bravo.",
+    "nn": "Du får det til å sjå lett ut å bli beundra. Eg veit det kravde innsats. Bravo."
+  },
+  {
+    "en": "Your rep grows, my respect grows, my prices… stay the same. Lucky you.",
+    "nn": "Omdømet ditt veks, respekten min veks, prisane mine… held seg. Heldig for deg."
+  },
+  {
+    "en": "I hope they gave you something shiny for it. Shiny things are my favourite.",
+    "nn": "Eg håpar dei gav deg noko blankt for det. Blanke ting er favorittane mine."
+  },
+  {
+    "en": "Friendship with a faction is like a good contract: long and profitable.",
+    "nn": "Vennskap med ein fraksjon er som ein god kontrakt: lang og lønsam."
+  },
+  {
+    "en": "That reputation will follow you forever. In a good way.",
+    "nn": "Det omdømet kjem til å følgje deg for alltid. På ein god måte."
+  },
+  {
+    "en": "Treat your new friends well. And bring them to my shop.",
+    "nn": "Ver snill med dei nye venene dine. Og ta dei med til butikken min."
+  },
+  {
+    "en": "They see you as a hero now. I always did. I also saw a customer.",
+    "nn": "Dei ser deg som ein helt no. Det gjorde eg alltid. Eg såg òg ein kunde."
+  },
+  {
+    "en": "Your standing is impressive. I’ll mention it in every sales pitch.",
+    "nn": "Rangen din er imponerande. Eg nemner han i kvar salstale."
+  },
+  {
+    "en": "Lovely! The faction is lucky, you’re lucky, and I’m about to get lucky. In sales.",
+    "nn": "Herleg! Fraksjonen er heldig, du er heldig, og eg er i ferd med å bli heldig. I sal."
+  },
+  {
+    "en": "That’s some reputation. Reputations like that take years. You did it faster.",
+    "nn": "For eit omdøme. Slike omdøme tek år. Du gjorde det fortare."
+  },
+  {
+    "en": "Your reputation is the talk of the town. Talk is cheap. Reputation isn’t.",
+    "nn": "Omdømet ditt er snakkisen i byen. Prat er billeg. Omdøme er det ikkje."
+  },
+  {
+    "en": "Wonderful standing! May it open doors to rare treasures. And rarer bargains.",
+    "nn": "Nydeleg rang! Måtte han opne dører til sjeldne skattar. Og endå sjeldnare kupp."
+  },
+  {
+    "en": "I’m genuinely delighted. Reputation is hard to earn. You earned it.",
+    "nn": "Eg er oppriktig glad. Omdøme er vanskeleg å vinne. Du vann det."
+  },
+  {
+    "en": "You’ve become a trusted friend of the faction. Trusted friends get the good stuff.",
+    "nn": "Du er vorten ein tiltrudd venn av fraksjonen. Tiltrudde vener får dei gode sakene."
+  },
+  {
+    "en": "Your rep is skyrocketing! Rockets, by the way, are available. Goblin-made.",
+    "nn": "Omdømet ditt skyt i vêret! Raketter, forresten, kan kjøpast. Goblinlaga."
+  },
+  {
+    "en": "Their elders bless you. I bless you too. My blessings come with coupons.",
+    "nn": "Dei eldste deira velsignar deg. Eg velsignar deg òg. Mine velsigningar kjem med kupongar."
+  },
+  {
+    "en": "Congratulations on your new rank! May it bring you joy and very rare recipes.",
+    "nn": "Gratulerer med den nye graden! Måtte han gi deg glede og svært sjeldne oppskrifter."
+  },
+  {
+    "en": "They gave you their trust. I give you my best smile. And a bill. Kidding.",
+    "nn": "Dei gav deg tilliten sin. Eg gir deg det beste smilet mitt. Og ei rekning. Tullar."
+  },
+  {
+    "en": "Your reputation is a beacon. Beacons attract customers.",
+    "nn": "Omdømet ditt er eit fyrtårn. Fyrtårn trekkjer til seg kundar."
+  },
+  {
+    "en": "I’ll celebrate your standing with a special: nothing off, but a big smile.",
+    "nn": "Eg feirar rangen din med eit tilbod: ingenting av, men eit stort smil."
+  },
+  {
+    "en": "That’s the best news since my vault door got fixed.",
+    "nn": "Det er det beste nyhendet sidan kvelvdøra mi vart reparert."
+  },
+  {
+    "en": "You’re a role model now. Role models get free advice. From me. Here: buy.",
+    "nn": "Du er eit førebilete no. Førebilete får gratis råd. Frå meg. Her: kjøp."
+  },
+  {
+    "en": "Your name is on everyone’s lips in that faction. On my lips, too. With prices.",
+    "nn": "Namnet ditt er på leppene til alle i den fraksjonen. På mine òg. Med prisar."
+  },
+  {
+    "en": "Now they’ll call you friend. I call you favourite.",
+    "nn": "No kallar dei deg venn. Eg kallar deg favoritt."
+  },
+  {
+    "en": "You’ve made a lasting impression. Lasting impressions are excellent marketing.",
+    "nn": "Du har gjort eit varig inntrykk. Varige inntrykk er framifrå marknadsføring."
+  },
+  {
+    "en": "Well done! The faction’s gratitude is endless. Like my inventory.",
+    "nn": "Godt gjort! Takksemda til fraksjonen er endelaus. Som lageret mitt."
+  },
+  {
+    "en": "Bravo! Being liked by so many must feel wonderful. I wouldn’t know.",
+    "nn": "Bravo! Å vere likt av så mange må kjennast vidunderleg. Det veit ikkje eg."
+  },
+  {
+    "en": "They’ve adopted you, basically. Adopted heroes get allowances. Spend them here.",
+    "nn": "Dei har nærast adoptert deg. Adopterte heltar får lommepengar. Bruk dei her."
+  },
+  {
+    "en": "Your standing is a credit to you. Good credit. The best kind.",
+    "nn": "Rangen din er ei ære for deg. God kreditt. Den beste typen."
+  },
+  {
+    "en": "You’re the pride of the faction. And the pride of my customer list.",
+    "nn": "Du er stoltheita til fraksjonen. Og stoltheita på kundelista mi."
+  },
+  {
+    "en": "I hope the faction’s quartermaster has good taste. You certainly do.",
+    "nn": "Eg håpar kvartermeisteren til fraksjonen har god smak. Det har i alle fall du."
+  },
+  {
+    "en": "Respect like yours can’t be bought. But I can sell you a nice frame for it.",
+    "nn": "Respekt som din kan ikkje kjøpast. Men eg kan selje deg ei fin ramme til han."
+  },
+  {
+    "en": "Hooray for the most popular hero in the realm!",
+    "nn": "Hurra for den mest populære helten i riket!"
+  },
+  {
+    "en": "That reputation is worth its weight in gold. It weighs a lot.",
+    "nn": "Det omdømet er verd vekta si i gull. Det veg mykje."
+  },
+  {
+    "en": "You’ve built a name worth remembering. I’ll remember it. Especially on invoices.",
+    "nn": "Du har bygt eit namn verd å hugse. Eg skal hugse det. Særleg på fakturaer."
+  },
+  {
+    "en": "Glorious standing! May it bring you glory, gold and good company.",
+    "nn": "Ærerik rang! Måtte han gi deg ære, gull og godt selskap."
+  },
+  {
+    "en": "New rank, new respect, new merchant opportunities. Thank you!",
+    "nn": "Ny grad, ny respekt, nye høve for kremmarar. Takk!"
+  },
+  {
+    "en": "Your faction friends are lucky. So am I. So are you. Everybody wins.",
+    "nn": "Fraksjonsvenene dine er heldige. Det er eg òg. Og du. Alle vinn."
+  },
+  {
+    "en": "That’s a well-deserved rank. I’d know. I deserve things too.",
+    "nn": "Det er ein vel fortent grad. Det veit eg. Eg fortener ting òg."
+  },
+  {
+    "en": "The faction is singing your praises. I’ll sell the songbook.",
+    "nn": "Fraksjonen syng lovsongar om deg. Eg sel songboka."
+  },
+  {
+    "en": "Now you’re a name they’ll never forget. Neither will I. Or my ledger.",
+    "nn": "No er du eit namn dei aldri gløymer. Ikkje eg heller. Eller rekneskapen min."
+  },
+  {
+    "en": "Congrats! May your reputation keep growing like my interest rates.",
+    "nn": "Gratulerer! Måtte omdømet ditt halde fram med å vekse som rentene mine."
+  },
+  {
+    "en": "I bet they bowed when you walked in. I’ll bow too. Briefly.",
+    "nn": "Eg veddar på at dei bukka då du kom inn. Eg bukkar òg. Kort."
+  },
+  {
+    "en": "A top-tier reputation for a top-tier hero. My favourite tier.",
+    "nn": "Eit omdøme i toppklassen til ein helt i toppklassen. Favorittklassen min."
+  },
+  {
+    "en": "Your hard work has made you beloved. Beloved heroes get free drinks. Not here.",
+    "nn": "Det harde arbeidet ditt har gjort deg elska. Elska heltar får gratis drikke. Ikkje her."
+  },
+  {
+    "en": "Respect from the faction and respect from me. Double respect!",
+    "nn": "Respekt frå fraksjonen og respekt frå meg. Dobbel respekt!"
+  },
+  {
+    "en": "Your good standing is the best investment you ever made. After my potions.",
+    "nn": "Den gode rangen din er den beste investeringa du har gjort. Etter trylledrikkane mine."
+  },
+  {
+    "en": "Look at you, the faction’s golden child. Golden is my favourite colour.",
+    "nn": "Sjå på deg, gullbarnet til fraksjonen. Gull er favorittfargen min."
+  },
+  {
+    "en": "You’re practically royalty to them. Royalty buys in bulk.",
+    "nn": "Du er nærast kongeleg for dei. Kongelege kjøper i store mengder."
+  },
+  {
+    "en": "That reputation will open doors for years. I sell doorknobs.",
+    "nn": "Det omdømet kjem til å opne dører i årevis. Eg sel dørhandtak."
+  },
+  {
+    "en": "Bless your hard work and your charm. Both are rare.",
+    "nn": "Velsigna vere det harde arbeidet og sjarmen din. Begge er sjeldne."
+  },
+  {
+    "en": "I always said you’d go far. Now a whole faction agrees.",
+    "nn": "Eg har alltid sagt du ville kome langt. No er ein heil fraksjon samd."
+  },
+  {
+    "en": "Popularity looks good on you. So would a new cloak from me.",
+    "nn": "Popularitet kler deg. Det hadde ei ny kappe frå meg òg gjort."
+  },
+  {
+    "en": "Your new rank is official. I’ll add it to your file in gold ink.",
+    "nn": "Den nye graden din er offisiell. Eg skriv han i mappa di med gullblekk."
+  },
+  {
+    "en": "The faction thanks you. I thank you too. Now let’s talk shop.",
+    "nn": "Fraksjonen takkar deg. Eg takkar deg òg. No skal vi snakke forretning."
+  },
+  {
+    "en": "You’re living proof that kindness pays. I’ll start being kind. Next week.",
+    "nn": "Du er levande prov på at godleik løner seg. Eg skal byrje å vere snill. Neste veke."
+  },
+  {
+    "en": "What a lovely milestone of trust. Trust is the root of all trade.",
+    "nn": "For ein nydeleg milepæl i tillit. Tillit er rota til all handel."
+  },
+  {
+    "en": "Your new friends must be throwing a party. I’ll cater.",
+    "nn": "Dei nye venene dine må halde fest. Eg står for maten."
+  },
+  {
+    "en": "That faction now sings your name. I hum along. With an invoice.",
+    "nn": "Den fraksjonen syng no namnet ditt. Eg nynnar med. Med ein faktura."
+  },
+  {
+    "en": "Reputation earned, respect gained, merchant impressed.",
+    "nn": "Omdøme tent, respekt vunne, kremmar imponert."
+  },
+  {
+    "en": "I hope they gave you a fancy badge. I collect fancy badges.",
+    "nn": "Eg håpar dei gav deg eit fint merke. Eg samlar på fine merke."
+  },
+  {
+    "en": "Rank achieved! Your faction just got a lot luckier.",
+    "nn": "Grad oppnådd! Fraksjonen din vart nett mykje heldigare."
+  },
+  {
+    "en": "Your reputation is a work of art. I appraise art. Priceless.",
+    "nn": "Omdømet ditt er eit kunstverk. Eg takserer kunst. Uvurderleg."
+  },
+  {
+    "en": "They’ve trusted you with their best. Trust me with yours.",
+    "nn": "Dei har gitt deg det beste sitt. Gi meg det beste ditt."
+  },
+  {
+    "en": "Hard-earned honour! Honour looks lovely on you. Gold would too.",
+    "nn": "Hardt tent ære! Ære kler deg nydeleg. Gull hadde òg gjort det."
+  },
+  {
+    "en": "That standing is impressive. I’m impressed. My cousin is impressed.",
+    "nn": "Den rangen er imponerande. Eg er imponert. Søskenbarnet mitt er imponert."
+  },
+  {
+    "en": "What a reputation! The faction must have run out of medals. I sell medals.",
+    "nn": "For eit omdøme! Fraksjonen må ha gått tom for medaljar. Eg sel medaljar."
+  },
+  {
+    "en": "Now you’re known far and wide. Far and wide is where I sell.",
+    "nn": "No er du kjend vidt og breitt. Vidt og breitt er der eg sel."
+  },
+  {
+    "en": "Congratulations! Being respected is worth more than any loot. Almost any.",
+    "nn": "Gratulerer! Å vere respektert er verd meir enn kva loot som helst. Nesten."
+  },
+  {
+    "en": "Faction friend forever! Forever is a long time. Long-term customers are the best.",
+    "nn": "Fraksjonsvenn for alltid! For alltid er lenge. Langvarige kundar er dei beste."
+  },
+  {
+    "en": "You’ve earned their esteem. I esteem you too. Very highly. Pricewise.",
+    "nn": "Du har vunne aktinga deira. Eg aktar deg òg. Svært høgt. Prismessig."
+  },
+  {
+    "en": "Look at you, all respectable! I barely recognise you. Buy something to remind me.",
+    "nn": "Sjå på deg, heilt respektabel! Eg kjenner deg knapt att. Kjøp noko så eg hugsar."
+  },
+  {
+    "en": "I love a hero with a good name. Good names are good for business.",
+    "nn": "Eg elskar ein helt med godt namn. Gode namn er bra for forretninga."
+  },
+  {
+    "en": "Your standing has risen. My expectations have risen too. Shopping-wise.",
+    "nn": "Rangen din har stige. Forventningane mine har stige òg. Handlemessig."
+  },
+  {
+    "en": "That’s a rank worth celebrating. Celebrations cost. You’re worth it.",
+    "nn": "Det er ein grad verd å feire. Feiringar kostar. Du er verd det."
+  },
+  {
+    "en": "Their banner flies for you now. I sell flagpoles.",
+    "nn": "Banneret deira vaiar for deg no. Eg sel flaggstenger."
+  },
+  {
+    "en": "They’ll remember you for ages. I’ll remember you every time I count my coins.",
+    "nn": "Dei kjem til å hugse deg i lange tider. Eg hugsar deg kvar gong eg tel myntane mine."
+  },
+  {
+    "en": "Your faction devotion deserves a statue. Small one. Very small. Affordable.",
+    "nn": "Truskapen din mot fraksjonen fortener ein statue. Liten. Svært liten. Rimeleg."
+  },
+  {
+    "en": "Respected, beloved, admired. And soon richer, I hope.",
+    "nn": "Respektert, elska, beundra. Og snart rikare, håpar eg."
+  },
+  {
+    "en": "What a reputation milestone! I’m adding it to my list of reasons to like you.",
+    "nn": "For ein omdømemilepæl! Eg set han på lista over grunnar til å like deg."
+  },
+  {
+    "en": "Splendid! Every faction should be so lucky. Every merchant too.",
+    "nn": "Strålande! Kvar fraksjon burde vere så heldig. Kvar kremmar òg."
+  },
+  {
+    "en": "Your rep went up, so I raised my respect. Prices stay. Mostly.",
+    "nn": "Omdømet ditt gjekk opp, så eg heva respekten min. Prisane står. Stort sett."
+  },
+  {
+    "en": "Congrats! I hope your new friends throw great parties. And invite me.",
+    "nn": "Gratulerer! Eg håpar dei nye venene dine held gode fester. Og inviterer meg."
+  }
+]

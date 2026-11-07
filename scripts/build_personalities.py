@@ -44,7 +44,7 @@ REACTIONS = ('gz', 'level', 'f', 'gitgood', 'welcome', 'enjoy', 'congrats', 'con
 LINES_PER_REACTION = 300
 # Personalities whose reaction voices ship. The others keep captions only until
 # their reactions are written and proofread; their reactions/ folders are ignored.
-REACTION_VOICES = ('wholesome', 'bard', 'veteran', 'christian', 'smug', 'dwarf', 'jealous', 'drama')
+REACTION_VOICES = ('wholesome', 'bard', 'veteran', 'goblin', 'christian', 'smug', 'dwarf', 'jealous', 'drama')
 # The value filled in when whispering; each line of these types holds it exactly once.
 PLACEHOLDERS = {'level': '{level}', 'enjoy': '{zone}'}
 # Variety: at most this many lines of a reaction file may open with the same two

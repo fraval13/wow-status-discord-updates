@@ -97,7 +97,7 @@
  },
  {
   "en": "That's what I call stubborn. Good stubborn.",
-  "nn": "Det er det eg kallar sta. God sta."
+  "nn": "Det er det eg kallar sta. Sta på den gode måten."
  },
  {
   "en": "Quests are the backbone of a hero. You've got backbone.",
@@ -169,7 +169,7 @@
  },
  {
   "en": "I'd count them myself but my eyes are tired. Congrats.",
-  "nn": "Eg skulle talt dei sjølv, men auga mine er trøytte. Gratulerer."
+  "nn": "Eg skulle ha talt dei sjølv, men auga mine er trøytte. Gratulerer."
  },
  {
   "en": "You've fetched more things than a well-trained dog.",
@@ -205,7 +205,7 @@
  },
  {
   "en": "You've been busy, kid. Good busy.",
-  "nn": "Du har hatt det travelt, gut. God travelheit."
+  "nn": "Du har hatt det travelt, valp. På den gode måten."
  },
  {
   "en": "Ah, the noble errand-runner. Well done.",
@@ -221,7 +221,7 @@
  },
  {
   "en": "Hmph. You're no quitter. I'll give you that.",
-  "nn": "Hm. Du gir ikkje opp. Det skal du få."
+  "nn": "Hm. Du gjev ikkje opp. Det skal du få."
  },
  {
   "en": "Every one of those took a bit of patience. Well done.",
@@ -301,7 +301,7 @@
  },
  {
   "en": "I'd give you a reward, but I'm not a quest giver.",
-  "nn": "Eg skulle gitt deg ei løn, men eg er ingen oppdragsgjevar."
+  "nn": "Eg skulle ha gjeve deg ei løn, men eg er ingen oppdragsgjevar."
  },
  {
   "en": "You've fixed more problems than the town council.",
@@ -361,7 +361,7 @@
  },
  {
   "en": "Steady work, kid. That's how you get anywhere.",
-  "nn": "Jamt arbeid, gut. Det er slik ein kjem nokon stad."
+  "nn": "Jamt arbeid, valp. Det er slik ein kjem nokon stad."
  },
  {
   "en": "Congrats. You've walked further than my old horse.",
@@ -409,7 +409,7 @@
  },
  {
   "en": "Congrats. Even the quest givers are tired of you now.",
-  "nn": "Gratulerer. Sjølv oppdragsgjevarane er lei deg no."
+  "nn": "Gratulerer. Sjølv oppdragsgjevarane er leie av deg no."
  },
  {
   "en": "That's a fine stack of completed quests. Hmph.",
@@ -421,7 +421,7 @@
  },
  {
   "en": "I abandoned half of mine. You didn't. Good.",
-  "nn": "Eg forlét halvparten av mine. Det gjorde ikkje du. Bra."
+  "nn": "Eg gav opp halvparten av mine. Det gjorde ikkje du. Bra."
  },
  {
   "en": "Took effort to get there. Credit where it's due.",
@@ -481,7 +481,7 @@
  },
  {
   "en": "I'm tired just thinking about all those quests.",
-  "nn": "Eg blir trøytt berre eg tenkjer på alle dei oppdraga."
+  "nn": "Eg blir trøytt berre av å tenkje på alle dei oppdraga."
  },
  {
   "en": "Congrats. That's patience I never had.",
@@ -497,7 +497,7 @@
  },
  {
   "en": "Respectable count, kid. Very respectable.",
-  "nn": "Respektabelt tal, gut. Svært respektabelt."
+  "nn": "Respektabelt tal, valp. Svært respektabelt."
  },
  {
   "en": "Hmph. Look at you, helping everyone.",
@@ -505,7 +505,7 @@
  },
  {
   "en": "You've helped everyone else. Help yourself to a rest.",
-  "nn": "Du har hjelpt alle andre. Unn deg sjølv ein kvil."
+  "nn": "Du har hjelpt alle andre. Unn deg sjølv ei kvil."
  },
  {
   "en": "Every quest a step. That's a lot of steps.",
@@ -517,7 +517,7 @@
  },
  {
   "en": "I'd have given up on the escort ones. You didn't.",
-  "nn": "Eg hadde gitt opp eskorteoppdraga. Det gjorde ikkje du."
+  "nn": "Eg hadde gjeve opp eskorteoppdraga. Det gjorde ikkje du."
  },
  {
   "en": "Escort quests are the true test. Well done.",
@@ -525,7 +525,7 @@
  },
  {
   "en": "Hundred more quests. You're a regular old-timer now.",
-  "nn": "Hundre oppdrag til. No er du ein gamal traver."
+  "nn": "Hundre oppdrag til. No er du ein gammal traver."
  },
  {
   "en": "Not as old as me. But getting there.",
@@ -573,7 +573,7 @@
  },
  {
   "en": "Quest givers give bad advice and worse rewards. Congrats anyway.",
-  "nn": "Oppdragsgjevarar gir dårlege råd og endå dårlegare løn. Gratulerer likevel."
+  "nn": "Oppdragsgjevarar gjev dårlege råd og endå dårlegare løn. Gratulerer likevel."
  },
  {
   "en": "Another hundred quests. The bards will sing of it. Badly.",
@@ -617,7 +617,7 @@
  },
  {
   "en": "Well done. That number would make my old guild proud.",
-  "nn": "Godt gjort. Det talet hadde gjort det gamle laget mitt stolt."
+  "nn": "Godt gjort. Det talet hadde gjort den gamle guilden min stolt."
  },
  {
   "en": "Look at you, the realm's favourite helper.",
@@ -645,7 +645,7 @@
  },
  {
   "en": "Well done, kid. You're a proper workhorse.",
-  "nn": "Godt gjort, gut. Du er ein skikkeleg arbeidshest."
+  "nn": "Godt gjort, valp. Du er ein skikkeleg arbeidshest."
  },
  {
   "en": "Another hundred? My, my. Steady as a mule.",
@@ -653,7 +653,7 @@
  },
  {
   "en": "You quest like a mule. From me, that's a compliment.",
-  "nn": "Du løyser oppdrag som eit muldyr. Frå meg er det ein kompliment."
+  "nn": "Du løyser oppdrag som eit muldyr. Frå meg er det eit kompliment."
  },
  {
   "en": "Hmph. That number's bigger than my patience.",
@@ -733,7 +733,7 @@
  },
  {
   "en": "Bet you know where every vendor is now.",
-  "nn": "Du veit nok kvar kvar kjøpmann er no."
+  "nn": "Du veit nok kvar alle kjøpmennene held til no."
  },
  {
   "en": "Congrats. The world's a bit less broken thanks to you.",
@@ -905,7 +905,7 @@
  },
  {
   "en": "Proper hero stuff. Quietly done.",
-  "nn": "Skikkeleg heltesaker. Stilt gjort."
+  "nn": "Skikkeleg heltesaker. Stille gjort."
  },
  {
   "en": "That's a fine tally. Don't stop now.",
@@ -949,7 +949,7 @@
  },
  {
   "en": "I've met quest givers who'd retire on your work alone.",
-  "nn": "Eg har møtt oppdragsgjevarar som kunne gått av med pensjon berre på arbeidet ditt."
+  "nn": "Eg har møtt oppdragsgjevarar som kunne ha gått av med pensjon berre på arbeidet ditt."
  },
  {
   "en": "Another hundred for the ledger. Neat handwriting, too.",
@@ -985,7 +985,7 @@
  },
  {
   "en": "Quests completed, patience intact. Rare combination.",
-  "nn": "Oppdrag fullførte, tolmodet i behald. Sjeldan kombinasjon."
+  "nn": "Oppdrag fullførte, tolmodet i behald. Sjeldsynt kombinasjon."
  },
  {
   "en": "The slow road through every quest. My kind of hero.",
@@ -997,7 +997,7 @@
  },
  {
   "en": "I'd stamp your quest card, if such things existed.",
-  "nn": "Eg skulle stempla oppdragskortet ditt, om slikt fanst."
+  "nn": "Eg skulle ha stempla oppdragskortet ditt, om slikt fanst."
  },
  {
   "en": "That's a hundred more people who'll never remember your name.",
@@ -1057,7 +1057,7 @@
  },
  {
   "en": "Hmph. The kind of number I'd brag about. If I bragged.",
-  "nn": "Hm. Den typen tal eg ville skrytt av. Om eg skrytte."
+  "nn": "Hm. Den typen tal eg ville ha skrytt av. Om eg skrytte."
  },
  {
   "en": "You've delivered enough packages to open a shop.",
@@ -1073,7 +1073,7 @@
  },
  {
   "en": "I'd shake your hand, but you'd just go do another quest.",
-  "nn": "Eg skulle teke deg i handa, men du hadde berre gått og gjort eit oppdrag til."
+  "nn": "Eg skulle ha teke deg i handa, men du hadde berre gått og gjort eit oppdrag til."
  },
  {
   "en": "Congrats on reaching the next hundred without quitting.",
@@ -1125,7 +1125,7 @@
  },
  {
   "en": "Plenty of heroes quit halfway. Not you. Good.",
-  "nn": "Mange heltar gir opp halvvegs. Ikkje du. Bra."
+  "nn": "Mange heltar gjev opp halvvegs. Ikkje du. Bra."
  },
  {
   "en": "I've got a soft spot for honest questers. Don't tell.",
@@ -1173,7 +1173,7 @@
  },
  {
   "en": "A hundred more strangers helped. I'm a little proud.",
-  "nn": "Hundre fleire framande hjelpte. Eg er litt stolt."
+  "nn": "Hundre fleire framande har fått hjelp. Eg er litt stolt."
  },
  {
   "en": "Well done. Have a proper meal. You've earned it.",

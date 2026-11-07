@@ -21,7 +21,7 @@
  },
  {
   "en": "GZ, kid. Now keep moving.",
-  "nn": "GZ, gut. Hald fram no."
+  "nn": "GZ, valp. Hald fram no."
  },
  {
   "en": "Ding, was it? GZ, then.",
@@ -101,7 +101,7 @@
  },
  {
   "en": "GZ, rookie.",
-  "nn": "GZ, nybegynnar."
+  "nn": "GZ, nybyrjar."
  },
  {
   "en": "Took me a week, took you a nap. GZ.",
@@ -113,7 +113,7 @@
  },
  {
   "en": "Quietly, please. GZ.",
-  "nn": "Stilt, takk. GZ."
+  "nn": "Stille, takk. GZ."
  },
  {
   "en": "Huh. GZ.",
@@ -133,7 +133,7 @@
  },
  {
   "en": "My old bones salute you. GZ.",
-  "nn": "Dei gamle knokane mine helsar deg. GZ."
+  "nn": "Dei gamle knoklane mine helsar deg. GZ."
  },
  {
   "en": "You're getting there. Slowly. GZ.",
@@ -241,7 +241,7 @@
  },
  {
   "en": "Don't let the new spells go to waste. GZ.",
-  "nn": "Ikkje la dei nye trolla gå til spille. GZ."
+  "nn": "Ikkje la dei nye trolldomsorda gå til spille. GZ."
  },
  {
   "en": "Get back out there. GZ.",
@@ -321,7 +321,7 @@
  },
  {
   "en": "Go buy some bags with that. GZ.",
-  "nn": "Gå og kjøp nokre bagar for det. GZ."
+  "nn": "Gå og kjøp nokre vesker for det. GZ."
  },
  {
   "en": "Honest work. I respect that. GZ.",
@@ -353,7 +353,7 @@
  },
  {
   "en": "Right. Moving on. GZ.",
-  "nn": "Rett. Vidare. GZ."
+  "nn": "Greitt. Vidare. GZ."
  },
  {
   "en": "Acceptable. GZ.",
@@ -421,7 +421,7 @@
  },
  {
   "en": "I'll raise my mug. Halfway. GZ.",
-  "nn": "Eg lyftar kruset. Halvvegs. GZ."
+  "nn": "Eg løftar kruset. Halvvegs. GZ."
  },
  {
   "en": "Don't get used to compliments. GZ.",
@@ -461,7 +461,7 @@
  },
  {
   "en": "Took ages. Worth it, I suppose. GZ.",
-  "nn": "Tok evig tid. Verdt det, vel. GZ."
+  "nn": "Det tok evig tid. Verdt det, vel. GZ."
  },
  {
   "en": "Don't let the shiny effect fool you. GZ.",
@@ -477,7 +477,7 @@
  },
  {
   "en": "And not a moment too soon. GZ.",
-  "nn": "Og ikkje eit augneblink for tidleg. GZ."
+  "nn": "Og ikkje ein augeblink for tidleg. GZ."
  },
  {
   "en": "You're catching up. Slowly. GZ.",
@@ -493,7 +493,7 @@
  },
  {
   "en": "You did alright, kid. GZ.",
-  "nn": "Du klarte deg bra, gut. GZ."
+  "nn": "Du klarte deg bra, valp. GZ."
  },
  {
   "en": "I've seen faster. Also slower. GZ.",
@@ -553,7 +553,7 @@
  },
  {
   "en": "Fair play. GZ.",
-  "nn": "Ærleg spel. GZ."
+  "nn": "Godt spela. GZ."
  },
  {
   "en": "Out of short pants at last. GZ.",
@@ -653,11 +653,11 @@
  },
  {
   "en": "Gz. Even the murlocs heard that one.",
-  "nn": "Gz. Sjølv murlockane høyrde den."
+  "nn": "Gz. Sjølv murlocane høyrde den."
  },
  {
   "en": "Gz. Your mother would be proud. I'm close.",
-  "nn": "Gz. Mor di hadde vore stolt. Eg er nære."
+  "nn": "Gz. Mor di hadde vore stolt. Eg er nesten der."
  },
  {
   "en": "Gz. Look at you, not dying.",
@@ -701,7 +701,7 @@
  },
  {
   "en": "Grats. Hard work pays. Who knew.",
-  "nn": "Gratulerer. Hardt arbeid lønner seg. Kven skulle tru."
+  "nn": "Gratulerer. Hardt arbeid løner seg. Kven skulle tru."
  },
  {
   "en": "Grats. My pipe went out waiting.",
@@ -729,7 +729,7 @@
  },
  {
   "en": "Grats. You beat the odds. They were low.",
-  "nn": "Gratulerer. Du slo oddsen. Han var låg."
+  "nn": "Gratulerer. Du slo oddsen. Dei var låge."
  },
  {
   "en": "Grats. Don't look so smug.",
@@ -805,7 +805,7 @@
  },
  {
   "en": "Ding. Took a while. Tasted sweet, I bet.",
-  "nn": "Ding. Tok ei stund. Smakte søtt, vil eg tru."
+  "nn": "Ding. Det tok ei stund. Smakte søtt, vil eg tru."
  },
  {
   "en": "Ding. I'll file that under decent.",
@@ -873,7 +873,7 @@
  },
  {
   "en": "All those hours paid off. Gz.",
-  "nn": "Alle dei timane lønte seg. Gz."
+  "nn": "Alle dei timane løna seg. Gz."
  },
  {
   "en": "No cheating there. I can tell. Gz.",
@@ -913,7 +913,7 @@
  },
  {
   "en": "Grind on, kiddo. Gz.",
-  "nn": "Grind vidare, vesle venn. Gz."
+  "nn": "Grind vidare, vesle ven. Gz."
  },
  {
   "en": "That took me back. Gz.",
@@ -933,7 +933,7 @@
  },
  {
   "en": "You'll do, kid. You'll do. Gz.",
-  "nn": "Du duger, gut. Du duger. Gz."
+  "nn": "Du duger, valp. Du duger. Gz."
  },
  {
   "en": "Lowercase gz. That's all you get.",
@@ -945,7 +945,7 @@
  },
  {
   "en": "That ding woke me from my nap. Gz.",
-  "nn": "Den dinginga vekte meg frå lurken. Gz."
+  "nn": "Den dinginga vekte meg frå luren. Gz."
  },
  {
   "en": "Gz from the grumpy corner.",
@@ -1013,7 +1013,7 @@
  },
  {
   "en": "Look at that. The kid levelled. Gz.",
-  "nn": "Sjå der. Guten gjekk opp i nivå. Gz."
+  "nn": "Sjå der. Valpen gjekk opp i nivå. Gz."
  },
  {
   "en": "Bet that felt good. Gz.",
@@ -1033,7 +1033,7 @@
  },
  {
   "en": "Watch out, world. Slightly stronger kid incoming. Gz.",
-  "nn": "Pass deg, verd. Litt sterkare gut på veg. Gz."
+  "nn": "Pass deg, verd. Litt sterkare valp på veg. Gz."
  },
  {
   "en": "That's one less level to grind. Gz.",
@@ -1041,7 +1041,7 @@
  },
  {
   "en": "I felt that ding in my bones. Gz.",
-  "nn": "Eg kjende den dinginga i knokane. Gz."
+  "nn": "Eg kjende den dinginga i knoklane. Gz."
  },
  {
   "en": "Shiny new level. Keep it clean. Gz.",
@@ -1097,7 +1097,7 @@
  },
  {
   "en": "Another level, another bag of problems. Gz.",
-  "nn": "Endå eit nivå, endå ein bag med problem. Gz."
+  "nn": "Endå eit nivå, endå ei veske med problem. Gz."
  },
  {
   "en": "Not every hero gets this far. Gz.",
@@ -1125,7 +1125,7 @@
  },
  {
   "en": "Another notch. Good kid. Gz.",
-  "nn": "Endå eit hakk. Flink gut. Gz."
+  "nn": "Endå eit hakk. Flink valp. Gz."
  },
  {
   "en": "Ding noted. Grumble suspended. Gz.",
@@ -1169,11 +1169,11 @@
  },
  {
   "en": "That's my kid. Well, not mine. Gz.",
-  "nn": "Det er guten min. Nja, ikkje min. Gz."
+  "nn": "Det er valpen min. Nja, ikkje min. Gz."
  },
  {
   "en": "I'll allow one cheer. Hooray. Gz.",
-  "nn": "Eg tillet eitt hurra. Hurra. Gz."
+  "nn": "Eg tillèt eitt hurra. Hurra. Gz."
  },
  {
   "en": "Your ding made my day slightly less grumpy. Gz.",
@@ -1181,7 +1181,7 @@
  },
  {
   "en": "Well, well. A level. Gz, youngster.",
-  "nn": "Nei, nei. Eit nivå. Gz, unge."
+  "nn": "Jaså. Eit nivå. Gz, unge."
  },
  {
   "en": "Stand tall, you've grown a level. Gz.",

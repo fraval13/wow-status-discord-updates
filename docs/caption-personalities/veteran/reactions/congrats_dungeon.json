@@ -69,7 +69,7 @@
  },
  {
   "en": "That dungeon's a rite of passage. You've passed.",
-  "nn": "Det fangeholet er eit overgangsrituale. Du har stått."
+  "nn": "Det fangeholet er eit overgangsrituale. Du har bestått."
  },
  {
   "en": "Look at you, a proper dungeon-crawler now.",
@@ -97,7 +97,7 @@
  },
  {
   "en": "Well done, kid. The dungeon bows to you. Barely.",
-  "nn": "Godt gjort, gut. Fangeholet bøyer seg for deg. Så vidt."
+  "nn": "Godt gjort, valp. Fangeholet bøyer seg for deg. Så vidt."
  },
  {
   "en": "Cleared it, did you? My first time, we wiped six times.",
@@ -125,7 +125,7 @@
  },
  {
   "en": "Took a healer to get you out. Thank them.",
-  "nn": "Det kravde ein healer å få deg ut. Takk han."
+  "nn": "Det kravde ein healer å få deg ut. Takk healeren."
  },
  {
   "en": "Congrats on the clear. The final boss deserved it.",
@@ -209,11 +209,11 @@
  },
  {
   "en": "Well done, dungeon delver.",
-  "nn": "Godt gjort, holegravar."
+  "nn": "Godt gjort, holeutforskar."
  },
  {
   "en": "Took a lot of potions, I bet.",
-  "nn": "Det kosta nok mange drikkar, vil eg tru."
+  "nn": "Det kosta nok mange trylledrikkar, vil eg tru."
  },
  {
   "en": "Congrats on the clear. You'll dream of those corridors.",
@@ -241,7 +241,7 @@
  },
  {
   "en": "Cleared! Well. Quietly cleared. Don't brag.",
-  "nn": "Gjennom! Nja. Stilt gjennom. Ikkje skryt."
+  "nn": "Gjennom! Nja. Stille gjennom. Ikkje skryt."
  },
  {
   "en": "That's a proper adventure. Dark halls and all.",
@@ -265,7 +265,7 @@
  },
  {
   "en": "First clear of a dungeon. Proud of you. Grumpily.",
-  "nn": "Fyrste runden gjennom eit fangehol. Stolt av deg. Gretten."
+  "nn": "Fyrste runden gjennom eit fangehol. Stolt av deg. Grettent."
  },
  {
   "en": "Congrats. Your group must have been patient.",
@@ -277,7 +277,7 @@
  },
  {
   "en": "Well done. Next time, try not to stand in the fire.",
-  "nn": "Godt gjort. Neste gong, prøv å ikkje stå i elden."
+  "nn": "Godt gjort. Neste gong bør du prøve å ikkje stå i elden."
  },
  {
   "en": "That's a proper first clear. Old-school feel.",
@@ -289,7 +289,7 @@
  },
  {
   "en": "Congrats on the clear. Hope you rolled need fairly.",
-  "nn": "Gratulerer med runden. Håpar du kasta behov ærleg."
+  "nn": "Gratulerer med runden. Håpar du rulla need ærleg."
  },
  {
   "en": "Hmph. A full clear and no complaints? Suspicious.",
@@ -297,7 +297,7 @@
  },
  {
   "en": "You've seen the inside of that place now. Lucky you.",
-  "nn": "No har du sett innsida av den staden. Heldige deg."
+  "nn": "No har du sett innsida av den staden. Du er heldig."
  },
  {
   "en": "Well done. The dungeon is a little quieter now.",
@@ -321,7 +321,7 @@
  },
  {
   "en": "First clear. Your corpse runs paid off.",
-  "nn": "Fyrste runden. Likløpa dine lønte seg."
+  "nn": "Fyrste runden. Likløpa dine løna seg."
  },
  {
   "en": "Congrats on the clear. That's a story worth telling.",
@@ -397,7 +397,7 @@
  },
  {
   "en": "Hmph. Clearing dungeons. Very brave. Very young.",
-  "nn": "Hm. Rydde fangehol. Svært modig. Svært ungt."
+  "nn": "Hm. Rydde fangehol. Svært modig. Svært ungdommeleg."
  },
  {
   "en": "Congrats on the clear. Mind the dust on the way out.",
@@ -409,7 +409,7 @@
  },
  {
   "en": "Well done, kid. The dungeon won this time. Kidding. You won.",
-  "nn": "Godt gjort, gut. Fangeholet vann denne gongen. Tullar. Du vann."
+  "nn": "Godt gjort, valp. Fangeholet vann denne gongen. Tullar. Du vann."
  },
  {
   "en": "First dungeon clear. Mark the day.",
@@ -473,7 +473,7 @@
  },
  {
   "en": "Congrats. That's the kind of thing I'd brag about.",
-  "nn": "Gratulerer. Det er den typen ting eg ville skrytt av."
+  "nn": "Gratulerer. Det er den typen ting eg ville ha skrytt av."
  },
  {
   "en": "Well done. You must be tired. Rest.",
@@ -569,7 +569,7 @@
  },
  {
   "en": "I'd show you my dungeon scars, but you'd faint. Congrats.",
-  "nn": "Eg skulle vist deg arra mine frå fangeholet, men du hadde svima av. Gratulerer."
+  "nn": "Eg skulle ha vist deg arra mine frå fangeholet, men du hadde svima av. Gratulerer."
  },
  {
   "en": "Hmph. A clear. Good. Don't wipe celebrating.",
@@ -601,11 +601,11 @@
  },
  {
   "en": "That's a good group effort. I'll grudgingly allow it.",
-  "nn": "Det er ein god gruppeinnsats. Eg tillet det motvillig."
+  "nn": "Det er ein god gruppeinnsats. Eg tillèt det motvillig."
  },
  {
   "en": "No longer a dungeon newbie. Mostly.",
-  "nn": "Ikkje lenger fangeholsnybegynnar. Stort sett."
+  "nn": "Ikkje lenger fangeholsnybyrjar. Stort sett."
  },
  {
   "en": "Hmph. That dungeon has eaten my patience. Not yours.",
@@ -681,7 +681,7 @@
  },
  {
   "en": "The deep places respect you now, kid. A little.",
-  "nn": "Dei djupe stadene respekterer deg no, gut. Litt."
+  "nn": "Dei djupe stadene respekterer deg no, valp. Litt."
  },
  {
   "en": "Hmph. First clear. Ten more and you'll be grumpy like me.",
@@ -717,7 +717,7 @@
  },
  {
   "en": "Hmph. First clear. I'll tell the others. Quietly.",
-  "nn": "Hm. Fyrste runden. Eg seier det til dei andre. Stilt."
+  "nn": "Hm. Fyrste runden. Eg seier det til dei andre. Stille."
  },
  {
   "en": "Congrats on the clear. Glad you got out.",
@@ -765,7 +765,7 @@
  },
  {
   "en": "Hmph. A dungeon clear. I'll allow some celebrating.",
-  "nn": "Hm. Eit fangehol gjennom. Eg tillet litt feiring."
+  "nn": "Hm. Eit fangehol gjennom. Eg tillèt litt feiring."
  },
  {
   "en": "Congrats. That boss had it coming.",
@@ -777,7 +777,7 @@
  },
  {
   "en": "Bring more potions next time. Trust me.",
-  "nn": "Ta med fleire drikkar neste gong. Stol på meg."
+  "nn": "Ta med fleire trylledrikkar neste gong. Stol på meg."
  },
  {
   "en": "Hmph. Your group got through it. Miracle.",
@@ -877,7 +877,7 @@
  },
  {
   "en": "Hmph. I'll raise my mug to your clear.",
-  "nn": "Hm. Eg lyftar kruset for runden din."
+  "nn": "Hm. Eg løftar kruset for runden din."
  },
  {
   "en": "Congrats on the clear. Tell the tank they're a hero.",
@@ -897,7 +897,7 @@
  },
  {
   "en": "Congrats. The dungeon is cleared. Your bags are full. Classic.",
-  "nn": "Gratulerer. Fangeholet er rydda. Bagane dine er fulle. Klassisk."
+  "nn": "Gratulerer. Fangeholet er rydda. Veskene dine er fulle. Klassisk."
  },
  {
   "en": "That's a story for the campfire. Short version, please.",
@@ -913,7 +913,7 @@
  },
  {
   "en": "Congrats on the clear, kid. Proud of you.",
-  "nn": "Gratulerer med runden, gut. Stolt av deg."
+  "nn": "Gratulerer med runden, valp. Stolt av deg."
  },
  {
   "en": "So the dungeon finally gave in. Stubborn thing, like you.",
@@ -997,7 +997,7 @@
  },
  {
   "en": "A dungeon cleared. Your bags groan, your heart sings.",
-  "nn": "Eit fangehol er rydda. Bagane stønnar, hjartet syng."
+  "nn": "Eit fangehol er rydda. Veskene stønnar, hjartet syng."
  },
  {
   "en": "Even the dungeon rats respect you now.",
@@ -1033,7 +1033,7 @@
  },
  {
   "en": "Hmph. A proper group effort. Group efforts are rare.",
-  "nn": "Hm. Ein skikkeleg gruppeinnsats. Slikt er sjeldan."
+  "nn": "Hm. Ein skikkeleg gruppeinnsats. Slikt ser ein sjeldan."
  },
  {
   "en": "That dungeon used to be the end of many a young hero.",
@@ -1081,7 +1081,7 @@
  },
  {
   "en": "The first is always the hardest. Unless it's the second.",
-  "nn": "Den fyrste er alltid den vanskelegaste. Om det ikkje er den andre."
+  "nn": "Den fyrste er alltid den vanskelegaste. Med mindre det er den andre."
  },
  {
   "en": "Hmph. You went where torches fear to go.",
@@ -1117,7 +1117,7 @@
  },
  {
   "en": "Hmph. That's the stuff, kid. Real dungeon stuff.",
-  "nn": "Hm. Det er saker, gut. Ekte fangeholssaker."
+  "nn": "Hm. Det er saker, valp. Ekte fangeholssaker."
  },
  {
   "en": "I've lost count of my clears. Treasure your first.",
@@ -1129,7 +1129,7 @@
  },
  {
   "en": "Dungeons test patience. You passed. Mostly.",
-  "nn": "Fangehol prøver tolmodet. Du stod. Stort sett."
+  "nn": "Fangehol prøver tolmodet. Du bestod. Stort sett."
  },
  {
   "en": "That first clear's a memory now. Keep it.",
@@ -1177,7 +1177,7 @@
  },
  {
   "en": "I've heard about the clear. Grudging respect, kid.",
-  "nn": "Eg har høyrt om runden. Motvillig respekt, gut."
+  "nn": "Eg har høyrt om runden. Motvillig respekt, valp."
  },
  {
   "en": "Good job in the deep. Now wash the dust off.",
@@ -1193,7 +1193,7 @@
  },
  {
   "en": "Hmph. A clean clear is a rare thing. Was it clean? Never mind.",
-  "nn": "Hm. Ein rein runde er sjeldan. Var han rein? Same det."
+  "nn": "Hm. Ein rein runde er sjeldsynt. Var han rein? Same det."
  },
  {
   "en": "You went in. You came out. You won. Simple and good.",

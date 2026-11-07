@@ -13,7 +13,7 @@
  },
  {
   "en": "{zone}. I walked there once. Barefoot. Kidding. Mostly.",
-  "nn": "{zone}. Eg gjekk dit ein gong. Barbeint. Tullar. Stort sett."
+  "nn": "{zone}. Eg gjekk dit ein gong. Berrføtt. Tullar. Stort sett."
  },
  {
   "en": "Have fun in {zone}. Watch your back.",
@@ -29,7 +29,7 @@
  },
  {
   "en": "Enjoy {zone}, kid. I didn't.",
-  "nn": "Kos deg i {zone}, gut. Det gjorde ikkje eg."
+  "nn": "Kos deg i {zone}, valp. Det gjorde ikkje eg."
  },
  {
   "en": "{zone}. Lovely place. Full of things that bite.",
@@ -53,11 +53,11 @@
  },
  {
   "en": "{zone}, huh. I lost a good pair of boots there.",
-  "nn": "{zone}, ja. Eg miste eit godt par støvlar der."
+  "nn": "{zone}, ja. Eg mista eit godt par støvlar der."
  },
  {
   "en": "Look for the boots I lost in {zone}, will you?",
-  "nn": "Sjå etter støvlane eg miste i {zone}, vil du?"
+  "nn": "Sjå etter støvlane eg mista i {zone}, vil du?"
  },
  {
   "en": "Enjoy {zone}. Stay on the road.",
@@ -153,7 +153,7 @@
  },
  {
   "en": "{zone}. Say hello to the innkeeper for me.",
-  "nn": "{zone}. Helse vertshusverten frå meg."
+  "nn": "{zone}. Hels til vertshusverten frå meg."
  },
  {
   "en": "Tell the innkeeper in {zone} I still owe nothing.",
@@ -161,7 +161,7 @@
  },
  {
   "en": "Enjoy {zone}. Don't pull more than you can chew.",
-  "nn": "Kos deg i {zone}. Ikkje pull meir enn du klarer å tygge."
+  "nn": "Kos deg i {zone}. Ikkje pull meir enn du klarar å tygge."
  },
  {
   "en": "Ah, {zone}. They don't make zones like that anymore.",
@@ -177,11 +177,11 @@
  },
  {
   "en": "Have fun in {zone}. Stay out of the caves.",
-  "nn": "Ha det gøy i {zone}. Hald deg unna hòlene."
+  "nn": "Ha det gøy i {zone}. Hald deg unna holene."
  },
  {
   "en": "{zone}. Caves are where bad things live.",
-  "nn": "{zone}. Det er i hòlene det vonde bur."
+  "nn": "{zone}. Det er i holene det vonde bur."
  },
  {
   "en": "Enjoy {zone}. And stop sightseeing.",
@@ -197,7 +197,7 @@
  },
  {
   "en": "{zone}. Mind the cliffs, kid.",
-  "nn": "{zone}. Pass deg for stupa, gut."
+  "nn": "{zone}. Pass deg for stupa, valp."
  },
  {
   "en": "Enjoy {zone}. The quests there are long.",
@@ -253,7 +253,7 @@
  },
  {
   "en": "Welcome to {zone}, rookie. Behave.",
-  "nn": "Velkomen til {zone}, nybegynnar. Oppfør deg."
+  "nn": "Velkomen til {zone}, nybyrjar. Oppfør deg."
  },
  {
   "en": "{zone}. Even I liked that one. A bit.",
@@ -277,7 +277,7 @@
  },
  {
   "en": "Ah, {zone}. My knees ache just hearing that name.",
-  "nn": "Å, {zone}. Knea mine verkjer berre eg høyrer det namnet."
+  "nn": "Å, {zone}. Knea mine verkjer berre av å høyre det namnet."
  },
  {
   "en": "{zone}. Bring a jacket.",
@@ -305,7 +305,7 @@
  },
  {
   "en": "{zone}. I'd come along, but my back.",
-  "nn": "{zone}. Eg skulle vore med, men ryggen min."
+  "nn": "{zone}. Eg skulle ha vore med, men ryggen min."
  },
  {
   "en": "Ah, {zone}. Proper adventure country.",
@@ -313,7 +313,7 @@
  },
  {
   "en": "{zone}. Keep your eyes open, kid.",
-  "nn": "{zone}. Hald auga opne, gut."
+  "nn": "{zone}. Hald auga opne, valp."
  },
  {
   "en": "Enjoy {zone}. Every bush has teeth.",
@@ -393,7 +393,7 @@
  },
  {
   "en": "{zone}. I'd tell you a story about it, but it's long.",
-  "nn": "{zone}. Eg skulle fortalt ei historie om det, men ho er lang."
+  "nn": "{zone}. Eg skulle ha fortalt ei historie om det, men ho er lang."
  },
  {
   "en": "{zone}. Remind me to tell you that story.",
@@ -429,7 +429,7 @@
  },
  {
   "en": "Sell your junk before {zone}. Bags fill fast there.",
-  "nn": "Sel skrapet ditt før {zone}. Bagane blir fort fulle der."
+  "nn": "Sel skrapet ditt før {zone}. Veskene blir fort fulle der."
  },
  {
   "en": "{zone}. Vendors there rip you off. Haggle.",
@@ -441,11 +441,11 @@
  },
  {
   "en": "{zone}. Good luck, rookie. You'll need it.",
-  "nn": "{zone}. Lukke til, nybegynnar. Du treng det."
+  "nn": "{zone}. Lukke til, nybyrjar. Du treng det."
  },
  {
   "en": "Warm socks for {zone}, kid. Trust an old man.",
-  "nn": "Varme sokkar til {zone}, gut. Stol på ein gammal mann."
+  "nn": "Varme sokkar til {zone}, valp. Stol på ein gammal mann."
  },
  {
   "en": "{zone}. Warm socks matter. Trust an old man.",
@@ -489,7 +489,7 @@
  },
  {
   "en": "{zone}. I'd say be careful, but you won't.",
-  "nn": "{zone}. Eg skulle sagt ver forsiktig, men det blir du ikkje."
+  "nn": "{zone}. Eg skulle ha bede deg vere forsiktig, men det blir du ikkje."
  },
  {
   "en": "Come back from {zone} without fleas, please.",
@@ -529,7 +529,7 @@
  },
  {
   "en": "{zone}. Ruins are never empty, kid.",
-  "nn": "{zone}. Ruinar er aldri tomme, gut."
+  "nn": "{zone}. Ruinar er aldri tomme, valp."
  },
  {
   "en": "Note where the graveyards are in {zone}. You'll need them.",
@@ -697,7 +697,7 @@
  },
  {
   "en": "Ah, {zone}. Good hunting, kid.",
-  "nn": "Å, {zone}. God jakt, gut."
+  "nn": "Å, {zone}. God jakt, valp."
  },
  {
   "en": "{zone}. Hope your boots are waterproof.",
@@ -741,7 +741,7 @@
  },
  {
   "en": "{zone}. Took a wrong turn there once. Lost a day.",
-  "nn": "{zone}. Eg svinga feil der ein gong. Miste ein dag."
+  "nn": "{zone}. Eg svinga feil der ein gong. Mista ein dag."
  },
  {
   "en": "Take the right turns in {zone}. I took the wrong ones.",
@@ -765,7 +765,7 @@
  },
  {
   "en": "The bridges in {zone} are dangerous, kid. Look both ways.",
-  "nn": "Bruene i {zone} er farlege, gut. Sjå til begge sider."
+  "nn": "Bruene i {zone} er farlege, valp. Sjå til begge sider."
  },
  {
   "en": "{zone}. Everything there is dangerous. Even the trees.",
@@ -865,7 +865,7 @@
  },
  {
   "en": "I crossed {zone} slower than you will. Enjoy the speed.",
-  "nn": "Eg kom meg gjennom {zone} seinare enn du kjem til å gjere. Nyt farten."
+  "nn": "Eg kom meg gjennom {zone} saktare enn du kjem til å gjere. Nyt farten."
  },
  {
   "en": "Wander {zone} for me. My legs won't.",
@@ -885,7 +885,7 @@
  },
  {
   "en": "Watch yourself in {zone}, kid.",
-  "nn": "Pass deg i {zone}, gut."
+  "nn": "Pass deg i {zone}, valp."
  },
  {
   "en": "They say {zone} is lovely this time of year. Liars.",
@@ -901,7 +901,7 @@
  },
  {
   "en": "Say hello to the mobs in {zone}. With your sword.",
-  "nn": "Helse på monstra i {zone}. Med sverdet."
+  "nn": "Hels på monstra i {zone}. Med sverdet."
  },
  {
   "en": "Good choice, {zone}. Well, a choice.",
@@ -985,11 +985,11 @@
  },
  {
   "en": "If {zone} gets rough, retreat. No shame.",
-  "nn": "Blir {zone} tøft, trekk deg tilbake. Inga skam."
+  "nn": "Blir det tøft i {zone}, trekk deg tilbake. Inga skam."
  },
  {
   "en": "Hmph. {zone}. I liked it before it got crowded.",
-  "nn": "Hm. {zone}. Eg likte det før det blei folksamt."
+  "nn": "Hm. {zone}. Eg likte det før det vart folksamt."
  },
  {
   "en": "Mind the edges in {zone}. Long drops.",
@@ -1009,7 +1009,7 @@
  },
  {
   "en": "Keep a potion handy in {zone}. Or three.",
-  "nn": "Ha ein drikk klar i {zone}. Eller tre."
+  "nn": "Ha ein trylledrikk klar i {zone}. Eller tre."
  },
  {
   "en": "Don't trust the quiet in {zone}.",
@@ -1017,7 +1017,7 @@
  },
  {
   "en": "I lost a whole afternoon in {zone}. Don't.",
-  "nn": "Eg miste ein heil ettermiddag i {zone}. Ikkje gjer det."
+  "nn": "Eg mista ein heil ettermiddag i {zone}. Ikkje gjer det."
  },
  {
   "en": "Lose two afternoons in {zone}. It's worth it.",
@@ -1029,7 +1029,7 @@
  },
  {
   "en": "Remember to breathe in {zone}. The view, kid.",
-  "nn": "Hugs å puste i {zone}. Utsikta, gut."
+  "nn": "Hugs å puste i {zone}. Utsikta, valp."
  },
  {
   "en": "You'll grumble about {zone} someday too.",
@@ -1041,7 +1041,7 @@
  },
  {
   "en": "I never finished {zone}. You'd better.",
-  "nn": "Eg vart aldri ferdig med {zone}. Det får du bli."
+  "nn": "Eg vart aldri ferdig med {zone}. Sjå til at du blir det."
  },
  {
   "en": "Careful around the water in {zone}.",
@@ -1085,11 +1085,11 @@
  },
  {
   "en": "I'd join you in {zone}, but I'm comfy here.",
-  "nn": "Eg skulle vore med deg til {zone}, men eg sit så godt."
+  "nn": "Eg skulle ha vore med deg til {zone}, men eg sit så godt."
  },
  {
   "en": "Pack light for {zone}. Bags fill fast.",
-  "nn": "Pakk lett til {zone}. Bagane blir fort fulle."
+  "nn": "Pakk lett til {zone}. Veskene blir fort fulle."
  },
  {
   "en": "Enjoy every grumble-worthy corner of {zone}.",
@@ -1169,7 +1169,7 @@
  },
  {
   "en": "Proud of you for reaching {zone}. Quietly.",
-  "nn": "Stolt av deg for å nå {zone}. Stilt."
+  "nn": "Stolt av deg for å nå {zone}. Stille."
  },
  {
   "en": "Take your time in {zone}. It's not going anywhere.",

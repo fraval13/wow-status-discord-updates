@@ -13,7 +13,7 @@
  },
  {
   "en": "Fetch my fainting couch, it's level {level}!",
-  "nn": "Hent besvimingssofaen min, det er nivå {level}!"
+  "nn": "Hent sjeselongen min, eg svimar, det er nivå {level}!"
  },
  {
   "en": "History is made: level {level}!",
@@ -65,7 +65,7 @@
  },
  {
   "en": "I'm writing a sonnet called Level {level}!",
-  "nn": "Eg skriv ein sonett som heiter Nivå {level}!"
+  "nn": "Eg skriv ein sonett som heiter «Nivå {level}»!"
  },
  {
   "en": "Now I've seen everything. Level {level}!",
@@ -137,7 +137,7 @@
  },
  {
   "en": "I baked a level {level} cake. Then I cried on it.",
-  "nn": "Eg baka ei kake for nivå {level}. Så gret eg på henne."
+  "nn": "Eg baka ei kake for nivå {level}. Så gret eg på ho."
  },
  {
   "en": "Never been this emotional. Level {level}!",
@@ -185,7 +185,7 @@
  },
  {
   "en": "I've fainted twice since you hit level {level}!",
-  "nn": "Eg har svime av to gonger sidan du nådde nivå {level}!"
+  "nn": "Eg har svima av to gonger sidan du nådde nivå {level}!"
  },
  {
   "en": "Somebody check on me. You're level {level}!",
@@ -521,7 +521,7 @@
  },
  {
   "en": "Level {level}! I dropped my sandwich in shock!",
-  "nn": "Nivå {level}! Eg miste brødskiva mi av sjokk!"
+  "nn": "Nivå {level}! Eg mista brødskiva mi av sjokk!"
  },
  {
   "en": "You climbed to level {level} like a legend!",
@@ -661,7 +661,7 @@
  },
  {
   "en": "Level {level}, and I couldn't be prouder!",
-  "nn": "Nivå {level}, og eg kunne ikkje vore stoltare!"
+  "nn": "Nivå {level}, og eg kunne ikkje ha vore stoltare!"
  },
  {
   "en": "I hugged my pillow and screamed level {level}!",
@@ -681,7 +681,7 @@
  },
  {
   "en": "Congrats on level {level}! I've fainted twice!",
-  "nn": "Gratulerer med nivå {level}! Eg har svime av to gonger!"
+  "nn": "Gratulerer med nivå {level}! Eg har svima av to gonger!"
  },
  {
   "en": "Darling! Level {level}! The emotions!",
@@ -753,7 +753,7 @@
  },
  {
   "en": "All hail the newly crowned level {level} hero!",
-  "nn": "Lenge leve den nykrønte helten på nivå {level}!"
+  "nn": "Lenge leve den nykrona helten på nivå {level}!"
  },
  {
   "en": "Grab the confetti, level {level} is here!",
@@ -981,7 +981,7 @@
  },
  {
   "en": "Fly, my hero! Level {level} awaits!",
-  "nn": "Fly, helten min! Nivå {level} ventar!"
+  "nn": "Flyg, helten min! Nivå {level} ventar!"
  },
  {
   "en": "In all my life, I've never seen a finer level {level}!",
