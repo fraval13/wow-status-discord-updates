@@ -229,6 +229,36 @@ function P.quiet()
     local group = ok and S.value(inside) and INSTANCE[S.string(kind) or ""]
     return group ~= nil and group ~= false and quiet[group] == true
 end
+-- A sound per kind of notification, from the game's own sounds (sound kit IDs).
+-- Nothing plays unless chosen; "/wstatus popup sound on" makes the chime the default.
+P.SOUNDS = {{"None", 0}, {"Soft chime", 850}, {"Level-up fanfare", 888}, {"Quest complete", 878},
+    {"Ready check", 8960}, {"Raid warning", 8959}, {"Alarm", 12889}}
+P.SOUND_KINDS = {{"level", "Level-ups"}, {"death", "Deaths"}, {"loot", "Armor"}, {"zone", "New zones"}, {"other", "Everything else"}}
+local function soundKind(item)
+    if item.level then return "level" end
+    local kind = item.kind
+    return (kind == "death" or kind == "loot" or kind == "zone") and kind or "other"
+end
+function P.sound(kind)
+    local chosen = prefs and type(prefs.sounds) == "table" and S.number(prefs.sounds[kind])
+    if chosen then return chosen end
+    return prefs and prefs.sound and 850 or 0
+end
+function P.setSound(kind, id)
+    if not prefs then return false end
+    prefs.sounds = type(prefs.sounds) == "table" and prefs.sounds or {}
+    prefs.sounds[kind] = tonumber(id) or 0
+    return true
+end
+function P.soundFor(item) return type(item) == "table" and P.sound(soundKind(item)) or 0 end
+function P.soundName(id)
+    for _, entry in ipairs(P.SOUNDS) do if entry[2] == id then return entry[1] end end
+    return tostring(id)
+end
+function P.playSound(id)
+    id = tonumber(id)
+    if id and id > 0 and PlaySound then pcall(PlaySound, id) end
+end
 local function groupMode(character)
     character = character or (getCharacter and getCharacter())
     return character and next(WoWStatusGroups.selected(character)) ~= nil
@@ -1164,9 +1194,7 @@ local function show(item, now)
     item.hide_at = now + 6
     active, lastDisplay = item, now
     if not item.preview then prefs.last_receive={state="displayed",sender=item.sender,kind=item.kind or "level",at=now} end
-    if prefs.sound and PlaySound and SOUNDKIT and SOUNDKIT.IG_MAINMENU_OPEN then
-        PlaySound(SOUNDKIT.IG_MAINMENU_OPEN)
-    end
+    P.playSound(P.soundFor(item))
 end
 
 

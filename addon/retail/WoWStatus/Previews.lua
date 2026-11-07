@@ -53,7 +53,7 @@ function P.show(host)
         end
         -- Settings first; below a line, the previews.
         local options = 150
-        local previews = options + 560
+        local previews = options + 760
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -125,6 +125,23 @@ function P.show(host)
         -- Quiet mode: notifications wait in the instances ticked (off by default).
         panel.quiet=check("Quiet mode: hold notifications in",-options-474,function() return WoWStatusPopups.quietSettings().enabled end,
             function(value) WoWStatusPopups.setQuiet("enabled",value) end)
+        -- Sounds, one per kind of notification; picking one plays it.
+        text(panel,"Sounds",24,-options-556,300)
+        panel.sounds={}
+        for i,entry in ipairs(WoWStatusPopups.SOUND_KINDS) do
+            local kind,y=entry[1],-options-590-(i-1)*34
+            text(panel,entry[2],44,y-4,200)
+            local widget=button(panel,"",250,y,200,function(self)
+                local items={}
+                for _,sound in ipairs(WoWStatusPopups.SOUNDS) do items[#items+1]={label=WoWStatusLocale.T(sound[1]),value=sound[2]} end
+                WoWStatusUI.menu(self,items,function(id)
+                    WoWStatusPopups.setSound(kind,id);WoWStatusPopups.playSound(id)
+                    self:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(id)))
+                end)
+            end)
+            widget.kind=kind
+            panel.sounds[kind]=widget
+        end
         panel.quietKinds={}
         for i,entry in ipairs({{"pvp","Battlegrounds"},{"raid","Raids"},{"party","Dungeons"}}) do
             local key=entry[1]
@@ -155,6 +172,7 @@ function P.show(host)
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.quiet:SetChecked(panel.quiet.get() == true)
+    for kind,widget in pairs(panel.sounds) do widget:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.sound(kind)))) end
     for _,widget in pairs(panel.quietKinds) do widget:SetChecked(widget.get() == true) end
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.refreshLanguage()
