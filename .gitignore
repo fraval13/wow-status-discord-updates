@@ -3,7 +3,7 @@
 !.env.example
 __pycache__/
 *.py[cod]
-.venv/
+.venv
 state/
 *.sqlite3
 *.sqlite3-*

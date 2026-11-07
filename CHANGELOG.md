@@ -10,6 +10,11 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Friends whose list came through a group count as members even when WoW's channel list misses them
+- When WoW shows you alone in a group channel, your updates go straight to friends from their lists
+
 ## 1.26.0
 
 - Friends whose list came through a group count as members even when WoW's channel list misses them
