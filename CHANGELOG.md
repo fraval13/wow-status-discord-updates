@@ -14,6 +14,11 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 - Two new caption personalities: Secret agent and Middle-school legend, in English and Nynorsk
 
+## 1.39.0
+
+- Controller support: move through WoW Status windows with the D-pad, A selects, B goes back, LB/RB change page
+- New key bindings to open WoW Status, open the activity log and dismiss a notification
+
 ## 1.38.0
 
 - Pick the caption personality and the reaction voice from dropdowns that list every choice

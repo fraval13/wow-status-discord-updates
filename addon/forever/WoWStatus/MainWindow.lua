@@ -221,6 +221,8 @@ function M.path()
         link.label:SetText(text)
         if crumb.target then link.label:SetTextColor(1, .82, 0) else link.label:SetTextColor(.85, .85, .85) end
         link.target = crumb.target
+        -- Only links take clicks, so controller navigation passes over the rest.
+        if link.SetEnabled then link:SetEnabled(crumb.target ~= nil) end
         local width = (link.label.GetStringWidth and link.label:GetStringWidth() or #text * 7) + 10
         link:SetWidth(width)
         link:ClearAllPoints(); link:SetPoint("TOPLEFT", x, -20)

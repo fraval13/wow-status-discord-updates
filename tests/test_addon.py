@@ -221,6 +221,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Previews.lua')
     run_addon_file(runtime, root / 'Screenshots.lua')
     run_addon_file(runtime, root / 'Milestones.lua')
+    run_addon_file(runtime, root / 'Gamepad.lua')
     run_addon_file(runtime, root / 'WoWStatus.lua')
     runtime.eval('fire')('PLAYER_LOGIN')
     # Most tests start like an existing account: no setup guide, Options opened

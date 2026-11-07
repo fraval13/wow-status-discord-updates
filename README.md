@@ -77,6 +77,24 @@ log, records and all 1,300 captions change; what players send each other stays
 English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
 and the release notes stay English.
 
+## Controller
+
+With gamepad support switched on in the game's own options, WoW Status windows
+can be used with a controller. While a window is open, the **D-pad** moves a gold
+highlight between its buttons and fields, **A** presses, **X** right-clicks, **B**
+leaves a text field, closes a menu, goes Back or closes the window, **LB/RB** change
+page in the main window and the **right stick** scrolls lists. The highlight shows
+on the first controller press and hides again when you use the mouse. Other
+buttons still reach the game, and in combat the window lets go of the controller
+completely. Typing (a group ID) still needs a keyboard or the on-screen keyboard
+of a handheld such as the Steam Deck.
+
+Under **Key Bindings → AddOns → WoW Status** you can put *Open or close WoW Status*,
+*Open the activity log* and *Dismiss the notification* on controller or keyboard
+buttons. With the ConsolePort addon loaded, WoW Status leaves navigation to
+ConsolePort. `/wstatus controller off` turns navigation off (`on` turns it back on);
+`/wstatus controller` shows its state.
+
 ## Caption personalities
 
 The funny line under each notification comes from a **Random** personality by

@@ -197,6 +197,15 @@ W.add({
     ["Screenshots are not available in this client."] = "Skjermbilete er ikkje tilgjengeleg i denne klienten.",
     ["A screenshot is already being taken."] = "Det blir alt teke eit skjermbilete.",
     ["Minimap button distance reset."] = "Avstanden til minikartknappen er tilbakestilt.",
+    -- Controller navigation and key bindings
+    ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
+    ["Open the activity log"] = "Opne aktivitetsloggen",
+    ["Dismiss the notification"] = "Lukk varselet",
+    ["Controller navigation is off. Type /wstatus controller on to turn it on."] = "Kontrollnavigering er av. Skriv /wstatus controller on for å slå ho på.",
+    ["Controller navigation steps aside for ConsolePort."] = "Kontrollnavigeringa viker for ConsolePort.",
+    ["Controller navigation is on; it starts when gamepad support is enabled in the game's options."] = "Kontrollnavigering er på; ho startar når handkontroll er slått på i innstillingane til spelet.",
+    ["Controller navigation is on: D-pad moves, A selects, B goes back, LB/RB change page, the right stick scrolls."] = "Kontrollnavigering er på: krossen flyttar, A vel, B går tilbake, LB/RB byter side, høgre stikke rullar.",
+    ["Usage: /wstatus controller [on | off]"] = "Bruk: /wstatus controller [on | off]",
     ["Activity syncs automatically when group members log in."] = "Aktiviteten blir synka automatisk når gruppemedlemer loggar inn.",
     ["Sharing paused."] = "Delinga er sett på pause.", ["Filter updated."] = "Filteret er oppdatert.", ["Invalid filter value."] = "Ugyldig filterverdi.",
     ["Enable profession sharing first. Names are player-entered, not verified skill ranks."] =

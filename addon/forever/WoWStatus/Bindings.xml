@@ -1,0 +1,5 @@
+<Bindings>
+	<Binding name="WOWSTATUS_TOGGLE" header="WOWSTATUS">WoWStatusGamepad.toggle()</Binding>
+	<Binding name="WOWSTATUS_ACTIVITY">WoWStatusGamepad.activity()</Binding>
+	<Binding name="WOWSTATUS_DISMISS">WoWStatusGamepad.dismiss()</Binding>
+</Bindings>
