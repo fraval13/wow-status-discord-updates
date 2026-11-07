@@ -77,6 +77,8 @@ PERSONALITIES = (
     Personality('dwarf', 'Dwarf', 'Dverg', 'FlavourDwarf.lua'),
     Personality('jealous', 'Jealous friend', 'Sjalu venn', 'FlavourJealous.lua'),
     Personality('drama', 'Drama queen', 'Dramadronning', 'FlavourDrama.lua'),
+    Personality('agent', 'Secret agent', 'Hemmeleg agent', 'FlavourAgent.lua'),
+    Personality('legend', 'Middle-school legend', 'Ungdomsskulelegende', 'FlavourLegend.lua'),
 )
 
 

@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Two new caption personalities: Secret agent and Middle-school legend, in English and Nynorsk
+
 ## 1.39.0
 
 - Controller support: move through WoW Status windows with the D-pad, A selects, B goes back, LB/RB change page

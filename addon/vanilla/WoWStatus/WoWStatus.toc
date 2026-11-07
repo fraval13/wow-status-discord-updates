@@ -30,6 +30,8 @@ FlavourSmug.lua
 FlavourDwarf.lua
 FlavourJealous.lua
 FlavourDrama.lua
+FlavourAgent.lua
+FlavourLegend.lua
 Theme.lua
 MainWindow.lua
 Overview.lua
