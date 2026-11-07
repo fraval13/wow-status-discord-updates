@@ -224,7 +224,14 @@ function F.week(group, offset)
             if p[e.kind] then p[e.kind] = p[e.kind] + 1 end
         end
     end
-    table.sort(order, function(a, b) return a.level ~= b.level and a.level > b.level or a.name < b.name end)
+    -- Most levels first, then by name. Written as two statements on purpose:
+    -- "a.level ~= b.level and a.level > b.level or a.name < b.name" parses as
+    -- (levels differ and a is higher) or (a sorts first by name), which answers
+    -- true both ways round for two people on different levels.
+    table.sort(order, function(a, b)
+        if a.level ~= b.level then return a.level > b.level end
+        return a.name < b.name
+    end)
     local lines = {}
     local function best(key, label)
         local top

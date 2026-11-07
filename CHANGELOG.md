@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Records: This week now lists people by how many levels they gained, most first
+
 ## 1.25.0
 
 - Armor headings name the piece: RARE RING EQUIPPED!, EPIC TRINKET EQUIPPED! (SJELDAN RING PÅ! in Nynorsk)
