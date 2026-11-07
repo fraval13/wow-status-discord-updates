@@ -74,3 +74,11 @@ def test_updates_go_to_friends_from_their_lists_while_alone():
     lua.eval('WoWStatusPopups.tick')()
     targets = [p['target'] for p in lua.eval('__sent').values() if 'WSTATUS2' in p['text']]
     assert 'Mira-TestRealm' in targets
+
+
+def test_on_forever_updates_are_whispered_to_the_plain_name():
+    lua, group = alone()
+    lua.execute('WoWStatusAdapter.full_names = true')
+    lua.eval('WoWStatusRoster.receive')(
+        f'C {group} 4d6972614d697261 Frank Mira_Stone-CAMWOWEU5Realm7PvE Dwarf 3 WARRIOR 12', 'Mira Stone', 'WHISPER')
+    assert list(lua.eval('WoWStatusRoster.recentMembers')(group).values()) == ['Mira Stone']

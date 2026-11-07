@@ -569,7 +569,9 @@ function R.invite(name, id)
     end
     if not via then return false, "They need to be online in a group you share." end
     local hex = label:gsub(".", function(c) return string.format("%02x", c:byte()) end)
-    table.insert(outgoing, {target=name, text=table.concat({"N", via, state().id, hex}, " ")})
+    -- WoW Forever whispers need the plain name (see recentMembers).
+    local target = WoWStatusAdapter.full_names and (name:match("^[^-]+") or name) or name
+    table.insert(outgoing, {target=target, text=table.concat({"N", via, state().id, hex}, " ")})
     return true, "Invite sent."
 end
 -- Characters of friends whose list came through a group in the last 12 hours
@@ -582,7 +584,9 @@ function R.recentMembers(group)
             for _, character in pairs(player.characters) do
                 if #list < 30 and S.string(character.name) and now - (S.number(character.at) or 0) < 12 * 3600
                     and not WoWStatusPopups.isSelf(character.name) then
-                    list[#list + 1] = character.name
+                    -- WoW Forever whispers reach "Durek Disco"; "Durek Disco-CAMWOWEU5Realm1PvE"
+                    -- bounces with "No player named ...", even on one's own internal realm.
+                    list[#list + 1] = WoWStatusAdapter.full_names and (character.name:match("^[^-]+") or character.name) or character.name
                 end
             end
         end
