@@ -572,6 +572,23 @@ function R.invite(name, id)
     table.insert(outgoing, {target=name, text=table.concat({"N", via, state().id, hex}, " ")})
     return true, "Invite sent."
 end
+-- Characters of friends whose list came through a group in the last 12 hours
+-- (at most 30), for sending when the game shows nobody in the group's channel.
+function R.recentMembers(group)
+    if not db or not current then return {} end
+    local list, now = {}, time()
+    for _, player in pairs(state().players) do
+        if type(player.groups) == "table" and player.groups[group] then
+            for _, character in pairs(player.characters) do
+                if #list < 30 and S.string(character.name) and now - (S.number(character.at) or 0) < 12 * 3600
+                    and not WoWStatusPopups.isSelf(character.name) then
+                    list[#list + 1] = character.name
+                end
+            end
+        end
+    end
+    return list
+end
 -- The first version that confirms live updates (WSACK).
 R.ACK_VERSION = "1.25.0"
 -- A member's addon version, from their list ("1.25.0"), or nil.

@@ -1346,6 +1346,13 @@ local function tick()
         if not send then status("unsupported_addon_whispers", item.event); return end
         if not item.targets then
             local targets = P.peers(item.group_id)
+            -- Shown alone in the channel: send to the friends whose lists arrived
+            -- recently instead of waiting (offline ones simply do not get it).
+            if #targets == 0 and lonely(item.group_id) and WoWStatusRoster and WoWStatusRoster.recentMembers then
+                targets = WoWStatusRoster.recentMembers(item.group_id)
+                item.fromLists = #targets > 0 or nil -- The member list cannot say who left.
+                if #targets > 0 then S.debug("member list empty: sending to " .. #targets .. " friends from their lists") end
+            end
             if #targets == 0 then status("waiting_for_group_peers", item.event); return end
             item.targets, item.target, item.since, item.checked = targets, 1, now, now
         elseif now - item.checked >= 10 then
@@ -1368,8 +1375,9 @@ local function tick()
             local delivered = item.event and deliveredTo[item.event]
             return delivered ~= nil and delivered[P.senderKey(target) or ""] == true
         end
-        while departed(item.group_id, item.targets[item.target], item.since) or reached(item.targets[item.target]) do
-            local gone = departed(item.group_id, item.targets[item.target], item.since)
+        local function left(target) return not item.fromLists and departed(item.group_id, target, item.since) end
+        while left(item.targets[item.target]) or reached(item.targets[item.target]) do
+            local gone = left(item.targets[item.target])
             item.unsure = nil -- A pending retry was for that peer.
             if item.target == #item.targets then
                 table.remove(outgoing, 1)

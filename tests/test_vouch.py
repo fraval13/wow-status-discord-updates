@@ -61,3 +61,16 @@ def test_a_friends_list_is_accepted_while_alone():
     assert ok
     names = [r.name for g in lua.eval('WoWStatusRoster.groups()').values() for r in g.rows.values()]
     assert 'Mira-TestRealm' in names
+
+
+def test_updates_go_to_friends_from_their_lists_while_alone():
+    lua, group = alone()
+    lua.eval('WoWStatusRoster.receive')(
+        f'C {group} 4d6972614d697261 Frank Mira-TestRealm Dwarf 3 WARRIOR 12', 'Mira-TestRealm', 'WHISPER')
+    # Forget the trust from that message: only the list remains.
+    lua.execute('for _, known in pairs({}) do end')
+    clock(lua, 2000)
+    lua.eval('fire')('PLAYER_LEVEL_UP', 3)
+    lua.eval('WoWStatusPopups.tick')()
+    targets = [p['target'] for p in lua.eval('__sent').values() if 'WSTATUS2' in p['text']]
+    assert 'Mira-TestRealm' in targets
