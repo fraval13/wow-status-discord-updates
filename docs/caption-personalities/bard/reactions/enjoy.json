@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "May the roads of {zone} sing beneath your boots, hero!",
+  "nn": "Måtte vegane i {zone} syngje under støvlane dine, helt!"
+ },
+ {
+  "en": "Hail, wanderer! {zone} awaits your legend.",
+  "nn": "Ære vere deg, vandrar! {zone} ventar på segna di."
+ },
+ {
+  "en": "For your days in {zone}, I shall compose a travel ballad!",
+  "nn": "Til dagane dine i {zone} skal eg dikte eit reisekvad!"
+ },
+ {
+  "en": "{zone}! A land worthy of your footsteps. Enjoy!",
+  "nn": "{zone}! Eit land verdig fotspora dine. Kos deg!"
+ },
+ {
+  "en": "Enjoy {zone}, brave explorer! Mind the local wildlife.",
+  "nn": "Kos deg i {zone}, djerve oppdagar! Pass deg for dyra der."
+ },
+ {
+  "en": "Behold, {zone} bows before its new visitor! Enjoy!",
+  "nn": "Sjå, {zone} bøyer seg for den nye gjesten! Kos deg!"
+ },
+ {
+  "en": "Enjoy {zone}! The map grows richer with every step.",
+  "nn": "Kos deg i {zone}! Kartet vert rikare for kvart steg."
+ },
+ {
+  "en": "Onward into {zone}, bold one! Enjoy the vistas!",
+  "nn": "Fram mot {zone}, djerve! Kos deg med utsikta!"
+ },
+ {
+  "en": "Enjoy {zone}! May the innkeepers there know your name soon.",
+  "nn": "Kos deg i {zone}! Måtte vertane der snart kjenne namnet ditt."
+ },
+ {
+  "en": "Enjoy {zone}, friend! Every new land is a new verse.",
+  "nn": "Kos deg i {zone}, venn! Kvart nytt land er eit nytt vers."
+ },
+ {
+  "en": "A hero strides into {zone}! Enjoy, and send me tales!",
+  "nn": "Ein helt steg inn i {zone}! Kos deg, og send meg soger!"
+ },
+ {
+  "en": "Enjoy {zone}! The wind there carries songs of old.",
+  "nn": "Kos deg i {zone}! Vinden der ber på gamle songar."
+ },
+ {
+  "en": "Enjoy {zone}! Its horizons were made for heroes like you.",
+  "nn": "Kos deg i {zone}! Horisontane der vart laga for heltar som deg."
+ },
+ {
+  "en": "Ah, {zone}! The bards speak of it in hushed tones. Enjoy!",
+  "nn": "Å, {zone}! Skaldane talar lågt om det. Kos deg!"
+ },
+ {
+  "en": "Enjoy {zone}! Let the first chapter there be glorious.",
+  "nn": "Kos deg i {zone}! Lat det første kapittelet der bli herleg."
+ },
+ {
+  "en": "Enjoy {zone}, adventurer! Adventure smells different there.",
+  "nn": "Kos deg i {zone}, eventyrar! Eventyret luktar annleis der."
+ },
+ {
+  "en": "Welcome to {zone}, explorer! Enjoy every mile!",
+  "nn": "Velkomen til {zone}, oppdagar! Kos deg kvar ei mil!"
+ },
+ {
+  "en": "Enjoy {zone}! I hear the sunsets there are worth a sonnet.",
+  "nn": "Kos deg i {zone}! Eg høyrer at solnedgangane der er verd ein sonett."
+ },
+ {
+  "en": "Enjoy {zone}! Tread boldly, for legends are watching.",
+  "nn": "Kos deg i {zone}! Gå djervt fram, for segnene ser på."
+ },
+ {
+  "en": "Enjoy {zone}! Its mysteries tremble at your approach.",
+  "nn": "Kos deg i {zone}! Løyndomane der skjelv når du nærmar deg."
+ },
+ {
+  "en": "{zone} at last! Enjoy it, wanderer of wonders!",
+  "nn": "{zone} endeleg! Kos deg, du vandrar mellom under!"
+ },
+ {
+  "en": "Enjoy {zone}, hero! May its paths lead to glory.",
+  "nn": "Kos deg i {zone}, helt! Måtte stigane der føre til ære."
+ },
+ {
+  "en": "Enjoy {zone}! Do bring me back a souvenir and a story.",
+  "nn": "Kos deg i {zone}! Ta med deg ein suvenir og ei soge attende."
+ },
+ {
+  "en": "Enjoy {zone}! The land itself sighs: finally, a hero.",
+  "nn": "Kos deg i {zone}! Landet sjølv sukkar: endeleg ein helt."
+ },
+ {
+  "en": "Enjoy {zone}, mighty one! Conquer it gently.",
+  "nn": "Kos deg i {zone}, mektige! Erobre det varsamt."
+ },
+ {
+  "en": "Enjoy {zone}! I shall add it to the map of your saga.",
+  "nn": "Kos deg i {zone}! Eg skal føre det inn på kartet over soga di."
+ },
+ {
+  "en": "To {zone} goes our hero! Enjoy the journey!",
+  "nn": "Til {zone} dreg helten vår! Kos deg på ferda!"
+ },
+ {
+  "en": "Enjoy {zone}! The flight master there is lucky to meet you.",
+  "nn": "Kos deg i {zone}! Flygemeisteren der er heldig som får møte deg."
+ },
+ {
+  "en": "Enjoy {zone}! Its quests have long awaited a worthy soul.",
+  "nn": "Kos deg i {zone}! Oppdraga der har lenge venta på ei verdig sjel."
+ },
+ {
+  "en": "Enjoy {zone}, friend! May its skies be kind to you.",
+  "nn": "Kos deg i {zone}, venn! Måtte himmelen der vere snill mot deg."
+ },
+ {
+  "en": "Hail the traveler! Enjoy {zone}!",
+  "nn": "Ære til den reisande! Kos deg i {zone}!"
+ },
+ {
+  "en": "Enjoy {zone}! A new land, a new legend!",
+  "nn": "Kos deg i {zone}! Eit nytt land, ei ny segn!"
+ },
+ {
+  "en": "Enjoy {zone}! May you find treasure, friends and good bread.",
+  "nn": "Kos deg i {zone}! Måtte du finne skattar, vener og godt brød."
+ },
+ {
+  "en": "Enjoy {zone}! The cartographers envy you.",
+  "nn": "Kos deg i {zone}! Kartteiknarane misunner deg."
+ },
+ {
+  "en": "Enjoy {zone}! The locals shall tell of your arrival.",
+  "nn": "Kos deg i {zone}! Folket der skal fortelje om komen din."
+ },
+ {
+  "en": "Enjoy {zone}, valiant one! Walk it like you own it.",
+  "nn": "Kos deg i {zone}, djerve! Gå der som om du eig staden."
+ },
+ {
+  "en": "Enjoy {zone}! A fine stage for your next heroic act.",
+  "nn": "Kos deg i {zone}! Ei fin scene for den neste heltedåda di."
+ },
+ {
+  "en": "Enjoy {zone}! I hum a little marching song for you.",
+  "nn": "Kos deg i {zone}! Eg nynnar ein liten marsjsong for deg."
+ },
+ {
+  "en": "Enjoy {zone}! The road unfurls like a scroll before you.",
+  "nn": "Kos deg i {zone}! Vegen rullar seg ut framfor deg som ein rull."
+ },
+ {
+  "en": "Enjoy {zone}! Its monsters have no idea what is coming.",
+  "nn": "Kos deg i {zone}! Monstera der aner ikkje kva som kjem."
+ },
+ {
+  "en": "May {zone} greet you with fair winds and friendly faces!",
+  "nn": "Måtte {zone} ta imot deg med god vind og venlege andlet!"
+ },
+ {
+  "en": "A new land! May {zone} prove worthy of your legend.",
+  "nn": "Eit nytt land! Måtte {zone} vise seg verdig segna di."
+ },
+ {
+  "en": "So you have reached {zone}! I shall write a travel verse at once.",
+  "nn": "Så du har nådd {zone}! Eg skal skrive eit reisevers med ein gong."
+ },
+ {
+  "en": "Tread proudly in {zone}, my wandering friend!",
+  "nn": "Gå stolt fram i {zone}, min vandrande venn!"
+ },
+ {
+  "en": "The bards say {zone} is lovely this time of year. Enjoy!",
+  "nn": "Skaldane seier at {zone} er nydeleg på denne tida av året. Kos deg!"
+ },
+ {
+  "en": "Fair travels through {zone}, brave one!",
+  "nn": "God ferd gjennom {zone}, modige!"
+ },
+ {
+  "en": "I envy you, friend! {zone} awaits your boots.",
+  "nn": "Eg misunner deg, venn! {zone} ventar på støvlane dine."
+ },
+ {
+  "en": "May the roads of {zone} lead you to treasure and tales!",
+  "nn": "Måtte vegane i {zone} føre deg til skattar og soger!"
+ },
+ {
+  "en": "Ah, {zone}! A fine stage for your next chapter.",
+  "nn": "Å, {zone}! Ei fin scene for neste kapittel ditt."
+ },
+ {
+  "en": "Explore every corner of {zone}, and tell me all!",
+  "nn": "Utforsk kvar krok av {zone}, og fortel meg alt!"
+ },
+ {
+  "en": "The map grows wider! Have a grand time in {zone}!",
+  "nn": "Kartet vert vidare! Ha det storveges i {zone}!"
+ },
+ {
+  "en": "Walk boldly into {zone}, hero. Legends begin with a step.",
+  "nn": "Gå djervt inn i {zone}, helt. Segner tek til med eitt steg."
+ },
+ {
+  "en": "May {zone} be kind to you and cruel to your foes!",
+  "nn": "Måtte {zone} vere snill mot deg og hard mot fiendane dine!"
+ },
+ {
+  "en": "New lands await! Savor every sight in {zone}!",
+  "nn": "Nye land ventar! Nyt kvart syn i {zone}!"
+ },
+ {
+  "en": "I hear the inns of {zone} pour a fine mead. Enjoy!",
+  "nn": "Eg høyrer at vertshusa i {zone} skjenkjer god mjød. Kos deg!"
+ },
+ {
+  "en": "Your saga travels on to {zone}! How splendid!",
+  "nn": "Soga di reiser vidare til {zone}! Så prektig!"
+ },
+ {
+  "en": "May the skies over {zone} smile upon you!",
+  "nn": "Måtte himmelen over {zone} smile til deg!"
+ },
+ {
+  "en": "Onward, explorer! {zone} has secrets just for you.",
+  "nn": "Fram, oppdagar! {zone} har løyndomar berre til deg."
+ },
+ {
+  "en": "I shall compose a ballad called The Hero in {zone}!",
+  "nn": "Eg skal dikte eit kvad som heiter Helten i {zone}!"
+ },
+ {
+  "en": "The wind carries you to {zone}. Ride it gladly!",
+  "nn": "Vinden ber deg til {zone}. Følg han med glede!"
+ },
+ {
+  "en": "Fresh horizons! Have a wonderful journey through {zone}!",
+  "nn": "Nye horisontar! Ha ei fin ferd gjennom {zone}!"
+ },
+ {
+  "en": "Brave wanderer, may {zone} fill your pack and your heart!",
+  "nn": "Djerve vandrar, måtte {zone} fylle både sekken og hjartet ditt!"
+ },
+ {
+  "en": "Take in the views of {zone}, friend. Heroes need beauty too.",
+  "nn": "Nyt utsikta i {zone}, venn. Heltar treng òg venleik."
+ },
+ {
+  "en": "I raise my cup to your arrival in {zone}!",
+  "nn": "Eg lyftar begeret for at du er komen til {zone}!"
+ },
+ {
+  "en": "The locals of {zone} have no idea a legend just arrived.",
+  "nn": "Folket i {zone} aner ikkje at ei segn nett er komen."
+ },
+ {
+  "en": "May your time in {zone} be rich with adventure!",
+  "nn": "Måtte tida di i {zone} vere rik på eventyr!"
+ },
+ {
+  "en": "Lucky {zone}, to be visited by you!",
+  "nn": "Heldige {zone}, som får besøk av deg!"
+ },
+ {
+  "en": "Off you go into {zone}! Bring back a story!",
+  "nn": "Av garde inn i {zone}! Ta med deg ei soge heim!"
+ },
+ {
+  "en": "Every land you walk becomes part of the saga. Enjoy {zone}!",
+  "nn": "Kvart land du går i, vert ein del av soga. Kos deg i {zone}!"
+ },
+ {
+  "en": "Mind the beasts of {zone}, and enjoy the scenery!",
+  "nn": "Pass deg for dyra i {zone}, og nyt landskapet!"
+ },
+ {
+  "en": "Ah, the scent of new adventure! {zone} awaits!",
+  "nn": "Å, lukta av nye eventyr! {zone} ventar!"
+ },
+ {
+  "en": "May {zone} offer you treasure, glory and a warm bed!",
+  "nn": "Måtte {zone} gje deg skattar, ære og ei varm seng!"
+ },
+ {
+  "en": "Fare well in {zone}, valiant friend!",
+  "nn": "Lev vel i {zone}, djerve venn!"
+ },
+ {
+  "en": "Your footprints will be the first legend in {zone}!",
+  "nn": "Fotspora dine blir den første segna i {zone}!"
+ },
+ {
+  "en": "The bards of {zone} will soon learn your name.",
+  "nn": "Skaldane i {zone} skal snart lære namnet ditt."
+ },
+ {
+  "en": "Breathe deep the air of {zone}, hero! Adventure is in it!",
+  "nn": "Pust djupt inn lufta i {zone}, helt! Det er eventyr i ho!"
+ },
+ {
+  "en": "New land, new verse! Have fun in {zone}!",
+  "nn": "Nytt land, nytt vers! Ha det moro i {zone}!"
+ },
+ {
+  "en": "I wish you joy and safe roads in {zone}!",
+  "nn": "Eg ønskjer deg glede og trygge vegar i {zone}!"
+ },
+ {
+  "en": "May every path in {zone} lead somewhere wonderful!",
+  "nn": "Måtte kvar sti i {zone} føre til ein underfull stad!"
+ },
+ {
+  "en": "Wander well, friend! {zone} is yours to discover.",
+  "nn": "Vandre vel, venn! {zone} ligg open for deg å oppdage."
+ },
+ {
+  "en": "They say {zone} has wonders untold. Go tell them!",
+  "nn": "Dei seier at {zone} har ufortalde under. Gå og fortel om dei!"
+ },
+ {
+  "en": "Here begins the {zone} chapter of your saga!",
+  "nn": "Her tek {zone}-kapittelet i soga di til!"
+ },
+ {
+  "en": "Your courage carries you to {zone}. Enjoy the ride!",
+  "nn": "Motet ditt ber deg til {zone}. Kos deg på ferda!"
+ },
+ {
+  "en": "A hero in {zone}! The land itself seems brighter.",
+  "nn": "Ein helt i {zone}! Landet sjølv ser lysare ut."
+ },
+ {
+  "en": "The adventure continues! Have a splendid time in {zone}!",
+  "nn": "Eventyret held fram! Ha ei prektig tid i {zone}!"
+ },
+ {
+  "en": "I shall mark {zone} on the map of your legend!",
+  "nn": "Eg skal merke {zone} på kartet over segna di!"
+ },
+ {
+  "en": "Go forth and conquer {zone}, gently and gloriously!",
+  "nn": "Dra ut og erobre {zone}, varsamt og herleg!"
+ },
+ {
+  "en": "May the quests in {zone} be many and merry!",
+  "nn": "Måtte oppdraga i {zone} vere mange og lystige!"
+ },
+ {
+  "en": "Look around, friend! {zone} is a sight for heroic eyes.",
+  "nn": "Sjå deg rundt, venn! {zone} er eit syn for heltars auge."
+ },
+ {
+  "en": "With joy I hear of your journey to {zone}!",
+  "nn": "Med glede høyrer eg om ferda di til {zone}!"
+ },
+ {
+  "en": "Fair winds to you in {zone}, my wandering hero!",
+  "nn": "God bør til deg i {zone}, min vandrande helt!"
+ },
+ {
+  "en": "I pray {zone} has good inns and soft beds for you!",
+  "nn": "Eg håpar {zone} har gode vertshus og mjuke senger til deg!"
+ },
+ {
+  "en": "What wonders will you find in {zone}? Tell me soon!",
+  "nn": "Kva under finn du i {zone}? Fortel meg snart!"
+ },
+ {
+  "en": "The saga moves to {zone}! I follow in spirit.",
+  "nn": "Soga flyttar til {zone}! Eg følgjer med i ånda."
+ },
+ {
+  "en": "Have a glorious time in {zone}, brave one!",
+  "nn": "Ha ei herleg tid i {zone}, modige!"
+ },
+ {
+  "en": "Let {zone} be the setting of your next great deed!",
+  "nn": "Lat {zone} vere staden for den neste store dåda di!"
+ },
+ {
+  "en": "Stride into {zone} like the hero you are!",
+  "nn": "Steg inn i {zone} som den helten du er!"
+ },
+ {
+  "en": "The road to {zone} was long. May the stay be sweet!",
+  "nn": "Vegen til {zone} var lang. Måtte opphaldet bli søtt!"
+ },
+ {
+  "en": "I hope {zone} treats you like the legend you are!",
+  "nn": "Eg håpar {zone} behandlar deg som den segna du er!"
+ },
+ {
+  "en": "Find your glory in {zone}, friend, and a good meal too!",
+  "nn": "Finn æra di i {zone}, venn, og eit godt måltid òg!"
+ },
+ {
+  "en": "Oh, {zone}! I have sung of it, but never seen it. Enjoy!",
+  "nn": "Å, {zone}! Eg har kvede om det, men aldri sett det. Kos deg!"
+ },
+ {
+  "en": "Adventure awaits in {zone}. Seize it, hero!",
+  "nn": "Eventyret ventar i {zone}. Grip det, helt!"
+ },
+ {
+  "en": "Your boots now walk the soil of {zone}. Splendid!",
+  "nn": "Støvlane dine går no på jorda i {zone}. Prektig!"
+ },
+ {
+  "en": "Bon voyage through {zone}, valiant soul!",
+  "nn": "God tur gjennom {zone}, djerve sjel!"
+ },
+ {
+  "en": "May the wildlife of {zone} be more cuddly than deadly!",
+  "nn": "Måtte dyra i {zone} vere meir kosete enn farlege!"
+ },
+ {
+  "en": "I wish you a merry journey across {zone}!",
+  "nn": "Eg ønskjer deg ei lystig ferd over {zone}!"
+ },
+ {
+  "en": "Spread your legend across {zone}, friend!",
+  "nn": "Sprei segna di utover {zone}, venn!"
+ },
+ {
+  "en": "The land of {zone} rolls out its welcome mat for you!",
+  "nn": "{zone} rullar ut velkomstteppet for deg!"
+ },
+ {
+  "en": "Enjoy the sights, sounds and monsters of {zone}!",
+  "nn": "Kos deg med syna, lydane og monstera i {zone}!"
+ },
+ {
+  "en": "Explore {zone} with an open heart and a sharp blade!",
+  "nn": "Utforsk {zone} med ope hjarte og kvass klinge!"
+ },
+ {
+  "en": "A new realm to roam! May {zone} delight you!",
+  "nn": "Eit nytt rike å streife i! Måtte {zone} glede deg!"
+ },
+ {
+  "en": "I am painting {zone} into your saga as we speak.",
+  "nn": "Eg målar {zone} inn i soga di medan vi snakkar."
+ },
+ {
+  "en": "Go, hero, and make {zone} a happier place!",
+  "nn": "Gå, helt, og gjer {zone} til ein lukkelegare stad!"
+ },
+ {
+  "en": "May you find friends, fortune and fine views in {zone}!",
+  "nn": "Måtte du finne vener, lukke og fin utsikt i {zone}!"
+ },
+ {
+  "en": "You bring adventure wherever you go. Now to {zone}!",
+  "nn": "Du tek med deg eventyr kvar du går. No til {zone}!"
+ },
+ {
+  "en": "Be bold in {zone}, and be merry too!",
+  "nn": "Ver djerv i {zone}, og ver lystig òg!"
+ },
+ {
+  "en": "The horizon of {zone} beckons. Answer it gladly!",
+  "nn": "Horisonten i {zone} lokkar. Svar han med glede!"
+ },
+ {
+  "en": "I raise a toast to the hero now roaming {zone}!",
+  "nn": "Eg skålar for helten som no streifar i {zone}!"
+ },
+ {
+  "en": "The ballad of your travels gains a {zone} verse!",
+  "nn": "Kvadet om ferdene dine får eit {zone}-vers!"
+ },
+ {
+  "en": "Welcome to new lands, friend! Savor {zone}!",
+  "nn": "Velkomen til nye land, venn! Nyt {zone}!"
+ },
+ {
+  "en": "Discover the hidden corners of {zone}, explorer!",
+  "nn": "Oppdag dei løynde krokane i {zone}, oppdagar!"
+ },
+ {
+  "en": "May {zone} gift you with a tale worth singing!",
+  "nn": "Måtte {zone} gje deg ei soge verd å kvede!"
+ },
+ {
+  "en": "Take your time in {zone}. Heroes may wander too.",
+  "nn": "Ta deg tid i {zone}. Heltar kan òg vandre."
+ },
+ {
+  "en": "Let the hills of {zone} hear your heroic footsteps!",
+  "nn": "Lat haugane i {zone} høyre dei heroiske stega dine!"
+ },
+ {
+  "en": "Fortune favors the explorer! Enjoy {zone}!",
+  "nn": "Lukka står den modige oppdagaren bi! Kos deg i {zone}!"
+ },
+ {
+  "en": "Ah, the wonders of {zone}! You lucky adventurer!",
+  "nn": "Å, undera i {zone}! Du heldige eventyrar!"
+ },
+ {
+  "en": "May your journey through {zone} be grand and glorious!",
+  "nn": "Måtte ferda di gjennom {zone} bli storslått og herleg!"
+ },
+ {
+  "en": "I wait eagerly for tales of {zone}!",
+  "nn": "Eg ventar spent på soger frå {zone}!"
+ },
+ {
+  "en": "Let {zone} remember the day you arrived!",
+  "nn": "Lat {zone} hugse dagen du kom!"
+ },
+ {
+  "en": "Have a marvelous adventure in {zone}, friend!",
+  "nn": "Ha eit vidunderleg eventyr i {zone}, venn!"
+ },
+ {
+  "en": "Bring your courage and curiosity to {zone}!",
+  "nn": "Ta med deg mot og nyfikne til {zone}!"
+ },
+ {
+  "en": "Rejoice! A new land! May {zone} treat you well!",
+  "nn": "Gled deg! Eit nytt land! Måtte {zone} vere god mot deg!"
+ },
+ {
+  "en": "The adventure in {zone} begins now. Go, hero, go!",
+  "nn": "Eventyret i {zone} tek til no. Gå, helt, gå!"
+ },
+ {
+  "en": "May every sunrise in {zone} find you smiling!",
+  "nn": "Måtte kvar soloppgang i {zone} finne deg smilande!"
+ },
+ {
+  "en": "Your saga gains a new backdrop: {zone}!",
+  "nn": "Soga di får ei ny kulisse: {zone}!"
+ },
+ {
+  "en": "Go see what {zone} has hidden for heroes!",
+  "nn": "Gå og sjå kva {zone} har gøymt for heltar!"
+ },
+ {
+  "en": "I salute you, traveler of {zone}!",
+  "nn": "Eg helsar deg, du som reiser i {zone}!"
+ },
+ {
+  "en": "Fair weather and fine loot in {zone}, friend!",
+  "nn": "Godt vêr og fin loot i {zone}, venn!"
+ },
+ {
+  "en": "May {zone} be a highlight of your legend!",
+  "nn": "Måtte {zone} bli eit høgdepunkt i segna di!"
+ },
+ {
+  "en": "Let your lantern shine across {zone}!",
+  "nn": "Lat lykta di skine over {zone}!"
+ },
+ {
+  "en": "Hark, traveler! {zone} has been waiting for a hero like you.",
+  "nn": "Høyr, reisande! {zone} har venta på ein helt som deg."
+ },
+ {
+  "en": "Off to {zone} with my blessing and a song!",
+  "nn": "Av garde til {zone} med signinga mi og ein song!"
+ },
+ {
+  "en": "Wander {zone} wide and well, friend!",
+  "nn": "Vandre vidt og vel i {zone}, venn!"
+ },
+ {
+  "en": "Your legend is now on tour! Next stop: {zone}!",
+  "nn": "Segna di er no på turné! Neste stopp: {zone}!"
+ },
+ {
+  "en": "What adventures does {zone} hold? Go find out!",
+  "nn": "Kva eventyr gøymer {zone}? Gå og finn ut!"
+ },
+ {
+  "en": "I hope the monsters in {zone} are polite. Enjoy!",
+  "nn": "Eg håpar monstera i {zone} er høflege. Kos deg!"
+ },
+ {
+  "en": "May you find a fine view and a finer tale in {zone}!",
+  "nn": "Måtte du finne ei fin utsikt og ei endå finare soge i {zone}!"
+ },
+ {
+  "en": "New land underfoot! Have fun in {zone}, hero!",
+  "nn": "Nytt land under føtene! Ha det moro i {zone}, helt!"
+ },
+ {
+  "en": "The road unrolls into {zone}. Follow it gladly!",
+  "nn": "Vegen rullar seg ut inn i {zone}. Følg han med glede!"
+ },
+ {
+  "en": "You and {zone}: the start of a beautiful saga!",
+  "nn": "Du og {zone}: byrjinga på ei vakker soge!"
+ },
+ {
+  "en": "I sing a little travel song as you enter {zone}.",
+  "nn": "Eg syng ein liten reisesong når du kjem inn i {zone}."
+ },
+ {
+  "en": "Go gently through {zone}, and gloriously!",
+  "nn": "Gå varsamt gjennom {zone}, og herleg!"
+ },
+ {
+  "en": "May {zone} offer good hunting and better company!",
+  "nn": "Måtte {zone} by på god jakt og endå betre selskap!"
+ },
+ {
+  "en": "New sights for heroic eyes! Delight in {zone}!",
+  "nn": "Nye syn for heltars auge! Gled deg over {zone}!"
+ },
+ {
+  "en": "Every corner of {zone} hides a story. Find them!",
+  "nn": "Kvar krok i {zone} gøymer ei soge. Finn dei!"
+ },
+ {
+  "en": "The breeze of {zone} carries a welcome for you.",
+  "nn": "Brisen i {zone} ber ei velkomsthelsing til deg."
+ },
+ {
+  "en": "Explorer, {zone} is your canvas. Paint it with deeds!",
+  "nn": "Oppdagar, {zone} er lerretet ditt. Mål det med dådene dine!"
+ },
+ {
+  "en": "Let {zone} add a fine chapter to your story!",
+  "nn": "Lat {zone} leggje eit fint kapittel til soga di!"
+ },
+ {
+  "en": "May the trails of {zone} be gentle on your feet!",
+  "nn": "Måtte stigane i {zone} vere milde mot føtene dine!"
+ },
+ {
+  "en": "I would join you in {zone}, but someone must sing of it.",
+  "nn": "Eg ville blitt med deg til {zone}, men nokon må kvede om det."
+ },
+ {
+  "en": "The scenery of {zone} is surely improved by you.",
+  "nn": "Landskapet i {zone} vert nok betre med deg der."
+ },
+ {
+  "en": "Your travels take you to {zone}. Lucky land!",
+  "nn": "Ferdene dine tek deg til {zone}. Heldig land!"
+ },
+ {
+  "en": "Seek wonders in {zone}, hero, and you shall find them!",
+  "nn": "Søk etter under i {zone}, helt, og du skal finne dei!"
+ },
+ {
+  "en": "Venture forth into {zone} with a song in your heart!",
+  "nn": "Våg deg inn i {zone} med ein song i hjartet!"
+ },
+ {
+  "en": "Fortune and fair skies to you in {zone}!",
+  "nn": "Lukke og klår himmel til deg i {zone}!"
+ },
+ {
+  "en": "Here is to your first steps in {zone}!",
+  "nn": "Skål for dei første stega dine i {zone}!"
+ },
+ {
+  "en": "May {zone} be full of quests and free of trouble!",
+  "nn": "Måtte det vere mykje oppdrag og lite trøbbel i {zone}!"
+ },
+ {
+  "en": "Have a merry adventure in {zone}, my friend!",
+  "nn": "Ha eit lystig eventyr i {zone}, venen min!"
+ },
+ {
+  "en": "Let your banner fly over {zone}!",
+  "nn": "Lat banneret ditt vaie over {zone}!"
+ },
+ {
+  "en": "I imagine you in {zone}, looking very heroic. Enjoy!",
+  "nn": "Eg ser deg for meg i {zone}, svært heroisk. Kos deg!"
+ },
+ {
+  "en": "The world is wide, and now it includes {zone}!",
+  "nn": "Verda er vid, og no har ho med {zone}!"
+ },
+ {
+  "en": "Savor the strangeness and splendor of {zone}!",
+  "nn": "Nyt det framande og storslåtte i {zone}!"
+ },
+ {
+  "en": "I trust {zone} will be honored by your visit!",
+  "nn": "Eg trur {zone} vert æra av besøket ditt!"
+ },
+ {
+  "en": "Breathe in, look around, and enjoy {zone}, friend!",
+  "nn": "Pust inn, sjå deg rundt, og kos deg i {zone}, venn!"
+ },
+ {
+  "en": "Bold steps into {zone}! The saga marches with you!",
+  "nn": "Djerve steg inn i {zone}! Soga marsjerer med deg!"
+ },
+ {
+  "en": "May you find the best tavern in {zone} quickly!",
+  "nn": "Måtte du snøgt finne det beste vertshuset i {zone}!"
+ },
+ {
+  "en": "{zone} welcomes the wanderer with open arms!",
+  "nn": "{zone} tek imot vandraren med opne armar!"
+ },
+ {
+  "en": "Write your name upon {zone} with good deeds!",
+  "nn": "Skriv namnet ditt i {zone} med gode dåder!"
+ },
+ {
+  "en": "Every new land makes you grander. Enjoy {zone}!",
+  "nn": "Kvart nytt land gjer deg større. Kos deg i {zone}!"
+ },
+ {
+  "en": "Venture boldly, rest gladly, and enjoy {zone}!",
+  "nn": "Våg deg djervt fram, kvil med glede og kos deg i {zone}!"
+ },
+ {
+  "en": "May the stars over {zone} guide you well!",
+  "nn": "Måtte stjernene over {zone} leie deg godt!"
+ },
+ {
+  "en": "Your journey to {zone} has my heartiest blessing!",
+  "nn": "Ferda di til {zone} har den hjartelegaste signinga mi!"
+ },
+ {
+  "en": "A new land, a new song! Enjoy every note in {zone}!",
+  "nn": "Eit nytt land, ein ny song! Nyt kvar tone i {zone}!"
+ },
+ {
+  "en": "I hear {zone} is splendid. You will make it more so!",
+  "nn": "Eg høyrer at {zone} er prektig. Du kjem til å gjere det endå meir!"
+ },
+ {
+  "en": "Make memories in {zone}, friend, and bring them home!",
+  "nn": "Lag minne i {zone}, venn, og ta dei med heim!"
+ },
+ {
+  "en": "May the people of {zone} sing your praises soon!",
+  "nn": "Måtte folket i {zone} snart syngje lovsongar om deg!"
+ },
+ {
+  "en": "Behold, a new land to love! Enjoy {zone}!",
+  "nn": "Sjå, eit nytt land å elske! Kos deg i {zone}!"
+ },
+ {
+  "en": "Let {zone} surprise and delight you, hero!",
+  "nn": "Lat {zone} overraske og glede deg, helt!"
+ },
+ {
+  "en": "The explorer's heart beats fast in {zone}!",
+  "nn": "Oppdagarhjartet slår fort i {zone}!"
+ },
+ {
+  "en": "Long may you roam in {zone}, friend!",
+  "nn": "Lenge må du streife i {zone}, venn!"
+ },
+ {
+  "en": "Dear wanderer, {zone} is lucky to have you!",
+  "nn": "Kjære vandrar, {zone} er heldig som får deg!"
+ },
+ {
+  "en": "My heart travels with you to {zone}. Enjoy it!",
+  "nn": "Hjartet mitt reiser med deg til {zone}. Kos deg!"
+ },
+ {
+  "en": "Seek the high places of {zone} and gaze upon them!",
+  "nn": "Søk dei høge stadene i {zone} og sjå utover!"
+ },
+ {
+  "en": "A fresh adventure in {zone}! Off you go, hero!",
+  "nn": "Eit ferskt eventyr i {zone}! Av garde, helt!"
+ },
+ {
+  "en": "Spend your days in {zone} gloriously, friend!",
+  "nn": "Bruk dagane dine i {zone} på herleg vis, venn!"
+ },
+ {
+  "en": "May you return from {zone} with pockets full and spirits high!",
+  "nn": "Måtte du kome heim frå {zone} med fulle lommer og godt mot!"
+ },
+ {
+  "en": "The land of {zone} unfolds before you. Enjoy the tale!",
+  "nn": "Landet {zone} breier seg ut framfor deg. Nyt soga!"
+ },
+ {
+  "en": "I hope {zone} has as much heart as you do!",
+  "nn": "Eg håpar {zone} har like mykje hjarte som du!"
+ },
+ {
+  "en": "From the bard to the explorer: enjoy {zone}!",
+  "nn": "Frå skalden til oppdagaren: kos deg i {zone}!"
+ },
+ {
+  "en": "Go discover {zone}! I will tune my harp meanwhile.",
+  "nn": "Gå og oppdag {zone}! Eg stemmer harpa i mellomtida."
+ },
+ {
+  "en": "Your map now holds {zone}. A treasured addition!",
+  "nn": "Kartet ditt har no med {zone}. Eit verdfullt tilskot!"
+ },
+ {
+  "en": "May {zone} offer peace between your adventures!",
+  "nn": "Måtte {zone} gje deg fred mellom eventyra!"
+ },
+ {
+  "en": "Have a heroic stroll through {zone}, friend!",
+  "nn": "Ha ein heroisk spasertur gjennom {zone}, venn!"
+ },
+ {
+  "en": "The air in {zone} tastes of legend. Breathe deep!",
+  "nn": "Lufta i {zone} smakar segn. Pust djupt!"
+ },
+ {
+  "en": "Another land for the hero! Delight in {zone}!",
+  "nn": "Endå eit land for helten! Gled deg over {zone}!"
+ },
+ {
+  "en": "I shall await your stories from {zone} by the fire.",
+  "nn": "Eg ventar på sogene dine frå {zone} ved elden."
+ },
+ {
+  "en": "The adventure calls from {zone}. Answer it!",
+  "nn": "Eventyret kallar frå {zone}. Svar på kallet!"
+ },
+ {
+  "en": "May the dangers of {zone} be small and the rewards large!",
+  "nn": "Måtte farane i {zone} vere små og løna stor!"
+ },
+ {
+  "en": "Wander, wonder and enjoy {zone}!",
+  "nn": "Vandre, undre deg og kos deg i {zone}!"
+ },
+ {
+  "en": "Into {zone} goes my bravest friend!",
+  "nn": "Inn i {zone} går den modigaste venen min!"
+ },
+ {
+  "en": "Find your fortune in {zone}, hero!",
+  "nn": "Finn lukka di i {zone}, helt!"
+ },
+ {
+  "en": "The ravens tell me you have reached {zone}. Enjoy!",
+  "nn": "Ramnane fortel meg at du har nådd {zone}. Kos deg!"
+ },
+ {
+  "en": "Let curiosity lead you through {zone}!",
+  "nn": "Lat nyfikna leie deg gjennom {zone}!"
+ },
+ {
+  "en": "May the roads of {zone} rise to meet you!",
+  "nn": "Måtte vegane i {zone} kome deg i møte!"
+ },
+ {
+  "en": "{zone}! What a fine place for a legend to wander!",
+  "nn": "{zone}! For ein fin stad for ei segn å vandre!"
+ },
+ {
+  "en": "I hope you find the finest sunsets in {zone}!",
+  "nn": "Eg håpar du finn dei finaste solnedgangane i {zone}!"
+ },
+ {
+  "en": "Hero, your journey to {zone} is a song in itself!",
+  "nn": "Helt, ferda di til {zone} er ein song i seg sjølv!"
+ },
+ {
+  "en": "Make {zone} yours, one brave step at a time!",
+  "nn": "Gjer {zone} til heimen din, eitt modig steg om gongen!"
+ },
+ {
+  "en": "Your arrival in {zone} is the talk of my tavern!",
+  "nn": "At du har kome til {zone}, er det alle snakkar om i kroa mi!"
+ },
+ {
+  "en": "Happy wandering in {zone}, friend!",
+  "nn": "God vandring i {zone}, venn!"
+ },
+ {
+  "en": "Let the paths of {zone} sing beneath your stride!",
+  "nn": "Lat stigane i {zone} syngje under stega dine!"
+ },
+ {
+  "en": "Strange new lands! May {zone} be good to you!",
+  "nn": "Framande nye land! Måtte du ha det godt i {zone}!"
+ },
+ {
+  "en": "Courage, curiosity and good boots: all you need in {zone}!",
+  "nn": "Mot, nyfikne og gode støvlar: alt du treng i {zone}!"
+ },
+ {
+  "en": "May you leave {zone} better than you found it!",
+  "nn": "Måtte du forlate {zone} betre enn du fann det!"
+ },
+ {
+  "en": "I celebrate your arrival in {zone} with a merry jig!",
+  "nn": "Eg feirar at du er komen til {zone} med ein lystig jig!"
+ },
+ {
+  "en": "New quests, new faces, new glory in {zone}!",
+  "nn": "Nye oppdrag, nye andlet, ny ære i {zone}!"
+ },
+ {
+  "en": "Your legend now stretches all the way to {zone}!",
+  "nn": "Segna di strekkjer seg no heilt til {zone}!"
+ },
+ {
+  "en": "Go on, friend, and let {zone} amaze you!",
+  "nn": "Gå på, venn, og lat {zone} forbløffe deg!"
+ },
+ {
+  "en": "Fair fortune in {zone}, wandering soul!",
+  "nn": "Lukke til i {zone}, vandrande sjel!"
+ },
+ {
+  "en": "May {zone} hold good company for you!",
+  "nn": "Måtte du finne godt selskap i {zone}!"
+ },
+ {
+  "en": "The journey continues! {zone} is the next verse.",
+  "nn": "Ferda held fram! {zone} er neste vers."
+ },
+ {
+  "en": "The bards will want to know all about {zone}. Enjoy!",
+  "nn": "Skaldane vil vite alt om {zone}. Kos deg!"
+ },
+ {
+  "en": "May your feet be light and your heart lighter in {zone}!",
+  "nn": "Måtte føtene dine vere lette og hjartet endå lettare i {zone}!"
+ },
+ {
+  "en": "What a fine land to explore! Enjoy {zone}, hero!",
+  "nn": "For eit fint land å utforske! Kos deg i {zone}, helt!"
+ },
+ {
+  "en": "The heavens bless your journey through {zone}!",
+  "nn": "Himmelen signar ferda di gjennom {zone}!"
+ },
+ {
+  "en": "Let each step in {zone} be an adventure!",
+  "nn": "Lat kvart steg i {zone} vere eit eventyr!"
+ },
+ {
+  "en": "I hope {zone} is all you dreamed of, friend!",
+  "nn": "Eg håpar {zone} er alt du drøymde om, venn!"
+ },
+ {
+  "en": "Marvel at {zone}, and let it marvel at you!",
+  "nn": "Undre deg over {zone}, og lat landet undre seg over deg!"
+ },
+ {
+  "en": "Sing as you walk through {zone}, friend. I will sing back!",
+  "nn": "Syng medan du går gjennom {zone}, venn. Eg syng tilbake!"
+ },
+ {
+  "en": "Rest well tonight in {zone}, brave traveler!",
+  "nn": "Kvil godt i natt i {zone}, modige reisande!"
+ },
+ {
+  "en": "May the rivers of {zone} be clear and its roads be safe!",
+  "nn": "Måtte elvane i {zone} vere klåre og vegane trygge!"
+ },
+ {
+  "en": "Off on another quest! Enjoy the wonders of {zone}!",
+  "nn": "Ut på endå eit oppdrag! Nyt undera i {zone}!"
+ },
+ {
+  "en": "{zone} awaits its newest legend. That is you!",
+  "nn": "{zone} ventar på den nyaste segna si. Det er deg!"
+ },
+ {
+  "en": "I can almost hear your boots in {zone}. Enjoy!",
+  "nn": "Eg kan nesten høyre støvlane dine i {zone}. Kos deg!"
+ },
+ {
+  "en": "Treasure, tales and triumph await in {zone}!",
+  "nn": "Skattar, soger og sigrar ventar i {zone}!"
+ },
+ {
+  "en": "May you find {zone} as glorious as your deeds!",
+  "nn": "Måtte du finne {zone} like herleg som dådene dine!"
+ },
+ {
+  "en": "Hero, the realm of {zone} welcomes your courage!",
+  "nn": "Helt, {zone} tek imot motet ditt!"
+ },
+ {
+  "en": "Let the journey through {zone} be gentle and grand!",
+  "nn": "Lat ferda gjennom {zone} vere mild og storslått!"
+ },
+ {
+  "en": "Bright skies over {zone} for my friend!",
+  "nn": "Klår himmel over {zone} for venen min!"
+ },
+ {
+  "en": "I look forward to the ballad of your days in {zone}!",
+  "nn": "Eg gler meg til kvadet om dagane dine i {zone}!"
+ },
+ {
+  "en": "Wander far, wander wide, and enjoy {zone}!",
+  "nn": "Vandre langt, vandre vidt, og kos deg i {zone}!"
+ },
+ {
+  "en": "Your legend now has a postcard from {zone}!",
+  "nn": "Segna di har no eit postkort frå {zone}!"
+ },
+ {
+  "en": "Every hero needs new lands. Yours is {zone}!",
+  "nn": "Kvar helt treng nye land. Ditt er {zone}!"
+ },
+ {
+  "en": "Let laughter follow you all through {zone}!",
+  "nn": "Lat latteren følgje deg gjennom heile {zone}!"
+ },
+ {
+  "en": "I wish you wonders at every turn in {zone}!",
+  "nn": "Eg ønskjer deg under bak kvar sving i {zone}!"
+ },
+ {
+  "en": "Have fun exploring {zone}, mighty one!",
+  "nn": "Ha det moro med å utforske {zone}, mektige!"
+ },
+ {
+  "en": "May the beasts of {zone} flee and its folk cheer!",
+  "nn": "Måtte dyra i {zone} flykte og folket juble!"
+ },
+ {
+  "en": "Your saga sets foot in {zone}! Onward!",
+  "nn": "Soga di set foten i {zone}! Fram!"
+ },
+ {
+  "en": "I envy every tree and stone in {zone} that sees you pass.",
+  "nn": "Eg misunner kvart tre og kvar stein i {zone} som ser deg fare forbi."
+ },
+ {
+  "en": "Good luck and good cheer in {zone}, friend!",
+  "nn": "Lukke til og godt mot i {zone}, venn!"
+ },
+ {
+  "en": "The quests of {zone} have found their hero!",
+  "nn": "Oppdraga i {zone} har funne helten sin!"
+ },
+ {
+  "en": "May {zone} greet you as warmly as I do!",
+  "nn": "Måtte {zone} helse deg like varmt som eg gjer!"
+ },
+ {
+  "en": "Go explore {zone}, and leave legends in your wake!",
+  "nn": "Gå og utforsk {zone}, og legg att segner etter deg!"
+ },
+ {
+  "en": "I am raising a cup to {zone} and the hero who walks it!",
+  "nn": "Eg lyftar begeret for {zone} og helten som går der!"
+ },
+ {
+  "en": "Fresh adventures in {zone}! The skalds approve!",
+  "nn": "Ferske eventyr i {zone}! Skaldane godkjenner!"
+ },
+ {
+  "en": "Wish me tales from {zone}, friend! Enjoy every step!",
+  "nn": "Send meg soger frå {zone}, venn! Kos deg kvart steg!"
+ },
+ {
+  "en": "May every quest giver in {zone} adore you!",
+  "nn": "Måtte kvar oppdragsgjevar i {zone} elske deg!"
+ },
+ {
+  "en": "Walk with wonder through {zone}, hero!",
+  "nn": "Gå med undring gjennom {zone}, helt!"
+ },
+ {
+  "en": "Courage, friend! {zone} is yours to explore!",
+  "nn": "Mot, venn! Du har heile {zone} å utforske!"
+ },
+ {
+  "en": "A splendid new land! Make the most of {zone}!",
+  "nn": "Eit prektig nytt land! Få mest mogleg ut av {zone}!"
+ },
+ {
+  "en": "Through the valleys and hills of {zone} you go! Enjoy!",
+  "nn": "Gjennom dalane og haugane i {zone} går du! Kos deg!"
+ },
+ {
+  "en": "May you meet only friendly faces in {zone}!",
+  "nn": "Måtte du berre møte venlege andlet i {zone}!"
+ },
+ {
+  "en": "Your travels make the saga richer. Enjoy {zone}!",
+  "nn": "Ferdene dine gjer soga rikare. Kos deg i {zone}!"
+ },
+ {
+  "en": "I have heard grand tales of {zone}. Go make one more!",
+  "nn": "Eg har høyrt store soger om {zone}. Gå og lag éi til!"
+ },
+ {
+  "en": "Look sharp and look around! {zone} is full of wonders.",
+  "nn": "Ver vaken og sjå deg rundt! Det er fullt av under i {zone}."
+ },
+ {
+  "en": "Here is a cheer for your arrival in {zone}!",
+  "nn": "Her er eit jubelrop for at du er komen til {zone}!"
+ },
+ {
+  "en": "Wherever you roam in {zone}, glory roams with you!",
+  "nn": "Kvar du enn streifar i {zone}, streifar æra med deg!"
+ },
+ {
+  "en": "To {zone} with you, and may luck ride at your side!",
+  "nn": "Til {zone} med deg, og måtte lukka ri ved sida di!"
+ },
+ {
+  "en": "Plant your banner in {zone}, hero!",
+  "nn": "Plant banneret ditt i {zone}, helt!"
+ },
+ {
+  "en": "Let the songs of {zone} join the songs of your saga!",
+  "nn": "Lat songane i {zone} bli ein del av songane i soga di!"
+ },
+ {
+  "en": "Tell the folk of {zone} your bard says hello!",
+  "nn": "Sei til folket i {zone} at skalden din helsar!"
+ },
+ {
+  "en": "A grand new country to roam! Cherish {zone}!",
+  "nn": "Eit storslått nytt land å streife i! Set pris på {zone}!"
+ },
+ {
+  "en": "Linger a while in {zone}, friend. It suits you.",
+  "nn": "Dvel ei stund i {zone}, venn. Det kler deg."
+ },
+ {
+  "en": "May every road in {zone} end at a warm hearth!",
+  "nn": "Måtte kvar veg i {zone} ende ved ein varm åre!"
+ },
+ {
+  "en": "Your adventure in {zone} begins with my blessing!",
+  "nn": "Eventyret ditt i {zone} tek til med signinga mi!"
+ },
+ {
+  "en": "Your wanderlust has brought you to {zone}! Enjoy!",
+  "nn": "Vandrelysta di har ført deg til {zone}! Kos deg!"
+ },
+ {
+  "en": "Go, and may {zone} keep you safe and merry!",
+  "nn": "Gå, og måtte du halde deg trygg og glad i {zone}!"
+ },
+ {
+  "en": "Brave the wilds of {zone}, and enjoy every mile!",
+  "nn": "Våg deg ut i villmarka i {zone}, og kos deg kvar mil!"
+ },
+ {
+  "en": "Let the bards of the future sing of your days in {zone}!",
+  "nn": "Lat framtidas skaldar kvede om dagane dine i {zone}!"
+ },
+ {
+  "en": "Ah, to be young and roaming in {zone}! Enjoy, friend!",
+  "nn": "Å, å vere ung og streife i {zone}! Kos deg, venn!"
+ },
+ {
+  "en": "The sun shines brighter on {zone} today. You arrived!",
+  "nn": "Sola skin klarare over {zone} i dag. Du er komen!"
+ },
+ {
+  "en": "The road to adventure runs straight through {zone}!",
+  "nn": "Vegen til eventyret går rett gjennom {zone}!"
+ },
+ {
+  "en": "Explore well, laugh often and enjoy {zone}!",
+  "nn": "Utforsk godt, le ofte og kos deg i {zone}!"
+ },
+ {
+  "en": "New dawns await you in {zone}, hero!",
+  "nn": "Nye morgongry ventar deg i {zone}, helt!"
+ },
+ {
+  "en": "Smile, wanderer! {zone} is a fine land for heroes.",
+  "nn": "Smil, vandrar! {zone} er eit fint land for heltar."
+ },
+ {
+  "en": "Hail the explorer of {zone}! Go forth!",
+  "nn": "Ære til oppdagaren av {zone}! Dra ut!"
+ },
+ {
+  "en": "Your courage opens the gates of {zone}!",
+  "nn": "Motet ditt opnar portane til {zone}!"
+ },
+ {
+  "en": "Fill your days in {zone} with wonder and song!",
+  "nn": "Fyll dagane dine i {zone} med undring og song!"
+ },
+ {
+  "en": "Safe travels, bold adventurer! {zone} awaits!",
+  "nn": "God tur, djerve eventyrar! {zone} ventar!"
+ },
+ {
+  "en": "May your legend in {zone} grow tall and bright!",
+  "nn": "Måtte segna di i {zone} vekse seg høg og klar!"
+ }
+]
