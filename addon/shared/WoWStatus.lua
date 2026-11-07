@@ -3,7 +3,7 @@ local H = WoWStatusHistory
 local S = WoWStatusSafe
 local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
-local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests", "gold", "kills"}
+local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests", "gold", "kills", "collection"}
 local kinds = {"level", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
@@ -38,7 +38,7 @@ local function defaults()
     return {
         enabled = true, discord_enabled = false, discord_delivery = "summary", introduction_confirmed = false, character_role = "alt",
         fields = {level = true, class = true, race = true, faction = true, guild = true,
-                  gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true, gold = true, kills = true},
+                  gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true, gold = true, kills = true, collection = true},
         collection = {introduction = true, level = true, loot = true, equipment = false,
                       death = true, zone = true, quest = true, profession = true, lfg = false},
         announcements = {introduction = true, level = true, loot = true,
@@ -216,7 +216,7 @@ local function showPanel(host)
         section("Character details",-742)
         local names={level="Level and XP",class="Class",race="Race and male/female",faction="Faction",
             guild="Guild",gear="Equipment",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
-            gold="Gold and gold earned",kills="Monsters killed"}
+            gold="Gold and gold earned",kills="Monsters killed",collection="Dungeons, mounts and honor kills"}
         for i,key in ipairs(fields) do
             checkbox(key,names[key] or key,(i-1)%2==0 and 24 or 310,-780-math.floor((i-1)/2)*42,"fields")
         end
@@ -475,7 +475,7 @@ local function initialize()
         current.settings.announcements[removed]=false
         current.settings.in_game[removed]=false
     end
-    for _, field in ipairs({"deaths", "quests", "gold", "kills"}) do
+    for _, field in ipairs({"deaths", "quests", "gold", "kills", "collection"}) do
         if current.settings.fields[field] == nil then current.settings.fields[field] = true end
     end
     for _, kind in ipairs({"quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}) do

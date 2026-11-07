@@ -197,8 +197,10 @@ function R.observe(character)
     local earned = fields.gold and P.goldEarned and P.goldEarned(character) or nil
     local kills = fields.kills and P.totalKills and P.totalKills(character) or nil
     local played = fields.playtime and character.snapshot and S.number(character.snapshot.playtime) or nil
+    local extras = fields.collection and P.extras and P.extras(character) or {}
     character.roster_info = {race=S.string(race), sex=S.number(S.call(UnitSex, "player")), class=S.string(class),
-        level=level, xp=permille, deaths=deaths, gold=gold, earned=earned, kills=kills, played=played, at=time()}
+        level=level, xp=permille, deaths=deaths, gold=gold, earned=earned, kills=kills, played=played,
+        honor_kills=extras.honor_kills, dungeons=extras.dungeons, mounts=extras.mounts, at=time()}
 end
 
 local function playerName()
@@ -252,15 +254,18 @@ end
 
 -- "gold earned kills played" for an "S" line, or nil when none is shared.
 local STAT_LIMIT = 1e12
-function R.statsLine(info)
+local function numbers(info, keys)
     local values, any = {}, false
-    for _, k in ipairs({"gold", "earned", "kills", "played"}) do
+    for _, k in ipairs(keys) do
         local v = S.number(info[k])
         if v and v >= 0 and v < STAT_LIMIT and v == math.floor(v) then values[#values + 1] = tostring(v); any = true
         else values[#values + 1] = "-" end
     end
     return any and table.concat(values, " ") or nil
 end
+function R.statsLine(info) return numbers(info, {"gold", "earned", "kills", "played"}) end
+-- "honor_kills dungeons mounts" for a "Q" line.
+function R.extrasLine(info) return numbers(info, {"honor_kills", "dungeons", "mounts"}) end
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
@@ -279,6 +284,8 @@ local function ownLines(group)
             -- Gold, gold earned, kills and played seconds ("-" when not shared); older versions ignore it.
             local stats = R.statsLine(info)
             if stats then table.insert(lines, table.concat({"S", group, roster.id, name, stats}, " ")) end
+            local extras = R.extrasLine(info)
+            if extras then table.insert(lines, table.concat({"Q", group, roster.id, name, extras}, " ")) end
             -- Level milestones with their times, for records ("e" exact, "a" by then).
             for level, item in pairs(R.milestones(c)) do
                 table.insert(lines, table.concat({"M", group, roster.id, name, level, item.at, item.exact and "e" or "a"}, " "))
@@ -440,8 +447,9 @@ function R.readWho()
                 for id, item in pairs(levels) do n = n + 1; if (item.at or 0) < oldestAt then oldest, oldestAt = id, item.at or 0 end end
                 if n >= MAX_WHO and oldest then levels[oldest] = nil end
             end
+            -- The same old results are read again on later system messages: count changes only.
+            if not levels[k] or levels[k].level ~= level then learnt = learnt + 1 end
             levels[k] = {level=level, at=time()}
-            learnt = learnt + 1
         end
     end
     if learnt > 0 then S.debug("/who: levels learnt for " .. learnt .. " group member(s)") end
@@ -786,6 +794,21 @@ receive = function(message, sender, distribution)
         end
         return true
     end
+    if op == "Q" and #words == 7 then
+        local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
+        local player = players[pid]
+        if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player then return false, "bad extras line" end
+        local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
+        if not character then return false, "unknown character" end
+        for i, k in ipairs({"honor_kills", "dungeons", "mounts"}) do
+            local text = words[4 + i]
+            local v = tonumber(text)
+            if text ~= "-" and not (v and text:match("^%d+$") and v < STAT_LIMIT) then return false, "bad extras value" end
+            character[k] = v
+        end
+        R.render()
+        return true
+    end
     if op == "S" and #words == 8 then
         local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
         local player = players[pid]
@@ -947,7 +970,8 @@ function R.groups()
         if not self then
             character = {name=resolve(character.name), race=character.race, sex=character.sex,
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups,
-                deaths=character.deaths, gold=character.gold, earned=character.earned, kills=character.kills, played=character.played}
+                deaths=character.deaths, gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
+                honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
             local newer = fresher[key(character.name) or ""]
@@ -983,7 +1007,8 @@ function R.groups()
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
             level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels, groupIds=ids,
             deaths=S.number(character.deaths) or deaths[k] or nil, gold=S.number(character.gold),
-            earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played)})
+            earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
+            honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts)})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
@@ -993,6 +1018,7 @@ function R.groups()
                 race=info.race, sex=info.sex, class=info.class, level=info.level, xp=info.xp, at=info.at,
                 deaths=c == current and current.settings.fields.deaths and WoWStatusProgress.totalDeaths(current) or info.deaths,
                 gold=info.gold, earned=info.earned, kills=info.kills, played=info.played,
+                honor_kills=info.honor_kills, dungeons=info.dungeons, mounts=info.mounts,
                 current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
         end
     end
@@ -1000,7 +1026,8 @@ function R.groups()
         for _, character in pairs(player.characters) do
             add(player.name or "Unnamed player", {name=character.name, race=character.race, sex=character.sex,
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups,
-                gold=character.gold, earned=character.earned, kills=character.kills, played=character.played},
+                gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
+                honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts},
                 nil, S.string(player.version) and ("v" .. player.version) or "older version")
         end
     end
@@ -1067,6 +1094,9 @@ local function card(index)
             line("Gold earned", S.number(character.earned) and UI.money(character.earned))
             line("Monsters killed", S.number(character.kills) and tostring(character.kills))
             line("Played", S.number(character.played) and UI.duration(character.played))
+            line("Honorable kills", S.number(character.honor_kills) and character.honor_kills > 0 and tostring(character.honor_kills))
+            line("Dungeons cleared", S.number(character.dungeons) and character.dungeons > 0 and tostring(character.dungeons))
+            line("Mounts", S.number(character.mounts) and character.mounts > 0 and tostring(character.mounts))
             if R.isUnreachable(character.name) then
                 GameTooltip:AddLine(T("Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."), 1, .4, .4, true)
             end

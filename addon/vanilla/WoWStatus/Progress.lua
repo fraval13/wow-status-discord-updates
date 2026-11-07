@@ -231,6 +231,45 @@ function P.goldEarned(character)
     return base and (base.lifetime + math.max(0, earned - base.tracked)) or earned
 end
 
+-- Honorable kills (lifetime, where the game gives them), different dungeons and
+-- raids first cleared since installing, and mounts in the collection (where the
+-- client has one; counted at most once a minute).
+local mountsAt, mountsCount
+function P.extras(character)
+    local result = {}
+    if GetPVPLifetimeStats then
+        local ok, kills = pcall(GetPVPLifetimeStats)
+        kills = ok and S.number(S.value(kills))
+        if kills and kills >= 0 and kills < LIMIT then result.honor_kills = math.floor(kills) end
+    end
+    local dungeons = character.milestones and character.milestones.automatic_dungeons
+    if type(dungeons) == "table" then
+        local count = 0
+        for _ in pairs(dungeons) do count = count + 1 end
+        result.dungeons = count
+    end
+    -- Counted again after a minute; a client still loading its collection is asked again next time.
+    if not mountsAt or time() - mountsAt >= 60 then
+        if C_MountJournal and C_MountJournal.GetMountIDs and C_MountJournal.GetMountInfoByID then
+            local ids = S.value(S.call(C_MountJournal.GetMountIDs))
+            if type(ids) == "table" then
+                local count = 0
+                for _, raw in ipairs(ids) do
+                    local id = S.number(raw)
+                    if id then
+                        -- (Not "id and pcall(...)": that keeps only pcall's first result.)
+                        local ok, _, _, _, _, _, _, _, _, _, _, collected = pcall(C_MountJournal.GetMountInfoByID, id)
+                        if ok and S.value(collected) == true then count = count + 1 end
+                    end
+                end
+                mountsAt, mountsCount = time(), count
+            end
+        end
+    end
+    result.mounts = mountsCount
+    return result
+end
+
 -- Clients with statistics (Retail; Forever if its client has them) count deaths
 -- from before installation. Statistic 60 is "Total deaths". Classic Era and TBC
 -- have no statistics, so their totals stay "since installation".

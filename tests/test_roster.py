@@ -42,7 +42,7 @@ def pair():
 
 def test_characters_are_announced_once_per_member_and_grouped_by_player():
     mira, thora = pair()
-    sent = [line for line in pump(mira, thora) if line[0] not in 'RS']
+    sent = [line for line in pump(mira, thora) if line[0] not in 'RSQ']
     assert len(sent) == 1
     assert sent[0].split(' ')[0] == 'C' and sent[0].endswith('Mira-TestRealm Dwarf 3 WARRIOR 1')
     assert pump(mira, thora, start=200) == []  # not repeated to the same member
@@ -117,7 +117,7 @@ def test_hiding_a_character_and_turning_sharing_off():
     assert len(sent) == 1 and sent[0].startswith('X ')
     assert thora.eval('next(WoWStatusDB.roster.players)') is None
     mira.execute('WoWStatusRoster.setSharing(true)')
-    assert [line[0] for line in pump(mira, thora, start=500)] == ['C', 'S']
+    assert [line[0] for line in pump(mira, thora, start=500)] == ['C', 'Q', 'S']
 
 
 def test_log_senders_without_a_list_show_as_never_met():
@@ -546,3 +546,30 @@ def test_a_listing_from_outside_the_group_is_refused():
     group = thora.eval('(next(character().group_ids))')
     ok = thora.eval('WoWStatusRoster.receive')(f'G {group} 0123456789abcdef {hexname}', 'Stranger-TestRealm', 'WHISPER')
     assert not ok and len(thora.eval('WoWStatusRoster.listings()')) == 0
+
+
+def test_honor_kills_dungeons_and_mounts_reach_friends():
+    mira, thora = pair()
+    mira.execute('''
+        function GetPVPLifetimeStats() return 42, 3 end
+        character().milestones = {automatic_dungeons={["the deadmines"]=true, ["wailing caverns"]=true}}
+        C_MountJournal = {GetMountIDs=function() return {1, 2, 3} end,
+            GetMountInfoByID=function(id) return "Horse", nil, nil, nil, nil, nil, nil, nil, nil, nil, id ~= 2 end}
+        WoWStatusRoster.observe(character())
+    ''')
+    sent = pump(mira, thora)
+    assert any(line.startswith('Q ') and line.endswith('Mira-TestRealm 42 2 2') for line in sent)
+    row = next(r for g in thora.eval('WoWStatusRoster.groups()').values() for r in g.rows.values()
+               if r.name == 'Mira-TestRealm')
+    assert (row.honor_kills, row.dungeons, row.mounts) == (42, 2, 2)
+
+
+def test_old_who_results_are_not_counted_again():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        __results = {{fullName="Mira", level=42}}
+        C_FriendList = {GetNumWhoResults=function() return #__results end, GetWhoInfo=function(i) return __results[i] end}
+    ''')
+    assert thora.eval('WoWStatusRoster.readWho()') == 1
+    assert thora.eval('WoWStatusRoster.readWho()') == 0
