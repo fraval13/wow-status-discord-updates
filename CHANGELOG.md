@@ -13,7 +13,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## Unreleased
 
 - Armor headings name the piece: RARE RING EQUIPPED!, EPIC TRINKET EQUIPPED! (SJELDAN RING PÅ! in Nynorsk)
-- Click a character card for their profile: stats, level-ups, recent activity and armor firsts
+- Click a character card for their profile: stats, level-ups, recent activity and recent gear
 - Invite a friend to one of your groups from their profile; they get a Join / Decline popup
 - Records: This week shows the week's highlights per group, with earlier weeks one click away
 - Records: Fun records, only for remarkable feats like the most dangerous zone or the best evening

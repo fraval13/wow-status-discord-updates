@@ -231,7 +231,7 @@ function F.week(group, offset)
         for _, p in ipairs(order) do if p[key] > 0 and (not top or p[key] > top[key]) then top = p end end
         if top then lines[#lines + 1] = "|cffffd100" .. T(label) .. "|r " .. top.name:gsub("|", "||") .. " (" .. top[key] .. ")" end
     end
-    best("level", "Most levels:"); best("death", "Most deaths:"); best("zone", "Most explored:"); best("loot", "Most new armor:")
+    best("level", "Most levels:"); best("death", "Most deaths:"); best("zone", "Most explored:"); best("loot", "Most new gear:")
     if #lines > 0 then lines[#lines + 1] = " " end
     for _, p in ipairs(order) do
         local parts = {}
@@ -290,7 +290,7 @@ function F.funRecords(group)
     end
     local mostArmor, pieces = nil, 0
     for name, n in pairs(armor) do if n > pieces then mostArmor, pieces = name, n end end
-    if mostArmor and pieces >= F.FUN.armor then add("Most armor firsts:", mostArmor, tostring(pieces)) end
+    if mostArmor and pieces >= F.FUN.armor then add("Most new gear:", mostArmor, tostring(pieces)) end
     local board = WoWStatusRoster.leaderboard(group)
     local function top(field)
         local t

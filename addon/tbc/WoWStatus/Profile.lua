@@ -1,6 +1,6 @@
 -- A character's profile, opened by clicking their card on the Characters page:
--- portrait and facts, their statistics, level-ups, recent activity and armor
--- firsts from the log, with Show activity and (for friends online) Invite to group.
+-- portrait and facts, their statistics, level-ups, recent activity and recent
+-- gear from the log, with Show activity and (for friends online) Invite to group.
 -- Also the Join / Decline popup for invitations friends send.
 WoWStatusProfile = {}
 local F, S = WoWStatusProfile, WoWStatusSafe
@@ -112,7 +112,7 @@ local function build(page)
         local column, rowIndex = (i - 1) % 3, math.floor((i - 1) / 3)
         stats.cells[i] = UI.text(stats, "GameFontHighlight", 12 + column * 232, -32 - rowIndex * 20, 226)
     end
-    -- Level-ups, recent activity and armor firsts
+    -- Level-ups, recent activity and recent gear
     local function column(title, x, width)
         local box = UI.box(view, width, 286); box:SetPoint("TOPLEFT", x, -222)
         UI.header(box, T(title), 10, -8, width - 20)
@@ -122,7 +122,7 @@ local function build(page)
     end
     view.levels = column("Level-ups", 24, 180)
     view.recent = column("Recent activity", 210, 300)
-    view.gear = column("Armor firsts", 516, 218)
+    view.gear = column("Recent gear", 516, 218)
     if UISpecialFrames then table.insert(UISpecialFrames, "WoWStatusProfileView") end
 end
 
@@ -155,7 +155,7 @@ function F.show(row, entry)
     end
     list(view.levels, data.levels, "No level-ups in the log yet.")
     list(view.recent, data.recent, "No activity in the log yet.")
-    list(view.gear, data.gear, "No armor firsts yet.")
+    list(view.gear, data.gear, "No new gear yet.")
     view:Show()
     return true
 end
