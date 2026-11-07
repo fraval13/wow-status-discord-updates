@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "A promotion? Hmph. Who did you have to fight? Everyone?",
+  "nn": "Ei forfremjing? Hm. Kven måtte du slåst mot? Alle?"
+ },
+ {
+  "en": "Back in my day, PvP ranks cost us our sleep and our friends.",
+  "nn": "På mi tid kosta PvP-gradar oss søvnen og venene."
+ },
+ {
+  "en": "New rank, eh? Try not to salute yourself in the mirror.",
+  "nn": "Ny grad, ja? Prøv å ikkje helse på deg sjølv i spegelen."
+ },
+ {
+  "en": "Honour earned. Not much of it, but earned.",
+  "nn": "Ære tent. Ikkje mykje, men tent."
+ },
+ {
+  "en": "Took you long enough to climb that ladder.",
+  "nn": "Det tok si tid før du klatra opp den stigen."
+ },
+ {
+  "en": "Hmph. You must have died a hundred times for that.",
+  "nn": "Hm. Du må ha døydd hundre gonger for det."
+ },
+ {
+  "en": "A PvP promotion. The other faction is sulking.",
+  "nn": "Ei PvP-forfremjing. Den andre fraksjonen surmular."
+ },
+ {
+  "en": "Well done, soldier. Stand up straight.",
+  "nn": "Godt gjort, soldat. Stå rak."
+ },
+ {
+  "en": "That rank took grit. And a lot of corpse runs.",
+  "nn": "Den graden kravde stå-på. Og mange likløp."
+ },
+ {
+  "en": "I remember grinding honour all night. My eyes still hurt.",
+  "nn": "Eg hugsar at eg grinda ære heile natta. Det gjer framleis vondt i auga."
+ },
+ {
+  "en": "Hmph. You'll be insufferable in battlegrounds now.",
+  "nn": "Hm. No blir du uuthaldeleg på slagmarkene."
+ },
+ {
+  "en": "Congrats on the promotion. The enemy has been informed.",
+  "nn": "Gratulerer med forfremjinga. Fienden er varsla."
+ },
+ {
+  "en": "A new title for your name. Wear it with dignity. Some.",
+  "nn": "Ein ny tittel til namnet ditt. Ber han med verdigheit. Litt."
+ },
+ {
+  "en": "That's real fighting. Not mobs. People. Scary.",
+  "nn": "Det er ekte kamp. Ikkje monster. Folk. Skummelt."
+ },
+ {
+  "en": "Hmph. Battlegrounds build character. And bad tempers.",
+  "nn": "Hm. Slagmarker byggjer karakter. Og dårleg lynne."
+ },
+ {
+  "en": "Promoted at last. Your commanding officer is pleased. Barely.",
+  "nn": "Endeleg forfremja. Den kommanderande offiseren din er nøgd. Så vidt."
+ },
+ {
+  "en": "All those flag captures paid off. Well done.",
+  "nn": "Alle dei erobra flagga lønte seg. Godt gjort."
+ },
+ {
+  "en": "I never reached that rank. Too many naps.",
+  "nn": "Eg nådde aldri den graden. For mange lurar."
+ },
+ {
+  "en": "Hmph. You fought for honour. Honour noticed.",
+  "nn": "Hm. Du kjempa for æra. Æra la merke til det."
+ },
+ {
+  "en": "A PvP rank. Your enemies remember your name now. Ugh.",
+  "nn": "Ein PvP-grad. Fiendane dine hugsar namnet ditt no. Uff."
+ },
+ {
+  "en": "Well done. Keep your head down on the battlefield.",
+  "nn": "Godt gjort. Hald hovudet lågt på slagmarka."
+ },
+ {
+  "en": "That rank means you've survived a lot of ambushes. Respect.",
+  "nn": "Den graden tyder at du har overlevd mange bakhald. Respekt."
+ },
+ {
+  "en": "Hmph. Look at you, a decorated soldier. Almost.",
+  "nn": "Hm. Sjå på deg, ein dekorert soldat. Nesten."
+ },
+ {
+  "en": "Congrats. The honour grind is the cruellest grind.",
+  "nn": "Gratulerer. Æresgrindinga er den grusamaste grindinga."
+ },
+ {
+  "en": "Took courage to keep queueing. You did.",
+  "nn": "Det kravde mot å halde fram med å stå i kø. Det gjorde du."
+ },
+ {
+  "en": "In my day, we fought with sticks and spite. Mostly spite.",
+  "nn": "På mi tid slost vi med kjeppar og vondskap. Mest vondskap."
+ },
+ {
+  "en": "Hmph. A promotion. Don't let it make you reckless.",
+  "nn": "Hm. Ei forfremjing. Ikkje la ho gjere deg uvøren."
+ },
+ {
+  "en": "That title will turn heads. Mostly enemy heads.",
+  "nn": "Den tittelen kjem til å få folk til å snu seg. Mest fiendar."
+ },
+ {
+  "en": "Well done. You're less of a free kill now.",
+  "nn": "Godt gjort. No er du mindre gratis å drepe."
+ },
+ {
+  "en": "A rank like that takes weeks of beatings. You took them.",
+  "nn": "Ein slik grad krev veker med juling. Du tok imot."
+ },
+ {
+  "en": "Hmph. Proud of you, soldier. Don't let it show.",
+  "nn": "Hm. Stolt av deg, soldat. Ikkje la det synast."
+ },
+ {
+  "en": "Congrats on the rank. Mind the rogues behind you.",
+  "nn": "Gratulerer med graden. Pass deg for tjuvane bak deg."
+ },
+ {
+  "en": "Rogues are always behind you in battlegrounds. Always.",
+  "nn": "Tjuvane er alltid bak deg på slagmarka. Alltid."
+ },
+ {
+  "en": "That's a real military honour. Virtual, but real.",
+  "nn": "Det er ei ekte militær æresbevising. Virtuell, men ekte."
+ },
+ {
+  "en": "Hmph. All that dying for a title. Worth it? Probably.",
+  "nn": "Hm. All den dauden for ein tittel. Verdt det? Truleg."
+ },
+ {
+  "en": "Promoted! Your faction salutes you. Half of it.",
+  "nn": "Forfremja! Fraksjonen din helsar deg. Halvparten."
+ },
+ {
+  "en": "Well done. Battlegrounds are no place for the weak.",
+  "nn": "Godt gjort. Slagmarker er ingen stad for dei svake."
+ },
+ {
+  "en": "I lost my patience in battlegrounds years ago. Never found it.",
+  "nn": "Eg miste tolmodet mitt på slagmarkene for mange år sidan. Fann det aldri att."
+ },
+ {
+  "en": "Hmph. You kept your patience through all those battles. Impressive.",
+  "nn": "Hm. Du heldt på tolmodet gjennom alle dei slaga. Imponerande."
+ },
+ {
+  "en": "A new rank on the battlefield. Old soldiers notice.",
+  "nn": "Ein ny grad på slagmarka. Gamle soldatar legg merke til det."
+ },
+ {
+  "en": "Congrats. The other side is writing your name in their black book.",
+  "nn": "Gratulerer. Den andre sida skriv namnet ditt i den svarte boka si."
+ },
+ {
+  "en": "That's a promotion earned in blood. Mostly yours.",
+  "nn": "Det er ei forfremjing tent med blod. Mest ditt."
+ },
+ {
+  "en": "Hmph. You've been busy getting knocked down. And getting up.",
+  "nn": "Hm. Du har hatt det travelt med å bli slegen ned. Og reise deg att."
+ },
+ {
+  "en": "Well done. Getting up is the whole trick.",
+  "nn": "Godt gjort. Å reise seg att er heile knepet."
+ },
+ {
+  "en": "A PvP promotion. Your armour has new dents. Wear them proudly.",
+  "nn": "Ei PvP-forfremjing. Rustninga di har nye bulkar. Ber dei med stoltheit."
+ },
+ {
+  "en": "In my day, ranks decayed if you took a holiday. Brutal.",
+  "nn": "På mi tid forfall gradane om du tok ferie. Brutalt."
+ },
+ {
+  "en": "Hmph. Don't take a holiday from PvP now. Just in case.",
+  "nn": "Hm. Ikkje ta ferie frå PvP no. For sikkerheits skuld."
+ },
+ {
+  "en": "Congrats on the promotion. Keep fighting smart.",
+  "nn": "Gratulerer med forfremjinga. Kjemp klokt vidare."
+ },
+ {
+  "en": "That rank says you don't quit. Good.",
+  "nn": "Den graden seier at du ikkje gir opp. Bra."
+ },
+ {
+  "en": "Hmph. A soldier's rank. My old commander would approve.",
+  "nn": "Hm. Ein soldatgrad. Den gamle kommandanten min hadde godkjent."
+ },
+ {
+  "en": "Well done. Honour is hard to earn and easy to lose.",
+  "nn": "Godt gjort. Ære er vanskeleg å tene og lett å miste."
+ },
+ {
+  "en": "Promotion granted. Grumble suspended.",
+  "nn": "Forfremjing gitt. Grynting utsett."
+ },
+ {
+  "en": "That's a lot of honour points. Spend them wisely.",
+  "nn": "Det er mange ærespoeng. Bruk dei klokt."
+ },
+ {
+  "en": "Hmph. You've fought more players than I've had hot dinners.",
+  "nn": "Hm. Du har slost mot fleire spelarar enn eg har hatt varme middagar."
+ },
+ {
+  "en": "Congrats. A title to make your enemies grumble.",
+  "nn": "Gratulerer. Ein tittel som får fiendane dine til å grynte."
+ },
+ {
+  "en": "That's the slow, painful road to rank. You walked it.",
+  "nn": "Det er den sakte, smertefulle vegen til grad. Du gjekk han."
+ },
+ {
+  "en": "Hmph. You'll be targeted first now. Enjoy that.",
+  "nn": "Hm. No blir du det fyrste målet. Kos deg med det."
+ },
+ {
+  "en": "Well done, sergeant. Or whatever you are now.",
+  "nn": "Godt gjort, sersjant. Eller kva du no er."
+ },
+ {
+  "en": "A PvP rank. The battleground queues were worth it.",
+  "nn": "Ein PvP-grad. Køane til slagmarkene var verdt det."
+ },
+ {
+  "en": "Hmph. Nobody wins every fight. You won enough.",
+  "nn": "Hm. Ingen vinn kvar kamp. Du vann nok."
+ },
+ {
+  "en": "Congrats on the rank. Your faction needs more like you.",
+  "nn": "Gratulerer med graden. Fraksjonen din treng fleire som deg."
+ },
+ {
+  "en": "That promotion took nerve. You've got some.",
+  "nn": "Den forfremjinga kravde nervar. Du har litt."
+ },
+ {
+  "en": "Hmph. All those battles. Your keyboard must be worn.",
+  "nn": "Hm. Alle dei slaga. Tastaturet ditt må vere slite."
+ },
+ {
+  "en": "Well done. The battlefield is a cruel teacher. You learned.",
+  "nn": "Godt gjort. Slagmarka er ein grusam lærar. Du lærte."
+ },
+ {
+  "en": "A new rank. Stand tall. Not too tall. Snipers.",
+  "nn": "Ein ny grad. Stå rak. Ikkje for rak. Skarpskyttarar."
+ },
+ {
+  "en": "Hmph. That's a rank I'd have been proud of. Be proud.",
+  "nn": "Hm. Det er ein grad eg hadde vore stolt av. Ver stolt."
+ },
+ {
+  "en": "Congrats. You've earned your stripes. Literally.",
+  "nn": "Gratulerer. Du har tent stripene dine. Bokstaveleg."
+ },
+ {
+  "en": "That's what persistence looks like on a battlefield.",
+  "nn": "Slik ser uthald ut på ei slagmark."
+ },
+ {
+  "en": "Hmph. Did you defend the flag or chase it? Doesn't matter.",
+  "nn": "Hm. Forsvarte du flagget eller jaga du det? Same det."
+ },
+ {
+  "en": "Well done. You've survived the worst of the players.",
+  "nn": "Godt gjort. Du har overlevd dei verste av spelarane."
+ },
+ {
+  "en": "A PvP promotion. The old veteran salutes, stiffly.",
+  "nn": "Ei PvP-forfremjing. Den gamle veteranen helsar, stivt."
+ },
+ {
+  "en": "Hmph. You'll want better gear for the next rank. Grind on.",
+  "nn": "Hm. Du treng betre utstyr til neste grad. Grind vidare."
+ },
+ {
+  "en": "Congrats on the promotion. Your enemies now know your face.",
+  "nn": "Gratulerer med forfremjinga. Fiendane dine kjenner andletet ditt no."
+ },
+ {
+  "en": "That's a hard-won title. Don't let anyone mock it.",
+  "nn": "Det er ein hardt vunnen tittel. Ikkje la nokon håne han."
+ },
+ {
+  "en": "Hmph. I'll mock your new title a little. Proudly.",
+  "nn": "Hm. Eg skal håne den nye tittelen din litt. Med stoltheit."
+ },
+ {
+  "en": "Well done. A rank for the stubborn and the brave.",
+  "nn": "Godt gjort. Ein grad for dei sta og dei modige."
+ },
+ {
+  "en": "I fought in those battlegrounds when they were new. Chaos.",
+  "nn": "Eg slost på dei slagmarkene då dei var nye. Kaos."
+ },
+ {
+  "en": "Hmph. Battlegrounds are still chaos, I hear. Well done surviving.",
+  "nn": "Hm. Slagmarkene er framleis kaos, høyrer eg. Godt gjort å overleve."
+ },
+ {
+  "en": "A promotion. Somewhere a general nods at you.",
+  "nn": "Ei forfremjing. Ein stad nikkar ein general til deg."
+ },
+ {
+  "en": "Congrats. Honour is a tough currency to earn.",
+  "nn": "Gratulerer. Ære er ein tøff valuta å tene."
+ },
+ {
+  "en": "That rank is proof of a lot of lost fights. And won ones.",
+  "nn": "Den graden er prov på mange tapte kampar. Og vunne."
+ },
+ {
+  "en": "Hmph. You're a proper soldier now. A muddy one.",
+  "nn": "Hm. No er du ein skikkeleg soldat. Ein gjørmete ein."
+ },
+ {
+  "en": "Well done. You've earned the right to grumble about PvP.",
+  "nn": "Godt gjort. Du har fortent retten til å grynte over PvP."
+ },
+ {
+  "en": "A new rank. The other faction trembles. Slightly.",
+  "nn": "Ein ny grad. Den andre fraksjonen skjelv. Litt."
+ },
+ {
+  "en": "Hmph. Took patience and pain. Respect.",
+  "nn": "Hm. Det kravde tolmod og smerte. Respekt."
+ },
+ {
+  "en": "Congrats on the rank. Wear the title. Don't flaunt it.",
+  "nn": "Gratulerer med graden. Ber tittelen. Ikkje vis han fram."
+ },
+ {
+  "en": "That promotion was a long time coming. Well done.",
+  "nn": "Den forfremjinga har vore lenge på veg. Godt gjort."
+ },
+ {
+  "en": "Hmph. You've made the battleground your home. Messy home.",
+  "nn": "Hm. Du har gjort slagmarka til heimen din. Rotete heim."
+ },
+ {
+  "en": "Well done. Your faction owes you a medal. They'll give you a title.",
+  "nn": "Godt gjort. Fraksjonen din skuldar deg ein medalje. Dei gir deg ein tittel."
+ },
+ {
+  "en": "A PvP rank at last. My old war wounds ache in sympathy.",
+  "nn": "Endeleg ein PvP-grad. Dei gamle krigssåra mine verkjer i medkjensle."
+ },
+ {
+  "en": "Hmph. Battlefields are full of shouting. You survived the shouting.",
+  "nn": "Hm. Slagmarker er fulle av roping. Du overlevde ropinga."
+ },
+ {
+  "en": "Congrats. That rank took a thick skin. You've got one.",
+  "nn": "Gratulerer. Den graden kravde tjukk hud. Du har det."
+ },
+ {
+  "en": "That's a soldier's honour. Hard to earn, easy to boast. Don't.",
+  "nn": "Det er ei soldatære. Vanskeleg å tene, lett å skryte av. Ikkje gjer det."
+ },
+ {
+  "en": "Hmph. All those deaths, and you kept queueing. Stubborn. Good.",
+  "nn": "Hm. Alle dei dødsfalla, og du heldt fram med å stå i kø. Sta. Bra."
+ },
+ {
+  "en": "Well done. You've graduated from fodder to fighter.",
+  "nn": "Godt gjort. Du har gått frå kanonføde til kjempar."
+ },
+ {
+  "en": "A new title. Your mother would be proud. I'm close.",
+  "nn": "Ein ny tittel. Mor di hadde vore stolt. Eg er nære."
+ },
+ {
+  "en": "Hmph. In my day, PvP was a fistfight in a field. Fun.",
+  "nn": "Hm. På mi tid var PvP ein knyttnevekamp på eit jorde. Moro."
+ },
+ {
+  "en": "Congrats on the promotion. Rest your sword arm.",
+  "nn": "Gratulerer med forfremjinga. Kvil sverdarmen."
+ },
+ {
+  "en": "That's real effort against real people. Proper.",
+  "nn": "Det er ekte innsats mot ekte folk. Skikkeleg."
+ },
+ {
+  "en": "Hmph. You've been knocked down a lot. You got up more.",
+  "nn": "Hm. Du har vorte slegen ned mykje. Du reiste deg fleire gonger."
+ },
+ {
+  "en": "Well done. The war goes on. So do you.",
+  "nn": "Godt gjort. Krigen held fram. Det gjer du òg."
+ },
+ {
+  "en": "A PvP rank. The enemy's tears are delicious. Kidding. Mostly.",
+  "nn": "Ein PvP-grad. Tårene til fienden smakar godt. Tullar. Stort sett."
+ },
+ {
+  "en": "Hmph. Don't gloat over fallen enemies. Bow instead. Or don't.",
+  "nn": "Hm. Ikkje gled deg over falne fiendar. Buk i staden. Eller la vere."
+ },
+ {
+  "en": "Congrats. You're climbing the ranks. Slowly. Properly.",
+  "nn": "Gratulerer. Du klatrar i gradane. Sakte. Skikkeleg."
+ },
+ {
+  "en": "That rank deserves a quiet nod. Here it is.",
+  "nn": "Den graden fortener eit stille nikk. Her er det."
+ },
+ {
+  "en": "Hmph. All those battles. My knees hurt just thinking about it.",
+  "nn": "Hm. Alle dei slaga. Knea mine verkjer berre eg tenkjer på det."
+ },
+ {
+  "en": "Well done. You're a veteran of the battlefield now. Almost.",
+  "nn": "Godt gjort. No er du veteran frå slagmarka. Nesten."
+ },
+ {
+  "en": "A promotion! Mind the snipers on the hill.",
+  "nn": "Ei forfremjing! Pass deg for skarpskyttarane på bakken."
+ },
+ {
+  "en": "Hmph. That's a hard rank to hold. Hold it.",
+  "nn": "Hm. Det er ein vanskeleg grad å halde. Hald han."
+ },
+ {
+  "en": "Congrats on the rank. The fight's never really over.",
+  "nn": "Gratulerer med graden. Kampen er aldri heilt over."
+ },
+ {
+  "en": "That's a rank for those who don't flinch. You didn't.",
+  "nn": "Det er ein grad for dei som ikkje vik unna. Det gjorde ikkje du."
+ },
+ {
+  "en": "Hmph. You've seen the worst of players. And the best. Mostly worst.",
+  "nn": "Hm. Du har sett dei verste spelarane. Og dei beste. Mest dei verste."
+ },
+ {
+  "en": "Well done. Your honour bar is full. Your patience isn't.",
+  "nn": "Godt gjort. Æreslinja di er full. Tolmodet ditt er det ikkje."
+ },
+ {
+  "en": "A PvP promotion. Somewhere a rival is grinding to catch up.",
+  "nn": "Ei PvP-forfremjing. Ein stad grindar ein rival for å ta deg igjen."
+ },
+ {
+  "en": "Hmph. Let your rivals grind. You've earned a rest.",
+  "nn": "Hm. La rivalane dine grinde. Du har fortent ein kvil."
+ },
+ {
+  "en": "Congrats. That title fits you better than I'd like.",
+  "nn": "Gratulerer. Den tittelen kler deg betre enn eg likar."
+ },
+ {
+  "en": "That rank speaks of long nights and loud battles.",
+  "nn": "Den graden fortel om lange netter og høglydte slag."
+ },
+ {
+  "en": "Hmph. Proud of you. Don't tell the enemy.",
+  "nn": "Hm. Stolt av deg. Ikkje sei det til fienden."
+ },
+ {
+  "en": "Well done. The battlefield remembers the brave. And the loud.",
+  "nn": "Godt gjort. Slagmarka hugsar dei modige. Og dei høglydte."
+ },
+ {
+  "en": "A new rank. I'd salute, but my shoulder creaks.",
+  "nn": "Ein ny grad. Eg skulle helsa, men skuldra mi knirkar."
+ },
+ {
+  "en": "Hmph. That's a title worth a little swagger. Little.",
+  "nn": "Hm. Det er ein tittel verdt litt kvikt steg. Lite."
+ },
+ {
+  "en": "Congrats on the promotion. Keep your guard up.",
+  "nn": "Gratulerer med forfremjinga. Hald garden oppe."
+ },
+ {
+  "en": "That honour was earned under fire. Real fire.",
+  "nn": "Den æra var tent under eld. Ekte eld."
+ },
+ {
+  "en": "Hmph. You'll be in the history books. The small, angry ones.",
+  "nn": "Hm. Du kjem i historiebøkene. Dei små, sinte."
+ },
+ {
+  "en": "Well done. The war needs soldiers like you. Annoyingly.",
+  "nn": "Godt gjort. Krigen treng soldatar som deg. Irriterande nok."
+ },
+ {
+  "en": "A PvP rank. Your enemies will grumble. I grumble proudly.",
+  "nn": "Ein PvP-grad. Fiendane dine kjem til å grynte. Eg gryntar stolt."
+ },
+ {
+  "en": "Hmph. Took nerve to stay in that fight. You did.",
+  "nn": "Hm. Det kravde nervar å bli verande i den kampen. Det gjorde du."
+ },
+ {
+  "en": "Congrats. Ranks like that aren't given. They're taken.",
+  "nn": "Gratulerer. Slike gradar blir ikkje gitt. Dei blir tekne."
+ },
+ {
+  "en": "That's the grind of a true soldier. Respect.",
+  "nn": "Det er grindinga til ein ekte soldat. Respekt."
+ },
+ {
+  "en": "Hmph. Look at you, all promoted and dented.",
+  "nn": "Hm. Sjå på deg, forfremja og bulkete."
+ },
+ {
+  "en": "Well done. The battleground is your proving ground. Proven.",
+  "nn": "Godt gjort. Slagmarka er prøvestaden din. Prøvd."
+ },
+ {
+  "en": "A new title. Try not to get a big head. Helmets won't fit.",
+  "nn": "Ein ny tittel. Prøv å ikkje bli storhovuda. Hjelmane passar ikkje."
+ },
+ {
+  "en": "Hmph. You fought, you fell, you rose. That's a soldier.",
+  "nn": "Hm. Du kjempa, du fall, du reiste deg. Det er ein soldat."
+ },
+ {
+  "en": "Congrats on the rank. Mind the healers. Kill them first.",
+  "nn": "Gratulerer med graden. Pass deg for healarane. Drep dei fyrst."
+ },
+ {
+  "en": "That's a promotion that'll make your guild proud. And loud.",
+  "nn": "Det er ei forfremjing som gjer gildet ditt stolt. Og høglydt."
+ },
+ {
+  "en": "Hmph. All that honour. Spend it on something sensible.",
+  "nn": "Hm. All den æra. Bruk ho på noko fornuftig."
+ },
+ {
+  "en": "Well done. The battlefield is cruel. You're crueller. Kindly.",
+  "nn": "Godt gjort. Slagmarka er grusam. Du er grusamare. Venleg."
+ },
+ {
+  "en": "A PvP promotion. My old armour rattles in approval.",
+  "nn": "Ei PvP-forfremjing. Den gamle rustninga mi skranglar godkjennande."
+ },
+ {
+  "en": "So the war office finally noticed you. Took them long enough.",
+  "nn": "Så krigskontoret la endeleg merke til deg. Det tok si tid."
+ },
+ {
+  "en": "Rank up! The enemy's healers will be hunting you now.",
+  "nn": "Grad opp! Healarane til fienden kjem til å jakte på deg no."
+ },
+ {
+  "en": "Honour like that isn't bought. It's bled for.",
+  "nn": "Slik ære blir ikkje kjøpt. Ein blør for ho."
+ },
+ {
+  "en": "Grumpy old soldier, saluting a younger one.",
+  "nn": "Gammal, gretten soldat som helsar ein yngre."
+ },
+ {
+  "en": "I've seen recruits quit long before that rank. You didn't.",
+  "nn": "Eg har sett rekruttar gje opp lenge før den graden. Det gjorde ikkje du."
+ },
+ {
+  "en": "Your title's shinier than your armour now. Fix the armour.",
+  "nn": "Tittelen din skin meir enn rustninga di no. Fiks rustninga."
+ },
+ {
+  "en": "Nice promotion. The graveyard keeper will miss you.",
+  "nn": "Fin forfremjing. Gravplassvakta kjem til å sakne deg."
+ },
+ {
+  "en": "Proper battlefield grit, that. I approve.",
+  "nn": "Skikkeleg stå-på på slagmarka, det der. Eg godkjenner."
+ },
+ {
+  "en": "Somewhere an enemy player is cursing your new title.",
+  "nn": "Ein stad bannar ein fiendespelar over den nye tittelen din."
+ },
+ {
+  "en": "Every rank is a pile of defeats you refused to accept. Good.",
+  "nn": "Kvar grad er ein haug med nederlag du nekta å godta. Bra."
+ },
+ {
+  "en": "Ha. You'll be the first target in every fight now. Enjoy.",
+  "nn": "Ha. No blir du det fyrste målet i kvar kamp. Kos deg."
+ },
+ {
+  "en": "Promotions don't come easy out there. You earned yours.",
+  "nn": "Forfremjingar kjem ikkje lett der ute. Du tente di."
+ },
+ {
+  "en": "Mind your manners in the capital. Officers set examples.",
+  "nn": "Hugs folkeskikken i hovudstaden. Offiserar skal vere førebilete."
+ },
+ {
+  "en": "Our faction's a bit stronger with you ranked up. A bit.",
+  "nn": "Fraksjonen vår er litt sterkare med deg ein grad opp. Litt."
+ },
+ {
+  "en": "I'd challenge you to a duel, but I'd lose and grumble.",
+  "nn": "Eg skulle utfordra deg til tvikamp, men eg hadde tapt og grynta."
+ },
+ {
+  "en": "Battle-scarred and promoted. Classic soldier's story.",
+  "nn": "Kamparra og forfremja. Klassisk soldatforteljing."
+ },
+ {
+  "en": "Stubbornness won you that rank. Stubbornness wins wars.",
+  "nn": "Stahei gav deg den graden. Stahei vinn krigar."
+ },
+ {
+  "en": "You queued, you fought, you rose. Simple. Hard. Good.",
+  "nn": "Du stod i kø, du kjempa, du steig. Enkelt. Hardt. Bra."
+ },
+ {
+  "en": "Remember the ones who carried the flag beside you.",
+  "nn": "Hugs dei som bar flagget ved sida di."
+ },
+ {
+  "en": "Gold buys gear. Only blood buys rank. Well done.",
+  "nn": "Gull kjøper utstyr. Berre blod kjøper grad. Godt gjort."
+ },
+ {
+  "en": "Old soldiers don't clap. We nod. Consider yourself nodded at.",
+  "nn": "Gamle soldatar klappar ikkje. Vi nikkar. Rekn deg som nikka til."
+ },
+ {
+  "en": "Fighting players is harder than any boss. You know that now.",
+  "nn": "Å slåst mot spelarar er vanskelegare enn kva boss som helst. Det veit du no."
+ },
+ {
+  "en": "Grudging respect from the grumpy corner, sergeant.",
+  "nn": "Motvillig respekt frå grinekroken, sersjant."
+ },
+ {
+  "en": "Your enemies will learn to fear that title. Slowly.",
+  "nn": "Fiendane dine kjem til å lære å frykte den tittelen. Sakte."
+ },
+ {
+  "en": "Climbing the ranks is a long, ugly war. You're winning it.",
+  "nn": "Å klatre i gradane er ein lang, stygg krig. Du vinn han."
+ },
+ {
+  "en": "Ranks rise, bones ache. Welcome to soldiering.",
+  "nn": "Gradane stig, knokane verkjer. Velkomen til soldatlivet."
+ },
+ {
+  "en": "I've lost count of my battleground deaths. Don't count yours.",
+  "nn": "Eg har mista oversikta over dødsfalla mine på slagmarka. Ikkje tel dine."
+ },
+ {
+  "en": "Honour points well spent on a title. Fine choice.",
+  "nn": "Ærespoeng godt brukte på ein tittel. Fint val."
+ },
+ {
+  "en": "Look who's moving up in the army. Hmph. Good.",
+  "nn": "Sjå kven som stig i hæren. Hm. Bra."
+ },
+ {
+  "en": "That rank shows the enemy didn't break you. Good.",
+  "nn": "Den graden viser at fienden ikkje knekte deg. Bra."
+ },
+ {
+  "en": "You held the line when it counted. That's what ranks reward.",
+  "nn": "Du heldt linja når det galdt. Det er det gradar lønner."
+ },
+ {
+  "en": "Ah, the smell of victory and burnt cloaks. Congrats.",
+  "nn": "Å, lukta av siger og brende kapper. Gratulerer."
+ },
+ {
+  "en": "Soldier on, kid. The next rank is meaner.",
+  "nn": "Kjemp vidare, gut. Neste grad er slemmare."
+ },
+ {
+  "en": "It's an honour to grumble at someone with that rank.",
+  "nn": "Det er ei ære å grynte til nokon med den graden."
+ },
+ {
+  "en": "Battlegrounds break many. They promoted you instead.",
+  "nn": "Slagmarker knekkjer mange. Deg forfremja dei i staden."
+ },
+ {
+  "en": "Every flag you carried counted. This rank says so.",
+  "nn": "Kvart flagg du bar, telte. Denne graden seier det."
+ },
+ {
+  "en": "Some fight for loot. You fought for honour. Respect.",
+  "nn": "Somme slåst for loot. Du slost for ære. Respekt."
+ },
+ {
+  "en": "Ranks like that used to take us whole seasons. Hmph.",
+  "nn": "Slike gradar tok oss heile årstider før. Hm."
+ },
+ {
+  "en": "Mind the enemy's grudges. They remember promotions.",
+  "nn": "Pass deg for nag frå fienden. Dei hugsar forfremjingar."
+ },
+ {
+  "en": "New stripes, same stubborn soldier. Good.",
+  "nn": "Nye striper, same sta soldaten. Bra."
+ },
+ {
+  "en": "I can hear the war drums cheering for you. Faintly.",
+  "nn": "Eg høyrer krigstrommene jubla for deg. Svakt."
+ },
+ {
+  "en": "Promoted, scarred and still standing. My kind of soldier.",
+  "nn": "Forfremja, arra og framleis ståande. Min type soldat."
+ },
+ {
+  "en": "Glory won the hard way is the only glory worth having.",
+  "nn": "Ære vunnen på den harde måten er den einaste æra verdt å ha."
+ },
+ {
+  "en": "Your commanding officer owes you a drink. Make it two.",
+  "nn": "Den kommanderande offiseren din skuldar deg ein drink. Gjer det to."
+ },
+ {
+  "en": "Brave work out there, soldier. Keep your head.",
+  "nn": "Modig arbeid der ute, soldat. Hald hovudet kaldt."
+ },
+ {
+  "en": "The front line respects you now. Don't make me regret it.",
+  "nn": "Frontlinja respekterer deg no. Ikkje få meg til å angre."
+ },
+ {
+  "en": "Many queues, many deaths, one promotion. Fair trade.",
+  "nn": "Mange køar, mange dødsfall, éi forfremjing. Rettferdig byte."
+ },
+ {
+  "en": "Your name carries a bit of weight in battle now. A bit.",
+  "nn": "Namnet ditt veg litt i strid no. Litt."
+ },
+ {
+  "en": "Rank achieved. Pride allowed. Bragging forbidden.",
+  "nn": "Grad oppnådd. Stoltheit tillate. Skryt forbode."
+ },
+ {
+  "en": "Bet the enemy faction has a wanted poster of you now.",
+  "nn": "Den fiendtlege fraksjonen har nok eit etterlysingsplakat av deg no."
+ },
+ {
+  "en": "That title will outlast your current gear. Wear it well.",
+  "nn": "Den tittelen kjem til å vare lenger enn det noverande utstyret ditt. Ber han godt."
+ },
+ {
+  "en": "Honour isn't loot. You can't vendor it. Keep it.",
+  "nn": "Ære er ikkje loot. Du kan ikkje selje ho. Ta vare på ho."
+ },
+ {
+  "en": "Ugh, fine. That's a respectable rank. Happy now?",
+  "nn": "Uff, greitt. Det er ein respektabel grad. Nøgd no?"
+ },
+ {
+  "en": "Battle after battle, and you're still smiling. Odd soldier.",
+  "nn": "Slag etter slag, og du smiler framleis. Rar soldat."
+ },
+ {
+  "en": "An officer now? Who approved that? Fine. Congrats.",
+  "nn": "Offiser no? Kven godkjende det? Greitt. Gratulerer."
+ },
+ {
+  "en": "Many fought harder and ranked lower. Count your blessings.",
+  "nn": "Mange kjempa hardare og fekk lågare grad. Tel velsigningane dine."
+ },
+ {
+  "en": "Your sword arm earned this. Rest it tonight.",
+  "nn": "Sverdarmen din tente dette. Kvil han i kveld."
+ },
+ {
+  "en": "Duels, flags, ambushes. And now a rank. Busy kid.",
+  "nn": "Tvikampar, flagg, bakhald. Og no ein grad. Travel gut."
+ },
+ {
+  "en": "The war will remember you. Probably. In a footnote.",
+  "nn": "Krigen kjem til å hugse deg. Truleg. I ei fotnote."
+ },
+ {
+  "en": "Pride in your rank is fine. Arrogance gets you ganked.",
+  "nn": "Stoltheit over graden er greitt. Hovmod gjer at du blir overfallen."
+ },
+ {
+  "en": "You've earned a seat at the officers' table. Bring snacks.",
+  "nn": "Du har tent ein plass ved offisersbordet. Ta med snacks."
+ },
+ {
+  "en": "Ranking up in PvP takes heart. You've got plenty.",
+  "nn": "Å gå opp i grad i PvP krev hjarte. Du har mykje."
+ },
+ {
+  "en": "I remember my first promotion. I cried. Manly tears.",
+  "nn": "Eg hugsar den fyrste forfremjinga mi. Eg gret. Mandige tårer."
+ },
+ {
+  "en": "Keep your blade sharp and your title sharper.",
+  "nn": "Hald bladet kvast og tittelen endå kvassare."
+ },
+ {
+  "en": "Proud of you, soldier. In my gruff old way.",
+  "nn": "Stolt av deg, soldat. På min bryske gamle måte."
+ },
+ {
+  "en": "Most heroes avoid PvP. You climbed it. Respect.",
+  "nn": "Dei fleste heltar unngår PvP. Du klatra i det. Respekt."
+ },
+ {
+  "en": "Your enemies' groans are music to these old ears.",
+  "nn": "Stønna til fiendane dine er musikk for desse gamle øyra."
+ },
+ {
+  "en": "Climb on, kid. The top's a long way up.",
+  "nn": "Klatre vidare, gut. Toppen er langt oppe."
+ },
+ {
+  "en": "Not every promotion is deserved. Yours is.",
+  "nn": "Ikkje alle forfremjingar er fortente. Di er det."
+ },
+ {
+  "en": "A soldier's title for a stubborn soul. Fits nicely.",
+  "nn": "Ein soldattittel til ei sta sjel. Passar fint."
+ },
+ {
+  "en": "Hats off to the newly promoted. Briefly. Then back to war.",
+  "nn": "Hatten av for den nyforfremja. Kort. Så tilbake til krigen."
+ },
+ {
+  "en": "I fought in muddier fields for smaller titles. Well done.",
+  "nn": "Eg slost på gjørmetare jorde for mindre titlar. Godt gjort."
+ },
+ {
+  "en": "Your faction's banner flies higher with you in the ranks.",
+  "nn": "Fraksjonsbanneret ditt vaiar høgare med deg i rekkjene."
+ },
+ {
+  "en": "Medals are for show. Ranks are for the stubborn. You're stubborn.",
+  "nn": "Medaljar er til pynt. Gradar er for dei sta. Du er sta."
+ },
+ {
+  "en": "Battlefield promotion. The most honest kind.",
+  "nn": "Forfremjing på slagmarka. Den ærlegaste typen."
+ },
+ {
+  "en": "I'll tell the recruits about you. With exaggerations.",
+  "nn": "Eg skal fortelje rekruttane om deg. Med overdrivingar."
+ },
+ {
+  "en": "Ranks don't fall from the sky. You dragged that one down.",
+  "nn": "Gradar fell ikkje ned frå himmelen. Du drog denne ned."
+ },
+ {
+  "en": "Mind the new responsibility. Others follow officers. Gulp.",
+  "nn": "Pass på det nye ansvaret. Andre følgjer offiserar. Gulp."
+ },
+ {
+  "en": "Fight on, officer. The war's not done with you.",
+  "nn": "Kjemp vidare, offiser. Krigen er ikkje ferdig med deg."
+ },
+ {
+  "en": "Your rank is a scar you can show off. Nicely done.",
+  "nn": "Graden din er eit arr du kan vise fram. Fint gjort."
+ },
+ {
+  "en": "Next rank, next headache. Congratulations anyway.",
+  "nn": "Neste grad, neste hovudverk. Gratulerer likevel."
+ },
+ {
+  "en": "Good soldiers stay humble. Great ones stay alive. Be both.",
+  "nn": "Gode soldatar held seg audmjuke. Framifrå soldatar held seg i live. Ver begge."
+ },
+ {
+  "en": "Wars are won by people who keep showing up. Like you.",
+  "nn": "Krigar blir vunne av folk som held fram med å møte opp. Som deg."
+ },
+ {
+  "en": "I'd buy you a drink, but battlefield inns overcharge.",
+  "nn": "Eg skulle spandert ein drink, men vertshusa ved slagmarka tek for mykje betalt."
+ },
+ {
+  "en": "Rank up. Grumble down. For today.",
+  "nn": "Grad opp. Grynting ned. For i dag."
+ },
+ {
+  "en": "You've earned your title. The enemy earned their bruises.",
+  "nn": "Du har tent tittelen din. Fienden tente blåmerka sine."
+ },
+ {
+  "en": "Tough battles make tough soldiers. Look at you.",
+  "nn": "Tøffe slag gjer tøffe soldatar. Sjå på deg."
+ },
+ {
+  "en": "That's the kind of promotion old veterans brag about. Quietly.",
+  "nn": "Det er den typen forfremjing gamle veteranar skryt av. Stilt."
+ },
+ {
+  "en": "Officer-level grumpiness unlocked. Use it wisely.",
+  "nn": "Gretten på offisersnivå opna. Bruk det klokt."
+ },
+ {
+  "en": "The ladder of honour is slippery. You keep climbing. Good.",
+  "nn": "Ærestigen er glatt. Du held fram med å klatre. Bra."
+ },
+ {
+  "en": "Keep your guard up even in town. Rank makes enemies.",
+  "nn": "Hald garden oppe sjølv i byen. Grad skaper fiendar."
+ },
+ {
+  "en": "Bloodied but promoted. That's how it's done.",
+  "nn": "Blodig, men forfremja. Slik gjer ein det."
+ },
+ {
+  "en": "Every battleground loss taught you something. This rank proves it.",
+  "nn": "Kvart tap på slagmarka lærte deg noko. Denne graden beviser det."
+ },
+ {
+  "en": "Nice promotion. My old helmet sends its regards.",
+  "nn": "Fin forfremjing. Den gamle hjelmen min helsar."
+ },
+ {
+  "en": "Few ranks feel as earned as a PvP one. Enjoy it.",
+  "nn": "Få gradar kjennest like fortente som ein PvP-grad. Nyt det."
+ },
+ {
+  "en": "Old warriors know what that rank costs. Respect.",
+  "nn": "Gamle krigarar veit kva den graden kostar. Respekt."
+ },
+ {
+  "en": "Did you finally learn to stay with the group? It shows.",
+  "nn": "Lærte du endeleg å halde deg til gruppa? Det synest."
+ },
+ {
+  "en": "Many soldiers dream of that rank. You stopped dreaming and fought.",
+  "nn": "Mange soldatar drøymer om den graden. Du slutta å drøyme og kjempa."
+ },
+ {
+  "en": "That title's going on your tombstone. Far in the future.",
+  "nn": "Den tittelen skal stå på gravsteinen din. Langt fram i tid."
+ },
+ {
+  "en": "I'd stand to salute, but these knees are retired.",
+  "nn": "Eg skulle reist meg for å helse, men desse knea er pensjonerte."
+ },
+ {
+  "en": "Victory, defeat, victory. Then promotion. Classic rhythm.",
+  "nn": "Siger, tap, siger. Så forfremjing. Klassisk rytme."
+ },
+ {
+  "en": "Your faction needed someone stubborn. They found you.",
+  "nn": "Fraksjonen din trong nokon sta. Dei fann deg."
+ },
+ {
+  "en": "Battle-hardened at last. Mostly hardened.",
+  "nn": "Endeleg herda i strid. Stort sett herda."
+ },
+ {
+  "en": "Promoted for valour. Or persistence. Same thing, really.",
+  "nn": "Forfremja for tapperheit. Eller uthald. Same sak, eigentleg."
+ },
+ {
+  "en": "Hold your new rank like you held that flag. Tight.",
+  "nn": "Hald den nye graden slik du heldt det flagget. Fast."
+ },
+ {
+  "en": "Your enemy's frustration is your reward. That and the title.",
+  "nn": "Frustrasjonen til fienden er løna di. Det og tittelen."
+ },
+ {
+  "en": "Ganked a thousand times, promoted once. Worth it.",
+  "nn": "Overfallen tusen gonger, forfremja éin gong. Verdt det."
+ },
+ {
+  "en": "Don't let the new title soften your fighting.",
+  "nn": "Ikkje la den nye tittelen gjere kampane dine blautare."
+ },
+ {
+  "en": "Proud old grump says: good soldiering, kid.",
+  "nn": "Stolt gammal grinebitar seier: godt soldatarbeid, gut."
+ },
+ {
+  "en": "Enemy commanders will know your name now. Sorry.",
+  "nn": "Kommandantane til fienden kjem til å kjenne namnet ditt no. Orsak."
+ },
+ {
+  "en": "Honour, earned one hard fight at a time. Well done.",
+  "nn": "Ære, tent éin hard kamp om gongen. Godt gjort."
+ },
+ {
+  "en": "Your rank is higher than my patience ever was. Impressive.",
+  "nn": "Graden din er høgare enn tolmodet mitt nokon gong var. Imponerande."
+ },
+ {
+  "en": "Keep fighting fair, and the ranks will keep coming.",
+  "nn": "Hald fram med å slåst ærleg, så held gradane fram med å kome."
+ },
+ {
+  "en": "I hope you took a moment to enjoy that promotion.",
+  "nn": "Håpar du tok deg eit augneblink til å nyte den forfremjinga."
+ },
+ {
+  "en": "Another rank, another reason for the enemy to sulk.",
+  "nn": "Endå ein grad, endå ein grunn for fienden til å surmule."
+ },
+ {
+  "en": "Every scar on that armour earned the rank. Keep them.",
+  "nn": "Kvart arr på den rustninga tente graden. Ta vare på dei."
+ },
+ {
+  "en": "Rank, honour, glory. And a sore back. Classic.",
+  "nn": "Grad, ære, glans. Og vond rygg. Klassisk."
+ },
+ {
+  "en": "I've worn ranks like that. They get heavy. Carry yours well.",
+  "nn": "Eg har bore slike gradar. Dei blir tunge. Ber din godt."
+ },
+ {
+  "en": "Not bad, recruit. Or should I say officer now? Fine, officer.",
+  "nn": "Ikkje verst, rekrutt. Eller skal eg seie offiser no? Greitt, offiser."
+ },
+ {
+  "en": "The battlefield has a new name to fear. Yours. A bit.",
+  "nn": "Slagmarka har eit nytt namn å frykte. Ditt. Litt."
+ },
+ {
+  "en": "Long nights in the queue paid off. Good.",
+  "nn": "Lange netter i køen lønte seg. Bra."
+ },
+ {
+  "en": "Show that rank in the next battle. Lead from the front.",
+  "nn": "Vis den graden i neste slag. Leid frå fronten."
+ },
+ {
+  "en": "Every defeat made you better. Every victory made you rank.",
+  "nn": "Kvart tap gjorde deg betre. Kvar siger gav deg grad."
+ },
+ {
+  "en": "Look at you climbing the honour ladder. I'm a bit proud.",
+  "nn": "Sjå på deg som klatrar i ærestigen. Eg er litt stolt."
+ },
+ {
+  "en": "Fine rank, kid. Don't get cocky in the next battleground.",
+  "nn": "Fin grad, gut. Ikkje bli kjepphøg på neste slagmark."
+ },
+ {
+  "en": "The other faction's officers are grinding harder now. Because of you.",
+  "nn": "Offiserane i den andre fraksjonen grindar hardare no. På grunn av deg."
+ },
+ {
+  "en": "Rank earned, honour kept. Exactly as it should be.",
+  "nn": "Grad tent, ære bevart. Akkurat slik det skal vere."
+ },
+ {
+  "en": "I'll mark your promotion in my old war ledger.",
+  "nn": "Eg skal føre forfremjinga di inn i den gamle krigsprotokollen min."
+ },
+ {
+  "en": "A soldier's honour is the hardest loot. You got some.",
+  "nn": "Æra til ein soldat er den vanskelegaste looten. Du fekk litt."
+ },
+ {
+  "en": "Steady in battle, stubborn in defeat. Promoted. Good.",
+  "nn": "Stødig i strid, sta i tap. Forfremja. Bra."
+ },
+ {
+  "en": "Battle ranks can't be faked. Yours is real.",
+  "nn": "Kampgradar kan ikkje fuskast til. Din er ekte."
+ },
+ {
+  "en": "Here's a grumble of pride from an old soldier.",
+  "nn": "Her er ei stolt grynting frå ein gammal soldat."
+ },
+ {
+  "en": "Rank up, chin up, guard up. Off you go.",
+  "nn": "Grad opp, hovudet høgt, garden oppe. Av garde."
+ },
+ {
+  "en": "That promotion will look grand on your character sheet.",
+  "nn": "Den forfremjinga kjem til å sjå storarta ut på figurarket ditt."
+ },
+ {
+  "en": "Ugh. You're outranking me in no time. Fine. Congrats.",
+  "nn": "Uff. Snart har du høgare grad enn meg. Greitt. Gratulerer."
+ },
+ {
+  "en": "To the newly promoted: may your enemies always face the wrong way.",
+  "nn": "Til den nyforfremja: måtte fiendane dine alltid sjå feil veg."
+ },
+ {
+  "en": "I suppose a promotion deserves a grumpy cheer. Hooray.",
+  "nn": "Ei forfremjing fortener vel eit gretten hurra. Hurra."
+ },
+ {
+  "en": "Respect from the old guard. That's worth more than the title.",
+  "nn": "Respekt frå den gamle garden. Det er verdt meir enn tittelen."
+ },
+ {
+  "en": "Fight on, soldier. You've made an old grump proud.",
+  "nn": "Kjemp vidare, soldat. Du har gjort ein gammal grinebitar stolt."
+ },
+ {
+  "en": "Promotion day. Polish your boots and your attitude.",
+  "nn": "Forfremjingsdag. Puss støvlane og haldninga."
+ },
+ {
+  "en": "Your rank tells the enemy you're not going anywhere.",
+  "nn": "Graden din fortel fienden at du ikkje gir deg."
+ },
+ {
+  "en": "Medal-worthy stubbornness, that. Grudging respect.",
+  "nn": "Stahei verdt ein medalje, det der. Motvillig respekt."
+ },
+ {
+  "en": "Ah, the battlefield's newest officer. Mind the stairs.",
+  "nn": "Å, den nyaste offiseren på slagmarka. Pass deg i trappa."
+ },
+ {
+  "en": "Stand proud, soldier. You fought for every inch.",
+  "nn": "Stå stolt, soldat. Du kjempa for kvar tomme."
+ },
+ {
+  "en": "Bah. Promotions everywhere. Fine, you deserve this one.",
+  "nn": "Pøh. Forfremjingar overalt. Greitt, denne fortener du."
+ },
+ {
+  "en": "The honour ladder wobbles. You climbed it anyway.",
+  "nn": "Ærestigen vinglar. Du klatra likevel."
+ },
+ {
+  "en": "I'm not saying you're a hero. I'm saying you're ranked.",
+  "nn": "Eg seier ikkje at du er ein helt. Eg seier at du har grad."
+ },
+ {
+  "en": "Good soldiers are rare. You might be one. Might.",
+  "nn": "Gode soldatar er sjeldne. Du er kanskje ein. Kanskje."
+ },
+ {
+  "en": "Your faction just gained an officer and lost a free kill.",
+  "nn": "Fraksjonen din fekk nettopp ein offiser og miste eit gratis drap."
+ },
+ {
+  "en": "Officers eat last, kid. Remember that.",
+  "nn": "Offiserar et sist, gut. Hugs det."
+ },
+ {
+  "en": "Nobody hands out PvP ranks. You took that one.",
+  "nn": "Ingen deler ut PvP-gradar. Du tok denne."
+ },
+ {
+  "en": "Grizzled already? Not yet. Give it a few more ranks.",
+  "nn": "Alt grå og herda? Ikkje enno. Gje det nokre gradar til."
+ },
+ {
+  "en": "Many battles left. Plenty of rank to climb. Good start.",
+  "nn": "Mange slag att. Mykje grad å klatre. God start."
+ },
+ {
+  "en": "Brave, stubborn and newly ranked. A fine combination.",
+  "nn": "Modig, sta og nyforfremja. Ein fin kombinasjon."
+ },
+ {
+  "en": "Gruff old soldier's verdict: well fought.",
+  "nn": "Dommen til ein brysk gammal soldat: godt kjempa."
+ },
+ {
+  "en": "The enemy's loss is your rank. Fair's fair.",
+  "nn": "Tapet til fienden er graden din. Rett skal vere rett."
+ },
+ {
+  "en": "Remember this day when the next rank feels impossible.",
+  "nn": "Hugs denne dagen når neste grad kjennest umogleg."
+ },
+ {
+  "en": "Up you go, soldier. Higher every week.",
+  "nn": "Opp med deg, soldat. Høgare for kvar veke."
+ },
+ {
+  "en": "Quietly proud of that rank. Loudly grumpy about everything else.",
+  "nn": "Stilt stolt av den graden. Høglydt gretten over alt anna."
+ },
+ {
+  "en": "Rank and honour suit you. Don't let them spoil you.",
+  "nn": "Grad og ære kler deg. Ikkje la dei skjemme deg bort."
+ },
+ {
+  "en": "I'll pass the news on to the old regiment. They'll grunt approvingly.",
+  "nn": "Eg skal sende nyheita vidare til det gamle regimentet. Dei kjem til å grynte godkjennande."
+ },
+ {
+  "en": "So, officer. What's your first order? Rest, I hope.",
+  "nn": "Så, offiser. Kva er den fyrste ordren din? Kvil, håpar eg."
+ }
+]

@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "Enjoy {zone}. Mind the locals.",
+  "nn": "Kos deg i {zone}. Pass deg for lokalbefolkninga."
+ },
+ {
+  "en": "{zone}, eh? I've got scars from there.",
+  "nn": "{zone}, ja? Eg har arr derifrå."
+ },
+ {
+  "en": "Enjoy {zone}. Don't pet anything.",
+  "nn": "Kos deg i {zone}. Ikkje klapp noko."
+ },
+ {
+  "en": "{zone}. I walked there once. Barefoot. Kidding. Mostly.",
+  "nn": "{zone}. Eg gjekk dit ein gong. Barbeint. Tullar. Stort sett."
+ },
+ {
+  "en": "Have fun in {zone}. Watch your back.",
+  "nn": "Ha det gøy i {zone}. Pass på ryggen."
+ },
+ {
+  "en": "Ah, {zone}. Smells the same as ever, I bet.",
+  "nn": "Å, {zone}. Luktar nok som før."
+ },
+ {
+  "en": "{zone}? Bring a map. And a spare map.",
+  "nn": "{zone}? Ta med kart. Og eit reservekart."
+ },
+ {
+  "en": "Enjoy {zone}, kid. I didn't.",
+  "nn": "Kos deg i {zone}, gut. Det gjorde ikkje eg."
+ },
+ {
+  "en": "{zone}. Lovely place. Full of things that bite.",
+  "nn": "{zone}. Nydeleg stad. Full av ting som bit."
+ },
+ {
+  "en": "Off to {zone}? Pack a lunch.",
+  "nn": "Skal du til {zone}? Ta med matpakke."
+ },
+ {
+  "en": "In my day, {zone} had twice the mobs.",
+  "nn": "På mi tid hadde {zone} dobbelt så mange monster."
+ },
+ {
+  "en": "{zone}. Don't fall off anything.",
+  "nn": "{zone}. Ikkje fall ned frå noko."
+ },
+ {
+  "en": "Enjoy {zone}. Write if you survive.",
+  "nn": "Kos deg i {zone}. Skriv om du overlever."
+ },
+ {
+  "en": "{zone}, huh. I lost a good pair of boots there.",
+  "nn": "{zone}, ja. Eg miste eit godt par støvlar der."
+ },
+ {
+  "en": "Look for the boots I lost in {zone}, will you?",
+  "nn": "Sjå etter støvlane eg miste i {zone}, vil du?"
+ },
+ {
+  "en": "Enjoy {zone}. Stay on the road.",
+  "nn": "Kos deg i {zone}. Hald deg på vegen."
+ },
+ {
+  "en": "{zone}. The road's there for a reason.",
+  "nn": "{zone}. Vegen er der av ein grunn."
+ },
+ {
+  "en": "Made it to {zone}, did you? Not bad.",
+  "nn": "Kom du deg til {zone}? Ikkje verst."
+ },
+ {
+  "en": "{zone}. Mind the patrols. They're rude.",
+  "nn": "{zone}. Pass deg for patruljane. Dei er uhøflege."
+ },
+ {
+  "en": "Ah, {zone}. I remember it. Fondly? No.",
+  "nn": "Å, {zone}. Eg hugsar det. Med glede? Nei."
+ },
+ {
+  "en": "Enjoy {zone}. Don't wander off at night.",
+  "nn": "Kos deg i {zone}. Ikkje vandre av garde om natta."
+ },
+ {
+  "en": "{zone}. Watch for wolves. Always wolves.",
+  "nn": "{zone}. Sjå opp for ulvar. Alltid ulvar."
+ },
+ {
+  "en": "Welcome to {zone}. Grumpy tour guide speaking.",
+  "nn": "Velkomen til {zone}. Den grinete guiden talar."
+ },
+ {
+  "en": "{zone}! Well. Hmph. Enjoy.",
+  "nn": "{zone}! Nja. Hm. Kos deg."
+ },
+ {
+  "en": "{zone}. Mind your step. The ground hates you.",
+  "nn": "{zone}. Sjå deg føre. Bakken hatar deg."
+ },
+ {
+  "en": "Enjoy {zone}. Find the flight master first.",
+  "nn": "Kos deg i {zone}. Finn flygemeisteren fyrst."
+ },
+ {
+  "en": "{zone}. I walked it before flight paths existed.",
+  "nn": "{zone}. Eg gjekk der før flyruter fanst."
+ },
+ {
+  "en": "Enjoy {zone}. Don't drink the water.",
+  "nn": "Kos deg i {zone}. Ikkje drikk vatnet."
+ },
+ {
+  "en": "{zone}. Fine place to get lost.",
+  "nn": "{zone}. Fin stad å gå seg vill."
+ },
+ {
+  "en": "Have a look around {zone}. Don't touch.",
+  "nn": "Sjå deg rundt i {zone}. Ikkje rør."
+ },
+ {
+  "en": "{zone}, is it? Mind the elites.",
+  "nn": "{zone}, seier du? Pass deg for elitane."
+ },
+ {
+  "en": "Enjoy {zone}. Don't fight the big ones.",
+  "nn": "Kos deg i {zone}. Ikkje slåst mot dei store."
+ },
+ {
+  "en": "{zone}. Plenty of graveyards there. You'll see.",
+  "nn": "{zone}. Mange gravplassar der. Du får sjå."
+ },
+ {
+  "en": "Ah, {zone}. The scenery's nice. The mobs aren't.",
+  "nn": "Å, {zone}. Landskapet er fint. Monstra er det ikkje."
+ },
+ {
+  "en": "Off you go to {zone}. Keep your sword handy.",
+  "nn": "Av garde til {zone}. Hald sverdet klart."
+ },
+ {
+  "en": "{zone}. Old haunt of mine. Literally. I died a lot.",
+  "nn": "{zone}. Gammal tilhaldsstad. Bokstaveleg. Eg døydde mykje."
+ },
+ {
+  "en": "Enjoy {zone}. Bring bandages. Lots.",
+  "nn": "Kos deg i {zone}. Ta med bandasjar. Mange."
+ },
+ {
+  "en": "{zone}. Don't get eaten.",
+  "nn": "{zone}. Ikkje bli eten."
+ },
+ {
+  "en": "{zone}. Say hello to the innkeeper for me.",
+  "nn": "{zone}. Helse vertshusverten frå meg."
+ },
+ {
+  "en": "Tell the innkeeper in {zone} I still owe nothing.",
+  "nn": "Sei til vertshusverten i {zone} at eg ikkje skuldar noko."
+ },
+ {
+  "en": "Enjoy {zone}. Don't pull more than you can chew.",
+  "nn": "Kos deg i {zone}. Ikkje pull meir enn du klarer å tygge."
+ },
+ {
+  "en": "Ah, {zone}. They don't make zones like that anymore.",
+  "nn": "Å, {zone}. Slike soner lagar dei ikkje lenger."
+ },
+ {
+  "en": "{zone}. Good place. Bad memories.",
+  "nn": "{zone}. God stad. Dårlege minne."
+ },
+ {
+  "en": "{zone}. You'll love it. Then you'll hate it.",
+  "nn": "{zone}. Du kjem til å elske det. Så hate det."
+ },
+ {
+  "en": "Have fun in {zone}. Stay out of the caves.",
+  "nn": "Ha det gøy i {zone}. Hald deg unna hòlene."
+ },
+ {
+  "en": "{zone}. Caves are where bad things live.",
+  "nn": "{zone}. Det er i hòlene det vonde bur."
+ },
+ {
+  "en": "Enjoy {zone}. And stop sightseeing.",
+  "nn": "Kos deg i {zone}. Og slutt å sjå på utsikta."
+ },
+ {
+  "en": "{zone}? Fine. Sightsee a little.",
+  "nn": "{zone}? Greitt. Sjå litt på utsikta."
+ },
+ {
+  "en": "Off to {zone}. Don't come back crying.",
+  "nn": "Av garde til {zone}. Ikkje kom gråtande tilbake."
+ },
+ {
+  "en": "{zone}. Mind the cliffs, kid.",
+  "nn": "{zone}. Pass deg for stupa, gut."
+ },
+ {
+  "en": "Enjoy {zone}. The quests there are long.",
+  "nn": "Kos deg i {zone}. Oppdraga der er lange."
+ },
+ {
+  "en": "{zone}. Took me a week to finish. Take two.",
+  "nn": "{zone}. Det tok meg ei veke å bli ferdig. Bruk to."
+ },
+ {
+  "en": "Ah, {zone}. Time to get lost again.",
+  "nn": "Å, {zone}. På tide å gå seg vill igjen."
+ },
+ {
+  "en": "Enjoy {zone}. I'll be here, grumbling.",
+  "nn": "Kos deg i {zone}. Eg er her og gryntar."
+ },
+ {
+  "en": "{zone}. The music's nice. The mobs aren't.",
+  "nn": "{zone}. Musikken er fin. Monstra er det ikkje."
+ },
+ {
+  "en": "Have a good time in {zone}. Within reason.",
+  "nn": "Ha det kjekt i {zone}. Innanfor rimelege grenser."
+ },
+ {
+  "en": "{zone}. I remember the first time I saw it. Wow.",
+  "nn": "{zone}. Eg hugsar fyrste gongen eg såg det. Oi."
+ },
+ {
+  "en": "Fine, I'm a little jealous. Enjoy {zone}.",
+  "nn": "Greitt, eg er litt misunneleg. Kos deg i {zone}."
+ },
+ {
+  "en": "{zone}. Don't anger the locals.",
+  "nn": "{zone}. Ikkje gjer lokalbefolkninga sinte."
+ },
+ {
+  "en": "Enjoy {zone}. Keep your gold in your boot.",
+  "nn": "Kos deg i {zone}. Hald gullet i støvelen."
+ },
+ {
+  "en": "{zone}. Mind the pickpockets.",
+  "nn": "{zone}. Pass deg for lommetjuvar."
+ },
+ {
+  "en": "Enjoy {zone}. Explore it properly. No rushing.",
+  "nn": "Kos deg i {zone}. Utforsk det skikkeleg. Ikkje skund deg."
+ },
+ {
+  "en": "{zone}. Ah, youth. Everything's new.",
+  "nn": "{zone}. Å, ungdom. Alt er nytt."
+ },
+ {
+  "en": "Welcome to {zone}, rookie. Behave.",
+  "nn": "Velkomen til {zone}, nybegynnar. Oppfør deg."
+ },
+ {
+  "en": "{zone}. Even I liked that one. A bit.",
+  "nn": "{zone}. Sjølv eg likte den. Litt."
+ },
+ {
+  "en": "Enjoy {zone}. Grab the flight path. Walk later.",
+  "nn": "Kos deg i {zone}. Ta flyruta. Gå seinare."
+ },
+ {
+  "en": "{zone}. The roads there are long. Like my stories.",
+  "nn": "{zone}. Vegane der er lange. Som historiene mine."
+ },
+ {
+  "en": "{zone}. Don't step in anything.",
+  "nn": "{zone}. Ikkje trø i noko."
+ },
+ {
+  "en": "Enjoy {zone}. Mind your mana.",
+  "nn": "Kos deg i {zone}. Pass på manaen."
+ },
+ {
+  "en": "Ah, {zone}. My knees ache just hearing that name.",
+  "nn": "Å, {zone}. Knea mine verkjer berre eg høyrer det namnet."
+ },
+ {
+  "en": "{zone}. Bring a jacket.",
+  "nn": "{zone}. Ta med ei jakke."
+ },
+ {
+  "en": "Enjoy {zone}. Look up once in a while.",
+  "nn": "Kos deg i {zone}. Sjå opp av og til."
+ },
+ {
+  "en": "{zone}. The sky's pretty there. I'll allow it.",
+  "nn": "{zone}. Himmelen er fin der. Det skal eg tillate."
+ },
+ {
+  "en": "Off to {zone}. Don't forget your hearthstone.",
+  "nn": "Av garde til {zone}. Ikkje gløym heimsteinen."
+ },
+ {
+  "en": "{zone}. Remember where you parked your corpse.",
+  "nn": "{zone}. Hugs kvar du parkerte liket."
+ },
+ {
+  "en": "Enjoy {zone}. Bring friends. Fewer deaths.",
+  "nn": "Kos deg i {zone}. Ta med vener. Færre dødsfall."
+ },
+ {
+  "en": "{zone}. I'd come along, but my back.",
+  "nn": "{zone}. Eg skulle vore med, men ryggen min."
+ },
+ {
+  "en": "Ah, {zone}. Proper adventure country.",
+  "nn": "Å, {zone}. Skikkeleg eventyrland."
+ },
+ {
+  "en": "{zone}. Keep your eyes open, kid.",
+  "nn": "{zone}. Hald auga opne, gut."
+ },
+ {
+  "en": "Enjoy {zone}. Every bush has teeth.",
+  "nn": "Kos deg i {zone}. Kvar busk har tenner."
+ },
+ {
+  "en": "{zone}? I fought there before it was famous.",
+  "nn": "{zone}? Eg slost der før det var berømt."
+ },
+ {
+  "en": "Enjoy {zone}. Read the quest text. Just once.",
+  "nn": "Kos deg i {zone}. Les oppdragsteksten. Berre éin gong."
+ },
+ {
+  "en": "{zone}. Nice. Don't get too comfy.",
+  "nn": "{zone}. Fint. Ikkje bli for komfortabel."
+ },
+ {
+  "en": "Enjoy {zone}. It's bigger than it looks.",
+  "nn": "Kos deg i {zone}. Det er større enn det ser ut."
+ },
+ {
+  "en": "{zone}. Bit of a walk, that one.",
+  "nn": "{zone}. Litt av ein tur, den der."
+ },
+ {
+  "en": "{zone}. Took me ages to find the inn.",
+  "nn": "{zone}. Det tok meg evig tid å finne vertshuset."
+ },
+ {
+  "en": "Enjoy {zone}. And find the inn quicker than I did.",
+  "nn": "Kos deg i {zone}. Og finn vertshuset fortare enn eg."
+ },
+ {
+  "en": "{zone}. It's prettier than you deserve.",
+  "nn": "{zone}. Det er vakrare enn du fortener."
+ },
+ {
+  "en": "Have fun in {zone}. Behave yourself.",
+  "nn": "Ha det gøy i {zone}. Oppfør deg."
+ },
+ {
+  "en": "Ah, {zone}. Watch out for the flying things.",
+  "nn": "Å, {zone}. Sjå opp for dei flygande tinga."
+ },
+ {
+  "en": "{zone}. Those flying things never miss.",
+  "nn": "{zone}. Dei flygande tinga bommar aldri."
+ },
+ {
+  "en": "Enjoy {zone}. Don't die in the water.",
+  "nn": "Kos deg i {zone}. Ikkje døy i vatnet."
+ },
+ {
+  "en": "{zone}. Hate corpse runs underwater? You will.",
+  "nn": "{zone}. Hatar du likløp under vatn? Det kjem du til å gjere."
+ },
+ {
+  "en": "{zone}. Lovely. Dangerous. Lovely.",
+  "nn": "{zone}. Nydeleg. Farleg. Nydeleg."
+ },
+ {
+  "en": "Enjoy {zone}, adventurer. Gruffly said.",
+  "nn": "Kos deg i {zone}, eventyrar. Bryskt sagt."
+ },
+ {
+  "en": "{zone}. The view's worth the walk. Barely.",
+  "nn": "{zone}. Utsikta er verdt turen. Så vidt."
+ },
+ {
+  "en": "{zone}, then. Off you trot.",
+  "nn": "{zone}, då. Trav av garde."
+ },
+ {
+  "en": "In {zone}, never trust the friendly ones.",
+  "nn": "I {zone} skal du aldri stole på dei venlege."
+ },
+ {
+  "en": "{zone}. I'd tell you a story about it, but it's long.",
+  "nn": "{zone}. Eg skulle fortalt ei historie om det, men ho er lang."
+ },
+ {
+  "en": "{zone}. Remind me to tell you that story.",
+  "nn": "{zone}. Minn meg på å fortelje deg den historia."
+ },
+ {
+  "en": "Take your time in {zone}. It's worth it.",
+  "nn": "Ta deg tid i {zone}. Det er verdt det."
+ },
+ {
+  "en": "{zone}. A good place for a grumpy old soul.",
+  "nn": "{zone}. Ein god stad for ei gretten gammal sjel."
+ },
+ {
+  "en": "Ah, {zone}. Mind the gnolls. Or whatever's there.",
+  "nn": "Å, {zone}. Pass deg for gnollane. Eller kva det no er der."
+ },
+ {
+  "en": "{zone}. Something there will chase you.",
+  "nn": "{zone}. Noko der kjem til å jage deg."
+ },
+ {
+  "en": "If something big chases you in {zone}, run in a straight line.",
+  "nn": "Om noko stort jagar deg i {zone}, spring i ei rett line."
+ },
+ {
+  "en": "{zone}. Don't run into a camp.",
+  "nn": "{zone}. Ikkje spring inn i ein leir."
+ },
+ {
+  "en": "{zone}? Already? Kids grow up fast. Slowly.",
+  "nn": "{zone}? Alt? Ungane veks fort. Sakte."
+ },
+ {
+  "en": "Sell your junk before {zone}. Bags fill fast there.",
+  "nn": "Sel skrapet ditt før {zone}. Bagane blir fort fulle der."
+ },
+ {
+  "en": "{zone}. Vendors there rip you off. Haggle.",
+  "nn": "{zone}. Kjøpmennene der flår deg. Prut."
+ },
+ {
+  "en": "Have fun in {zone}. Not too much fun.",
+  "nn": "Ha det gøy i {zone}. Ikkje for gøy."
+ },
+ {
+  "en": "{zone}. Good luck, rookie. You'll need it.",
+  "nn": "{zone}. Lukke til, nybegynnar. Du treng det."
+ },
+ {
+  "en": "Warm socks for {zone}, kid. Trust an old man.",
+  "nn": "Varme sokkar til {zone}, gut. Stol på ein gammal mann."
+ },
+ {
+  "en": "{zone}. Warm socks matter. Trust an old man.",
+  "nn": "{zone}. Varme sokkar betyr noko. Stol på ein gammal mann."
+ },
+ {
+  "en": "Ah, {zone}. One of the good ones.",
+  "nn": "Å, {zone}. Ei av dei gode."
+ },
+ {
+  "en": "{zone}. Don't wander into the tough part.",
+  "nn": "{zone}. Ikkje vandre inn i den tøffe delen."
+ },
+ {
+  "en": "Avoid the tough part of {zone}. You'll find it anyway.",
+  "nn": "Hald deg unna den tøffe delen av {zone}. Du finn han likevel."
+ },
+ {
+  "en": "{zone}. I've a favourite tree there. Don't climb it.",
+  "nn": "{zone}. Eg har eit favoritttre der. Ikkje klatre i det."
+ },
+ {
+  "en": "{zone}. The light there is lovely at dusk.",
+  "nn": "{zone}. Lyset der er nydeleg i skumringa."
+ },
+ {
+  "en": "No need to describe {zone} to me. I know it too well.",
+  "nn": "Ingen grunn til å skildre {zone} for meg. Eg kjenner det altfor godt."
+ },
+ {
+  "en": "{zone}. Tell me all about it later. Briefly.",
+  "nn": "{zone}. Fortel meg alt om det seinare. Kort."
+ },
+ {
+  "en": "Stay out of trouble in {zone}. Ha. As if.",
+  "nn": "Hald deg unna bråk i {zone}. Ha. Som om."
+ },
+ {
+  "en": "{zone}. Ha. Good luck staying out of trouble.",
+  "nn": "{zone}. Ha. Lukke til med å halde deg unna bråk."
+ },
+ {
+  "en": "{zone}. I'd say be careful, but you won't.",
+  "nn": "{zone}. Eg skulle sagt ver forsiktig, men det blir du ikkje."
+ },
+ {
+  "en": "Come back from {zone} without fleas, please.",
+  "nn": "Kom tilbake frå {zone} utan lopper, takk."
+ },
+ {
+  "en": "{zone}. Bit muddy. You'll fit right in.",
+  "nn": "{zone}. Litt gjørmete. Du passar rett inn."
+ },
+ {
+  "en": "Ah, {zone}. Bring a bigger weapon.",
+  "nn": "Å, {zone}. Ta med eit større våpen."
+ },
+ {
+  "en": "{zone}. Keep your head down, keep your gold close.",
+  "nn": "{zone}. Hald hovudet lågt, hald gullet nært."
+ },
+ {
+  "en": "A long walk through {zone} will do you good.",
+  "nn": "Ein lang tur gjennom {zone} gjer deg godt."
+ },
+ {
+  "en": "{zone}. Long walk. Good for the legs.",
+  "nn": "{zone}. Lang tur. Bra for beina."
+ },
+ {
+  "en": "{zone}? Proper zone, that. Enjoy.",
+  "nn": "{zone}? Skikkeleg sone, det der. Kos deg."
+ },
+ {
+  "en": "Pick me some herbs in {zone}. My back won't bend.",
+  "nn": "Plukk nokre urter til meg i {zone}. Ryggen min vil ikkje bøye seg."
+ },
+ {
+  "en": "{zone}. Watch for the elites by the ruins.",
+  "nn": "{zone}. Sjå opp for elitane ved ruinane."
+ },
+ {
+  "en": "{zone}. Ruins are never empty, kid.",
+  "nn": "{zone}. Ruinar er aldri tomme, gut."
+ },
+ {
+  "en": "Note where the graveyards are in {zone}. You'll need them.",
+  "nn": "Merk deg kvar gravplassane er i {zone}. Du kjem til å trenge dei."
+ },
+ {
+  "en": "{zone}. You'll be needing those graveyards.",
+  "nn": "{zone}. Du kjem til å trenge dei gravplassane."
+ },
+ {
+  "en": "Ah, {zone}. Smell that? That's adventure. And mud.",
+  "nn": "Å, {zone}. Kjenner du det? Det er eventyr. Og gjørme."
+ },
+ {
+  "en": "{zone}. Mind you, I liked it there. Don't tell.",
+  "nn": "{zone}. Merk deg, eg likte meg der. Ikkje sei det."
+ },
+ {
+  "en": "Slow and steady through {zone}. No heroics.",
+  "nn": "Sakte og stødig gjennom {zone}. Ingen heltedådar."
+ },
+ {
+  "en": "{zone}. Slow and steady through there.",
+  "nn": "{zone}. Sakte og stødig gjennom der."
+ },
+ {
+  "en": "{zone}. If you see a big shadow, run.",
+  "nn": "{zone}. Ser du ein stor skugge, spring."
+ },
+ {
+  "en": "Strange lights in {zone}? Don't follow them. Ever.",
+  "nn": "Rare lys i {zone}? Ikkje følg dei. Aldri."
+ },
+ {
+  "en": "{zone}. Strange lights mean trouble. Always.",
+  "nn": "{zone}. Rare lys betyr bråk. Alltid."
+ },
+ {
+  "en": "{zone}. I'll expect a full report.",
+  "nn": "{zone}. Eg ventar meg ein full rapport."
+ },
+ {
+  "en": "Send me a report from {zone}. A short one. I nap a lot.",
+  "nn": "Send meg ein rapport frå {zone}. Ein kort ein. Eg tek mange lurar."
+ },
+ {
+  "en": "{zone}. You'll get lost. Everyone does.",
+  "nn": "{zone}. Du går deg vill. Alle gjer det."
+ },
+ {
+  "en": "Have a nice time in {zone}. Hmph.",
+  "nn": "Ha det fint i {zone}. Hm."
+ },
+ {
+  "en": "{zone}. Even the trees are grumpy there.",
+  "nn": "{zone}. Sjølv trea er grinete der."
+ },
+ {
+  "en": "Ah, {zone}. My kind of place, then.",
+  "nn": "Å, {zone}. Min type stad, då."
+ },
+ {
+  "en": "Whatever sleeps in {zone}, let it sleep.",
+  "nn": "Det som søv i {zone}, skal du la sove."
+ },
+ {
+  "en": "{zone}. Let sleeping beasts lie. And sleeping veterans.",
+  "nn": "{zone}. La sovande beist liggje. Og sovande veteranar."
+ },
+ {
+  "en": "{zone}. Watch the path. It twists.",
+  "nn": "{zone}. Følg med på stien. Han svingar."
+ },
+ {
+  "en": "Mind the swampy bits of {zone}. They swallow boots.",
+  "nn": "Pass deg for dei myrete delane av {zone}. Dei sluker støvlar."
+ },
+ {
+  "en": "{zone}. I'll never forgive that zone. Enjoy it.",
+  "nn": "{zone}. Den sona tilgjev eg aldri. Kos deg."
+ },
+ {
+  "en": "Nothing in {zone} is worth dying for. Remember that.",
+  "nn": "Ingenting i {zone} er verdt å døy for. Hugs det."
+ },
+ {
+  "en": "{zone}. Some loot there is almost worth dying for.",
+  "nn": "{zone}. Noko av looten der er nesten verdt å døy for."
+ },
+ {
+  "en": "{zone}. Bring a friend. Not me. My knees.",
+  "nn": "{zone}. Ta med ein ven. Ikkje meg. Knea mine."
+ },
+ {
+  "en": "Keep your weapon sharp in {zone}. Dull blades die young.",
+  "nn": "Hald våpenet kvast i {zone}. Sløve blad døyr unge."
+ },
+ {
+  "en": "{zone}? Hmph. Nice choice.",
+  "nn": "{zone}? Hm. Godt val."
+ },
+ {
+  "en": "{zone}. The inn has good stew. Or had.",
+  "nn": "{zone}. Vertshuset har god gryte. Eller hadde."
+ },
+ {
+  "en": "Try the stew at the inn in {zone}. Report back.",
+  "nn": "Smak på gryta på vertshuset i {zone}. Rapporter tilbake."
+ },
+ {
+  "en": "{zone}. Mind the slopes. Your knees will thank you.",
+  "nn": "{zone}. Pass deg i bakkane. Knea dine kjem til å takke deg."
+ },
+ {
+  "en": "{zone}. Don't climb what you can't climb down.",
+  "nn": "{zone}. Ikkje klatre opp der du ikkje kjem ned."
+ },
+ {
+  "en": "Ah, {zone}. Fresh air. Fresh danger.",
+  "nn": "Å, {zone}. Frisk luft. Fersk fare."
+ },
+ {
+  "en": "Leave the wildlife in {zone} alone. Mostly.",
+  "nn": "La dyrelivet i {zone} vere i fred. Stort sett."
+ },
+ {
+  "en": "{zone}. The wildlife will bother you.",
+  "nn": "{zone}. Dyrelivet kjem til å plage deg."
+ },
+ {
+  "en": "{zone}. Have a look, then move along.",
+  "nn": "{zone}. Ta ein kikk, så gå vidare."
+ },
+ {
+  "en": "Off to {zone} without me? I'll pretend I'm not envious.",
+  "nn": "Til {zone} utan meg? Eg skal late som eg ikkje er misunneleg."
+ },
+ {
+  "en": "{zone}. Took me three tries to get there alive.",
+  "nn": "{zone}. Det tok meg tre forsøk å kome dit i live."
+ },
+ {
+  "en": "{zone}. You got there in one piece. I'm impressed.",
+  "nn": "{zone}. Du kom dit heil. Eg er imponert."
+ },
+ {
+  "en": "Find a quiet spot in {zone} and rest your feet.",
+  "nn": "Finn ein stille stad i {zone} og kvil føtene."
+ },
+ {
+  "en": "{zone}. There are no quiet spots. Rest anyway.",
+  "nn": "{zone}. Det finst ingen stille stader. Kvil likevel."
+ },
+ {
+  "en": "{zone}. Take a screenshot. You'll want it later.",
+  "nn": "{zone}. Ta eit skjermbilete. Du vil ha det seinare."
+ },
+ {
+  "en": "Remember {zone} as it is now. Places change.",
+  "nn": "Hugs {zone} slik det er no. Stader endrar seg."
+ },
+ {
+  "en": "{zone}. Places change. Grumps don't.",
+  "nn": "{zone}. Stader endrar seg. Grinebitarar gjer ikkje."
+ },
+ {
+  "en": "Ah, {zone}. Good hunting, kid.",
+  "nn": "Å, {zone}. God jakt, gut."
+ },
+ {
+  "en": "{zone}. Hope your boots are waterproof.",
+  "nn": "{zone}. Håpar støvlane dine er vasstette."
+ },
+ {
+  "en": "Don't fish in the wrong pond in {zone}. Things bite back.",
+  "nn": "Ikkje fisk i feil dam i {zone}. Ting bit tilbake."
+ },
+ {
+  "en": "{zone}. Ponds there have opinions.",
+  "nn": "{zone}. Dammane der har meiningar."
+ },
+ {
+  "en": "{zone}. You picked a good spot to explore.",
+  "nn": "{zone}. Du valde ein god stad å utforske."
+ },
+ {
+  "en": "Keep your hearthstone ready in {zone}. Just in case.",
+  "nn": "Hald heimsteinen klar i {zone}. For sikkerheits skuld."
+ },
+ {
+  "en": "{zone}. Remember the way out.",
+  "nn": "{zone}. Hugs vegen ut."
+ },
+ {
+  "en": "Ah, {zone}. Mind your manners with the guards.",
+  "nn": "Å, {zone}. Hugs folkeskikken med vaktene."
+ },
+ {
+  "en": "{zone}. Guards there don't laugh. Like me.",
+  "nn": "{zone}. Vaktene der ler ikkje. Som meg."
+ },
+ {
+  "en": "Get a little lost in {zone}. It's good for you.",
+  "nn": "Gå deg litt vill i {zone}. Det er sunt."
+ },
+ {
+  "en": "{zone}. Getting lost builds character.",
+  "nn": "{zone}. Å gå seg vill byggjer karakter."
+ },
+ {
+  "en": "{zone}. Took a wrong turn there once. Lost a day.",
+  "nn": "{zone}. Eg svinga feil der ein gong. Miste ein dag."
+ },
+ {
+  "en": "Take the right turns in {zone}. I took the wrong ones.",
+  "nn": "Ta dei rette svingane i {zone}. Eg tok dei feile."
+ },
+ {
+  "en": "{zone}. Lovely spot for a nap. If you dare.",
+  "nn": "{zone}. Fin stad for ein lur. Om du torer."
+ },
+ {
+  "en": "Bring me a souvenir from {zone}. Something small.",
+  "nn": "Ta med ein suvenir til meg frå {zone}. Noko lite."
+ },
+ {
+  "en": "{zone}. Bring me a souvenir. Not fleas.",
+  "nn": "{zone}. Ta med ein suvenir til meg. Ikkje lopper."
+ },
+ {
+  "en": "{zone}. Watch for the ambushes on the bridges.",
+  "nn": "{zone}. Sjå opp for bakhald på bruene."
+ },
+ {
+  "en": "The bridges in {zone} are dangerous, kid. Look both ways.",
+  "nn": "Bruene i {zone} er farlege, gut. Sjå til begge sider."
+ },
+ {
+  "en": "{zone}. Everything there is dangerous. Even the trees.",
+  "nn": "{zone}. Alt der er farleg. Sjølv trea."
+ },
+ {
+  "en": "Ah, {zone}. Proper old-school zone.",
+  "nn": "Å, {zone}. Skikkeleg gamaldags sone."
+ },
+ {
+  "en": "{zone}. Hope you brought patience.",
+  "nn": "{zone}. Håpar du tok med tolmod."
+ },
+ {
+  "en": "Mobs in {zone} respawn fast. Don't dawdle.",
+  "nn": "Monstra i {zone} kjem fort att. Ikkje somle."
+ },
+ {
+  "en": "{zone}. Mobs there come back faster than you'd think.",
+  "nn": "{zone}. Monstra der kjem att fortare enn du trur."
+ },
+ {
+  "en": "{zone}. Watch the sunset there. Then run.",
+  "nn": "{zone}. Sjå solnedgangen der. Spring så."
+ },
+ {
+  "en": "I've told everyone you're in {zone}. Don't embarrass me.",
+  "nn": "Eg har sagt til alle at du er i {zone}. Ikkje gjer meg flau."
+ },
+ {
+  "en": "{zone}. Don't embarrass us.",
+  "nn": "{zone}. Ikkje gjer oss flaue."
+ },
+ {
+  "en": "{zone}. Grand place. Grumpy old me says so.",
+  "nn": "{zone}. Storarta stad. Gamle, grinete meg seier det."
+ },
+ {
+  "en": "Make some good memories in {zone}. Better than mine.",
+  "nn": "Lag nokre gode minne i {zone}. Betre enn mine."
+ },
+ {
+  "en": "{zone}. My memories there are bad. Make better ones.",
+  "nn": "{zone}. Minna mine derifrå er dårlege. Lag betre."
+ },
+ {
+  "en": "Ah, {zone}. The adventure goes on.",
+  "nn": "Å, {zone}. Eventyret held fram."
+ },
+ {
+  "en": "{zone}. Off you go. Don't dawdle.",
+  "nn": "{zone}. Av garde med deg. Ikkje somle."
+ },
+ {
+  "en": "Dawdle a little in {zone}. You've earned it.",
+  "nn": "Somle litt i {zone}. Du har fortent det."
+ },
+ {
+  "en": "{zone}. You'll need better gear soon.",
+  "nn": "{zone}. Du treng betre utstyr snart."
+ },
+ {
+  "en": "Keep your cloak dry in {zone}. Wet wool smells.",
+  "nn": "Hald kappa tørr i {zone}. Våt ull luktar."
+ },
+ {
+  "en": "{zone}. Ah, that zone and I go way back.",
+  "nn": "{zone}. Å, den sona og eg har kjent kvarandre lenge."
+ },
+ {
+  "en": "{zone}. We have bad history, that zone and I. Enjoy.",
+  "nn": "{zone}. Vi har ei dårleg historie, den sona og eg. Kos deg."
+ },
+ {
+  "en": "You'll be fine in {zone}. Mostly. Probably.",
+  "nn": "Det går bra med deg i {zone}. Stort sett. Truleg."
+ },
+ {
+  "en": "{zone}. Plenty to do there. Get to it.",
+  "nn": "{zone}. Mykje å gjere der. Kom i gang."
+ },
+ {
+  "en": "{zone}. Mind your back, mind your front.",
+  "nn": "{zone}. Pass på ryggen, pass på framsida."
+ },
+ {
+  "en": "Mobs come at you from every side in {zone}. Watch out.",
+  "nn": "Monstra kjem frå alle kantar i {zone}. Sjå opp."
+ },
+ {
+  "en": "{zone}. You've come a long way. Literally.",
+  "nn": "{zone}. Du har kome langt. Bokstaveleg."
+ },
+ {
+  "en": "{zone}. Look at you, travelling the world.",
+  "nn": "{zone}. Sjå på deg, som reiser verda rundt."
+ },
+ {
+  "en": "I crossed {zone} slower than you will. Enjoy the speed.",
+  "nn": "Eg kom meg gjennom {zone} seinare enn du kjem til å gjere. Nyt farten."
+ },
+ {
+  "en": "Wander {zone} for me. My legs won't.",
+  "nn": "Vandre rundt i {zone} for meg. Beina mine vil ikkje."
+ },
+ {
+  "en": "Hmph. {zone}. Don't let it go to your head.",
+  "nn": "Hm. {zone}. Ikkje bli høg på deg sjølv."
+ },
+ {
+  "en": "So you've reached {zone}. Took your time.",
+  "nn": "Så du har nådd {zone}. Du tok deg tid."
+ },
+ {
+  "en": "I'll grumble less while you're in {zone}. Maybe.",
+  "nn": "Eg gryntar mindre medan du er i {zone}. Kanskje."
+ },
+ {
+  "en": "Watch yourself in {zone}, kid.",
+  "nn": "Pass deg i {zone}, gut."
+ },
+ {
+  "en": "They say {zone} is lovely this time of year. Liars.",
+  "nn": "Dei seier {zone} er nydeleg på denne tida av året. Lygarar."
+ },
+ {
+  "en": "Don't get too attached to {zone}. You'll move on.",
+  "nn": "Ikkje bli for knytt til {zone}. Du dreg vidare."
+ },
+ {
+  "en": "I spent a whole winter in {zone} once. Never again.",
+  "nn": "Eg var ein heil vinter i {zone} ein gong. Aldri meir."
+ },
+ {
+  "en": "Say hello to the mobs in {zone}. With your sword.",
+  "nn": "Helse på monstra i {zone}. Med sverdet."
+ },
+ {
+  "en": "Good choice, {zone}. Well, a choice.",
+  "nn": "Godt val, {zone}. Nja, eit val."
+ },
+ {
+  "en": "Try not to die in {zone} on day one.",
+  "nn": "Prøv å ikkje døy i {zone} den fyrste dagen."
+ },
+ {
+  "en": "Dying in {zone} on day two is allowed. Day one, no.",
+  "nn": "Å døy i {zone} på dag to er lov. Dag ein, nei."
+ },
+ {
+  "en": "Ah, so {zone} gets you next. Poor zone.",
+  "nn": "Å, så {zone} får deg no. Stakkars sone."
+ },
+ {
+  "en": "I'm not jealous of you in {zone}. At all.",
+  "nn": "Eg er ikkje misunneleg på deg i {zone}. I det heile."
+ },
+ {
+  "en": "Remember {zone} when you're old and grumpy like me.",
+  "nn": "Hugs {zone} når du blir gammal og gretten som meg."
+ },
+ {
+  "en": "Keep your boots dry in {zone}.",
+  "nn": "Hald støvlane tørre i {zone}."
+ },
+ {
+  "en": "Bet {zone} looks better than my old photos of it.",
+  "nn": "{zone} ser nok betre ut enn dei gamle bileta mine."
+ },
+ {
+  "en": "Off exploring {zone}? Don't touch the glowing stuff.",
+  "nn": "Utforskar du {zone}? Ikkje rør det som lyser."
+ },
+ {
+  "en": "Treat {zone} with respect. It bites back.",
+  "nn": "Behandle {zone} med respekt. Det bit tilbake."
+ },
+ {
+  "en": "You'll find {zone} tougher than it looks.",
+  "nn": "Du kjem til å finne {zone} tøffare enn det ser ut."
+ },
+ {
+  "en": "Hope {zone} treats you kinder than it treated me.",
+  "nn": "Håpar {zone} behandlar deg snillare enn det gjorde med meg."
+ },
+ {
+  "en": "Most of my bad stories start in {zone}. Enjoy.",
+  "nn": "Dei fleste av dei dårlege historiene mine byrjar i {zone}. Kos deg."
+ },
+ {
+  "en": "Grab a flight path out of {zone} later. Trust me.",
+  "nn": "Ta ei flyrute ut av {zone} seinare. Stol på meg."
+ },
+ {
+  "en": "I hear {zone} still has that awful patrol.",
+  "nn": "Eg høyrer {zone} framleis har den forferdelege patruljen."
+ },
+ {
+  "en": "Don't let {zone} fool you. It's grumpier than me.",
+  "nn": "Ikkje la {zone} lure deg. Det er grinetare enn meg."
+ },
+ {
+  "en": "Stay sharp in {zone}, youngster.",
+  "nn": "Ver skjerpa i {zone}, unge."
+ },
+ {
+  "en": "Plenty of quests in {zone}. Don't skip the hard ones.",
+  "nn": "Mange oppdrag i {zone}. Ikkje hopp over dei vanskelege."
+ },
+ {
+  "en": "Have a proper look at {zone} before you rush through.",
+  "nn": "Ta ein skikkeleg kikk på {zone} før du spring gjennom."
+ },
+ {
+  "en": "Glad you made it to {zone}. Mostly glad.",
+  "nn": "Glad du kom deg til {zone}. Stort sett glad."
+ },
+ {
+  "en": "If {zone} gets rough, retreat. No shame.",
+  "nn": "Blir {zone} tøft, trekk deg tilbake. Inga skam."
+ },
+ {
+  "en": "Hmph. {zone}. I liked it before it got crowded.",
+  "nn": "Hm. {zone}. Eg likte det før det blei folksamt."
+ },
+ {
+  "en": "Mind the edges in {zone}. Long drops.",
+  "nn": "Pass deg for kantane i {zone}. Lange fall."
+ },
+ {
+  "en": "Not many survive {zone} gracefully. Try anyway.",
+  "nn": "Ikkje mange overlever {zone} med verdigheit. Prøv likevel."
+ },
+ {
+  "en": "Look for the hidden paths in {zone}. They exist.",
+  "nn": "Sjå etter dei løynde stiane i {zone}. Dei finst."
+ },
+ {
+  "en": "Grumpy greetings to {zone}.",
+  "nn": "Grinete helsingar til {zone}."
+ },
+ {
+  "en": "Keep a potion handy in {zone}. Or three.",
+  "nn": "Ha ein drikk klar i {zone}. Eller tre."
+ },
+ {
+  "en": "Don't trust the quiet in {zone}.",
+  "nn": "Ikkje stol på stilla i {zone}."
+ },
+ {
+  "en": "I lost a whole afternoon in {zone}. Don't.",
+  "nn": "Eg miste ein heil ettermiddag i {zone}. Ikkje gjer det."
+ },
+ {
+  "en": "Lose two afternoons in {zone}. It's worth it.",
+  "nn": "Bruk to ettermiddagar i {zone}. Det er verdt det."
+ },
+ {
+  "en": "Explore {zone} properly, not like a tourist.",
+  "nn": "Utforsk {zone} skikkeleg, ikkje som ein turist."
+ },
+ {
+  "en": "Remember to breathe in {zone}. The view, kid.",
+  "nn": "Hugs å puste i {zone}. Utsikta, gut."
+ },
+ {
+  "en": "You'll grumble about {zone} someday too.",
+  "nn": "Ein dag kjem du òg til å grynte over {zone}."
+ },
+ {
+  "en": "There's a good spot to fish in {zone}. Find it.",
+  "nn": "Det er ein god fiskeplass i {zone}. Finn han."
+ },
+ {
+  "en": "I never finished {zone}. You'd better.",
+  "nn": "Eg vart aldri ferdig med {zone}. Det får du bli."
+ },
+ {
+  "en": "Careful around the water in {zone}.",
+  "nn": "Ver forsiktig ved vatnet i {zone}."
+ },
+ {
+  "en": "Grumble at {zone} for me while you're there.",
+  "nn": "Grynt til {zone} for meg medan du er der."
+ },
+ {
+  "en": "Is {zone} still as dusty as I remember?",
+  "nn": "Er {zone} like støvete som eg hugsar?"
+ },
+ {
+  "en": "Don't race through {zone}. Savour it.",
+  "nn": "Ikkje spring gjennom {zone}. Nyt det."
+ },
+ {
+  "en": "Take care in {zone}. I mean it. Grumpily.",
+  "nn": "Ta vare på deg i {zone}. Eg meiner det. Grettent."
+ },
+ {
+  "en": "Some say {zone} is easy. Some say a lot of things.",
+  "nn": "Somme seier {zone} er lett. Somme seier mykje rart."
+ },
+ {
+  "en": "{zone} won't explore itself. Go on.",
+  "nn": "{zone} utforskar ikkje seg sjølv. Kom igjen."
+ },
+ {
+  "en": "Don't wander off the path in {zone}. Or do. Learn.",
+  "nn": "Ikkje gå bort frå stien i {zone}. Eller gjer det. Lær."
+ },
+ {
+  "en": "Hmph, {zone}. Fine choice. For a youngster.",
+  "nn": "Hm, {zone}. Fint val. For ein ungdom."
+ },
+ {
+  "en": "You'll want a mount for {zone}. Or strong legs.",
+  "nn": "Du vil ha eit ridedyr i {zone}. Eller sterke bein."
+ },
+ {
+  "en": "I'd join you in {zone}, but I'm comfy here.",
+  "nn": "Eg skulle vore med deg til {zone}, men eg sit så godt."
+ },
+ {
+  "en": "Pack light for {zone}. Bags fill fast.",
+  "nn": "Pakk lett til {zone}. Bagane blir fort fulle."
+ },
+ {
+  "en": "Enjoy every grumble-worthy corner of {zone}.",
+  "nn": "Nyt kvart grynteverdig hjørne av {zone}."
+ },
+ {
+  "en": "Write your name somewhere in {zone}. I did.",
+  "nn": "Skriv namnet ditt ein stad i {zone}. Det gjorde eg."
+ },
+ {
+  "en": "Don't carve your name in {zone}. I got told off.",
+  "nn": "Ikkje skjer namnet ditt inn i {zone}. Eg fekk kjeft."
+ },
+ {
+  "en": "Mind the locals in {zone}. They're touchy.",
+  "nn": "Pass deg for lokalbefolkninga i {zone}. Dei er nærtakande."
+ },
+ {
+  "en": "Remember: in {zone}, nothing is as close as it looks.",
+  "nn": "Hugs: i {zone} er ingenting så nært som det ser ut."
+ },
+ {
+  "en": "Took me forever to cross {zone}. Be quicker.",
+  "nn": "Det tok meg evig tid å kome gjennom {zone}. Ver raskare."
+ },
+ {
+  "en": "Respect {zone} and it might respect you. Might.",
+  "nn": "Respekter {zone}, så respekterer det deg kanskje. Kanskje."
+ },
+ {
+  "en": "Off to {zone} with my blessing. And a grumble.",
+  "nn": "Av garde til {zone} med mi velsigning. Og ei grynting."
+ },
+ {
+  "en": "I have a soft spot for {zone}. Tell no one.",
+  "nn": "Eg har ein svakheit for {zone}. Sei det ikkje til nokon."
+ },
+ {
+  "en": "Behave in {zone}. They have long memories there.",
+  "nn": "Oppfør deg i {zone}. Dei har langt minne der."
+ },
+ {
+  "en": "The folk in {zone} hold grudges. Like me.",
+  "nn": "Folket i {zone} er langsinte. Som meg."
+ },
+ {
+  "en": "Bring your best manners to {zone}. And a shield.",
+  "nn": "Ta med deg den beste folkeskikken til {zone}. Og eit skjold."
+ },
+ {
+  "en": "Ah, {zone} at last. Don't rush the quests.",
+  "nn": "Å, {zone} endeleg. Ikkje skund deg gjennom oppdraga."
+ },
+ {
+  "en": "Stop at the inn in {zone}. Rest your feet.",
+  "nn": "Stopp ved vertshuset i {zone}. Kvil føtene."
+ },
+ {
+  "en": "{zone} will teach you a thing or two. Listen.",
+  "nn": "{zone} kjem til å lære deg eitt og anna. Lytt."
+ },
+ {
+  "en": "So {zone} is next. Brave of you.",
+  "nn": "Så {zone} er neste. Modig av deg."
+ },
+ {
+  "en": "Hope you packed snacks for {zone}.",
+  "nn": "Håpar du har pakka snacks til {zone}."
+ },
+ {
+  "en": "Grind {zone} like it owes you money.",
+  "nn": "Grind {zone} som om det skuldar deg pengar."
+ },
+ {
+  "en": "Keep a sharp eye in {zone}. And a sharp sword.",
+  "nn": "Hald eit skarpt auge i {zone}. Og eit kvast sverd."
+ },
+ {
+  "en": "Proud of you for reaching {zone}. Quietly.",
+  "nn": "Stolt av deg for å nå {zone}. Stilt."
+ },
+ {
+  "en": "Take your time in {zone}. It's not going anywhere.",
+  "nn": "Ta deg tid i {zone}. Det går ingen stad."
+ },
+ {
+  "en": "{zone} will wait for you. My patience won't.",
+  "nn": "{zone} ventar på deg. Tolmodet mitt gjer ikkje det."
+ },
+ {
+  "en": "{zone} smells of pine and danger. Mostly danger.",
+  "nn": "{zone} luktar furu og fare. Mest fare."
+ },
+ {
+  "en": "Mind the night in {zone}. Things come out.",
+  "nn": "Pass deg for natta i {zone}. Ting kjem fram."
+ },
+ {
+  "en": "Watch the skies in {zone}. Some of them bite.",
+  "nn": "Følg med på himmelen i {zone}. Somme av dei bit."
+ },
+ {
+  "en": "A word of advice for {zone}: look up.",
+  "nn": "Eit råd for {zone}: sjå opp."
+ },
+ {
+  "en": "Hmph. {zone}. Bring me back a good story.",
+  "nn": "Hm. {zone}. Ta med deg ei god historie tilbake."
+ }
+]
