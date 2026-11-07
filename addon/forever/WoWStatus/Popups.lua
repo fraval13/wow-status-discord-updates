@@ -364,12 +364,23 @@ local function releaseRoster()
     if request and request.previous and request.previous~=request.index
         and selectedChannel()==request.index then S.call(SetSelectedDisplayChannel,request.previous) end
 end
+-- Debug: what the game answered for a group's member list (logged when it changes).
+local rosterNotes={}
+local function rosterNote(group,text)
+    if rosterNotes[group]~=text then rosterNotes[group]=text;S.debug("member list "..tostring(group):sub(1,4).."…: "..text) end
+end
+P.rosterNote=rosterNote
 local function advanceRoster()
     if not pendingRoster then return end
     local request=pendingRoster
     local name,count=displayInfo(request.index)
-    if not name or name:lower()~=WoWStatusGroups.channel(request.group):lower() then releaseRoster();return end
+    if not name or name:lower()~=WoWStatusGroups.channel(request.group):lower() then
+        rosterNote(request.group,"channel moved from list row "..tostring(request.index).." ("..tostring(name)..")")
+        releaseRoster();return
+    end
     local peers,complete=readRoster(request.index,count)
+    rosterNote(request.group,"list row "..request.index..", game count "..tostring(count)..", names read "..#peers
+        ..(complete and "" or " (incomplete)"))
     if complete then rosterCache[request.group]={peers=peers,count=count,at=time()};releaseRoster()
     elseif time()-request.at>=5 then releaseRoster() end
 end
@@ -458,7 +469,9 @@ function P.peers(group)
             return withKnown(group,cached and cached.count==members and cached.peers or {})
         end
     end
-    rosterBusy=false;return withKnown(group,{})
+    rosterBusy=false
+    rosterNote(group,"channel not in the game's chat channel list ("..count.." rows)")
+    return withKnown(group,{})
 end
 -- logged: commit already wrote this update to the log.
 local function remember(item, logged)
