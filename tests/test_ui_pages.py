@@ -300,3 +300,29 @@ def test_overview_names_current_gold_in_either_language():
         line = WoWStatusOverviewPage.you.stats2.text
         assert(line:find("^Noverande: 12"), line)
     ''')
+
+
+def test_an_overview_link_jumps_to_its_entry_through_any_filter():
+    """A type or person filter left from earlier hid the wanted entry (#119)."""
+    from test_journal import actor
+    lua = actor('Thora')
+    lua.execute('''
+        local group = next(character().group_ids)
+        local r = WoWStatusJournal.received
+        r({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=5,at=time(),group_id=group})
+        r({sender="Bob-TestRealm",nonce="1-3-c",kind="death",text="Died",at=time(),group_id=group})
+        WoWStatusJournal.show()
+        local log = WoWStatusActivityLog
+        -- The player narrows the log to Type: Deaths and leaves it that way.
+        log.typeButton.OnClick(log.typeButton)
+        local deaths
+        for _, row in ipairs(WoWStatusMenu.rows) do if row.text.text == "Deaths" then deaths = row end end
+        deaths.OnClick(deaths)
+        assert(#log.entriesList == 1, "the type filter is on")
+        -- Then clicks the level-up line on the Overview.
+        local target
+        for _, e in ipairs(WoWStatusJournal.entries()) do if e.kind == "level" then target = e.id end end
+        assert(WoWStatusJournal.focus(target), "focus found the entry")
+        assert(#log.entriesList == 2, "every filter was cleared")
+        assert(log.typeButton.text == "Type: All")
+    ''')

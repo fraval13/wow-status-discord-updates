@@ -1213,7 +1213,10 @@ end
 function J.focus(id)
     if not db or not index[id] then return false end
     WoWStatusMainWindow.show("activity")
-    panel.filter="all"
+    -- Every filter goes, as Show all does. A type or person filter left from
+    -- earlier in the session would hide the very entry we came to show, and
+    -- the jump would quietly do nothing (#119).
+    panel.filter,panel.typeFilter,panel.character,panel.characterName="all",nil,nil,nil
     local day=dayOf(index[id])
     panel.day=day==today() and "today" or day
     for i,e in ipairs(visibleEntries()) do
