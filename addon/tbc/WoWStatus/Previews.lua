@@ -159,19 +159,32 @@ function P.show(host)
         end
         -- Caption personality: the voice of the line under each notification.
         -- Account-wide; new notifications use it, saved ones keep their caption.
-        panel.personality=text(panel,WoWStatusPersonalities.label(),24,-options-432,300)
-        panel.personalityNext=button(panel,"Next personality",330,-options-426,180,function()
-            WoWStatusPersonalities.next()
-            panel.personality:SetText(WoWStatusPersonalities.label())
-            WoWStatusPopups.preview("level")
+        -- Each is a dropdown listing every choice by name (WoWStatusUI.menu).
+        local P=WoWStatusPersonalities
+        local function choices(ids)
+            local items={}
+            for _,id in ipairs(ids) do items[#items+1]={label=P.name(id),value=id} end
+            return items
+        end
+        text(panel,"Caption personality:",24,-options-432,300)
+        panel.personalityPick=button(panel,"",330,-options-426,230,function(self)
+            WoWStatusUI.menu(self,choices(P.order),function(id)
+                P.set(id);panel.refreshVoices()
+                WoWStatusPopups.preview("level")
+            end)
         end)
         -- Reaction voice: how the GZ!/F/Congrats! whispers to friends sound. Its own
-        -- setting (Classic by default), since these are sent in your name.
-        panel.reactionVoice=text(panel,WoWStatusPersonalities.reactionLabel(),24,-options-474,300)
-        panel.reactionVoiceNext=button(panel,"Next voice",330,-options-468,180,function()
-            WoWStatusPersonalities.nextReaction()
-            panel.reactionVoice:SetText(WoWStatusPersonalities.reactionLabel())
+        -- setting (Wholesome by default), since these are sent in your name.
+        text(panel,"Reaction voice:",24,-options-474,300)
+        panel.reactionVoicePick=button(panel,"",330,-options-468,230,function(self)
+            WoWStatusUI.menu(self,choices(P.reactionVoices()),function(id)
+                P.setReaction(id);panel.refreshVoices()
+            end)
         end)
+        function panel.refreshVoices()
+            panel.personalityPick:SetText(P.name(P.current()))
+            panel.reactionVoicePick:SetText(P.name(P.reactionVoice()))
+        end
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
@@ -184,8 +197,7 @@ function P.show(host)
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.refreshLanguage()
     panel.theme:SetText(WoWStatusTheme.label())
-    panel.personality:SetText(WoWStatusPersonalities.label())
-    panel.reactionVoice:SetText(WoWStatusPersonalities.reactionLabel())
+    panel.refreshVoices()
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)

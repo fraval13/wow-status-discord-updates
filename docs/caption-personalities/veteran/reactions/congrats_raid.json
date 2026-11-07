@@ -17,7 +17,7 @@
  },
  {
   "en": "Well done. Your raid leader must be hoarse from shouting.",
-  "nn": "Godt gjort. Raidleiaren din må vere hes etter alt ropinga."
+  "nn": "Godt gjort. Raidleiaren din må vere hes etter all ropinga."
  },
  {
   "en": "Hmph. A raid boss. That's real work.",
@@ -49,7 +49,7 @@
  },
  {
   "en": "Hmph. A first kill. The loot was probably cloth.",
-  "nn": "Hm. Fyrste drapet. Looten var sikkert stoff."
+  "nn": "Hm. Fyrste drapet. Looten var sikkert tøy."
  },
  {
   "en": "Congrats. Forty people agreed on something for once.",
@@ -61,7 +61,7 @@
  },
  {
   "en": "Well done. Raid nights are long. That one paid off.",
-  "nn": "Godt gjort. Raidkveldar er lange. Den lønte seg."
+  "nn": "Godt gjort. Raidkveldar er lange. Den løna seg."
  },
  {
   "en": "I remember my first raid kill. I couldn't stop grinning.",
@@ -85,7 +85,7 @@
  },
  {
   "en": "Well done. The guild chat must be unbearable now.",
-  "nn": "Godt gjort. Gildepraten må vere uuthaldeleg no."
+  "nn": "Godt gjort. Guildpraten må vere uuthaldeleg no."
  },
  {
   "en": "Hmph. Did the tanks hold aggro? Miracles happen.",
@@ -109,7 +109,7 @@
  },
  {
   "en": "Well done. Raid bosses don't give up easily. Neither did you.",
-  "nn": "Godt gjort. Raidbossar gir seg ikkje lett. Det gjorde ikkje du heller."
+  "nn": "Godt gjort. Raidbossar gjev seg ikkje lett. Det gjorde ikkje du heller."
  },
  {
   "en": "Hmph. First kill. Mark the date. I'll forget it.",
@@ -133,11 +133,11 @@
  },
  {
   "en": "Well done, kid. Raids are where heroes are tested.",
-  "nn": "Godt gjort, gut. Det er i raid heltar blir prøvde."
+  "nn": "Godt gjort, valp. Det er i raid heltar blir prøvde."
  },
  {
   "en": "Hmph. You passed the raid test. Barely, I'm sure, but passed.",
-  "nn": "Hm. Du stod på raidprøva. Så vidt, er eg viss på, men du stod."
+  "nn": "Hm. Du bestod raidprøva. Så vidt, er eg viss på, men du bestod."
  },
  {
   "en": "Congrats on the kill. How many wipes? Don't answer.",
@@ -157,7 +157,7 @@
  },
  {
   "en": "Hmph. That boss had more health than my old guild had patience.",
-  "nn": "Hm. Den bossen hadde meir helse enn det gamle gildet mitt hadde tolmod."
+  "nn": "Hm. Den bossen hadde meir helse enn den gamle guilden min hadde tolmod."
  },
  {
   "en": "Congrats. Your raid must be celebrating loudly.",
@@ -165,7 +165,7 @@
  },
  {
   "en": "Tell your raid to celebrate quietly. Some of us nap.",
-  "nn": "Sei til raidet ditt at dei skal feire stilt. Somme av oss tek seg ein lur."
+  "nn": "Sei til raidet ditt at dei skal feire stille. Somme av oss tek seg ein lur."
  },
  {
   "en": "That's a fine kill. The boss will respawn. Your pride shouldn't.",
@@ -217,7 +217,7 @@
  },
  {
   "en": "Hmph. A raid victory. I'll allow a modest cheer.",
-  "nn": "Hm. Ein raidsiger. Eg tillet eit beskjedent hurra."
+  "nn": "Hm. Ein raidsiger. Eg tillèt eit beskjedent hurra."
  },
  {
   "en": "That fight takes everyone. You did your part.",
@@ -233,7 +233,7 @@
  },
  {
   "en": "Well done. The guild bank thanks you for the repair costs.",
-  "nn": "Godt gjort. Gildebanken takkar for reparasjonskostnadene."
+  "nn": "Godt gjort. Guildbanken takkar for reparasjonskostnadene."
  },
  {
   "en": "Hmph. Forty heroes, one boss, one victory. Not bad.",
@@ -245,7 +245,7 @@
  },
  {
   "en": "That's a kill worth bragging about. Quietly.",
-  "nn": "Det er eit drap verdt å skryte av. Stilt."
+  "nn": "Det er eit drap verdt å skryte av. Stille."
  },
  {
   "en": "Well done. Your consumables bill must be horrendous.",
@@ -297,7 +297,7 @@
  },
  {
   "en": "Congrats on the kill. Next week, try not to wipe on trash.",
-  "nn": "Gratulerer med drapet. Neste veke, prøv å ikkje wipe på småmonster."
+  "nn": "Gratulerer med drapet. Neste veke bør de prøve å ikkje wipe på småmonster."
  },
  {
   "en": "That boss deserved it. You deserved the win.",
@@ -313,7 +313,7 @@
  },
  {
   "en": "Congrats. That's the kind of kill I'd frame. If I framed things.",
-  "nn": "Gratulerer. Det er den typen drap eg ville hengt på veggen. Om eg heng opp ting."
+  "nn": "Gratulerer. Det er den typen drap eg ville ha hengt på veggen. Om eg hengde opp ting."
  },
  {
   "en": "That raid took grit. Proper grit.",
@@ -329,7 +329,7 @@
  },
  {
   "en": "Congrats on the kill. You'll never forget that moment.",
-  "nn": "Gratulerer med drapet. Du gløymer aldri det augneblinken."
+  "nn": "Gratulerer med drapet. Du gløymer aldri den augeblinken."
  },
  {
   "en": "My first raid kill was on a rainy Tuesday. I still remember.",
@@ -337,7 +337,7 @@
  },
  {
   "en": "Well done. You did what forty people do best: argue, then win.",
-  "nn": "Godt gjort. Du gjorde det førti folk gjer best: kranglar, så vinn."
+  "nn": "Godt gjort. Du gjorde det førti folk gjer best: krangle, så vinne."
  },
  {
   "en": "Hmph. Raid bosses used to be harder. Probably.",
@@ -357,7 +357,7 @@
  },
  {
   "en": "Hmph. A raid boss down. My old guild would toast you.",
-  "nn": "Hm. Ein raidboss nede. Det gamle gildet mitt hadde skåla for deg."
+  "nn": "Hm. Ein raidboss nede. Den gamle guilden min hadde skåla for deg."
  },
  {
   "en": "That's a hero's work. Team hero's work.",
@@ -385,7 +385,7 @@
  },
  {
   "en": "Well done. Next time, read the tactics before the pull.",
-  "nn": "Godt gjort. Neste gong, les taktikken før pullet."
+  "nn": "Godt gjort. Neste gong bør du lese taktikken før pullet."
  },
  {
   "en": "Hmph. That's the kind of victory old soldiers dream of.",
@@ -393,7 +393,7 @@
  },
  {
   "en": "A big boss, fallen at last. Good work.",
-  "nn": "Ein stor boss, endeleg falt. Godt arbeid."
+  "nn": "Ein stor boss, endeleg fallen. Godt arbeid."
  },
  {
   "en": "Congrats on the kill. Now farm him into the ground.",
@@ -405,7 +405,7 @@
  },
  {
   "en": "Well done. You must have spent a fortune on potions.",
-  "nn": "Godt gjort. Du må ha brukt ei formue på drikkar."
+  "nn": "Godt gjort. Du må ha brukt ei formue på trylledrikkar."
  },
  {
   "en": "Hmph. That boss and I have a history. A bad one.",
@@ -417,7 +417,7 @@
  },
  {
   "en": "A raid boss down. That's the big leagues, kid.",
-  "nn": "Ein raidboss nede. Det er dei store ligaene, gut."
+  "nn": "Ein raidboss nede. Det er dei store ligaene, valp."
  },
  {
   "en": "Well done. The raid leader can stop sighing now.",
@@ -437,7 +437,7 @@
  },
  {
   "en": "Well done. A raid kill. Your ancestors raise their mugs.",
-  "nn": "Godt gjort. Eit raiddrap. Forfedrane dine lyftar krusa."
+  "nn": "Godt gjort. Eit raiddrap. Forfedrane dine løftar krusa."
  },
  {
   "en": "Hmph. Took you weeks? Took me months. Fine.",
@@ -473,7 +473,7 @@
  },
  {
   "en": "Hmph. That boss kill will echo in guild chat for days.",
-  "nn": "Hm. Det bossdrapet kjem til å ljome i gildepraten i fleire dagar."
+  "nn": "Hm. Det bossdrapet kjem til å ljome i guildpraten i fleire dagar."
  },
  {
   "en": "A proper raid kill. Old-school, sweaty, glorious.",
@@ -485,11 +485,11 @@
  },
  {
   "en": "Big kill. Stay humble anyway, kid.",
-  "nn": "Stort drap. Ver audmjuk likevel, gut."
+  "nn": "Stort drap. Ver audmjuk likevel, valp."
  },
  {
   "en": "Hmph. That's a kill I'd remember. You will too.",
-  "nn": "Hm. Det er eit drap eg ville hugsa. Det gjer du òg."
+  "nn": "Hm. Det er eit drap eg ville ha hugsa. Det gjer du òg."
  },
  {
   "en": "That boss fell to your raid. The realm is grateful. Barely.",
@@ -517,11 +517,11 @@
  },
  {
   "en": "Call yourself a raider now. Quietly, though.",
-  "nn": "Kall deg raidar no. Men stilt."
+  "nn": "Kall deg raidar no. Men stille."
  },
  {
   "en": "Hmph. Big kill. Big moment. Small grumble from me.",
-  "nn": "Hm. Stort drap. Stort augneblink. Lita grynting frå meg."
+  "nn": "Hm. Stort drap. Stor augeblink. Lita grynting frå meg."
  },
  {
   "en": "That boss has a voice that haunts me. Glad he's quiet.",
@@ -529,11 +529,11 @@
  },
  {
   "en": "Congrats on the kill. Your teamwork paid off.",
-  "nn": "Gratulerer med drapet. Samarbeidet dykkar lønte seg."
+  "nn": "Gratulerer med drapet. Samarbeidet dykkar løna seg."
  },
  {
   "en": "First raid kill. That's a big step, kid.",
-  "nn": "Fyrste raiddrapet. Det er eit stort steg, gut."
+  "nn": "Fyrste raiddrapet. Det er eit stort steg, valp."
  },
  {
   "en": "Hmph. You'll want to kill him every week now. Addict.",
@@ -577,7 +577,7 @@
  },
  {
   "en": "Congrats. Your guild's name is on that kill. And yours.",
-  "nn": "Gratulerer. Namnet til gildet ditt står på det drapet. Og ditt."
+  "nn": "Gratulerer. Namnet til guilden din står på det drapet. Og ditt."
  },
  {
   "en": "Your raid will talk about tonight for years.",
@@ -589,7 +589,7 @@
  },
  {
   "en": "That raid kill earns you a proper nod.",
-  "nn": "Det raiddrapet gir deg eit skikkeleg nikk."
+  "nn": "Det raiddrapet gjev deg eit skikkeleg nikk."
  },
  {
   "en": "Congrats on the kill. Proud of you, raider.",
@@ -709,7 +709,7 @@
  },
  {
   "en": "Proper raiders don't quit. You didn't. Good.",
-  "nn": "Skikkelege raidarar gir seg ikkje. Det gjorde ikkje du. Bra."
+  "nn": "Skikkelege raidarar gjev seg ikkje. Det gjorde ikkje du. Bra."
  },
  {
   "en": "Hmph. A big boss down. My old heart raced a bit.",
@@ -733,7 +733,7 @@
  },
  {
   "en": "A first raid kill. My mug is raised. Halfway.",
-  "nn": "Eit fyrste raiddrap. Kruset mitt er lyfta. Halvvegs."
+  "nn": "Eit fyrste raiddrap. Kruset mitt er løfta. Halvvegs."
  },
  {
   "en": "Congrats. Every raider remembers their first kill.",
@@ -805,7 +805,7 @@
  },
  {
   "en": "Your guild will be insufferable now. Enjoy every minute.",
-  "nn": "Gildet ditt blir uuthaldeleg no. Nyt kvart minutt."
+  "nn": "Guilden din blir uuthaldeleg no. Nyt kvart minutt."
  },
  {
   "en": "Hmph. That boss deserved to fall. You made it happen.",
@@ -817,7 +817,7 @@
  },
  {
   "en": "Congrats on the kill. Good raiding, kid.",
-  "nn": "Gratulerer med drapet. Godt raida, gut."
+  "nn": "Gratulerer med drapet. Godt raida, valp."
  },
  {
   "en": "So the big one finally fell. I heard the cheering from here.",
@@ -841,7 +841,7 @@
  },
  {
   "en": "You stood in the right places at the right times. Rare skill.",
-  "nn": "Du stod på rette stader til rett tid. Sjeldan ferdigheit."
+  "nn": "Du stod på rette stader til rett tid. Sjeldsynt ferdigheit."
  },
  {
   "en": "The raid wiped on him for weeks, I bet. And then it didn't.",
@@ -849,7 +849,7 @@
  },
  {
   "en": "Forty heroes, a mountain of potions, one dead boss. Good.",
-  "nn": "Førti heltar, eit fjell av drikkar, éin daud boss. Bra."
+  "nn": "Førti heltar, eit fjell av trylledrikkar, éin daud boss. Bra."
  },
  {
   "en": "Hmph. A first kill. I won't pretend that's nothing.",
@@ -861,7 +861,7 @@
  },
  {
   "en": "The guild bank is crying. The guild is cheering. Balance.",
-  "nn": "Gildebanken græt. Gildet jublar. Balanse."
+  "nn": "Guildbanken græt. Guilden jublar. Balanse."
  },
  {
   "en": "That's a raid victory you'll tell grandchildren about. Briefly.",
@@ -893,7 +893,7 @@
  },
  {
   "en": "Hmph. I'd buy the raid a round. Of water.",
-  "nn": "Hm. Eg skulle spandert ein runde på raidet. Med vatn."
+  "nn": "Hm. Eg skulle ha spandert ein runde på raidet. Med vatn."
  },
  {
   "en": "There's no feeling like a first raid kill. Savour it.",
@@ -925,7 +925,7 @@
  },
  {
   "en": "Hmph. All those strategy meetings finally paid off.",
-  "nn": "Hm. Alle dei strategimøta lønte seg endeleg."
+  "nn": "Hm. Alle dei strategimøta løna seg endeleg."
  },
  {
   "en": "The boss is down and the loot is drama. Classic raid night.",
@@ -981,7 +981,7 @@
  },
  {
   "en": "Hmph. Your guild just got a little louder. Lovely.",
-  "nn": "Hm. Gildet ditt vart nettopp litt høglyttare. Herleg."
+  "nn": "Hm. Guilden din vart nettopp litt høglyttare. Herleg."
  },
  {
   "en": "That boss has humbled kings. Today he was humbled.",
@@ -997,7 +997,7 @@
  },
  {
   "en": "That boss used to be the wall every guild hit. You climbed it.",
-  "nn": "Den bossen var veggen kvart gilde køyrde i. Du klatra over."
+  "nn": "Den bossen var veggen kvar guild køyrde i. Du klatra over."
  },
  {
   "en": "Your raid gear has a few new scorch marks. Wear them proudly.",
@@ -1057,7 +1057,7 @@
  },
  {
   "en": "That's a first kill your guild will talk about for ages.",
-  "nn": "Det er eit fyrste drap gildet ditt kjem til å snakke om lenge."
+  "nn": "Det er eit fyrste drap guilden din kjem til å snakke om lenge."
  },
  {
   "en": "Hmph. Proud of the raid. A little proud of you.",
@@ -1077,7 +1077,7 @@
  },
  {
   "en": "That kill was earned with sweat and stubbornness. My favourite.",
-  "nn": "Det drapet var tent med sveitte og stahei. Favoritten min."
+  "nn": "Det drapet var tent med sveitte og staheit. Favoritten min."
  },
  {
   "en": "You'll look back on that kill fondly. I do on mine.",
@@ -1129,7 +1129,7 @@
  },
  {
   "en": "First kill nights are the best nights. Don't sleep through it.",
-  "nn": "Kveldar med fyrste drap er dei beste kveldane. Ikkje sov gjennom han."
+  "nn": "Kveldar med fyrste drap er dei beste kveldane. Ikkje sov bort denne."
  },
  {
   "en": "Hmph. That boss has a long memory. So do I. Well done.",
@@ -1149,11 +1149,11 @@
  },
  {
   "en": "You did what my old guild never managed. Annoying. Congrats.",
-  "nn": "Du klarte det det gamle gildet mitt aldri fekk til. Irriterande. Gratulerer."
+  "nn": "Du klarte det den gamle guilden min aldri fekk til. Irriterande. Gratulerer."
  },
  {
   "en": "Hmph. You'll never forget that moment. I hope.",
-  "nn": "Hm. Du kjem aldri til å gløyme det augneblinken. Håpar eg."
+  "nn": "Hm. Du kjem aldri til å gløyme den augeblinken. Håpar eg."
  },
  {
   "en": "The boss is down and the night is young. Go celebrate.",

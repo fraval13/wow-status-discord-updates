@@ -1,0 +1,1202 @@
+[
+  {
+    "en": "Enjoy {zone}! Bring me back anything shiny. I’ll pay fair. Ish.",
+    "nn": "Kos deg i {zone}! Ta med noko blankt til meg. Eg betaler rettvist. Nesten."
+  },
+  {
+    "en": "Enjoy {zone}! I hear the land prices there are a steal.",
+    "nn": "Kos deg i {zone}! Eg høyrer tomteprisane der er eit kupp."
+  },
+  {
+    "en": "Enjoy {zone}! Send a postcard. Postage is on you.",
+    "nn": "Kos deg i {zone}! Send eit postkort. Portoen betaler du."
+  },
+  {
+    "en": "Enjoy {zone}! Scout the local markets for me, will you?",
+    "nn": "Kos deg i {zone}! Speid ut dei lokale marknadene for meg, vil du?"
+  },
+  {
+    "en": "{zone}? Lovely! I have a map of it. Slightly outdated, fully priced.",
+    "nn": "{zone}? Herleg! Eg har eit kart over det. Litt utdatert, full pris."
+  },
+  {
+    "en": "Enjoy {zone}! If the locals sell anything rare, call me first.",
+    "nn": "Kos deg i {zone}! Om dei lokale sel noko sjeldan, ring meg først."
+  },
+  {
+    "en": "Enjoy {zone}! Travel insurance is still available, by the way.",
+    "nn": "Kos deg i {zone}! Du kan forresten framleis kjøpe reiseforsikring."
+  },
+  {
+    "en": "Enjoy {zone}! I’ve always wanted to open a branch there.",
+    "nn": "Kos deg i {zone}! Eg har alltid ønskt å opne ein filial der."
+  },
+  {
+    "en": "Enjoy {zone}! Don’t pay tourist prices. Pay my prices.",
+    "nn": "Kos deg i {zone}! Ikkje betal turistprisar. Betal prisane mine."
+  },
+  {
+    "en": "Enjoy {zone}! Watch your purse, the locals are pros. Like me.",
+    "nn": "Kos deg i {zone}! Pass på pungen, dei lokale er proffar. Som meg."
+  },
+  {
+    "en": "Enjoy {zone}! Souvenir shopping is mandatory, right?",
+    "nn": "Kos deg i {zone}! Suvenirshopping er obligatorisk, ikkje sant?"
+  },
+  {
+    "en": "Enjoy {zone}! I’m told the ore there is practically free.",
+    "nn": "Kos deg i {zone}! Eg har høyrt at malmen der er så godt som gratis."
+  },
+  {
+    "en": "Enjoy {zone}! Report back on rival merchants, please.",
+    "nn": "Kos deg i {zone}! Rapporter om konkurrerande kremmarar, takk."
+  },
+  {
+    "en": "Enjoy {zone}! Pick up some exotic goods for my shelves.",
+    "nn": "Kos deg i {zone}! Plukk med deg eksotiske varer til hyllene mine."
+  },
+  {
+    "en": "Enjoy {zone}! Remember, everything is for sale if you ask right.",
+    "nn": "Kos deg i {zone}! Hugs at alt er til sals om du spør rett."
+  },
+  {
+    "en": "Enjoy {zone}! Haggle hard. Make me proud.",
+    "nn": "Kos deg i {zone}! Prut hardt. Gjer meg stolt."
+  },
+  {
+    "en": "Enjoy {zone}! If it’s a dump, I’ll buy the land cheap.",
+    "nn": "Kos deg i {zone}! Er det ein søppelplass, kjøper eg tomta billeg."
+  },
+  {
+    "en": "Enjoy {zone}! I’ve heard it’s lovely. And underpriced.",
+    "nn": "Kos deg i {zone}! Eg har høyrt det er nydeleg. Og underprisa."
+  },
+  {
+    "en": "Enjoy {zone}! My cousin runs a stall there. Mention my name.",
+    "nn": "Kos deg i {zone}! Søskenbarnet mitt driv ein bod der. Nemn namnet mitt."
+  },
+  {
+    "en": "Enjoy {zone}! Bring back a fridge magnet. I collect, then resell.",
+    "nn": "Kos deg i {zone}! Ta med ein kjøleskapsmagnet. Eg samlar på dei og sel dei vidare."
+  },
+  {
+    "en": "Enjoy {zone}, friend! Bring me back a rock. I’ll sell it as a relic.",
+    "nn": "Kos deg i {zone}, venn! Ta med ein stein til meg. Eg sel han som relikvie."
+  },
+  {
+    "en": "Enjoy {zone}, partner! Scout the shops. Report the prices.",
+    "nn": "Kos deg i {zone}, makker! Speid ut butikkane. Rapporter prisane."
+  },
+  {
+    "en": "Ooh, {zone}! Enjoy! I hear the merchants there are amateurs.",
+    "nn": "Å, {zone}! Kos deg! Eg høyrer kremmarane der er amatørar."
+  },
+  {
+    "en": "Welcome to {zone}! Mind your purse, the locals are hungry.",
+    "nn": "Velkomen til {zone}! Pass på pungen, dei lokale er svoltne."
+  },
+  {
+    "en": "Have fun in {zone}! Collect rumours. Rumours sell well.",
+    "nn": "Ha det gøy i {zone}! Samle rykte. Rykte sel godt."
+  },
+  {
+    "en": "{zone}? Lovely! I’d visit, but rent at my stall is due.",
+    "nn": "{zone}? Herleg! Eg skulle gjerne ha kome på vitjing, men leiga for boden forfell."
+  },
+  {
+    "en": "Enjoy {zone}, buddy! If you find a treasure map, it’s half mine.",
+    "nn": "Kos deg i {zone}, kompis! Finn du eit skattekart, er halvparten mitt."
+  },
+  {
+    "en": "{zone}, eh? Enjoy! Don’t drink the water. Buy my water.",
+    "nn": "{zone}, altså? Kos deg! Ikkje drikk vatnet. Kjøp vatnet mitt."
+  },
+  {
+    "en": "Enjoy your trip to {zone}! Send a postcard with prices on the back.",
+    "nn": "God tur til {zone}! Send eit postkort med prisar på baksida."
+  },
+  {
+    "en": "Happy travels in {zone}! I’ll keep your tab warm.",
+    "nn": "God reise i {zone}! Eg held rekninga di open."
+  },
+  {
+    "en": "Ah, {zone}! Enjoy! Lovely place to get robbed. Be careful.",
+    "nn": "Ah, {zone}! Kos deg! Ein fin stad å bli rana på. Ver forsiktig."
+  },
+  {
+    "en": "Every map you finish raises its price. Enjoy {zone}, explorer!",
+    "nn": "Kvart kart du fullfører, stig i pris. Kos deg i {zone}, utforskar!"
+  },
+  {
+    "en": "My cousin there has my prices. Plus tax. Enjoy {zone}, valued customer!",
+    "nn": "Søskenbarnet mitt der har prisane mine. Pluss skatt. Kos deg i {zone}, kjære kunde!"
+  },
+  {
+    "en": "{zone} at last! Enjoy! Take in the view. Views are free there. Mostly.",
+    "nn": "Endeleg {zone}! Kos deg! Nyt utsikta. Utsikta er gratis der. Stort sett."
+  },
+  {
+    "en": "Off to {zone}? Enjoy! Pack a lunch. Lunches cost two silver.",
+    "nn": "På veg til {zone}? Kos deg! Ta med niste. Niste kostar to sølv."
+  },
+  {
+    "en": "Bring back spices. Spices are gold. Enjoy {zone}, globetrotter!",
+    "nn": "Ta med krydder. Krydder er gull. Kos deg i {zone}, globetrotter!"
+  },
+  {
+    "en": "Have a blast in {zone}! Avoid blasts, actually. Repairs are pricey.",
+    "nn": "Ha det kjempegøy i {zone}! Unngå forresten eksplosjonar. Reparasjonar er dyre."
+  },
+  {
+    "en": "Let me know if anything’s for sale there. Anything at all. Enjoy {zone}, champ!",
+    "nn": "Sei frå om noko er til sals der. Kva som helst. Kos deg i {zone}, meister!"
+  },
+  {
+    "en": "{zone}! What a market! I’m jealous. And plotting.",
+    "nn": "{zone}! For ein marknad! Eg er misunneleg. Og legg planar."
+  },
+  {
+    "en": "Spend there. Then spend more here. Enjoy {zone}, big spender!",
+    "nn": "Bruk pengar der. Bruk så meir her. Kos deg i {zone}, storforbrukar!"
+  },
+  {
+    "en": "Lucky you, {zone}! Lucky me if you bring me something.",
+    "nn": "{zone}? Heldiggris! Og heldig er eg om du tek med noko til meg."
+  },
+  {
+    "en": "Enjoy the sights of {zone}! The sights don’t pay, but the loot might.",
+    "nn": "Kos deg med alt du får sjå i {zone}! Utsikta betaler ikkje, men looten kan gjere det."
+  },
+  {
+    "en": "Adventure is good. Profit from adventure is better. Enjoy {zone}, adventurer!",
+    "nn": "Eventyr er bra. Forteneste på eventyr er betre. Kos deg i {zone}, eventyrar!"
+  },
+  {
+    "en": "{zone}, nice pick! I hear the inns there water down the ale.",
+    "nn": "{zone}, godt val! Eg høyrer vertshusa der blandar vatn i ølet."
+  },
+  {
+    "en": "If someone sells it cheaper than me, they’re lying. Enjoy {zone}, boss!",
+    "nn": "Om nokon sel det billegare enn meg, lyg dei. Kos deg i {zone}, sjef!"
+  },
+  {
+    "en": "Oh, {zone}! Have fun! I’ve got a cousin there who owes me money. Say hi.",
+    "nn": "Å, {zone}! Ha det kjekt! Eg har eit søskenbarn der som skuldar meg pengar. Sei hei."
+  },
+  {
+    "en": "Sun hats on sale before you go. Enjoy {zone}, sunshine!",
+    "nn": "Solhattar på tilbod før du dreg. Kos deg i {zone}, solstråle!"
+  },
+  {
+    "en": "{zone}, how exciting! I’ve always wanted a branch office there.",
+    "nn": "{zone}, så spennande! Eg har alltid ønskt eit avdelingskontor der."
+  },
+  {
+    "en": "Safe travels in {zone}! Travel insurance is never too late. Actually, it is.",
+    "nn": "Trygg reise i {zone}! Det er aldri for seint med reiseforsikring. Jo, det er det."
+  },
+  {
+    "en": "Bring back something hot. To sell. Enjoy {zone}, hotshot!",
+    "nn": "Ta med noko heitt. Til å selje. Kos deg i {zone}, stjerneskot!"
+  },
+  {
+    "en": "I want reports on every vendor. Enjoy {zone}, my scout!",
+    "nn": "Eg vil ha rapport om kvar seljar. Kos deg i {zone}, speidaren min!"
+  },
+  {
+    "en": "Oh, I love {zone}! Well, I love its auction house.",
+    "nn": "Å, eg elskar {zone}! Vel, eg elskar auksjonshuset der."
+  },
+  {
+    "en": "Tourists pay double. Don’t be a tourist. Enjoy {zone}, tourist!",
+    "nn": "Turistar betaler dobbelt. Ikkje ver turist. Kos deg i {zone}, turist!"
+  },
+  {
+    "en": "May the roads be safe and the merchants honest. Ha! Enjoy {zone}, my friend!",
+    "nn": "Måtte vegane vere trygge og kremmarane ærlege. Ha! Kos deg i {zone}, venen min!"
+  },
+  {
+    "en": "Off to {zone}, eh? Don’t forget to bring me a souvenir. Anything shiny.",
+    "nn": "Til {zone}, altså? Ikkje gløym å ta med ein suvenir. Noko blankt."
+  },
+  {
+    "en": "Welcome to {zone}, traveller! Remember me when you see the prices there.",
+    "nn": "Velkomen til {zone}, reisande! Hugs meg når du ser prisane der."
+  },
+  {
+    "en": "Wander toward anything valuable. Enjoy {zone}, wanderer!",
+    "nn": "Vandre mot alt som er verdifullt. Kos deg i {zone}, vandrar!"
+  },
+  {
+    "en": "{zone}! Exciting! I bet the land there is criminally undervalued.",
+    "nn": "{zone}! Spennande! Eg veddar på at tomtene der er kriminelt undervurderte."
+  },
+  {
+    "en": "Sightseeing is free. Souvenirs are not. Enjoy {zone}, sightseer!",
+    "nn": "Det er gratis å sjå seg om. Suvenirar er det ikkje. Kos deg i {zone}, turist på tur!"
+  },
+  {
+    "en": "New zone, {zone}! Enjoy! New zone means new customers. For me.",
+    "nn": "Ny sone, {zone}! Kos deg! Ny sone betyr nye kundar. For meg."
+  },
+  {
+    "en": "Your commission is a warm smile. Enjoy {zone}, my trade scout!",
+    "nn": "Provisjonen din er eit varmt smil. Kos deg i {zone}, handelsspeidaren min!"
+  },
+  {
+    "en": "Heading into {zone}? Have fun! Haggle for me if you see a bargain.",
+    "nn": "På veg inn i {zone}? Ha det kjekt! Prut for meg om du ser eit kupp."
+  },
+  {
+    "en": "Truly! Every corner is a market waiting to happen. Enjoy {zone}, champ!",
+    "nn": "Verkeleg! Kvar krok er ein marknad som ventar. Kos deg i {zone}, meister!"
+  },
+  {
+    "en": "Ahh, {zone}! Lovely spot! I almost opened a stall there once.",
+    "nn": "Ah, {zone}! Fin stad! Eg opna nesten ein bod der ein gong."
+  },
+  {
+    "en": "Enjoy every corner of {zone}! And check every corner for coins.",
+    "nn": "Kos deg i kvar krok av {zone}! Og sjekk kvar krok etter myntar."
+  },
+  {
+    "en": "Have a grand time in {zone}! Grand times are worth grand souvenirs.",
+    "nn": "Ha det storarta i {zone}! Storarta stunder er verd storarta suvenirar."
+  },
+  {
+    "en": "Bring snacks. The local ones are overpriced. Enjoy {zone}, road warrior!",
+    "nn": "Ta med snacks. Dei lokale er overprisa. Kos deg i {zone}, landevegskrigar!"
+  },
+  {
+    "en": "{zone}? Ooh, fancy. Watch out for pickpockets. Present company excluded.",
+    "nn": "{zone}? Å, fornemt. Pass deg for lommetjuvar. Underteikna unnateke."
+  },
+  {
+    "en": "I’m so jealous you’re in {zone}. Mail me a map. Postage due.",
+    "nn": "Eg er så misunneleg på at du er i {zone}. Send meg eit kart. Mottakar betaler porto."
+  },
+  {
+    "en": "Have you tried the local food in {zone}? Bring some back. I’ll resell it.",
+    "nn": "Har du smakt den lokale maten i {zone}? Ta med litt heim. Eg sel han vidare."
+  },
+  {
+    "en": "Hello from your merchant! Enjoy {zone}, and keep receipts.",
+    "nn": "Helsing frå kremmaren din! Kos deg i {zone}, og ta vare på kvitteringane."
+  },
+  {
+    "en": "Exploring {zone}? Lovely. Take notes on anything shiny.",
+    "nn": "Utforskar du {zone}? Herleg. Noter alt som skin."
+  },
+  {
+    "en": "Ooh, you made it to {zone}! The wildlife there sells for a fortune. Pelts, mostly.",
+    "nn": "Å, du kom deg til {zone}! Dyrelivet der er verd ein formue. Mest skinna."
+  },
+  {
+    "en": "Look at you in {zone}! Have fun. And check the auction house.",
+    "nn": "Sjå på deg i {zone}! Ha det kjekt. Og sjekk auksjonshuset."
+  },
+  {
+    "en": "{zone} is a fine place for a hero. And for a merchant’s scouting report.",
+    "nn": "{zone} er ein fin stad for ein helt. Og for ein speidarrapport til ein kremmar."
+  },
+  {
+    "en": "Enjoy the scenery in {zone}! I’ll price it when you’re back.",
+    "nn": "Nyt landskapet i {zone}! Eg prissett det når du kjem tilbake."
+  },
+  {
+    "en": "Make the most of {zone}! And the most out of its vendors.",
+    "nn": "Få mest mogleg ut av {zone}! Og mest mogleg ut av seljarane der."
+  },
+  {
+    "en": "Welcome to {zone}! If anyone sells you a bridge, call me first.",
+    "nn": "Velkomen til {zone}! Om nokon prøver å selje deg ei bru, ring meg først."
+  },
+  {
+    "en": "{zone}! Great choice. I hear the ore there practically jumps into bags.",
+    "nn": "{zone}! Godt val. Eg høyrer malmen der nærast hoppar opp i sekken."
+  },
+  {
+    "en": "Oh, {zone}! Do me a favour and count the competition.",
+    "nn": "Å, {zone}! Gjer meg ei teneste og tel konkurrentane."
+  },
+  {
+    "en": "Have fun exploring {zone}! Don’t forget: exploration is a business expense.",
+    "nn": "Ha det kjekt når du utforskar {zone}! Ikkje gløym: utforsking er ei forretningsutgift."
+  },
+  {
+    "en": "You’re in {zone}! Lucky you. I’m in my shop. Lucky me, I have customers.",
+    "nn": "Du er i {zone}! Heldiggris. Eg er i butikken. Heldig er eg òg, eg har kundar."
+  },
+  {
+    "en": "I hear {zone} is lovely this time of year. Good for business, too.",
+    "nn": "Eg høyrer det er nydeleg i {zone} på denne tida av året. Bra for forretningane òg."
+  },
+  {
+    "en": "And remember, the best treasures aren’t in the guidebook. Enjoy {zone}!",
+    "nn": "Og hugs at dei beste skattane ikkje står i reiseguiden. God tur til {zone}!"
+  },
+  {
+    "en": "I’ve marked it on my map as potential expansion territory. Enjoy {zone}!",
+    "nn": "Eg har merkt det på kartet som mogleg ekspansjonsområde. Kos deg i {zone}!"
+  },
+  {
+    "en": "Make friends with the locals. Locals know where the gold is. Enjoy {zone}!",
+    "nn": "Bli venn med dei lokale. Dei veit kvar gullet er. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "I’d love a jar of local dirt. Dirt sells, believe it or not. Enjoy {zone}!",
+    "nn": "Eg vil gjerne ha ei krukke lokal jord. Jord sel, tru det eller ei. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Don’t let anyone overcharge you. That’s my job. Enjoy {zone}!",
+    "nn": "Ikkje la nokon ta overpris av deg. Det er jobben min. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Keep an eye out for rare herbs and rare bargains. Enjoy {zone}!",
+    "nn": "Hald auga med sjeldne urter og sjeldne kupp. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "I’ve heard the treasure chests there are poorly guarded. Enjoy {zone}!",
+    "nn": "Eg har høyrt at skattekistene der er dårleg vakta. Lukke til i {zone}!"
+  },
+  {
+    "en": "It’s a fine day for adventure and profit. Mostly profit. Enjoy {zone}!",
+    "nn": "Det er ein fin dag for eventyr og forteneste. Mest forteneste. Kos deg i {zone}!"
+  },
+  {
+    "en": "Write down every price you see. I’ll undercut them all. Enjoy {zone}!",
+    "nn": "Skriv ned kvar pris du ser. Eg skal underby dei alle. God tur til {zone}!"
+  },
+  {
+    "en": "Mind the cliffs. And the vendors. Both are steep. Enjoy {zone}!",
+    "nn": "Pass deg for stupa. Og seljarane. Begge er bratte. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Pick up a souvenir for me. Something heavy and valuable. Enjoy {zone}!",
+    "nn": "Plukk med deg ein suvenir til meg. Noko tungt og verdifullt. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "I’ve never been, but I’ve sold three maps of it. Enjoy {zone}!",
+    "nn": "Eg har aldri vore der, men eg har selt tre kart over det. Nyt tida i {zone}!"
+  },
+  {
+    "en": "The locals might not like goblins. Tell them I’m nice. Enjoy {zone}!",
+    "nn": "Dei lokale likar kanskje ikkje goblinar. Sei at eg er snill. Ha det fint i {zone}!"
+  },
+  {
+    "en": "If you meet a dragon, don’t sell it anything. That’s my market. Enjoy {zone}!",
+    "nn": "Møter du ein drake, må du ikkje selje han noko. Det er marknaden min. Kos deg i {zone}!"
+  },
+  {
+    "en": "I’ve packed you a lunch in spirit. Real lunch costs extra. Enjoy {zone}!",
+    "nn": "Eg har pakka niste til deg i ånda. Ekte niste kostar ekstra. God tur til {zone}!"
+  },
+  {
+    "en": "I hope the weather’s nice. I sell umbrellas just in case. Enjoy {zone}!",
+    "nn": "Eg håpar vêret er fint. Eg sel paraplyar, i tilfelle. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "Don’t get lost. Guides cost money, but so does getting lost. Enjoy {zone}!",
+    "nn": "Ikkje gå deg vill. Guidar kostar, men det gjer det òg å gå seg vill. Kos deg i {zone}!"
+  },
+  {
+    "en": "I’ll want to hear everything. Stories pay well at the tavern. Enjoy {zone}!",
+    "nn": "Eg vil høyre alt. Gode historier løner seg på kroa. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "A fresh zone, a fresh market, a fresh chance to profit. Enjoy {zone}!",
+    "nn": "Ny sone, ny marknad, ny sjanse til forteneste. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Be sure to sample everything. Then tell me what sells. Enjoy {zone}!",
+    "nn": "Smak på alt. Fortel meg så kva som sel. Ha det moro i {zone}!"
+  },
+  {
+    "en": "If the locals offer you a deal, ask what I’d do. Then do it. Enjoy {zone}!",
+    "nn": "Byr dei lokale deg ein avtale, spør kva eg ville gjere. Gjer så det. Kos deg i {zone}!"
+  },
+  {
+    "en": "Rumour says there’s a hidden vault. Find it, share it. Enjoy {zone}!",
+    "nn": "Rykta seier det finst eit løynt kvelv. Finn det, del det. Lukke til i {zone}!"
+  },
+  {
+    "en": "Leave footprints, take loot. Enjoy {zone}!",
+    "nn": "Legg att fotspor, ta med loot. God tur til {zone}!"
+  },
+  {
+    "en": "I hope the innkeeper is generous. Mention my name for a surcharge. Enjoy {zone}!",
+    "nn": "Eg håpar vertshusvertinna er raus. Nemn namnet mitt for pristillegg. Ha det fint i {zone}!"
+  },
+  {
+    "en": "It’s a great place to sell things to people who don’t know better. Enjoy {zone}!",
+    "nn": "Det er ein fin stad å selje ting til folk som ikkje veit betre. Kos deg i {zone}!"
+  },
+  {
+    "en": "Find me a cheap supplier. Very cheap. Suspiciously cheap. Enjoy {zone}!",
+    "nn": "Finn ein billeg leverandør til meg. Svært billeg. Mistenkeleg billeg. Lukke til i {zone}!"
+  },
+  {
+    "en": "I can’t go myself, so I’m sending my best wishes. And my catalogue. Enjoy {zone}!",
+    "nn": "Eg kan ikkje dra sjølv, så eg sender beste ønske. Og katalogen min. God tur til {zone}!"
+  },
+  {
+    "en": "Look for anything glowing. Glowing things are expensive. Enjoy {zone}!",
+    "nn": "Sjå etter alt som lyser. Ting som lyser, er dyre. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Stay on the roads. Off the roads, prices are higher. Life prices. Enjoy {zone}!",
+    "nn": "Hald deg på vegen. Utanfor er prisane høgare. Du betaler med livet. Kos deg i {zone}!"
+  },
+  {
+    "en": "My advice: smile, haggle and never pay the first price. Enjoy {zone}!",
+    "nn": "Rådet mitt: smil, prut og betal aldri første pris. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Tell the vendors there a goblin says their prices are cute. Enjoy {zone}!",
+    "nn": "Sei til seljarane der at ein goblin synest prisane deira er søte. Ha det fint i {zone}!"
+  },
+  {
+    "en": "I’m told the views are breathtaking. Breathless heroes buy potions. Enjoy {zone}!",
+    "nn": "Utsikta tek visst pusten frå ein. Andpustne heltar kjøper trylledrikk. God tur til {zone}!"
+  },
+  {
+    "en": "If you see a well, throw in a coin. Then fish it out. Waste not. Enjoy {zone}!",
+    "nn": "Ser du ein brunn, kast ein mynt oppi. Fisk han så opp att. Ikkje sløs. Kos deg i {zone}!"
+  },
+  {
+    "en": "Wear sturdy boots. My sturdy boots. Enjoy {zone}!",
+    "nn": "Bruk solide støvlar. Dei solide støvlane mine. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "I hope the monsters there drop nice things. For me. Enjoy {zone}!",
+    "nn": "Eg håpar monstera der slepper fine ting. Til meg. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "The air there is free. Breathe it all. Enjoy {zone}!",
+    "nn": "Lufta der er gratis. Pust inn alt saman. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Keep your gold close and your merchant closer. Enjoy {zone}!",
+    "nn": "Hald gullet nær og kremmaren endå nærare. Kos deg i {zone}!"
+  },
+  {
+    "en": "Every new place is a new chance to find a bargain. Enjoy {zone}!",
+    "nn": "Kvar ny stad er ein ny sjanse til å finne eit kupp. Lukke til i {zone}!"
+  },
+  {
+    "en": "I hear the flight master there overcharges. Walk. Or ride. Enjoy {zone}!",
+    "nn": "Eg høyrer flygemeisteren der tek for mykje. Gå. Eller rid. God tur til {zone}!"
+  },
+  {
+    "en": "Find the quietest inn. Quiet inns have cheap rooms. Enjoy {zone}!",
+    "nn": "Finn det rolegaste vertshuset. Rolege vertshus har billege rom. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Have an adventure worth retelling. I’ll handle the retelling rights. Enjoy {zone}!",
+    "nn": "Ha eit eventyr verd å fortelje vidare. Eg tek meg av rettane. Kos deg i {zone}!"
+  },
+  {
+    "en": "May every chest you open be full and every lock be weak. Enjoy {zone}!",
+    "nn": "Måtte kvar kiste du opnar vere full og kvar lås vere svak. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Don’t forget sunscreen. Or moonscreen. Depending on the zone. Enjoy {zone}!",
+    "nn": "Ikkje gløym solkrem. Eller månekrem. Alt etter sona. Ha det fint i {zone}!"
+  },
+  {
+    "en": "I’d come along, but somebody has to mind the till. Enjoy {zone}!",
+    "nn": "Eg skulle gjerne ha vore med, men nokon må passe kassa. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Watch out for anyone offering a deal too good to be true. Unless it’s me. Enjoy {zone}!",
+    "nn": "Pass deg for alle som tilbyr ein for god avtale. Unnateke meg. Kos deg i {zone}!"
+  },
+  {
+    "en": "I’ve heard the local cheese is to die for. Please don’t. Enjoy {zone}!",
+    "nn": "Eg har høyrt at den lokale osten er til å døy for. Ikkje gjer det. Nyt tida i {zone}!"
+  },
+  {
+    "en": "You’ll love it. And if you don’t, sell your memories to me. Enjoy {zone}!",
+    "nn": "Du kjem til å elske det. Og om ikkje, sel minna dine til meg. God tur til {zone}!"
+  },
+  {
+    "en": "Hope the roads are paved with gold. Or at least copper. Enjoy {zone}!",
+    "nn": "Håpar vegane er lagde med gull. Eller i det minste kopar. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "There’s money in every new place. Go find it. Enjoy {zone}!",
+    "nn": "Det er pengar på kvar ny stad. Gå og finn dei. Lukke til i {zone}!"
+  },
+  {
+    "en": "Bring back a story and a sack. Preferably a full sack. Enjoy {zone}!",
+    "nn": "Ta med deg ei historie og ein sekk. Helst ein full sekk. Kos deg i {zone}!"
+  },
+  {
+    "en": "I’ve heard the people there are friendly. Friendly people buy things. Enjoy {zone}!",
+    "nn": "Eg har høyrt folka der er vennlege. Vennlege folk kjøper ting. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Smile at the guards. Guards remember smiles. And bribes. Enjoy {zone}!",
+    "nn": "Smil til vaktene. Vakter hugsar smil. Og bestikking. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Take the scenic route. Scenic routes have more treasure. Enjoy {zone}!",
+    "nn": "Ta den vakre ruta. Vakre ruter har fleire skattar. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Tell me if there’s an empty shop. I’ve got plans. Enjoy {zone}!",
+    "nn": "Sei frå om det står ein butikk tom. Eg har planar. Kos deg i {zone}!"
+  },
+  {
+    "en": "I want a full inventory of their market. You’re on the clock. Enjoy {zone}!",
+    "nn": "Eg vil ha ein full oversikt over marknaden der. Du er på jobb. Ha det fint i {zone}!"
+  },
+  {
+    "en": "A merchant’s blessing: may your bags be full on the way out. Enjoy {zone}!",
+    "nn": "Ei kremmarvelsigning: måtte sekkene dine vere fulle på veg ut. God tur til {zone}!"
+  },
+  {
+    "en": "So it’s {zone} today? Enjoy! Bring me a bargain, not a bruise.",
+    "nn": "Så det er {zone} i dag? Kos deg! Ta med eit kupp til meg, ikkje eit blåmerke."
+  },
+  {
+    "en": "First time in {zone}? Enjoy! The first visit is always the cheapest.",
+    "nn": "Første gong i {zone}? Kos deg! Det første besøket er alltid det billegaste."
+  },
+  {
+    "en": "Ooh, {zone} sounds expensive. Have fun! Keep receipts.",
+    "nn": "Å, {zone}? Det høyrest dyrt ut. Ha det kjekt! Ta vare på kvitteringane."
+  },
+  {
+    "en": "They say {zone} is beautiful. They also say it’s a seller’s market. Enjoy!",
+    "nn": "Dei seier det er vakkert i {zone}. Dei seier òg at seljaren rår der. Kos deg!"
+  },
+  {
+    "en": "Look out, {zone}, a hero’s coming! And a merchant’s scout.",
+    "nn": "Pass deg, {zone}, her kjem ein helt! Og speidaren til ein kremmar."
+  },
+  {
+    "en": "Have a lovely time in {zone}! Lovely times are free. Lovely souvenirs, not so much.",
+    "nn": "Ha det nydeleg i {zone}! Nydelege stunder er gratis. Nydelege suvenirar er det ikkje."
+  },
+  {
+    "en": "Lucky {zone}, getting a visitor like you! Enjoy!",
+    "nn": "Heldige {zone}, som får ein gjest som deg! Kos deg!"
+  },
+  {
+    "en": "Discovering {zone}? Wonderful! Discover me a gold vein while you’re at it.",
+    "nn": "Oppdagar du {zone}? Vidunderleg! Oppdag ei gullåre til meg medan du held på."
+  },
+  {
+    "en": "You’ve reached {zone}! I’ll mark it on my map of potential customers.",
+    "nn": "Du har nådd {zone}! Eg merkar det på kartet over moglege kundar."
+  },
+  {
+    "en": "How’s {zone}? Pretty? Profitable? Both? Enjoy it!",
+    "nn": "Korleis er det i {zone}? Fint? Lønsamt? Begge delar? Kos deg!"
+  },
+  {
+    "en": "Enjoying {zone} already? Good. Now find me something to sell.",
+    "nn": "Kosar du deg alt i {zone}? Bra. Finn no noko eg kan selje."
+  },
+  {
+    "en": "Well, well, {zone}! Enjoy it, and mind the pickpockets. They’re not as good as me.",
+    "nn": "Jaså, {zone}! Kos deg, og pass deg for lommetjuvane. Dei er ikkje så flinke som meg."
+  },
+  {
+    "en": "I’ve always dreamed of {zone}. Mostly of its trade routes. Enjoy!",
+    "nn": "Eg har alltid drøymt om {zone}. Mest om handelsrutene der. Kos deg!"
+  },
+  {
+    "en": "Taking in {zone}? Take in some loot too. Enjoy!",
+    "nn": "Ser du deg om i {zone}? Sjå etter litt loot òg. Kos deg!"
+  },
+  {
+    "en": "Travel well through {zone}! Wells, by the way, are full of lost coins.",
+    "nn": "God reise gjennom {zone}! Brunnar er forresten fulle av mista myntar."
+  },
+  {
+    "en": "A new zone! {zone}! Enjoy! New zones mean new rare drops.",
+    "nn": "Ei ny sone! {zone}! Kos deg! Nye soner betyr nye sjeldne dropp."
+  },
+  {
+    "en": "And if the locals ask, I’m a respected merchant. Enjoy {zone}!",
+    "nn": "Og om dei lokale spør, er eg ein respektert kremmar. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Off you go into {zone}! Have fun. Bring back a quarterly report.",
+    "nn": "Av stad til {zone}! Ha det kjekt. Ta med ein kvartalsrapport."
+  },
+  {
+    "en": "Bon voyage to {zone}! Bon profit, too.",
+    "nn": "God tur til {zone}! God forteneste òg."
+  },
+  {
+    "en": "{zone}, the land of opportunity! Well, every land is. Enjoy!",
+    "nn": "{zone}, landet med alle mogleikane! Vel, alle land er det. Kos deg!"
+  },
+  {
+    "en": "Enjoy your adventure in {zone}! Adventure is the best way to find unsold goods.",
+    "nn": "Kos deg på eventyr i {zone}! Eventyr er den beste måten å finne usselde varer på."
+  },
+  {
+    "en": "Fresh tracks in {zone}! Enjoy! Fresh tracks often lead to fresh loot.",
+    "nn": "Ferske spor i {zone}! Kos deg! Ferske spor fører ofte til fersk loot."
+  },
+  {
+    "en": "I hope {zone} treats you well! If not, I’ll overcharge everyone there.",
+    "nn": "Eg håpar {zone} tek godt imot deg! Om ikkje, tek eg overpris av alle der."
+  },
+  {
+    "en": "Enjoy {zone}, and send my regards to any rich travellers.",
+    "nn": "Kos deg i {zone}, og hels til alle rike reisande."
+  },
+  {
+    "en": "Arrived in {zone}? Have fun! I hear the inn there has lumpy beds.",
+    "nn": "Er du komen til {zone}? Ha det kjekt! Eg høyrer vertshuset der har klumpete senger."
+  },
+  {
+    "en": "Oh, {zone}! I sold a map of it this morning. Wrong map, but still. Enjoy!",
+    "nn": "Å, {zone}! Eg selde eit kart over det i morges. Feil kart, men likevel. Kos deg!"
+  },
+  {
+    "en": "You’re seeing {zone}? Lucky! Count the gold in the streets for me.",
+    "nn": "Får du sjå {zone}? Heldiggris! Tel gullet i gatene for meg."
+  },
+  {
+    "en": "Make {zone} yours! Then rent it out to me.",
+    "nn": "Gjer {zone} til heimen din! Lei han så ut til meg."
+  },
+  {
+    "en": "May {zone} be kind to your boots and your purse. Enjoy!",
+    "nn": "Måtte {zone} skåne både støvlane og pungen din. Kos deg!"
+  },
+  {
+    "en": "Exploring {zone}? I’m sending you good vibes and a brochure.",
+    "nn": "Utforskar du {zone}? Eg sender deg gode vibbar og ein brosjyre."
+  },
+  {
+    "en": "{zone} is lucky to have you! Enjoy, and keep your hands on your bags.",
+    "nn": "{zone} har flaks som får deg! Kos deg, og hald fast i sekkene."
+  },
+  {
+    "en": "Wandering {zone}? Enjoy! Wander past any open chests. Slowly.",
+    "nn": "Vandrar du i {zone}? Kos deg! Vandre forbi opne kister. Sakte."
+  },
+  {
+    "en": "Hope you love {zone}! I love its import potential.",
+    "nn": "Håpar du elskar {zone}! Eg elskar importpotensialet der."
+  },
+  {
+    "en": "In {zone} at last! Enjoy! Ask around if anyone needs a goblin.",
+    "nn": "Endeleg i {zone}! Kos deg! Høyr om nokon treng ein goblin."
+  },
+  {
+    "en": "Have fun in {zone}! Pace yourself. Treasure doesn’t run away. Monsters do.",
+    "nn": "Ha det kjekt i {zone}! Ta det med ro. Skattar spring ikkje vekk. Monster gjer det."
+  },
+  {
+    "en": "Settle in, {zone} is lovely. Enjoy! I’d bring a bigger bag, though.",
+    "nn": "Finn deg til rette, det er nydeleg i {zone}. Kos deg! Men eg ville ta med ein større sekk."
+  },
+  {
+    "en": "New stamp for your passport: {zone}! Enjoy! Stamps cost a copper.",
+    "nn": "Nytt stempel i passet: {zone}! Kos deg! Stempel kostar ein kopar."
+  },
+  {
+    "en": "Treat yourself in {zone}! Then treat me with a souvenir.",
+    "nn": "Unn deg noko i {zone}! Unn meg så ein suvenir."
+  },
+  {
+    "en": "Here’s to {zone}! May it be full of adventure and empty of thieves.",
+    "nn": "Skål for {zone}! Måtte det vere fullt av eventyr der og tomt for tjuvar."
+  },
+  {
+    "en": "I just sold a guided tour of it. You’re the guide. Surprise! Enjoy {zone}!",
+    "nn": "Eg selde nett ein guida tur der. Du er guiden. Overrasking! Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Bask in {zone}! Basking is free. Towels are extra.",
+    "nn": "Sol deg i {zone}! Det er gratis. Handkle kostar ekstra."
+  },
+  {
+    "en": "Ah, {zone}. The air smells of opportunity. And maybe goats. Enjoy!",
+    "nn": "Ah, {zone}. Lufta luktar mogleikar. Og kanskje geit. Kos deg!"
+  },
+  {
+    "en": "Brave the wilds of {zone}! Enjoy! Wilds are where the good loot hides.",
+    "nn": "Våg deg ut i villmarka i {zone}! Kos deg! Det er der den gode looten gøymer seg."
+  },
+  {
+    "en": "Welcome to {zone}! Remember, the first thing you see for sale is overpriced.",
+    "nn": "Velkomen til {zone}! Hugs at det første du ser til sals, er overprisa."
+  },
+  {
+    "en": "If the locals offer you tea, take it. Free is free. Enjoy {zone}!",
+    "nn": "Bed dei lokale deg på te, så ta imot. Gratis er gratis. Nyt tida i {zone}!"
+  },
+  {
+    "en": "If you see a goblin there, he’s not me. Don’t trust him. Enjoy {zone}!",
+    "nn": "Ser du ein goblin der, er det ikkje meg. Ikkje stol på han. Kos deg i {zone}!"
+  },
+  {
+    "en": "You’re my eyes and ears there. Especially the eyes. For shiny things. Enjoy {zone}!",
+    "nn": "Du er auga og øyra mine der. Særleg auga. For blanke ting. God tur til {zone}!"
+  },
+  {
+    "en": "The local currency is gold, I hope. Always bet on gold. Enjoy {zone}!",
+    "nn": "Den lokale valutaen er gull, håpar eg. Sats alltid på gull. Lukke til i {zone}!"
+  },
+  {
+    "en": "Don’t forget to stretch. Long walks are hard on the knees. Enjoy {zone}!",
+    "nn": "Hugs å strekkje deg. Lange turar tek på knea. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "Keep an eye out for haunted houses. Excellent value. Enjoy {zone}!",
+    "nn": "Sjå etter hus det spøkjer i. Framifrå verdi. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Take plenty of pictures. I’ll sell them to people who can’t go. Enjoy {zone}!",
+    "nn": "Ta mange bilete. Eg sel dei til folk som ikkje kan dra. Kos deg i {zone}!"
+  },
+  {
+    "en": "A little birdie told me there’s treasure nearby. The birdie charged. Enjoy {zone}!",
+    "nn": "Ein liten fugl sa det finst skattar i nærleiken. Fuglen tok betalt. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Be polite to the vendors. Then outhaggle them. Enjoy {zone}!",
+    "nn": "Ver høfleg mot seljarane. Prut dei så ned. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "There’s nothing like a new zone to refresh the soul. And the inventory. Enjoy {zone}!",
+    "nn": "Ingenting friskar opp sjela som ei ny sone. Og lageret. Nyt tida i {zone}!"
+  },
+  {
+    "en": "I’m told the moonlight there is beautiful. And free. Free is my favourite. Enjoy {zone}!",
+    "nn": "Månelyset der skal vere vakkert. Og gratis. Gratis er favoritten min. God tur til {zone}!"
+  },
+  {
+    "en": "I’ve got a hunch you’ll find something valuable. My hunches are pricey. Enjoy {zone}!",
+    "nn": "Eg har på kjensla at du finn noko verdifullt. Kjenslene mine er dyre. Kos deg i {zone}!"
+  },
+  {
+    "en": "If the locals have a festival, sell them something. Enjoy {zone}!",
+    "nn": "Har dei lokale festival, sel dei noko. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Don’t forget to sign the guestbook. Mention my shop. Enjoy {zone}!",
+    "nn": "Ikkje gløym å skrive i gjesteboka. Nemn butikken min. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Make it a trip to remember. And a trip to profit from. Enjoy {zone}!",
+    "nn": "Gjer det til ein tur å hugse. Og ein tur å tene på. God tur til {zone}!"
+  },
+  {
+    "en": "A goblin shop there? It isn’t cheaper. Check for yourself. Enjoy {zone}!",
+    "nn": "Ein goblinbutikk der? Han er ikkje billegare. Sjekk sjølv. Kos deg i {zone}!"
+  },
+  {
+    "en": "May you find lost treasure and give me a finder’s fee. Enjoy {zone}!",
+    "nn": "Måtte du finne gøymde skattar og gi meg finnarløn. Lukke til i {zone}!"
+  },
+  {
+    "en": "I hope the monsters there are slow and wealthy. Enjoy {zone}!",
+    "nn": "Eg håpar monstera der er trege og rike. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "I’d send a guide, but you’re the smartest one I know. Enjoy {zone}!",
+    "nn": "Eg skulle gjerne ha sendt ein guide, men du er den smartaste eg kjenner. Nyt {zone}!"
+  },
+  {
+    "en": "If it rains, sell umbrellas. If it shines, sell hats. Enjoy {zone}!",
+    "nn": "Regnar det, sel paraplyar. Skin sola, sel hattar. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "Stay safe, have fun and buy nothing I could sell you cheaper. Enjoy {zone}!",
+    "nn": "Ver trygg, ha det kjekt og kjøp ingenting eg kunne selje deg billegare. Kos deg i {zone}!"
+  },
+  {
+    "en": "Write me a letter. Short ones cost less to read. Enjoy {zone}!",
+    "nn": "Skriv eit brev til meg. Korte brev er billegare å lese. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Your journey there is my business opportunity. Thanks! Enjoy {zone}!",
+    "nn": "Ferda di dit er forretningshøvet mitt. Takk! God tur til {zone}!"
+  },
+  {
+    "en": "The locals have a saying: never trust a goblin. Ignore it. Enjoy {zone}!",
+    "nn": "Dei lokale har eit ordtak: stol aldri på ein goblin. Oversjå det. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Look for bargains in the corners. Corners are where vendors hide them. Enjoy {zone}!",
+    "nn": "Sjå etter kupp i krokane. Det er der seljarane gøymer dei. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Remember, every quest giver there could be a future customer. Enjoy {zone}!",
+    "nn": "Hugs at kvar oppdragsgivar der kan bli ein framtidig kunde. Kos deg i {zone}!"
+  },
+  {
+    "en": "I’ll be thinking of you. And of all the loot you’ll bring back. Enjoy {zone}!",
+    "nn": "Eg tenkjer på deg. Og på all looten du tek med heim. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Watch where you step. Some things there are priceless. Some are just smelly. Enjoy {zone}!",
+    "nn": "Sjå kvar du trør. Somt der er uvurderleg. Somt luktar berre vondt. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Let the adventure begin. Let the bargains follow. Enjoy {zone}!",
+    "nn": "Lat eventyret byrje. Lat kuppa følgje etter. God tur til {zone}!"
+  },
+  {
+    "en": "Pick a nice spot for my future shop while you’re there. Enjoy {zone}!",
+    "nn": "Finn ein fin stad til den framtidige butikken min medan du er der. Kos deg i {zone}!"
+  },
+  {
+    "en": "May your map be accurate and your pockets heavy. Enjoy {zone}!",
+    "nn": "Måtte kartet ditt vere nøyaktig og lommene tunge. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "Bring a bottle of local sand. Sand sells to collectors. Odd ones. Enjoy {zone}!",
+    "nn": "Ta med ei flaske lokal sand. Samlarar kjøper sand. Rare typar. Ha det moro i {zone}!"
+  },
+  {
+    "en": "The best souvenir is a full bag. Don’t settle for less. Enjoy {zone}!",
+    "nn": "Den beste suveniren er ein full sekk. Ikkje nøy deg med mindre. Lukke til i {zone}!"
+  },
+  {
+    "en": "Have you got enough potions? I’m asking for your health. And my sales. Enjoy {zone}!",
+    "nn": "Har du nok trylledrikkar? Eg spør for helsa di. Og salet mitt. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "A wise traveller knows where to buy. A wiser one asks me. Enjoy {zone}!",
+    "nn": "Ein klok reisande veit kvar han skal handle. Ein klokare spør meg. Kos deg i {zone}!"
+  },
+  {
+    "en": "Take the long way. Long ways have more chests. Enjoy {zone}!",
+    "nn": "Ta den lange vegen. Lange vegar har fleire kister. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Look at you, a real explorer now. Explorers buy rope. I sell rope. Enjoy {zone}!",
+    "nn": "Sjå på deg, ein ekte utforskar no. Utforskarar kjøper tau. Eg sel tau. God tur til {zone}!"
+  },
+  {
+    "en": "Nothing beats seeing a new place. Except selling it. Enjoy {zone}!",
+    "nn": "Ingenting slår å sjå ein ny stad. Unnateke å selje han. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Tell me if the locals like trinkets. I’ve got crates. Enjoy {zone}!",
+    "nn": "Sei frå om dei lokale likar småting. Eg har kassevis. Kos deg i {zone}!"
+  },
+  {
+    "en": "I just checked: no rival merchants have claimed it. Yet. Enjoy {zone}!",
+    "nn": "Eg sjekka nett: ingen konkurrentar har gjort krav på det. Enno. Ha det moro i {zone}!"
+  },
+  {
+    "en": "Here’s hoping the locals pay in gems. Enjoy {zone}!",
+    "nn": "Lat oss håpe dei lokale betaler med edelsteinar. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Breathe the fresh air. The air in my shop smells like coins. Enjoy {zone}!",
+    "nn": "Pust inn den friske lufta. Lufta i butikken min luktar myntar. Nyt tida i {zone}!"
+  },
+  {
+    "en": "You’ll do great things there. Possibly profitable things. Enjoy {zone}!",
+    "nn": "Du kjem til å gjere store ting der. Kanskje lønsame ting. Lukke til i {zone}!"
+  },
+  {
+    "en": "May the quest rewards there be generous. Bring me the extras. Enjoy {zone}!",
+    "nn": "Måtte oppdragsløna der vere raus. Ta med det du ikkje treng. Kos deg i {zone}!"
+  },
+  {
+    "en": "I’ll hold down the fort. The fort being my shop. Enjoy {zone}!",
+    "nn": "Eg held stillinga. Stillinga er butikken min. God tur til {zone}!"
+  },
+  {
+    "en": "I’m so proud of you for exploring. Exploring is good for the economy. Enjoy {zone}!",
+    "nn": "Eg er så stolt av at du utforskar. Det er bra for økonomien. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "Don’t trust any map that’s free. Trust mine. It costs. Enjoy {zone}!",
+    "nn": "Ikkje stol på kart som er gratis. Stol på mitt. Det kostar. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Look at the stars at night. Count them. Price them. Enjoy {zone}!",
+    "nn": "Sjå på stjernene om natta. Tel dei. Prismerk dei. Ha det moro i {zone}!"
+  },
+  {
+    "en": "I’ve put a pin in it on my map. A gold pin. Enjoy {zone}!",
+    "nn": "Eg har sett ei nål i det på kartet mitt. Ei gullnål. Kos deg i {zone}!"
+  },
+  {
+    "en": "If you meet a talking chest, negotiate. Enjoy {zone}!",
+    "nn": "Møter du ei kiste som snakkar, så forhandle. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Pack light on the way in, heavy on the way out. Enjoy {zone}!",
+    "nn": "Pakk lett på veg inn, tungt på veg ut. God tur til {zone}!"
+  },
+  {
+    "en": "Fresh horizons, fresh profits. Enjoy {zone}!",
+    "nn": "Nye horisontar, ny forteneste. Nyt tida i {zone}!"
+  },
+  {
+    "en": "My cousin went there once. He came back rich. Then he met me. Enjoy {zone}!",
+    "nn": "Søskenbarnet mitt var der ein gong. Han kom rik heim. Så møtte han meg. Kos deg i {zone}!"
+  },
+  {
+    "en": "Watch for traps. And for vendors. Same thing, really. Enjoy {zone}!",
+    "nn": "Pass deg for feller. Og for seljarar. Same sak, eigentleg. Ha det fint i {zone}!"
+  },
+  {
+    "en": "I want to hear about every chest you open. In detail. Enjoy {zone}!",
+    "nn": "Eg vil høyre om kvar kiste du opnar. I detalj. Ha det moro i {zone}!"
+  },
+  {
+    "en": "May the wind be at your back and gold at your feet. Enjoy {zone}!",
+    "nn": "Måtte du ha vinden i ryggen og gullet ved føtene. God tur til {zone}!"
+  },
+  {
+    "en": "Rest at the inns, eat the food, ignore the prices. Then tell me them. Enjoy {zone}!",
+    "nn": "Kvil på vertshusa, et maten, oversjå prisane. Fortel meg dei så. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Have the time of your life. Then sell me the memories. Enjoy {zone}!",
+    "nn": "Ha det betre enn nokon gong. Sel meg så minna. Kos deg i {zone}!"
+  },
+  {
+    "en": "I expect a full report and a modest gift. Mostly the gift. Enjoy {zone}!",
+    "nn": "Eg ventar ein full rapport og ei lita gåve. Mest gåva. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "If you run out of potions, remember who sells them. Enjoy {zone}!",
+    "nn": "Går du tom for trylledrikkar, hugs kven som sel dei. Lukke til i {zone}!"
+  },
+  {
+    "en": "It’s a big world. Every corner of it has a price. Enjoy {zone}!",
+    "nn": "Verda er stor. Kvar krok av ho har ein pris. Nyt tida i {zone}!"
+  },
+  {
+    "en": "The locals might charge you for directions. I’d charge more. Enjoy {zone}!",
+    "nn": "Dei lokale tek kanskje betalt for vegvising. Eg ville ta meir. Ha det fint i {zone}!"
+  },
+  {
+    "en": "I’ve heard the sunsets there are gold-coloured. My favourite colour. Enjoy {zone}!",
+    "nn": "Solnedgangane der skal vere gullfarga. Favorittfargen min. Kos deg i {zone}!"
+  },
+  {
+    "en": "Shake hands with everyone. Count your fingers after. Enjoy {zone}!",
+    "nn": "Handhels på alle. Tel fingrane etterpå. Ha det moro i {zone}!"
+  },
+  {
+    "en": "I sell homesickness cures, if you need one. Enjoy {zone}!",
+    "nn": "Eg sel kur mot heimlengt, om du treng ein. God tur til {zone}!"
+  },
+  {
+    "en": "Make memories, make friends, make money. In that order. Or reverse. Enjoy {zone}!",
+    "nn": "Lag minne, få vener, ten pengar. I den rekkjefølgja. Eller motsett. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "I’d love to hear how the markets there compare. Spoiler: mine’s better. Enjoy {zone}!",
+    "nn": "Eg vil høyre korleis marknadene der er. Avsløring: min er betre. Nyt tida i {zone}!"
+  },
+  {
+    "en": "May every vendor there quote you my prices. Enjoy {zone}!",
+    "nn": "Måtte kvar seljar der gi deg prisane mine. Ha det fint i {zone}!"
+  },
+  {
+    "en": "If you find a shortcut, sell it to the flight master. Enjoy {zone}!",
+    "nn": "Finn du ein snarveg, sel han til flygemeisteren. Kos deg i {zone}!"
+  },
+  {
+    "en": "Your adventure there will be legendary. Legends sell well. Enjoy {zone}!",
+    "nn": "Eventyret ditt der blir legendarisk. Legender sel godt. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "I hope the bridges there are toll-free. If not, call me. Enjoy {zone}!",
+    "nn": "Eg håpar bruene der er bompengefrie. Om ikkje, ring meg. God tur til {zone}!"
+  },
+  {
+    "en": "Look for anything ancient. Ancient means antique. Antique means money. Enjoy {zone}!",
+    "nn": "Sjå etter det eldgamle. Eldgamalt er antikt. Antikt er pengar. Ha det moro i {zone}!"
+  },
+  {
+    "en": "I’ll keep your favourite stool free. Nobody else sits on it anyway. Enjoy {zone}!",
+    "nn": "Eg held favorittkrakken din ledig. Ingen andre sit på han uansett. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Pick up the local language. Haggle in it. Enjoy {zone}!",
+    "nn": "Lær det lokale språket. Prut på det. Lukke til i {zone}!"
+  },
+  {
+    "en": "Shiny things, rare things, old things: bring me all the things. Enjoy {zone}!",
+    "nn": "Blanke ting, sjeldne ting, gamle ting: ta med alle tinga til meg. Kos deg i {zone}!"
+  },
+  {
+    "en": "Mind the bandits. They give honest thieves a bad name. Enjoy {zone}!",
+    "nn": "Pass deg for bandittane. Dei gir ærlege tjuvar dårleg rykte. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Have fun, stay curious, and always check under the rug. Enjoy {zone}!",
+    "nn": "Ha det kjekt, ver nysgjerrig og sjekk alltid under teppet. God tur til {zone}!"
+  },
+  {
+    "en": "I hope it lives up to the brochure. I wrote the brochure. Enjoy {zone}!",
+    "nn": "Eg håpar det lever opp til brosjyren. Eg skreiv brosjyren. Ha det fint i {zone}!"
+  },
+  {
+    "en": "When you come back, tell me everything. Twice. Slowly. Enjoy {zone}!",
+    "nn": "Når du kjem tilbake, fortel meg alt. To gonger. Sakte. Ha det moro i {zone}!"
+  },
+  {
+    "en": "May you find wonders. And sell the wonders to me. Enjoy {zone}!",
+    "nn": "Måtte du finne under. Og selje dei til meg. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "Long live adventure. Long live commerce. Enjoy {zone}!",
+    "nn": "Leve eventyret. Leve handelen. Kos deg i {zone}!"
+  },
+  {
+    "en": "Take your time. I’ll take your orders when you’re back. Enjoy {zone}!",
+    "nn": "Ta deg tid. Eg tek imot bestillingane dine når du er tilbake. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Every step there is a step toward treasure. Or a swamp. Enjoy {zone}!",
+    "nn": "Kvart steg der er eit steg mot skattar. Eller ei myr. Lukke til i {zone}!"
+  },
+  {
+    "en": "I’m told the locals throw great parties. Bring me a party favour. Enjoy {zone}!",
+    "nn": "Dei lokale skal halde store fester. Ta med ei festgåve til meg. Nyt tida i {zone}!"
+  },
+  {
+    "en": "The world’s your oyster. I’ll buy any pearls. Enjoy {zone}!",
+    "nn": "Verda ligg open for deg. Eg kjøper alle perlene. God tur til {zone}!"
+  },
+  {
+    "en": "Remember: every chest is someone’s savings. Now yours. Enjoy {zone}!",
+    "nn": "Hugs: kvar kiste er nokon sine sparepengar. No dine. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Don’t forget to rest. Tired heroes make bad trades. Enjoy {zone}!",
+    "nn": "Hugs å kvile. Trøytte heltar gjer dårlege handlar. Ha det godt i {zone}!"
+  },
+  {
+    "en": "May the treasure be plentiful and the competition sleepy. Enjoy {zone}!",
+    "nn": "Måtte skattane vere mange og konkurrentane søvnige. Ha det moro i {zone}!"
+  },
+  {
+    "en": "If you see a sign saying Free, investigate. Thoroughly. Enjoy {zone}!",
+    "nn": "Ser du eit skilt det står Gratis på, så undersøk. Grundig. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "I hope it’s every bit as golden as I imagine. Enjoy {zone}!",
+    "nn": "Eg håpar alt der er like gyllent som eg ser for meg. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Your merchant awaits your safe and wealthy return. Enjoy {zone}!",
+    "nn": "Kremmaren din ventar på at du kjem trygt og rik heim. God tur til {zone}!"
+  },
+  {
+    "en": "Travel is the best teacher. Tuition is paid in gold. Enjoy {zone}!",
+    "nn": "Reising er den beste læraren. Skulepengane blir betalte i gull. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "I’ll miss you. My till will miss you more. Enjoy {zone}!",
+    "nn": "Eg kjem til å sakne deg. Kassa mi endå meir. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Find a fountain and make a wish. Wish for me. Enjoy {zone}!",
+    "nn": "Finn ein fontene og kom med eit ønske. Ønsk noko til meg. Ha det moro i {zone}!"
+  },
+  {
+    "en": "They say it’s dangerous. Danger pays well. Enjoy {zone}!",
+    "nn": "Dei seier det er farleg. Fare betaler godt. Lukke til i {zone}!"
+  },
+  {
+    "en": "Sniff out the deals. You’ve got a good nose. I trained it. Enjoy {zone}!",
+    "nn": "Snus opp tilboda. Du har god nase. Eg har trena ho opp. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Watch out for anyone wearing too much gold. They’re either rich or me. Enjoy {zone}!",
+    "nn": "Pass deg for alle med for mykje gull. Dei er rike, eller så er det meg. Nyt {zone}!"
+  },
+  {
+    "en": "A merchant never forgets a new market. Neither should you. Enjoy {zone}!",
+    "nn": "Ein kremmar gløymer aldri ein ny marknad. Det bør ikkje du heller. God tur til {zone}!"
+  },
+  {
+    "en": "I hope you find what you’re looking for. And what I’m looking for. Enjoy {zone}!",
+    "nn": "Eg håpar du finn det du leitar etter. Og det eg leitar etter. Ha det godt i {zone}!"
+  },
+  {
+    "en": "Go see the sights. I’ll handle the sales. Enjoy {zone}!",
+    "nn": "Gå og sjå deg om. Eg tek meg av salet. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Here’s a tip: the locals’ second price is the real price. Enjoy {zone}!",
+    "nn": "Her er eit tips: den andre prisen dei lokale seier, er den verkelege. Nyt tida i {zone}!"
+  },
+  {
+    "en": "Find the hidden places. Hidden places hide hidden gold. Enjoy {zone}!",
+    "nn": "Finn dei løynde stadene. Løynde stader gøymer løynt gull. Ha det moro i {zone}!"
+  },
+  {
+    "en": "I’ve heard it’s magical there. Magic sells. Enjoy {zone}!",
+    "nn": "Eg har høyrt det er magisk der. Magi sel. Ha ein fin tur i {zone}!"
+  },
+  {
+    "en": "You’ve got good instincts. Follow them to the treasure. Enjoy {zone}!",
+    "nn": "Du har gode instinkt. Følg dei til skatten. Lukke til i {zone}!"
+  },
+  {
+    "en": "If the bandits ask, tell them your merchant has your gold. Safely. Enjoy {zone}!",
+    "nn": "Spør bandittane, så sei at kremmaren din har gullet ditt. Trygt. Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Take it slow, take it all in, take it all home. Enjoy {zone}!",
+    "nn": "Ta det roleg, ta det inn, ta det med heim. God tur til {zone}!"
+  },
+  {
+    "en": "Your journey is my favourite kind of investment. Enjoy {zone}!",
+    "nn": "Ferda di er favorittinvesteringa mi. Ha det godt i {zone}!"
+  },
+  {
+    "en": "A new place, a new you. Same purse, I hope. Full. Enjoy {zone}!",
+    "nn": "Ny stad, ny deg. Same pung, håpar eg. Full. Ha det fint i {zone}!"
+  },
+  {
+    "en": "There’s always a market for good stories. Make one. Enjoy {zone}!",
+    "nn": "Det er alltid ein marknad for gode historier. Lag ei. Ha det moro i {zone}!"
+  },
+  {
+    "en": "May your travels be cheap and your finds expensive. Enjoy {zone}!",
+    "nn": "Måtte reisene vere billege og funna dyre. God reise til {zone}!"
+  },
+  {
+    "en": "I’ve heard rumours of a lost goblin treasure there. Mine, obviously. Enjoy {zone}!",
+    "nn": "Eg har høyrt rykte om ein tapt goblinskatt der. Min, sjølvsagt. Lukke til i {zone}!"
+  },
+  {
+    "en": "Every journey begins with a single purchase. Did you buy rope? Enjoy {zone}!",
+    "nn": "Kvar ferd byrjar med eitt kjøp. Kjøpte du tau? Ha det kjekt i {zone}!"
+  },
+  {
+    "en": "Smile at strangers. Strangers become customers. Enjoy {zone}!",
+    "nn": "Smil til framande. Framande blir kundar. Nyt tida i {zone}!"
+  },
+  {
+    "en": "You’re a brave soul. Brave souls get the best loot. Enjoy {zone}!",
+    "nn": "Du er ei modig sjel. Modige sjeler får den beste looten. Ha det godt i {zone}!"
+  },
+  {
+    "en": "I can feel the profit from here. Enjoy {zone}!",
+    "nn": "Eg kjenner fortenesta heilt hit. God tur til {zone}!"
+  },
+  {
+    "en": "Come home safe. Rich is a bonus. Enjoy {zone}!",
+    "nn": "Kom trygt heim. Rik er ein bonus. Ha det fint i {zone}!"
+  },
+  {
+    "en": "Be careful out there. Good customers are hard to replace. Enjoy {zone}!",
+    "nn": "Ver forsiktig der ute. Gode kundar er vanskelege å erstatte. Ha det godt i {zone}!"
+  }
+]

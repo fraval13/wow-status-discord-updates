@@ -10,6 +10,12 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Pick the caption personality and the reaction voice from dropdowns that list every choice
+- New reaction voice: Goblin merchant turns every GZ!, F and Congrats! into a sales pitch
+- Thousands of Nynorsk reaction whispers proofread and corrected for all voices
+
 ## 1.37.0
 
 - Nynorsk: Back buttons say Tilbake again; the cloak slot has its own label

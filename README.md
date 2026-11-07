@@ -81,7 +81,7 @@ and the release notes stay English.
 
 The funny line under each notification comes from a **Random** personality by
 default: each notification picks one of the voices below, Classic included. Under
-**Notifications → Next personality**, or with `/wstatus personality <name>`, you can
+**Notifications → Caption personality** dropdown, or with `/wstatus personality <name>`, you can
 stick to one voice instead: Classic, Wholesome, Epic bard, Grumpy veteran, Goblin
 merchant, Christian, Condescending Christian, Dwarf, Jealous friend or Drama queen.
 Each has 300 captions per event, plus 30 death roasts for each class, in English and
@@ -91,8 +91,8 @@ notifications, and captions already in your log keep their wording. See
 
 The same voices can also speak your **reactions**: the whisper a friend gets when you
 click GZ!, F or Congrats! on their notification. These go out in your name, so they
-have their own setting, **Notifications → Next voice** or `/wstatus voice <name>`. The
-default is the gentle **Wholesome** voice; you can also pick Epic bard, Grumpy veteran, Christian, Condescending Christian, Dwarf, Jealous friend, Drama queen,
+have their own setting, the **Notifications → Reaction voice** dropdown or `/wstatus voice <name>`. The
+default is the gentle **Wholesome** voice; you can also pick any of the nine personalities,
 Random or **Classic** (the plain GZ!/F/Congrats! texts). More voices follow. Each voice has 300
 whispers for every reaction; the button keeps its short label.
 

@@ -9,7 +9,7 @@
  },
  {
   "en": "Welcome, kid. Don't touch my stuff.",
-  "nn": "Velkomen, gut. Ikkje rør tinga mine."
+  "nn": "Velkomen, valp. Ikkje rør tinga mine."
  },
  {
   "en": "Hmph. Another recruit. Welcome.",
@@ -53,11 +53,11 @@
  },
  {
   "en": "Don't make me regret letting you in. Welcome.",
-  "nn": "Ikkje få meg til å angre på at du slapp inn. Velkomen."
+  "nn": "Ikkje få meg til å angre på at eg slapp deg inn. Velkomen."
  },
  {
   "en": "The kettle's on, rookie. Welcome.",
-  "nn": "Kjelen står på, nybegynnar. Velkomen."
+  "nn": "Kjelen står på, nybyrjar. Velkomen."
  },
  {
   "en": "Another adventurer? Fine. Welcome.",
@@ -165,7 +165,7 @@
  },
  {
   "en": "Glad you made it, kid.",
-  "nn": "Glad du kom, gut."
+  "nn": "Glad du kom, valp."
  },
  {
   "en": "We'll make a hero of you yet. Welcome.",
@@ -265,7 +265,7 @@
  },
  {
   "en": "Oh good, more people to grumble at. Welcome.",
-  "nn": "Å fint, fleire å grynte til. Velkomen."
+  "nn": "Å, fint, fleire å grynte til. Velkomen."
  },
  {
   "en": "Find your feet. Then find a sword.",
@@ -277,7 +277,7 @@
  },
  {
   "en": "Keep your nose clean, kid. Welcome.",
-  "nn": "Hald nasen rein, gut. Velkomen."
+  "nn": "Hald nasen rein, valp. Velkomen."
  },
  {
   "en": "Be good. Or at least be quiet.",
@@ -321,7 +321,7 @@
  },
  {
   "en": "You'll do fine here.",
-  "nn": "Du klarer deg fint her."
+  "nn": "Du klarar deg fint her."
  },
  {
   "en": "I'll keep an eye on you. A kind eye.",
@@ -333,7 +333,7 @@
  },
  {
   "en": "Welcome. Welcome. There, said it twice.",
-  "nn": "Velkomen. Velkomen. Der, sa det to gonger."
+  "nn": "Velkomen. Velkomen. Der, eg sa det to gonger."
  },
  {
   "en": "Mind the gap between us. In levels.",
@@ -341,11 +341,11 @@
  },
  {
   "en": "Someone new. How exciting. Welcome.",
-  "nn": "Nokon nye. Så spennande. Velkomen."
+  "nn": "Nokon ny. Så spennande. Velkomen."
  },
  {
   "en": "Dry your cloak by the fire.",
-  "nn": "Turk kappa di ved bålet."
+  "nn": "Tørk kappa di ved bålet."
  },
  {
   "en": "Keep your sword sheathed indoors.",
@@ -377,7 +377,7 @@
  },
  {
   "en": "Keep your bags organised. Welcome.",
-  "nn": "Hald orden i bagane. Velkomen."
+  "nn": "Hald orden i veskene. Velkomen."
  },
  {
   "en": "I'll grumble you into shape. Welcome.",
@@ -409,7 +409,7 @@
  },
  {
   "en": "Make yourself at home. Quietly.",
-  "nn": "Gjer deg heime. Stilt."
+  "nn": "Gjer deg heime. Stille."
  },
  {
   "en": "We have snacks. Stale ones. Welcome.",
@@ -465,7 +465,7 @@
  },
  {
   "en": "You'll grow on me. Like moss.",
-  "nn": "Du veks på meg. Som mose."
+  "nn": "Du gror fast hos meg. Som mose."
  },
  {
   "en": "Small crew. Small, but grumpy. Welcome.",
@@ -485,7 +485,7 @@
  },
  {
   "en": "I hear you're new. It shows. Not an insult. Mostly.",
-  "nn": "Eg høyrer du er ny. Det synest. Ingen fornærming. Stort sett."
+  "nn": "Eg høyrer du er ny. Det syner. Ingen fornærming. Stort sett."
  },
  {
   "en": "Fresh faces get old. Like mine. Welcome.",
@@ -493,7 +493,7 @@
  },
  {
   "en": "We were all newbies once. Welcome.",
-  "nn": "Vi var alle nybegynnarar ein gong. Velkomen."
+  "nn": "Vi var alle nybyrjarar ein gong. Velkomen."
  },
  {
   "en": "Even I was new. A century ago.",
@@ -513,7 +513,7 @@
  },
  {
   "en": "I'd shake your hand, but arthritis.",
-  "nn": "Eg skulle teke deg i handa, men gikta."
+  "nn": "Eg skulle ha teke deg i handa, men gikta."
  },
  {
   "en": "A grumpy nod, then. Welcome.",
@@ -589,7 +589,7 @@
  },
  {
   "en": "The company could be worse. It's us.",
-  "nn": "Selskapet kunne vore verre. Det er oss."
+  "nn": "Selskapet kunne ha vore verre. Det er oss."
  },
  {
   "en": "We're all a bit rusty here. Polish yourself up.",
@@ -597,7 +597,7 @@
  },
  {
   "en": "When I grumble at your level-ups, it's a compliment.",
-  "nn": "Når eg gryntar over nivåa dine, er det ein kompliment."
+  "nn": "Når eg gryntar over nivåa dine, er det eit kompliment."
  },
  {
   "en": "When I'm quiet, worry. Welcome.",
@@ -605,7 +605,7 @@
  },
  {
   "en": "I was going to say something wise. Forgot it. Welcome anyway.",
-  "nn": "Eg skulle seie noko klokt. Gløymde det. Velkomen likevel."
+  "nn": "Eg hadde tenkt å seie noko klokt. Eg gløymde det. Velkomen likevel."
  },
  {
   "en": "Good boots matter. Remember that. Welcome.",
@@ -665,7 +665,7 @@
  },
  {
   "en": "Long roads ahead. Good company, though.",
-  "nn": "Lange vegar framfor oss. Godt selskap, likevel."
+  "nn": "Lange vegar framfor oss. Men godt selskap."
  },
  {
   "en": "Took one look at you and thought: fine. High praise.",
@@ -753,7 +753,7 @@
  },
  {
   "en": "Well, well. Fresh recruit.",
-  "nn": "Nei, nei. Fersk rekrutt."
+  "nn": "Jaså. Fersk rekrutt."
  },
  {
   "en": "A youngster. We need those.",
@@ -769,11 +769,11 @@
  },
  {
   "en": "Pleasure. Mild pleasure.",
-  "nn": "Hyggeleg. Litt hyggeleg."
+  "nn": "Hyggjeleg. Litt hyggjeleg."
  },
  {
   "en": "Nice to meet you. I mean it. Grumpily.",
-  "nn": "Hyggeleg å treffe deg. Eg meiner det. Grettent."
+  "nn": "Hyggjeleg å treffe deg. Eg meiner det. Grettent."
  },
  {
   "en": "There's room by the fire. Squeeze in.",
@@ -805,7 +805,7 @@
  },
  {
   "en": "Good to have you, kid. Honestly.",
-  "nn": "Godt å ha deg, gut. Ærleg talt."
+  "nn": "Godt å ha deg, valp. Ærleg talt."
  },
  {
   "en": "Fresh boots on the floor.",
@@ -821,7 +821,7 @@
  },
  {
   "en": "Glad you're aboard, rookie.",
-  "nn": "Glad du er om bord, nybegynnar."
+  "nn": "Glad du er om bord, nybyrjar."
  },
  {
   "en": "A newcomer! Let me find my reading glasses.",
@@ -841,7 +841,7 @@
  },
  {
   "en": "Hello, kid. Mind the step. And the old man.",
-  "nn": "Hei, gut. Pass deg for trinnet. Og den gamle."
+  "nn": "Hei, valp. Pass deg for trinnet. Og den gamle."
  },
  {
   "en": "The tea's weak but honest. Come in.",
@@ -881,7 +881,7 @@
  },
  {
   "en": "Pleased to have you. Don't spread it around.",
-  "nn": "Glad for å ha deg. Ikkje spreie det."
+  "nn": "Glad for å ha deg. Ikkje spreid det."
  },
  {
   "en": "We're a quiet bunch. Except when someone dings.",
@@ -993,7 +993,7 @@
  },
  {
   "en": "Hello there, rookie. I'm the grump.",
-  "nn": "Hei, nybegynnar. Eg er grinebitaren."
+  "nn": "Hei, nybyrjar. Eg er grinebitaren."
  },
  {
   "en": "Settle down, unpack, then go adventure.",
@@ -1005,7 +1005,7 @@
  },
  {
   "en": "There's a spare bedroll by the fire. It smells.",
-  "nn": "Det er ein ekstra soveveske ved bålet. Ho luktar."
+  "nn": "Det er ei ekstra soveveske ved bålet. Ho luktar."
  },
  {
   "en": "Join the fun. What little there is.",
@@ -1033,7 +1033,7 @@
  },
  {
   "en": "Glad to meet you. Now go do something brave.",
-  "nn": "Hyggeleg å møte deg. Gå og gjer noko modig no."
+  "nn": "Hyggjeleg å møte deg. Gå og gjer noko modig no."
  },
  {
   "en": "You're our newest. Don't let it go to your head.",
@@ -1073,7 +1073,7 @@
  },
  {
   "en": "Glad you came along, kid.",
-  "nn": "Fint at du blei med, gut."
+  "nn": "Fint at du blei med, valp."
  },
  {
   "en": "Another recruit for the old guard. Hmph. Good.",
@@ -1085,7 +1085,7 @@
  },
  {
   "en": "Pull up a log, rookie. Story time later.",
-  "nn": "Finn deg ein stokk, nybegynnar. Historietid seinare."
+  "nn": "Finn deg ein stokk, nybyrjar. Historietid seinare."
  },
  {
   "en": "Our door's open, our tea's weak, our hearts are warm.",
@@ -1113,7 +1113,7 @@
  },
  {
   "en": "New here? Good. Grab a bandage, you'll need it.",
-  "nn": "Ny her? Bra. Ta ei bandasje, du kjem til å trenge ho."
+  "nn": "Ny her? Bra. Ta ein bandasje, du kjem til å trenge han."
  },
  {
   "en": "Our newest member. Try to outlast the last one.",
@@ -1141,11 +1141,11 @@
  },
  {
   "en": "Mind the steps, mind the grump, mind your manners.",
-  "nn": "Pass trinna, pass grinebitaren, pass folkeskikken."
+  "nn": "Pass på trinna, grinebitaren og folkeskikken."
  },
  {
   "en": "Come in out of the rain, kid.",
-  "nn": "Kom inn frå regnet, gut."
+  "nn": "Kom inn frå regnet, valp."
  },
  {
   "en": "Every new member gets one free grumble. Here's yours.",
@@ -1181,7 +1181,7 @@
  },
  {
   "en": "Rookies welcome. Grumps tolerated. That's me.",
-  "nn": "Nybegynnarar er velkomne. Grinebitarar blir tolte. Det er meg."
+  "nn": "Nybyrjarar er velkomne. Grinebitarar blir tolte. Det er meg."
  },
  {
   "en": "Welcome. Now let's see how long you last. Long, I hope.",
@@ -1197,6 +1197,6 @@
  },
  {
   "en": "Settle in, kid. This is home now.",
-  "nn": "Finn deg til rette, gut. Dette er heime no."
+  "nn": "Finn deg til rette, valp. Dette er heime no."
  }
 ]

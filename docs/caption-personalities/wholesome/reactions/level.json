@@ -65,7 +65,7 @@
   },
   {
     "en": "So proud of your level {level}, friend.",
-    "nn": "Så stolt av nivå {level}-et ditt, venn."
+    "nn": "Så stolt av at du er nivå {level}, venn."
   },
   {
     "en": "Level {level}! Time for a little celebration.",
@@ -81,7 +81,7 @@
   },
   {
     "en": "Level {level}! Your trainer must be beaming.",
-    "nn": "Nivå {level}! Treinaren din må stråle."
+    "nn": "Nivå {level}! Trenaren din må stråle."
   },
   {
     "en": "Hello, level {level}! You look great.",
@@ -121,7 +121,7 @@
   },
   {
     "en": "Level {level}! Can't wait to adventure together.",
-    "nn": "Nivå {level}! Gler meg til å eventyre saman."
+    "nn": "Nivå {level}! Gler meg til å dra på eventyr saman."
   },
   {
     "en": "Level {level}! You never gave up.",
@@ -145,7 +145,7 @@
   },
   {
     "en": "Tea and cake on me for level {level}!",
-    "nn": "Te og kake på meg for nivå {level}!"
+    "nn": "Eg spanderer te og kake for nivå {level}!"
   },
   {
     "en": "Such a happy ding! Level {level}!",
@@ -169,7 +169,7 @@
   },
   {
     "en": "A well-earned glow for level {level}.",
-    "nn": "Ein vel fortent glød for nivå {level}."
+    "nn": "Ein velfortent glød for nivå {level}."
   },
   {
     "en": "Onwards from level {level}, you lovely hero!",
@@ -193,7 +193,7 @@
   },
   {
     "en": "A tiny party in honour of your level {level}!",
-    "nn": "Ein liten fest til ære for nivå {level}-et ditt!"
+    "nn": "Ein liten fest til ære for at du nådde nivå {level}!"
   },
   {
     "en": "Every bit of level {level} is earned.",
@@ -201,7 +201,7 @@
   },
   {
     "en": "Grinning ear to ear about your level {level}!",
-    "nn": "Eg gliser frå øyre til øyre over nivå {level}-et ditt!"
+    "nn": "Eg gliser frå øyre til øyre over at du er nivå {level}!"
   },
   {
     "en": "Steady steps, big heart, level {level}!",
@@ -277,7 +277,7 @@
   },
   {
     "en": "Sparkles for your level {level}!",
-    "nn": "Glitter for nivå {level}-et ditt!"
+    "nn": "Glitter til deg for nivå {level}!"
   },
   {
     "en": "My favourite kind of news: level {level}!",
@@ -377,7 +377,7 @@
   },
   {
     "en": "Warmest congratulations on level {level}.",
-    "nn": "Varmaste gratulasjonar med nivå {level}."
+    "nn": "Dei varmaste gratulasjonane med nivå {level}."
   },
   {
     "en": "Bigger, braver, better: level {level}!",
@@ -405,7 +405,7 @@
   },
   {
     "en": "You make it all worth it. Level {level}!",
-    "nn": "Du gjer alt verdt det. Nivå {level}!"
+    "nn": "Du gjer at alt er verdt det. Nivå {level}!"
   },
   {
     "en": "You inspire me, truly. Level {level}!",
@@ -421,7 +421,7 @@
   },
   {
     "en": "Couldn't be happier about your level {level}.",
-    "nn": "Kunne ikkje vore gladare for nivå {level}-et ditt."
+    "nn": "Eg kunne ikkje ha vore gladare for at du nådde nivå {level}."
   },
   {
     "en": "Go treat yourself, level {level} hero!",
@@ -465,7 +465,7 @@
   },
   {
     "en": "So happy for you and your level {level}.",
-    "nn": "Så glad for deg og nivå {level}-et ditt."
+    "nn": "Så glad for deg no som du er nivå {level}."
   },
   {
     "en": "Congrats on level {level}, sunshine!",
@@ -545,7 +545,7 @@
   },
   {
     "en": "So happy for your level {level}!",
-    "nn": "Så glad for nivå {level}-et ditt!"
+    "nn": "Så glad for at du nådde nivå {level}!"
   },
   {
     "en": "You reached level {level}! Have a cosy rest.",
@@ -557,7 +557,7 @@
   },
   {
     "en": "Congrats on level {level}! I knew you could.",
-    "nn": "Gratulerer med nivå {level}! Eg visste du kunne."
+    "nn": "Gratulerer med nivå {level}! Eg visste du ville klare det."
   },
   {
     "en": "Hello, level {level}! Be nice to my friend.",
@@ -621,7 +621,7 @@
   },
   {
     "en": "Yay! Level {level} is a big deal.",
-    "nn": "Hurra! Nivå {level} er stort."
+    "nn": "Hurra! Nivå {level} er ei stor sak."
   },
   {
     "en": "Can you believe it? Level {level}!",
@@ -693,7 +693,7 @@
   },
   {
     "en": "So, level {level}! What will you do first?",
-    "nn": "So, nivå {level}! Kva vil du gjere først?"
+    "nn": "Så, nivå {level}! Kva vil du gjere først?"
   },
   {
     "en": "You hit level {level}! I'm so delighted.",
@@ -721,7 +721,7 @@
   },
   {
     "en": "Your trainer must be thrilled with level {level}.",
-    "nn": "Treinaren din må vere i ekstase over nivå {level}."
+    "nn": "Trenaren din må vere i hundre over nivå {level}."
   },
   {
     "en": "Little by little, all the way to level {level}!",
@@ -789,7 +789,7 @@
   },
   {
     "en": "So many adventures got you to level {level}.",
-    "nn": "So mange eventyr fekk deg til nivå {level}."
+    "nn": "Så mange eventyr fekk deg til nivå {level}."
   },
   {
     "en": "I hope level {level} brings lovely surprises.",
@@ -837,7 +837,7 @@
   },
   {
     "en": "Can't wait to adventure with you at level {level}!",
-    "nn": "Gler meg til å eventyre med deg på nivå {level}!"
+    "nn": "Gler meg til å dra på eventyr med deg på nivå {level}!"
   },
   {
     "en": "Cosy congrats on level {level}!",
@@ -857,7 +857,7 @@
   },
   {
     "en": "Grinning so wide for your level {level}!",
-    "nn": "Eg gliser så breitt for nivå {level}-et ditt!"
+    "nn": "Eg gliser så breitt fordi du er nivå {level}!"
   },
   {
     "en": "The best is yet to come after level {level}!",
@@ -873,7 +873,7 @@
   },
   {
     "en": "Your level {level} made my day!",
-    "nn": "Nivå {level}-et ditt gjorde dagen min!"
+    "nn": "Nivå {level}! Du redda dagen min!"
   },
   {
     "en": "Brave little hero, now level {level}!",
@@ -889,7 +889,7 @@
   },
   {
     "en": "Wow, level {level}! The trainers will be busy.",
-    "nn": "Oi, nivå {level}! Treinarane får mykje å gjere."
+    "nn": "Oi, nivå {level}! Trenarane får mykje å gjere."
   },
   {
     "en": "Oh, how lovely, level {level}!",
@@ -909,7 +909,7 @@
   },
   {
     "en": "A big hug moment: level {level}!",
-    "nn": "Eit augeblink for ein stor klem: nivå {level}!"
+    "nn": "Ein augeblink for ein stor klem: nivå {level}!"
   },
   {
     "en": "Yay, level {level}! You're on such a roll.",
@@ -917,7 +917,7 @@
   },
   {
     "en": "I'm proud as can be of your level {level}.",
-    "nn": "Eg er så stolt som eg kan bli av nivå {level}-et ditt."
+    "nn": "Eg er så stolt som eg kan bli over at du nådde nivå {level}."
   },
   {
     "en": "Lovely, lovely level {level}!",
@@ -977,7 +977,7 @@
   },
   {
     "en": "Your level {level} makes me so happy.",
-    "nn": "Nivå {level}-et ditt gjer meg så glad."
+    "nn": "Det gjer meg så glad at du er nivå {level}."
   },
   {
     "en": "Congrats on level {level}, kind hero!",
@@ -1041,11 +1041,11 @@
   },
   {
     "en": "Your level {level} is a gift to us all.",
-    "nn": "Nivå {level}-et ditt er ei gåve til oss alle."
+    "nn": "At du nådde nivå {level}, er ei gåve til oss alle."
   },
   {
     "en": "I'll toast to your level {level} tonight!",
-    "nn": "Eg skålar for nivå {level}-et ditt i kveld!"
+    "nn": "Eg skålar for nivå {level} i kveld!"
   },
   {
     "en": "Proud to be the friend of a level {level} hero.",
@@ -1053,7 +1053,7 @@
   },
   {
     "en": "So that's level {level}! You make it look fun.",
-    "nn": "So det er nivå {level}! Du får det til å sjå gøy ut."
+    "nn": "Så det er nivå {level}! Du får det til å sjå moro ut."
   },
   {
     "en": "Keep on shining at level {level}, my dear!",
@@ -1089,7 +1089,7 @@
   },
   {
     "en": "You're level {level}? You superstar!",
-    "nn": "Er du nivå {level}? Di superstjerne!"
+    "nn": "Er du nivå {level}? Du superstjerne!"
   },
   {
     "en": "All smiles over here for level {level}!",
@@ -1173,7 +1173,7 @@
   },
   {
     "en": "Time to visit your trainer, level {level} hero!",
-    "nn": "Tid for å besøkje treinaren, nivå {level}-helt!"
+    "nn": "Tid for å besøkje trenaren, nivå {level}-helt!"
   },
   {
     "en": "That ding to level {level} was lovely to see.",
@@ -1185,7 +1185,7 @@
   },
   {
     "en": "Your hard work truly shows at level {level}.",
-    "nn": "Det harde arbeidet ditt syner verkeleg på nivå {level}."
+    "nn": "Det harde arbeidet ditt syner verkeleg att på nivå {level}."
   },
   {
     "en": "Big squeeze from me for level {level}!",

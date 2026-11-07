@@ -37,7 +37,7 @@
   },
   {
     "en": "The choir would sing for your level {level} if I asked.",
-    "nn": "Koret ville sunge for nivå {level} om eg bad dei."
+    "nn": "Koret ville ha sunge for nivå {level} om eg bad dei."
   },
   {
     "en": "A blessed level {level} to you!",
@@ -65,7 +65,7 @@
   },
   {
     "en": "Level {level} already? Your diligence is a sermon.",
-    "nn": "Nivå {level} alt? Flida di er ei heil preike."
+    "nn": "Nivå {level} alt? Fliden din er ei heil preike."
   },
   {
     "en": "Lighting a candle for level {level}.",
@@ -257,11 +257,11 @@
   },
   {
     "en": "Heaven's high five for level {level} is on its way.",
-    "nn": "Himmelens high five for nivå {level} er på veg."
+    "nn": "Ein high five frå himmelen for nivå {level} er på veg."
   },
   {
     "en": "Level {level}: a milestone on the pilgrim road.",
-    "nn": "Nivå {level}: ein milepæl på pilegrimsvegen."
+    "nn": "Nivå {level}: ein milepåle på pilegrimsvegen."
   },
   {
     "en": "Growing in grace and in stats. Level {level}!",
@@ -357,7 +357,7 @@
   },
   {
     "en": "You were made for moments like level {level}.",
-    "nn": "Du vart skapt for augneblikk som nivå {level}."
+    "nn": "Du vart skapt for augeblinkar som nivå {level}."
   },
   {
     "en": "Grace found you on the road again. Level {level}!",
@@ -457,7 +457,7 @@
   },
   {
     "en": "What a beautiful testimony your level {level} is.",
-    "nn": "For eit vakkert vitnemål nivå {level} ditt er."
+    "nn": "For eit vakkert vitnesbyrd nivå {level} ditt er."
   },
   {
     "en": "You've grown so much, friend. Level {level}!",
@@ -465,7 +465,7 @@
   },
   {
     "en": "Glad tidings for the whole guild: level {level}!",
-    "nn": "Gledelege tidender for heile laget: nivå {level}!"
+    "nn": "Gledelege tidender for heile guilden: nivå {level}!"
   },
   {
     "en": "You're not hiding level {level} under a bushel.",
@@ -529,7 +529,7 @@
   },
   {
     "en": "What a gracious little milestone, level {level}.",
-    "nn": "For ein nådig liten milepæl, nivå {level}."
+    "nn": "For ein nådig liten milepåle, nivå {level}."
   },
   {
     "en": "Lifting your level {level} up in prayer and cheers.",
@@ -633,7 +633,7 @@
   },
   {
     "en": "Your effort to level {level} didn't go unnoticed.",
-    "nn": "Strevet ditt fram mot nivå {level} gjekk ikkje upåakta forbi."
+    "nn": "Strevet ditt fram mot nivå {level} gjekk ikkje upåakta hen."
   },
   {
     "en": "There's joy in heaven over level {level}.",
@@ -709,7 +709,7 @@
   },
   {
     "en": "I'm so glad God made gamers who reach level {level}.",
-    "nn": "Eg er så glad Gud skapte spelarar som når nivå {level}."
+    "nn": "Eg er så glad for at Gud skapte spelarar som når nivå {level}."
   },
   {
     "en": "Mercy, level {level} was a good one.",
@@ -901,7 +901,7 @@
   },
   {
     "en": "Gather the flock, someone hit level {level}!",
-    "nn": "Samle flokken, nokon har nådd nivå {level}!"
+    "nn": "Kall saman flokken, nokon har nådd nivå {level}!"
   },
   {
     "en": "Heaven rejoices, and so do I: level {level}!",
@@ -1053,7 +1053,7 @@
   },
   {
     "en": "Bless this friend, this ding and this level {level}.",
-    "nn": "Velsigne denne venen, dette dinget og dette nivå {level}."
+    "nn": "Velsign denne venen, dette dinget og dette nivå {level}."
   },
   {
     "en": "I'd bake you a level {level} cake if I could.",
@@ -1065,7 +1065,7 @@
   },
   {
     "en": "I'm so glad I got to see level {level} happen.",
-    "nn": "Eg er så glad eg fekk sjå nivå {level} skje."
+    "nn": "Eg er så glad for at eg fekk sjå nivå {level} skje."
   },
   {
     "en": "You climb faithfully, and level {level} proves it.",
@@ -1149,7 +1149,7 @@
   },
   {
     "en": "Prayers answered: level {level}.",
-    "nn": "Bønene er svara: nivå {level}."
+    "nn": "Bønene fekk svar: nivå {level}."
   },
   {
     "en": "Every level counts, and {level} counts double today.",
@@ -1193,7 +1193,7 @@
   },
   {
     "en": "Level {level}, and not a single grumble. Saintly!",
-    "nn": "Nivå {level}, og ikkje ein einaste murring. Heilagt!"
+    "nn": "Nivå {level}, og ikkje ein einaste murring. Som ein helgen!"
   },
   {
     "en": "Grace by the bucket for level {level}!",

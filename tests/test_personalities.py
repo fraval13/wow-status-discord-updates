@@ -37,8 +37,9 @@ def test_generated_files_match_their_json_and_every_edition():
 
 def test_the_builder_rejects_broken_sources(tmp_path):
     build = builder()
-    # A personality without reaction voices: this test is about the caption files.
-    personality = next(p for p in build.PERSONALITIES if p.id not in build.REACTION_VOICES)
+    # This test is about the caption files, so the fake personality has no reaction voice.
+    build.REACTION_VOICES = ()
+    personality = build.PERSONALITIES[0]
     folder = tmp_path / personality.id
     folder.mkdir()
     rows = [{'en': f'Line {i}.', 'nn': f'Line {i} på nynorsk.'} for i in range(560)]
@@ -154,20 +155,33 @@ def test_personality_death_lines_respect_the_sender_class():
     ''')
 
 
-def test_settings_button_cycles_and_previews_and_the_command_switches():
+def test_settings_dropdown_lists_every_personality_previews_and_the_command_switches():
     lua = make_lua()
     lua.execute('WoWStatusPopups.CLICK_GUARD = 0')
     lua.execute('''
         local P=WoWStatusPersonalities
+        -- Pick an entry by its label from the dropdown the button opens.
+        local function pick(button,label)
+            button.OnClick(button)
+            local menu,names,found=WoWStatusMenu,{},nil
+            for _,row in ipairs(menu.rows) do
+                if row:IsShown() then
+                    names[#names+1]=row.text.text
+                    if row.text.text==label then found=row end
+                end
+            end
+            if not found then error("no "..label.." in "..table.concat(names,", ")) end
+            found.OnClick(found)
+            return names
+        end
         WoWStatusPreviews.show()
         local panel=WoWStatusNotificationPreviews
-        assert(panel.personality.text=="Caption personality: Random")
-        panel.personalityNext.OnClick(panel.personalityNext)
-        assert(P.current()=="classic" and panel.personality.text=="Caption personality: Classic")
-        panel.personalityNext.OnClick(panel.personalityNext)
-        assert(P.current()=="wholesome" and panel.personality.text=="Caption personality: Wholesome")
+        assert(panel.personalityPick.text=="Random")
+        local names=pick(panel.personalityPick,"Wholesome")
+        assert(#names==#P.order and names[1]=="Random" and names[2]=="Classic")
+        assert(P.current()=="wholesome" and panel.personalityPick.text=="Wholesome")
         assert(WoWStatusLevelPopup.detail.visible and #WoWStatusDB.journal.entries==0 and #__sent==0)
-        for i=1,9 do panel.personalityNext.OnClick(panel.personalityNext) end
+        pick(panel.personalityPick,"Random")
         assert(P.current()=="random")
         local said
         DEFAULT_CHAT_FRAME.AddMessage=function(_,message) said=message end
@@ -179,7 +193,7 @@ def test_settings_button_cycles_and_previews_and_the_command_switches():
         assert(P.current()=="dwarf" and said:find("Goblin merchant",1,true))
         WoWStatusLocale.set("nn")
         WoWStatusPreviews.show()
-        assert(panel.personality.text=="Personlegdom i kommentarane: Dverg")
+        assert(panel.personalityPick.text=="Dverg")
     ''')
 
 

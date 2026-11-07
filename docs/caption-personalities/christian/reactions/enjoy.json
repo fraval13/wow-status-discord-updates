@@ -17,7 +17,7 @@
   },
   {
     "en": "May {zone} be kind to you, friend.",
-    "nn": "Måtte {zone} vere snill med deg, ven."
+    "nn": "Måtte du bli godt motteken i {zone}, ven."
   },
   {
     "en": "Have a blessed time in {zone}!",
@@ -225,7 +225,7 @@
   },
   {
     "en": "I hope {zone} is as nice as a church garden.",
-    "nn": "Eg håpar {zone} er like fint som ein kyrkjehage."
+    "nn": "Eg håpar det er like fint i {zone} som i ein kyrkjehage."
   },
   {
     "en": "Have a wonderful time in {zone}!",
@@ -241,7 +241,7 @@
   },
   {
     "en": "{zone}? Go, explore, give thanks!",
-    "nn": "{zone}? Gå, utforsk og takk!"
+    "nn": "{zone}? Gå, utforsk og sei takk!"
   },
   {
     "en": "Wander wisely in {zone}.",
@@ -257,7 +257,7 @@
   },
   {
     "en": "I'll pray for good spawns in {zone}.",
-    "nn": "Eg skal be for gode monsterstader i {zone}."
+    "nn": "Eg skal be om gode spawnar i {zone}."
   },
   {
     "en": "{zone} reminds me what a big world God made.",
@@ -285,7 +285,7 @@
   },
   {
     "en": "May {zone} be full of still waters.",
-    "nn": "Måtte {zone} vere fullt av stille vatn."
+    "nn": "Måtte du finne mykje stille vatn i {zone}."
   },
   {
     "en": "Have a holy good time in {zone}!",
@@ -297,7 +297,7 @@
   },
   {
     "en": "The Lord made {zone}, so it must be beautiful.",
-    "nn": "Herren skapte {zone}, så det må vere vakkert."
+    "nn": "Herren skapte {zone}, så der må det vere vakkert."
   },
   {
     "en": "Mind the cliffs in {zone}, friend.",
@@ -345,7 +345,7 @@
   },
   {
     "en": "Be still and take in {zone}.",
-    "nn": "Ver still og ta inn {zone}."
+    "nn": "Ver stille og ta inn {zone}."
   },
   {
     "en": "God bless your trip through {zone}!",
@@ -401,7 +401,7 @@
   },
   {
     "en": "Go bless {zone} with your presence!",
-    "nn": "Gå og velsigne {zone} med nærværet ditt!"
+    "nn": "Gå og velsign {zone} med nærværet ditt!"
   },
   {
     "en": "I'm humming a travel hymn for your trip to {zone}.",
@@ -457,7 +457,7 @@
   },
   {
     "en": "May the Lord bless {zone} for having you.",
-    "nn": "Måtte Herren velsigne {zone} fordi det har deg."
+    "nn": "Måtte Herren velsigne {zone}, som har fått deg på besøk."
   },
   {
     "en": "I'll be thinking of you in {zone}.",
@@ -481,7 +481,7 @@
   },
   {
     "en": "May {zone} be full of answered prayers.",
-    "nn": "Måtte {zone} vere fullt av bønesvar."
+    "nn": "Måtte du få mange bønesvar i {zone}."
   },
   {
     "en": "Peace in every valley of {zone}!",
@@ -509,7 +509,7 @@
   },
   {
     "en": "Give thanks for every view in {zone}.",
-    "nn": "Takk for kvar utsikt i {zone}."
+    "nn": "Sei takk for kvar utsikt i {zone}."
   },
   {
     "en": "May {zone} bring you joy and good company.",
@@ -537,7 +537,7 @@
   },
   {
     "en": "A blessed welcome to {zone}!",
-    "nn": "Ei velsigna velkomst til {zone}!"
+    "nn": "Ein velsigna velkomst til {zone}!"
   },
   {
     "en": "Let wonder be your guide in {zone}.",
@@ -577,7 +577,7 @@
   },
   {
     "en": "I'm sure {zone} is full of good surprises.",
-    "nn": "{zone} er nok fullt av gode overraskingar."
+    "nn": "Det er nok mange gode overraskingar i {zone}."
   },
   {
     "en": "May {zone} be gentle on your gear.",
@@ -641,7 +641,7 @@
   },
   {
     "en": "Give the wildlife of {zone} my blessing.",
-    "nn": "Helse dyra i {zone} med velsigning frå meg."
+    "nn": "Hels dyra i {zone} med ei velsigning frå meg."
   },
   {
     "en": "May your time in {zone} be sweet as honey.",
@@ -665,7 +665,7 @@
   },
   {
     "en": "Breathe in {zone}, and give thanks.",
-    "nn": "Pust inn {zone}, og takk."
+    "nn": "Pust inn {zone}, og sei takk."
   },
   {
     "en": "May you walk through {zone} unafraid.",
@@ -761,7 +761,7 @@
   },
   {
     "en": "May {zone} bless you as you bless it.",
-    "nn": "Måtte {zone} velsigne deg slik du velsignar det."
+    "nn": "Måtte {zone} velsigne deg slik du er ei velsigning der."
   },
   {
     "en": "The Lord's creation is grand. Enjoy {zone}!",
@@ -781,7 +781,7 @@
   },
   {
     "en": "{zone} is yours to discover.",
-    "nn": "{zone} er ditt å oppdage."
+    "nn": "No kan du oppdage {zone}."
   },
   {
     "en": "May the paths of {zone} be smooth for you.",
@@ -849,7 +849,7 @@
   },
   {
     "en": "{zone}! Go and rejoice in it.",
-    "nn": "{zone}! Gå og gled deg over det."
+    "nn": "{zone}! Gå og gled deg over alt der."
   },
   {
     "en": "The light goes with you to {zone}.",
@@ -933,7 +933,7 @@
   },
   {
     "en": "They say {zone} is beautiful. Tell me if it's true!",
-    "nn": "Dei seier {zone} er vakkert. Sei frå om det stemmer!"
+    "nn": "Dei seier det er vakkert i {zone}. Sei frå om det stemmer!"
   },
   {
     "en": "I hope {zone} has a little chapel somewhere.",
@@ -1009,7 +1009,7 @@
   },
   {
     "en": "{zone} won't know what blessed it.",
-    "nn": "{zone} kjem ikkje til å skjøne kva som velsigna det."
+    "nn": "Ingen i {zone} kjem til å skjøne kva som velsigna dei."
   },
   {
     "en": "Your feet are beautiful on the hills of {zone}.",
@@ -1021,7 +1021,7 @@
   },
   {
     "en": "Say hello to the sheep in {zone} for me.",
-    "nn": "Helse sauene i {zone} frå meg."
+    "nn": "Hels på sauene i {zone} frå meg."
   },
   {
     "en": "Your adventure in {zone} starts now. Go with God!",
@@ -1061,7 +1061,7 @@
   },
   {
     "en": "A pilgrim's welcome to {zone}!",
-    "nn": "Ei pilegrimsvelkomst til {zone}!"
+    "nn": "Ein pilegrimsvelkomst til {zone}!"
   },
   {
     "en": "Into {zone} like Moses into the promised land!",

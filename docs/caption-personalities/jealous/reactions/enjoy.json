@@ -17,7 +17,7 @@
   },
   {
     "en": "Have fun in {zone}. Not too much fun.",
-    "nn": "Ha det moro i {zone}. Ikkje for moro."
+    "nn": "Ha det moro i {zone}. Ikkje for mykje moro."
   },
   {
     "en": "I hear {zone} is overrated. I hope. Enjoy.",
@@ -57,7 +57,7 @@
   },
   {
     "en": "I am sure {zone} is nice. Too nice for me.",
-    "nn": "{zone} er sikkert fint. For fint for meg."
+    "nn": "Det er sikkert fint i {zone}. For fint for meg."
   },
   {
     "en": "{zone}. Wow. Must be nice to travel.",
@@ -129,7 +129,7 @@
   },
   {
     "en": "Is {zone} nice? Do not tell me. I will cry.",
-    "nn": "Er {zone} fint? Ikkje fortel. Då grin eg."
+    "nn": "Er det fint i {zone}? Ikkje fortel. Då græt eg."
   },
   {
     "en": "Try not to look too happy in your {zone} screenshots.",
@@ -145,7 +145,7 @@
   },
   {
     "en": "I would come to {zone}, but I am busy being envious.",
-    "nn": "Eg ville blitt med til {zone}, men eg er oppteken med å vere misunneleg."
+    "nn": "Eg ville ha blitt med til {zone}, men eg er oppteken med å vere misunneleg."
   },
   {
     "en": "Wow, {zone}. I only got as far as the inn.",
@@ -225,7 +225,7 @@
   },
   {
     "en": "So, {zone}. Jealous? Me? Yes. Enjoy.",
-    "nn": "Så, {zone}. Sjalu? Eg? Ja. Kos deg."
+    "nn": "Jaså, {zone}. Sjalu? Eg? Ja. Kos deg."
   },
   {
     "en": "Do not come back from {zone} with too many stories.",
@@ -233,7 +233,7 @@
   },
   {
     "en": "{zone}. How exotic. How far. How annoying.",
-    "nn": "{zone}. Så eksotisk. Så langt. Så irriterande."
+    "nn": "{zone}. Så eksotisk. Så langt unna. Så irriterande."
   },
   {
     "en": "I hope the locals in {zone} are grumpy. Like me.",
@@ -273,7 +273,7 @@
   },
   {
     "en": "I would join you in {zone}, but I cannot find the road.",
-    "nn": "Eg ville blitt med deg til {zone}, men eg finn ikkje vegen."
+    "nn": "Eg ville ha blitt med deg til {zone}, men eg finn ikkje vegen."
   },
   {
     "en": "{zone}! Of course. Why not. Everywhere is yours.",
@@ -393,7 +393,7 @@
   },
   {
     "en": "{zone}, huh. Is that one of the nice ones? It is, isn't it.",
-    "nn": "{zone}, altså. Er det ein av dei fine? Det er det, er det ikkje."
+    "nn": "{zone}, altså. Er det eitt av dei fine områda? Det er det, ikkje sant?"
   },
   {
     "en": "Explore {zone} slowly. Like me. Pace yourself.",
@@ -417,7 +417,7 @@
   },
   {
     "en": "{zone} already? Slow down, wanderer.",
-    "nn": "{zone} alt? Ro deg ned, vandrar."
+    "nn": "{zone} alt? Ta det med ro, vandrar."
   },
   {
     "en": "I will look {zone} up on the map and sigh.",
@@ -433,7 +433,7 @@
   },
   {
     "en": "I have never been invited to {zone}. Just saying.",
-    "nn": "Eg har aldri vorte invitert til {zone}. Berre seier det."
+    "nn": "Eg har aldri vorte invitert til {zone}. Berre så det er sagt."
   },
   {
     "en": "{zone} sounds dangerous. Be careful. Or not. Kidding. Be careful.",
@@ -449,7 +449,7 @@
   },
   {
     "en": "Tell me if {zone} is ugly. Please let it be ugly.",
-    "nn": "Sei frå om {zone} er stygt. Lat det vere stygt, er du snill."
+    "nn": "Sei frå om det er stygt i {zone}. Lat det vere stygt der, er du snill."
   },
   {
     "en": "I am glad you are seeing {zone}. Without me.",
@@ -457,7 +457,7 @@
   },
   {
     "en": "{zone}? Beautiful, I expect. Typical.",
-    "nn": "{zone}? Vakkert, går eg ut frå. Typisk."
+    "nn": "{zone}? Vakkert der, går eg ut frå. Typisk."
   },
   {
     "en": "You are in {zone}. I am grinding the same three mobs.",
@@ -477,7 +477,7 @@
   },
   {
     "en": "My character pressed his face against the map of {zone}.",
-    "nn": "Figuren min pressa fjeset mot kartet over {zone}."
+    "nn": "Figuren min pressa fjeset sitt mot kartet over {zone}."
   },
   {
     "en": "{zone}! I demand a full report. A boring one.",
@@ -525,7 +525,7 @@
   },
   {
     "en": "{zone}? How did you even get there? Do not tell me.",
-    "nn": "{zone}? Korleis kom du deg i det heile dit? Ikkje fortel."
+    "nn": "{zone}? Korleis kom du deg i det heile teke dit? Ikkje fortel."
   },
   {
     "en": "I will just read about {zone} in my sad little book.",
@@ -549,11 +549,11 @@
   },
   {
     "en": "It is nice to see someone reach {zone}. I suppose.",
-    "nn": "Det er fint å sjå at nokon kjem seg til {zone}. Truleg."
+    "nn": "Det er fint å sjå at nokon kjem seg til {zone}. Går eg ut frå."
   },
   {
     "en": "{zone}! Big world, huh? Mine is small.",
-    "nn": "{zone}! Stor verd, ikkje sant? Mi er lita."
+    "nn": "{zone}! Verda er stor, hæ? Mi er lita."
   },
   {
     "en": "My jealousy will follow you to {zone}.",
@@ -725,7 +725,7 @@
   },
   {
     "en": "Keep an eye out in {zone} for anything I would like. Then leave it.",
-    "nn": "Sjå etter ting i {zone} som eg ville likt. Og la dei liggje."
+    "nn": "Sjå etter ting i {zone} som eg ville ha likt. Og la dei liggje."
   },
   {
     "en": "Is there an inn in {zone}? Can I visit? No? Fine.",
@@ -741,7 +741,7 @@
   },
   {
     "en": "If you meet a better friend in {zone}, ignore them.",
-    "nn": "Møter du ein betre ven i {zone}, så overse han."
+    "nn": "Møter du ein betre venn i {zone}, så overse han."
   },
   {
     "en": "You are in {zone}. I am walking to my mailbox. Adventure.",
@@ -749,7 +749,7 @@
   },
   {
     "en": "I am sure {zone} is pretty. Pretty annoying.",
-    "nn": "{zone} er sikkert pent. Pent irriterande."
+    "nn": "Det er sikkert pent i {zone}. Pent irriterande."
   },
   {
     "en": "Do not let {zone} change you. Too late?",
@@ -761,7 +761,7 @@
   },
   {
     "en": "May your bags in {zone} stay full of boring stuff.",
-    "nn": "Måtte veskene dine i {zone} vere fulle av kjedelege ting."
+    "nn": "Måtte sekkane dine i {zone} vere fulle av kjedelege ting."
   },
   {
     "en": "Is {zone} where all the lucky people go? Figures.",
@@ -785,7 +785,7 @@
   },
   {
     "en": "I put a pin on {zone} on my map. It says not me.",
-    "nn": "Eg sette ein nål på {zone} på kartet mitt. Det står ikkje eg."
+    "nn": "Eg sette ein nål på {zone} på kartet mitt. Det står: ikkje eg."
   },
   {
     "en": "Avoid the sharp things in {zone}. Leave them for my visit.",
@@ -817,7 +817,7 @@
   },
   {
     "en": "I hope {zone} is a little bit spooky.",
-    "nn": "Håpar {zone} er litt skummelt."
+    "nn": "Håpar det er litt skummelt i {zone}."
   },
   {
     "en": "Save me a spot in {zone}. A small, bad spot.",
@@ -829,7 +829,7 @@
   },
   {
     "en": "I will watch the sky and pretend I am in {zone}.",
-    "nn": "Eg ser på himmelen og let som eg er i {zone}."
+    "nn": "Eg ser på himmelen og lèt som eg er i {zone}."
   },
   {
     "en": "Okay, enjoy {zone}. But not out loud.",
@@ -857,7 +857,7 @@
   },
   {
     "en": "I would warn you about {zone}, but you will be fine. Ugh.",
-    "nn": "Eg skulle åtvara deg mot {zone}, men det går bra med deg. Uff."
+    "nn": "Eg skulle ha åtvara deg mot {zone}, men det går bra med deg. Uff."
   },
   {
     "en": "Write from {zone} if you get bored. Please get bored.",
@@ -909,7 +909,7 @@
   },
   {
     "en": "My character stood by the road to {zone} and waved. Sadly.",
-    "nn": "Figuren min stod ved vegen til {zone} og vinka. Trist."
+    "nn": "Figuren min stod ved vegen til {zone} og vinka. Med eit tungt hjarte."
   },
   {
     "en": "You will love {zone}. You love everything you win.",
@@ -917,7 +917,7 @@
   },
   {
     "en": "Wander well in {zone}. Wander slower.",
-    "nn": "Vandre godt i {zone}. Vandre seinare."
+    "nn": "Vandre godt i {zone}. Vandre saktare."
   },
   {
     "en": "Happy for you in {zone}. A little homesick for you, too.",
@@ -973,7 +973,7 @@
   },
   {
     "en": "I wish it were me in {zone}, but enjoy it anyway.",
-    "nn": "Skulle ønskt det var eg i {zone}, men kos deg likevel."
+    "nn": "Eg skulle ønskje det var eg i {zone}, men kos deg likevel."
   },
   {
     "en": "Have fun in {zone}. My envy envies your envy-free life.",
@@ -989,11 +989,11 @@
   },
   {
     "en": "I hope {zone} is nice but not too nice. Medium nice.",
-    "nn": "Håpar {zone} er fint, men ikkje for fint. Middels fint."
+    "nn": "Håpar det er fint i {zone}, men ikkje for fint. Middels fint."
   },
   {
     "en": "I will hear about {zone} for weeks, won't I?",
-    "nn": "Eg får høyre om {zone} i vekevis, får eg ikkje?"
+    "nn": "Eg får høyre om {zone} i vekevis, ikkje sant?"
   },
   {
     "en": "Have fun in {zone}. With love, from your stuck-at-home friend.",
@@ -1013,7 +1013,7 @@
   },
   {
     "en": "Travel safe in {zone}. Or at least travel slower.",
-    "nn": "Reis trygt i {zone}. Eller reis i det minste seinare."
+    "nn": "Reis trygt i {zone}. Eller reis i det minste saktare."
   },
   {
     "en": "Say hello to {zone} from someone who has never been.",
@@ -1089,7 +1089,7 @@
   },
   {
     "en": "I am pretending {zone} is overrated. Help me believe it.",
-    "nn": "Eg let som {zone} er overvurdert. Hjelp meg å tru det."
+    "nn": "Eg lèt som {zone} er overvurdert. Hjelp meg å tru det."
   },
   {
     "en": "Look at you, {zone} explorer. Very fancy title.",
@@ -1141,7 +1141,7 @@
   },
   {
     "en": "I wish I was in {zone} with you. Mostly I wish I was there instead.",
-    "nn": "Skulle ønskt eg var i {zone} med deg. Helst i staden for deg."
+    "nn": "Eg skulle ønskje eg var i {zone} med deg. Helst i staden for deg."
   },
   {
     "en": "You took the road to {zone} without me. I see how it is.",
@@ -1149,7 +1149,7 @@
   },
   {
     "en": "Lucky you, seeing {zone}. Lucky, lucky you.",
-    "nn": "Heldig deg, som får sjå {zone}. Heldig, heldig deg."
+    "nn": "Heldige deg, som får sjå {zone}. Heldige, heldige deg."
   },
   {
     "en": "Watch out in {zone}. The mobs there might be jealous too.",

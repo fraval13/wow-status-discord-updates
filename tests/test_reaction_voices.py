@@ -161,22 +161,37 @@ def test_every_voice_line_is_recognised_with_its_kind_and_zone():
     ''')
 
 
-def test_settings_row_cycles_the_reaction_voice_without_sending():
+def test_settings_dropdown_picks_the_reaction_voice_without_sending():
     lua = make_lua()
     g = lua.globals()
     g.VOICE, g.NAME, g.LAST = VOICE, NAMES[VOICE], NAMES[READY[-1]]
     g.STEPS = len(READY)
     lua.execute('''
         local P=WoWStatusPersonalities
+        -- Pick an entry by its label from the dropdown the button opens.
+        local function pick(button,label)
+            button.OnClick(button)
+            local menu,names,found=WoWStatusMenu,{},nil
+            for _,row in ipairs(menu.rows) do
+                if row:IsShown() then
+                    names[#names+1]=row.text.text
+                    if row.text.text==label then found=row end
+                end
+            end
+            if not found then error("no "..label.." in "..table.concat(names,", ")) end
+            found.OnClick(found)
+            return names
+        end
         WoWStatusPreviews.show()
         local panel=WoWStatusNotificationPreviews
-        assert(panel.reactionVoice.text=="Reaction voice: Classic")  -- the harness default
-        panel.reactionVoiceNext.OnClick(panel.reactionVoiceNext)
-        assert(P.reactionVoice()==VOICE and panel.reactionVoice.text=="Reaction voice: "..NAME)
+        assert(panel.reactionVoicePick.text=="Classic")  -- the harness default
+        local names=pick(panel.reactionVoicePick,NAME)
+        assert(#names==STEPS+2 and names[1]=="Random" and names[2]=="Classic")
+        assert(P.reactionVoice()==VOICE and panel.reactionVoicePick.text==NAME)
         assert(P.current()=="random" and #__sent==0)
-        for i=1,STEPS do panel.reactionVoiceNext.OnClick(panel.reactionVoiceNext) end
+        pick(panel.reactionVoicePick,"Random")
         assert(P.reactionVoice()=="random")
-        panel.reactionVoiceNext.OnClick(panel.reactionVoiceNext)
+        pick(panel.reactionVoicePick,"Classic")
         assert(P.reactionVoice()=="classic")
         local said
         DEFAULT_CHAT_FRAME.AddMessage=function(_,message) said=message end
@@ -188,5 +203,5 @@ def test_settings_row_cycles_the_reaction_voice_without_sending():
         assert(P.findReaction("Goblin merchant")==nil or P.reactionBanks("goblin"))
         WoWStatusLocale.set("nn")
         WoWStatusPreviews.show()
-        assert(panel.reactionVoice.text:find("Røyst i reaksjonane: ",1,true)==1)
+        assert(panel.reactionVoicePick.text==P.name(P.reactionVoice()))
     ''')

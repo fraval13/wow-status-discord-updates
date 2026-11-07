@@ -97,7 +97,7 @@
  },
  {
   "en": "May {zone} treat you like royalty!",
-  "nn": "Måtte {zone} behandle deg som kongelege!"
+  "nn": "Måtte {zone} handsame deg som kongelege!"
  },
  {
   "en": "{zone}! Wear something fabulous!",
@@ -173,7 +173,7 @@
  },
  {
   "en": "Oh, to be young and exploring {zone}!",
-  "nn": "Å, vere ung og utforske {zone}!"
+  "nn": "Å, å vere ung og utforske {zone}!"
  },
  {
   "en": "Make every monster in {zone} regret it!",
@@ -821,7 +821,7 @@
  },
  {
   "en": "Paint the town in {zone}!",
-  "nn": "Mål byen raud i {zone}!"
+  "nn": "Slå deg laus i {zone}!"
  },
  {
   "en": "Each step into {zone} makes my heart skip!",
@@ -853,7 +853,7 @@
  },
  {
   "en": "I'd give anything to be in {zone} with you!",
-  "nn": "Eg skulle gitt kva som helst for å vere i {zone} med deg!"
+  "nn": "Eg skulle ha gitt kva som helst for å vere i {zone} med deg!"
  },
  {
   "en": "You and {zone}: a match made in legend!",
@@ -913,7 +913,7 @@
  },
  {
   "en": "{zone} better treat you like royalty!",
-  "nn": "{zone} får behandle deg som kongelege!"
+  "nn": "La {zone} handsame deg som kongelege!"
  },
  {
   "en": "A new horizon called {zone}! I'm weeping!",
@@ -1093,7 +1093,7 @@
  },
  {
   "en": "{zone}! Oh, I wish I could see your face right now!",
-  "nn": "{zone}! Å, eg skulle gjerne sett andletet ditt akkurat no!"
+  "nn": "{zone}! Å, eg skulle gjerne ha sett andletet ditt akkurat no!"
  },
  {
   "en": "Twirl through the fields of {zone}!",
@@ -1197,6 +1197,6 @@
  },
  {
   "en": "Fly, my bird, fly into {zone}!",
-  "nn": "Fly, fuglen min, fly inn i {zone}!"
+  "nn": "Flyg, fuglen min, flyg inn i {zone}!"
  }
 ]

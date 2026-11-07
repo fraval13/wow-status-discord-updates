@@ -1,0 +1,1202 @@
+[
+  {
+    "en": "A new ability! Can I patent it before anyone else does?",
+    "nn": "Ein ny evne! Kan eg patentere ho før nokon andre gjer det?"
+  },
+  {
+    "en": "Congrats on the new ability! I’ll sell tickets to the first demo.",
+    "nn": "Gratulerer med den nye evna! Eg sel billettar til den første demoen."
+  },
+  {
+    "en": "New power unlocked! Licensing fees are negotiable.",
+    "nn": "Ny kraft låst opp! Lisensavgifta kan forhandlast."
+  },
+  {
+    "en": "Congrats! That ability would sell for a fortune on a scroll.",
+    "nn": "Gratulerer! Den evna hadde selt for ein formue på ein rull."
+  },
+  {
+    "en": "New ability! Use it wisely. Or profitably. Preferably both.",
+    "nn": "Ny evne! Bruk ho klokt. Eller lønsamt. Helst begge delar."
+  },
+  {
+    "en": "Congrats on the unlock! Your trainer undercharged. Lucky you.",
+    "nn": "Gratulerer med evna! Trenaren tok for lite. Heldig for deg."
+  },
+  {
+    "en": "A new power! I can already think of three ways to monetize it.",
+    "nn": "Ei ny kraft! Eg ser alt tre måtar å tene pengar på ho."
+  },
+  {
+    "en": "Congrats! Want a manual for that? I wrote one. Unread.",
+    "nn": "Gratulerer! Vil du ha ei bruksrettleiing? Eg skreiv ei. Ulesen."
+  },
+  {
+    "en": "New ability! Shall I put a warranty on it? Covers misfires.",
+    "nn": "Ny evne! Skal eg gi garanti på ho? Dekkjer feiltenning."
+  },
+  {
+    "en": "Congrats on the new trick! Teach me and I’ll split the profits.",
+    "nn": "Gratulerer med det nye trikset! Lær meg, så deler vi forteneste."
+  },
+  {
+    "en": "Unlocked! Now that’s a skill with real market value.",
+    "nn": "Låst opp! Det er ein dugleik med ekte marknadsverdi."
+  },
+  {
+    "en": "Congrats! New ability, new action bar, new keybinds. I sell keys.",
+    "nn": "Gratulerer! Ny evne, ny handlingslinje, nye tastar. Eg sel tastar."
+  },
+  {
+    "en": "A new ability! Combat consulting just got pricier. You’re worth it.",
+    "nn": "Ei ny evne! Kamprådgiving vart nett dyrare. Du er verd det."
+  },
+  {
+    "en": "Congrats on the unlock! Practise on monsters, not on customers.",
+    "nn": "Gratulerer med evna! Øv på monster, ikkje på kundar."
+  },
+  {
+    "en": "Power unlocked! Shall I print a user manual? Very thick. Very pricey.",
+    "nn": "Kraft låst opp! Skal eg trykkje ei bruksrettleiing? Svært tjukk. Svært dyr."
+  },
+  {
+    "en": "New trick! Tricks like that should be patented. I’ll handle the paperwork.",
+    "nn": "Nytt triks! Slike triks burde patenterast. Eg tek meg av papira."
+  },
+  {
+    "en": "Look at that power! I felt it from my shop. My shelves rattled.",
+    "nn": "Sjå på den krafta! Eg kjende ho frå butikken. Hyllene mine rista."
+  },
+  {
+    "en": "Unlocked! Every unlock is a new market. I love new markets.",
+    "nn": "Låst opp! Kvar ny evne er ein ny marknad. Eg elskar nye marknader."
+  },
+  {
+    "en": "Fancy new skill! Fancy skills need fancy gear to match.",
+    "nn": "Fin ny dugleik! Fine dugleikar treng fint utstyr som passar."
+  },
+  {
+    "en": "Ooh, a new power! Can you use it to make gold? Asking for me.",
+    "nn": "Å, ei ny kraft! Kan du bruke ho til å lage gull? Spør på vegner av meg."
+  },
+  {
+    "en": "Stronger already! Strong heroes break things. I fix things. For a fee.",
+    "nn": "Sterkare alt! Sterke heltar øydelegg ting. Eg reparerer ting. Mot betaling."
+  },
+  {
+    "en": "New move, partner! Show me sometime. Admission is free. For you.",
+    "nn": "Nytt grep, makker! Vis meg ein gong. Gratis inngang. For deg."
+  },
+  {
+    "en": "Powered up! Powered-up heroes spend more on potions. I’ve noticed.",
+    "nn": "Kraftauke! Heltar med kraftauke bruker meir på trylledrikkar. Eg har merka det."
+  },
+  {
+    "en": "Congrats, trollkar! Er, spellcaster. Spells are great for business.",
+    "nn": "Gratulerer, trollkar! Trolldom er bra for forretninga."
+  },
+  {
+    "en": "That’s a big one! Big abilities, big cooldowns, big potion orders.",
+    "nn": "Det er ei stor ei! Store evner, lange nedkjølingar, store trylledrikkbestillingar."
+  },
+  {
+    "en": "New toy! Toys break. Warranty, anyone?",
+    "nn": "Nytt leiketøy! Leiketøy blir øydelagde. Nokon som vil ha garanti?"
+  },
+  {
+    "en": "Ability acquired! Acquisitions are my favourite thing.",
+    "nn": "Ny evne skaffa! Oppkjøp er det beste eg veit."
+  },
+  {
+    "en": "What a skill! Skills like that sell scrolls. I sell scrolls.",
+    "nn": "For ein dugleik! Slik dugleik sel rullar. Eg sel rullar."
+  },
+  {
+    "en": "Congrats, powerhouse! Powerhouses need fuel. I sell snacks.",
+    "nn": "Gratulerer, kraftverk! Kraftverk treng drivstoff. Eg sel snacks."
+  },
+  {
+    "en": "Shiny new ability! I’d polish it, but it’s invisible. Pity.",
+    "nn": "Blank ny evne! Eg hadde pussa ho, men ho er usynleg. Synd."
+  },
+  {
+    "en": "Upgrade unlocked! Upgrades are my love language.",
+    "nn": "Oppgradering låst opp! Oppgraderingar er kjærleiksspråket mitt."
+  },
+  {
+    "en": "Mighty new power! May it serve you well. And profitably.",
+    "nn": "Mektig ny kraft! Måtte ho tene deg godt. Og lønsamt."
+  },
+  {
+    "en": "Congrats, quick learner! Quick learners make quick gold.",
+    "nn": "Gratulerer, du lærer fort! Dei som lærer fort, tener fort."
+  },
+  {
+    "en": "A class milestone! Your trainer is proud. Your trainer is also richer.",
+    "nn": "Ein klassemilepæl! Trenaren din er stolt. Trenaren din er òg rikare."
+  },
+  {
+    "en": "Fresh skill! Fresh as my morning prices.",
+    "nn": "Fersk dugleik! Fersk som morgonprisane mine."
+  },
+  {
+    "en": "New spell, friend! Spells are like coins. The more you have, the better.",
+    "nn": "Ny trolldom, venn! Trolldom er som myntar. Jo meir du har, dess betre."
+  },
+  {
+    "en": "Big power boost! Big boosts deserve big celebrations. I cater.",
+    "nn": "Stor kraftauke! Store aukar fortener store feiringar. Eg står for maten."
+  },
+  {
+    "en": "Dangerous now! Dangerous heroes are great for my bodyguard business.",
+    "nn": "Farleg no! Farlege heltar er bra for livvaktbedrifta mi."
+  },
+  {
+    "en": "Power up, buddy! Your enemies just felt a chill. My till felt a warm glow.",
+    "nn": "Meir kraft, kompis! Fiendane dine kjende ein kulde. Kassa mi kjende ein varm glød."
+  },
+  {
+    "en": "Impressive unlock! Impressive enough to put on a business card.",
+    "nn": "Imponerande evne! Imponerande nok til å stå på eit visittkort."
+  },
+  {
+    "en": "New weapon in the arsenal! Arsenals need storage. I rent storage.",
+    "nn": "Nytt våpen i arsenalet! Arsenal treng lagerplass. Eg leiger ut lagerplass."
+  },
+  {
+    "en": "Ooh, fancy powers! Fancy powers attract fancy enemies. Insurance?",
+    "nn": "Å, fine krefter! Fine krefter trekkjer til seg fine fiendar. Forsikring?"
+  },
+  {
+    "en": "Skills to pay the bills! Well, my bills. Through your purchases.",
+    "nn": "Dugleik som betaler rekningane! Vel, mine rekningar. Gjennom kjøpa dine."
+  },
+  {
+    "en": "New ability, new you! Same lovely customer, though.",
+    "nn": "Ny evne, ny deg! Men same hyggelege kunden."
+  },
+  {
+    "en": "Something new to show off! Show it off near my shop. Draws crowds.",
+    "nn": "Noko nytt å vise fram! Vis det fram ved butikken min. Det trekkjer folk."
+  },
+  {
+    "en": "What a power-up! I’d buy one for myself if they were for sale.",
+    "nn": "For ein kraftauke! Eg hadde kjøpt ein til meg sjølv om dei var til sals."
+  },
+  {
+    "en": "Hot new ability! Hot abilities need fireproof gloves. I have some.",
+    "nn": "Heit ny evne! Heite evner treng brannsikre hanskar. Eg har nokre."
+  },
+  {
+    "en": "Learned something big! Big lessons cost big tuition. Worth it.",
+    "nn": "Du lærte noko stort! Stor lærdom kostar dyre skulepengar. Verd det."
+  },
+  {
+    "en": "Congrats, hero! Heroes with new tricks are heroes with new needs.",
+    "nn": "Gratulerer, helt! Heltar med nye triks er heltar med nye behov."
+  },
+  {
+    "en": "That ability could change the game. Game-changers deserve premium potions.",
+    "nn": "Den evna kan endre spelet. Slike fortener premiumdrikkar."
+  },
+  {
+    "en": "I heard you unlocked something big. Big things sell big.",
+    "nn": "Eg høyrde du låste opp noko stort. Store ting sel stort."
+  },
+  {
+    "en": "Your new power is the talk of the bazaar. I started the talk.",
+    "nn": "Den nye krafta di er snakkisen på basaren. Eg starta pratet."
+  },
+  {
+    "en": "Every new ability is a new reason to restock potions. I’m ready.",
+    "nn": "Kvar ny evne er ein ny grunn til å fylle på trylledrikkar. Eg er klar."
+  },
+  {
+    "en": "You’ll be unstoppable now. Unstoppable heroes still need repairs.",
+    "nn": "No blir du ustoppeleg. Ustoppelege heltar treng likevel reparasjonar."
+  },
+  {
+    "en": "I hope your trainer gave you a receipt. Receipts are important.",
+    "nn": "Eg håpar trenaren gav deg kvittering. Kvitteringar er viktige."
+  },
+  {
+    "en": "A major ability! Major abilities make for major legends. And major merchandise.",
+    "nn": "Ei viktig evne! Viktige evner gir store legender. Og store varer."
+  },
+  {
+    "en": "The monsters just got a lot more nervous. Nervous monsters drop more loot.",
+    "nn": "Monstera vart nett mykje meir nervøse. Nervøse monster slepper meir loot."
+  },
+  {
+    "en": "Your power grows. My admiration grows. My prices grow too. Coincidence.",
+    "nn": "Krafta di veks. Beundringa mi veks. Prisane mine veks òg. Tilfeldig."
+  },
+  {
+    "en": "Show me what it does! I’ll sell tickets to the demonstration.",
+    "nn": "Vis meg kva ho gjer! Eg sel billettar til demonstrasjonen."
+  },
+  {
+    "en": "I bet that ability looks spectacular. Spectacles sell.",
+    "nn": "Eg veddar på at den evna ser spektakulær ut. Spektakel sel."
+  },
+  {
+    "en": "A new tool in your kit! I sell kits. And tools. And kit bags.",
+    "nn": "Eit nytt verktøy i settet ditt! Eg sel sett. Og verktøy. Og verktøyvesker."
+  },
+  {
+    "en": "Now that’s what I call progress. Progress pays.",
+    "nn": "Det kallar eg framgang. Framgang løner seg."
+  },
+  {
+    "en": "Your class just got a lot more interesting. And so did your enemies’ day.",
+    "nn": "Klassen din vart nett mykje meir interessant. Og dagen til fiendane dine òg."
+  },
+  {
+    "en": "You’re turning into a real powerhouse. Powerhouses deserve power snacks.",
+    "nn": "Du blir eit skikkeleg kraftverk. Kraftverk fortener kraftsnacks."
+  },
+  {
+    "en": "Another ability mastered! At this rate, you’ll need a bigger spellbook. I sell spellbooks.",
+    "nn": "Endå ei evne meistra! I dette tempoet treng du ei større trollbok. Eg sel slike."
+  },
+  {
+    "en": "I can see the sparkle of new power in your eyes. Or is that greed? Mine, I mean.",
+    "nn": "Eg ser glansen av ny kraft i auga dine. Eller er det grådigheit? Mi, altså."
+  },
+  {
+    "en": "New ability, new tactics, new shopping list.",
+    "nn": "Ny evne, ny taktikk, ny handleliste."
+  },
+  {
+    "en": "That ability will save your life. A life saved is a customer kept.",
+    "nn": "Den evna kjem til å redde livet ditt. Eit redda liv er ein kunde som blir verande."
+  },
+  {
+    "en": "You’ve earned that power. Spend it wisely. Spend gold even more wisely. Here.",
+    "nn": "Du har gjort deg fortent til den krafta. Bruk ho klokt. Bruk gull endå klokare. Her."
+  },
+  {
+    "en": "Your enemies are going to hate this. My potion sales are going to love it.",
+    "nn": "Fiendane dine kjem til å hate dette. Trylledrikksalet mitt kjem til å elske det."
+  },
+  {
+    "en": "Mighty fine! Your toolkit just got deadlier and more valuable.",
+    "nn": "Svært fint! Verktøykassa di vart nett farlegare og meir verdifull."
+  },
+  {
+    "en": "I knew you had more power in you. Power is a great investment.",
+    "nn": "Eg visste du hadde meir kraft i deg. Kraft er ei flott investering."
+  },
+  {
+    "en": "New ability? New action bar layout. I sell little labels for that.",
+    "nn": "Ny evne? Nytt oppsett på handlingslinja. Eg sel små etikettar til det."
+  },
+  {
+    "en": "That’s a power worth celebrating! Fireworks, anyone? Safe ones. Mostly.",
+    "nn": "Det er ei kraft verd å feire! Nokon som vil ha fyrverkeri? Trygt. Stort sett."
+  },
+  {
+    "en": "I’d ask you to teach me, but I’d probably set my shop on fire.",
+    "nn": "Eg hadde bede deg lære meg, men då hadde eg truleg sett fyr på butikken."
+  },
+  {
+    "en": "You’re officially more dangerous. Dangerous is good for business. Someone else’s business.",
+    "nn": "No er du offisielt farlegare. Farleg er bra for forretningane. Til andre."
+  },
+  {
+    "en": "Your new ability glows with potential. Potential is profit in disguise.",
+    "nn": "Den nye evna di gløder av potensial. Potensial er forkledd forteneste."
+  },
+  {
+    "en": "I’ll celebrate with a little sale. Little discounts. Very little.",
+    "nn": "Eg feirar med eit lite tilbod. Små rabattar. Svært små."
+  },
+  {
+    "en": "Ooh, what does it do? Does it make gold? Does it find gold? Either is fine.",
+    "nn": "Å, kva gjer ho? Lagar ho gull? Finn ho gull? Begge delar går fint."
+  },
+  {
+    "en": "Big step for your class! Your class must be very proud.",
+    "nn": "Stort steg for klassen din! Klassen din må vere svært stolt."
+  },
+  {
+    "en": "New ability unlocked, new adventures ahead. Pack potions.",
+    "nn": "Ny evne låst opp, nye eventyr i vente. Pakk trylledrikkar."
+  },
+  {
+    "en": "Your trainer is beaming. And counting coins. I relate.",
+    "nn": "Trenaren din strålar. Og tel myntar. Det kjenner eg meg att i."
+  },
+  {
+    "en": "A power like that deserves a dramatic entrance. Capes sold here.",
+    "nn": "Ei slik kraft fortener ein dramatisk entré. Her får du kjøpt kapper."
+  },
+  {
+    "en": "That ability will make dungeons faster. Faster dungeons, faster loot, faster sales.",
+    "nn": "Den evna gjer fangehola raskare. Raskare fangehol, raskare loot, raskare sal."
+  },
+  {
+    "en": "Your new power just raised your market value. I adjusted my estimate.",
+    "nn": "Den nye krafta di heva nett marknadsverdien din. Eg justerte overslaget mitt."
+  },
+  {
+    "en": "Now you’re a force to be reckoned with. I reckon a lot. Mostly prices.",
+    "nn": "No er du ei kraft å rekne med. Eg reknar mykje. Mest prisar."
+  },
+  {
+    "en": "A key ability! Keys open doors. Doors lead to treasure. Treasure leads to me.",
+    "nn": "Ei nøkkelevne! Nøklar opnar dører. Dører fører til skattar. Skattar fører til meg."
+  },
+  {
+    "en": "I’m impressed. Magic I can’t do. Selling magic, I can.",
+    "nn": "Eg er imponert. Magi kan eg ikkje. Selje magi, det kan eg."
+  },
+  {
+    "en": "New power, new pride. Proud heroes buy proud armor.",
+    "nn": "Ny kraft, ny stoltheit. Stolte heltar kjøper stolt rustning."
+  },
+  {
+    "en": "Your skill set is growing faster than my inventory. That’s saying something.",
+    "nn": "Dugleiken din veks fortare enn lageret mitt. Det seier ikkje lite."
+  },
+  {
+    "en": "I hope it comes with a cool sound effect. Sound effects sell.",
+    "nn": "Eg håpar ho kjem med ein kul lydeffekt. Lydeffektar sel."
+  },
+  {
+    "en": "Wonderful! Every ability you learn makes my potions more necessary.",
+    "nn": "Vidunderleg! Kvar evne du lærer, gjer trylledrikkane mine meir naudsynte."
+  },
+  {
+    "en": "You’re evolving! Evolved heroes need evolved gear. I have some.",
+    "nn": "Du utviklar deg! Utvikla heltar treng utvikla utstyr. Eg har litt."
+  },
+  {
+    "en": "Congrats on the new trick! Old tricks, by the way, I buy cheap.",
+    "nn": "Gratulerer med det nye trikset! Gamle triks, forresten, kjøper eg billeg."
+  },
+  {
+    "en": "That ability is a game-changer. And a price-changer, for my services.",
+    "nn": "Den evna endrar spelet. Og prisane mine for tenestene mine."
+  },
+  {
+    "en": "I’d love a demonstration. From a safe distance. Very safe.",
+    "nn": "Eg vil gjerne ha ein demonstrasjon. Frå trygg avstand. Svært trygg."
+  },
+  {
+    "en": "So much power! Did it come with a manual? Manuals sold separately.",
+    "nn": "Så mykje kraft! Kom ho med bruksrettleiing? Rettleiingar blir selde kvar for seg."
+  },
+  {
+    "en": "New ability, same favourite customer. Always nice to see you grow.",
+    "nn": "Ny evne, same favorittkunde. Alltid kjekt å sjå deg vekse."
+  },
+  {
+    "en": "Your trainer must have been thrilled. Thrilled and paid.",
+    "nn": "Trenaren din må ha vore i ekstase. I ekstase og betalt."
+  },
+  {
+    "en": "That new power will make you the star of every group. Stars need sunglasses.",
+    "nn": "Den nye krafta gjer deg til stjerna i kvar gruppe. Stjerner treng solbriller."
+  },
+  {
+    "en": "Now you can do something new. New things are always profitable. Somehow.",
+    "nn": "No kan du gjere noko nytt. Nye ting er alltid lønsame. På eit vis."
+  },
+  {
+    "en": "Ability learned! The world just got a little more magical. And more expensive.",
+    "nn": "Evne lært! Verda vart nett litt meir magisk. Og dyrare."
+  },
+  {
+    "en": "Look at you, learning new things! Lifelong learners make lifelong customers.",
+    "nn": "Sjå på deg, du lærer nye ting! Dei som lærer heile livet, blir kundar heile livet."
+  },
+  {
+    "en": "That power makes you twice the hero. And twice the customer, I hope.",
+    "nn": "Den krafta gjer deg dobbelt så mykje helt. Og dobbelt så mykje kunde, håpar eg."
+  },
+  {
+    "en": "Bravo! May your new power never miss and your purse never empty.",
+    "nn": "Bravo! Måtte den nye krafta aldri bomme og pungen aldri bli tom."
+  },
+  {
+    "en": "Every hero dreams of that ability. You made the dream real.",
+    "nn": "Kvar helt drøymer om den evna. Du gjorde draumen verkeleg."
+  },
+  {
+    "en": "I’ll celebrate by naming a potion after your new power. Strong stuff.",
+    "nn": "Eg feirar med å kalle opp ein trylledrikk etter den nye krafta di. Sterke saker."
+  },
+  {
+    "en": "Unlocking abilities is like unlocking chests. Always exciting.",
+    "nn": "Å låse opp evner er som å låse opp kister. Alltid spennande."
+  },
+  {
+    "en": "Your enemies just lost their advantage. Their gold, I hope, is next.",
+    "nn": "Fiendane dine miste nett fordelen sin. Gullet deira står for tur, håpar eg."
+  },
+  {
+    "en": "Splendid power! Use it on monsters, not on my merchandise.",
+    "nn": "Strålande kraft! Bruk ho på monster, ikkje på varene mine."
+  },
+  {
+    "en": "A new ability, earned with sweat and gold. The best kind.",
+    "nn": "Ei ny evne, tent med sveitte og gull. Den beste typen."
+  },
+  {
+    "en": "That’s the power of hard work. Hard work deserves a shopping trip.",
+    "nn": "Det er krafta til hardt arbeid. Hardt arbeid fortener ein handletur."
+  },
+  {
+    "en": "Your spellbook is getting thick. Thick spellbooks need sturdy covers.",
+    "nn": "Trollboka di blir tjukk. Tjukke trollbøker treng solide permar."
+  },
+  {
+    "en": "That’s quite an upgrade. Upgrades are my favourite kind of news.",
+    "nn": "For ei oppgradering. Oppgraderingar er favorittnyhenda mine."
+  },
+  {
+    "en": "Powerful and stylish! The ideal combination. Like gold and gems.",
+    "nn": "Kraftig og stilig! Den ideelle kombinasjonen. Som gull og edelsteinar."
+  },
+  {
+    "en": "I hope that ability has a short cooldown. Waiting is bad for business.",
+    "nn": "Eg håpar den evna har kort nedkjøling. Venting er dårleg for forretninga."
+  },
+  {
+    "en": "Unlocked and loaded! Load up on potions too.",
+    "nn": "Låst opp og klar! Fyll på med trylledrikkar òg."
+  },
+  {
+    "en": "Now you’re ready for bigger fights. Bigger fights, bigger loot.",
+    "nn": "No er du klar for større kampar. Større kampar, større loot."
+  },
+  {
+    "en": "That new power will get you places. Places with treasure. Bring some back.",
+    "nn": "Den nye krafta tek deg langt. Til stader med skattar. Ta med litt heim."
+  },
+  {
+    "en": "You’ve grown so strong! I remember when you bought your first stick.",
+    "nn": "Du har vorte så sterk! Eg hugsar då du kjøpte den første pinnen din."
+  },
+  {
+    "en": "Every ability is a new adventure waiting. Adventures need supplies.",
+    "nn": "Kvar evne er eit nytt eventyr som ventar. Eventyr treng forsyningar."
+  },
+  {
+    "en": "Major ability, major milestone, major merchant joy.",
+    "nn": "Stor evne, stor milepæl, stor kremmarglede."
+  },
+  {
+    "en": "I bet that power feels amazing. I feel amazing too. Selling to you.",
+    "nn": "Den krafta kjennest nok fantastisk. Eg kjenner meg fantastisk òg. Når eg sel til deg."
+  },
+  {
+    "en": "That’s a power fit for a legend. Legends shop at legendary shops.",
+    "nn": "Det er ei kraft verdig ei legende. Legender handlar i legendariske butikkar."
+  },
+  {
+    "en": "You must have trained so hard. Training is expensive. You’re worth it.",
+    "nn": "Du må ha trent så hardt. Trening er dyrt. Du er verd det."
+  },
+  {
+    "en": "That ability will be your signature move. Signatures cost extra on contracts.",
+    "nn": "Du må ha trent så hardt. Trening er dyr. Du er verd det."
+  },
+  {
+    "en": "Oh my, the possibilities! The possible profits!",
+    "nn": "Jøss, for moglegheiter! For moglege forteneste!"
+  },
+  {
+    "en": "You’re a whole new hero. A whole new hero needs a whole new wardrobe.",
+    "nn": "Jøss, for moglegheiter! For ei mogleg forteneste!"
+  },
+  {
+    "en": "That’s a power the bards will sing about. I’ll sell the songs.",
+    "nn": "Det er ei kraft skaldane kjem til å syngje om. Eg sel songane."
+  },
+  {
+    "en": "My goodness, what power! Please don’t use it near my fragile goods.",
+    "nn": "Du store, for ei kraft! Ikkje bruk ho nær dei skjøre varene mine."
+  },
+  {
+    "en": "New ability, new confidence. Confident heroes buy confidently.",
+    "nn": "Ny evne, ny sjølvtillit. Sjølvsikre heltar kjøper sjølvsikkert."
+  },
+  {
+    "en": "I always knew you had potential. Now you have power too.",
+    "nn": "Eg visste alltid at du hadde potensial. No har du kraft òg."
+  },
+  {
+    "en": "You’ll be the envy of every class trainer. And every merchant.",
+    "nn": "Kvar klassetrenar kjem til å misunne deg. Og kvar kremmar."
+  },
+  {
+    "en": "That ability is pure gold. Well, pure magic. Close enough.",
+    "nn": "Den evna er reint gull. Vel, rein magi. Nesten same sak."
+  },
+  {
+    "en": "Hooray for new powers! Powers make heroes, heroes make customers.",
+    "nn": "Hurra for nye krefter! Krefter skaper heltar, heltar skaper kundar."
+  },
+  {
+    "en": "Your arsenal just grew. Mine too. I just restocked.",
+    "nn": "Arsenalet ditt vart nett større. Mitt òg. Eg fylte nett på."
+  },
+  {
+    "en": "New power, new responsibilities. Responsibility insurance, anyone?",
+    "nn": "Ny kraft, nytt ansvar. Nokon som vil ha ansvarsforsikring?"
+  },
+  {
+    "en": "That’s a lovely bit of magic. Magic always sells.",
+    "nn": "Det er eit nydeleg stykke magi. Magi sel alltid."
+  },
+  {
+    "en": "What a milestone for your class! I’ll put it in my newsletter.",
+    "nn": "For ein milepæl for klassen din! Eg tek det med i nyhendebrevet mitt."
+  },
+  {
+    "en": "You’re growing into a true master. Masters deserve master gear.",
+    "nn": "Du veks til ein ekte meister. Meistrar fortener meisterutstyr."
+  },
+  {
+    "en": "You can do something I can’t. I can sell something you can’t. Fair.",
+    "nn": "Du kan gjere noko eg ikkje kan. Eg kan selje noko du ikkje kan. Rettvist."
+  },
+  {
+    "en": "That power looks good on you. Matching gloves would look even better.",
+    "nn": "Den krafta kler deg. Hanskar som passar, hadde kledd deg endå betre."
+  },
+  {
+    "en": "I bet the monsters already heard. Word travels fast. Like my deliveries.",
+    "nn": "Eg veddar på at monstera alt har høyrt det. Ord reiser fort. Som leveransane mine."
+  },
+  {
+    "en": "Learning that must have been tough. Tough lessons are the best.",
+    "nn": "Å lære det må ha vore tøft. Tøffe leksjonar er dei beste."
+  },
+  {
+    "en": "A major unlock deserves a major treat. My treats are major. And priced.",
+    "nn": "Å lære det må ha vore tøft. Tøffe lekser er dei beste."
+  },
+  {
+    "en": "I’m adding a little star to your file for that. Gold star.",
+    "nn": "Ei stor evne fortener ein stor godbit. Godbitane mine er store. Og prisa."
+  },
+  {
+    "en": "New ability? Excellent. Your future enemies are already nervous.",
+    "nn": "Ny evne? Framifrå. Dei framtidige fiendane dine er alt nervøse."
+  },
+  {
+    "en": "That power will make you a legend. Legends need biographers. I sell biographies.",
+    "nn": "Den krafta gjer deg til ei legende. Legender treng biografar. Eg sel biografiar."
+  },
+  {
+    "en": "Well earned! Every ability you learn makes the realm safer. And my roads busier.",
+    "nn": "Vel fortent! Kvar evne du lærer, gjer riket tryggare. Og vegane mine travlare."
+  },
+  {
+    "en": "Strong, clever and newly empowered. My favourite customer profile.",
+    "nn": "Sterk, klok og med ny kraft. Favorittkundeprofilen min."
+  },
+  {
+    "en": "Your new power is lovely. I almost want to learn it. Almost. Too much work.",
+    "nn": "Den nye krafta di er nydeleg. Eg har nesten lyst til å lære ho. Nesten. For mykje arbeid."
+  },
+  {
+    "en": "That ability is so cool. Cool things sell. Hot things sell too.",
+    "nn": "Den evna er så kul. Kule ting sel. Heite ting sel òg."
+  },
+  {
+    "en": "You’re leveling up your arsenal. I’m leveling up my prices. Fair.",
+    "nn": "Du oppgraderer arsenalet ditt. Eg oppgraderer prisane mine. Rettvist."
+  },
+  {
+    "en": "I hope it’s flashy. Flashy abilities make great advertising.",
+    "nn": "Eg håpar ho er prangande. Prangande evner er god reklame."
+  },
+  {
+    "en": "That’s the kind of power that wins wars. And tournaments. And my respect.",
+    "nn": "Det er den typen kraft som vinn krigar. Og turneringar. Og respekten min."
+  },
+  {
+    "en": "I raise my glass to your new power. Glasses cost a copper.",
+    "nn": "Eg løftar glaset for den nye krafta di. Glas kostar ein kopar."
+  },
+  {
+    "en": "Your enemies should worry. Your merchant should rejoice. I rejoice.",
+    "nn": "Fiendane dine bør uroe seg. Kremmaren din bør juble. Eg jublar."
+  },
+  {
+    "en": "You’ve learned a new trick. I’ve learned a new price.",
+    "nn": "Du har lært eit nytt triks. Eg har lært ein ny pris."
+  },
+  {
+    "en": "That ability will be your best friend. After me.",
+    "nn": "Den evna blir den beste venen din. Etter meg."
+  },
+  {
+    "en": "Ooh, power! I love power. Purchasing power, especially.",
+    "nn": "Å, kraft! Eg elskar kraft. Kjøpekraft, særleg."
+  },
+  {
+    "en": "A new skill, a new chapter. Chapters need bookmarks. I sell bookmarks.",
+    "nn": "Ein ny dugleik, eit nytt kapittel. Kapittel treng bokmerke. Eg sel bokmerke."
+  },
+  {
+    "en": "You did it! You learned the thing! Now use the thing. Wisely.",
+    "nn": "Du klarte det! Du lærte tingen! Bruk no tingen. Klokt."
+  },
+  {
+    "en": "Every power has a price. Yours was training. Mine is potions.",
+    "nn": "Kvar kraft har ein pris. Din var trening. Min er trylledrikkar."
+  },
+  {
+    "en": "Your growth is my favourite investment. Returns are excellent.",
+    "nn": "Veksten din er favorittinvesteringa mi. Avkastinga er framifrå."
+  },
+  {
+    "en": "That new trick will make your enemies weep. And drop gold.",
+    "nn": "Det nye trikset får fiendane dine til å gråte. Og sleppe gull."
+  },
+  {
+    "en": "Magnificent! Your skill tree just blossomed. I sell fertilizer. Kidding.",
+    "nn": "Storarta! Talenttreet ditt blomstra nett. Eg sel gjødsel. Tullar."
+  },
+  {
+    "en": "Your talents are multiplying. So are my sales projections.",
+    "nn": "Talenta dine blir fleire. Det blir salsprognosane mine òg."
+  },
+  {
+    "en": "I can sense the power from here. My coins are trembling.",
+    "nn": "Eg kjenner krafta heilt hit. Myntane mine skjelv."
+  },
+  {
+    "en": "Congratulations, mighty one! Mighty ones get mighty receipts.",
+    "nn": "Gratulerer, du mektige! Dei mektige får mektige kvitteringar."
+  },
+  {
+    "en": "That’s an ability to be proud of. Pride sold separately. Kidding, it’s free.",
+    "nn": "Det er ei evne å vere stolt av. Stoltheit kostar ekstra. Tullar, ho er gratis."
+  },
+  {
+    "en": "I’ll tell everyone you’ve become even more amazing. Word of mouth is cheap.",
+    "nn": "Eg skal fortelje alle at du har vorte endå meir fantastisk. Jungeltelegrafen er billeg."
+  },
+  {
+    "en": "You’ve unlocked a new level of cool. Cool costs extra. You got it free.",
+    "nn": "Du har låst opp eit nytt nivå av kul. Kul kostar ekstra. Du fekk det gratis."
+  },
+  {
+    "en": "What will you do with your new power? Shop? Excellent answer.",
+    "nn": "Kva skal du gjere med den nye krafta? Handle? Framifrå svar."
+  },
+  {
+    "en": "That ability will make you a hero of legend. Legends get statues. I build statues.",
+    "nn": "Den evna gjer deg til ein sagnhelt. Legender får statuar. Eg byggjer statuar."
+  },
+  {
+    "en": "New power, same sweet hero. Slightly more dangerous. Lovely.",
+    "nn": "Ny kraft, same søte helten. Litt farlegare. Herleg."
+  },
+  {
+    "en": "I’m so proud. My little customer, all powerful now.",
+    "nn": "Eg er så stolt. Den vesle kunden min, heilt mektig no."
+  },
+  {
+    "en": "Your enemies will remember this day. So will I. With gold ink.",
+    "nn": "Fiendane dine kjem til å hugse denne dagen. Det gjer eg òg. Med gullblekk."
+  },
+  {
+    "en": "Big power, big deeds, big purchases. My favourite progression.",
+    "nn": "Stor kraft, store gjerningar, store kjøp. Favorittutviklinga mi."
+  },
+  {
+    "en": "That new skill will pay for itself. Then pay for my goods.",
+    "nn": "Den nye dugleiken betaler seg sjølv. Så betaler han for varene mine."
+  },
+  {
+    "en": "I bet you can’t wait to try it out. Try it on monsters. Not merchants.",
+    "nn": "Eg veddar på at du gler deg til å prøve. Prøv på monster. Ikkje kremmarar."
+  },
+  {
+    "en": "Your new ability is the best thing since my last price hike.",
+    "nn": "Den nye evna di er det beste sidan den førre prisauken min."
+  },
+  {
+    "en": "That ability is like a shiny coin. Valuable, bright and mine to admire.",
+    "nn": "Den evna er som ein blank mynt. Verdifull, lysande og min å beundre."
+  },
+  {
+    "en": "You keep growing stronger. My heart keeps growing fonder. And greedier.",
+    "nn": "Du blir stadig sterkare. Hjartet mitt blir stadig varmare. Og grådigare."
+  },
+  {
+    "en": "Lovely new power! I’ll put up a poster: local hero levels up.",
+    "nn": "Nydeleg ny kraft! Eg heng opp ein plakat: lokal helt går opp i nivå."
+  },
+  {
+    "en": "Spells, strikes, shields, whatever it is, it’s yours now. Congrats!",
+    "nn": "Trolldom, slag, skjold, kva det enn er, er det ditt no. Gratulerer!"
+  },
+  {
+    "en": "Brilliant! I knew your training fees would pay off. For the trainer, at least.",
+    "nn": "Glimrande! Eg visste treningsavgiftene ville løne seg. For trenaren, i alle fall."
+  },
+  {
+    "en": "Learning that took courage. Courage is the rarest stock I know.",
+    "nn": "Å lære det kravde mot. Mot er den sjeldnaste vara eg kjenner."
+  },
+  {
+    "en": "With that power, the world gets smaller and your loot gets bigger.",
+    "nn": "Med den krafta blir verda mindre og looten din større."
+  },
+  {
+    "en": "Who taught you that? I want to hire them. Cheap.",
+    "nn": "Kven lærte deg det? Eg vil tilsetje dei. Billeg."
+  },
+  {
+    "en": "Your fighting style just got fancier. Fancy fighting needs fancy boots.",
+    "nn": "Kampstilen din vart nett finare. Fin kamp treng fine støvlar."
+  },
+  {
+    "en": "A mighty milestone! I’m marking it in my calendar with a gold coin.",
+    "nn": "Ein mektig milepæl! Eg merkar han i kalenderen med ein gullmynt."
+  },
+  {
+    "en": "Abilities are like investments. The good ones pay every day.",
+    "nn": "Evner er som investeringar. Dei gode betaler kvar dag."
+  },
+  {
+    "en": "I knew you’d unlock it. I placed a small bet. I won a small fortune.",
+    "nn": "Eg visste du ville låse ho opp. Eg vedda litt. Eg vann ein liten formue."
+  },
+  {
+    "en": "New power suits you. Everything suits you. Except cheap gear. Buy better.",
+    "nn": "Ny kraft kler deg. Alt kler deg. Bortsett frå billeg utstyr. Kjøp betre."
+  },
+  {
+    "en": "Your power has a nice sparkle to it. Sparkles sell.",
+    "nn": "Krafta di har ein fin glans. Glans sel."
+  },
+  {
+    "en": "Did it hurt to learn? Learning hurts. Potions help. I sell potions.",
+    "nn": "Gjorde det vondt å lære? Læring gjer vondt. Trylledrikkar hjelper. Eg sel trylledrikkar."
+  },
+  {
+    "en": "Hats off to the newly powerful! Power hats, very trendy.",
+    "nn": "Hatten av for den nyleg mektige! Krafthattar, svært moderne."
+  },
+  {
+    "en": "I’m adding you to my list of heroes not to anger. Also my best customers list.",
+    "nn": "Eg set deg på lista over heltar ein ikkje bør gjere sinte. Og lista over beste kundar."
+  },
+  {
+    "en": "Now you’re a real threat. Real threats need real armor.",
+    "nn": "No er du ein ekte trussel. Ekte truslar treng ekte rustning."
+  },
+  {
+    "en": "I’m genuinely impressed. That’s a big deal for your class.",
+    "nn": "Eg er oppriktig imponert. Det er ei stor sak for klassen din."
+  },
+  {
+    "en": "Powerful you! I’ll throw in a free compliment with your next purchase. You’re strong.",
+    "nn": "Du mektige! Du får eit gratis kompliment med neste kjøp. Du er sterk."
+  },
+  {
+    "en": "Talent unlocked! Talent is the one thing money can’t buy. I’ve checked.",
+    "nn": "Talent låst opp! Talent er det einaste pengar ikkje kan kjøpe. Eg har sjekka."
+  },
+  {
+    "en": "Did your trainer smile? Trainers smile when paid. Like me.",
+    "nn": "Smilte trenaren din? Trenarar smiler når dei får betalt. Som meg."
+  },
+  {
+    "en": "This calls for a toast with my second-finest juice.",
+    "nn": "Dette krev ei skål med den nest finaste safta mi."
+  },
+  {
+    "en": "I hope your new power works on bandits. They’ve been stealing my customers.",
+    "nn": "Eg håpar den nye krafta verkar på bandittar. Dei har stole kundane mine."
+  },
+  {
+    "en": "Every power you gain makes my shop safer. Thank you, bodyguard.",
+    "nn": "Kvar kraft du får, gjer butikken min tryggare. Takk, livvakt."
+  },
+  {
+    "en": "You’re like a fine wine, getting better and more expensive with age.",
+    "nn": "Du er som god vin, betre og dyrare med åra."
+  },
+  {
+    "en": "Grand new ability! Grand abilities deserve grand entrances. Trumpets for rent.",
+    "nn": "Storarta ny evne! Storarta evner fortener storarta entréar. Trompetar til leige."
+  },
+  {
+    "en": "I can’t do magic. I can do math. And the math says you’re amazing.",
+    "nn": "Eg kan ikkje magi. Eg kan rekning. Og rekninga seier at du er fantastisk."
+  },
+  {
+    "en": "Your toolbox grows. My product range grows to match.",
+    "nn": "Verktøykassa di veks. Vareutvalet mitt veks i takt."
+  },
+  {
+    "en": "That’s a powerful milestone. Milestones are great for business.",
+    "nn": "Det er ein mektig milepæl. Milepælar er bra for forretninga."
+  },
+  {
+    "en": "Look how far you’ve come. Look how far your purse can go.",
+    "nn": "Sjå kor langt du har kome. Sjå kor langt pungen din kan rekke."
+  },
+  {
+    "en": "You’re officially stronger than yesterday. Yesterday’s prices are gone too.",
+    "nn": "No er du offisielt sterkare enn i går. Prisane frå i går er borte òg."
+  },
+  {
+    "en": "Use that power wisely. Wisely means profitably. Trust me.",
+    "nn": "Bruk den krafta klokt. Klokt betyr lønsamt. Stol på meg."
+  },
+  {
+    "en": "I salute your dedication. Dedication unlocks everything. Except my vault.",
+    "nn": "Eg gjer honnør for iherdigheita di. Iherdigheit låser opp alt. Bortsett frå kvelvet mitt."
+  },
+  {
+    "en": "Ooh, I love when heroes level their skills. They always need new gear.",
+    "nn": "Å, eg elskar når heltar oppgraderer dugleiken sin. Dei treng alltid nytt utstyr."
+  },
+  {
+    "en": "That ability is a real treasure. I appraise treasures. Value: legendary.",
+    "nn": "Den evna er ein ekte skatt. Eg takserer skattar. Verdi: legendarisk."
+  },
+  {
+    "en": "A new tool for the job! The job being heroism. Mine being sales.",
+    "nn": "Eit nytt verktøy til jobben! Jobben er heltedåd. Min er sal."
+  },
+  {
+    "en": "My, what a powerful friend I have! Powerful friends are good for business.",
+    "nn": "Jøss, for ein mektig venn eg har! Mektige vener er bra for forretninga."
+  },
+  {
+    "en": "Your progress is my favourite story. I tell it to all my customers.",
+    "nn": "Framgangen din er favoritthistoria mi. Eg fortel ho til alle kundane mine."
+  },
+  {
+    "en": "Wonderful new power! The realm is safer, my shop is busier.",
+    "nn": "Vidunderleg ny kraft! Riket er tryggare, butikken min travlare."
+  },
+  {
+    "en": "Big new power deserves big new gloves. Size up!",
+    "nn": "Stor ny kraft fortener store nye hanskar. Gå opp ein storleik!"
+  },
+  {
+    "en": "You can now do things I only dream of. Like hitting things. Hard.",
+    "nn": "No kan du gjere ting eg berre drøymer om. Som å slå ting. Hardt."
+  },
+  {
+    "en": "I hope that power comes with flair. Flair sells.",
+    "nn": "Eg håpar den krafta kjem med stil. Stil sel."
+  },
+  {
+    "en": "That’s some serious power. Serious power needs serious snacks.",
+    "nn": "Det er seriøs kraft. Seriøs kraft treng seriøse snacks."
+  },
+  {
+    "en": "Every new power is a new chance to impress. You’ve impressed me.",
+    "nn": "Kvar ny kraft er ein ny sjanse til å imponere. Du har imponert meg."
+  },
+  {
+    "en": "Your trainer gave you a gift. I’ll give you a coupon. Equally valuable. Nearly.",
+    "nn": "Trenaren gav deg ei gåve. Eg gir deg ein kupong. Like verdifull. Nesten."
+  },
+  {
+    "en": "What a learner! You’d make a fine merchant. Never mind, stay a hero.",
+    "nn": "For eit lærenemme! Du hadde vore ein fin kremmar. Gløym det, hald fram som helt."
+  },
+  {
+    "en": "That power will open doors. Doors with treasure behind them, I hope.",
+    "nn": "Den krafta kjem til å opne dører. Dører med skattar bak, håpar eg."
+  },
+  {
+    "en": "I’m drafting a brochure about you. Page one: new ability. Page two: buy here.",
+    "nn": "Eg skriv ein brosjyre om deg. Side éin: ny evne. Side to: kjøp her."
+  },
+  {
+    "en": "Huzzah! The newly mighty shall be well supplied. By me.",
+    "nn": "Hurra! Dei nyleg mektige skal vere godt forsynte. Av meg."
+  },
+  {
+    "en": "Your class trainer must think you’re a natural. I think you’re a natural customer.",
+    "nn": "Klassetrenaren din må tru at du er eit naturtalent. Eg trur du er ein naturleg kunde."
+  },
+  {
+    "en": "Strong moves need strong boots. Boot sale this week.",
+    "nn": "Sterke grep treng sterke støvlar. Støvlar på tilbod denne veka."
+  },
+  {
+    "en": "I bet your enemies just felt a shiver. My till just felt a thrill.",
+    "nn": "Eg veddar på at fiendane dine kjende ei skjelving. Kassa mi kjende ei spenning."
+  },
+  {
+    "en": "Now that you’ve got it, flaunt it. Flaunting sells.",
+    "nn": "No som du har ho, vis ho fram. Det sel."
+  },
+  {
+    "en": "Another ability? You’re collecting them like I collect coins.",
+    "nn": "Endå ei evne? Du samlar dei som eg samlar myntar."
+  },
+  {
+    "en": "Master of a new art! Art sells. Your art sells monsters to the graveyard.",
+    "nn": "Meister i ein ny kunst! Kunst sel. Din kunst sender monster til gravplassen."
+  },
+  {
+    "en": "I hereby declare you more awesome than yesterday. Certificate, one silver.",
+    "nn": "Eg erklærer deg herved meir fantastisk enn i går. Bevis, eitt sølv."
+  },
+  {
+    "en": "Your power is growing. So is my shop. Coincidence? No, strategy.",
+    "nn": "Krafta di veks. Det gjer butikken min òg. Tilfeldig? Nei, strategi."
+  },
+  {
+    "en": "That ability looks great on paper. Even better in battle. Best in my brochure.",
+    "nn": "Den evna ser flott ut på papiret. Endå betre i strid. Best i brosjyren min."
+  },
+  {
+    "en": "What a powerful addition to your repertoire! Repertoires need agents. Hello.",
+    "nn": "For eit mektig tilskot til repertoaret ditt! Repertoar treng agentar. Hei."
+  },
+  {
+    "en": "New ability, new respect, new tab at my shop.",
+    "nn": "Ny evne, ny respekt, ny rekning i butikken min."
+  },
+  {
+    "en": "I knew this day would come. I stocked up on celebration cakes.",
+    "nn": "Eg visste denne dagen ville kome. Eg fylte på med feiringskaker."
+  },
+  {
+    "en": "You’re practically unstoppable now. Practically. Potions help with the rest.",
+    "nn": "No er du nesten ustoppeleg. Nesten. Trylledrikkar hjelper med resten."
+  },
+  {
+    "en": "That new power deserves a fancy name. Naming rights, two gold.",
+    "nn": "Den nye krafta fortener eit fint namn. Namnerettar, to gull."
+  },
+  {
+    "en": "Let me know if the new power breaks anything. I do repairs. Gladly.",
+    "nn": "Sei frå om den nye krafta øydelegg noko. Eg reparerer. Gjerne."
+  },
+  {
+    "en": "Every power unlocked is a door opened. Mind the draft. Cloaks on sale.",
+    "nn": "Kvar kraft du låser opp, er ei dør som opnar seg. Pass deg for trekken. Kapper på tilbod."
+  },
+  {
+    "en": "You worked so hard for this. Treat yourself. My shop has treats.",
+    "nn": "Du jobba så hardt for dette. Unn deg noko. Butikken min har godsaker."
+  },
+  {
+    "en": "Power looks lovely on you. Like gold looks lovely on me.",
+    "nn": "Kraft kler deg nydeleg. Som gull kler meg."
+  },
+  {
+    "en": "That ability will turn the tide of many battles. Tides bring treasure ashore.",
+    "nn": "Den evna kjem til å snu mange slag. Tidevatnet ber skattar i land."
+  },
+  {
+    "en": "Here’s to your new power and all the loot it will bring.",
+    "nn": "Skål for den nye krafta og all looten ho kjem til å gi."
+  },
+  {
+    "en": "I wish I could unlock new abilities. All I unlock is my vault. Daily.",
+    "nn": "Eg skulle ønskje eg kunne låse opp nye evner. Eg låser berre opp kvelvet mitt. Dagleg."
+  },
+  {
+    "en": "New ability, old friend. Some things change, some stay lovely.",
+    "nn": "Ny evne, gamal venn. Somt endrar seg, somt held seg nydeleg."
+  },
+  {
+    "en": "Your growth makes my greedy heart sing.",
+    "nn": "Veksten din får det grådige hjartet mitt til å syngje."
+  },
+  {
+    "en": "Now you’ve got what it takes. Next: what it costs. Visit me.",
+    "nn": "No har du det som skal til. Neste: det det kostar. Kom innom."
+  },
+  {
+    "en": "Every master was once an apprentice. You’re getting closer to master.",
+    "nn": "Kvar meister var ein gong lærling. Du nærmar deg meister."
+  },
+  {
+    "en": "The new power is yours. The bragging rights too. I’ll sell them back to you.",
+    "nn": "Den nye krafta er di. Skryteretten òg. Eg sel han tilbake til deg."
+  },
+  {
+    "en": "That ability will make you the life of every party. And raid.",
+    "nn": "Den evna gjer deg til midtpunktet i kvar gruppe. Og kvart raid."
+  },
+  {
+    "en": "Glorious power! The kind that writes history. I’ll publish it.",
+    "nn": "Ærerik kraft! Den typen som skriv historie. Eg gir ho ut."
+  },
+  {
+    "en": "You grow, I profit, the realm is safe. Everyone wins.",
+    "nn": "Du veks, eg tener, riket er trygt. Alle vinn."
+  },
+  {
+    "en": "That new skill is going to be so useful. Useful is my favourite adjective. After cheap.",
+    "nn": "Den nye dugleiken kjem til å vere så nyttig. Nyttig er favorittordet mitt. Etter billeg."
+  },
+  {
+    "en": "So you’re even stronger now. Stronger heroes carry heavier bags. Buy heavier bags.",
+    "nn": "Så du er endå sterkare no. Sterkare heltar ber tyngre sekker. Kjøp tyngre sekker."
+  },
+  {
+    "en": "I bet your enemies are filing complaints already. Complaints department: closed.",
+    "nn": "Eg veddar på at fiendane dine alt sender klager. Klageavdelinga: stengd."
+  },
+  {
+    "en": "New tricks keep life exciting. And my shop busy.",
+    "nn": "Nye triks held livet spennande. Og butikken min travel."
+  },
+  {
+    "en": "That ability is the stuff of dreams. Sweet, profitable dreams.",
+    "nn": "Den evna er stoff for draumar. Søte, lønsame draumar."
+  },
+  {
+    "en": "Look at you, unlocking things! Unlock my heart next. With gold.",
+    "nn": "Sjå på deg, du låser opp ting! Lås opp hjartet mitt neste gong. Med gull."
+  },
+  {
+    "en": "You’re officially more impressive. Impressive heroes get impressive price tags.",
+    "nn": "No er du offisielt meir imponerande. Imponerande heltar får imponerande prislappar."
+  },
+  {
+    "en": "I’d give you a medal for it, but I’d rather sell you one.",
+    "nn": "Eg hadde gitt deg ein medalje for det, men eg vil heller selje deg ein."
+  },
+  {
+    "en": "That ability is legendary. Your trainer must be telling everyone. So am I.",
+    "nn": "Den evna er legendarisk. Trenaren din må fortelje det til alle. Det gjer eg òg."
+  },
+  {
+    "en": "Your skills shine brighter every day. I’ll need sunglasses. I sell sunglasses.",
+    "nn": "Dugleiken din skin klarare kvar dag. Eg treng solbriller. Eg sel solbriller."
+  },
+  {
+    "en": "Power gained, legend growing, merchant grinning.",
+    "nn": "Kraft vunne, legende som veks, kremmar som gliser."
+  },
+  {
+    "en": "That’s my favourite kind of news. The kind that leads to shopping.",
+    "nn": "Det er favorittnyhenda mine. Dei som fører til handling."
+  },
+  {
+    "en": "You’ve outgrown your old tricks. Sell them to me. I collect tricks.",
+    "nn": "Du har vakse frå dei gamle triksa. Sel dei til meg. Eg samlar på triks."
+  },
+  {
+    "en": "I hope it comes with a dramatic glow. Glows are very marketable.",
+    "nn": "Eg håpar ho kjem med ein dramatisk glød. Glød er svært salbart."
+  },
+  {
+    "en": "Your new ability is the cherry on top of a very lucrative cake.",
+    "nn": "Den nye evna di er kirsebæret på ei svært innbringande kake."
+  },
+  {
+    "en": "Proud of you, mighty one! Mighty ones remember their merchants. Right?",
+    "nn": "Stolt av deg, du mektige! Dei mektige hugsar kremmarane sine. Ikkje sant?"
+  },
+  {
+    "en": "You learned it, you earned it, now flaunt it. Flaunting near my shop, please.",
+    "nn": "Du lærte det, du fortente det, vis det no fram. Ved butikken min, takk."
+  },
+  {
+    "en": "Every new ability brings you closer to legend. And me closer to retirement.",
+    "nn": "Kvar ny evne fører deg nærare legenda. Og meg nærare pensjonen."
+  },
+  {
+    "en": "That power is a game-changer. My game is selling. Still unchanged. Profitable.",
+    "nn": "Den krafta endrar spelet. Spelet mitt er sal. Framleis uendra. Lønsamt."
+  },
+  {
+    "en": "The trainers are proud, the monsters are scared and I’m delighted.",
+    "nn": "Trenarane er stolte, monstera er redde og eg er glad."
+  },
+  {
+    "en": "Hooray! That’s a big unlock. Big unlocks deserve big parties.",
+    "nn": "Hurra! Det er ei stor evne. Store evner fortener store fester."
+  },
+  {
+    "en": "I’ve been waiting for you to learn that. I stocked the right reagents.",
+    "nn": "Eg har venta på at du skulle lære det. Eg har fylt på dei rette reagensane."
+  },
+  {
+    "en": "That’s an ability worth its weight in gold. It weighs nothing. Still.",
+    "nn": "Det er ei evne verd vekta si i gull. Ho veg ingenting. Likevel."
+  },
+  {
+    "en": "You keep getting better. I keep getting richer. Thank you.",
+    "nn": "Du blir stadig betre. Eg blir stadig rikare. Takk."
+  },
+  {
+    "en": "Unlock achieved! Achievement unlocked! Gold, hopefully, incoming!",
+    "nn": "Evne låst opp! Bragd oppnådd! Gull, forhåpentleg, på veg!"
+  },
+  {
+    "en": "Wow! You’re practically a different class now. A richer class, I hope.",
+    "nn": "Oi! Du er nesten ein annan klasse no. Ein rikare klasse, håpar eg."
+  },
+  {
+    "en": "That’s the power of persistence. Persistence is my favourite customer trait.",
+    "nn": "Det er krafta til uthald. Uthald er favoritteigenskapen min hos kundar."
+  },
+  {
+    "en": "I always said you had hidden talents. Now they’re not hidden. Excellent.",
+    "nn": "Eg har alltid sagt du hadde løynde talent. No er dei ikkje løynde. Framifrå."
+  },
+  {
+    "en": "New power, new swagger. Swagger is free. Swagger gear isn’t.",
+    "nn": "Ny kraft, ny gangart. Gangart er gratis. Utstyr til han er det ikkje."
+  },
+  {
+    "en": "Treat your new power kindly. And treat yourself to my wares.",
+    "nn": "Ver snill med den nye krafta. Og unn deg varene mine."
+  },
+  {
+    "en": "Your skills just reached a whole new tier. Tiers are like shelves. Higher is pricier.",
+    "nn": "Dugleiken din nådde eit heilt nytt nivå. Nivå er som hyller. Høgare er dyrare."
+  },
+  {
+    "en": "I’m so glad I invested in you early. Returns are excellent.",
+    "nn": "Eg er så glad eg investerte i deg tidleg. Avkastinga er framifrå."
+  },
+  {
+    "en": "That ability will make monsters think twice. Monsters thinking is rare. Good job.",
+    "nn": "Den evna får monstera til å tenkje seg om. Det er sjeldan monster tenkjer. Bra jobba."
+  },
+  {
+    "en": "You’re a marvel. Marvels are rare. Rare things are precious. Like you.",
+    "nn": "Du er eit under. Under er sjeldne. Sjeldne ting er dyrebare. Som deg."
+  },
+  {
+    "en": "A whole new power! The future looks bright. And expensive.",
+    "nn": "Ei heilt ny kraft! Framtida ser lys ut. Og dyr."
+  },
+  {
+    "en": "May your new power never fail you. And may you never fail to visit me.",
+    "nn": "Måtte den nye krafta aldri svikte deg. Og måtte du aldri gløyme å vitje meg."
+  },
+  {
+    "en": "I’ll update your hero profile: stronger, smarter, still my best customer.",
+    "nn": "Eg oppdaterer helteprofilen din: sterkare, klokare, framleis den beste kunden min."
+  },
+  {
+    "en": "Your new ability is a delight. So are you. So is your purse.",
+    "nn": "Den nye evna di er ei glede. Det er du òg. Og pungen din."
+  },
+  {
+    "en": "Congrats! You just became the most interesting hero at the inn.",
+    "nn": "Gratulerer! Du vart nett den mest interessante helten på vertshuset."
+  },
+  {
+    "en": "Power and grace, all in one! Like a well-balanced ledger.",
+    "nn": "Kraft og ynde i eitt! Som ein godt balansert rekneskap."
+  }
+]

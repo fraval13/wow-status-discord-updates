@@ -37,7 +37,7 @@
   },
   {
     "en": "{level} already? Slow down, please.",
-    "nn": "{level} alt? Ro deg ned litt, er du snill."
+    "nn": "{level} alt? Ta det litt roleg, er du snill."
   },
   {
     "en": "Fine. Great. Wonderful. Level {level}. Grr.",
@@ -77,7 +77,7 @@
   },
   {
     "en": "{level}! Great. I will just go cry in a cave.",
-    "nn": "{level}! Flott. Eg går og grin i ei hole."
+    "nn": "{level}! Flott. Eg går og græt i ei grotte."
   },
   {
     "en": "The gap between us just grew to level {level}. Lovely.",
@@ -165,7 +165,7 @@
   },
   {
     "en": "Hitting {level} without me? Bold.",
-    "nn": "Nå {level} utan meg? Frekt."
+    "nn": "Nå {level} utan meg? Djervt."
   },
   {
     "en": "I will pretend that your level {level} is fine with me.",
@@ -173,7 +173,7 @@
   },
   {
     "en": "The XP gods love you. Level {level} proves it.",
-    "nn": "XP-gudane elskar deg. Nivå {level} prov det."
+    "nn": "XP-gudane elskar deg. Nivå {level} er beviset."
   },
   {
     "en": "Give me a minute to process level {level}.",
@@ -205,11 +205,11 @@
   },
   {
     "en": "Congrats on {level}. Truly. Mostly. Partly.",
-    "nn": "Gratulerer med {level}. Verkeleg. Mest. Delvis."
+    "nn": "Gratulerer med {level}. Verkeleg. Stort sett. Delvis."
   },
   {
     "en": "Did you even break a sweat getting to {level}?",
-    "nn": "Vart du i det heile sveitt på vegen til {level}?"
+    "nn": "Vart du i det heile teke sveitt på vegen til {level}?"
   },
   {
     "en": "I need a snack after seeing you at level {level}.",
@@ -273,11 +273,11 @@
   },
   {
     "en": "I am being the bigger person about your level {level}.",
-    "nn": "Eg er den store personen her når det gjeld nivå {level}."
+    "nn": "Eg er den vaksne her når det gjeld nivå {level}."
   },
   {
     "en": "That level {level} should have been mine.",
-    "nn": "Det nivå {level} skulle ha vore mitt."
+    "nn": "Nivå {level} skulle ha vore mitt."
   },
   {
     "en": "Oh, joy. Level {level}. For you.",
@@ -445,7 +445,7 @@
   },
   {
     "en": "I would hug you for {level}, but envy.",
-    "nn": "Eg ville klemt deg for {level}, men misunning."
+    "nn": "Eg ville ha klemt deg for {level}, men misunninga."
   },
   {
     "en": "I am cheering for {level} in my own way. Sulking.",
@@ -465,7 +465,7 @@
   },
   {
     "en": "I demand you slow down. {level} is plenty.",
-    "nn": "Eg krev at du roar deg ned. {level} er meir enn nok."
+    "nn": "Eg krev at du tek det roleg. {level} er meir enn nok."
   },
   {
     "en": "You are a menace. A level {level} menace.",
@@ -473,7 +473,7 @@
   },
   {
     "en": "Fine. Amazing. There, I said it. Level {level}.",
-    "nn": "Greitt. Fantastisk. Der, eg sa det. Nivå {level}."
+    "nn": "Greitt. Fantastisk. Sånn, no har eg sagt det. Nivå {level}."
   },
   {
     "en": "Is there anything you cannot do? Apart from staying below {level}?",
@@ -541,7 +541,7 @@
   },
   {
     "en": "Big moment, level {level}. For you. Not for me.",
-    "nn": "Stort augeblink, nivå {level}. For deg. Ikkje for meg."
+    "nn": "Stor augeblink, nivå {level}. For deg. Ikkje for meg."
   },
   {
     "en": "Your level {level} makes me want a rematch with my life choices.",
@@ -561,7 +561,7 @@
   },
   {
     "en": "Level {level}. Nice. Suspiciously nice.",
-    "nn": "Nivå {level}. Fint. Mistenkeleg fint."
+    "nn": "Nivå {level}. Fint. Mistenkjeleg fint."
   },
   {
     "en": "Can we pretend I am {level} too? Just for today?",
@@ -585,7 +585,7 @@
   },
   {
     "en": "Good for you, bad for my ego. Level {level}.",
-    "nn": "Bra for deg, dårleg for egoet mitt. Nivå {level}."
+    "nn": "Kjekt for deg, dårleg for egoet mitt. Nivå {level}."
   },
   {
     "en": "You hit {level}. My armour has holes in it, by the way.",
@@ -601,7 +601,7 @@
   },
   {
     "en": "Okay, champ. Level {level}. Do not get a big head.",
-    "nn": "Greitt, mester. Nivå {level}. Ikkje bli kjepphøg."
+    "nn": "Greitt, meister. Nivå {level}. Ikkje bli kjepphøg."
   },
   {
     "en": "Why do you get all the good mobs? Level {level} already.",
@@ -701,7 +701,7 @@
   },
   {
     "en": "You are a natural. {level} proves it. It is unbearable.",
-    "nn": "Du er eit naturtalent. {level} prov det. Det er uuthaldeleg."
+    "nn": "Du er eit naturtalent. {level} er beviset. Det er uuthaldeleg."
   },
   {
     "en": "Level {level}? No way. Way? Ugh.",
@@ -797,7 +797,7 @@
   },
   {
     "en": "Take a bow for {level}. A small one.",
-    "nn": "Bukk for {level}. Eit lite eitt."
+    "nn": "Bukk for {level}. Eit lite eit."
   },
   {
     "en": "How did you reach {level} so fast? Rude question. Sorry.",
@@ -809,7 +809,7 @@
   },
   {
     "en": "Great, now my guild will ask why I am not {level}.",
-    "nn": "Flott, no spør gilda kvifor eg ikkje er {level}."
+    "nn": "Flott, no spør guilden min kvifor eg ikkje er {level}."
   },
   {
     "en": "You and that level {level} glow, honestly.",
@@ -865,7 +865,7 @@
   },
   {
     "en": "Fine work on {level}, my annoyingly good friend.",
-    "nn": "Fint arbeid med {level}, min irriterande flinke ven."
+    "nn": "Fint arbeid med {level}, min irriterande flinke venn."
   },
   {
     "en": "You win today with {level}. Only today.",
@@ -937,7 +937,7 @@
   },
   {
     "en": "Can somebody slow this person down? Level {level}!",
-    "nn": "Kan nokon bremse dette mennesket? Nivå {level}!"
+    "nn": "Stopp dette mennesket, nokon! Nivå {level}!"
   },
   {
     "en": "You hit {level} and did not even brag. Yet.",
@@ -953,7 +953,7 @@
   },
   {
     "en": "You always get the good spawns. {level} proves it.",
-    "nn": "Du får alltid dei gode spawnane. {level} prov det."
+    "nn": "Du får alltid dei gode spawnane. {level} er beviset."
   },
   {
     "en": "I had a level once. Ah, memories. You are {level}.",
@@ -1009,7 +1009,7 @@
   },
   {
     "en": "Brilliant, {level}. Now do the next one slower.",
-    "nn": "Strålande, {level}. Ta det neste nivået seinare."
+    "nn": "Strålande, {level}. Ta det neste nivået saktare."
   },
   {
     "en": "I need to go lie on the floor. You are {level}.",
@@ -1065,7 +1065,7 @@
   },
   {
     "en": "You are doing amazing at {level}. Stop it.",
-    "nn": "Du gjer det fantastisk på {level}. Slutt."
+    "nn": "Du gjer det fantastisk på {level}. Slutt med det."
   },
   {
     "en": "Level {level}! From your very proud, very sour friend.",
@@ -1085,7 +1085,7 @@
   },
   {
     "en": "Someone tell my XP bar that {level} is possible.",
-    "nn": "Kan nokon fortelje XP-linja mi at {level} er mogleg."
+    "nn": "Fortel XP-linja mi at {level} er mogleg, nokon!"
   },
   {
     "en": "They say {level} is the best level. They are wrong. Congrats.",
@@ -1133,7 +1133,7 @@
   },
   {
     "en": "That {level} looks suspiciously shiny.",
-    "nn": "Det nivå {level} ser mistenkeleg blankt ut."
+    "nn": "Nivå {level} ser mistenkjeleg blankt ut."
   },
   {
     "en": "If {level} were a person, I would glare at it.",
@@ -1157,7 +1157,7 @@
   },
   {
     "en": "Right, {level}. My pride is in the repair shop now.",
-    "nn": "Jaha, {level}. Stoltheita mi er på verkstad no."
+    "nn": "Jaha, {level}. Stoltheita mi står på verkstaden no."
   },
   {
     "en": "Watching you reach {level} was a lot. For me.",
@@ -1165,7 +1165,7 @@
   },
   {
     "en": "Honestly, {level} suits you. I wish it did not.",
-    "nn": "Ærleg talt, {level} kler deg. Skulle ønskt det ikkje gjorde det."
+    "nn": "Ærleg talt, {level} kler deg. Eg skulle ønskje det ikkje gjorde det."
   },
   {
     "en": "Cheers to {level}. My cup is half empty.",

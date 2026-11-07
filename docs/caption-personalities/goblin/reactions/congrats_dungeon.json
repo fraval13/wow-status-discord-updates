@@ -1,0 +1,1202 @@
+[
+  {
+    "en": "Dungeon cleared! I’ll take my cut of the loot now, thanks.",
+    "nn": "Fangeholet er rydda! Eg tek delen min av looten no, takk."
+  },
+  {
+    "en": "Congrats on the clear! Did you leave anything for the auctioneers?",
+    "nn": "Gratulerer med ryddinga! La du igjen noko til auksjonarius?"
+  },
+  {
+    "en": "A cleared dungeon is a market opened. Well done!",
+    "nn": "Eit rydda fangehol er ein opna marknad. Godt gjort!"
+  },
+  {
+    "en": "Congrats! I’d like the salvage rights to that dungeon, please.",
+    "nn": "Gratulerer! Eg vil gjerne ha bergingsrettane til det fangeholet."
+  },
+  {
+    "en": "Cleared! Now I can open a gift shop at the entrance.",
+    "nn": "Rydda! No kan eg opne ein suvenirbutikk ved inngangen."
+  },
+  {
+    "en": "Congrats on the clear! All that treasure needs appraising. By me.",
+    "nn": "Gratulerer med ryddinga! All den skatten treng taksering. Av meg."
+  },
+  {
+    "en": "Dungeon done! The boss’s hoard is now a business opportunity.",
+    "nn": "Fangeholet er ferdig! Skatten til sjefen er no eit forretningshøve."
+  },
+  {
+    "en": "Congrats! Was the boss carrying gold? Asking professionally.",
+    "nn": "Gratulerer! Hadde sjefen gull på seg? Spør i jobbsamanheng."
+  },
+  {
+    "en": "Cleared! I’m renting that dungeon out for parties next week.",
+    "nn": "Rydda! Eg leiger ut det fangeholet til selskap neste veke."
+  },
+  {
+    "en": "Congrats on the clear! Your loot bags look heavy. Need a porter?",
+    "nn": "Gratulerer med ryddinga! Lootsekkene dine ser tunge ut. Treng du ein berar?"
+  },
+  {
+    "en": "Dungeon cleared! I’ll sell guided tours now that it’s safe.",
+    "nn": "Fangeholet er rydda! Eg sel guida turar no som det er trygt."
+  },
+  {
+    "en": "Congrats on the clear! Dibs on the empty treasure chests.",
+    "nn": "Gratulerer med ryddinga! Eg tingar dei tomme skattekistene."
+  },
+  {
+    "en": "A first clear! Collectors pay extra for first-clear loot.",
+    "nn": "Ei første rydding! Samlarar betaler ekstra for slik loot."
+  },
+  {
+    "en": "Congrats! Dungeon real estate just became very attractive.",
+    "nn": "Gratulerer! Fangeholseigedom vart nett svært attraktiv."
+  },
+  {
+    "en": "Cleared! I hope you checked every pot and crate. Profit hides.",
+    "nn": "Rydda! Eg håpar du sjekka kvar krukke og kasse. Forteneste gøymer seg."
+  },
+  {
+    "en": "First clear! Collectors will pay for anything you dragged out of there.",
+    "nn": "Første rydding! Samlarar betaler for alt du drog med deg ut derifrå."
+  },
+  {
+    "en": "What a run! Did the boss leave a will? I’d like to read it.",
+    "nn": "For ein runde! Skreiv sjefen testament? Eg vil gjerne lese det."
+  },
+  {
+    "en": "Down they went, one after another. Like my competitors’ prices.",
+    "nn": "Ned gjekk dei, den eine etter den andre. Som prisane til konkurrentane mine."
+  },
+  {
+    "en": "Clean sweep! I sell brooms, by the way, if you want to make it official.",
+    "nn": "Reint bord! Eg sel kostar, forresten, om du vil gjere det offisielt."
+  },
+  {
+    "en": "Boss down! Now who owns all that furniture? Asking for a buyer.",
+    "nn": "Sjefen er nede! Kven eig no alle dei møblane? Spør for ein kjøpar."
+  },
+  {
+    "en": "Nicely cleared! I’m drawing up a lease for the empty halls.",
+    "nn": "Fint rydda! Eg set opp ein leigekontrakt for dei tomme hallane."
+  },
+  {
+    "en": "What a clear, partner! Shall we split the loot? Seventy-thirty sounds fair.",
+    "nn": "For ei rydding, makker! Skal vi dele looten? Sytti-tretti høyrest rettvist ut."
+  },
+  {
+    "en": "Another dungeon done! The underground economy thanks you.",
+    "nn": "Endå eit fangehol ferdig! Den underjordiske økonomien takkar deg."
+  },
+  {
+    "en": "All cleared out! Out of monsters, I mean. Gold, I hope, you took.",
+    "nn": "Alt reinska ut! For monster, meiner eg. Gullet tok du, håpar eg."
+  },
+  {
+    "en": "Smashing run! Any smashed crates I should know about? Salvage rights!",
+    "nn": "Knallrunde! Nokon knuste kasser eg bør vite om? Bergingsrettar!"
+  },
+  {
+    "en": "Victory underground! The worms are celebrating. So am I.",
+    "nn": "Siger under jorda! Makkane feirar. Det gjer eg òg."
+  },
+  {
+    "en": "Swept clean! I’ll send my cousin in to check for loose coins.",
+    "nn": "Feia reint! Eg sender søskenbarnet mitt inn for å sjå etter lause myntar."
+  },
+  {
+    "en": "Well cleared, friend! Did you check behind the throne? Thrones hide things.",
+    "nn": "Godt rydda, venn! Sjekka du bak tronen? Troner gøymer ting."
+  },
+  {
+    "en": "Heroes of the deep! The deep is lovely when it’s empty and profitable.",
+    "nn": "Heltar frå djupet! Djupet er nydeleg når det er tomt og lønsamt."
+  },
+  {
+    "en": "Done and dusted! Dust is free. Dungeon loot isn’t. Let’s talk.",
+    "nn": "Ferdig og klart! Støv er gratis. Looten frå fangeholet er det ikkje. Lat oss prate."
+  },
+  {
+    "en": "Dungeon conquered! Shall I put a gift shop at the exit? I’m doing it.",
+    "nn": "Fangeholet er erobra! Skal eg opne suvenirbutikk ved utgangen? Eg gjer det."
+  },
+  {
+    "en": "Boss toppled! Big bosses fall hard. And drop well.",
+    "nn": "Sjefen er felt! Store sjefar fell hardt. Og slepper godt."
+  },
+  {
+    "en": "That’s a clear! First of many, I hope. Each one a business opportunity.",
+    "nn": "Det er ei rydding! Den første av mange, håpar eg. Kvar ei eit forretningshøve."
+  },
+  {
+    "en": "Well fought! I watched from a safe distance. Very safe. Next town over.",
+    "nn": "Godt kjempa! Eg såg på frå trygg avstand. Svært trygg. Neste by."
+  },
+  {
+    "en": "The dungeon is yours! Want to sell it? I’ll make an offer.",
+    "nn": "Fangeholet er ditt! Vil du selje det? Eg kjem med eit bod."
+  },
+  {
+    "en": "Ooh, a clear! Clears are lovely. Clears with loot are lovelier.",
+    "nn": "Å, ei rydding! Ryddingar er nydelege. Ryddingar med loot er endå finare."
+  },
+  {
+    "en": "Cleared and looted! The two best words in the language.",
+    "nn": "Rydda og plyndra! Dei to beste orda i språket."
+  },
+  {
+    "en": "What a crew! A crew like that should work for me. Part time.",
+    "nn": "For eit mannskap! Eit slikt mannskap burde jobbe for meg. Deltid."
+  },
+  {
+    "en": "Dungeon beaten! The beaten dungeon is now real estate.",
+    "nn": "Fangeholet er slått! Det slegne fangeholet er no eigedom."
+  },
+  {
+    "en": "Lovely clear! I’m adding the dungeon to my list of safe delivery routes.",
+    "nn": "Nydeleg rydding! Eg set fangeholet på lista over trygge leveringsruter."
+  },
+  {
+    "en": "Down in the deep and out on top! Got any deep-sea treasure?",
+    "nn": "Ned i djupet og opp på topp! Har du noko skatt frå djupet?"
+  },
+  {
+    "en": "Mission complete! Mission rewards go through my appraisal desk.",
+    "nn": "Oppdraget er fullført! Oppdragsløn går gjennom takseringsdisken min."
+  },
+  {
+    "en": "First time, flawless! Flawless runs fetch premium stories at the tavern.",
+    "nn": "Første gong, feilfritt! Feilfrie rundar gir premiumhistorier på kroa."
+  },
+  {
+    "en": "That dungeon never stood a chance! Neither do my prices against your loot.",
+    "nn": "Det fangeholet hadde ikkje sjans! Det har ikkje prisane mine heller mot looten din."
+  },
+  {
+    "en": "Splendid run! I’m sending an invoice to the boss’s estate.",
+    "nn": "Strålande runde! Eg sender faktura til dødsbuet etter sjefen."
+  },
+  {
+    "en": "Dungeon emptied! Emptied of monsters, filled with opportunity.",
+    "nn": "Fangeholet er tømt! Tømt for monster, fylt med moglegheiter."
+  },
+  {
+    "en": "You went in heroes and came out richer heroes. Ideal.",
+    "nn": "De gjekk inn som heltar og kom ut som rikare heltar. Ideelt."
+  },
+  {
+    "en": "I hope you didn’t forget the chest in the corner. Corners hide the good stuff.",
+    "nn": "Eg håpar de ikkje gløymde kista i hjørnet. Hjørne gøymer dei gode sakene."
+  },
+  {
+    "en": "A clean dungeon is a happy dungeon. A looted dungeon is a happy merchant.",
+    "nn": "Eit reint fangehol er eit glad fangehol. Eit plyndra fangehol er ein glad kremmar."
+  },
+  {
+    "en": "How was the boss? Rich? Tell me it was rich.",
+    "nn": "Korleis var sjefen? Rik? Sei at han var rik."
+  },
+  {
+    "en": "I’ve marked that dungeon as done on my map. Next to a little coin.",
+    "nn": "Eg har merkt det fangeholet som ferdig på kartet. Ved sida av ein liten mynt."
+  },
+  {
+    "en": "Did the dungeon have a gift shop? No? Missed opportunity. Mine now.",
+    "nn": "Hadde fangeholet suvenirbutikk? Nei? Tapt høve. No er det mitt."
+  },
+  {
+    "en": "That’s one less dungeon full of monsters. One more full of my tour groups.",
+    "nn": "Det er eitt fangehol mindre fullt av monster. Eitt meir fullt av turgruppene mine."
+  },
+  {
+    "en": "You crushed it! Crushed things are cheaper to ship.",
+    "nn": "Du knuste det! Knuste ting er billegare å frakte."
+  },
+  {
+    "en": "That run deserves a song. Bards are standing by. Paid by you.",
+    "nn": "Den runden fortener ein song. Skaldane står klare. Betalte av deg."
+  },
+  {
+    "en": "The dungeon fell, and so did its prices. Bargain time!",
+    "nn": "Fangeholet fall, og det gjorde prisane òg. Kupptid!"
+  },
+  {
+    "en": "I knew you’d clear it. I already sold tickets to the replay.",
+    "nn": "Eg visste du ville rydde det. Eg har alt selt billettar til reprisen."
+  },
+  {
+    "en": "Boss defeated, loot collected, merchant delighted.",
+    "nn": "Sjefen slegen, looten samla, kremmaren glad."
+  },
+  {
+    "en": "Not a monster left standing! Not a coin left behind, I hope.",
+    "nn": "Ikkje eitt monster står att! Ikkje ein mynt lagd att, håpar eg."
+  },
+  {
+    "en": "Bravo! That dungeon is officially under new management. Yours. Or mine.",
+    "nn": "Bravo! Fangeholet er offisielt under ny leiing. Di. Eller mi."
+  },
+  {
+    "en": "Your first clear! I’ll frame the map. Framing, two silver.",
+    "nn": "Den første ryddinga di! Eg rammar inn kartet. Innramming, to sølv."
+  },
+  {
+    "en": "The dungeon has been cleaned out. My kind of housekeeping.",
+    "nn": "Fangeholet er tømt. Min type husarbeid."
+  },
+  {
+    "en": "That’s a tidy run. Tidy runs make tidy profits.",
+    "nn": "Det er ein ryddig runde. Ryddige rundar gir ryddig forteneste."
+  },
+  {
+    "en": "Did you bring back any skulls? Collectors love skulls. Weird collectors.",
+    "nn": "Tok du med nokre hovudskaller? Samlarar elskar hovudskaller. Rare samlarar."
+  },
+  {
+    "en": "I hope the healer got a tip. Healers never get tips. Except from me. Never.",
+    "nn": "Eg håpar lækjaren fekk drikkepengar. Lækjarar får aldri det. Ikkje frå meg heller."
+  },
+  {
+    "en": "Those dungeon walls have seen a lot. Now they’ve seen you win.",
+    "nn": "Veggene i det fangeholet har sett mykje. No har dei sett deg vinne."
+  },
+  {
+    "en": "What a delve! Delving is just mining with more screaming.",
+    "nn": "For ei ferd i djupet! Djupferder er berre gruvedrift med meir skriking."
+  },
+  {
+    "en": "The dungeon’s quiet now. Quiet places rent well.",
+    "nn": "Fangeholet er stille no. Stille stader er lette å leige ut."
+  },
+  {
+    "en": "That clear was a work of art. Art sells.",
+    "nn": "Den ryddinga var eit kunstverk. Kunst sel."
+  },
+  {
+    "en": "I bet the boss had a treasure room. I bet you emptied it. Good.",
+    "nn": "Eg veddar på at sjefen hadde eit skattkammer. Eg veddar på at du tømde det. Bra."
+  },
+  {
+    "en": "I’ve got bags if you’ve got loot. Bigger bags, bigger profits.",
+    "nn": "Eg har sekker om du har loot. Større sekker, større forteneste."
+  },
+  {
+    "en": "One dungeon down! Plenty more where that came from. Plenty more loot too.",
+    "nn": "Eitt fangehol unna! Mange fleire der det kom frå. Mykje meir loot òg."
+  },
+  {
+    "en": "Well done, team! Teams are wonderful. Splitting loot, less so.",
+    "nn": "Godt gjort, laget! Lag er vidunderlege. Å dele loot er mindre vidunderleg."
+  },
+  {
+    "en": "The torches are out and the treasure’s gone. Perfect visit.",
+    "nn": "Faklane er sløkte og skatten er borte. Perfekt vitjing."
+  },
+  {
+    "en": "Did the dungeon have a cleaning fee? I’ll invent one.",
+    "nn": "Hadde fangeholet reinhaldsavgift? Eg finn på ei."
+  },
+  {
+    "en": "Fantastic run! The monsters filed a complaint. I’m processing it slowly.",
+    "nn": "Fantastisk runde! Monstera sende inn ei klage. Eg handsamar ho sakte."
+  },
+  {
+    "en": "You and your group are now dungeon royalty. Royalty buys crowns. I sell crowns.",
+    "nn": "Du og gruppa di er no fangeholskongelege. Kongelege kjøper kroner. Eg sel kroner."
+  },
+  {
+    "en": "That dungeon was a tough nut. You cracked it. I sell nuts. Cracked ones.",
+    "nn": "Det fangeholet var ei hard nøtt. Du knekte ho. Eg sel nøtter. Knekte."
+  },
+  {
+    "en": "A first clear is a big deal. Big deals are my favourite deals.",
+    "nn": "Ei første rydding er ein stor sak. Store saker er favorittsakene mine."
+  },
+  {
+    "en": "I sent a cleaning crew in after you. They found coins. They kept coins.",
+    "nn": "Eg sende eit reinhaldslag inn etter deg. Dei fann myntar. Dei behaldt myntane."
+  },
+  {
+    "en": "I’d have charged admission for that run. Front-row seats.",
+    "nn": "Eg ville ha teke inngangspengar for den runden. Plassar på første rad."
+  },
+  {
+    "en": "Your loot bags must be heavy. Heavy bags are my love language.",
+    "nn": "Lootsekkene dine må vere tunge. Tunge sekker er kjærleiksspråket mitt."
+  },
+  {
+    "en": "Congrats! You’ve turned a scary place into a sightseeing spot.",
+    "nn": "Gratulerer! Du har gjort ein skummel stad om til ein turistattraksjon."
+  },
+  {
+    "en": "That’s some serious dungeoneering. Serious adventurers need serious potions.",
+    "nn": "Det er seriøs fangeholsferd. Seriøse eventyrarar treng seriøse trylledrikkar."
+  },
+  {
+    "en": "Tell me, did the boss drop his wallet? Bosses always have wallets.",
+    "nn": "Sei meg, miste sjefen lommeboka? Sjefar har alltid lommebøker."
+  },
+  {
+    "en": "Fearless delvers deserve fearless discounts. Small ones.",
+    "nn": "Fryktlause holutforskarar fortener fryktlause rabattar. Små."
+  },
+  {
+    "en": "The dungeon’s been cleaned. You’ve been enriched. I’m envious.",
+    "nn": "Fangeholet er reinska. Du er vorten rikare. Eg er misunneleg."
+  },
+  {
+    "en": "Now the dungeon is safe for merchants. Finally.",
+    "nn": "No er fangeholet trygt for kremmarar. Endeleg."
+  },
+  {
+    "en": "A legendary first run! I’ll sell the legend. You keep the loot. Deal?",
+    "nn": "Ein legendarisk første runde! Eg sel legenda. Du held på looten. Avtale?"
+  },
+  {
+    "en": "You found the exit with all your limbs. And, I hope, all the loot.",
+    "nn": "Du fann utgangen med alle lemene i behald. Og, håpar eg, all looten."
+  },
+  {
+    "en": "You made that dungeon look like a stroll. A profitable stroll.",
+    "nn": "Du fekk det fangeholet til å sjå ut som ein spasertur. Ein lønsam spasertur."
+  },
+  {
+    "en": "I bet the traps were annoying. I sell trap-detecting goggles. Now. Late, I know.",
+    "nn": "Eg veddar på at fellene var plagsame. Eg sel briller som finn feller. No. Seint, eg veit."
+  },
+  {
+    "en": "Your party’s a well-oiled machine. I sell oil.",
+    "nn": "Gruppa di er ein velsmurd maskin. Eg sel olje."
+  },
+  {
+    "en": "Way to go, adventurer! Dungeons tremble at your name. Vendors cheer it.",
+    "nn": "Sånn skal det gjerast, eventyrar! Fangehol skjelv ved namnet ditt. Seljarar jublar."
+  },
+  {
+    "en": "That dungeon’s been cleaned out like my rivals’ shelves.",
+    "nn": "Det fangeholet er tømt som hyllene til konkurrentane mine."
+  },
+  {
+    "en": "A first clear! Bring me any trinkets. Trinkets are my bread and butter.",
+    "nn": "Ei første rydding! Kom med småting. Småting er levebrødet mitt."
+  },
+  {
+    "en": "The deep dark is a little less dark now. Lamps for sale anyway.",
+    "nn": "Det djupe mørkret er litt mindre mørkt no. Lamper er til sals likevel."
+  },
+  {
+    "en": "Your gear’s battered, your bags are full. Classic dungeon result.",
+    "nn": "Utstyret ditt er medteke, sekkene fulle. Klassisk fangeholresultat."
+  },
+  {
+    "en": "I want every detail. Especially the parts with chests.",
+    "nn": "Eg vil ha kvar detalj. Særleg dei med kister."
+  },
+  {
+    "en": "Did you get the rare drop? Tell me you got the rare drop.",
+    "nn": "Fekk du det sjeldne droppet? Sei at du fekk det sjeldne droppet."
+  },
+  {
+    "en": "Monsters out, heroes in, merchant counting. Perfect order.",
+    "nn": "Monster ut, heltar inn, kremmar som tel. Perfekt orden."
+  },
+  {
+    "en": "That boss was overdue for retirement. You helped. Generous.",
+    "nn": "Den sjefen burde for lengst ha gått av. Du hjelpte. Raust."
+  },
+  {
+    "en": "Dungeon done, legend begun! Legends need a merchandise line.",
+    "nn": "Fangeholet ferdig, legenda byrja! Legender treng ei vareline."
+  },
+  {
+    "en": "I bet the boss didn’t see you coming. Nobody sees heroes coming. Or invoices.",
+    "nn": "Eg veddar på at sjefen ikkje såg deg kome. Ingen ser heltar kome. Eller fakturaer."
+  },
+  {
+    "en": "You’ve earned a long bath. Bath salts, aisle seven.",
+    "nn": "Du har fortent eit langt bad. Badesalt, hylle sju."
+  },
+  {
+    "en": "Brilliant teamwork! My team is me. I’m brilliant too.",
+    "nn": "Glimrande lagarbeid! Laget mitt er meg. Eg er òg glimrande."
+  },
+  {
+    "en": "I can practically hear the treasure jingling from here.",
+    "nn": "Eg høyrer nesten skatten klirre heilt hit."
+  },
+  {
+    "en": "Congrats on the clear! I’m opening a museum of dungeon souvenirs. Donations welcome.",
+    "nn": "Gratulerer med ryddinga! Eg opnar museum for fangeholsuvenirar. Gåver mottakast."
+  },
+  {
+    "en": "Lucky dungeon, getting visited by you. Unlucky boss.",
+    "nn": "Heldig fangehol som fekk besøk av deg. Uheldig sjef."
+  },
+  {
+    "en": "That clear will look great in your memoirs. I’ll publish them.",
+    "nn": "Den ryddinga blir fin i memoarane dine. Eg gir dei ut."
+  },
+  {
+    "en": "Darkness, danger, death, and you walked out smiling. Respect.",
+    "nn": "Mørker, fare, død, og du gjekk ut smilande. Respekt."
+  },
+  {
+    "en": "The boss’s throne is empty now. Want me to sell it? Big market for thrones.",
+    "nn": "Tronen til sjefen står tom no. Skal eg selje han? Stor marknad for troner."
+  },
+  {
+    "en": "A dungeon cleared is a gold mine opened. Did you check for gold mines?",
+    "nn": "Eit rydda fangehol er ei opna gullgruve. Sjekka du etter gullgruver?"
+  },
+  {
+    "en": "Bravo, delvers! My favourite kind of customers: those with full bags.",
+    "nn": "Bravo, holutforskarar! Favorittkundane mine: dei med fulle sekker."
+  },
+  {
+    "en": "Show me the loot! I’ll show you a price.",
+    "nn": "Vis meg looten! Eg viser deg ein pris."
+  },
+  {
+    "en": "Every dungeon has a hidden treasure. Did you find it? I need to know.",
+    "nn": "Kvart fangehol har ein løynd skatt. Fann du han? Eg må vite det."
+  },
+  {
+    "en": "The monsters are gone and the rent is cheap. Thinking of moving in.",
+    "nn": "Monstera er borte og leiga er låg. Eg tenkjer på å flytte inn."
+  },
+  {
+    "en": "You did it! Was it scary? Scary pays well.",
+    "nn": "Du klarte det! Var det skummelt? Skummelt løner seg godt."
+  },
+  {
+    "en": "That boss had it coming. And had pockets. Hopefully full ones.",
+    "nn": "Den sjefen fekk som fortent. Og hadde lommer. Fulle, forhåpentleg."
+  },
+  {
+    "en": "Way to clear! Clearing is just shopping with swords.",
+    "nn": "Godt rydda! Rydding er berre handling med sverd."
+  },
+  {
+    "en": "Your group must be proud. Your merchant certainly is.",
+    "nn": "Gruppa di må vere stolt. Kremmaren din er det i alle fall."
+  },
+  {
+    "en": "No more monsters? Lovely. I’ll put up my stall at the entrance.",
+    "nn": "Ikkje fleire monster? Herleg. Eg set opp boden min ved inngangen."
+  },
+  {
+    "en": "I’d buy a dungeon like that if it came with your skills.",
+    "nn": "Eg ville ha kjøpt eit slikt fangehol om det kom med dugleiken din."
+  },
+  {
+    "en": "Clearing dungeons is good for business. Monsters don’t buy anything.",
+    "nn": "Å rydde fangehol er bra for forretninga. Monster kjøper ingenting."
+  },
+  {
+    "en": "Nice work in the dark. Did you need torches? I sell torches. After the fact, sadly.",
+    "nn": "Bra jobba i mørkret. Trong du faklar? Eg sel faklar. Etterpå, dessverre."
+  },
+  {
+    "en": "Well, that dungeon won’t be bothering anyone. Except my tour guides.",
+    "nn": "Det fangeholet kjem ikkje til å plage nokon meir. Bortsett frå guidane mine."
+  },
+  {
+    "en": "You’ve earned a feast! Feast catering by me. Feast invoice to you.",
+    "nn": "Du har fortent eit gjestebod! Mat frå meg. Faktura til deg."
+  },
+  {
+    "en": "I knew that run would go well. I was selling potions at the door.",
+    "nn": "Eg visste den runden ville gå bra. Eg selde trylledrikkar ved døra."
+  },
+  {
+    "en": "Every dungeon you clear makes my map a little brighter.",
+    "nn": "Kvart fangehol du ryddar, gjer kartet mitt litt lysare."
+  },
+  {
+    "en": "That’s the first of many clears. Many clears, many sales.",
+    "nn": "Det er den første av mange ryddingar. Mange ryddingar, mange sal."
+  },
+  {
+    "en": "What did the boss say before falling? I’ll sell the quote.",
+    "nn": "Kva sa sjefen før han fall? Eg sel sitatet."
+  },
+  {
+    "en": "I hope the loot was split fairly. If not, I mediate. For a fee.",
+    "nn": "Eg håpar looten vart delt rettvist. Om ikkje, meklar eg. Mot betaling."
+  },
+  {
+    "en": "Dungeon champions! I’m printing posters. Posters cost a copper.",
+    "nn": "Fangeholmeistrar! Eg trykkjer plakatar. Plakatar kostar ein kopar."
+  },
+  {
+    "en": "Did you leave the door open on the way out? Thieves love open doors. Kidding.",
+    "nn": "La du døra open på veg ut? Tjuvar elskar opne dører. Tullar."
+  },
+  {
+    "en": "That clear was cleaner than my shop floor. Impressive.",
+    "nn": "Den ryddinga var reinare enn butikkgolvet mitt. Imponerande."
+  },
+  {
+    "en": "The deepest halls fell silent. Except for your coin bags clinking.",
+    "nn": "Dei djupaste hallane teia. Bortsett frå at myntsekkene dine klirra."
+  },
+  {
+    "en": "Your first clear deserves a commemorative plaque. Bronze? Gold? Gold.",
+    "nn": "Den første ryddinga di fortener ei minneplate. Bronse? Gull? Gull."
+  },
+  {
+    "en": "The dungeon’s monsters have been politely evicted. By sword.",
+    "nn": "Monstera i fangeholet er høfleg kasta ut. Med sverd."
+  },
+  {
+    "en": "You came, you saw, you looted. My kind of visit.",
+    "nn": "Du kom, du såg, du plyndra. Min type vitjing."
+  },
+  {
+    "en": "I’d have sold you a map, but you didn’t need one. Show-off.",
+    "nn": "Eg skulle gjerne ha selt deg eit kart, men du trong ikkje noko. Skrytepave."
+  },
+  {
+    "en": "I hear the boss’s treasure is legendary. Legendary means expensive.",
+    "nn": "Eg høyrer skatten til sjefen er legendarisk. Legendarisk betyr dyrt."
+  },
+  {
+    "en": "Clearing a dungeon takes guts. And gear. Mostly gear. Mine.",
+    "nn": "Å rydde eit fangehol krev mot. Og utstyr. Mest utstyr. Mitt."
+  },
+  {
+    "en": "Look at you, coming home with treasure! Come home through my shop.",
+    "nn": "Sjå på deg, du kjem heim med skattar! Gå heim gjennom butikken min."
+  },
+  {
+    "en": "The dungeon’s been cleared. Its economy is now mine.",
+    "nn": "Fangeholet er rydda. Økonomien der er no min."
+  },
+  {
+    "en": "A first-time clear! Rookies usually die. You didn’t. Bravo.",
+    "nn": "Ei første rydding! Nybyrjarar døyr vanlegvis. Det gjorde ikkje du. Bravo."
+  },
+  {
+    "en": "That victory smells like old stone and new loot.",
+    "nn": "Den sigeren luktar gamal stein og ny loot."
+  },
+  {
+    "en": "I’ve been waiting for someone to clear that place. The real estate is fabulous.",
+    "nn": "Eg har venta på at nokon skulle rydde den staden. Eigedomen er fabelaktig."
+  },
+  {
+    "en": "Was the final boss as scary as they say? Fear sells. Tell me everything.",
+    "nn": "Var sluttsjefen så skummel som dei seier? Frykt sel. Fortel meg alt."
+  },
+  {
+    "en": "You’re a dungeon conqueror now. Conquerors need banners. I sell banners.",
+    "nn": "Du er ein erobrar av fangehol no. Erobrarar treng banner. Eg sel banner."
+  },
+  {
+    "en": "Did anything shiny drop? I’ve got a feeling something shiny dropped.",
+    "nn": "Datt det noko blankt? Eg har ei kjensle av at noko blankt datt."
+  },
+  {
+    "en": "That’s a run for the history books. I’ll sell the history books.",
+    "nn": "Det er ein runde for historiebøkene. Eg sel historiebøkene."
+  },
+  {
+    "en": "So, the boss is gone. Who collects his rent now? Asking for me.",
+    "nn": "Så, sjefen er borte. Kven krev inn husleiga hans no? Spør for meg."
+  },
+  {
+    "en": "You made it out alive! Alive customers are my favourite customers.",
+    "nn": "Du kom ut levande! Levande kundar er favorittkundane mine."
+  },
+  {
+    "en": "Clearing dungeons builds character. And bank balance.",
+    "nn": "Å rydde fangehol byggjer karakter. Og banksaldo."
+  },
+  {
+    "en": "You’ve just made that dungeon a whole lot safer for my delivery boys.",
+    "nn": "Du har nett gjort det fangeholet mykje tryggare for visergutane mine."
+  },
+  {
+    "en": "Grand clear! The underworld will be gossiping about you for weeks.",
+    "nn": "Storarta rydding! Underverda kjem til å sladre om deg i vekevis."
+  },
+  {
+    "en": "A full clear on the first try? You’re worth investing in.",
+    "nn": "Full rydding på første forsøk? Du er verd å investere i."
+  },
+  {
+    "en": "I bet the boss regrets his life choices. And his security.",
+    "nn": "Eg veddar på at sjefen angrar på livsvala sine. Og tryggleiken sin."
+  },
+  {
+    "en": "Your party works like a fine clock. I sell fine clocks.",
+    "nn": "Gruppa di går som eit fint urverk. Eg sel fine ur."
+  },
+  {
+    "en": "I knew you’d come out on top. I bet on it. I won. Thank you.",
+    "nn": "Eg visste du ville kome ut på topp. Eg vedda på det. Eg vann. Takk."
+  },
+  {
+    "en": "Every room cleared, every chest opened, every goblin happy. Me.",
+    "nn": "Kvart rom rydda, kvar kiste opna, kvar goblin glad. Altså eg."
+  },
+  {
+    "en": "Did you write down which chests had the best stuff? Share the map.",
+    "nn": "Skreiv du ned kva kister som hadde det beste? Del kartet."
+  },
+  {
+    "en": "Way down, way up! You’ve got the dungeon bug now. I sell cures.",
+    "nn": "Langt ned, langt opp! No har du fått fangeholfeberen. Eg sel kurar."
+  },
+  {
+    "en": "That dungeon gave its all, and you took its all. Efficient.",
+    "nn": "Det fangeholet gav alt, og du tok alt. Effektivt."
+  },
+  {
+    "en": "I’d congratulate you properly, but I’m busy pricing your loot in my head.",
+    "nn": "Eg skulle gjerne gratulert deg skikkeleg, men eg prisar looten din i hovudet."
+  },
+  {
+    "en": "Down with the dark lord! Up with my sales!",
+    "nn": "Ned med mørkets herre! Opp med salet mitt!"
+  },
+  {
+    "en": "You’re the reason the dungeon’s for sale now. Thank you.",
+    "nn": "Det er på grunn av deg fangeholet er til sals no. Takk."
+  },
+  {
+    "en": "A clean run with no deaths? You saved a fortune in repairs. Spend it here.",
+    "nn": "Ein rein runde utan dødsfall? Du sparte ein formue på reparasjonar. Bruk han her."
+  },
+  {
+    "en": "The boss’s loot table just got a lot lighter. Your bags, heavier.",
+    "nn": "Lootlista til sjefen vart mykje lettare. Sekkene dine tyngre."
+  },
+  {
+    "en": "You should be proud. I am. And a bit jealous of the loot.",
+    "nn": "Du bør vere stolt. Det er eg. Og litt misunneleg på looten."
+  },
+  {
+    "en": "Lovely work below ground! Above ground, my shop awaits.",
+    "nn": "Nydeleg arbeid under jorda! Over jorda ventar butikken min."
+  },
+  {
+    "en": "You make dungeon crawling look like window shopping.",
+    "nn": "Du får fangeholferder til å sjå ut som ein tur i handlegata."
+  },
+  {
+    "en": "The bards will call it the Great Clear. I’ll call it a sales event.",
+    "nn": "Skaldane kjem til å kalle det Den store ryddinga. Eg kallar det eit salsarrangement."
+  },
+  {
+    "en": "Every corridor cleared! Every corner checked? Corners are where coins hide.",
+    "nn": "Kvar korridor rydda! Kvart hjørne sjekka? Det er i hjørna myntane gøymer seg."
+  },
+  {
+    "en": "I’m having a statue made of you at the dungeon gate. Small one. Paid by you.",
+    "nn": "Eg får laga ein statue av deg ved fangeholporten. Ein liten. Betalt av deg."
+  },
+  {
+    "en": "Your first clear! It’s like a first sale. Never forgotten.",
+    "nn": "Den første ryddinga di! Det er som det første salet. Aldri gløymt."
+  },
+  {
+    "en": "The dungeon gate swings freely now. I’ll install a turnstile.",
+    "nn": "Fangeholporten går fritt no. Eg set opp ein svingport."
+  },
+  {
+    "en": "Fewer monsters, more merchants. That’s progress.",
+    "nn": "Færre monster, fleire kremmarar. Det er framsteg."
+  },
+  {
+    "en": "I salute you, dungeon breaker! Breakers often need repairs.",
+    "nn": "Eg helsar deg, fangeholknusar! Knusarar treng ofte reparasjon."
+  },
+  {
+    "en": "Let’s celebrate in style. Style is sold by the yard.",
+    "nn": "Lat oss feire med stil. Stil blir seld i meter."
+  },
+  {
+    "en": "You made the dungeon your playground. I make playgrounds profitable.",
+    "nn": "Du gjorde fangeholet til leikeplassen din. Eg gjer leikeplassar lønsame."
+  },
+  {
+    "en": "The dungeon has new owners: you. And my mortgage offer.",
+    "nn": "Fangeholet har nye eigarar: deg. Og lånetilbodet mitt."
+  },
+  {
+    "en": "Hooray for the brave crew! Brave crews need hearty meals. Pies, two silver.",
+    "nn": "Hurra for det modige mannskapet! Modige mannskap treng god mat. Paier, to sølv."
+  },
+  {
+    "en": "That dungeon had a reputation. Now so do you.",
+    "nn": "Det fangeholet hadde eit rykte. No har du det òg."
+  },
+  {
+    "en": "Dark caves, deadly traps, mighty boss. And you laughed at all of it.",
+    "nn": "Mørke holer, dødelege feller, mektig sjef. Og du lo av alt saman."
+  },
+  {
+    "en": "I’ll be adding a dungeon tour to my catalogue. Thanks to you.",
+    "nn": "Eg legg til ein fangeholtur i katalogen min. Takka vere deg."
+  },
+  {
+    "en": "Look who survived the deep! Survivors are excellent customers.",
+    "nn": "Sjå kven som overlevde djupet! Overlevarar er framifrå kundar."
+  },
+  {
+    "en": "Into the dark and back with treasure. The perfect business trip.",
+    "nn": "Inn i mørkret og tilbake med skattar. Den perfekte forretningsreisa."
+  },
+  {
+    "en": "I’d have priced that dungeon at a fortune. You took it for free. Well done.",
+    "nn": "Eg ville ha prisa det fangeholet til ein formue. Du tok det gratis. Godt gjort."
+  },
+  {
+    "en": "Your first dungeon clear is now part of goblin folklore. My folklore.",
+    "nn": "Den første ryddinga di er no ein del av goblinsoga. Mi soge."
+  },
+  {
+    "en": "Every boss you topple makes the world better. And richer.",
+    "nn": "Kvar sjef du vippar av pinnen, gjer verda betre. Og rikare."
+  },
+  {
+    "en": "Brave work! The dungeon’s monsters are now just a rumour. Rumours sell.",
+    "nn": "Modig arbeid! Monstera i fangeholet er no berre eit rykte. Rykte sel."
+  },
+  {
+    "en": "If the dungeon had a guestbook, I hope you signed it. With style.",
+    "nn": "Om fangeholet hadde ei gjestebok, håpar eg du skreiv i ho. Med stil."
+  },
+  {
+    "en": "Excellent dungeon work. I’ll update my risk assessment. Lower risk, higher rent.",
+    "nn": "Framifrå fangeholarbeid. Eg oppdaterer risikovurderinga. Lågare risiko, høgare leige."
+  },
+  {
+    "en": "Wonderful! The dungeon is free. Free is my second-favourite price.",
+    "nn": "Vidunderleg! Fangeholet er fritt. Gratis er den nest beste prisen min."
+  },
+  {
+    "en": "So the dungeon’s finished. What’s next? Another? My stock is ready.",
+    "nn": "Så fangeholet er ferdig. Kva blir det neste? Eitt til? Lageret mitt er klart."
+  },
+  {
+    "en": "I’d hug you, but you smell like dungeon. Bath salts, aisle seven. Again.",
+    "nn": "Eg skulle gjerne klemt deg, men du luktar fangehol. Badesalt, hylle sju. Att."
+  },
+  {
+    "en": "Next time you clear it, take me along. I’ll carry the loot. Carefully. Into my bag.",
+    "nn": "Neste gong tek du meg med. Eg ber looten. Varsamt. Ned i sekken min."
+  },
+  {
+    "en": "That clear was so clean you could eat off the boss room floor. Don’t.",
+    "nn": "Den ryddinga var så rein at du kunne ete frå golvet i sjefsrommet. Ikkje gjer det."
+  },
+  {
+    "en": "Clears like that make my ledger sing a little ditty.",
+    "nn": "Slike ryddingar får rekneskapen min til å syngje ein liten trall."
+  },
+  {
+    "en": "Proud of you! Pride is free. The souvenir mug is not.",
+    "nn": "Stolt av deg! Stoltheit er gratis. Suvenirkoppen er ikkje det."
+  },
+  {
+    "en": "Out of the dungeon, into the limelight. Limelight rental available.",
+    "nn": "Ut av fangeholet, inn i rampelyset. Rampelys kan leigast."
+  },
+  {
+    "en": "I can’t wait to hear about the loot. The fighting, less so. The loot!",
+    "nn": "Eg gler meg til å høyre om looten. Kampane, mindre. Looten!"
+  },
+  {
+    "en": "Way to clean house! I clean houses too. Clean them out. Of gold.",
+    "nn": "For ei storreingjering! Eg ryddar òg hus. Tømer dei. For gull."
+  },
+  {
+    "en": "The darkness is defeated. I’ll sell candles anyway. Tradition.",
+    "nn": "Mørkret er slege. Eg sel lys likevel. Tradisjon."
+  },
+  {
+    "en": "Another dungeon on your list of conquests. Long lists are lucrative.",
+    "nn": "Endå eit fangehol på lista over erobringar. Lange lister er lønsame."
+  },
+  {
+    "en": "Let me know if you found anything cursed. Cursed items fetch a fortune.",
+    "nn": "Sei frå om du fann noko forbanna. Forbanna ting gir ein formue."
+  },
+  {
+    "en": "That dungeon’s been on my list of dangerous places. Now it’s on my shop list.",
+    "nn": "Det fangeholet stod på lista over farlege stader. No står det på butikklista mi."
+  },
+  {
+    "en": "Proud, impressed and pricing your loot. That’s my reaction.",
+    "nn": "Stolt, imponert og prisar looten din. Det er reaksjonen min."
+  },
+  {
+    "en": "The dungeon was a maze. You found the way out and the gold.",
+    "nn": "Fangeholet var ein labyrint. Du fann vegen ut og gullet."
+  },
+  {
+    "en": "I’d like the boss’s crown, please. For display. And resale.",
+    "nn": "Eg vil gjerne ha krona til sjefen, takk. Til utstilling. Og vidaresal."
+  },
+  {
+    "en": "That’s some heroic housekeeping you did down there.",
+    "nn": "Det var heroisk husstell du dreiv med der nede."
+  },
+  {
+    "en": "I’m adding dungeon-cleared stickers to my shop. You’re my first customer.",
+    "nn": "Eg sel klistremerke for rydda fangehol. Du er den første kunden min."
+  },
+  {
+    "en": "Well done, brave one. Your bravery paid off. In loot, I hope.",
+    "nn": "Godt gjort, du modige. Motet lønte seg. I loot, håpar eg."
+  },
+  {
+    "en": "You just made a lot of adventurers jealous. And one goblin rich, hopefully.",
+    "nn": "Du gjorde nett mange eventyrarar misunnelege. Og éin goblin rik, forhåpentleg."
+  },
+  {
+    "en": "What a delve! Your party must be thrilled. And sore. Liniment, aisle four.",
+    "nn": "For ei ferd! Gruppa di må vere i ekstase. Og stiv. Liniment, hylle fire."
+  },
+  {
+    "en": "Your boss kill makes my new dungeon tour very marketable.",
+    "nn": "Sjefsdrapet ditt gjer den nye fangeholturen min svært salbar."
+  },
+  {
+    "en": "The dungeon is quiet. Too quiet. Perfect for my new warehouse.",
+    "nn": "Fangeholet er stille. For stille. Perfekt for det nye lageret mitt."
+  },
+  {
+    "en": "I’m sure there’s a hidden passage you missed. I’ll find it. For a fee.",
+    "nn": "Eg er sikker på at det finst ein løynd gang du gjekk glipp av. Eg finn han. Mot betaling."
+  },
+  {
+    "en": "Every clear is a new chapter in your legend. I sell bookmarks.",
+    "nn": "Kvar rydding er eit nytt kapittel i legenda di. Eg sel bokmerke."
+  },
+  {
+    "en": "You turned a death trap into a trophy room. Very efficient.",
+    "nn": "Du gjorde ei dødsfelle om til eit troférom. Svært effektivt."
+  },
+  {
+    "en": "That dungeon owes you a lot. I’ll collect. For a cut.",
+    "nn": "Det fangeholet skuldar deg mykje. Eg krev det inn. Mot ein del av det."
+  },
+  {
+    "en": "I heard the boss screaming from my shop. Lovely sound.",
+    "nn": "Eg høyrde sjefen skrike heilt frå butikken. Nydeleg lyd."
+  },
+  {
+    "en": "The dungeon’s darkest secrets are now yours. Secrets sell.",
+    "nn": "Dei mørkaste løyndomane i fangeholet er no dine. Løyndomar sel."
+  },
+  {
+    "en": "You came back victorious and only slightly singed. Burn ointment?",
+    "nn": "Du kom tilbake sigerrik og berre litt svidd. Brannsalve?"
+  },
+  {
+    "en": "Grand adventure, grand loot, grand merchant waiting.",
+    "nn": "Storarta eventyr, storarta loot, storarta kremmar som ventar."
+  },
+  {
+    "en": "I’m impressed. I’d be more impressed with a gift from the boss’s hoard.",
+    "nn": "Eg er imponert. Eg ville ha vore meir imponert over ei gåve frå skatten til sjefen."
+  },
+  {
+    "en": "Clearing a dungeon? Easy for you. Pricing the loot? Easy for me.",
+    "nn": "Rydde eit fangehol? Lett for deg. Prise looten? Lett for meg."
+  },
+  {
+    "en": "The dungeon fell silent, and my till started ringing. Coincidence?",
+    "nn": "Fangeholet teia, og kassa mi byrja å ringje. Tilfeldig?"
+  },
+  {
+    "en": "You’ve proven yourself in the deep. Prove yourself in my shop next.",
+    "nn": "Du har vist kva du dug i djupet. Vis det i butikken min neste gong."
+  },
+  {
+    "en": "Monsters beware, the merchant’s favourite hero is on the loose.",
+    "nn": "Monster, pass dykk, favoritthelten til kremmaren er laus."
+  },
+  {
+    "en": "I’ll pin a gold star on that dungeon on my map. Your star.",
+    "nn": "Eg set ei gullstjerne på det fangeholet på kartet mitt. Stjerna di."
+  },
+  {
+    "en": "Did the boss have a pet? Pets sell well. Kidding. Mostly.",
+    "nn": "Hadde sjefen eit kjæledyr? Kjæledyr sel godt. Tullar. Stort sett."
+  },
+  {
+    "en": "A first clear deserves a first-class celebration. First class costs more.",
+    "nn": "Ei første rydding fortener ei førsteklasses feiring. Førsteklasse kostar meir."
+  },
+  {
+    "en": "I’ve updated the dungeon’s status: conquered, looted, for rent.",
+    "nn": "Eg har oppdatert statusen til fangeholet: erobra, plyndra, til leige."
+  },
+  {
+    "en": "Danger: zero. Treasure: plenty. Merchant: thrilled.",
+    "nn": "Fare: ingen. Skattar: mange. Kremmar: i ekstase."
+  },
+  {
+    "en": "Remember the dungeon fondly. Remember my prices fondly too.",
+    "nn": "Hugs fangeholet med glede. Hugs prisane mine med glede òg."
+  },
+  {
+    "en": "What a group effort! Groups buy in bulk. Hint.",
+    "nn": "For ein gruppeinnsats! Grupper kjøper i store mengder. Vink."
+  },
+  {
+    "en": "Your bravery is the stuff of legend. Legends get discounts. Tiny ones.",
+    "nn": "Motet ditt er stoff for legender. Legender får rabatt. Bittesmå."
+  },
+  {
+    "en": "That dungeon was ancient. Its loot is antique. Antiques are my specialty.",
+    "nn": "Det fangeholet var eldgamalt. Looten er antikk. Antikvitetar er spesialiteten min."
+  },
+  {
+    "en": "You brought light to the darkness. And loot to the light.",
+    "nn": "Du bar lys inn i mørkret. Og loot ut i lyset."
+  },
+  {
+    "en": "No dungeon is safe from you. No customer is safe from me.",
+    "nn": "Ingen fangehol er trygge for deg. Ingen kundar er trygge for meg."
+  },
+  {
+    "en": "I’d write you a poem about the clear, but poets charge by the word.",
+    "nn": "Eg skulle gjerne skrive eit dikt om ryddinga, men poetar tek betalt per ord."
+  },
+  {
+    "en": "Fine work! Do let me know if anything needs identifying. I identify for a fee.",
+    "nn": "Fint arbeid! Sei frå om noko må identifiserast. Eg identifiserer mot betaling."
+  },
+  {
+    "en": "The dungeon is cleared and the realm rejoices. Rejoicing sells.",
+    "nn": "Fangeholet er rydda og riket jublar. Jubel sel."
+  },
+  {
+    "en": "Ah, the sweet echo of an empty dungeon. Echoes are free. Visits aren’t.",
+    "nn": "Ah, det søte ekkoet frå eit tomt fangehol. Ekko er gratis. Vitjingar er ikkje det."
+  },
+  {
+    "en": "The boss is history. History books sell well.",
+    "nn": "Sjefen er historie. Historiebøker sel godt."
+  },
+  {
+    "en": "Delving deep paid off. Deep pockets, I hope.",
+    "nn": "Djupferda lønte seg. Djupe lommer, håpar eg."
+  },
+  {
+    "en": "Some heroes run from dungeons. You run through them.",
+    "nn": "Somme heltar spring frå fangehol. Du spring gjennom dei."
+  },
+  {
+    "en": "A clean clear with style! Style points convert to gold at my shop.",
+    "nn": "Ei rein rydding med stil! Stilpoeng kan vekslast til gull i butikken min."
+  },
+  {
+    "en": "I knew you’d conquer it. I had a sale ready for your return.",
+    "nn": "Eg visste du ville erobre det. Eg hadde eit sal klart til du kom tilbake."
+  },
+  {
+    "en": "Victory underground means profit above ground.",
+    "nn": "Siger under jorda betyr forteneste over jorda."
+  },
+  {
+    "en": "That’s one dungeon you’ll never forget. Or I’ll sell you a reminder.",
+    "nn": "Det er eitt fangehol du aldri gløymer. Elles sel eg deg ei påminning."
+  },
+  {
+    "en": "The deep places are safer now, thanks to you. Bless your sword.",
+    "nn": "Dei djupe stadene er tryggare no, takka vere deg. Velsigna vere sverdet ditt."
+  },
+  {
+    "en": "The dungeon was dangerous. You made it look like a picnic. Picnic baskets, aisle eight.",
+    "nn": "Fangeholet var farleg. Du fekk det til å sjå ut som ein piknik. Piknikkorger, hylle åtte."
+  },
+  {
+    "en": "Clearing that dungeon was a public service. I’ll bill the public.",
+    "nn": "Å rydde det fangeholet var ei offentleg teneste. Eg fakturerer folket."
+  },
+  {
+    "en": "You’ve tamed the deep. I’ll tame the market. Together, unstoppable.",
+    "nn": "Du har temja djupet. Eg temjer marknaden. Saman er vi ustoppelege."
+  },
+  {
+    "en": "What a story for the tavern! Drinks on you, story on me.",
+    "nn": "For ei historie til kroa! Drikken på deg, historia på meg."
+  },
+  {
+    "en": "The walls whispered your name. I sold the echo.",
+    "nn": "Veggene kviskra namnet ditt. Eg selde ekkoet."
+  },
+  {
+    "en": "That boss was a menace. You were a solution. Solutions sell.",
+    "nn": "Den sjefen var ein trussel. Du var ei løysing. Løysingar sel."
+  },
+  {
+    "en": "Dungeon cleared, legend earned, merchant smiling.",
+    "nn": "Fangehol rydda, legende fortent, kremmar smiler."
+  },
+  {
+    "en": "You walked in a hero and walked out a richer hero. Ideal business model.",
+    "nn": "Du gjekk inn som helt og ut som ein rikare helt. Ideell forretningsmodell."
+  },
+  {
+    "en": "Let me guess: you found a mysterious key. I buy mysterious keys.",
+    "nn": "Lat meg gjette: du fann ein mystisk nøkkel. Eg kjøper mystiske nøklar."
+  },
+  {
+    "en": "All that danger, and you didn’t even need my emergency kit. Next time, buy it anyway.",
+    "nn": "All den faren, og du trong ikkje ein gong naudsettet mitt. Kjøp det likevel neste gong."
+  },
+  {
+    "en": "The dungeon’s been decluttered. Of monsters. Lovely.",
+    "nn": "Fangeholet er rydda opp i. For monster. Herleg."
+  },
+  {
+    "en": "I’ll sell tickets to see where you fought. Very popular.",
+    "nn": "Eg sel billettar for å sjå kvar du kjempa. Svært populært."
+  },
+  {
+    "en": "I hope your group shared the gold fairly. Fair is relative.",
+    "nn": "Eg håpar gruppa di delte gullet rettvist. Rettvist er relativt."
+  },
+  {
+    "en": "Monster-free and ready for business. The dungeon, I mean. And you.",
+    "nn": "Monsterfritt og klart for forretning. Fangeholet, meiner eg. Og du."
+  },
+  {
+    "en": "You beat the dungeon. Now beat my prices. You can’t.",
+    "nn": "Du slo fangeholet. Slå no prisane mine. Det kan du ikkje."
+  },
+  {
+    "en": "The boss had one job, and you made sure he lost it.",
+    "nn": "Sjefen hadde éin jobb, og du sytte for at han miste han."
+  },
+  {
+    "en": "The adventure guild will hear about this. I’ll make sure. For a commission.",
+    "nn": "Eventyrlauget skal få høyre om dette. Det syter eg for. Mot provisjon."
+  },
+  {
+    "en": "Your shiny new loot is calling my name. Literally. Listen.",
+    "nn": "Den blanke nye looten din ropar namnet mitt. Bokstavleg. Lytt."
+  },
+  {
+    "en": "Down came the boss, up went your fame. And my prices.",
+    "nn": "Ned kom sjefen, opp gjekk ryet ditt. Og prisane mine."
+  },
+  {
+    "en": "Glory, gold and a good story. The holy trinity of dungeons.",
+    "nn": "Ære, gull og ei god historie. Den heilage treeininga i fangehola."
+  },
+  {
+    "en": "Bravo! May every dungeon fall so easily. And drop so much.",
+    "nn": "Bravo! Måtte kvart fangehol falle like lett. Og sleppe like mykje."
+  },
+  {
+    "en": "Next time you go in, take my catalogue. You can shop between fights.",
+    "nn": "Neste gong du går inn, ta med katalogen min. Du kan handle mellom kampane."
+  },
+  {
+    "en": "Such a clean finish! I’ll bet the floor was spotless. Except for monsters.",
+    "nn": "For ein rein avslutning! Eg veddar på at golvet var plettfritt. Bortsett frå monster."
+  },
+  {
+    "en": "Your dungeon days have begun. My dungeon supply sales too.",
+    "nn": "Fangeholdagane dine har byrja. Salet mitt av fangeholutstyr òg."
+  },
+  {
+    "en": "I always knew you were the dungeon-clearing type. Rich type, too.",
+    "nn": "Eg visste alltid at du var typen som ryddar fangehol. Rik type òg."
+  },
+  {
+    "en": "Treasure, triumph and tired feet. Classic. Foot balm?",
+    "nn": "Skattar, triumf og trøytte føter. Klassisk. Fotsalve?"
+  },
+  {
+    "en": "I’m adding your name to the dungeon’s new plaque. Engraving extra.",
+    "nn": "Eg set namnet ditt på den nye plata i fangeholet. Gravering kostar ekstra."
+  },
+  {
+    "en": "Well done! The dungeon has become a bargain bin. Pick through it.",
+    "nn": "Godt gjort! Fangeholet har vorte ei tilbodskorg. Grav i ho."
+  },
+  {
+    "en": "Clearing it once is impressive. Clearing it again is profitable. Hint.",
+    "nn": "Å rydde det éin gong er imponerande. Å rydde det att er lønsamt. Vink."
+  },
+  {
+    "en": "A tough place, tamed. Tough heroes, rewarded. Tough merchant, pleased.",
+    "nn": "Ein tøff stad, temja. Tøffe heltar, løna. Tøff kremmar, nøgd."
+  },
+  {
+    "en": "The underworld trembles at your name. My shop smiles at it.",
+    "nn": "Underverda skjelv ved namnet ditt. Butikken min smiler."
+  },
+  {
+    "en": "I bet the boss’s treasure chest is light as a feather now.",
+    "nn": "Eg veddar på at skattekista til sjefen er lett som ei fjør no."
+  },
+  {
+    "en": "Congratulations on surviving! Survival is the first step to shopping.",
+    "nn": "Gratulerer med å overleve! Å overleve er det første steget mot å handle."
+  },
+  {
+    "en": "Lovely! Your dungeon trophies would look grand on my walls.",
+    "nn": "Herleg! Fangeholtrofea dine ville ha sett staselege ut på veggene mine."
+  },
+  {
+    "en": "That clear calls for a party. My party tent is for rent.",
+    "nn": "Den ryddinga krev fest. Festteltet mitt er til leige."
+  },
+  {
+    "en": "The dungeon is yours. The souvenirs are mine. Fair split.",
+    "nn": "Fangeholet er ditt. Suvenirane er mine. Rettvis deling."
+  },
+  {
+    "en": "You did the work. The dungeon did the paying. I’ll do the selling.",
+    "nn": "Du gjorde arbeidet. Fangeholet betalte. Eg sel."
+  },
+  {
+    "en": "A dungeon, defeated. A friend, triumphant. A goblin, proud.",
+    "nn": "Eit fangehol, slege. Ein venn, triumferande. Ein goblin, stolt."
+  },
+  {
+    "en": "Hooray! Bring the loot, bring the stories, bring the gold.",
+    "nn": "Hurra! Ta med looten, ta med historiene, ta med gullet."
+  },
+  {
+    "en": "That run will be the talk of every tavern. I own two taverns.",
+    "nn": "Den runden blir snakka om på kvar kro. Eg eig to kroer."
+  },
+  {
+    "en": "Quite the haul from the deep! Any gems? I adore gems.",
+    "nn": "For ein fangst frå djupet! Nokon edelsteinar? Eg elskar edelsteinar."
+  },
+  {
+    "en": "The dungeon’s doors swing open for business. My business.",
+    "nn": "Dørene i fangeholet står opne for forretning. Mi forretning."
+  },
+  {
+    "en": "The final room, the final boss, the final loot. Bring it here.",
+    "nn": "Det siste rommet, den siste sjefen, den siste looten. Kom hit med han."
+  },
+  {
+    "en": "Your first dungeon clear is a milestone. Milestones are for marking. With purchases.",
+    "nn": "Den første ryddinga er ein milepæl. Milepælar skal markerast. Med kjøp."
+  },
+  {
+    "en": "Dungeon heroes always find their way to my shop. It’s tradition.",
+    "nn": "Fangeholheltar finn alltid vegen til butikken min. Det er tradisjon."
+  },
+  {
+    "en": "I salute your sword arm. And your loot arm.",
+    "nn": "Eg helsar sverdarmen din. Og lootarmen din."
+  }
+]
