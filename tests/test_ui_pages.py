@@ -32,7 +32,8 @@ def test_clicking_a_character_shows_only_its_activity():
             local c=WoWStatusCharactersPage.lines[i]
             if c.character and c.character.name=="Mira-TestRealm" then card=c end
         end
-        card.OnClick(card)
+        card.OnClick(card)                   -- opens the profile
+        WoWStatusProfileView.activity.OnClick(WoWStatusProfileView.activity)
         assert(WoWStatusMainWindow.active()=="activity")
         local list=WoWStatusActivityLog.entriesList
         assert(#list==1 and list[1].sender=="Mira-TestRealm")

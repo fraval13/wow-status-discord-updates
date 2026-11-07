@@ -42,6 +42,7 @@ WhatsNew.lua
 Firsts.lua
 Recaps.lua
 Roster.lua
+Profile.lua
 Minimap.lua
 StatusLine.lua
 Previews.lua

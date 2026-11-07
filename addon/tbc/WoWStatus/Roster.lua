@@ -56,6 +56,7 @@ local function key(name)
     return WoWStatusPopups.senderKey(name)
 end
 R.key = key
+R.shownRace = function(race) return shownRace(race) end
 
 local function state()
     db.roster = type(db.roster) == "table" and db.roster or {}
@@ -552,6 +553,23 @@ function R.onlineNames()
     table.sort(names)
     return names
 end
+-- Invitations: "N <shared group> <player ID> <group name in hex>" to one online
+-- member, who can join or decline. Older versions ignore it.
+local invitedFrom = {}
+function R.invite(name, id)
+    if not db or not current then return false, "Not ready yet." end
+    local member = WoWStatusGroups.selected(current)[id]
+    local label = member and member.label
+    if not label then return false, "That group is not in your list." end
+    local via
+    for group in pairs(WoWStatusGroups.selected(current)) do
+        if group ~= id and WoWStatusPopups.isPeer(group, WoWStatusPopups.senderKey(name)) then via = group end
+    end
+    if not via then return false, "They need to be online in a group you share." end
+    local hex = label:gsub(".", function(c) return string.format("%02x", c:byte()) end)
+    table.insert(outgoing, {target=name, text=table.concat({"N", via, state().id, hex}, " ")})
+    return true, "Invite sent."
+end
 -- The first version that confirms live updates (WSACK).
 R.ACK_VERSION = "1.24.0"
 -- A member's addon version, from their list ("1.24.0"), or nil.
@@ -764,6 +782,21 @@ receive = function(message, sender, distribution)
         return true
     end
     -- "G": a member listed one of their groups; "U": they unlisted it.
+    if op == "N" and #words == 4 then
+        local hex = words[4]
+        if #hex > 160 or #hex % 2 ~= 0 or not hex:match("^[0-9a-f]+$") then return false, "bad invite" end
+        local name = hex:gsub("..", function(pair) return string.char(tonumber(pair, 16)) end)
+        local id, cleaned = WoWStatusGroups.key(name)
+        if not id or cleaned:find(S.CONTROL_OR_PIPE) then return false, "bad group name" end
+        if WoWStatusGroups.contains(current, id) then return true end -- Already a member.
+        local k = key(sender)
+        if k and invitedFrom[k] and time() - invitedFrom[k] < 60 then return false, "invite repeated" end
+        if k then invitedFrom[k] = time() end
+        local player = players[pid]
+        local from = R.displayName and R.displayName(sender) or sender
+        if WoWStatusProfile and WoWStatusProfile.invited then WoWStatusProfile.invited(from, cleaned) end
+        return true
+    end
     if op == "G" and #words == 4 then
         local hex = words[4]
         if #hex > 160 or #hex % 2 ~= 0 or not hex:match("^[0-9a-f]+$") then return false, "bad listing" end
@@ -1081,7 +1114,9 @@ local function card(index)
     c.groups = UI.text(c, "GameFontHighlightSmall", 380, -44, 280, "RIGHT")
     -- Clicking a character shows its entries on the Activity page.
     c:SetScript("OnClick", function(self)
-        if self.character and WoWStatusJournal.showCharacter then WoWStatusJournal.showCharacter(self.character.name) end
+        -- Clicking a character opens their profile (with Show activity on it).
+        if self.character and WoWStatusProfile then WoWStatusProfile.show(self.character, self.player)
+        elseif self.character and WoWStatusJournal.showCharacter then WoWStatusJournal.showCharacter(self.character.name) end
     end)
     c:SetScript("OnEnter", function(self)
         UI.tint(self, true)
@@ -1100,7 +1135,7 @@ local function card(index)
             if R.isUnreachable(character.name) then
                 GameTooltip:AddLine(T("Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."), 1, .4, .4, true)
             end
-            GameTooltip:AddLine(T("Click to see this character's activity."), 1, 1, 1, true); GameTooltip:Show()
+            GameTooltip:AddLine(T("Click to open this character's profile."), 1, 1, 1, true); GameTooltip:Show()
         end
     end)
     c:SetScript("OnLeave", function(self) UI.tint(self, false); if GameTooltip then GameTooltip:Hide() end end)
@@ -1271,7 +1306,7 @@ function R.render()
                     local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
                     c.groups:SetText(groups ~= "" and ("|cff9d9d9d" .. T("Groups:") .. "|r " .. groups:gsub("|", "||")) or "")
                     c.text = c.name -- Older callers read a row's text.
-                    c.kind, c.character = "character", character
+                    c.kind, c.character, c.player = "character", character, group
                     UI.tint(c, false)
                     c:Show()
                     y = y + CARD + GAP
