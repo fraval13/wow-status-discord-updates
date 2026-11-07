@@ -67,6 +67,12 @@ def discord_config(raw):
     return result
 
 
+# The receiver accepts at most 64 MiB and only needs the application, the edition
+# TOCs and the built homepage (whose ZIPs carry the full addon). Leave out the
+# caption sources and generated caption banks, which grow with each personality.
+ARCHIVE_PATHSPEC = ('.', ':(exclude)docs/caption-personalities', ':(exclude,glob)addon/**/Flavour*.lua')
+
+
 def main():
     revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], encoding='utf-8').strip()
     homepage = Path('dist/homepage')
@@ -74,7 +80,7 @@ def main():
     if manifest.get('addon_revision') != revision:
         raise ValueError('Rebuild the homepage for the exact revision being deployed')
     config = discord_config(os.environ.get('WOW_STATUS_DISCORD_CONFIG', ''))
-    archive = subprocess.check_output(['git', 'archive', '--format=tar', revision])
+    archive = subprocess.check_output(['git', 'archive', '--format=tar', revision, '--', *ARCHIVE_PATHSPEC])
     path = Path(sys.argv[1])
     path.write_bytes(archive)
     path.chmod(0o600)
