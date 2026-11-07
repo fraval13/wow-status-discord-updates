@@ -152,6 +152,21 @@ def replace_output(staging, output):
         print(f'Could not delete the earlier build in {aside}; delete it by hand', file=sys.stderr)
 
 
+def write_package(root, revision, folder, files, archive):
+    """Write one edition's ZIP: files read from folder (ending in /) at revision, under WoWStatus/."""
+    contents = git_files(root, revision, [folder + file for file in files])
+    with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
+        for file in files:
+            # Stable timestamps keep repeated builds byte-identical.
+            info = zipfile.ZipInfo(f'WoWStatus/{file}', date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o100644 << 16
+            package.writestr(info, contents[folder + file])
+    with zipfile.ZipFile(archive) as package:
+        if package.testzip() is not None:
+            raise ValueError(f'Broken archive: {archive}')
+
+
 def write_site(root, output, revision, editions, version, notes):
     """Write the website and the four ZIPs into the new, empty folder output."""
     for source in (root / 'website').iterdir():
@@ -166,19 +181,8 @@ def write_site(root, output, revision, editions, version, notes):
     downloads.mkdir(exist_ok=True)
     releases = {}
     for edition, (files, edition_version) in editions.items():
-        folder = f'addon/{edition}/WoWStatus/'
         archive = downloads / f'WoWStatus-{edition}.zip'
-        contents = git_files(root, revision, [folder + file for file in files])
-        with zipfile.ZipFile(archive, 'w', zipfile.ZIP_DEFLATED) as package:
-            for file in files:
-                # Stable timestamps keep repeated builds byte-identical.
-                info = zipfile.ZipInfo(f'WoWStatus/{file}', date_time=(2026, 1, 1, 0, 0, 0))
-                info.compress_type = zipfile.ZIP_DEFLATED
-                info.external_attr = 0o100644 << 16
-                package.writestr(info, contents[folder + file])
-        with zipfile.ZipFile(archive) as package:
-            if package.testzip() is not None:
-                raise ValueError(f'Broken archive: {archive}')
+        write_package(root, revision, f'addon/{edition}/WoWStatus/', files, archive)
         releases[edition] = {'version': edition_version, 'file': archive.name,
                              'bytes': archive.stat().st_size,
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}

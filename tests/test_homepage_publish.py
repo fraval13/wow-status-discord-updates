@@ -55,14 +55,12 @@ def commit(repo, files):
     git(repo, 'commit', '-q', '-m', 'change')
 
 
-@pytest.fixture
-def repo(tmp_path):
-    """A Git checkout holding what a homepage build and publish read, committed and clean.
+def make_release_repo(repo):
+    """A Git repository holding what a homepage build and publish read, committed and clean.
 
     Website, addons and the Caddyfile template come from HEAD; the builder and server
     code are this working tree's, so the code under test is what runs.
     """
-    repo = tmp_path / 'repo'
     archive = git(ROOT, 'archive', '--format=tar', 'HEAD', 'website', 'addon', 'pyproject.toml', 'CHANGELOG.md',
                   TEMPLATE)
     with tarfile.open(fileobj=io.BytesIO(archive)) as package:
@@ -75,7 +73,16 @@ def repo(tmp_path):
     git(repo, 'init', '-q')
     git(repo, 'add', '-A')
     git(repo, 'commit', '-q', '-m', 'release')
-    return repo
+    git(repo, 'repack', '-adq')  # clones link one pack instead of hundreds of loose objects
+
+
+@pytest.fixture
+def repo(shared_once, tmp_path, clone_repository, reuse_homepage_packages):
+    """A clean checkout of that repository. The addons stay out of the working tree:
+    builds read them from Git, and a publish checks only its own inputs."""
+    reuse_homepage_packages(builder)
+    return clone_repository(shared_once('release-repo', make_release_repo), tmp_path / 'repo',
+                            ['website', 'scripts', 'deploy'])
 
 
 def build(repo, output):
@@ -89,11 +96,13 @@ def snapshot(folder):
 
 # The builder always produces a fresh folder.
 
-def test_a_rebuild_leaves_no_file_of_the_earlier_build(repo, tmp_path):
-    site = build(repo, tmp_path / 'dist/homepage')
+def test_a_rebuild_leaves_no_file_of_the_earlier_build(repo, tmp_path, monkeypatch):
+    site = build(repo, tmp_path / 'dist/homepage')  # ZIPs another build of these files wrote
     clean = snapshot(site)
     write(site / 'assets/removed-artwork.png', b'\x89PNG')
     write(site / 'downloads/WoWStatus-classic.zip', b'PK')
+    # Compressed again for real: a build repeats the earlier build's bytes exactly.
+    monkeypatch.setattr(builder, 'write_package', load_builder().write_package)
     build(repo, site)
     assert snapshot(site) == clean
     assert sorted(path.name for path in site.parent.iterdir()) == ['homepage']  # no staging folder left
@@ -177,9 +186,11 @@ def test_a_failed_swap_never_loses_the_earlier_build(repo, tmp_path, monkeypatch
 # The publisher's checks, all before the host is contacted.
 
 @pytest.fixture
-def publisher(repo, monkeypatch):
+def publisher(repo, monkeypatch, reuse_homepage_packages):
     module = importlib.import_module('publish_homepage')
     monkeypatch.setattr(module, 'REPOSITORY', repo)
+    load = module.load_builder  # still loads the checkout's builder, as a publish does
+    monkeypatch.setattr(module, 'load_builder', lambda: reuse_homepage_packages(load()))
     return module
 
 

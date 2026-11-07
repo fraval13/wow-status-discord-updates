@@ -183,6 +183,12 @@ literals. Reproduce locally
 with `LC_ALL=C PYTHONWARNDEFAULTENCODING=1 PYTHONWARNINGS=error::EncodingWarning
 python -X utf8=0 -m pytest -q`.
 
+`pytest` runs in parallel by default (pytest-xdist, `addopts` in `pyproject.toml`);
+`-n 0` runs it in one process, e.g. for a debugger. Homepage tests share template
+repositories and compressed ZIPs across workers (`shared_once`, `clone_repository`,
+`reuse_homepage_packages` in `tests/conftest.py`), and Lua harnesses load each
+addon file as bytecode compiled once per run (`run_addon_file` in `test_addon.py`).
+
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.
 lupa's default runtime is a newer Lua (5.5 in lupa 2.8) but every WoW client runs

@@ -42,11 +42,13 @@ def receiver():
     return module
 
 
-@pytest.fixture(scope='module')
-def built_site(tmp_path_factory):
-    target=tmp_path_factory.mktemp('homepage')
-    subprocess.run([sys.executable,str(ROOT/'scripts/build_homepage.py'),'--output',str(target)],check=True,cwd=ROOT)
-    return target
+@pytest.fixture(scope='session')
+def built_site(shared_once):
+    # One build of HEAD per run, shared with every test worker. Tests must not change it.
+    def build(folder):
+        subprocess.run([sys.executable, str(ROOT/'scripts/build_homepage.py'), '--output', str(folder/'site')],
+                       check=True, cwd=ROOT)
+    return shared_once('head-homepage', build)/'site'
 
 
 @pytest.fixture

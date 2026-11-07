@@ -157,50 +157,70 @@ PERSONALITY_FILES = ('Personalities.lua', 'FlavourWholesome.lua', 'FlavourBard.l
                      'FlavourDrama.lua')
 
 
+_COMPILED = {}
+
+
+def run_addon_file(runtime, path):
+    """Run an addon file in runtime, as runtime.execute(its text) would.
+
+    Each file is compiled once per run and Lua runtime type, then loaded as bytecode:
+    the same chunk under the same name, without parsing megabytes of caption tables
+    again for each of the hundreds of runtimes the tests start.
+    """
+    source = path.read_text(encoding='utf-8')  # read each time: a test may swap a file's text
+    key = (type(runtime), source)
+    if key not in _COMPILED:
+        compiler = type(runtime)(encoding=None)  # returns the bytecode as bytes
+        _COMPILED[key] = compiler.eval(
+            'function(source) return string.dump(assert((loadstring or load)(source, "<python>"))) end'
+        )(source.encode('utf-8'))
+    return runtime.eval('loadstring or load')(_COMPILED[key])()
+
+
 def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
-    runtime.execute((root / 'Safe.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Locale.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'LocaleNN.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Features.lua').read_text(encoding='utf-8'))
+    run_addon_file(runtime, root / 'Safe.lua')
+    run_addon_file(runtime, root / 'Locale.lua')
+    run_addon_file(runtime, root / 'LocaleNN.lua')
+    run_addon_file(runtime, root / 'Features.lua')
     if discord_feature is not None:
         runtime.globals().WoWStatusFeatures['discord'] = discord_feature
-    runtime.execute((root / 'CaseFold.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Vanilla.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Loot.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Progress.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'History.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'HistoryUI.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Groups.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Share.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Flavour.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'FlavourNN.lua').read_text(encoding='utf-8'))
+    run_addon_file(runtime, root / 'CaseFold.lua')
+    run_addon_file(runtime, root / 'Vanilla.lua')
+    run_addon_file(runtime, root / 'Loot.lua')
+    run_addon_file(runtime, root / 'Progress.lua')
+    run_addon_file(runtime, root / 'History.lua')
+    run_addon_file(runtime, root / 'HistoryUI.lua')
+    run_addon_file(runtime, root / 'Groups.lua')
+    run_addon_file(runtime, root / 'Share.lua')
+    run_addon_file(runtime, root / 'Flavour.lua')
+    run_addon_file(runtime, root / 'FlavourNN.lua')
     for name in PERSONALITY_FILES:
-        runtime.execute((root / name).read_text(encoding='utf-8'))
-    runtime.execute((root / 'Theme.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'MainWindow.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Overview.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Guide.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Presentation.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Popups.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Journal.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'WhatsNewData.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'WhatsNew.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Firsts.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Recaps.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Equipment.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Roster.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Profile.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Minimap.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'StatusLine.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Previews.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Screenshots.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'Milestones.lua').read_text(encoding='utf-8'))
-    runtime.execute((root / 'WoWStatus.lua').read_text(encoding='utf-8'))
+        run_addon_file(runtime, root / name)
+    run_addon_file(runtime, root / 'Theme.lua')
+    run_addon_file(runtime, root / 'MainWindow.lua')
+    run_addon_file(runtime, root / 'Overview.lua')
+    run_addon_file(runtime, root / 'Guide.lua')
+    run_addon_file(runtime, root / 'Presentation.lua')
+    run_addon_file(runtime, root / 'Popups.lua')
+    run_addon_file(runtime, root / 'Journal.lua')
+    run_addon_file(runtime, root / 'WhatsNewData.lua')
+    run_addon_file(runtime, root / 'WhatsNew.lua')
+    run_addon_file(runtime, root / 'Firsts.lua')
+    run_addon_file(runtime, root / 'Recaps.lua')
+    run_addon_file(runtime, root / 'Equipment.lua')
+    run_addon_file(runtime, root / 'Roster.lua')
+    run_addon_file(runtime, root / 'Profile.lua')
+    run_addon_file(runtime, root / 'Minimap.lua')
+    run_addon_file(runtime, root / 'StatusLine.lua')
+    run_addon_file(runtime, root / 'Previews.lua')
+    run_addon_file(runtime, root / 'Screenshots.lua')
+    run_addon_file(runtime, root / 'Milestones.lua')
+    run_addon_file(runtime, root / 'WoWStatus.lua')
     runtime.eval('fire')('PLAYER_LOGIN')
     # Most tests start like an existing account: no setup guide, Options opened
     # on the character's first login as before the guide existed.

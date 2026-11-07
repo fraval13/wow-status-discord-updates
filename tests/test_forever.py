@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from test_addon import PERSONALITY_FILES, STUBS, lupa
+from test_addon import PERSONALITY_FILES, STUBS, lupa, run_addon_file
 
 
 def forever_runtime(name='Thora', extra=''):
@@ -25,7 +25,7 @@ def forever_runtime(name='Thora', extra=''):
     root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
     for name in ('Safe.lua', 'Locale.lua', 'LocaleNN.lua', 'Features.lua', 'CaseFold.lua', 'Forever.lua', 'Loot.lua', 'Progress.lua', 'History.lua', 'HistoryUI.lua',
                  'Groups.lua', 'Share.lua', 'Flavour.lua', 'FlavourNN.lua', *PERSONALITY_FILES, 'Theme.lua', 'MainWindow.lua', 'Overview.lua', 'Guide.lua', 'Presentation.lua', 'Popups.lua', 'Journal.lua', 'WhatsNewData.lua', 'WhatsNew.lua', 'Firsts.lua', 'Recaps.lua', 'Equipment.lua', 'Roster.lua', 'Profile.lua', 'Minimap.lua', 'StatusLine.lua', 'Previews.lua', 'Screenshots.lua', 'Milestones.lua', 'WoWStatus.lua'):
-        runtime.execute((root / name).read_text(encoding='utf-8'))
+        run_addon_file(runtime, root / name)
     return runtime
 
 
