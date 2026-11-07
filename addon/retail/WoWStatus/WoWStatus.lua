@@ -145,6 +145,7 @@ local function scrub()
         current.played_boundary = nil
     end
     if not current.settings.fields.professions then current.professions = nil end
+    if WoWStatusEquipment and not current.settings.fields.gear then current.equipment_profile = nil end
     snapshot()
 end
 
@@ -215,7 +216,7 @@ local function showPanel(host)
         checkbox("legendary","Legendary equipment",54,-670,"loot_rarities")
         section("Character details",-742)
         local names={level="Level and XP",class="Class",race="Race and male/female",faction="Faction",
-            guild="Guild",gear="Equipment",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
+            guild="Guild",gear="Equipment and combat stats",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
             gold="Gold and gold earned",kills="Monsters killed",collection="Dungeons, mounts and honor kills"}
         for i,key in ipairs(fields) do
             checkbox(key,names[key] or key,(i-1)%2==0 and 24 or 310,-780-math.floor((i-1)/2)*42,"fields")

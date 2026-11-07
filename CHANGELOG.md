@@ -10,6 +10,12 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Scroll down a character's profile for all equipped gear, with item tooltips, enchants and random suffixes
+- Character profiles show available combat stats, including health, attributes, armor and critical strike
+- Friends share saved equipment on demand; offline characters keep their last reported gear and stats
+
 ## 1.28.0
 
 - Records: This week now lists people by how many levels they gained, most first

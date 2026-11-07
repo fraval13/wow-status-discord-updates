@@ -40,6 +40,7 @@ WhatsNewData.lua
 WhatsNew.lua
 Firsts.lua
 Recaps.lua
+Equipment.lua
 Roster.lua
 Profile.lua
 Minimap.lua

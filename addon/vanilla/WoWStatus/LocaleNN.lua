@@ -471,3 +471,29 @@ WoWStatusLocale.POOLS = {
         "Sei hei til alle i {zone} frå meg!",
     },
 }
+
+-- Character equipment snapshots and combat attributes.
+W.add({
+    ["Equipped gear"] = "Utstyr i bruk", ["Refresh gear"] = "Oppdater utstyr",
+    ["Requesting equipment…"] = "Hentar utstyr…",
+    ["Combat attributes"] = "Kampeigenskapar", ["Last reported:"] = "Sist meldt:",
+    ["Equipment sharing is off."] = "Deling av utstyr er slått av.",
+    ["No snapshot yet. Their owner needs the latest addon and must be online to share it."] = "Inga lagra oversikt enno. Eigaren treng nyaste tillegg og må vere pålogga for å dele.",
+    ["Hover an item for its full tooltip. Stats include buffs at the time recorded."] = "Hald musa over ein gjenstand for detaljar. Tala tek med styrkingar då dei vart lagra.",
+    ["Live appearance"] = "Utsjånad no", ["Saved equipment · race portrait"] = "Lagra utstyr · raseportrett",
+    ["Equipment and combat stats"] = "Utstyr og kamptal", ["Not available"] = "Ikkje tilgjengeleg",
+    ["Empty"] = "Tom", ["Item"] = "Gjenstand", ["Health"] = "Helse", ["Mana"] = "Mana",
+    ["Strength"] = "Styrke", ["Agility"] = "Smidigheit", ["Stamina"] = "Uthald",
+    ["Intellect"] = "Intellekt", ["Spirit"] = "Ånd", ["Armor"] = "Rustning",
+    ["Attack power"] = "Åtaksstyrke", ["Ranged attack power"] = "Avstandsstyrke",
+    ["Spell power"] = "Tryllekraft", ["Bonus healing"] = "Ekstra læking",
+    ["Melee critical strike"] = "Kritisk nærkampstreff", ["Spell critical strike"] = "Kritisk trylletreff",
+    ["Dodge"] = "Unnviking", ["Parry"] = "Parering", ["Block"] = "Blokkering",
+    ["Haste"] = "Hast", ["Mastery"] = "Meistring", ["Versatility"] = "Allsidigheit",
+    ["Head"] = "Hovud", ["Neck"] = "Hals", ["Shoulders"] = "Skuldrer", ["Back"] = "Rygg",
+    ["Chest"] = "Bryst", ["Shirt"] = "Skjorte", ["Tabard"] = "Våpenkjortel", ["Wrists"] = "Handledd",
+    ["Hands"] = "Hender", ["Waist"] = "Liv", ["Legs"] = "Bein", ["Feet"] = "Føter",
+    ["Finger 1"] = "Finger 1", ["Finger 2"] = "Finger 2", ["Trinket 1"] = "Prydgjenstand 1",
+    ["Trinket 2"] = "Prydgjenstand 2", ["Main hand"] = "Hovudhand", ["Off hand"] = "Andre hand",
+    ["Ranged / relic"] = "Avstand / relikvie", ["Ammunition"] = "Ammunisjon",
+})
