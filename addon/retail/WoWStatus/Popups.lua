@@ -307,6 +307,7 @@ local function joined(group)
     if not channels()[name:lower()] then return nil end
     return inChannel(name)
 end
+P.joinedChannel = joined
 -- The roster arrives asynchronously after selection. Restoring the old UI
 -- selection immediately can leave an empty roster forever on one client.
 local function displayInfo(index)
@@ -709,18 +710,35 @@ end
 -- When the member count changes, P.peers lists nobody until the new roster
 -- loads, so members from a recent complete read also count: one login or
 -- logout must not hold everybody's popups.
+-- WoW Forever: full names are unique across its internal realms, and a sender
+-- or roster name may come with or without one ("Archduke Franz" or
+-- "Archduke Franz-CAMWOWEU5Realm7PvE"). Membership there compares the name
+-- alone; adding this account's realm to a bare sender name rejected members on
+-- other internal realms as "not a member".
+local function nameOnly(key) return key and key:match("^([^-]+)") or nil end
 local function memberKeys(group)
     local keys = {}
     local current = P.peers(group)
     local cached = rosterCache[group]
     local recent = cached and time() - cached.at < LAST_ROSTER_SECONDS and cached.peers or {}
     for _, list in ipairs({current, recent}) do
-        for _, name in ipairs(list) do local key = P.senderKey(name); if key then keys[key] = true end end
+        for _, name in ipairs(list) do
+            local key = P.senderKey(name)
+            if key then
+                keys[key] = true
+                if A.full_names then keys[nameOnly(key)] = true end
+            end
+        end
     end
     return keys
 end
+P.memberKeys = memberKeys
+-- Whether a sender key is in a member list from memberKeys (see nameOnly).
+local function listed(keys, key)
+    return key ~= nil and (keys[key] == true or (A.full_names == true and keys[nameOnly(key)] == true))
+end
 function P.isPeer(group, key)
-    return key ~= nil and memberKeys(group)[key] == true
+    return listed(memberKeys(group), key)
 end
 -- Whether the group channel's member count differs from the last complete
 -- roster read, or there is none. Only then is reading the roster again worth it:
@@ -755,7 +773,7 @@ local function verifyPending(now, members)
     for _, c in ipairs(waiting) do
         if WoWStatusGroups.contains(getCharacter(), c.group) then
             members[c.group] = members[c.group] or memberKeys(c.group)
-            if members[c.group][c.key] then commit(c, now)
+            if listed(members[c.group], c.key) then commit(c, now)
             elseif now < c.expires then table.insert(unverified, c)
             else noteReceive("rejected_unknown_sender", c, now) end
         end
@@ -772,8 +790,9 @@ local function acknowledge(c)
 end
 local function admit(c, now)
     local members = c.group ~= "legacy" and memberKeys(c.group)
-    if members and members[c.key] then acknowledge(c) end
-    if not members or members[c.key] then
+    local member = members and listed(members, c.key)
+    if member then acknowledge(c) end
+    if not members or member then
         verifyPending(now, members and {[c.group] = members}) -- Earlier updates that waited go first.
         local queued = commit(c, now)
         P.tick()

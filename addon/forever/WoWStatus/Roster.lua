@@ -391,7 +391,9 @@ function R.scan()
         local names = table.concat(WoWStatusPopups.peers(group), ", ")
         if lastPeers[group] ~= names then
             lastPeers[group] = names
-            S.debug("group " .. index .. " members online: " .. (names ~= "" and names or "none"))
+            local channel = WoWStatusPopups.joinedChannel and WoWStatusPopups.joinedChannel(group)
+            S.debug("group " .. index .. " members online: " .. (names ~= "" and names or "none")
+                .. (channel and (" (chat channel " .. tostring(channel) .. ")") or " (not in its chat channel)"))
         end
         for _, peer in ipairs(WoWStatusPopups.peers(group)) do
             noteSeen(group, peer); enqueue(group, peer)
@@ -571,8 +573,8 @@ function R.invite(name, id)
     return true, "Invite sent."
 end
 -- The first version that confirms live updates (WSACK).
-R.ACK_VERSION = "1.24.0"
--- A member's addon version, from their list ("1.24.0"), or nil.
+R.ACK_VERSION = "1.25.0"
+-- A member's addon version, from their list ("1.25.0"), or nil.
 function R.versionOf(name)
     local k = db and key(name)
     if not k then return nil end

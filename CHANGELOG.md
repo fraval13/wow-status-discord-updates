@@ -24,6 +24,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - The minimap button's tooltip shows who is online and a friend's latest news
 - Honorable kills, dungeons cleared and mounts on character cards and profiles
 - Armor tooltips show the full item with its suffix and enchant
+- WoW Forever: friends on other internal realms are no longer rejected as "not a member"
 
 ## 1.24.0
 

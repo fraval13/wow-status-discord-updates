@@ -29,7 +29,7 @@ def test_a_member_confirms_a_live_update_and_the_sender_stops_waiting():
 
 def test_an_unconfirmed_update_is_sent_again_then_marked_not_reached():
     mira, _ = level_up_sent()
-    mira.execute('function WoWStatusRoster.versionOf() return "1.24.0" end')
+    mira.execute('function WoWStatusRoster.versionOf() return "1.25.0" end')
     target = mira.eval('WoWStatusPopups.pendingDeliveries()[1].target')
     before = mira.eval('#__sent')
     clock(mira, 31)
@@ -48,7 +48,7 @@ def test_an_unconfirmed_update_is_sent_again_then_marked_not_reached():
 
 def test_members_on_older_versions_are_never_marked_not_reached():
     mira, _ = level_up_sent()
-    mira.execute('function WoWStatusRoster.versionOf() return "1.23.0" end')
+    mira.execute('function WoWStatusRoster.versionOf() return "1.24.0" end')
     target = mira.eval('WoWStatusPopups.pendingDeliveries()[1].target')
     for t in (31, 52, 80):
         clock(mira, t)
