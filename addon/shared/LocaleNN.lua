@@ -45,7 +45,7 @@ W.add({
     ["Shared an update"] = "Delte ei oppdatering",
     -- Main window and Activity
     ["Overview"] = "Oversikt", ["Activity"] = "Aktivitet", ["Records"] = "Rekordar", ["Characters"] = "Figurar",
-    [" (sample tour, nothing here is real)"] = " (prøvetur, ingenting her er ekte)",
+    ["(sample tour, nothing here is real)"] = "(prøvetur, ingenting her er ekte)", ["Home"] = "Heim",
     ["Showing:"] = "Viser:", ["From your achievements (date only)"] = "Frå bragdene dine (berre dato)",
     ["Your activity"] = "Di aktivitet", ["Caught up via"] = "Henta via", ["a group member"] = "eit gruppemedlem",
     ["passed on by"] = "vidaresendt av", ["Saved group update"] = "Lagra gruppeoppdatering",

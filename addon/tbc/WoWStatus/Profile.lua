@@ -86,7 +86,9 @@ local function build(page)
         widget:SetScript("OnClick", onClick)
         return widget
     end
-    view.back = button("Back", 594, -10, 104, function() view:Hide() end)
+    view.back = button("Back", 594, -10, 104, function()
+        if not WoWStatusMainWindow.back() then F.hide(); WoWStatusMainWindow.go({page="characters"}) end
+    end)
     view.activity = button("Show activity", 434, -10, 154, function()
         if view.row then WoWStatusJournal.showCharacter(view.row.name) end
     end)
@@ -157,7 +159,18 @@ function F.show(row, entry)
     list(view.recent, data.recent, "No activity in the log yet.")
     list(view.gear, data.gear, "No new gear yet.")
     view:Show()
+    WoWStatusMainWindow.go({page="characters", profile=row.name})
     return true
+end
+-- The profile of a character by name (Back and the breadcrumbs).
+function F.showByName(name)
+    local k = key(name)
+    for _, entry in ipairs(WoWStatusRoster.groups()) do
+        for _, row in ipairs(entry.rows) do
+            if k and key(row.name) == k then return F.show(row, entry) end
+        end
+    end
+    return false
 end
 function F.hide() if view then view:Hide() end end
 

@@ -89,13 +89,63 @@ local function create()
     close:SetScript("OnClick", function() window:Hide() end)
     window.close = close
     for index, key in ipairs(order) do addTab(pages[key], index) end
+    -- Back, and the breadcrumbs after the title: Home › Characters › Mira › Activity.
+    window.back = CreateFrame("Button", nil, window, "UIPanelButtonTemplate")
+    window.back:SetPoint("TOPRIGHT", -44, -16); window.back:SetSize(80, 24); window.back:SetText("< " .. T("Back"))
+    window.back:SetScript("OnClick", function() M.back() end)
+    window.crumbs = {}
     table.insert(UISpecialFrames, "WoWStatusMainFrame")
     restorePosition()
     if WoWStatusTheme then WoWStatusTheme.attach(window, background) end
 end
 
--- Open a page by key, or the last page used (Activity on first use).
-function M.show(key)
+-- Navigation like a browser: each step (a page, a profile, a character's
+-- activity) is a state {page, profile, character}; Back returns to the one
+-- before, and the breadcrumbs at the top lead to Home (the Overview), the page
+-- and the character. Kept until the next /reload, at most 30 steps.
+local history, state, restoring = {}, nil, false
+local function same(a, b) return a and b and a.page == b.page and a.profile == b.profile and a.character == b.character end
+function M.state() return state end
+function M.go(next)
+    if restoring or type(next) ~= "table" then return end
+    if state and not same(state, next) then
+        table.insert(history, state)
+        if #history > 30 then table.remove(history, 1) end
+    end
+    state = next
+    if M.path then M.path() end
+end
+-- Show a state without recording it (Back and the breadcrumbs).
+local function apply(target)
+    restoring = true
+    if target.character and WoWStatusJournal then WoWStatusJournal.showCharacter(target.character)
+    else
+        M.show(target.page, true)
+        if WoWStatusProfile then
+            if target.profile then WoWStatusProfile.showByName(target.profile) else WoWStatusProfile.hide() end
+        end
+    end
+    restoring = false
+    state = target
+    if M.path then M.path() end
+end
+function M.back()
+    local previous = table.remove(history)
+    if not previous then return false end
+    apply(previous)
+    return true
+end
+function M.open(target)
+    if state and not same(state, target) then
+        table.insert(history, state)
+        if #history > 30 then table.remove(history, 1) end
+    end
+    apply(target)
+end
+
+-- Open a page by key, or the last page used (Activity on first use). quiet: the
+-- caller records a more precise state itself.
+function M.show(key, quiet)
     if not key or not pages[key] then key = saved().page end
     if not key or not pages[key] then key = pages.activity and "activity" or order[1] end
     if not key then return nil end
@@ -109,15 +159,78 @@ function M.show(key)
     if not page.frame and page.build then page.frame = page.build(window.content) end
     active = key
     saved().page = key
-    local tour = WoWStatusGuide and WoWStatusGuide.touring() and " (sample tour, nothing here is real)" or ""
-    window.title:SetText("WoW Status — " .. T(page.title) .. (tour ~= "" and T(tour) or ""))
     if page.frame then page.frame:Show() end
     if page.refresh then page.refresh(page.frame) end
     window:Show()
+    if not quiet then
+        if key == "characters" and WoWStatusProfile then WoWStatusProfile.hide() end
+        M.go({page=key})
+    end
+    if M.path then M.path() end
     return page.frame
 end
 
 function M.hide() if window then window:Hide() end end
+
+-- The breadcrumbs for the current state; every part but the last is a link.
+function M.crumbs()
+    local current = state or {page=active}
+    local list = {{label=T("Home"), target={page="overview"}}}
+    local function title(key) return pages[key] and T(pages[key].title) or key end
+    if current.character then
+        local name = current.character:match("^[^-]+") or current.character
+        local fromProfile = history[#history] and history[#history].profile == current.character
+        if fromProfile then
+            list[#list + 1] = {label=title("characters"), target={page="characters"}}
+            list[#list + 1] = {label=name, target={page="characters", profile=current.character}}
+            list[#list + 1] = {label=title("activity")}
+        else
+            list[#list + 1] = {label=title("activity"), target={page="activity"}}
+            list[#list + 1] = {label=name}
+        end
+    elseif current.profile then
+        list[#list + 1] = {label=title("characters"), target={page="characters"}}
+        list[#list + 1] = {label=current.profile:match("^[^-]+") or current.profile}
+    elseif current.page and current.page ~= "overview" then
+        list[#list + 1] = {label=title(current.page)}
+    else
+        list[1].target = nil -- Home is where you are.
+    end
+    list[#list].target = nil
+    return list
+end
+function M.path()
+    if not window then return end
+    local list = M.crumbs()
+    local tour = WoWStatusGuide and WoWStatusGuide.touring() and (" " .. T("(sample tour, nothing here is real)")) or ""
+    window.title:SetText("WoW Status" .. tour)
+    local x = 24 + (window.title.GetStringWidth and window.title:GetStringWidth() or 100) + 18
+    for i, crumb in ipairs(list) do
+        local link = window.crumbs[i]
+        if not link then
+            link = CreateFrame("Button", nil, window)
+            link:SetSize(10, 20)
+            link.label = link:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+            link.label:SetPoint("LEFT", 0, 0)
+            link:SetScript("OnClick", function(self) if self.target then M.open(self.target) end end)
+            link:SetScript("OnEnter", function(self) if self.target then self.label:SetTextColor(1, 1, 1) end end)
+            link:SetScript("OnLeave", function(self) M.path() end)
+            window.crumbs[i] = link
+        end
+        local text = (i > 1 and "›  " or "") .. tostring(crumb.label):gsub("|", "||")
+        link.label:SetText(text)
+        if crumb.target then link.label:SetTextColor(1, .82, 0) else link.label:SetTextColor(.85, .85, .85) end
+        link.target = crumb.target
+        local width = (link.label.GetStringWidth and link.label:GetStringWidth() or #text * 7) + 10
+        link:SetWidth(width)
+        link:ClearAllPoints(); link:SetPoint("TOPLEFT", x, -20)
+        link:Show()
+        x = x + width + 4
+    end
+    for i = #list + 1, #window.crumbs do window.crumbs[i]:Hide() end
+    if window.back.SetEnabled then window.back:SetEnabled(#history > 0) end
+end
+M.history = function() return history end
 
 -- Pages call this when their data changes; only a visible page redraws.
 function M.refresh(key)

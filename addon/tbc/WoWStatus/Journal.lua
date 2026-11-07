@@ -1200,10 +1200,11 @@ end
 -- Open the Activity page showing only one character's entries.
 function J.showCharacter(name)
     if not db or not P.senderKey(name) then return false end
-    WoWStatusMainWindow.show("activity")
+    WoWStatusMainWindow.show("activity",true)
     panel.filter,panel.character,panel.characterName="all",P.senderKey(name),name:match("^[^-]+") or name
     panel.day=nil -- A character's activity on every day.
     panel.scroll:SetVerticalScroll(0);render()
+    if WoWStatusMainWindow.go then WoWStatusMainWindow.go({page="activity",character=name}) end
     return true
 end
 -- Open the Activity page scrolled to one entry (used by the Overview links).
