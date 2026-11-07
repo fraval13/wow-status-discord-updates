@@ -14,6 +14,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 - Records: This week now lists people by how many levels they gained, most first
 - Overview: clicking a line always jumps to that entry, even with a filter set on the Activity page
+- Nynorsk: the Overview line that counts the lines it had to leave out is translated too
 
 ## 1.27.0
 
