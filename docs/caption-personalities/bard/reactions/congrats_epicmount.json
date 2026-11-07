@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "Hail, swiftest of heroes! Congrats on the epic mount!",
+  "nn": "Sæl og vel, snøggaste av heltar! Gratulerer med det episke ridedyret!"
+ },
+ {
+  "en": "Congrats on the epic mount! The wind has filed a complaint.",
+  "nn": "Gratulerer med det episke ridedyret! Vinden har sendt inn ei klage."
+ },
+ {
+  "en": "An epic steed! Thy gold was spent on pure glory!",
+  "nn": "Eit episk ridedyr! Gullet ditt gjekk til rein ære!"
+ },
+ {
+  "en": "Congrats! You now arrive before your own legend does.",
+  "nn": "Gratulerer! No kjem du fram før segna di gjer det."
+ },
+ {
+  "en": "Congratulations! Lightning itself asks for your secret.",
+  "nn": "Gratulerer! Sjølv lynet spør om løyndomen din."
+ },
+ {
+  "en": "Congrats on the epic mount! The roads blur beneath you.",
+  "nn": "Gratulerer med det episke ridedyret! Vegane flyt saman under deg."
+ },
+ {
+  "en": "Congrats! A steed of legend, swift as a bard's gossip!",
+  "nn": "Gratulerer! Eit segnridedyr, snøgt som sladderet til ein skald!"
+ },
+ {
+  "en": "Congratulations! Thunder follows in your wake.",
+  "nn": "Gratulerer! Toreskrallet følgjer i kjølvatnet ditt."
+ },
+ {
+  "en": "Congrats on the epic mount! My ballads cannot keep up.",
+  "nn": "Gratulerer med det episke ridedyret! Kvada mine held ikkje følgje."
+ },
+ {
+  "en": "Congrats! Speed and splendor, perfectly matched!",
+  "nn": "Gratulerer! Fart og prakt, fullkome samstemte!"
+ },
+ {
+  "en": "Congratulations! The swiftest steed for the boldest heart!",
+  "nn": "Gratulerer! Det snøggaste ridedyret for det djervaste hjartet!"
+ },
+ {
+  "en": "Congrats on the epic mount! Your purse weeps, your legend sings.",
+  "nn": "Gratulerer med det episke ridedyret! Pungen gret, segna syng."
+ },
+ {
+  "en": "Congrats! You gallop so fast the map needs updating.",
+  "nn": "Gratulerer! Du galopperer så fort at kartet må oppdaterast."
+ },
+ {
+  "en": "Congratulations! An epic mount! Kings would trade crowns for it.",
+  "nn": "Gratulerer! Eit episk ridedyr! Kongar ville bytt krona for det."
+ },
+ {
+  "en": "Congrats on the epic mount! Even the griffons are nervous.",
+  "nn": "Gratulerer med det episke ridedyret! Sjølv griffane er nervøse."
+ },
+ {
+  "en": "Congrats! The saga now moves at a gallop!",
+  "nn": "Gratulerer! Soga går no i galopp!"
+ },
+ {
+  "en": "Congratulations! Your steed is the envy of every stable.",
+  "nn": "Gratulerer! Ridedyret ditt er misunt i kvar stall."
+ },
+ {
+  "en": "Congrats on the epic mount! You blaze past like a comet.",
+  "nn": "Gratulerer med det episke ridedyret! Du suser forbi som ein komet."
+ },
+ {
+  "en": "Congrats! Behold, glory at full speed!",
+  "nn": "Gratulerer! Sjå, ære i full fart!"
+ },
+ {
+  "en": "Congratulations! Swift enough to outrun the bad news.",
+  "nn": "Gratulerer! Snøgg nok til å springe frå dårlege nyhende."
+ },
+ {
+  "en": "Congrats on the epic mount! A royal steed for a royal legend!",
+  "nn": "Gratulerer med det episke ridedyret! Eit kongeleg ridedyr for ei kongeleg segn!"
+ },
+ {
+  "en": "Congrats! The thunder of your hooves wakes the old gods.",
+  "nn": "Gratulerer! Dundret frå hovane dine vekkjer dei gamle gudane."
+ },
+ {
+  "en": "Congratulations! You ride like the hero of a very long epic.",
+  "nn": "Gratulerer! Du rir som helten i eit svært langt epos."
+ },
+ {
+  "en": "Congrats on the epic mount! The dust you leave is legendary too.",
+  "nn": "Gratulerer med det episke ridedyret! Sjølv støvet du etterlèt er segnomspunne."
+ },
+ {
+  "en": "Congrats! The fastest hero in my songbook!",
+  "nn": "Gratulerer! Den snøggaste helten i songboka mi!"
+ },
+ {
+  "en": "Congratulations! Worth every gold coin and then some!",
+  "nn": "Gratulerer! Verdt kvar ein gullmynt og meir til!"
+ },
+ {
+  "en": "Congrats on the epic mount! Your arrival now comes with fanfare.",
+  "nn": "Gratulerer med det episke ridedyret! No kjem du med fanfare."
+ },
+ {
+  "en": "Congrats! The road whispers: there goes a legend.",
+  "nn": "Gratulerer! Vegen kviskrar: der fer ei segn."
+ },
+ {
+  "en": "Congratulations! Speed worthy of a demigod!",
+  "nn": "Gratulerer! Fart verdig ein halvgud!"
+ },
+ {
+  "en": "Congrats on the epic mount! I need a faster quill.",
+  "nn": "Gratulerer med det episke ridedyret! Eg treng ein snøggare penn."
+ },
+ {
+  "en": "Congrats! Saddled in splendor, swift as a shooting star!",
+  "nn": "Gratulerer! Salen full av prakt, snøgg som eit stjerneskot!"
+ },
+ {
+  "en": "Congratulations! The long roads tremble at your pace.",
+  "nn": "Gratulerer! Dei lange vegane skjelv av farten din."
+ },
+ {
+  "en": "Congrats on the epic mount! Your old steed is proud of you.",
+  "nn": "Gratulerer med det episke ridedyret! Det gamle ridedyret ditt er stolt av deg."
+ },
+ {
+  "en": "Congrats! Glory now travels at double speed!",
+  "nn": "Gratulerer! Æra reiser no i dobbel fart!"
+ },
+ {
+  "en": "Congratulations! A blur of heroism on the horizon!",
+  "nn": "Gratulerer! Eit strøk av heltemot i horisonten!"
+ },
+ {
+  "en": "Congrats on the epic mount! The wind bows as you pass.",
+  "nn": "Gratulerer med det episke ridedyret! Vinden bukkar når du far forbi."
+ },
+ {
+  "en": "Congrats! Even the flight masters look impressed.",
+  "nn": "Gratulerer! Sjølv flygemeistrane ser imponerte ut."
+ },
+ {
+  "en": "Congratulations! The fastest chapter of your saga begins!",
+  "nn": "Gratulerer! Det snøggaste kapittelet i soga di tek til!"
+ },
+ {
+  "en": "Congrats on the epic mount! Gallop on, bright comet!",
+  "nn": "Gratulerer med det episke ridedyret! Galopper vidare, klåre komet!"
+ },
+ {
+  "en": "Congrats! The steed of steeds for the hero of heroes!",
+  "nn": "Gratulerer! Ridedyras ridedyr for heltars helt!"
+ },
+ {
+  "en": "An epic steed! The wind itself cannot keep pace!",
+  "nn": "Eit episk ridedyr! Sjølve vinden held ikkje følgje!"
+ },
+ {
+  "en": "Swift as lightning, proud as a king! Splendid!",
+  "nn": "Snøgg som lynet, stolt som ein konge! Prektig!"
+ },
+ {
+  "en": "Your epic mount makes the roads tremble!",
+  "nn": "Det episke ridedyret ditt får vegane til å skjelve!"
+ },
+ {
+  "en": "At such speed, even legends struggle to follow!",
+  "nn": "I slik fart har sjølv segnene vanskeleg for å følgje med!"
+ },
+ {
+  "en": "Behold, the swiftest hero of the realm!",
+  "nn": "Sjå, den snøggaste helten i riket!"
+ },
+ {
+  "en": "I blinked, and you were already across the map!",
+  "nn": "Eg blunka, og du var alt på andre sida av kartet!"
+ },
+ {
+  "en": "Thundering hooves, blazing glory!",
+  "nn": "Dundrande hovar, flammande ære!"
+ },
+ {
+  "en": "A steed of legend for a legend in the making!",
+  "nn": "Eit segnridedyr til ei segn i emning!"
+ },
+ {
+  "en": "Your gold was well spent on pure speed!",
+  "nn": "Gullet ditt var vel brukt på rein fart!"
+ },
+ {
+  "en": "The realm shrinks beneath your epic steed!",
+  "nn": "Riket krympar under det episke ridedyret ditt!"
+ },
+ {
+  "en": "Now you ride like the heroes of the oldest songs!",
+  "nn": "No rir du som heltane i dei eldste songane!"
+ },
+ {
+  "en": "Faster than rumor, swifter than fame!",
+  "nn": "Snøggare enn rykte, kjappare enn ry!"
+ },
+ {
+  "en": "My quill cannot write as fast as you ride!",
+  "nn": "Pennen min kan ikkje skrive så fort som du rir!"
+ },
+ {
+  "en": "Glory at full gallop! Bravo!",
+  "nn": "Ære i full galopp! Bravo!"
+ },
+ {
+  "en": "Even the eagles are impressed by your speed!",
+  "nn": "Sjølv ørnene er imponerte over farten din!"
+ },
+ {
+  "en": "Epic indeed! The bards are breathless!",
+  "nn": "Episk, sanneleg! Skaldane er andpustne!"
+ },
+ {
+  "en": "Your new mount is the envy of kings!",
+  "nn": "Det nye ridedyret ditt er misunt av kongar!"
+ },
+ {
+  "en": "Dust clouds of glory trail behind you!",
+  "nn": "Støvskyer av ære følgjer etter deg!"
+ },
+ {
+  "en": "A comet on four legs! Splendid!",
+  "nn": "Ein komet på fire bein! Prektig!"
+ },
+ {
+  "en": "Royal speed for a royal heart!",
+  "nn": "Kongeleg fart for eit kongeleg hjarte!"
+ },
+ {
+  "en": "The roads blur as you thunder past!",
+  "nn": "Vegane flyt saman når du dundrar forbi!"
+ },
+ {
+  "en": "Hooray! Swift adventures await!",
+  "nn": "Hurra! Snøgge eventyr ventar!"
+ },
+ {
+  "en": "I hear thunder, and it is your hooves!",
+  "nn": "Eg høyrer torebrak, og det er hovane dine!"
+ },
+ {
+  "en": "Such speed! The prophecy did not foresee this!",
+  "nn": "For ein fart! Spådomen såg ikkje dette kome!"
+ },
+ {
+  "en": "Mighty friend, you outrun the dawn!",
+  "nn": "Mektige venn, du spring frå morgongryet!"
+ },
+ {
+  "en": "Your epic steed gleams like polished gold!",
+  "nn": "Det episke ridedyret ditt glitrar som pussa gull!"
+ },
+ {
+  "en": "Fly, hero, fly! The realm awaits!",
+  "nn": "Fyk, helt, fyk! Riket ventar!"
+ },
+ {
+  "en": "The flight masters are nervous now!",
+  "nn": "Flygemeistrane er nervøse no!"
+ },
+ {
+  "en": "A splendid upgrade worthy of a ballad!",
+  "nn": "Ei prektig oppgradering verdig eit kvad!"
+ },
+ {
+  "en": "Your legend just doubled its speed!",
+  "nn": "Segna di har nett dobla farten!"
+ },
+ {
+  "en": "Bravo! The swiftest steed for the boldest friend!",
+  "nn": "Bravo! Det snøggaste ridedyret til den djervaste venen!"
+ },
+ {
+  "en": "I shall need a faster song to match your mount!",
+  "nn": "Eg treng ein snøggare song som passar til ridedyret ditt!"
+ },
+ {
+  "en": "Gallop on, swift legend!",
+  "nn": "Galopper vidare, snøgge segn!"
+ },
+ {
+  "en": "No road is long enough to tire you now!",
+  "nn": "Ingen veg er lang nok til å trøytte deg no!"
+ },
+ {
+  "en": "Your mount streaks like a falling star!",
+  "nn": "Ridedyret ditt fer som eit stjerneskot!"
+ },
+ {
+  "en": "Speed and splendor in perfect harmony!",
+  "nn": "Fart og prakt i fullkomen samklang!"
+ },
+ {
+  "en": "The realm will see you coming and gone!",
+  "nn": "Riket ser deg kome og vere borte att!"
+ },
+ {
+  "en": "Worth every coin! Truly epic!",
+  "nn": "Verdt kvar mynt! Verkeleg episk!"
+ },
+ {
+  "en": "Swift as a whispered secret, bold as a war cry!",
+  "nn": "Snøgg som ein kviskra løyndom, djerv som eit krigsrop!"
+ },
+ {
+  "en": "The wind asks for your secret! Do not tell it!",
+  "nn": "Vinden spør etter løyndomen din! Ikkje fortel han det!"
+ },
+ {
+  "en": "Mounted in majesty! Bravo, friend!",
+  "nn": "Til hest i majestet! Bravo, venn!"
+ },
+ {
+  "en": "You blaze across the realm like wildfire!",
+  "nn": "Du far over riket som ein skogbrann!"
+ },
+ {
+  "en": "Every journey is a sprint to glory now!",
+  "nn": "Kvar ferd er ein sprint mot æra no!"
+ },
+ {
+  "en": "Your epic steed shall be sung of far and wide!",
+  "nn": "Det episke ridedyret ditt skal kvedast om vidt og breitt!"
+ },
+ {
+  "en": "Even the griffons whisper of your speed!",
+  "nn": "Sjølv griffane kviskrar om farten din!"
+ },
+ {
+  "en": "A rider of speed and splendor! Hooray!",
+  "nn": "Ein ryttar med fart og prakt! Hurra!"
+ },
+ {
+  "en": "I can barely see you, friend! Splendid!",
+  "nn": "Eg ser deg knapt, venn! Prektig!"
+ },
+ {
+  "en": "Lightning envies your gallop!",
+  "nn": "Lynet misunner galoppen din!"
+ },
+ {
+  "en": "The epic chapter of your journeys begins!",
+  "nn": "Det episke kapittelet i ferdene dine tek til!"
+ },
+ {
+  "en": "Glory, gallop and gold well spent!",
+  "nn": "Ære, galopp og gull vel brukt!"
+ },
+ {
+  "en": "Zoom, hero, zoom! The realm blurs past!",
+  "nn": "Sus, helt, sus! Riket flyt forbi!"
+ },
+ {
+  "en": "Bards everywhere wish they rode so fast!",
+  "nn": "Skaldar overalt skulle ønskje dei rei så fort!"
+ },
+ {
+  "en": "Chase the horizon, swift friend!",
+  "nn": "Jag horisonten, snøgge venn!"
+ },
+ {
+  "en": "Dazzling speed! You outshine the shooting stars!",
+  "nn": "Blendande fart! Du skin klarare enn stjerneskota!"
+ },
+ {
+  "en": "Each gallop is a thunderclap of glory!",
+  "nn": "Kvar galopp er eit torebrak av ære!"
+ },
+ {
+  "en": "Fleet of hoof, fierce of heart!",
+  "nn": "Snøgg på foten, sterk i hjartet!"
+ },
+ {
+  "en": "Gone in a flash, my splendid friend!",
+  "nn": "Borte på eit blunk, min prektige venn!"
+ },
+ {
+  "en": "Hurtling toward glory on your epic steed!",
+  "nn": "Du fyk mot æra på det episke ridedyret ditt!"
+ },
+ {
+  "en": "In record time, you cross the realm!",
+  "nn": "På rekordtid kryssar du riket!"
+ },
+ {
+  "en": "Just in time for every adventure now!",
+  "nn": "No kjem du tidsnok til kvart eventyr!"
+ },
+ {
+  "en": "Kings would trade their crowns for that steed!",
+  "nn": "Kongar ville bytt bort krona si for det ridedyret!"
+ },
+ {
+  "en": "Lightning on legs! Bravo!",
+  "nn": "Lyn på bein! Bravo!"
+ },
+ {
+  "en": "Majestic and swift! What a mount!",
+  "nn": "Majestetisk og snøgg! For eit ridedyr!"
+ },
+ {
+  "en": "Nothing can catch you now, friend!",
+  "nn": "Ingenting kan ta deg att no, venn!"
+ },
+ {
+  "en": "Onward at a blistering pace!",
+  "nn": "Fram i ein rasande fart!"
+ },
+ {
+  "en": "Pure speed, pure glory!",
+  "nn": "Rein fart, rein ære!"
+ },
+ {
+  "en": "Quick as a quill on a bard's best night!",
+  "nn": "Snøgg som pennen til ein skald på sin beste kveld!"
+ },
+ {
+  "en": "Racing the wind and winning!",
+  "nn": "Du kappspring med vinden og vinn!"
+ },
+ {
+  "en": "Splendid steed, splendid speed!",
+  "nn": "Prektig ridedyr, prektig fart!"
+ },
+ {
+  "en": "Thunder and grace in one mount!",
+  "nn": "Torebrak og ynde i eitt ridedyr!"
+ },
+ {
+  "en": "Unmatched speed for an unmatched friend!",
+  "nn": "Makelaus fart til ein makelaus venn!"
+ },
+ {
+  "en": "Velocity becomes you, hero!",
+  "nn": "Fart kler deg, helt!"
+ },
+ {
+  "en": "Whoosh! There goes a legend!",
+  "nn": "Sus! Der fer ei segn!"
+ },
+ {
+  "en": "You leave the very dust behind in awe!",
+  "nn": "Du let sjølv støvet liggje att i ærefrykt!"
+ },
+ {
+  "en": "A blur of brilliance on the road!",
+  "nn": "Eit strøk av glans på vegen!"
+ },
+ {
+  "en": "Bold rider on a breathtaking steed!",
+  "nn": "Djerv ryttar på eit ridedyr som tek pusten frå ein!"
+ },
+ {
+  "en": "Can anything keep up with you now? I doubt it!",
+  "nn": "Kan noko halde følgje med deg no? Eg tvilar!"
+ },
+ {
+  "en": "Distance means nothing to you anymore!",
+  "nn": "Avstand tyder ingenting for deg lenger!"
+ },
+ {
+  "en": "Epic speed, epic friend!",
+  "nn": "Episk fart, episk venn!"
+ },
+ {
+  "en": "Faster than gossip in a tavern!",
+  "nn": "Snøggare enn sladder i ei kro!"
+ },
+ {
+  "en": "Gallant and quick, you ride into legend!",
+  "nn": "Galant og snøgg rir du inn i segna!"
+ },
+ {
+  "en": "Heralds cannot announce you before you arrive!",
+  "nn": "Heroldane rekk ikkje å kunngjere deg før du er komen!"
+ },
+ {
+  "en": "Impressive mount, impressive hero!",
+  "nn": "Imponerande ridedyr, imponerande helt!"
+ },
+ {
+  "en": "Jaw-dropping speed, friend!",
+  "nn": "Kjeveslepp-fart, venn!"
+ },
+ {
+  "en": "Keep riding fast and far!",
+  "nn": "Ri vidare, fort og langt!"
+ },
+ {
+  "en": "Look at you go! The realm is a blur!",
+  "nn": "Sjå på deg! Riket er berre eit strøk!"
+ },
+ {
+  "en": "Mounted swiftness, matchless glory!",
+  "nn": "Snøggleik til hest, makelaus ære!"
+ },
+ {
+  "en": "Now nothing is out of reach!",
+  "nn": "No er ingenting utanfor rekkjevidd!"
+ },
+ {
+  "en": "Outrun every foe and every storm!",
+  "nn": "Spring frå kvar fiende og kvar storm!"
+ },
+ {
+  "en": "Prepare the songs! The swift one arrives!",
+  "nn": "Bu fram songane! Den snøgge kjem!"
+ },
+ {
+  "en": "Quite the steed, quite the speed!",
+  "nn": "Litt av eit ridedyr, litt av ein fart!"
+ },
+ {
+  "en": "Rush on, legend! Rush on!",
+  "nn": "Fyk vidare, segn! Fyk vidare!"
+ },
+ {
+  "en": "Sleek, swift and splendid!",
+  "nn": "Slank, snøgg og prektig!"
+ },
+ {
+  "en": "The swiftest hooves in the realm are yours!",
+  "nn": "Dei snøggaste hovane i riket er dine!"
+ },
+ {
+  "en": "Undeniably epic! Bravo!",
+  "nn": "Utvilsamt episk! Bravo!"
+ },
+ {
+  "en": "Vroom is not a word, but it fits!",
+  "nn": "Brumm er ikkje eit ord, men det passar!"
+ },
+ {
+  "en": "Wings of wind beneath your hooves!",
+  "nn": "Vindvenger under hovane dine!"
+ },
+ {
+  "en": "Yes! The epic mount is yours!",
+  "nn": "Ja! Det episke ridedyret er ditt!"
+ },
+ {
+  "en": "Arrive before your echo! Splendid!",
+  "nn": "Kom fram før ekkoet ditt! Prektig!"
+ },
+ {
+  "en": "Breathless bards salute your speed!",
+  "nn": "Andpustne skaldar helsar farten din!"
+ },
+ {
+  "en": "Celebrate, swift friend! Your mount is magnificent!",
+  "nn": "Feir, snøgge venn! Ridedyret ditt er storfelt!"
+ },
+ {
+  "en": "Days of travel are now mere hours!",
+  "nn": "Dagsreiser er no berre timar!"
+ },
+ {
+  "en": "Every road bows to your swift steed!",
+  "nn": "Kvar veg bøyer seg for det snøgge ridedyret ditt!"
+ },
+ {
+  "en": "Flash of hooves, flash of glory!",
+  "nn": "Glimt av hovar, glimt av ære!"
+ },
+ {
+  "en": "Gilded saddle, galloping hero!",
+  "nn": "Forgylt sal, galopperande helt!"
+ },
+ {
+  "en": "Hold on to your hat, friend!",
+  "nn": "Hald fast på hatten, venn!"
+ },
+ {
+  "en": "Incredible speed! The saga races ahead!",
+  "nn": "Utruleg fart! Soga fyk framover!"
+ },
+ {
+  "en": "Joy at full gallop!",
+  "nn": "Glede i full galopp!"
+ },
+ {
+  "en": "Kingly mount for my kingly friend!",
+  "nn": "Kongeleg ridedyr til den kongelege venen min!"
+ },
+ {
+  "en": "Leaping ahead of every rival!",
+  "nn": "Du byksar forbi kvar rival!"
+ },
+ {
+  "en": "Marvelous mount, my swift friend!",
+  "nn": "Vidunderleg ridedyr, min snøgge venn!"
+ },
+ {
+  "en": "Now the realm is your racetrack!",
+  "nn": "No er riket kappløpsbana di!"
+ },
+ {
+  "en": "Over the hills in a heartbeat!",
+  "nn": "Over haugane på eit hjarteslag!"
+ },
+ {
+  "en": "Proud and swift, the epic rider!",
+  "nn": "Stolt og snøgg, den episke ryttaren!"
+ },
+ {
+  "en": "Quicker than the eye can follow!",
+  "nn": "Snøggare enn auga kan følgje!"
+ },
+ {
+  "en": "Ride the storm, swift hero!",
+  "nn": "Ri stormen, snøgge helt!"
+ },
+ {
+  "en": "Speed worthy of the old sagas!",
+  "nn": "Fart verdig dei gamle sogene!"
+ },
+ {
+  "en": "Truly, a mount fit for a legend!",
+  "nn": "Sanneleg, eit ridedyr verdig ei segn!"
+ },
+ {
+  "en": "Unstoppable now! Bravo!",
+  "nn": "Ustoppeleg no! Bravo!"
+ },
+ {
+  "en": "Victory is quicker on an epic steed!",
+  "nn": "Sigeren kjem snøggare på eit episk ridedyr!"
+ },
+ {
+  "en": "What a magnificent beast!",
+  "nn": "For eit storfelt dyr!"
+ },
+ {
+  "en": "Your steed and your fame race together!",
+  "nn": "Ridedyret og ryet ditt kappspring saman!"
+ },
+ {
+  "en": "Ah, the joy of an epic mount!",
+  "nn": "Å, gleda over eit episk ridedyr!"
+ },
+ {
+  "en": "Behold the gleaming epic steed!",
+  "nn": "Sjå det glitrande episke ridedyret!"
+ },
+ {
+  "en": "Charge across the realm, mighty one!",
+  "nn": "Storm over riket, mektige!"
+ },
+ {
+  "en": "Destiny rides with you, and it is in a hurry!",
+  "nn": "Lagnaden rir med deg, og han har det travelt!"
+ },
+ {
+  "en": "Elite rider, epic steed!",
+  "nn": "Eliteryttar, episk ridedyr!"
+ },
+ {
+  "en": "Fame follows fast, but you ride faster!",
+  "nn": "Ryet følgjer fort, men du rir fortare!"
+ },
+ {
+  "en": "Grand, swift and glorious!",
+  "nn": "Storslått, snøgg og herleg!"
+ },
+ {
+  "en": "Hasten to glory, my friend!",
+  "nn": "Skund deg mot æra, venen min!"
+ },
+ {
+  "en": "In a single gallop, a whole new land!",
+  "nn": "På éin galopp, eit heilt nytt land!"
+ },
+ {
+  "en": "Jubilant hooves! What a sound!",
+  "nn": "Jublande hovar! For ein lyd!"
+ },
+ {
+  "en": "Kudos for the swiftest steed!",
+  "nn": "Heider for det snøggaste ridedyret!"
+ },
+ {
+  "en": "Legendary speed, legendary rider!",
+  "nn": "Segnomspunnen fart, segnomspunnen ryttar!"
+ },
+ {
+  "en": "My songs will never catch you now!",
+  "nn": "Songane mine tek deg aldri att no!"
+ },
+ {
+  "en": "Nimble, noble and blindingly fast!",
+  "nn": "Lett, edel og blendande snøgg!"
+ },
+ {
+  "en": "Oh, how swiftly you ride!",
+  "nn": "Å, så snøgt du rir!"
+ },
+ {
+  "en": "Pride of the stables, terror of the slow!",
+  "nn": "Stoltheita til stallen, skrekken for dei seine!"
+ },
+ {
+  "en": "Rapid rider, radiant glory!",
+  "nn": "Rapp ryttar, strålande ære!"
+ },
+ {
+  "en": "Swift steed for a splendid soul!",
+  "nn": "Snøgt ridedyr til ei prektig sjel!"
+ },
+ {
+  "en": "The fastest tale in my songbook is yours!",
+  "nn": "Den snøggaste soga i songboka mi er di!"
+ },
+ {
+  "en": "Upgrade complete: glory at double speed!",
+  "nn": "Oppgraderinga er ferdig: ære i dobbel fart!"
+ },
+ {
+  "en": "Valiant and swift! Hooray!",
+  "nn": "Djerv og snøgg! Hurra!"
+ },
+ {
+  "en": "Wonderful! The epic steed suits you!",
+  "nn": "Vidunderleg! Det episke ridedyret kler deg!"
+ },
+ {
+  "en": "Your mount is a legend on four legs!",
+  "nn": "Ridedyret ditt er ei segn på fire bein!"
+ },
+ {
+  "en": "A gallop worthy of a hero's saga!",
+  "nn": "Ein galopp verdig ei heltesoge!"
+ },
+ {
+  "en": "Blazing trails across the realm!",
+  "nn": "Du brenn nye stigar over riket!"
+ },
+ {
+  "en": "Cheers to the swiftest friend I know!",
+  "nn": "Skål for den snøggaste venen eg kjenner!"
+ },
+ {
+  "en": "Down the road like a thunderbolt!",
+  "nn": "Nedover vegen som eit lynnedslag!"
+ },
+ {
+  "en": "Enjoy the speed, friend! You have earned it!",
+  "nn": "Nyt farten, venn! Den har du fortent!"
+ },
+ {
+  "en": "Forward, swift legend!",
+  "nn": "Framover, snøgge segn!"
+ },
+ {
+  "en": "Glorious beast, glorious rider!",
+  "nn": "Herleg dyr, herleg ryttar!"
+ },
+ {
+  "en": "Hear the hooves sing of speed!",
+  "nn": "Høyr hovane syngje om fart!"
+ },
+ {
+  "en": "I salute your splendid epic mount!",
+  "nn": "Eg helsar det prektige episke ridedyret ditt!"
+ },
+ {
+  "en": "Journey far, journey fast!",
+  "nn": "Fer langt, fer fort!"
+ },
+ {
+  "en": "Keen as an arrow, swift as the wind!",
+  "nn": "Kvass som ei pil, snøgg som vinden!"
+ },
+ {
+  "en": "Lords and ladies gasp as you race by!",
+  "nn": "Herrar og fruer gispar når du susar forbi!"
+ },
+ {
+  "en": "Many miles melt beneath you now!",
+  "nn": "Mange mil smeltar under deg no!"
+ },
+ {
+  "en": "Never was a steed so swift!",
+  "nn": "Aldri var eit ridedyr så snøgt!"
+ },
+ {
+  "en": "Of all the steeds, yours is the swiftest!",
+  "nn": "Av alle ridedyr er ditt det snøggaste!"
+ },
+ {
+  "en": "Pounding hooves, pounding hearts!",
+  "nn": "Dundrande hovar, bankande hjarte!"
+ },
+ {
+  "en": "Rumble of hooves, roar of glory!",
+  "nn": "Dunder av hovar, brøl av ære!"
+ },
+ {
+  "en": "Shining steed, shining speed!",
+  "nn": "Skinande ridedyr, skinande fart!"
+ },
+ {
+  "en": "Treasure well spent on a treasure of a mount!",
+  "nn": "Ein skatt vel brukt på eit ridedyr som er ein skatt!"
+ },
+ {
+  "en": "Unrivaled swiftness! Bravo!",
+  "nn": "Makelaus snøggleik! Bravo!"
+ },
+ {
+  "en": "Very fast, very fine, very epic!",
+  "nn": "Svært snøgg, svært fin, svært episk!"
+ },
+ {
+  "en": "Whirlwind rider, the realm salutes you!",
+  "nn": "Kvervelvind av ein ryttar, riket helsar deg!"
+ },
+ {
+  "en": "A sprint of splendor!",
+  "nn": "Ein sprint av prakt!"
+ },
+ {
+  "en": "Behold, speed incarnate!",
+  "nn": "Sjå, fart i levande live!"
+ },
+ {
+  "en": "Could anyone be swifter? I think not!",
+  "nn": "Kunne nokon vere snøggare? Neppe!"
+ },
+ {
+  "en": "Dash on, dazzling friend!",
+  "nn": "Fyk vidare, blendande venn!"
+ },
+ {
+  "en": "Excellent steed for an excellent hero!",
+  "nn": "Framifrå ridedyr til ein framifrå helt!"
+ },
+ {
+  "en": "Fly like the wind, ride like a legend!",
+  "nn": "Fyk som vinden, ri som ei segn!"
+ },
+ {
+  "en": "Great gallops ahead!",
+  "nn": "Store galoppar framfor deg!"
+ },
+ {
+  "en": "Heroic speed! The bards adore it!",
+  "nn": "Heroisk fart! Skaldane elskar det!"
+ },
+ {
+  "en": "In awe of your swift new steed!",
+  "nn": "I ærefrykt for det snøgge nye ridedyret ditt!"
+ },
+ {
+  "en": "Just splendid! Swift and splendid!",
+  "nn": "Berre prektig! Snøgt og prektig!"
+ },
+ {
+  "en": "Keep that pace, my legendary friend!",
+  "nn": "Hald det tempoet, min segnomspunne venn!"
+ },
+ {
+  "en": "Leagues vanish under your hooves!",
+  "nn": "Mil forsvinn under hovane dine!"
+ },
+ {
+  "en": "Mighty mount, mightier speed!",
+  "nn": "Mektig ridedyr, endå mektigare fart!"
+ },
+ {
+  "en": "New heights of speed for my friend!",
+  "nn": "Nye høgder av fart for venen min!"
+ },
+ {
+  "en": "Out of sight in a heartbeat!",
+  "nn": "Ute av syne på eit hjarteslag!"
+ },
+ {
+  "en": "Paths of glory flash by at speed!",
+  "nn": "Ærestigar susar forbi i fart!"
+ },
+ {
+  "en": "Rejoice, rider! Speed is yours!",
+  "nn": "Gled deg, ryttar! Farten er din!"
+ },
+ {
+  "en": "Superb, swift and spectacular!",
+  "nn": "Framifrå, snøgg og spektakulær!"
+ },
+ {
+  "en": "Thunderous gallop, triumphant friend!",
+  "nn": "Dundrande galopp, sigerrik venn!"
+ },
+ {
+  "en": "Utterly epic, my friend!",
+  "nn": "Fullstendig episk, venen min!"
+ },
+ {
+  "en": "Vanishing over the horizon in style!",
+  "nn": "Du forsvinn over horisonten med stil!"
+ },
+ {
+  "en": "Well worth the wait, and the gold!",
+  "nn": "Vel verdt ventinga, og gullet!"
+ },
+ {
+  "en": "You ride like a bard's wildest dream!",
+  "nn": "Du rir som den villaste draumen til ein skald!"
+ },
+ {
+  "en": "A legend at a gallop!",
+  "nn": "Ei segn i galopp!"
+ },
+ {
+  "en": "Bold and blazing fast! Bravo!",
+  "nn": "Djerv og lynsnøgg! Bravo!"
+ },
+ {
+  "en": "Clattering hooves and clamoring crowds!",
+  "nn": "Klaprande hovar og jublande folkemengder!"
+ },
+ {
+  "en": "Dazzle them all, swift rider!",
+  "nn": "Blend dei alle, snøgge ryttar!"
+ },
+ {
+  "en": "Every second counts, and you save them all!",
+  "nn": "Kvart sekund tel, og du sparer dei alle!"
+ },
+ {
+  "en": "Fleetest of foot, finest of friends!",
+  "nn": "Snøggast på foten, finast av vener!"
+ },
+ {
+  "en": "Galloping greatness, my friend!",
+  "nn": "Galopperande storleik, venen min!"
+ },
+ {
+  "en": "How fast is too fast? Not for you!",
+  "nn": "Kor fort er for fort? Ikkje for deg!"
+ },
+ {
+  "en": "Imagine the tales this steed will carry!",
+  "nn": "Tenk på alle sogene dette ridedyret skal bere!"
+ },
+ {
+  "en": "Jubilation! The epic mount is here!",
+  "nn": "Jubel! Det episke ridedyret er her!"
+ },
+ {
+  "en": "Kick up the dust, legend!",
+  "nn": "Kvervle opp støvet, segn!"
+ },
+ {
+  "en": "Lo, a rider swifter than the storm!",
+  "nn": "Sjå, ein ryttar snøggare enn stormen!"
+ },
+ {
+  "en": "Magnificent speed for a magnificent friend!",
+  "nn": "Storfelt fart til ein storfelt venn!"
+ },
+ {
+  "en": "Nobody rides quite like you now!",
+  "nn": "Ingen rir heilt som deg no!"
+ },
+ {
+  "en": "Off like an arrow from a bow!",
+  "nn": "Av garde som ei pil frå ein boge!"
+ },
+ {
+  "en": "Perfectly swift, perfectly splendid!",
+  "nn": "Fullkome snøgg, fullkome prektig!"
+ },
+ {
+  "en": "Quickest hero in the fellowship!",
+  "nn": "Den snøggaste helten i laget!"
+ },
+ {
+  "en": "Riding the lightning, are we? Splendid!",
+  "nn": "Rir du på lynet no? Prektig!"
+ },
+ {
+  "en": "Splendor at speed! What a mount!",
+  "nn": "Prakt i fart! For eit ridedyr!"
+ },
+ {
+  "en": "Tales of your speed will spread fast! Like you!",
+  "nn": "Soger om farten din vil spreie seg fort! Som deg!"
+ },
+ {
+  "en": "Unbelievably swift! Bravo!",
+  "nn": "Utruleg snøgg! Bravo!"
+ },
+ {
+  "en": "Valor and velocity, united!",
+  "nn": "Djervskap og fart, sameinte!"
+ },
+ {
+  "en": "Wondrous steed, wondrous speed!",
+  "nn": "Underfullt ridedyr, underfull fart!"
+ },
+ {
+  "en": "Yonder you go, swift as a dream!",
+  "nn": "Der borte fer du, snøgg som ein draum!"
+ },
+ {
+  "en": "A thunderclap with a saddle!",
+  "nn": "Eit torebrak med sal!"
+ },
+ {
+  "en": "Bright comet of the realm, ride on!",
+  "nn": "Klåre komet i riket, ri vidare!"
+ },
+ {
+  "en": "Courage and speed, the finest pair!",
+  "nn": "Mot og fart, det finaste paret!"
+ },
+ {
+  "en": "Delighted for your dazzling new steed!",
+  "nn": "Glad for det blendande nye ridedyret ditt!"
+ },
+ {
+  "en": "Ever faster, ever finer!",
+  "nn": "Stadig fortare, stadig finare!"
+ },
+ {
+  "en": "Fortune favors the fast! Ride on!",
+  "nn": "Lukka står den snøgge bi! Ri vidare!"
+ },
+ {
+  "en": "Glory has never moved so quickly!",
+  "nn": "Æra har aldri flytt seg så fort!"
+ },
+ {
+  "en": "Hats off to your splendid steed!",
+  "nn": "Hattar av for det prektige ridedyret ditt!"
+ },
+ {
+  "en": "Idle no more, the roads await!",
+  "nn": "Slutt på å drive dank, vegane ventar!"
+ },
+ {
+  "en": "Joyride to glory, my friend!",
+  "nn": "Lystur mot æra, venen min!"
+ },
+ {
+  "en": "Keep the wind at your back!",
+  "nn": "Hald vinden i ryggen!"
+ },
+ {
+  "en": "Lucky steed to carry such a hero!",
+  "nn": "Heldig ridedyr som får bere ein slik helt!"
+ },
+ {
+  "en": "Matchless mount! Truly epic!",
+  "nn": "Makelaust ridedyr! Verkeleg episk!"
+ },
+ {
+  "en": "Now that is a steed for the ages!",
+  "nn": "Det kallar eg eit ridedyr for æva!"
+ },
+ {
+  "en": "Overjoyed for your epic mount!",
+  "nn": "Overlukkeleg for det episke ridedyret ditt!"
+ },
+ {
+  "en": "Prance, gallop, soar! Splendid!",
+  "nn": "Spankuler, galopper, sveiv i sky! Prektig!"
+ },
+ {
+  "en": "Quite simply, the swiftest friend I have!",
+  "nn": "Rett og slett den snøggaste venen eg har!"
+ },
+ {
+  "en": "Roads tremble, horizons beckon!",
+  "nn": "Vegar skjelv, horisontar lokkar!"
+ },
+ {
+  "en": "Swift and splendid, now and forever!",
+  "nn": "Snøgg og prektig, no og for alltid!"
+ },
+ {
+  "en": "Trail of glory behind your epic steed!",
+  "nn": "Ærespor etter det episke ridedyret ditt!"
+ },
+ {
+  "en": "Unmatched on any road! Hooray!",
+  "nn": "Makelaus på kvar veg! Hurra!"
+ },
+ {
+  "en": "Vivid flash of hooves and glory!",
+  "nn": "Eit klårt glimt av hovar og ære!"
+ },
+ {
+  "en": "What speed! What style! What a friend!",
+  "nn": "For ein fart! For ein stil! For ein venn!"
+ },
+ {
+  "en": "Your gallop could outpace a rumor!",
+  "nn": "Galoppen din kunne sprunge frå eit rykte!"
+ },
+ {
+  "en": "All the realm in a single ride!",
+  "nn": "Over heile riket på éin tur!"
+ },
+ {
+  "en": "Brilliant steed, brilliant friend!",
+  "nn": "Strålande ridedyr, strålande venn!"
+ },
+ {
+  "en": "Cheering as you thunder by!",
+  "nn": "Eg jublar når du dundrar forbi!"
+ },
+ {
+  "en": "Distant horizons, suddenly near!",
+  "nn": "Fjerne horisontar, brått nære!"
+ },
+ {
+  "en": "Eager hooves, epic heart!",
+  "nn": "Ivrige hovar, episk hjarte!"
+ },
+ {
+  "en": "Fanfare for the fastest friend!",
+  "nn": "Fanfare for den snøggaste venen!"
+ },
+ {
+  "en": "Gleaming, galloping glory!",
+  "nn": "Glitrande, galopperande ære!"
+ },
+ {
+  "en": "Heads turn as you race past!",
+  "nn": "Folk snur seg når du susar forbi!"
+ },
+ {
+  "en": "It is official: you are swift!",
+  "nn": "No er det offisielt: du er snøgg!"
+ },
+ {
+  "en": "Just look at that epic gallop!",
+  "nn": "Sjå berre på den episke galoppen!"
+ },
+ {
+  "en": "Keep soaring, swift friend!",
+  "nn": "Hald fram med å sveve, snøgge venn!"
+ },
+ {
+  "en": "Legendary steed! Ride proudly!",
+  "nn": "Segnomspunne ridedyr! Ri stolt!"
+ },
+ {
+  "en": "Mighty hooves, mighty friend!",
+  "nn": "Mektige hovar, mektig venn!"
+ },
+ {
+  "en": "No hero rides finer than you!",
+  "nn": "Ingen helt rir finare enn du!"
+ },
+ {
+  "en": "Oh, what a splendid upgrade!",
+  "nn": "Å, for ei prektig oppgradering!"
+ },
+ {
+  "en": "Proudly fast, fastly proud!",
+  "nn": "Stolt og snøgg, snøgg og stolt!"
+ },
+ {
+  "en": "Racing hearts salute you!",
+  "nn": "Bankande hjarte helsar deg!"
+ },
+ {
+  "en": "Speedy friend, splendid steed!",
+  "nn": "Snøgge venn, prektig ridedyr!"
+ },
+ {
+  "en": "Tremendous steed, my friend!",
+  "nn": "Veldig ridedyr, venen min!"
+ },
+ {
+  "en": "Up, up and away at a gallop!",
+  "nn": "Opp, opp og av garde i galopp!"
+ },
+ {
+  "en": "Vast realm, swift rider!",
+  "nn": "Vidt rike, snøgg ryttar!"
+ },
+ {
+  "en": "Warp speed for my favorite hero!",
+  "nn": "Lynfart for yndlingshelten min!"
+ }
+]
