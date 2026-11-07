@@ -342,3 +342,15 @@ def test_publish_without_private_config_on_the_host_stops_before_uploading(monke
     with pytest.raises(SystemExit, match='groups.json'):
         load('deploy/publish_homepage.py').main(['--host', 'root@example.test', '--dry-run'])
     assert len(calls) == 1
+
+
+def test_release_archive_leaves_out_caption_banks_but_keeps_tocs():
+    import subprocess
+    from pathlib import Path, PurePosixPath
+    root = Path(__file__).parents[1]
+    pathspec = load('deploy/make_release.py').ARCHIVE_PATHSPEC
+    names = subprocess.run(['git', 'ls-files', '--', *pathspec], cwd=root, capture_output=True,
+                           text=True, encoding='utf-8', check=True).stdout.splitlines()
+    assert 'addon/forever/WoWStatus/WoWStatus.toc' in names and 'deploy/install_release.py' in names
+    assert not [name for name in names if name.startswith('docs/caption-personalities/')
+                or PurePosixPath(name).name.startswith('Flavour')]
