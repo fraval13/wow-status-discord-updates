@@ -161,3 +161,9 @@ def test_package_files_reads_toc_paths_and_allowlisted_textures():
                'WTF/WoWStatus.lua', '.DS_Store'}
     assert builder.package_files(toc, tracked) == ['Core.lua', 'Libs/Lib.lua', 'Textures/Glow.TGA',
                                                    'Textures/Logo.tga', 'WoWStatus.toc']
+
+
+def test_key_bindings_ship_without_a_toc_line():
+    # The game loads Bindings.xml by its name; other XML still needs a TOC line.
+    tracked = {'WoWStatus.toc', 'Core.lua', 'Bindings.xml', 'Other.xml', 'Libs/Bindings.xml'}
+    assert builder.package_files('Core.lua\n', tracked) == ['Bindings.xml', 'Core.lua', 'WoWStatus.toc']

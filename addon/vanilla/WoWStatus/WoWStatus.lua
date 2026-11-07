@@ -710,6 +710,11 @@ SlashCmdList.WOWSTATUS = function(message)
         elseif rest == "reset" then WoWStatusMinimap.setOffset(nil); say("Minimap button distance reset.")
         elseif WoWStatusMinimap.setOffset(tonumber(rest)) then say("Minimap button distance set to " .. rest .. ".")
         else say("Usage: /wstatus minimap [distance " .. WoWStatusMinimap.MIN_OFFSET .. " to " .. WoWStatusMinimap.MAX_OFFSET .. " | reset]") end
+    elseif command == "controller" or command == "gamepad" then
+        local choice = rest:lower()
+        if choice == "on" or choice == "off" then WoWStatusGamepad.setAllowed(choice == "on")
+        elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
+        say(WoWStatusGamepad.report())
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

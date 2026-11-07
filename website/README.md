@@ -12,8 +12,8 @@ python -m http.server 4173 --directory dist/homepage --bind 127.0.0.1
 ```
 
 The output is `dist/homepage/`. All four ZIPs contain the top-level `WoWStatus`
-folder expected by WoW and hold only the TOC, the files it lists and
-`Textures/*.tga`; any other committed file (for example `.DS_Store` or `WTF/`) is
+folder expected by WoW and hold only the TOC, the files it lists, `Bindings.xml`
+and `Textures/*.tga`; any other committed file (for example `.DS_Store` or `WTF/`) is
 left out, and a TOC-listed file that is not committed fails the build. The build
 also fails unless all four TOC versions equal the `pyproject.toml` version. Addon
 files always come from the specified committed Git revision. Uncommitted addon
@@ -108,6 +108,6 @@ the `release.json` the deploy job built itself (`--manifest`), not only with the
 manifest the site serves. It checks the exact commit revision, that the served
 manifest equals the local one, the visible download links, that every ZIP's size
 and SHA-256 match the local build, and the version labels. Each ZIP must hold
-exactly its TOC, the files the TOC lists and `Textures/*.tga` under `WoWStatus/`;
+exactly its TOC, the files the TOC lists, `Bindings.xml` and `Textures/*.tga` under `WoWStatus/`;
 path traversal, duplicate, directory, symlink or other unexpected entries fail. A stale,
 tampered or missing public download fails the release verification step.

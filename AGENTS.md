@@ -26,6 +26,16 @@ be checked against Git and the environment rather than assumed permanently true.
   legendary armor per item ID. No ordinary quest-turn-in, skill-point, equipment
   change, or looting announcements. Keep milestone reports automatic, without
   free-text announcements or manual dungeon invitations/reports.
+- Every new feature must work with a controller, in all four editions. `Gamepad.lua`
+  finds controls by walking visible frames, so: make every interactive element a
+  `Button`/`CheckButton`/`EditBox` with an `OnClick` (or a mouse-enabled `Frame` with
+  `OnMouseUp`), disable buttons that do nothing; name each new window or overlay
+  `WoWStatus<Name>` and add it to `UISpecialFrames` (B closes it); put lists in a
+  `ScrollFrame`. Give an action that happens outside a window (like dismissing a
+  notification) a `Bindings.xml` binding with a `BINDING_NAME_` label. Do not take
+  controller buttons in combat. Test that `WoWStatusGamepad.controls` reaches the new
+  controls (see `tests/test_gamepad.py`), and say in the PR that live-pad checks are
+  still the owner's.
 - Homepage style is nostalgic 2005-era WoW. The owner rejected both walking and
   lights-only animation experiments. Keep the original still illustration; do
   not restore videos, GIFs, animation assets or preview controls.
@@ -44,6 +54,9 @@ be checked against Git and the environment rather than assumed permanently true.
 - `Safe.lua`: public-value boundary; guard missing APIs and Retail secret values.
 - `Groups.lua`, `Popups.lua`, `Journal.lua`: membership, live transport/queue and
   persistent log/login recovery. Retain bounded payloads, queues and validation.
+- `Gamepad.lua`, `Bindings.xml`: controller navigation of open windows (D-pad,
+  A/B/X, LB/RB, right stick) and key bindings. `Bindings.xml` ships without a TOC
+  line and is mirrored by `sync_addons.py` like shared Lua.
 - `Presentation.lua`, `Flavour.lua`, `Previews.lua`: themes, caption selection and
   local-only preview controls. Previewing must not send or record real progress.
 - `docs/notification-flavour-text.md`: complete 1,300-line caption catalogue,
@@ -61,7 +74,7 @@ be checked against Git and the environment rather than assumed permanently true.
 - `website/`: buildless static HTML/CSS/JS and locally served artwork/fonts.
 - `scripts/build_homepage.py`: packages committed addon source into four ZIPs;
   fills website versions/sizes and publishes a checksummed release manifest.
-  Each ZIP holds only the TOC, the files it lists and `Textures/*.tga`; other
+  Each ZIP holds only the TOC, the files it lists, `Bindings.xml` and `Textures/*.tga`; other
   committed files are skipped. The build fails unless all four TOC versions
   equal the `pyproject.toml` version. Each build replaces its output folder as a
   whole, so no file of an earlier build survives.
