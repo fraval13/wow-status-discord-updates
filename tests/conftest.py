@@ -1,8 +1,13 @@
 import copy
+import hashlib
 import importlib
+import os
+import shutil
+import subprocess
 import sys
 import time
 import types
+from pathlib import Path
 
 import pytest
 
@@ -30,6 +35,8 @@ def pytest_configure(config):
     _lua_tests.clear()
     _runtimes_outside_tests = 0
     _no_lua_ran = False
+    if config.pluginmanager.hasplugin('xdist') and not hasattr(config, 'workerinput'):
+        config.pluginmanager.register(_WorkerLuaCounts(), 'wow-status-worker-lua-counts')
     if config.getoption('lua') != '5.1':
         return
     # Not importorskip: a missing runtime must fail the run rather than silently
@@ -102,17 +109,36 @@ def pytest_runtest_protocol(item, nextitem):
 
 
 def _guarded(config):
-    """False for modes that run no test bodies here: collection, setup plans, xdist."""
+    """False for runs that start no test bodies here: collection, setup plans, xdist workers.
+
+    Under pytest-xdist the workers run the tests and send their Lua counts to the
+    main process (``_WorkerLuaCounts``), which checks and reports the total.
+    """
     option = config.option
     return config.getoption('lua') == '5.1' and not (
         option.collectonly or getattr(option, 'setuponly', False)
-        or getattr(option, 'setupplan', False) or getattr(option, 'numprocesses', None)
-        or hasattr(config, 'workerinput'))
+        or getattr(option, 'setupplan', False) or hasattr(config, 'workerinput'))
+
+
+class _WorkerLuaCounts:
+    """Adds each pytest-xdist worker's Lua 5.1 counts to the main process's."""
+
+    @pytest.hookimpl
+    def pytest_testnodedown(self, node, error):
+        global _runtimes_outside_tests
+        output = getattr(node, 'workeroutput', {})
+        _lua_tests.update(output.get('lua_tests', ()))
+        _runtimes_outside_tests += output.get('lua_runtimes_outside_tests', 0)
 
 
 def pytest_sessionfinish(session):
     global _no_lua_ran
-    if _guarded(session.config) and session.exitstatus == 0 and not _lua_tests:
+    config = session.config
+    if hasattr(config, 'workerinput'):  # an xdist worker: report to the main process
+        config.workeroutput['lua_tests'] = sorted(_lua_tests)
+        config.workeroutput['lua_runtimes_outside_tests'] = _runtimes_outside_tests
+        return
+    if _guarded(config) and session.exitstatus == 0 and not _lua_tests:
         # Guards against the Lua tests being skipped or deselected unnoticed. Runtimes
         # started outside a test do not count: they show nothing was checked.
         _no_lua_ran = True
@@ -178,3 +204,99 @@ def hold_lock():
     yield hold
     for handle in handles:
         handle.close()
+
+
+@pytest.fixture(scope='session')
+def shared_once(tmp_path_factory):
+    """Make a folder once per run and share it, across pytest-xdist workers too.
+
+    ``shared_once(name, make)`` calls ``make(folder)`` for the first caller only and
+    returns the finished folder to everyone. Callers must not change it.
+    """
+    base = tmp_path_factory.getbasetemp()
+    if os.environ.get('PYTEST_XDIST_WORKER'):
+        base = base.parent  # the run's folder, which holds every worker's own folder
+
+    def once(name, make):
+        final = base / f'shared-{name}'
+        if final.is_dir():
+            return final
+        lock = base / f'shared-{name}.lock'
+        deadline = time.monotonic() + 600
+        while True:
+            try:
+                handle = os.open(lock, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+                break
+            except FileExistsError:
+                if final.is_dir():
+                    return final
+                if time.monotonic() > deadline:
+                    raise TimeoutError(f'Another test worker still holds {lock}') from None
+                time.sleep(0.02)
+        try:
+            if not final.is_dir():
+                partial = base / f'shared-{name}.partial'
+                shutil.rmtree(partial, ignore_errors=True)  # from a worker that failed
+                partial.mkdir()
+                make(partial)
+                partial.rename(final)
+        finally:
+            os.close(handle)
+            os.unlink(lock)
+        return final
+
+    return once
+
+
+@pytest.fixture
+def reuse_homepage_packages(shared_once, monkeypatch):
+    """Make a homepage builder module reuse each addon ZIP it wrote earlier in this run.
+
+    ``write_package`` compresses an edition's committed files, and its ZIP is fixed by
+    the builder's code, the Git tree of that addon folder and the file list.
+    Compressing the same files again for every build was most of these tests' time.
+    The rest of a build still runs every time, and changed addon files are a real
+    build. ``test_a_rebuild_leaves_no_file_of_the_earlier_build`` compares a fresh
+    compression with a reused one, so the builder's repeatable output stays checked.
+    """
+    def reuse(module):
+        write_package = module.write_package
+        code = hashlib.sha256(Path(module.__file__).read_bytes()).hexdigest()
+
+        def write(root, revision, folder, files, archive):
+            tree = module.git(root, 'rev-parse', '--verify', f'{revision}:{folder.rstrip("/")}').decode().strip()
+            key = repr((code, tree, folder, files))
+            made = shared_once('zip-' + hashlib.sha256(key.encode('utf-8')).hexdigest()[:32],
+                               lambda made: write_package(root, revision, folder, files, made / archive.name))
+            shutil.copyfile(made / archive.name, archive)
+
+        monkeypatch.setattr(module, 'write_package', write)
+        return module
+
+    return reuse
+
+
+@pytest.fixture(scope='session')
+def clone_repository():
+    """Clone a template repository, checking out only the folders a test reads and edits.
+
+    Sharing the template's Git objects is much faster than writing and committing
+    every file again, and objects are never rewritten, so a test's commits can't reach
+    the template. Pack the template first (``git repack -ad``) so a clone links a few
+    pack files instead of hundreds of loose objects. Other paths stay committed but out of the working tree: Git then
+    never has to reread hundreds of just-written files to trust its index.
+    """
+    def clone(template, destination, folders):
+        # Stored in the clone's config: exact bytes on Windows too, and no developer hooks.
+        # expectFilesOutsideOfPatterns: Git otherwise clears a skip-worktree mark a test sets.
+        # --template=: no sample hooks or other template files, which this would otherwise copy each time.
+        subprocess.run(['git', 'clone', '-q', '--local', '--no-checkout', '--template=', '-c', 'core.autocrlf=false',
+                        '-c', 'core.hooksPath=no-hooks', '-c', 'sparse.expectFilesOutsideOfPatterns=true',
+                        str(template), str(destination)],
+                       check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(destination), 'sparse-checkout', 'set', '--cone', *folders],
+                       check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(destination), 'checkout', '-q'], check=True, capture_output=True)
+        return destination
+
+    return clone

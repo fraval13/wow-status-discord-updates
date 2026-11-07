@@ -35,14 +35,11 @@ def zip_names(output, edition):
         return package.namelist()
 
 
-@pytest.fixture
-def addon_repo(tmp_path):
+def make_addon_repo(repo):
     """A small Git repository holding HEAD's website, addons and pyproject.toml.
 
     It is built from the committed tree, so uncommitted local edits never change the result.
     """
-    repo = tmp_path / 'repo'
-    repo.mkdir()
     archive = git(ROOT, 'archive', '--format=tar', 'HEAD', 'website', 'addon', 'pyproject.toml', 'CHANGELOG.md')
     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
         for member in tar.getmembers():
@@ -53,7 +50,15 @@ def addon_repo(tmp_path):
     git(repo, 'init', '-q')
     git(repo, 'add', '-A')
     git(repo, 'commit', '-q', '-m', 'release')
-    return repo
+    git(repo, 'repack', '-adq')  # clones link one pack instead of hundreds of loose objects
+
+
+@pytest.fixture
+def addon_repo(shared_once, tmp_path, clone_repository, reuse_homepage_packages):
+    """A clean checkout of that repository. Builds read the addons from Git, so they
+    stay out of the working tree."""
+    reuse_homepage_packages(builder)
+    return clone_repository(shared_once('addon-repo', make_addon_repo), tmp_path / 'repo', ['website'])
 
 
 def commit(repo, files):
@@ -65,8 +70,9 @@ def commit(repo, files):
     git(repo, 'commit', '-q', '-m', 'change')
 
 
-def test_current_release_ships_every_committed_addon_file(tmp_path):
+def test_current_release_ships_every_committed_addon_file(tmp_path, reuse_homepage_packages):
     # Guard for the allowlist: a needed file committed to an addon folder must never be dropped.
+    reuse_homepage_packages(builder)
     builder.build(ROOT, tmp_path, 'HEAD')
     for edition in builder.EDITIONS:
         folder = f'addon/{edition}/WoWStatus/'
@@ -106,7 +112,7 @@ def test_pyproject_version_must_match_the_addon_tocs(addon_repo, tmp_path):
 
 
 def test_a_toc_listed_file_must_be_committed(addon_repo, tmp_path):
-    git(addon_repo, 'rm', '-q', 'addon/tbc/WoWStatus/Popups.lua')
+    git(addon_repo, 'rm', '-q', '--sparse', 'addon/tbc/WoWStatus/Popups.lua')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='tbc: Missing addon file: Popups.lua'):
         builder.build(addon_repo, tmp_path / 'site', 'HEAD')
@@ -115,7 +121,7 @@ def test_a_toc_listed_file_must_be_committed(addon_repo, tmp_path):
 @pytest.mark.parametrize('variant', ['bom', 'crlf'])
 def test_a_toc_with_a_bom_or_crlf_fails_clearly(addon_repo, tmp_path, variant):
     toc = 'addon/retail/WoWStatus/WoWStatus.toc'
-    data = (addon_repo / toc).read_bytes()
+    data = git(addon_repo, 'show', f'HEAD:{toc}')
     data = b'\xef\xbb\xbf' + data if variant == 'bom' else data.replace(b'\n', b'\r\n')
     commit(addon_repo, {toc: data})
     with pytest.raises(ValueError, match='retail TOC must be saved without a BOM and with LF'):
@@ -123,7 +129,7 @@ def test_a_toc_with_a_bom_or_crlf_fails_clearly(addon_repo, tmp_path, variant):
 
 
 def test_a_missing_toc_fails_clearly(addon_repo, tmp_path):
-    git(addon_repo, 'rm', '-q', 'addon/forever/WoWStatus/WoWStatus.toc')
+    git(addon_repo, 'rm', '-q', '--sparse', 'addon/forever/WoWStatus/WoWStatus.toc')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='No forever TOC'):
         builder.build(addon_repo, tmp_path / 'site', 'HEAD')
@@ -136,7 +142,7 @@ def test_textures_that_differ_only_by_case_fail(addon_repo, tmp_path):
 
 
 def test_a_revision_without_pyproject_fails_clearly(addon_repo, tmp_path):
-    git(addon_repo, 'rm', '-q', 'pyproject.toml')
+    git(addon_repo, 'rm', '-q', '--sparse', 'pyproject.toml')
     git(addon_repo, 'commit', '-q', '-m', 'drop')
     with pytest.raises(ValueError, match='No pyproject.toml project version'):
         builder.build(addon_repo, tmp_path / 'site', 'HEAD')
