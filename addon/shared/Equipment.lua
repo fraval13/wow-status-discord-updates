@@ -13,7 +13,7 @@ E.STATS = {
 }
 E.SLOTS = {
     {1,"Head","HeadSlot"}, {2,"Neck","NeckSlot"}, {3,"Shoulders","ShoulderSlot"},
-    {15,"Back","BackSlot"}, {5,"Chest","ChestSlot"}, {4,"Shirt","ShirtSlot"},
+    {15,"Cloak","BackSlot"}, {5,"Chest","ChestSlot"}, {4,"Shirt","ShirtSlot"},
     {19,"Tabard","TabardSlot"}, {9,"Wrists","WristSlot"},
     {10,"Hands","HandsSlot"}, {6,"Waist","WaistSlot"}, {7,"Legs","LegsSlot"},
     {8,"Feet","FeetSlot"}, {11,"Finger 1","Finger0Slot"}, {12,"Finger 2","Finger1Slot"},
