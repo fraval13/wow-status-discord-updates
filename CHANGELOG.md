@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.43.0
 
 - Settings can hide or restore your saved bank alts in everyone's character list, Overview and leaderboard
 - Leaderboard includes a played-time column and sort, using each character's latest shared total
