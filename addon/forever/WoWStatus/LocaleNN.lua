@@ -264,6 +264,7 @@ W.add({
     ["Congrats on the new ability!"] = "Gratulerer med den nye evna!",
     ["Congrats on the promotion!"] = "Gratulerer med opprykket!", ["Congrats on the record!"] = "Gratulerer med rekorden!", ["Welcome!"] = "Velkomen!", ["You whispered"] = "Du kviskra",
     -- Records
+    ["No dungeon clear recorded yet."] = "Ingen rydding av fangehol er registrert enno.",
     ["Firsts in"] = "Rekordar i", ["Join a group to compete for records with your friends."] =
         "Bli med i ei gruppe for å kjempe om rekordar med venene dine.",
     ["before WoW Status, by"] = "før WoW Status, seinast", ["nobody yet"] = "ingen enno",

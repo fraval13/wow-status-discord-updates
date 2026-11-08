@@ -177,8 +177,11 @@ It respects your current announcement and character-detail choices. Friends need
 a version supporting recap sharing to see it; older clients ignore the new events.
 Recovery stays quiet, with the usual log bounds.
 
-Dungeon completion requires a supported game completion signal; unsupported
-clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
+Dungeon completion requires a supported game signal. Classic-family clients
+also recognize known final bosses when no complete encounter roster is available;
+intermediate bosses do not count. Earlier unrecorded clears cannot reconstruct
+the group's first-clear record. See [dungeon recording](docs/DUNGEON_RECORDING.md)
+and [in-game testing and coverage](docs/LIVE_POPUPS.md).
 
 Malformed log data is rejected silently and never enters the activity log. The
 group warning popup that earlier versions showed for it was removed after false

@@ -337,7 +337,8 @@ local function render()
         local when = e and WoWStatusHistory.oslo(e.at):sub(1, 16)
         -- Reached before WoW Status tracked it: the date is "by then".
         if e and e.milestone and not e.exact then when = T("before WoW Status, by") .. " " .. when:sub(1, 10) end
-        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or T("nobody yet")
+        local empty = medal.key == "dungeon" and T("No dungeon clear recorded yet.") or T("nobody yet")
+        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or empty
         c.holder:SetText(e and holder or ("|cff808080" .. holder .. "|r"))
         UI.tint(c, e ~= nil)
         c.text = medal.title .. " — " .. holder -- Plain summary of the card.

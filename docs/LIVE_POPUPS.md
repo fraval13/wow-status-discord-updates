@@ -96,8 +96,9 @@ authorship remains player-reported rather than cryptographically authenticated.
 
 ## Automatic milestone coverage
 
-Dungeon clears require a game completion signal or a complete killed encounter
-roster in a party instance. First mount uses collection APIs, or a first observed
+Dungeon clears require a game completion signal, a complete killed encounter
+roster, or a known terminal encounter in a Classic-family party instance. See
+[dungeon recording and supported endpoints](DUNGEON_RECORDING.md). First mount uses collection APIs, or a first observed
 ride with that wording on clients without the journal. Reputation announces new
 Honored/Revered/Exalted highs. Class unlocks cover a conservative first-rank spell
 list; PvP uses available classic rank APIs. Existing observations are baselined
