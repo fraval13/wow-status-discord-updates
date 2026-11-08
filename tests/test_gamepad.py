@@ -1,7 +1,8 @@
 """Controller navigation with simulated frames and buttons.
 
-Positions, visibility and gamepad events are modelled here; whether a client
-delivers its controller's buttons this way needs a game client to confirm.
+Positions, visibility, override bindings and the controller's mapped state are
+modelled here; whether a client delivers its controller's buttons this way needs
+a game client to confirm.
 """
 from pathlib import Path
 
@@ -19,7 +20,29 @@ __pad = true
 __focusEdit = nil
 function InCombatLockdown() return __combat end
 function GetCurrentKeyBoardFocus() return __focusEdit end
-C_GamePad = {IsEnabled=function() return __pad end}
+__stick = {x=0, y=0, len=0}
+C_GamePad = {
+    IsEnabled=function() return __pad end,
+    GetActiveDeviceID=function() return 3 end,
+    GetDeviceMappedState=function(id)
+        if id ~= 3 then return nil end
+        return {sticks={{x=0, y=0, len=0}, __stick}}
+    end,
+    StickIndexToConfigName=function(i) return ({"Left", "Right"})[i] end,
+}
+-- Override bindings: {[key] = {button name, mouse button}}.
+__bindings = {}
+function SetOverrideBindingClick(owner, priority, key, name, mouse)
+    assert(not __combat, "override bindings cannot change in combat")
+    assert(priority == true)
+    __bindings[key] = {name, mouse}
+end
+function ClearOverrideBindings(owner)
+    assert(not __combat, "override bindings cannot change in combat")
+    __bindings = {}
+end
+function bound(key) return __bindings[key] ~= nil end
+function anyBound() return next(__bindings) ~= nil end
 local methods = {}
 local meta = {__index=methods}
 function CreateFrame(kind, name, parent, template)
@@ -54,9 +77,10 @@ function methods:IsEnabled() return self.enabled ~= false end
 function methods:SetEnabled(value) self.enabled = value end
 function methods:IsMouseEnabled() return self.mouse == true end
 function methods:EnableMouse(value) self.mouse = value end
-function methods:Click(button)
-    if self.enabled ~= false and self.scripts.OnClick then self.scripts.OnClick(self, button) end
+function methods:Click(button, down)
+    if self.enabled ~= false and self.scripts.OnClick then self.scripts.OnClick(self, button, down) end
 end
+function methods:RegisterForClicks(...) self.clicks = {...} end
 function methods:GetFrameStrata() return self.strata end
 function methods:SetFrameStrata(value) self.strata = value end
 function methods:GetFrameLevel() return self.level end
@@ -75,9 +99,10 @@ end
 function methods:GetVerticalScroll() return self.scroll end
 function methods:SetVerticalScroll(value) self.scroll = value end
 function methods:GetVerticalScrollRange() return self.range or 0 end
-function methods:EnableGamePadButton(value) self.padButtons = value end
-function methods:EnableGamePadStick(value) self.padStick = value end
-function methods:SetPropagateKeyboardInput(value) self.propagate = value end
+-- Protected for addons: calling them raised the game's "blocked action" dialog.
+function methods:EnableGamePadButton() error("EnableGamePadButton is protected") end
+function methods:EnableGamePadStick() error("EnableGamePadStick is protected") end
+function methods:SetPropagateKeyboardInput() error("SetPropagateKeyboardInput is restricted") end
 function methods:RegisterEvent(name) self.events = self.events or {}; self.events[name] = true end
 function methods:SetFocus() self.typing = true; __focusEdit = self end
 function methods:ClearFocus() self.typing = false; __focusEdit = nil end
@@ -99,10 +124,15 @@ function button(parent, label, l, b, w, h)
     f:SetScript("OnClick", function(self, which) table.insert(__clicks, label .. ":" .. (which or "?")) end)
     return f
 end
+-- A controller button: a claimed one clicks its button (press, then release) and
+-- returns false; any other returns true, as it reaches the game's own binding.
 function press(name)
-    local driver = WoWStatusGamepadDriver
-    driver.scripts.OnGamePadButtonDown(driver, name)
-    return driver.propagate
+    local binding = __bindings[name]
+    if not binding then return true end
+    local target = _G[binding[1]]
+    target:Click(binding[2], true)
+    target:Click(binding[2], false)
+    return false
 end
 function focused() local f = WoWStatusGamepad.focus(); return f and f.label end
 function fire(event, ...) WoWStatusGamepadDriver.scripts.OnEvent(WoWStatusGamepadDriver, event, ...) end
@@ -139,23 +169,45 @@ def main_window(lua):
 
 def test_takes_buttons_only_while_a_window_is_open_with_gamepad_enabled(lua):
     lua.execute('WoWStatusGamepad.update()')
-    assert not lua.eval('WoWStatusGamepadDriver.padButtons')
+    assert not lua.eval('anyBound()')
     main_window(lua)
     lua.execute('WoWStatusGamepad.update()')
-    assert lua.eval('WoWStatusGamepadDriver.padButtons') is True
-    assert lua.eval('WoWStatusGamepadDriver.padStick') is True
+    for key in ('PADDUP', 'PADDDOWN', 'PADDLEFT', 'PADDRIGHT', 'PAD1', 'PAD2', 'PAD3',
+                'PADLSHOULDER', 'PADRSHOULDER'):
+        assert lua.eval(f'__bindings.{key}[1]') == 'WoWStatusGamepadInput'
+        assert lua.eval(f'__bindings.{key}[2]') == key
+    assert not lua.eval('bound("PAD5")')
     lua.execute('main:Hide(); WoWStatusGamepad.update()')
-    assert lua.eval('WoWStatusGamepadDriver.padButtons') is False
+    assert not lua.eval('anyBound()')
     # Gamepad support switched off in the game's options: never taken.
     lua.execute('__pad = false; main:Show(); WoWStatusGamepad.update()')
-    assert lua.eval('WoWStatusGamepadDriver.padButtons') is False
+    assert not lua.eval('anyBound()')
+
+
+def test_never_calls_protected_frame_input_functions():
+    source = (ROOT / 'addon/shared/Gamepad.lua').read_text(encoding='utf-8')
+    code = '\n'.join(line.split('--')[0] for line in source.splitlines())
+    for name in ('EnableGamePadButton', 'EnableGamePadStick', 'SetPropagateKeyboardInput',
+                 'OnGamePadButtonDown', 'OnGamePadStick'):
+        assert name not in code
+
+
+def test_shoulders_are_claimed_only_for_the_main_window(lua):
+    lua.execute('''
+        menu = window("WoWStatusMenu", 200, 200, 150, 120, "TOOLTIP")
+        first = button(menu, "first", 210, 280)
+        WoWStatusGamepad.update()
+    ''')
+    assert lua.eval('bound("PAD1")') is True
+    assert lua.eval('bound("PADLSHOULDER")') is False
+    assert lua.eval('press("PADRSHOULDER")') is True
 
 
 @pytest.mark.parametrize('setup', ['ConsolePort = {}', 'WoWStatusDB.controller = false'])
 def test_steps_aside_for_consoleport_and_the_opt_out(lua, setup):
     main_window(lua)
     lua.execute(setup + '; WoWStatusGamepad.update()')
-    assert not lua.eval('WoWStatusGamepadDriver.padButtons')
+    assert not lua.eval('anyBound()')
     assert lua.eval('WoWStatusGamepad.root()') is None
 
 
@@ -246,7 +298,7 @@ def test_b_goes_back_first_then_closes_and_leaves_text_fields(lua):
     lua.execute('__back = false; press("PAD2")')
     assert lua.eval('main.visible') is False
     lua.execute('WoWStatusGamepad.update()')
-    assert lua.eval('WoWStatusGamepadDriver.padButtons') is False
+    assert not lua.eval('anyBound()')
 
 
 def test_shoulders_change_main_window_pages_and_wrap(lua):
@@ -284,14 +336,19 @@ def test_right_stick_scrolls_the_list_under_the_highlight(lua):
     lua.execute('''
         list = CreateFrame("ScrollFrame", nil, main); list.rect = {120, 150, 400, 200}; list.range = 300
         WoWStatusGamepad.update()
-        local driver = WoWStatusGamepadDriver
-        driver.scripts.OnGamePadStick(driver, "Right", 0, -1, 1)
+        __stick = {x=0, y=-1, len=1}
         WoWStatusGamepad.tick(.1)
     ''')
     assert lua.eval('list.scroll') == pytest.approx(90)
     lua.execute('''
-        local driver = WoWStatusGamepadDriver
-        driver.scripts.OnGamePadStick(driver, "Right", 0, .1, .1) -- Inside the dead zone.
+        __stick = {x=0, y=.1, len=.1} -- Inside the dead zone.
+        WoWStatusGamepad.tick(.1)
+    ''')
+    assert lua.eval('list.scroll') == pytest.approx(90)
+    # Only the right stick scrolls; the left one moves the character.
+    lua.execute('''
+        C_GamePad.StickIndexToConfigName = function(i) return ({"Right", "Left"})[i] end
+        __stick = {x=0, y=-1, len=1}
         WoWStatusGamepad.tick(.1)
     ''')
     assert lua.eval('list.scroll') == pytest.approx(90)
@@ -300,9 +357,10 @@ def test_right_stick_scrolls_the_list_under_the_highlight(lua):
 def test_combat_lets_go_and_takes_back_after(lua):
     main_window(lua)
     lua.execute('WoWStatusGamepad.update(); fire("PLAYER_REGEN_DISABLED"); __combat = true; WoWStatusGamepad.update()')
-    assert lua.eval('WoWStatusGamepadDriver.padButtons') is False
+    assert not lua.eval('anyBound()')
+    assert lua.eval('press("PAD1")') is True
     lua.execute('__combat = false; fire("PLAYER_REGEN_ENABLED")')
-    assert lua.eval('WoWStatusGamepadDriver.padButtons') is True
+    assert lua.eval('bound("PAD1")') is True
 
 
 def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
@@ -415,9 +473,9 @@ def test_settings_character_visibility_checkboxes_are_reachable(lua):
         function methods:SetChecked(value) self.checked=value end
         function methods:GetChecked() return self.checked end
         local click=methods.Click
-        function methods:Click(button)
+        function methods:Click(button,down)
             if self.kind=="CheckButton" then self.checked=not self.checked end
-            click(self,button)
+            click(self,button,down)
         end
         function methods:SetJustifyH() end
         function methods:SetScrollChild(child) self.child=child end
