@@ -1148,7 +1148,9 @@ reactionButtons = function()
     local bottom, stacked = total > BESIDE_HEADING, total > 536
     toast.reactionRow = #list > 0 and (stacked and "stacked" or bottom and "bottom" or "top") or nil
     local rows = stacked and #list or bottom and 1 or 0
-    toast:SetSize(560, TOAST_HEIGHT + (rows > 0 and rows * 28 + 6 or 0))
+    local captionHeight = toast.detail:IsShown() and S.number(S.call(toast.detail.GetStringHeight, toast.detail)) or 0
+    local bodyHeight = math.max(TOAST_HEIGHT, 84 + (captionHeight or 14) + 12)
+    toast:SetSize(560, bodyHeight + (rows > 0 and rows * 28 + 6 or 0))
     local x = -12
     for i = #list, 1, -1 do
         local button = toast.reactions[i]
@@ -1231,7 +1233,8 @@ local function show(item, now)
         toast.message:SetPoint("TOPLEFT", 104, -38); toast.message:SetWidth(438)
         toast.message:SetJustifyH("LEFT")
         toast.detail = toast:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-        toast.detail:SetPoint("BOTTOMLEFT", 104, 12); toast.detail:SetWidth(438)
+        toast.detail:SetPoint("TOPLEFT", 104, -84); toast.detail:SetWidth(438)
+        toast.detail:SetWordWrap(true)
         toast.detail:SetJustifyH("LEFT")
         toast.handle = toast:CreateTexture(nil, "OVERLAY")
         toast.handle:SetPoint("BOTTOMLEFT", toast, "TOPLEFT"); toast.handle:SetSize(560, 10)

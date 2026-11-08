@@ -214,6 +214,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Firsts.lua')
     run_addon_file(runtime, root / 'Recaps.lua')
     run_addon_file(runtime, root / 'Equipment.lua')
+    run_addon_file(runtime, root / 'EquipmentSync.lua')
     run_addon_file(runtime, root / 'Roster.lua')
     run_addon_file(runtime, root / 'Profile.lua')
     run_addon_file(runtime, root / 'Minimap.lua')

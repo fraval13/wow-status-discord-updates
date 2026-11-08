@@ -60,12 +60,22 @@ appear underneath. The timestamp marks the last reported snapshot; stats can
 include buffs. A visible unit can supply a live 3D model; offline characters use
 their race portrait beside their saved equipment.
 
-Friends fetch equipment when you open a profile, at most once a minute per
-character. The owner needs the updated addon and must be online on one of their
-characters to provide a snapshot. Previously received gear remains available
-offline. Characters must log in with this version before their own gear can be
-saved. **Character details → Equipment and combat stats** controls this sharing;
-hidden characters and accounts with character-list sharing off do not send gear.
+Equipment syncs in the background at login and with **Sync now**. Changing gear
+quietly tells your group that a newer snapshot is available; friends fetch it
+without opening a profile. Online friends can also relay saved gear for an
+offline owner, within the group where it was shared. The owner's saved revision
+and capture time determine freshness, so an old relay never replaces newer data
+and incomplete transfers never replace a complete snapshot.
+
+The character list and Overview show the game's average **equipped** item level
+when available; bag gear and required character level are not substituted.
+Character cards have more room and a full-width XP bar along the bottom.
+**Character details → Equipment and combat stats** controls sharing. Hidden
+characters and accounts with character-list sharing off do not send gear.
+Both sides need the updated addon for background sync; older clients keep the
+original profile-open request. Characters must log in with the gear feature
+before their own equipment can be saved. Previously received gear remains
+available offline.
 See [equipment profiles and live checks](docs/EQUIPMENT_PROFILES.md).
 
 ## Language
@@ -171,7 +181,7 @@ exchange missing announcement IDs. An already-online friend also recovers saved
 entries from the arriving player. There is no periodic polling after the login
 exchange completes. **Sync now** on the Characters page repeats it on request (once a
 minute): it resends your character list, asks for everyone else's and catches up the
-log, still limited to one catch-up per member every ten minutes. Recovery adds quiet log cards rather
+log, and refreshes group equipment, still limited to one log catch-up per member every ten minutes. Recovery adds quiet log cards rather
 than replaying old popups, and duplicate IDs do not create duplicate entries.
 
 Someone with a saved copy must be online. Sync covers up to seven days after your

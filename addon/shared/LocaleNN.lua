@@ -487,6 +487,8 @@ WoWStatusLocale.POOLS = {
 W.add({
     ["Equipped gear"] = "Utstyr i bruk", ["Refresh gear"] = "Oppdater utstyr",
     ["Requesting equipment…"] = "Hentar utstyr…",
+    ["Average item level"] = "Snittnivå på utstyr", ["Average item level:"] = "Snittnivå på utstyr:",
+    ["XP unavailable"] = "XP ikkje tilgjengeleg",
     ["Combat attributes"] = "Kampeigenskapar", ["Last reported:"] = "Sist meldt:",
     ["Equipment sharing is off."] = "Deling av utstyr er slått av.",
     ["No snapshot yet. Their owner needs the latest addon and must be online to share it."] = "Inga lagra oversikt enno. Eigaren treng nyaste tillegg og må vere pålogga for å dele.",

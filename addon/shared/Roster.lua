@@ -400,6 +400,7 @@ function R.scan()
         end
         for _, peer in ipairs(WoWStatusPopups.peers(group)) do
             noteSeen(group, peer); enqueue(group, peer)
+            if WoWStatusEquipmentSync then WoWStatusEquipmentSync.hello(group, peer) end
             -- Ask each member once a session for their list: one sent while this
             -- account was offline (a level-up) never reached it. Older versions ignore it.
             local k = key(peer)
@@ -408,6 +409,9 @@ function R.scan()
                 requested[group][k] = true
                 table.insert(outgoing, {target=peer, text="R " .. group .. " " .. state().id})
             end
+        end
+        if WoWStatusEquipmentSync and #WoWStatusPopups.peers(group)==0 and R.recentMembers then
+            for _,peer in ipairs(R.recentMembers(group)) do WoWStatusEquipmentSync.hello(group,peer) end
         end
     end
 end
@@ -642,6 +646,8 @@ end
 function R.changed()
     if not db or not current then return end
     local roster = state()
+    local equipment = {}
+    for _, item in ipairs(outgoing) do if item.equipmentSync then equipment[#equipment + 1] = item end end
     outgoing, sentTo = {}, {}
     if not roster.share then
         for group in pairs(WoWStatusGroups.selected(current)) do
@@ -650,6 +656,8 @@ function R.changed()
             end
         end
     end
+    for _, item in ipairs(equipment) do outgoing[#outgoing + 1] = item end
+    if WoWStatusEquipmentSync then WoWStatusEquipmentSync.privacyChanged() end
     R.scan()
 end
 
@@ -680,6 +688,7 @@ function R.syncNow()
         end
     end
     if WoWStatusJournal.syncNow then WoWStatusJournal.syncNow() end
+    if WoWStatusEquipmentSync then WoWStatusEquipmentSync.sync() end
     updateSyncButton()
     return true
 end
@@ -711,6 +720,10 @@ function R.equipment(name)
         if not (own.settings and own.settings.fields and own.settings.fields.gear) then return nil, true end
         return own.equipment_profile
     end
+    if WoWStatusEquipmentSync then
+        local snapshot, hidden, known = WoWStatusEquipmentSync.get(name)
+        if known then return snapshot, hidden end
+    end
     for _, player in pairs(state().players) do
         local character = player.characters[key(name) or ""]
         if character then return character.equipment_profile, character.equipment_hidden end
@@ -732,6 +745,7 @@ function R.requestEquipment(name)
         if own == current then WoWStatusEquipment.capture(own) end
         return true
     end
+    if WoWStatusEquipmentSync and WoWStatusEquipmentSync.refresh(name) then return true end
     if expireEquipment(equipmentPending, 180) >= 8 or #outgoing >= 256 then return false end
     expireEquipment(equipmentAsked, 60)
     local wanted = key(name)
@@ -764,9 +778,48 @@ function R.requestEquipment(name)
     return false
 end
 function R.equipmentWaiting(name)
+    if WoWStatusEquipmentSync and WoWStatusEquipmentSync.waiting(name) then return true end
     expireEquipment(equipmentPending, 180)
     for _, request in pairs(equipmentPending) do if request.name == key(name) then return true end end
     return false
+end
+
+function R.equipmentQueueSize() return #outgoing end
+function R.itemLevel(name)
+    local snapshot=R.equipment(name)
+    return snapshot and S.number(snapshot.average_item_level) or nil
+end
+local function queueEquipment(group, peer, text, owner)
+    if #outgoing>=256 or #text>250 or not WoWStatusGroups.contains(current,group) then return false end
+    local target=WoWStatusAdapter.full_names and (peer:match("^[^-]+") or peer) or peer
+    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=time(),equipmentOwner=owner,equipmentSync=true}
+    return true
+end
+-- A relay carries the original identity and capture time, not a claim that the
+-- offline owner is online now. Existing live roster details are retained.
+function R.storeEquipment(record,group)
+    local players, k = state().players, key(record.name)
+    if not k then return end
+    local player=players[record.owner]
+    if not player and not record.hidden then
+        local count,oldest,at=0,nil,math.huge
+        for pid,item in pairs(players) do count=count+1; if (item.at or 0)<at then oldest,at=pid,item.at or 0 end end
+        if count>=MAX_PLAYERS and oldest then players[oldest]=nil end
+        player={characters={},groups={},at=record.at}; players[record.owner]=player
+    end
+    if not player then return end
+    local character=player.characters[k]
+    if not character and not record.hidden then
+        local count,oldest,at=0,nil,math.huge
+        for name,item in pairs(player.characters) do count=count+1; if (item.at or 0)<at then oldest,at=name,item.at or 0 end end
+        if count>=MAX_CHARACTERS and oldest then player.characters[oldest]=nil end
+        character={name=record.name,race=record.race,sex=record.sex,class=record.class,level=record.level,at=record.at}
+        player.characters[k]=character
+    end
+    if character then character.equipment_profile,character.equipment_hidden=record.snapshot,record.hidden or nil end
+    player.groups=type(player.groups)=="table" and player.groups or {}
+    player.groups[group]=true
+    R.render()
 end
 local function equipmentMessage(words, sender)
     local op, group, pid, name, token = words[1], words[2], words[3], words[4], words[5]
@@ -856,6 +909,7 @@ function R.tick()
             end
         end
     end
+    if WoWStatusEquipmentSync then WoWStatusEquipmentSync.tick() end
     if #outgoing == 0 or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
     if outgoing[1].notBefore and now < outgoing[1].notBefore then return end
     local item = table.remove(outgoing, 1)
@@ -910,9 +964,13 @@ receive = function(message, sender, distribution)
     end
     if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false, "bad player ID" end
     local players = state().players
+    if op=="H" or op=="J" or op=="F" or op=="T" then
+        return WoWStatusEquipmentSync and WoWStatusEquipmentSync.receive(words,sender) or false
+    end
     if op == "D" or op == "E" then return equipmentMessage(words, sender) end
     if op == "X" and #words == 3 then
         players[pid] = nil
+        if WoWStatusEquipmentSync then WoWStatusEquipmentSync.withdraw(pid) end
         R.render()
         if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
         return true
@@ -1280,7 +1338,7 @@ end
 
 -- Characters page: one bordered card per character under each player's header.
 local UI = WoWStatusUI
-local CARD, HEADER, GAP = 58, 26, 6
+local CARD, HEADER, GAP = 84, 26, 6
 local function header(index)
     local h = CreateFrame("Frame", nil, page.list)
     h:SetSize(680, HEADER)
@@ -1295,7 +1353,8 @@ local function card(index)
     c.name = UI.text(c, "GameFontNormalLarge", 66, -8, 300)
     c.dot = c:CreateTexture(nil, "OVERLAY"); c.dot:SetPoint("TOPLEFT", 66, -32); c.dot:SetSize(14, 14)
     c.status = UI.text(c, "GameFontHighlightSmall", 82, -33, 200)
-    c.xp = UI.xpBar(c, 230, 10); c.xp:SetPoint("TOPLEFT", 66, -46)
+    c.itemLevel = UI.text(c, "GameFontHighlightSmall", 66, -48, 280)
+    c.xp = UI.xpBar(c, 660, 14); c.xp:SetPoint("BOTTOMLEFT", 10, 6)
     c.class = UI.text(c, "GameFontHighlight", 380, -10, 280, "RIGHT")
     c.latest = UI.text(c, "GameFontDisableSmall", 380, -30, 280, "RIGHT")
     c.groups = UI.text(c, "GameFontHighlightSmall", 380, -44, 280, "RIGHT")
@@ -1319,6 +1378,8 @@ local function card(index)
             line("Honorable kills", S.number(character.honor_kills) and character.honor_kills > 0 and tostring(character.honor_kills))
             line("Dungeons cleared", S.number(character.dungeons) and character.dungeons > 0 and tostring(character.dungeons))
             line("Mounts", S.number(character.mounts) and character.mounts > 0 and tostring(character.mounts))
+            local average=R.itemLevel(character.name)
+            line("Average item level", average and string.format("%.2f",average))
             if R.isUnreachable(character.name) then
                 GameTooltip:AddLine(T("Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."), 1, .4, .4, true)
             end
@@ -1482,7 +1543,14 @@ function R.render()
                     local lost = not group.self and R.isUnreachable(character.name) and ("   |cffff5555" .. T("not reached") .. "|r") or ""
                     c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or "") .. lost)
                     local xp = S.number(character.xp)
-                    c.xp:SetProgress(xp and xp / 1000, xp and TF("XP %d%%", math.floor(xp / 10)))
+                    if character.level and character.level >= (WoWStatusAdapter.max_level or 999) then
+                        c.xp:SetProgress(1,T("Maximum level"))
+                    else
+                        c.xp:SetProgress(xp and xp / 1000, xp and TF("XP %d%%", math.floor(xp / 10)) or T("XP unavailable"))
+                        c.xp:Show()
+                    end
+                    local average=R.itemLevel(character.name)
+                    c.itemLevel:SetText(T("Average item level:") .. " " .. (average and math.floor(average) or "—"))
                     -- Level and total deaths at the end of the card.
                     local facts = {}
                     if character.level then table.insert(facts, TF("Level %d", character.level)) end
@@ -1581,6 +1649,7 @@ function R.init(database, character, reporter)
     requested, whoAsked = {}, {}
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
     equipmentSendState = {}
+    if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
     xpSent = character and character.roster_info and character.roster_info.xp
     statsSent = character and character.roster_info and R.statsLine(character.roster_info)
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix

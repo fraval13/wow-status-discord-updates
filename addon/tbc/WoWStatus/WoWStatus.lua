@@ -146,6 +146,7 @@ local function scrub()
     end
     if not current.settings.fields.professions then current.professions = nil end
     if WoWStatusEquipment and not current.settings.fields.gear then current.equipment_profile = nil end
+    if WoWStatusEquipmentSync then WoWStatusEquipmentSync.privacyChanged() end
     snapshot()
 end
 

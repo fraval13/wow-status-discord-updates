@@ -43,6 +43,7 @@ WhatsNew.lua
 Firsts.lua
 Recaps.lua
 Equipment.lua
+EquipmentSync.lua
 Roster.lua
 Profile.lua
 Minimap.lua
