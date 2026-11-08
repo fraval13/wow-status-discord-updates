@@ -1,0 +1,1202 @@
+[
+ {
+  "en": "Your codename is waiting at reception. Welcome, agent.",
+  "nn": "Kodenamnet ditt ventar i resepsjonen. Velkomen, agent."
+ },
+ {
+  "en": "Ah, you've arrived. Do come in and mind the trapdoor.",
+  "nn": "Å, du er komen. Kom inn og pass deg for lemmen."
+ },
+ {
+  "en": "Good evening, recruit. The network has been expecting you.",
+  "nn": "God kveld, rekrutt. Nettverket har venta deg."
+ },
+ {
+  "en": "Delighted to have you in the service. Tea or martini?",
+  "nn": "Gledeleg å ha deg i tenesta. Te eller martini?"
+ },
+ {
+  "en": "The safe house key is under the third flowerpot. Welcome aboard.",
+  "nn": "Nøkkelen til det trygge huset ligg under den tredje blomepotta. Velkomen om bord."
+ },
+ {
+  "en": "You've been cleared for duty. Welcome, old sport.",
+  "nn": "Du er klarert for teneste. Velkomen, gamle ven."
+ },
+ {
+  "en": "Do sit down. Your mission file is on the desk.",
+  "nn": "Set deg. Oppdragsmappa di ligg på pulten."
+ },
+ {
+  "en": "A new agent in our little circle. How splendid.",
+  "nn": "Ein ny agent i den vesle krinsen vår. Så strålande."
+ },
+ {
+  "en": "Burn this whisper after reading. Welcome to the team.",
+  "nn": "Brenn denne kviskringa etter lesing. Velkomen til laget."
+ },
+ {
+  "en": "Pleased to make your acquaintance, agent. Discreetly, of course.",
+  "nn": "Hyggeleg å gjere kjenning med deg, agent. Diskret, sjølvsagt."
+ },
+ {
+  "en": "The quartermaster has a welcome gift for you. Don't shake it.",
+  "nn": "Kvartermeisteren har ei velkomstgåve til deg. Ikkje rist på henne."
+ },
+ {
+  "en": "Glad you found the secret entrance. Most people don't.",
+  "nn": "Kjekt at du fann den løynde inngangen. Dei fleste gjer ikkje det."
+ },
+ {
+  "en": "You'll find we're very discreet. Welcome to the network.",
+  "nn": "Du vil sjå at vi er svært diskrete. Velkomen i nettverket."
+ },
+ {
+  "en": "Ah, the new recruit. You wear the tuxedo well.",
+  "nn": "Å, den nye rekrutten. Smokingen kler deg."
+ },
+ {
+  "en": "Headquarters sends its welcome. And a slightly dented badge.",
+  "nn": "Hovudkvarteret ønskjer deg velkomen. Og sender eit litt bulkete merke."
+ },
+ {
+  "en": "Your desk has a false bottom. Welcome to the service.",
+  "nn": "Pulten din har dobbel botn. Velkomen i tenesta."
+ },
+ {
+  "en": "Welcome, darling. The password changes every Tuesday.",
+  "nn": "Velkomen, kjære deg. Passordet blir bytt kvar tysdag."
+ },
+ {
+  "en": "Psst. Welcome. Act natural.",
+  "nn": "Pst. Velkomen. Ver naturleg."
+ },
+ {
+  "en": "An excellent addition to the roster. Welcome, agent.",
+  "nn": "Eit framifrå tilskot til mannskapslista. Velkomen, agent."
+ },
+ {
+  "en": "Welcome to the club. The most secret one in town.",
+  "nn": "Velkomen i klubben. Den mest hemmelege i byen."
+ },
+ {
+  "en": "I've had a martini poured in your honour. Welcome.",
+  "nn": "Eg har fått skjenkt ein martini til ære for deg. Velkomen."
+ },
+ {
+  "en": "The handler nodded when he saw your name. That's a warm welcome, from him.",
+  "nn": "Kontaktpersonen nikka då han såg namnet ditt. Det er ein varm velkomst, frå han."
+ },
+ {
+  "en": "You've joined at just the right time. The villains are restless.",
+  "nn": "Du kjem med akkurat på rett tid. Skurkane er rastlause."
+ },
+ {
+  "en": "Do come in. Close the bookcase behind you.",
+  "nn": "Kom inn. Lat att bokhylla bak deg."
+ },
+ {
+  "en": "We share everything. Except secrets. Welcome to the circle, agent.",
+  "nn": "Vi deler alt. Bortsett frå løyndommar. Velkomen i krinsen, agent."
+ },
+ {
+  "en": "New face, sharp suit. Welcome aboard.",
+  "nn": "Nytt andlet, skarp dress. Velkomen om bord."
+ },
+ {
+  "en": "Glad to have another agent in the field. Welcome.",
+  "nn": "Kjekt å ha endå ein agent i felten. Velkomen."
+ },
+ {
+  "en": "Your locker is ready. It's the one that ticks.",
+  "nn": "Skapet ditt er klart. Det er det som tikkar."
+ },
+ {
+  "en": "Welcome, old friend. The safe house kettle is on.",
+  "nn": "Velkomen, gamle ven. Kjelen i det trygge huset står på."
+ },
+ {
+  "en": "A warm welcome from headquarters. Well, lukewarm. They're shy.",
+  "nn": "Ein varm velkomst frå Hovudkvarteret. Vel, lunken. Dei er sjenerte."
+ },
+ {
+  "en": "The secret handshake is two taps and a wink. Welcome.",
+  "nn": "Det hemmelege handtrykket er to slag og ein blunk. Velkomen."
+ },
+ {
+  "en": "Your cover story: perfectly ordinary. Welcome to the group.",
+  "nn": "Dekkhistoria di: heilt vanleg. Velkomen i gruppa."
+ },
+ {
+  "en": "Splendid. Another agent to share the baccarat table with.",
+  "nn": "Strålande. Endå ein agent å dele baccaratbordet med."
+ },
+ {
+  "en": "Welcome, recruit. Training starts at dawn. Breakfast at nine.",
+  "nn": "Velkomen, rekrutt. Opplæringa byrjar ved daggry. Frukost klokka ni."
+ },
+ {
+  "en": "I hear you're the new one. You look the part. Welcome.",
+  "nn": "Eg høyrer du er den nye. Du passar i rolla. Velkomen."
+ },
+ {
+  "en": "The Ministry approved your file this morning. Welcome aboard.",
+  "nn": "Departementet godkjende mappa di i dag tidleg. Velkomen om bord."
+ },
+ {
+  "en": "Welcome. I'll be your contact. Look for the red carnation.",
+  "nn": "Velkomen. Eg er kontakten din. Sjå etter den raude nelliken."
+ },
+ {
+  "en": "Good to have you, agent. The villains won't know what hit them.",
+  "nn": "Godt å ha deg, agent. Skurkane veit ikkje kva som trefte dei."
+ },
+ {
+  "en": "You found us. That's the first test passed. Welcome.",
+  "nn": "Du fann oss. Det er den første prøva bestått. Velkomen."
+ },
+ {
+  "en": "Welcome to the service. The coffee is terrible, the gadgets excellent.",
+  "nn": "Velkomen i tenesta. Kaffien er elendig, duppedittane framifrå."
+ },
+ {
+  "en": "A new agent? Splendid. We were short-handed.",
+  "nn": "Ein ny agent? Strålande. Vi mangla folk."
+ },
+ {
+  "en": "Welcome, agent. Do memorise our names, then forget them.",
+  "nn": "Velkomen, agent. Lær namna våre utanåt, og gløym dei så."
+ },
+ {
+  "en": "Your gadgets are on the way. Welcome to the team.",
+  "nn": "Duppedittane dine er på veg. Velkomen til laget."
+ },
+ {
+  "en": "Welcome in. Hang your coat on the hook that doesn't open the vault.",
+  "nn": "Kom inn. Heng frakken på knaggen som ikkje opnar kvelvet."
+ },
+ {
+  "en": "Pleased to see you, recruit. The briefing room is downstairs.",
+  "nn": "Hyggeleg å sjå deg, rekrutt. Orienteringsrommet er i kjellaren."
+ },
+ {
+  "en": "Keep your eyes open and your tie straight. Welcome to the fold, agent.",
+  "nn": "Hald augo opne og slipset rett. Velkomen i flokken, agent."
+ },
+ {
+  "en": "You're one of us now. Try to look mysterious.",
+  "nn": "Du er ein av oss no. Prøv å sjå mystisk ut."
+ },
+ {
+  "en": "A toast to our newest agent. Welcome.",
+  "nn": "Ein skål for den nyaste agenten vår. Velkomen."
+ },
+ {
+  "en": "The dead drop is behind the third brick on the left. Welcome.",
+  "nn": "Den hemmelege postkassa er bak den tredje mursteinen til venstre. Velkomen."
+ },
+ {
+  "en": "Your codename has been approved. It's rather dashing. Welcome.",
+  "nn": "Kodenamnet ditt er godkjent. Det er temmeleg flott. Velkomen."
+ },
+ {
+  "en": "Ah, reinforcements. Welcome, agent.",
+  "nn": "Å, forsterkingar. Velkomen, agent."
+ },
+ {
+  "en": "Don't touch the red button. Ever. Welcome to the network.",
+  "nn": "Ikkje rør den raude knappen. Aldri. Velkomen i nettverket."
+ },
+ {
+  "en": "I've reserved you a seat in the briefing room. Welcome.",
+  "nn": "Eg har reservert ein plass til deg i orienteringsrommet. Velkomen."
+ },
+ {
+  "en": "Glad you're here, agent. Things were getting quiet.",
+  "nn": "Kjekt at du er her, agent. Det var i ferd med å bli stille."
+ },
+ {
+  "en": "We meet at the casino on Thursdays. Welcome, agent.",
+  "nn": "Vi møtest på kasinoet på torsdagar. Velkomen, agent."
+ },
+ {
+  "en": "Delighted. Another fine agent for the cause.",
+  "nn": "Gledeleg. Endå ein god agent for saka."
+ },
+ {
+  "en": "Welcome. The tailor will take your measurements shortly.",
+  "nn": "Velkomen. Skreddaren tek måla dine om litt."
+ },
+ {
+  "en": "The safe house has a spare room with your name on it. Welcome.",
+  "nn": "Det trygge huset har eit ledig rom med namnet ditt på. Velkomen."
+ },
+ {
+  "en": "Welcome to the team. Your first mission: relax.",
+  "nn": "Velkomen til laget. Det første oppdraget ditt: slapp av."
+ },
+ {
+  "en": "An agent of your calibre? Welcome indeed.",
+  "nn": "Ein agent av ditt kaliber? Hjarteleg velkomen."
+ },
+ {
+  "en": "Welcome, recruit. The volcano tours are optional.",
+  "nn": "Velkomen, rekrutt. Vulkanturane er valfrie."
+ },
+ {
+  "en": "Mind the laser grid in the hall. Welcome to the service, old sport.",
+  "nn": "Pass deg for lasernettet i gangen. Velkomen i tenesta, gamle ven."
+ },
+ {
+  "en": "I'm told you can keep a secret. Welcome to the group.",
+  "nn": "Eg har høyrt at du kan halde på ein løyndom. Velkomen i gruppa."
+ },
+ {
+  "en": "Welcome. Your mission file is thin, but we'll fix that.",
+  "nn": "Velkomen. Oppdragsmappa di er tynn, men det skal vi ordne."
+ },
+ {
+  "en": "Come in, come in. The handler is pretending not to be pleased.",
+  "nn": "Kom inn, kom inn. Kontaktpersonen lèt som han ikkje er glad."
+ },
+ {
+  "en": "Welcome to our quiet little network, agent.",
+  "nn": "Velkomen i det stille vesle nettverket vårt, agent."
+ },
+ {
+  "en": "Your clearance is approved. Welcome to the inner circle.",
+  "nn": "Klareringa di er godkjend. Velkomen i den indre krinsen."
+ },
+ {
+  "en": "Lifejackets are under the seats. Ejector seats too. Welcome aboard.",
+  "nn": "Redningsvestane er under seta. Katapultseta òg. Velkomen om bord."
+ },
+ {
+  "en": "A new agent joins us. The villains have been notified. Welcome.",
+  "nn": "Ein ny agent er med oss. Skurkane er varsla. Velkomen."
+ },
+ {
+  "en": "Welcome. Tea is at four. Missions at five past.",
+  "nn": "Velkomen. Te klokka fire. Oppdrag fem over."
+ },
+ {
+  "en": "How lovely to have you, agent. Welcome to the circle.",
+  "nn": "Så nydeleg å ha deg, agent. Velkomen i krinsen."
+ },
+ {
+  "en": "You'll fit right in. We're all impeccably dressed. Welcome.",
+  "nn": "Du kjem til å passe rett inn. Vi er alle ulasteleg kledde. Velkomen."
+ },
+ {
+  "en": "The quartermaster is polishing your first gadget now. Welcome.",
+  "nn": "Kvartermeisteren pussar den første duppeditten din no. Velkomen."
+ },
+ {
+  "en": "Good evening, agent. You've been expected. Welcome.",
+  "nn": "God kveld, agent. Du har vore venta. Velkomen."
+ },
+ {
+  "en": "Our motto is: say little, notice everything. Welcome to the group.",
+  "nn": "Mottoet vårt er: sei lite, legg merke til alt. Velkomen i gruppa."
+ },
+ {
+  "en": "Splendid to have you aboard. I'll have the car brought round.",
+  "nn": "Strålande å ha deg om bord. Eg får bilen køyrd fram."
+ },
+ {
+  "en": "Welcome, agent. Do try the canapés. They're not poisoned.",
+  "nn": "Velkomen, agent. Smak på snittane. Dei er ikkje forgifta."
+ },
+ {
+  "en": "A friend of the service is a friend of mine. Welcome.",
+  "nn": "Ein ven av tenesta er ein ven av meg. Velkomen."
+ },
+ {
+  "en": "Welcome to the network. Our secrets are your secrets now.",
+  "nn": "Velkomen i nettverket. Løyndommane våre er dine løyndommar no."
+ },
+ {
+  "en": "Welcome in. Wipe your shoes. The floor is pressure-sensitive.",
+  "nn": "Kom inn. Tørk av skoa. Golvet er trykkfølsamt."
+ },
+ {
+  "en": "So you're the new agent. Welcome. I've read your file.",
+  "nn": "Så du er den nye agenten. Velkomen. Eg har lese mappa di."
+ },
+ {
+  "en": "Welcome, recruit. We'll start you on the easy villains.",
+  "nn": "Velkomen, rekrutt. Vi byrjar med dei lette skurkane."
+ },
+ {
+  "en": "Your badge, your codename, your welcome. All ready.",
+  "nn": "Merket ditt, kodenamnet ditt, velkomsten din. Alt er klart."
+ },
+ {
+  "en": "The view from headquarters is excellent. Welcome to the service.",
+  "nn": "Utsikta frå Hovudkvarteret er framifrå. Velkomen i tenesta."
+ },
+ {
+  "en": "Ah, there you are. The network feels complete. Welcome.",
+  "nn": "Å, der er du. Nettverket kjennest fullstendig. Velkomen."
+ },
+ {
+  "en": "We use code names only. Yours is splendid. Welcome, agent.",
+  "nn": "Vi brukar berre kodenamn. Ditt er strålande. Velkomen, agent."
+ },
+ {
+  "en": "Glad to have you on the mission roster. Welcome.",
+  "nn": "Kjekt å ha deg på oppdragslista. Velkomen."
+ },
+ {
+  "en": "Cocktails are at eight. Welcome to the group, darling.",
+  "nn": "Cocktailar klokka åtte. Velkomen i gruppa, kjære deg."
+ },
+ {
+  "en": "Welcome. The cufflinks in your welcome pack are radios.",
+  "nn": "Velkomen. Mansjettknappane i velkomstpakka di er radioar."
+ },
+ {
+  "en": "Welcome aboard, agent. Do keep your wits about you.",
+  "nn": "Velkomen om bord, agent. Hald hovudet kaldt."
+ },
+ {
+  "en": "The Ministry welcomes you. Quietly, as is our custom.",
+  "nn": "Departementet ønskjer deg velkomen. I det stille, som skikken er."
+ },
+ {
+  "en": "Welcome to our circle. Please sign here, in invisible ink.",
+  "nn": "Velkomen i krinsen vår. Skriv under her, med usynleg blekk."
+ },
+ {
+  "en": "An extra chair at the briefing table. Welcome, agent.",
+  "nn": "Ein ekstra stol ved orienteringsbordet. Velkomen, agent."
+ },
+ {
+  "en": "Welcome. Your first assignment is to have a lovely evening.",
+  "nn": "Velkomen. Det første oppdraget ditt er å ha ein nydeleg kveld."
+ },
+ {
+  "en": "You're in. Welcome to the most stylish group in the field.",
+  "nn": "Du er med. Velkomen i den mest stilige gruppa i felten."
+ },
+ {
+  "en": "Welcome, old sport. The villains will soon know your name. Or your codename.",
+  "nn": "Velkomen, gamle ven. Skurkane får snart vite namnet ditt. Eller kodenamnet."
+ },
+ {
+  "en": "Rule one: never order the fish at the lair. Welcome to the service.",
+  "nn": "Første regel: bestill aldri fisken i skurkereiret. Velkomen i tenesta."
+ },
+ {
+  "en": "Delighted to welcome you, agent. The kettle's already on.",
+  "nn": "Gledeleg å ønskje deg velkomen, agent. Kjelen står alt på."
+ },
+ {
+  "en": "I'll be in touch. Discreetly. Welcome to the network.",
+  "nn": "Eg tek kontakt. Diskret. Velkomen i nettverket."
+ },
+ {
+  "en": "A fine recruit for a fine group. Welcome.",
+  "nn": "Ein fin rekrutt til ei fin gruppe. Velkomen."
+ },
+ {
+  "en": "The gadget lab opens at nine. Please wear goggles. Welcome.",
+  "nn": "Duppedittlaben opnar klokka ni. Bruk vernebriller. Velkomen."
+ },
+ {
+  "en": "Glad you made it past the guard dogs. Welcome, agent.",
+  "nn": "Kjekt at du kom deg forbi vakthundane. Velkomen, agent."
+ },
+ {
+  "en": "Welcome to the team, agent. Your file photo is very flattering.",
+  "nn": "Velkomen til laget, agent. Passbiletet ditt er svært smigrande."
+ },
+ {
+  "en": "A warm welcome to the newest member of the service.",
+  "nn": "Ein varm velkomst til det nyaste medlemmet i tenesta."
+ },
+ {
+  "en": "Welcome. If anyone asks, you're here for the canapés.",
+  "nn": "Velkomen. Om nokon spør, er du her for snittane."
+ },
+ {
+  "en": "Welcome aboard, agent. The ski chase is on Saturday.",
+  "nn": "Velkomen om bord, agent. Skijakta er på laurdag."
+ },
+ {
+  "en": "I raised an eyebrow when you joined. A welcoming one.",
+  "nn": "Eg løfta eit augebryn då du kom med. Eit velkomande eitt."
+ },
+ {
+  "en": "Our handshake is very firm and very brief. Welcome to the circle.",
+  "nn": "Handtrykket vårt er svært fast og svært kort. Velkomen i krinsen."
+ },
+ {
+  "en": "Welcome, recruit. You've joined the right side. The one with better suits.",
+  "nn": "Velkomen, rekrutt. Du har valt rett side. Den med betre dressar."
+ },
+ {
+  "en": "Your welcome martini is on the bar. Welcome to the group.",
+  "nn": "Velkomstmartinien din står på baren. Velkomen i gruppa."
+ },
+ {
+  "en": "Welcome. Please don't sit in the chair with the button.",
+  "nn": "Velkomen. Ikkje set deg i stolen med knappen."
+ },
+ {
+  "en": "Welcome, agent. We've been watching you. In a friendly way.",
+  "nn": "Velkomen, agent. Vi har halde auge med deg. På ein venleg måte."
+ },
+ {
+  "en": "New agent, new hope. Welcome to the service.",
+  "nn": "Ny agent, nytt håp. Velkomen i tenesta."
+ },
+ {
+  "en": "Welcome. Your mailbox is the hollow tree by the fountain.",
+  "nn": "Velkomen. Postkassa di er det hole treet ved fontena."
+ },
+ {
+  "en": "Welcome to the network. Your gadgets are labelled. Please read the labels.",
+  "nn": "Velkomen i nettverket. Duppedittane dine er merkte. Les merkelappane."
+ },
+ {
+  "en": "Splendid to see you. Welcome to our little organisation.",
+  "nn": "Strålande å sjå deg. Velkomen i den vesle organisasjonen vår."
+ },
+ {
+  "en": "The trick car is in the garage. Ask nicely. Welcome, agent.",
+  "nn": "Triksebilen står i garasjen. Spør pent. Velkomen, agent."
+ },
+ {
+  "en": "You're in excellent company. Mostly. Welcome to the group.",
+  "nn": "Du er i framifrå selskap. For det meste. Velkomen i gruppa."
+ },
+ {
+  "en": "Welcome. The headwaiter at the casino knows your codename already.",
+  "nn": "Velkomen. Hovmeisteren på kasinoet kjenner alt kodenamnet ditt."
+ },
+ {
+  "en": "Hello, agent. Welcome to the team. Shall we begin?",
+  "nn": "Hei, agent. Velkomen til laget. Skal vi byrje?"
+ },
+ {
+  "en": "Welcome. A fresh dossier, a fresh start.",
+  "nn": "Velkomen. Ei ny mappe, ein ny start."
+ },
+ {
+  "en": "Welcome aboard. The handler will brief you. Briefly.",
+  "nn": "Velkomen om bord. Kontaktpersonen orienterer deg. Kort."
+ },
+ {
+  "en": "Your codename was chosen by committee. Sorry. Welcome to the service.",
+  "nn": "Kodenamnet ditt vart valt av ein komité. Orsak. Velkomen i tenesta."
+ },
+ {
+  "en": "Welcome, agent. The secret door is the one marked broom cupboard.",
+  "nn": "Velkomen, agent. Den løynde døra er den som er merkt kosteskap."
+ },
+ {
+  "en": "Welcome to the circle. You've already passed the background check.",
+  "nn": "Velkomen i krinsen. Du har alt bestått bakgrunnssjekken."
+ },
+ {
+  "en": "A new agent at headquarters. The receptionist actually smiled. Welcome.",
+  "nn": "Ein ny agent i Hovudkvarteret. Resepsjonisten smilte faktisk. Velkomen."
+ },
+ {
+  "en": "Welcome. Please read the welcome letter, then eat it.",
+  "nn": "Velkomen. Les velkomstbrevet, og et det så."
+ },
+ {
+  "en": "Welcome to our network of very discreet friends.",
+  "nn": "Velkomen i nettverket vårt av svært diskrete vener."
+ },
+ {
+  "en": "I'll show you the shark tank. From a distance. Welcome, agent.",
+  "nn": "Eg skal syne deg haitanken. På avstand. Velkomen, agent."
+ },
+ {
+  "en": "Our parties are legendary and classified. Welcome to the group.",
+  "nn": "Selskapa våre er legendariske og hemmelegstempla. Velkomen i gruppa."
+ },
+ {
+  "en": "Your welcome pack includes a pen. Please don't click it indoors.",
+  "nn": "Velkomstpakka di inneheld ein penn. Ikkje klikk på han innandørs."
+ },
+ {
+  "en": "Welcome, old friend. The world just became a little safer.",
+  "nn": "Velkomen, gamle ven. Verda vart nett litt tryggare."
+ },
+ {
+  "en": "The cipher for today is welcome. Fitting, isn't it? Welcome.",
+  "nn": "Chifferet for i dag er velkomen. Passande, ikkje sant? Velkomen."
+ },
+ {
+  "en": "Bring your best dinner jacket. Welcome to the team, agent.",
+  "nn": "Ta med den beste smokingen din. Velkomen til laget, agent."
+ },
+ {
+  "en": "Welcome, recruit. Your training wheels are on the trick car.",
+  "nn": "Velkomen, rekrutt. Støttehjula dine sit på triksebilen."
+ },
+ {
+  "en": "Welcome. Our meetings are held in a very ordinary-looking bakery.",
+  "nn": "Velkomen. Møta våre blir haldne i eit svært vanleg bakeri."
+ },
+ {
+  "en": "Welcome to the network. A fine evening to start a career in espionage.",
+  "nn": "Velkomen i nettverket. Ein fin kveld å byrje ein karriere innan spionasje."
+ },
+ {
+  "en": "Welcome, agent. The Ministry has high hopes. Don't tell them I said so.",
+  "nn": "Velkomen, agent. Departementet har store forventningar. Ikkje sei at eg sa det."
+ },
+ {
+  "en": "You've been recruited. Welcome to the good side.",
+  "nn": "Du er rekruttert. Velkomen til den gode sida."
+ },
+ {
+  "en": "Welcome. The trapdoor by the coat rack is for emergencies.",
+  "nn": "Velkomen. Lemmen ved knaggrekkja er for naudstilfelle."
+ },
+ {
+  "en": "Welcome aboard, agent. Lovely to have a fresh pair of eyes.",
+  "nn": "Velkomen om bord, agent. Nydeleg med eit nytt par auge."
+ },
+ {
+  "en": "I'll introduce you to everyone. By codename. Welcome to the group.",
+  "nn": "Eg skal presentere deg for alle. Med kodenamn. Velkomen i gruppa."
+ },
+ {
+  "en": "Welcome, darling. Your cover identity is a wealthy art dealer.",
+  "nn": "Velkomen, kjære deg. Dekkidentiteten din er ein rik kunsthandlar."
+ },
+ {
+  "en": "Welcome. Your mission, should you choose it: have fun.",
+  "nn": "Velkomen. Oppdraget ditt, om du vel det: kos deg."
+ },
+ {
+  "en": "The first martini is on headquarters. Welcome to the service, recruit.",
+  "nn": "Den første martinien spanderer Hovudkvarteret. Velkomen i tenesta, rekrutt."
+ },
+ {
+  "en": "Do keep your passport handy. We travel. Welcome, agent.",
+  "nn": "Ha passet klart. Vi reiser. Velkomen, agent."
+ },
+ {
+  "en": "Welcome to the network. Our handler sends a very formal hello.",
+  "nn": "Velkomen i nettverket. Kontaktpersonen vår sender ei svært formell helsing."
+ },
+ {
+  "en": "A new recruit in our midst. The volcano trembles. Welcome.",
+  "nn": "Ein ny rekrutt blant oss. Vulkanen skjelv. Velkomen."
+ },
+ {
+  "en": "Welcome. You're cleared for the second floor. The first floor is a decoy.",
+  "nn": "Velkomen. Du er klarert for andre etasje. Første etasje er berre for syns skuld."
+ },
+ {
+  "en": "Your umbrella has a hidden blade. Be careful. Welcome to the team, agent.",
+  "nn": "Paraplyen din har eit skjult blad. Ver varsam. Velkomen til laget, agent."
+ },
+ {
+  "en": "The group was missing exactly one agent. You. Welcome.",
+  "nn": "Gruppa mangla akkurat éin agent. Deg. Velkomen."
+ },
+ {
+  "en": "Welcome, agent. The safe house fridge is stocked.",
+  "nn": "Velkomen, agent. Kjøleskapet i det trygge huset er fylt opp."
+ },
+ {
+  "en": "We'll teach you the coded knock. Welcome to the circle.",
+  "nn": "Vi skal lære deg den koda bankinga. Velkomen i krinsen."
+ },
+ {
+  "en": "Our network spans every tavern and casino. Welcome aboard.",
+  "nn": "Nettverket vårt strekkjer seg over kvar kro og kvart kasino. Velkomen om bord."
+ },
+ {
+  "en": "Welcome. I'll leave your welcome note in the usual dead drop.",
+  "nn": "Velkomen. Eg legg velkomstlappen din i den vanlege hemmelege postkassa."
+ },
+ {
+  "en": "Welcome to the service, agent. Everyone here is terribly charming.",
+  "nn": "Velkomen i tenesta, agent. Alle her er forferdeleg sjarmerande."
+ },
+ {
+  "en": "A splendid recruit. Welcome to the group.",
+  "nn": "Ein strålande rekrutt. Velkomen i gruppa."
+ },
+ {
+  "en": "Welcome, old sport. You've joined the finest network in the realm.",
+  "nn": "Velkomen, gamle ven. Du har kome med i det finaste nettverket i riket."
+ },
+ {
+  "en": "Welcome. Our dress code is formal. Our threat level is high.",
+  "nn": "Velkomen. Klesskoden vår er formell. Trusselnivået vårt er høgt."
+ },
+ {
+  "en": "The gadget allowance is generous. Welcome to the team.",
+  "nn": "Duppedittkvoten er raus. Velkomen til laget."
+ },
+ {
+  "en": "Headquarters has given you a lovely little codename. Welcome, agent.",
+  "nn": "Hovudkvarteret har gitt deg eit nydeleg lite kodenamn. Velkomen, agent."
+ },
+ {
+  "en": "Welcome. The villains have a newsletter. You'll be in it soon.",
+  "nn": "Velkomen. Skurkane har eit nyhendebrev. Du er snart med i det."
+ },
+ {
+  "en": "Our tea is strong and our secrets stronger. Welcome to the network.",
+  "nn": "Teen vår er sterk og løyndommane våre sterkare. Velkomen i nettverket."
+ },
+ {
+  "en": "Welcome aboard, recruit. Hold on to your hat.",
+  "nn": "Velkomen om bord, rekrutt. Hald fast på hatten."
+ },
+ {
+  "en": "Welcome to the group. The baccarat table is reserved for us.",
+  "nn": "Velkomen i gruppa. Baccaratbordet er reservert for oss."
+ },
+ {
+  "en": "Welcome, agent. I've polished a nameplate just for you.",
+  "nn": "Velkomen, agent. Eg har pussa eit namneskilt berre til deg."
+ },
+ {
+  "en": "The network grows stronger. The villains, nervous. Welcome.",
+  "nn": "Nettverket blir sterkare. Skurkane, nervøse. Velkomen."
+ },
+ {
+  "en": "Expect the unexpected. And canapés. Welcome to the service.",
+  "nn": "Vent deg det uventa. Og snittar. Velkomen i tenesta."
+ },
+ {
+  "en": "Do tell the quartermaster your shoe size. Welcome, agent.",
+  "nn": "Sei skostorleiken din til kvartermeisteren. Velkomen, agent."
+ },
+ {
+  "en": "You'll love the briefings. Welcome to the circle, recruit.",
+  "nn": "Du kjem til å elske orienteringane. Velkomen i krinsen, rekrutt."
+ },
+ {
+  "en": "Welcome. Our group whispers are fully encrypted. Mostly.",
+  "nn": "Velkomen. Kviskringane i gruppa vår er fullt krypterte. For det meste."
+ },
+ {
+  "en": "Welcome aboard, agent. The getaway car is fuelled.",
+  "nn": "Velkomen om bord, agent. Fluktbilen er fylt."
+ },
+ {
+  "en": "Welcome to the team. Your secret identity suits you.",
+  "nn": "Velkomen til laget. Den hemmelege identiteten din kler deg."
+ },
+ {
+  "en": "Welcome, agent. Your first briefing is over dinner. Black tie.",
+  "nn": "Velkomen, agent. Den første orienteringa di er over middag. Antrekk: smoking."
+ },
+ {
+  "en": "Welcome. The lair maps are in the left drawer.",
+  "nn": "Velkomen. Karta over skurkereiret ligg i den venstre skuffa."
+ },
+ {
+  "en": "Excellent taste in friends. Welcome to the group, agent.",
+  "nn": "Framifrå smak når det gjeld vener. Velkomen i gruppa, agent."
+ },
+ {
+  "en": "Welcome. We've rearranged the safe house for you. The secret passage stays.",
+  "nn": "Velkomen. Vi har ordna om det trygge huset for deg. Den løynde gangen blir verande."
+ },
+ {
+  "en": "You'll be a natural. Welcome to the service, darling.",
+  "nn": "Du er eit naturtalent. Velkomen i tenesta, kjære deg."
+ },
+ {
+  "en": "Your watch is now synchronised with ours. Welcome, agent.",
+  "nn": "Klokka di er no synkronisert med våre. Velkomen, agent."
+ },
+ {
+  "en": "Welcome to the network. Do come to the gala. Villain-free, I promise.",
+  "nn": "Velkomen i nettverket. Kom på gallaen. Utan skurkar, det lovar eg."
+ },
+ {
+  "en": "You'll want sturdy shoes and a sharp mind. Welcome aboard.",
+  "nn": "Du treng solide sko og eit kvast hovud. Velkomen om bord."
+ },
+ {
+  "en": "The briefing room door sticks. Push firmly. Welcome.",
+  "nn": "Døra til orienteringsrommet heng seg opp. Skuv hardt. Velkomen."
+ },
+ {
+  "en": "The handler wishes you luck. Silently. Welcome to the team.",
+  "nn": "Kontaktpersonen ønskjer deg lukke til. I det stille. Velkomen til laget."
+ },
+ {
+  "en": "Welcome, recruit. We'll have you foiling villains by Friday.",
+  "nn": "Velkomen, rekrutt. Vi skal ha deg til å stogge skurkar innan fredag."
+ },
+ {
+  "en": "Welcome. A fresh agent always livens up the casino.",
+  "nn": "Velkomen. Ein ny agent set alltid liv i kasinoet."
+ },
+ {
+  "en": "You'll get the hang of the code words. Welcome to the group.",
+  "nn": "Du får taket på kodeorda. Velkomen i gruppa."
+ },
+ {
+  "en": "Welcome, agent. Your welcome speech has been cancelled for security reasons.",
+  "nn": "Velkomen, agent. Velkomsttalen din er avlyst av tryggingsomsyn."
+ },
+ {
+  "en": "Welcome. I'll be at the bar if you need anything. Or anyone.",
+  "nn": "Velkomen. Eg er i baren om du treng noko. Eller nokon."
+ },
+ {
+  "en": "So glad you've joined us, agent. The network was a chair short.",
+  "nn": "Så kjekt at du er med oss, agent. Nettverket mangla ein stol."
+ },
+ {
+  "en": "Come in out of the rain, agent. You're one of us now.",
+  "nn": "Kom inn frå regnet, agent. Du er ein av oss no."
+ },
+ {
+  "en": "Delighted to see your name on the roster. Truly.",
+  "nn": "Gledeleg å sjå namnet ditt på mannskapslista. Verkeleg."
+ },
+ {
+  "en": "At last, a fellow agent with taste. Glad you're here.",
+  "nn": "Endeleg ein agentkollega med god smak. Kjekt at du er her."
+ },
+ {
+  "en": "Pull up a chair, agent. The briefing has just begun.",
+  "nn": "Finn deg ein stol, agent. Orienteringa har nett byrja."
+ },
+ {
+  "en": "Good to have you with us. The villains won't like it.",
+  "nn": "Godt å ha deg med oss. Skurkane kjem ikkje til å like det."
+ },
+ {
+  "en": "Our newest operative has arrived. Splendid timing.",
+  "nn": "Den nyaste agenten vår er komen. Strålande timing."
+ },
+ {
+  "en": "Lovely to have you, agent. I've saved you a seat by the fire.",
+  "nn": "Nydeleg å ha deg her, agent. Eg har halde av ein plass ved peisen til deg."
+ },
+ {
+  "en": "Hello, recruit. You'll find us at the corner table.",
+  "nn": "Hei, rekrutt. Du finn oss ved hjørnebordet."
+ },
+ {
+  "en": "Greetings, agent. Your arrival has been noted. Warmly.",
+  "nn": "Vel møtt, agent. Ankomsten din er notert. Med varme."
+ },
+ {
+  "en": "Glad you could join our merry little network.",
+  "nn": "Kjekt at du kunne bli med i det lystige vesle nettverket vårt."
+ },
+ {
+  "en": "Come aboard, agent. The submarine leaves at midnight.",
+  "nn": "Kom om bord, agent. Ubåten går ved midnatt."
+ },
+ {
+  "en": "How marvellous. Another agent for our discreet little club.",
+  "nn": "Så fantastisk. Endå ein agent til den diskrete vesle klubben vår."
+ },
+ {
+  "en": "Step inside, recruit. Mind the revolving bookcase.",
+  "nn": "Kom inn, rekrutt. Pass deg for den roterande bokhylla."
+ },
+ {
+  "en": "Nice of you to drop in, agent. Do stay a while.",
+  "nn": "Hyggeleg at du stakk innom, agent. Bli ei stund."
+ },
+ {
+  "en": "Greetings from headquarters, new agent. We're thrilled, quietly.",
+  "nn": "Helsing frå Hovudkvarteret, ny agent. Vi er begeistra, i det stille."
+ },
+ {
+  "en": "Fresh recruit spotted. Glad to have you.",
+  "nn": "Ny rekrutt observert. Kjekt å ha deg."
+ },
+ {
+  "en": "Pleasure to have you in the group, agent. Truly.",
+  "nn": "Ei glede å ha deg i gruppa, agent. Verkeleg."
+ },
+ {
+  "en": "I'll introduce you to the quartermaster. Bring earplugs.",
+  "nn": "Eg skal presentere deg for kvartermeisteren. Ta med øyreproppar."
+ },
+ {
+  "en": "Your cover is set, your gadgets packed. Glad you're with us.",
+  "nn": "Dekkidentiteten din er klar, duppedittane er pakka. Kjekt at du er med oss."
+ },
+ {
+  "en": "Hello and good evening, agent. The night is ours.",
+  "nn": "Hei og god kveld, agent. Natta er vår."
+ },
+ {
+  "en": "Such a pleasure to meet you, agent. In code, naturally.",
+  "nn": "For ei glede å møte deg, agent. I kode, naturlegvis."
+ },
+ {
+  "en": "Make yourself at home. The safe house has lovely curtains.",
+  "nn": "Gjer deg heime. Det trygge huset har nydelege gardiner."
+ },
+ {
+  "en": "News of your arrival reached the casino before you did.",
+  "nn": "Nyheita om at du kom, nådde kasinoet før deg."
+ },
+ {
+  "en": "Glad to have you on our side of the baccarat table.",
+  "nn": "Kjekt å ha deg på vår side av baccaratbordet."
+ },
+ {
+  "en": "Recruit, you've chosen the most elegant group around.",
+  "nn": "Rekrutt, du har valt den mest elegante gruppa som finst."
+ },
+ {
+  "en": "How do you do, agent? Very well, I trust. Glad you're here.",
+  "nn": "Korleis står det til, agent? Godt, går eg ut frå. Kjekt at du er her."
+ },
+ {
+  "en": "Hats off to our newest agent. Bowler, naturally.",
+  "nn": "Hatten av for den nyaste agenten vår. Bowlerhatten, naturlegvis."
+ },
+ {
+  "en": "Do join us at the bar. The first round is on the Ministry.",
+  "nn": "Bli med oss i baren. Første runde spanderer Departementet."
+ },
+ {
+  "en": "Every network needs a fresh face. Yours will do nicely.",
+  "nn": "Kvart nettverk treng eit nytt andlet. Ditt passar fint."
+ },
+ {
+  "en": "Ready for your first mission, agent? It's a dinner party.",
+  "nn": "Klar for det første oppdraget ditt, agent? Det er eit middagsselskap."
+ },
+ {
+  "en": "Here's your codename, your badge and a warm hello.",
+  "nn": "Her er kodenamnet ditt, merket ditt og ei varm helsing."
+ },
+ {
+  "en": "Lovely to see a new agent in the ranks. Do settle in.",
+  "nn": "Nydeleg å sjå ein ny agent i rekkjene. Finn deg til rette."
+ },
+ {
+  "en": "Grand to have you, agent. The volcano tours start soon.",
+  "nn": "Flott å ha deg, agent. Vulkanturane byrjar snart."
+ },
+ {
+  "en": "A hearty hello from the safe house, agent.",
+  "nn": "Ei hjarteleg helsing frå det trygge huset, agent."
+ },
+ {
+  "en": "Thrilled you've joined. The handler is too, in his way.",
+  "nn": "Begeistra for at du er med. Kontaktpersonen er òg det, på sin måte."
+ },
+ {
+  "en": "Agent, your seat at the briefing table is the one without the spike.",
+  "nn": "Agent, plassen din ved orienteringsbordet er den utan pigg."
+ },
+ {
+  "en": "Settle in, agent. The tea is hot and the gadgets are hotter.",
+  "nn": "Finn deg til rette, agent. Teen er varm og duppedittane endå varmare."
+ },
+ {
+  "en": "Hello, new friend. We've cleared a drawer for your disguises.",
+  "nn": "Hei, ny ven. Vi har rydda ei skuffe til forkledningane dine."
+ },
+ {
+  "en": "Congratulations on joining the most secret group in the realm.",
+  "nn": "Gratulerer med å ha kome med i den mest hemmelege gruppa i riket."
+ },
+ {
+  "en": "Long have we waited for an agent like you. Come in.",
+  "nn": "Lenge har vi venta på ein agent som deg. Kom inn."
+ },
+ {
+  "en": "Greetings, agent. The bunker is cosier than it sounds.",
+  "nn": "Vel møtt, agent. Bunkeren er koselegare enn det høyrest ut."
+ },
+ {
+  "en": "Look who's joined the network. Splendid choice, agent.",
+  "nn": "Sjå kven som har kome med i nettverket. Strålande val, agent."
+ },
+ {
+  "en": "Just in time, agent. The kettle has just boiled.",
+  "nn": "Akkurat i tide, agent. Kjelen har nett kokt."
+ },
+ {
+  "en": "Charmed to have you with us, agent.",
+  "nn": "Ei glede å ha deg med oss, agent."
+ },
+ {
+  "en": "Our door is always open to you. The secret one, that is.",
+  "nn": "Døra vår står alltid open for deg. Den løynde, altså."
+ },
+ {
+  "en": "Glad you've signed on. The paperwork was in invisible ink.",
+  "nn": "Kjekt at du har skrive deg på. Papira var med usynleg blekk."
+ },
+ {
+  "en": "Nod twice if you're the new agent. Ah, there you are.",
+  "nn": "Nikk to gonger om du er den nye agenten. Å, der er du."
+ },
+ {
+  "en": "Fine to have you aboard, agent. Fasten your seatbelt.",
+  "nn": "Fint å ha deg om bord, agent. Spenn fast setebeltet."
+ },
+ {
+  "en": "Allow me to show you around the lair. Our lair. The good one.",
+  "nn": "Lat meg syne deg rundt i reiret. Vårt reir. Det gode."
+ },
+ {
+  "en": "Excellent. A new agent, and so well dressed.",
+  "nn": "Framifrå. Ein ny agent, og så velkledd."
+ },
+ {
+  "en": "Hello there, agent. Your first gadget is a very ordinary pen. Or is it?",
+  "nn": "Hei der, agent. Den første duppeditten din er ein heilt vanleg penn. Eller?"
+ },
+ {
+  "en": "Your training starts tomorrow. Tonight, we celebrate you.",
+  "nn": "Opplæringa di byrjar i morgon. I kveld feirar vi deg."
+ },
+ {
+  "en": "The whole network raised a glass to you just now.",
+  "nn": "Heile nettverket løfta glaset for deg nett no."
+ },
+ {
+  "en": "Agent, your arrival makes this group rather formidable.",
+  "nn": "Agent, med deg blir denne gruppa temmeleg fryktinngytande."
+ },
+ {
+  "en": "Kindly report to the tailor for your fitting. And hello.",
+  "nn": "Ver så snill og meld deg hjå skreddaren for prøving. Og hei."
+ },
+ {
+  "en": "Charming to meet you. Let's keep it between us.",
+  "nn": "Sjarmerande å møte deg. Lat oss halde det mellom oss."
+ },
+ {
+  "en": "Quietly overjoyed to have you, agent.",
+  "nn": "Stillferdig overlukkeleg over å ha deg, agent."
+ },
+ {
+  "en": "One more agent, one less villain soon. Glad you're in.",
+  "nn": "Éin agent til, éin skurk mindre snart. Kjekt at du er med."
+ },
+ {
+  "en": "Hello, agent. Your locker combination is your codename backwards.",
+  "nn": "Hei, agent. Koden til skapet ditt er kodenamnet ditt baklengs."
+ },
+ {
+  "en": "Pleased you found us, agent. The map was deliberately vague.",
+  "nn": "Glad du fann oss, agent. Kartet var med vilje uklart."
+ },
+ {
+  "en": "Sit, relax, and pretend you don't know anyone. Glad you're here.",
+  "nn": "Set deg, slapp av, og lat som du ikkje kjenner nokon. Kjekt at du er her."
+ },
+ {
+  "en": "Your file arrived this morning, agent. It's lovely to have you.",
+  "nn": "Mappa di kom i dag tidleg, agent. Det er nydeleg å ha deg."
+ },
+ {
+  "en": "Hold your applause, everyone. The new agent prefers discretion.",
+  "nn": "Hald att applausen, alle saman. Den nye agenten føretrekkjer diskresjon."
+ },
+ {
+  "en": "Everyone, meet our newest agent. No, don't wave. Too conspicuous.",
+  "nn": "Alle saman, møt den nyaste agenten vår. Nei, ikkje vink. For iaugefallande."
+ },
+ {
+  "en": "Agent, we've been hoping you'd join. The tea set has a new cup.",
+  "nn": "Agent, vi har håpa du ville bli med. Teserviset har fått ein ny kopp."
+ },
+ {
+  "en": "Do you take sugar, agent? Every new recruit gets a cuppa.",
+  "nn": "Tek du sukker, agent? Alle nye rekruttar får ein kopp te."
+ },
+ {
+  "en": "Here at last. The network breathes easier now.",
+  "nn": "Endeleg her. Nettverket pustar lettare no."
+ },
+ {
+  "en": "Brilliant. Another set of eyes on the villains.",
+  "nn": "Glimrande. Endå eit par auge på skurkane."
+ },
+ {
+  "en": "Hello, agent. I'll be your guide. Follow the scent of cologne.",
+  "nn": "Hei, agent. Eg er guiden din. Følg eimen av parfyme."
+ },
+ {
+  "en": "Agent, consider this your official induction. Quietly done.",
+  "nn": "Agent, rekn dette som den offisielle innlemminga di. Stillferdig gjort."
+ },
+ {
+  "en": "The briefing room just got a little more stylish. Glad you're here.",
+  "nn": "Orienteringsrommet vart nett litt meir stilig. Kjekt at du er her."
+ },
+ {
+  "en": "Nice to meet you, agent. Shall we discuss it over a martini?",
+  "nn": "Hyggeleg å treffe deg, agent. Skal vi drøfte det over ein martini?"
+ },
+ {
+  "en": "Agent, the group whispers your codename with approval already.",
+  "nn": "Agent, gruppa kviskrar alt kodenamnet ditt med godkjenning."
+ },
+ {
+  "en": "Hello, darling. You're cleared for all the fun parts.",
+  "nn": "Hei, kjære deg. Du er klarert for alle dei morosame delane."
+ },
+ {
+  "en": "Ah, a new agent. Shall I fetch the good biscuits?",
+  "nn": "Å, ein ny agent. Skal eg hente dei gode kjeksane?"
+ },
+ {
+  "en": "Such excellent news, another agent among us.",
+  "nn": "For gode nyhende, endå ein agent blant oss."
+ },
+ {
+  "en": "Take a cufflink, agent. Every member wears one.",
+  "nn": "Ta ein mansjettknapp, agent. Alle i nettverket ber ein."
+ },
+ {
+  "en": "Recruit, the network is honoured. Mostly the handler.",
+  "nn": "Rekrutt, nettverket er æra. Mest kontaktpersonen."
+ },
+ {
+  "en": "It's official, agent. You're part of the network.",
+  "nn": "Det er offisielt, agent. Du er ein del av nettverket."
+ },
+ {
+  "en": "Heard you were joining. I polished my best smile.",
+  "nn": "Høyrde at du skulle bli med. Eg pussa det beste smilet mitt."
+ },
+ {
+  "en": "Agent, the coat rack has a hook just for you. Not the trick one.",
+  "nn": "Agent, knaggrekkja har ein knagg berre til deg. Ikkje trikseknaggen."
+ },
+ {
+  "en": "Hello and welcome, in the quietest possible voice.",
+  "nn": "Hei og velkomen, med den stillaste stemma eg har."
+ },
+ {
+  "en": "Ah, good. Our numbers grow. Our tailoring improves.",
+  "nn": "Å, bra. Talet vårt veks. Skreddarsaumen vår blir betre."
+ },
+ {
+  "en": "Agent, your gadget kit includes a spare bow tie. Always.",
+  "nn": "Agent, duppedittsettet ditt inneheld ei ekstra sløyfe. Alltid."
+ },
+ {
+  "en": "Lovely of you to join us. The villains will be appalled.",
+  "nn": "Nydeleg at du blir med oss. Skurkane blir forferda."
+ },
+ {
+  "en": "Hello, agent. The group chat is encrypted and very polite.",
+  "nn": "Hei, agent. Gruppepraten er kryptert og svært høfleg."
+ },
+ {
+  "en": "Great to have you. I'll walk you through the safe house tour.",
+  "nn": "Flott å ha deg. Eg tek deg med på omvising i det trygge huset."
+ },
+ {
+  "en": "The network welcomes its newest agent. Do bow slightly.",
+  "nn": "Nettverket ønskjer den nyaste agenten velkomen. Bukk litt."
+ },
+ {
+  "en": "Glad to see you, recruit. We'll find you a codename by Tuesday.",
+  "nn": "Kjekt å sjå deg, rekrutt. Vi finn eit kodenamn til deg innan tysdag."
+ },
+ {
+  "en": "Psst, new agent. The good coffee is hidden behind the files.",
+  "nn": "Pst, ny agent. Den gode kaffien er gøymd bak mappene."
+ },
+ {
+  "en": "A new agent? I'll inform the quartermaster to brace himself.",
+  "nn": "Ein ny agent? Eg ber kvartermeisteren gjere seg klar."
+ },
+ {
+  "en": "Hello, agent. Your seat on the ski lift is reserved.",
+  "nn": "Hei, agent. Plassen din i skiheisen er reservert."
+ },
+ {
+  "en": "Excellent recruit, excellent timing. Glad to have you.",
+  "nn": "Framifrå rekrutt, framifrå timing. Kjekt å ha deg."
+ },
+ {
+  "en": "Agent, here's your welcome pack: a map, a pen, a mystery.",
+  "nn": "Agent, her er velkomstpakka di: eit kart, ein penn, eit mysterium."
+ },
+ {
+  "en": "Joining us? Wonderful. The headwaiter will learn your face.",
+  "nn": "Blir du med oss? Herleg. Hovmeisteren lærer seg andletet ditt."
+ },
+ {
+  "en": "Hello, agent. Shall we toast your first day in the service?",
+  "nn": "Hei, agent. Skal vi skåle for den første dagen din i tenesta?"
+ },
+ {
+  "en": "Our circle widens. How splendid to have you.",
+  "nn": "Krinsen vår blir større. Så strålande å ha deg."
+ },
+ {
+  "en": "Agent, you join a long line of very well-dressed heroes.",
+  "nn": "Agent, du kjem inn i ei lang rekkje av svært velkledde heltar."
+ },
+ {
+  "en": "Pleasure, agent. The shark tank is behind glass. Mostly.",
+  "nn": "Ei glede, agent. Haitanken er bak glas. For det meste."
+ },
+ {
+  "en": "Hello, recruit. We take our tea seriously and our villains more so.",
+  "nn": "Hei, rekrutt. Vi tek teen vår på alvor og skurkane endå meir."
+ },
+ {
+  "en": "Agent, the trick car's passenger seat is yours. Don't touch anything.",
+  "nn": "Agent, passasjersetet i triksebilen er ditt. Ikkje rør noko."
+ },
+ {
+  "en": "Glad you're in, agent. We do love a fresh dossier.",
+  "nn": "Kjekt at du er med, agent. Vi elskar ei ny mappe."
+ },
+ {
+  "en": "Joining the network? Bravo. Do bring your best manners.",
+  "nn": "Blir du med i nettverket? Bravo. Ta med dei beste manerane dine."
+ },
+ {
+  "en": "A gentleman's greeting for our newest agent. Hat tipped.",
+  "nn": "Ei gentlemanshelsing til den nyaste agenten vår. Hatten letta."
+ },
+ {
+  "en": "Hello, agent. Your signal is strong and your timing perfect.",
+  "nn": "Hei, agent. Signalet ditt er sterkt og timinga perfekt."
+ },
+ {
+  "en": "Agent, it's an honour. The ministry says so, in triplicate.",
+  "nn": "Agent, det er ei ære. Departementet seier det, i tre eksemplar."
+ },
+ {
+  "en": "Glad you've come in out of the snow, agent. Warm up by the fire.",
+  "nn": "Kjekt at du har kome inn frå snøen, agent. Varm deg ved peisen."
+ },
+ {
+  "en": "Hello, agent. I've been told to make you feel at home. Consider it done.",
+  "nn": "Hei, agent. Eg har fått beskjed om å få deg til å kjenne deg heime. Rekn det som gjort."
+ },
+ {
+  "en": "Good heavens, a new agent. I must change into my dinner jacket.",
+  "nn": "Du store, ein ny agent. Eg må skifte til smokingen."
+ },
+ {
+  "en": "Right on cue, agent. The group has been waiting.",
+  "nn": "Akkurat på stikkordet, agent. Gruppa har venta."
+ },
+ {
+  "en": "From one agent to another: delighted you're aboard.",
+  "nn": "Frå ein agent til ein annan: gledeleg at du er om bord."
+ }
+]

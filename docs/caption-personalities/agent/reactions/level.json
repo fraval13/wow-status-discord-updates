@@ -1,0 +1,1202 @@
+[
+  {
+    "en": "Level {level}, agent. Headquarters has updated your file.",
+    "nn": "Nivå {level}, agent. Hovudkvarteret har oppdatert mappa di."
+  },
+  {
+    "en": "Congratulations on {level}. Do straighten your tie for the photo.",
+    "nn": "Gratulerer med {level}. Rett på slipset til biletet."
+  },
+  {
+    "en": "Clearance level {level} granted. Try not to look smug.",
+    "nn": "Klareringsnivå {level} er innvilga. Prøv å ikkje sjå sjølvnøgd ut."
+  },
+  {
+    "en": "So it's {level} now. The villains will need a bigger volcano.",
+    "nn": "Så du er {level} no. Skurkane treng ein større vulkan."
+  },
+  {
+    "en": "{level}, and not a crease in the dinner jacket. Splendid.",
+    "nn": "{level}, og ikkje ei skrukke på smokingen. Strålande."
+  },
+  {
+    "en": "The quartermaster has gadgets waiting for a level {level} agent.",
+    "nn": "Kvartermeisteren har duppedittar som ventar på ein agent på nivå {level}."
+  },
+  {
+    "en": "I've had {level} engraved on your cufflinks. Discreetly.",
+    "nn": "Eg har fått gravert {level} på mansjettknappane dine. Diskret."
+  },
+  {
+    "en": "Agent, {level} suits you. Like a well-cut tuxedo.",
+    "nn": "Agent, {level} kler deg. Som ein velsydd smoking."
+  },
+  {
+    "en": "Your file now says level {level}. Rather a thick file.",
+    "nn": "I mappa di står det no nivå {level}. Ho er temmeleg tjukk."
+  },
+  {
+    "en": "A martini for the agent at level {level}, please.",
+    "nn": "Ein martini til agenten på nivå {level}, takk."
+  },
+  {
+    "en": "Level {level}? The Ministry is quietly delighted.",
+    "nn": "Nivå {level}? Departementet er stillferdig begeistra."
+  },
+  {
+    "en": "Whispering congratulations on {level}. Walls have ears.",
+    "nn": "Eg kviskrar gratulasjonar med {level}. Veggane har øyre."
+  },
+  {
+    "en": "Reached {level} without spilling a drop. Impressive.",
+    "nn": "Nådde {level} utan å søle ein drope. Imponerande."
+  },
+  {
+    "en": "The handler raised an eyebrow at {level}. High praise indeed.",
+    "nn": "Kontaktpersonen løfta eit augebryn over {level}. Stor ros, altså."
+  },
+  {
+    "en": "{level} already? I'll inform headquarters at once.",
+    "nn": "{level} alt? Eg gir Hovudkvarteret beskjed med ein gong."
+  },
+  {
+    "en": "Mission update: agent reached {level}. Status: splendid.",
+    "nn": "Oppdragsoppdatering: agenten nådde {level}. Status: strålande."
+  },
+  {
+    "en": "At {level}, you're cleared for the exploding pen. Mind the click.",
+    "nn": "På {level} er du klarert for den eksploderande pennen. Pass deg for klikket."
+  },
+  {
+    "en": "Raising my glass to level {level}. Just slightly.",
+    "nn": "Eg løftar glaset for nivå {level}. Berre litt."
+  },
+  {
+    "en": "Congrats on {level}, agent. The sharks are worried now.",
+    "nn": "Gratulerer med {level}, agent. Haiane er uroa no."
+  },
+  {
+    "en": "Your codename sounds more dangerous at {level}.",
+    "nn": "Kodenamnet ditt høyrest farlegare ut på {level}."
+  },
+  {
+    "en": "Level {level} and still impeccably dressed. Bravo.",
+    "nn": "Nivå {level} og framleis ulasteleg kledd. Bravo."
+  },
+  {
+    "en": "Headquarters sends its compliments on {level}. And a bigger budget.",
+    "nn": "Hovudkvarteret sender helsingar for {level}. Og eit større budsjett."
+  },
+  {
+    "en": "I decoded the news myself: level {level}. Well done.",
+    "nn": "Eg dekoda nyheita sjølv: nivå {level}. Godt gjort."
+  },
+  {
+    "en": "{level}! Somewhere in a hollow mountain, a villain frowned.",
+    "nn": "{level}! Ein stad i eit holt fjell rynka ein skurk panna."
+  },
+  {
+    "en": "Nicely done on {level}. Shall we celebrate at the casino?",
+    "nn": "Pent gjort med {level}. Skal vi feire på kasinoet?"
+  },
+  {
+    "en": "A level {level} agent deserves the good tea. Kettle's on.",
+    "nn": "Ein agent på nivå {level} fortener den gode teen. Kjelen står på."
+  },
+  {
+    "en": "Do burn this after reading: congrats on {level}.",
+    "nn": "Brenn dette etter lesing: gratulerer med {level}."
+  },
+  {
+    "en": "They'll need to reprint your badge for {level}. Tedious but deserved.",
+    "nn": "Dei må trykkje nytt merke til deg for {level}. Kjedeleg, men fortent."
+  },
+  {
+    "en": "Well, well. Level {level}. The file grows thicker.",
+    "nn": "Nei, sjå der. Nivå {level}. Mappa blir tjukkare."
+  },
+  {
+    "en": "At {level} you may finally borrow the trick car. Return it whole.",
+    "nn": "På {level} kan du endeleg låne triksebilen. Lever han heil tilbake."
+  },
+  {
+    "en": "Quietly reaching {level}, as a proper agent should.",
+    "nn": "Stillferdig opp på {level}, slik ein skikkeleg agent skal."
+  },
+  {
+    "en": "The baccarat table toasts your {level}. So do I.",
+    "nn": "Baccaratbordet skålar for {level}. Det gjer eg òg."
+  },
+  {
+    "en": "My compliments on {level}. Not a hair out of place.",
+    "nn": "Mine komplimentar for {level}. Ikkje eitt hår ute av lage."
+  },
+  {
+    "en": "{level} looks good on you, agent. Very good.",
+    "nn": "{level} kler deg, agent. Svært godt."
+  },
+  {
+    "en": "Promotion to {level} confirmed by three independent sources.",
+    "nn": "Forfremjinga til {level} er stadfesta av tre uavhengige kjelder."
+  },
+  {
+    "en": "I'd salute your {level}, but it would blow my cover.",
+    "nn": "Eg ville helsa for {level}, men då blir eg avslørt."
+  },
+  {
+    "en": "The tailor is letting out your shoulders for level {level}.",
+    "nn": "Skreddaren legg ut jakka over skuldrene dine for nivå {level}."
+  },
+  {
+    "en": "Congratulations, agent. {level} is no small thing.",
+    "nn": "Gratulerer, agent. {level} er ingen liten ting."
+  },
+  {
+    "en": "At {level}, even your shadow walks with confidence.",
+    "nn": "På {level} går sjølv skuggen din med sjølvtillit."
+  },
+  {
+    "en": "Your mission file now reads level {level}. In ink, not pencil.",
+    "nn": "I oppdragsmappa di står det no nivå {level}. Med blekk, ikkje blyant."
+  },
+  {
+    "en": "A quiet nod for {level}. That's how we do things here.",
+    "nn": "Eit stille nikk for {level}. Slik gjer vi det her."
+  },
+  {
+    "en": "The villains have heard about {level}. They're redrawing plans.",
+    "nn": "Skurkane har høyrt om {level}. Dei teiknar planane på nytt."
+  },
+  {
+    "en": "Served dry with a twist of lemon: level {level}.",
+    "nn": "Servert tørt med sitronskal: nivå {level}."
+  },
+  {
+    "en": "I've moved your photograph up a shelf for {level}.",
+    "nn": "Eg har flytta biletet ditt ei hylle opp for {level}."
+  },
+  {
+    "en": "How splendid. {level}, and the shoes still shine.",
+    "nn": "Så strålande. {level}, og skoa skin framleis."
+  },
+  {
+    "en": "Bravo on {level}. The handler nearly smiled.",
+    "nn": "Bravo med {level}. Kontaktpersonen smilte nesten."
+  },
+  {
+    "en": "Cleared for the laser watch at level {level}. Do aim carefully.",
+    "nn": "Klarert for laserklokka på nivå {level}. Sikt nøye."
+  },
+  {
+    "en": "Agent, at {level} you're overqualified for guard duty.",
+    "nn": "Agent, på {level} er du overkvalifisert for vaktteneste."
+  },
+  {
+    "en": "News of {level} reached the safe house before you did.",
+    "nn": "Nyheita om {level} nådde det trygge huset før deg."
+  },
+  {
+    "en": "Your enemies reviewed their threat assessment after {level}.",
+    "nn": "Fiendane dine vurderte trusselbiletet på nytt etter {level}."
+  },
+  {
+    "en": "{level}, darling. How very becoming.",
+    "nn": "{level}, kjære deg. Så kledeleg."
+  },
+  {
+    "en": "The quartermaster sighed and unlocked the {level} cabinet.",
+    "nn": "Kvartermeisteren sukka og låste opp {level}-skapet."
+  },
+  {
+    "en": "Now at {level}. The ski chase will be a breeze.",
+    "nn": "No på {level}. Skijakta blir ein leik."
+  },
+  {
+    "en": "I tapped out {level} in code on the bar. The barman approves.",
+    "nn": "Eg banka ut {level} i kode på baren. Bartenderen godkjenner."
+  },
+  {
+    "en": "Rather dashing of you, reaching {level}.",
+    "nn": "Svært flott av deg å nå {level}."
+  },
+  {
+    "en": "There's a congratulations card for {level} hidden in your coat.",
+    "nn": "Det ligg eit gratulasjonskort for {level} gøymt i frakken din."
+  },
+  {
+    "en": "Excellent work reaching {level}, agent.",
+    "nn": "Framifrå arbeid å nå {level}, agent."
+  },
+  {
+    "en": "A {level} agent in our ranks. The Ministry sleeps better.",
+    "nn": "Ein agent på {level} i rekkjene våre. Departementet søv betre."
+  },
+  {
+    "en": "{level} noted, filed and admired.",
+    "nn": "{level} notert, arkivert og beundra."
+  },
+  {
+    "en": "At level {level}, the lair guard dogs start to whimper.",
+    "nn": "På nivå {level} byrjar vakthundane ved skurkereiret å klynke."
+  },
+  {
+    "en": "Do accept my felicitations on {level}. Very continental, I know.",
+    "nn": "Ta imot mine félicitations for {level}. Svært kontinentalt, eg veit."
+  },
+  {
+    "en": "Congratulations on {level}. I've ordered the good champagne.",
+    "nn": "Gratulerer med {level}. Eg har bestilt den gode champagnen."
+  },
+  {
+    "en": "Steady climb to {level}, agent. Textbook.",
+    "nn": "Stø klatring til {level}, agent. Etter boka."
+  },
+  {
+    "en": "Expect longer briefings now that you're {level}.",
+    "nn": "Vent deg lengre orienteringar no som du er {level}."
+  },
+  {
+    "en": "Headquarters is redrawing the org chart for your {level}.",
+    "nn": "Hovudkvarteret teiknar organisasjonskartet på nytt for {level}."
+  },
+  {
+    "en": "Psst. {level}. Very nicely done.",
+    "nn": "Pst. {level}. Svært pent gjort."
+  },
+  {
+    "en": "I hear it's {level} now. The henchmen are asking for raises.",
+    "nn": "Eg høyrer det er {level} no. Handlangarane ber om lønsauke."
+  },
+  {
+    "en": "Composed as ever at level {level}. Well done, agent.",
+    "nn": "Fatta som alltid på nivå {level}. Godt gjort, agent."
+  },
+  {
+    "en": "A toast with tea to your {level}. It's early yet.",
+    "nn": "Ein skål med te for {level}. Det er tidleg enno."
+  },
+  {
+    "en": "Your clearance now reaches {level}. Do mind the second drawer.",
+    "nn": "Klareringa di går no til {level}. Pass deg for den andre skuffa."
+  },
+  {
+    "en": "Congratulations on {level}, old sport.",
+    "nn": "Gratulerer med {level}, gamle ven."
+  },
+  {
+    "en": "{level} reached without breaking a sweat, or a cufflink.",
+    "nn": "{level} nådd utan å sveitte, eller knekke ein mansjettknapp."
+  },
+  {
+    "en": "Delighted about {level}. The department sends its regards.",
+    "nn": "Glad for {level}. Avdelinga sender helsingar."
+  },
+  {
+    "en": "They've given you a bigger desk for {level}. False bottom included.",
+    "nn": "Dei har gitt deg ein større pult for {level}. Dobbel botn medrekna."
+  },
+  {
+    "en": "Mind the trapdoor on your way up to {level}, agent.",
+    "nn": "Pass deg for lemmen på veg opp til {level}, agent."
+  },
+  {
+    "en": "A dignified {level}. I'd expect nothing less.",
+    "nn": "Eit verdig {level}. Eg venta ikkje noko mindre."
+  },
+  {
+    "en": "Classified, but between us: {level} looks marvellous on you.",
+    "nn": "Hemmelegstempla, men mellom oss: {level} kler deg fantastisk."
+  },
+  {
+    "en": "Mission objective achieved: {level}. Extraction not needed.",
+    "nn": "Oppdragsmålet er nådd: {level}. Ingen evakuering trengst."
+  },
+  {
+    "en": "At {level}, you outrank half the briefing room.",
+    "nn": "På {level} har du høgare grad enn halve orienteringsrommet."
+  },
+  {
+    "en": "{level} already. Time flies when you're foiling villains.",
+    "nn": "{level} alt. Tida går fort når ein kjem skurkar i forkjøpet."
+  },
+  {
+    "en": "Your new rank of {level} has been telegraphed to headquarters.",
+    "nn": "Den nye graden din, {level}, er telegrafert til Hovudkvarteret."
+  },
+  {
+    "en": "I've adjusted my monocle to admire your {level}.",
+    "nn": "Eg har justert monokkelen for å beundre {level}."
+  },
+  {
+    "en": "The volcano lair is officially nervous about your {level}.",
+    "nn": "Vulkanreiret er offisielt uroa over {level}."
+  },
+  {
+    "en": "Splendid, agent. {level} and still the best dressed in the room.",
+    "nn": "Strålande, agent. {level} og framleis best kledd i rommet."
+  },
+  {
+    "en": "The speedboat is yours to borrow now that you're {level}.",
+    "nn": "Speedbåten kan du låne no som du er {level}."
+  },
+  {
+    "en": "So you're {level}. I knew it from your file.",
+    "nn": "Så du er {level}. Eg visste det frå mappa di."
+  },
+  {
+    "en": "Up to {level} with a raised eyebrow and a straight tie.",
+    "nn": "Opp til {level} med løfta augebryn og rett slips."
+  },
+  {
+    "en": "The piranhas lost their appetite when they heard of {level}.",
+    "nn": "Rovfiskane i bassenget mista matlysta då dei høyrde om {level}."
+  },
+  {
+    "en": "Here's to {level}, agent. Clink.",
+    "nn": "Skål for {level}, agent. Klirr."
+  },
+  {
+    "en": "Hushed applause from the shadows for {level}.",
+    "nn": "Dempa applaus frå skuggane for {level}."
+  },
+  {
+    "en": "Quite a leap to {level}. Like a jump from a cable car.",
+    "nn": "Litt av eit hopp til {level}. Som eit hopp frå ein taubane."
+  },
+  {
+    "en": "The receptionist at headquarters smiled about your {level}.",
+    "nn": "Resepsjonisten i Hovudkvarteret smilte over {level}."
+  },
+  {
+    "en": "With you at {level}, the world feels safer already.",
+    "nn": "Med deg på {level} kjennest verda tryggare alt."
+  },
+  {
+    "en": "{level} in the field, and not a scratch on the watch.",
+    "nn": "{level} i felten, og ikkje ei ripe på klokka."
+  },
+  {
+    "en": "A new pocket square is in order for {level}. I'll send one.",
+    "nn": "Eit nytt brystlommetørkle trengst for {level}. Eg sender eitt."
+  },
+  {
+    "en": "I've informed the handler of your {level}. He finished his tea first.",
+    "nn": "Eg har fortalt kontaktpersonen om {level}. Han drakk opp teen først."
+  },
+  {
+    "en": "Your dossier at {level} requires two hands to carry.",
+    "nn": "Mappa di på {level} må berast med to hender."
+  },
+  {
+    "en": "Agent, {level} is a lovely number on you.",
+    "nn": "Agent, {level} er eit nydeleg tal på deg."
+  },
+  {
+    "en": "Promoted to {level}. Do vanish into the crowd now.",
+    "nn": "Forfremja til {level}. Forsvinn i mengda no."
+  },
+  {
+    "en": "{level}, and the villains' monologues just got shorter.",
+    "nn": "{level}, og monologane til skurkane vart nett kortare."
+  },
+  {
+    "en": "The parachute that works first time is yours at {level}.",
+    "nn": "Fallskjermen som verkar første gongen, er din på {level}."
+  },
+  {
+    "en": "At {level}, the casino doorman bows when you walk in.",
+    "nn": "På {level} bukkar dørvakta på kasinoet når du kjem inn."
+  },
+  {
+    "en": "Shall I bring the car round to celebrate {level}?",
+    "nn": "Skal eg køyre bilen fram for å feire {level}?"
+  },
+  {
+    "en": "How marvellous, agent. {level}!",
+    "nn": "Så fantastisk, agent. {level}!"
+  },
+  {
+    "en": "A whisper from the next table: well done on {level}.",
+    "nn": "Ei kviskring frå bordet ved sida av: godt gjort med {level}."
+  },
+  {
+    "en": "Your laser watch has been recalibrated for {level}.",
+    "nn": "Laserklokka di er kalibrert på nytt for {level}."
+  },
+  {
+    "en": "Your expense account grew at {level}. Slightly.",
+    "nn": "Utgiftskontoen din voks på {level}. Litt."
+  },
+  {
+    "en": "I've hidden a medal for {level} somewhere inconspicuous.",
+    "nn": "Eg har gøymt ein medalje for {level} ein stad ingen ser."
+  },
+  {
+    "en": "{level} looks rather formidable in the file.",
+    "nn": "{level} ser temmeleg fryktinngytande ut i mappa."
+  },
+  {
+    "en": "Delightful news: {level}. The Ministry clock chimed.",
+    "nn": "Herlege nyhende: {level}. Klokka i Departementet slo."
+  },
+  {
+    "en": "Even the sharks applauded {level} with their fins.",
+    "nn": "Sjølv haiane applauderte {level} med finnane."
+  },
+  {
+    "en": "I knew you'd reach {level}. It says so in my notes.",
+    "nn": "Eg visste du ville nå {level}. Det står i notata mine."
+  },
+  {
+    "en": "The gadget lab is giddy about your {level}, agent.",
+    "nn": "Duppedittlaben er i ekstase over {level}, agent."
+  },
+  {
+    "en": "Graceful work, reaching {level} so smoothly.",
+    "nn": "Grasiøst arbeid, å nå {level} så smidig."
+  },
+  {
+    "en": "{level} received. Eyebrow raised. Glass lifted.",
+    "nn": "{level} motteke. Augebrynet løfta. Glaset heva."
+  },
+  {
+    "en": "They've reclassified you as formidable at {level}.",
+    "nn": "Dei har omklassifisert deg som fryktinngytande på {level}."
+  },
+  {
+    "en": "Shall we mark {level} with a game of baccarat?",
+    "nn": "Skal vi markere {level} med ein runde baccarat?"
+  },
+  {
+    "en": "At {level}, you can now complain about the coffee at headquarters.",
+    "nn": "På {level} kan du no klage på kaffien i Hovudkvarteret."
+  },
+  {
+    "en": "A gentleman's nod from me for {level}.",
+    "nn": "Eit gentlemansnikk frå meg for {level}."
+  },
+  {
+    "en": "The tuxedo fits better at {level}. Odd, but true.",
+    "nn": "Smokingen sit betre på {level}. Rart, men sant."
+  },
+  {
+    "en": "Fewer briefings on how doors work, now that you're {level}.",
+    "nn": "Færre orienteringar om korleis dører verkar, no som du er {level}."
+  },
+  {
+    "en": "{level}? The cat in the villain's lap looks worried.",
+    "nn": "{level}? Katten i fanget til skurken ser uroa ut."
+  },
+  {
+    "en": "Reached {level} in style. The only way to travel.",
+    "nn": "Nådde {level} med stil. Den einaste måten å reise på."
+  },
+  {
+    "en": "I'll mention {level} in my report. Briefly, but warmly.",
+    "nn": "Eg nemner {level} i rapporten min. Kort, men varmt."
+  },
+  {
+    "en": "Congratulations on {level}, agent. Your star is rising.",
+    "nn": "Gratulerer med {level}, agent. Stjerna di stig."
+  },
+  {
+    "en": "The henchmen started a support group when you hit {level}.",
+    "nn": "Handlangarane starta ei støttegruppe då du nådde {level}."
+  },
+  {
+    "en": "A {level} worth a second martini.",
+    "nn": "Eit {level} verdt ein martini til."
+  },
+  {
+    "en": "Your gadget allowance doubled at {level}. Spend it wisely.",
+    "nn": "Duppedittkvoten din vart dobla på {level}. Bruk han klokt."
+  },
+  {
+    "en": "{level}, and the trick car purrs in approval.",
+    "nn": "{level}, og triksebilen malar godkjennande."
+  },
+  {
+    "en": "The doorman whispered your {level} to the croupier.",
+    "nn": "Dørvakta kviskra {level} til croupieren."
+  },
+  {
+    "en": "Level {level}. Not bad at all, agent.",
+    "nn": "Nivå {level}. Slett ikkje verst, agent."
+  },
+  {
+    "en": "Agent, your {level} has not gone unnoticed.",
+    "nn": "Agent, {level} har ikkje gått upåakta forbi."
+  },
+  {
+    "en": "The cellar is sending up something sparkling for {level}.",
+    "nn": "Kjellaren sender opp noko med bobler for {level}."
+  },
+  {
+    "en": "At {level}, the second-best umbrellas are beneath you.",
+    "nn": "På {level} er dei nest beste paraplyane under din verdigheit."
+  },
+  {
+    "en": "I'll leave a coded note about {level} under your door.",
+    "nn": "Eg legg ein koda lapp om {level} under døra di."
+  },
+  {
+    "en": "A stylish ding to {level}, as one expects.",
+    "nn": "Eit stilig ding til {level}, som venta."
+  },
+  {
+    "en": "{level} in the books. The villain's cable car is shaking.",
+    "nn": "{level} er ført inn. Taubanen til skurken skjelv."
+  },
+  {
+    "en": "Superb, agent. {level} with not a feather ruffled.",
+    "nn": "Suverent, agent. {level} utan å fortrekkje ein mine."
+  },
+  {
+    "en": "Now that you're {level}, the safe house has a spare key for you.",
+    "nn": "No som du er {level}, har det trygge huset ein ekstra nøkkel til deg."
+  },
+  {
+    "en": "Congratulations on {level}. Do keep your guard up tonight.",
+    "nn": "Gratulerer med {level}. Hald garden oppe i kveld."
+  },
+  {
+    "en": "From asset to rather valuable asset, thanks to {level}.",
+    "nn": "Frå ressurs til temmeleg verdfull ressurs, takk vere {level}."
+  },
+  {
+    "en": "Ah, {level}. I've been expecting this.",
+    "nn": "Å, {level}. Dette har eg venta på."
+  },
+  {
+    "en": "The dealer at the baccarat table owes you a round for {level}.",
+    "nn": "Givaren ved baccaratbordet skuldar deg ein runde for {level}."
+  },
+  {
+    "en": "Spy to spy: {level} is a fine achievement.",
+    "nn": "Spion til spion: {level} er ei fin bragd."
+  },
+  {
+    "en": "Your aftershave was classified the moment you hit {level}.",
+    "nn": "Barbervatnet ditt vart hemmelegstempla same augneblinken du nådde {level}."
+  },
+  {
+    "en": "I lifted my hat for {level}. You couldn't see it.",
+    "nn": "Eg letta på hatten for {level}. Du kunne ikkje sjå det."
+  },
+  {
+    "en": "{level} and climbing. The corner office is in view.",
+    "nn": "{level} og stigande. Hjørnekontoret er innan synsvidd."
+  },
+  {
+    "en": "The briefing room stood up for {level}. Briefly.",
+    "nn": "Orienteringsrommet reiste seg for {level}. Kort."
+  },
+  {
+    "en": "You hit {level} mid-mission. Very professional.",
+    "nn": "Du nådde {level} midt i oppdraget. Svært profesjonelt."
+  },
+  {
+    "en": "I've lit a chocolate cigar in honour of {level}.",
+    "nn": "Eg har tent ein sjokoladesigar til ære for {level}."
+  },
+  {
+    "en": "At {level}, the quartermaster hands over the shoe phone.",
+    "nn": "På {level} gir kvartermeisteren deg skotelefonen."
+  },
+  {
+    "en": "{level}, old friend. Delighted for you.",
+    "nn": "{level}, gamle ven. Eg er glad på dine vegner."
+  },
+  {
+    "en": "The Ministry wrote a very stern congratulation for {level}.",
+    "nn": "Departementet skreiv ein svært streng gratulasjon for {level}."
+  },
+  {
+    "en": "{level} is a tidy little triumph, agent.",
+    "nn": "{level} er ein ryddig liten triumf, agent."
+  },
+  {
+    "en": "Level {level} reached on schedule. Headquarters likes schedules.",
+    "nn": "Nivå {level} nådd etter planen. Hovudkvarteret likar planar."
+  },
+  {
+    "en": "Quick, before the villain notices: congrats on {level}!",
+    "nn": "Fort, før skurken merkar det: gratulerer med {level}!"
+  },
+  {
+    "en": "Dashing as ever at {level}, agent.",
+    "nn": "Like flott som alltid på {level}, agent."
+  },
+  {
+    "en": "Your passport of triumphs gets a {level} stamp.",
+    "nn": "Sigerspasset ditt får eit {level}-stempel."
+  },
+  {
+    "en": "Fresh rank, fresh carnation in the lapel. {level} it is.",
+    "nn": "Ny grad, ny nellik i jakkeslaget. {level}, altså."
+  },
+  {
+    "en": "{level}, and the world is in good gloved hands.",
+    "nn": "{level}, og verda er i gode hender med hanskar på."
+  },
+  {
+    "en": "Congratulations on {level}. Our little secret, of course.",
+    "nn": "Gratulerer med {level}. Vår vesle løyndom, sjølvsagt."
+  },
+  {
+    "en": "I nearly spilled my tea over your {level}. Nearly.",
+    "nn": "Eg søla nesten teen min over {level}. Nesten."
+  },
+  {
+    "en": "The villain cancelled his monologue on hearing of {level}.",
+    "nn": "Skurken avlyste monologen sin då han høyrde om {level}."
+  },
+  {
+    "en": "At {level}, you've graduated from the beginner briefings.",
+    "nn": "På {level} er du ferdig med nybyrjarorienteringane."
+  },
+  {
+    "en": "{level} achieved. The safe house kettle is on.",
+    "nn": "{level} oppnådd. Kjelen i det trygge huset står på."
+  },
+  {
+    "en": "Charming, agent. {level} suits your cheekbones.",
+    "nn": "Sjarmerande, agent. {level} passar til kinnbeina dine."
+  },
+  {
+    "en": "Lovely work on {level}. Now vanish into the night.",
+    "nn": "Nydeleg arbeid med {level}. Forsvinn ut i natta no."
+  },
+  {
+    "en": "Promotions like {level} suit you better than disguises.",
+    "nn": "Forfremjingar som {level} kler deg betre enn forkledningar."
+  },
+  {
+    "en": "Brilliantly done. {level} is yours.",
+    "nn": "Glimrande gjort. {level} er ditt."
+  },
+  {
+    "en": "News from the field: {level}. Marvellous.",
+    "nn": "Nyhende frå felten: {level}. Fantastisk."
+  },
+  {
+    "en": "On behalf of the department, congratulations on {level}.",
+    "nn": "På vegner av avdelinga, gratulerer med {level}."
+  },
+  {
+    "en": "{level}. Even the guard at the gate tipped his cap.",
+    "nn": "{level}. Sjølv vakta ved porten letta på hua."
+  },
+  {
+    "en": "Your briefcase got a secret compartment for {level}.",
+    "nn": "Dokumentmappa di fekk eit hemmeleg rom for {level}."
+  },
+  {
+    "en": "I've polished your nameplate for {level}. It still just says agent.",
+    "nn": "Eg har pussa namneskiltet ditt for {level}. Det står framleis berre agent."
+  },
+  {
+    "en": "Another notch on the walking stick: {level}.",
+    "nn": "Endå eit skar i spaserstokken: {level}."
+  },
+  {
+    "en": "{level} and smooth as a getaway on fresh snow.",
+    "nn": "{level} og glatt som ei flukt på nysnø."
+  },
+  {
+    "en": "Up a rank to {level}, down a martini.",
+    "nn": "Opp ein grad til {level}, ned ein martini."
+  },
+  {
+    "en": "A {level} that deserves a quiet drink in a loud casino.",
+    "nn": "Eit {level} som fortener ein stille drink på eit bråkete kasino."
+  },
+  {
+    "en": "Nothing escapes my notice. Certainly not {level}.",
+    "nn": "Ingenting slepp unna meg. Iallfall ikkje {level}."
+  },
+  {
+    "en": "Sadly the gala is full of villains, or we'd toast {level} there.",
+    "nn": "Dessverre er gallaen full av skurkar, elles kunne vi skåla for {level} der."
+  },
+  {
+    "en": "The headwaiter moved you to the better table. {level} has perks.",
+    "nn": "Hovmeisteren flytta deg til det betre bordet. {level} har sine fordelar."
+  },
+  {
+    "en": "{level}, agent. Rumour says you're one to watch.",
+    "nn": "{level}, agent. Ryktet seier du er ein å halde auge med."
+  },
+  {
+    "en": "Hats off for {level}. Bowler, naturally.",
+    "nn": "Hatten av for {level}. Bowlerhatten, naturlegvis."
+  },
+  {
+    "en": "At {level}, your codename is whispered in all the right casinos.",
+    "nn": "På {level} blir kodenamnet ditt kviskra på alle dei rette kasinoa."
+  },
+  {
+    "en": "Steady hands, steady climb, and now {level}.",
+    "nn": "Stø hand, stø klatring, og no {level}."
+  },
+  {
+    "en": "The tuxedo is rented, but {level} is all yours.",
+    "nn": "Smokingen er leigd, men {level} er heilt ditt."
+  },
+  {
+    "en": "{level}. Let the record show: excellent work.",
+    "nn": "{level}. La protokollen vise: framifrå arbeid."
+  },
+  {
+    "en": "Well climbed to {level}. The view up there suits you.",
+    "nn": "Godt klatra til {level}. Utsikta der oppe kler deg."
+  },
+  {
+    "en": "In my professional opinion, {level} is a fine ding.",
+    "nn": "Etter mitt faglege syn er {level} eit fint ding."
+  },
+  {
+    "en": "Congratulations on {level}. Felicitations, even.",
+    "nn": "Gratulerer med {level}. Félicitations, til og med."
+  },
+  {
+    "en": "The villain's henchmen are updating their CVs. You're {level}.",
+    "nn": "Handlangarane til skurken oppdaterer CV-ane sine. Du er {level}."
+  },
+  {
+    "en": "{level}! Shall we dance?",
+    "nn": "{level}! Skal vi danse?"
+  },
+  {
+    "en": "And they said you'd never pass training. Look: {level}.",
+    "nn": "Og dei sa du aldri ville kome gjennom opplæringa. Sjå: {level}."
+  },
+  {
+    "en": "The handler wrote well done next to {level} in the margin.",
+    "nn": "Kontaktpersonen skreiv godt gjort ved sida av {level} i margen."
+  },
+  {
+    "en": "Nothing escapes headquarters, least of all your {level}.",
+    "nn": "Ingenting slepp unna Hovudkvarteret, minst av alt {level}."
+  },
+  {
+    "en": "{level}, and your enemies are rethinking their careers.",
+    "nn": "{level}, og fiendane dine tenkjer nytt om karrieren sin."
+  },
+  {
+    "en": "At {level}, the shark tank has become a mere puddle to you.",
+    "nn": "På {level} er haibassenget berre ein dam for deg."
+  },
+  {
+    "en": "A tidy promotion to {level}, quietly earned.",
+    "nn": "Ei ryddig forfremjing til {level}, stillferdig fortent."
+  },
+  {
+    "en": "I've reserved a bulletproof table to celebrate {level}.",
+    "nn": "Eg har reservert eit skotsikkert bord for å feire {level}."
+  },
+  {
+    "en": "Ever upward, agent. {level} today, who knows tomorrow.",
+    "nn": "Stadig oppover, agent. {level} i dag, kven veit i morgon."
+  },
+  {
+    "en": "{level} and still not a hair out of place. Remarkable.",
+    "nn": "{level} og framleis ikkje eitt hår ute av lage. Imponerande."
+  },
+  {
+    "en": "Headquarters ran the numbers on {level}. They're good.",
+    "nn": "Hovudkvarteret rekna på {level}. Tala er gode."
+  },
+  {
+    "en": "Charming {level}, agent. Truly charming.",
+    "nn": "Sjarmerande {level}, agent. Verkeleg sjarmerande."
+  },
+  {
+    "en": "That's the spirit. {level} and counting.",
+    "nn": "Slik skal det gjerast. {level} og vidare."
+  },
+  {
+    "en": "At {level}, the world's villains collectively sighed.",
+    "nn": "På {level} sukka skurkane i verda i kor."
+  },
+  {
+    "en": "The tailor will be thrilled about {level}.",
+    "nn": "Skreddaren blir overlukkeleg over {level}."
+  },
+  {
+    "en": "{level}. Calm, collected and impeccably timed.",
+    "nn": "{level}. Roleg, samla og med ulasteleg timing."
+  },
+  {
+    "en": "Congratulations on {level}. I always knew you had it in you.",
+    "nn": "Gratulerer med {level}. Eg visste alltid at du hadde det i deg."
+  },
+  {
+    "en": "Somewhere a villain is rewriting his plans because of {level}.",
+    "nn": "Ein stad skriv ein skurk om planane sine på grunn av {level}."
+  },
+  {
+    "en": "{level} looks marvellous from the shadows.",
+    "nn": "{level} ser fantastisk ut frå skuggane."
+  },
+  {
+    "en": "Splendid {level}, agent. The cufflinks agree.",
+    "nn": "Strålande {level}, agent. Mansjettknappane er samde."
+  },
+  {
+    "en": "Even the receptionist smiled at the news of {level}.",
+    "nn": "Sjølv resepsjonisten smilte over nyheita om {level}."
+  },
+  {
+    "en": "Mission success rate: rising. Agent level: {level}.",
+    "nn": "Suksessrate på oppdrag: stigande. Agentnivå: {level}."
+  },
+  {
+    "en": "{level}, and a fine addition to the legend.",
+    "nn": "{level}, og eit fint tilskot til legenda."
+  },
+  {
+    "en": "I've telegraphed headquarters about {level}: stop, splendid, stop.",
+    "nn": "Eg har telegrafert Hovudkvarteret om {level}: stopp, strålande, stopp."
+  },
+  {
+    "en": "Do mind the new gadgets that come with {level}.",
+    "nn": "Pass deg for dei nye duppedittane som følgjer med {level}."
+  },
+  {
+    "en": "You made {level} look effortless, agent.",
+    "nn": "Du fekk {level} til å sjå lett ut, agent."
+  },
+  {
+    "en": "{level}! The ski slopes await your next descent.",
+    "nn": "{level}! Skibakkane ventar på den neste nedfarten din."
+  },
+  {
+    "en": "Rather a good day for you, agent. {level}!",
+    "nn": "Ein temmeleg god dag for deg, agent. {level}!"
+  },
+  {
+    "en": "Modesty suits a spy, but do enjoy {level} a little.",
+    "nn": "Audmjukskap kler ein spion, men nyt {level} litt likevel."
+  },
+  {
+    "en": "Your cover story now says terribly good, level {level}.",
+    "nn": "Dekkhistoria di seier no forferdeleg flink, nivå {level}."
+  },
+  {
+    "en": "{level}, and the trapdoor in the lair just widened.",
+    "nn": "{level}, og lemmen i skurkereiret vart nett breiare."
+  },
+  {
+    "en": "A level {level} agent, and dressed for it, too.",
+    "nn": "Ein agent på nivå {level}, og kledd for det òg."
+  },
+  {
+    "en": "Your shadow looks more confident at {level}.",
+    "nn": "Skuggen din ser sikrare ut på {level}."
+  },
+  {
+    "en": "You've made the handler's day with {level}.",
+    "nn": "Du har lyst opp dagen for kontaktpersonen med {level}."
+  },
+  {
+    "en": "{level} reached. The quartermaster muttered something proud.",
+    "nn": "{level} nådd. Kvartermeisteren mumla noko stolt."
+  },
+  {
+    "en": "From one agent to another: {level} is well earned.",
+    "nn": "Frå ein agent til ein annan: {level} er vel fortent."
+  },
+  {
+    "en": "Headquarters will deny being thrilled about {level}. They are.",
+    "nn": "Hovudkvarteret vil nekte for at dei er begeistra over {level}. Det er dei."
+  },
+  {
+    "en": "To celebrate {level}, I'll be in the usual booth.",
+    "nn": "For å feire {level} sit eg i den vanlege båsen."
+  },
+  {
+    "en": "{level}! The bartender is already shaking your drink.",
+    "nn": "{level}! Bartenderen ristar alt drinken din."
+  },
+  {
+    "en": "Glad to see you rise to {level}.",
+    "nn": "Kjekt å sjå deg stige til {level}."
+  },
+  {
+    "en": "Congratulations on {level}. No fuss, no fanfare, just excellence.",
+    "nn": "Gratulerer med {level}. Ikkje noko oppstyr, ingen fanfare, berre klasse."
+  },
+  {
+    "en": "Your new codename for {level} arrives by carrier pigeon.",
+    "nn": "Det nye kodenamnet ditt for {level} kjem med brevdue."
+  },
+  {
+    "en": "{level}, and your exploding pen is now a fountain pen.",
+    "nn": "{level}, og den eksploderande pennen din er no ein fyllepenn."
+  },
+  {
+    "en": "Most agents would boast about {level}. You simply carry on.",
+    "nn": "Dei fleste agentar ville skrytt av {level}. Du berre held fram."
+  },
+  {
+    "en": "A small celebration at the safe house for {level}.",
+    "nn": "Ei lita feiring i det trygge huset for {level}."
+  },
+  {
+    "en": "Even the guard dogs are impressed by {level}.",
+    "nn": "Sjølv vakthundane er imponerte over {level}."
+  },
+  {
+    "en": "Word reached the casino: you're {level} now. The croupier bowed.",
+    "nn": "Ordet nådde kasinoet: du er {level} no. Croupieren bukka."
+  },
+  {
+    "en": "Brace yourself, agent. {level} comes with paperwork.",
+    "nn": "Gjer deg klar, agent. {level} kjem med papirarbeid."
+  },
+  {
+    "en": "One does like a promotion to {level} on a quiet evening.",
+    "nn": "Ein likar ei forfremjing til {level} ein stille kveld."
+  },
+  {
+    "en": "Pinned a small flag at {level} on the map in the war room.",
+    "nn": "Eg festa eit lite flagg ved {level} på kartet i krigsrommet."
+  },
+  {
+    "en": "Remarkably smooth climb to {level}. Like a well-oiled zip line.",
+    "nn": "Usedvanleg smidig klatring til {level}. Som ein velsmurd zipline."
+  },
+  {
+    "en": "Sources confirm {level}. My sources are always right.",
+    "nn": "Kjeldene stadfestar {level}. Kjeldene mine har alltid rett."
+  },
+  {
+    "en": "Should anyone ask, you were always destined for {level}.",
+    "nn": "Om nokon spør, var du alltid tiltenkt {level}."
+  },
+  {
+    "en": "Keep it under your hat, but {level} is a splendid result.",
+    "nn": "Hald det for deg sjølv, men {level} er eit strålande resultat."
+  },
+  {
+    "en": "Tonight we drink to {level}. Tea for you if you're driving.",
+    "nn": "I kveld skålar vi for {level}. Te til deg om du køyrer."
+  },
+  {
+    "en": "Imagine the villain's face when he reads about {level}.",
+    "nn": "Tenk deg andletet til skurken når han les om {level}."
+  },
+  {
+    "en": "Nobody reaches {level} by accident. Well, almost nobody.",
+    "nn": "Ingen når {level} tilfeldigvis. Vel, nesten ingen."
+  },
+  {
+    "en": "Cheers from the safe house on reaching {level}.",
+    "nn": "Skål frå det trygge huset for at du nådde {level}."
+  },
+  {
+    "en": "Do take the evening off. {level} deserves it.",
+    "nn": "Ta deg fri i kveld. {level} fortener det."
+  },
+  {
+    "en": "Marvellous. Your briefing folder now has a {level} tab.",
+    "nn": "Fantastisk. Orienteringsmappa di har no ein {level}-fane."
+  },
+  {
+    "en": "Our man in the field reports {level}. Our man is me.",
+    "nn": "Mannen vår i felten melder {level}. Mannen vår er meg."
+  },
+  {
+    "en": "Very well played, agent. {level} is yours.",
+    "nn": "Svært godt spelt, agent. {level} er ditt."
+  },
+  {
+    "en": "Gadgets for {level} are on their way. Please sign for the volatile ones.",
+    "nn": "Duppedittane for {level} er på veg. Kvitter for dei ustabile."
+  },
+  {
+    "en": "Ding, I hear. {level}, if the cipher holds.",
+    "nn": "Ding, høyrer eg. {level}, om chifferet held."
+  },
+  {
+    "en": "Stand tall, agent. You're {level} now.",
+    "nn": "Stå rak, agent. Du er {level} no."
+  },
+  {
+    "en": "Delighted to report {level} to the Ministry.",
+    "nn": "Det er ei glede å melde {level} til Departementet."
+  },
+  {
+    "en": "Smoothly done, agent. {level} without a single alarm.",
+    "nn": "Glatt gjort, agent. {level} utan ein einaste alarm."
+  },
+  {
+    "en": "Your codename has been reprinted in bold for {level}.",
+    "nn": "Kodenamnet ditt er trykt på nytt med feit skrift for {level}."
+  },
+  {
+    "en": "Who needs luck at the baccarat table? You've got {level}.",
+    "nn": "Kven treng flaks ved baccaratbordet? Du har {level}."
+  },
+  {
+    "en": "Somebody fetch the good champagne. The agent is {level}.",
+    "nn": "Nokon må hente den gode champagnen. Agenten er {level}."
+  },
+  {
+    "en": "Behind every {level} agent stands an exhausted quartermaster.",
+    "nn": "Bak kvar agent på {level} står ein utsliten kvartermeister."
+  },
+  {
+    "en": "Even the villain's butler whispered {level} with respect.",
+    "nn": "Sjølv butleren til skurken kviskra {level} med respekt."
+  },
+  {
+    "en": "Look who's {level}. Do mind the champagne cork.",
+    "nn": "Sjå kven som er {level}. Pass deg for champagnekorken."
+  },
+  {
+    "en": "Your file photo at {level} looks positively heroic.",
+    "nn": "Passbiletet ditt på {level} ser rett og slett heltemodig ut."
+  },
+  {
+    "en": "Many happy returns of {level}, as they say at the embassy.",
+    "nn": "Hjarteleg til lukke med {level}, som dei seier på ambassaden."
+  },
+  {
+    "en": "Noted in invisible ink: agent reached {level}.",
+    "nn": "Notert med usynleg blekk: agenten nådde {level}."
+  },
+  {
+    "en": "Headquarters lit one small candle for {level}. Budget cuts.",
+    "nn": "Hovudkvarteret tende eitt lite ljos for {level}. Innsparingar."
+  },
+  {
+    "en": "Dinner jacket pressed, {level} reached. Shall we?",
+    "nn": "Smokingen er pressa, {level} er nådd. Skal vi?"
+  },
+  {
+    "en": "Raise a glass, agent. {level} won't toast itself.",
+    "nn": "Løft glaset, agent. {level} skålar ikkje for seg sjølv."
+  },
+  {
+    "en": "Rather proud of you for {level}. Don't tell the handler.",
+    "nn": "Eg er temmeleg stolt av deg for {level}. Ikkje sei det til kontaktpersonen."
+  },
+  {
+    "en": "Field report: {level}, style intact, villains nervous.",
+    "nn": "Feltrapport: {level}, stilen intakt, skurkane nervøse."
+  },
+  {
+    "en": "Somewhere a henchman just quit over your {level}.",
+    "nn": "Ein stad slutta ein handlangar nett på grunn av {level}."
+  },
+  {
+    "en": "Splendid show, agent. {level} at last.",
+    "nn": "Strålande innsats, agent. {level} endeleg."
+  },
+  {
+    "en": "The cable car to the lair runs faster for {level} agents.",
+    "nn": "Taubanen til skurkereiret går fortare for agentar på {level}."
+  },
+  {
+    "en": "Nicely timed, agent. {level} just before the briefing.",
+    "nn": "Godt tima, agent. {level} like før orienteringa."
+  },
+  {
+    "en": "Twice the danger at {level}, and twice the charm.",
+    "nn": "Dobbelt så farleg på {level}, og dobbelt så sjarmerande."
+  },
+  {
+    "en": "Very discreetly done. {level} with nobody noticing.",
+    "nn": "Svært diskret gjort. {level} utan at nokon merka det."
+  },
+  {
+    "en": "Allow me to buy the first round for {level}.",
+    "nn": "Lat meg spandere første runde for {level}."
+  },
+  {
+    "en": "From the shadows, a quiet bravo for {level}.",
+    "nn": "Frå skuggane, eit stille bravo for {level}."
+  },
+  {
+    "en": "Upgraded to {level}, like a fine car with hidden rockets.",
+    "nn": "Oppgradert til {level}, som ein fin bil med gøymde rakettar."
+  },
+  {
+    "en": "Fancy that. {level} before teatime.",
+    "nn": "Tenk det. {level} før tetid."
+  },
+  {
+    "en": "Rumour has it {level} looks good on you. Rumour is right.",
+    "nn": "Ryktet seier at {level} kler deg. Ryktet har rett."
+  },
+  {
+    "en": "In this line of work, {level} is worth a toast.",
+    "nn": "I denne bransjen er {level} verdt ein skål."
+  },
+  {
+    "en": "Mark the calendar: today you became {level}.",
+    "nn": "Merk av i kalenderen: i dag vart du {level}."
+  },
+  {
+    "en": "Off you go to {level}, and mind the laser grid.",
+    "nn": "Av garde til {level}, og pass deg for lasernettet."
+  },
+  {
+    "en": "Quite the dossier now, with {level} on the cover.",
+    "nn": "Litt av ei mappe no, med {level} på framsida."
+  },
+  {
+    "en": "Cracking work, agent. {level} on the dot.",
+    "nn": "Knallarbeid, agent. {level} på prikken."
+  },
+  {
+    "en": "Kindly report to the gadget lab. {level} has privileges.",
+    "nn": "Ver så venleg å melde deg i duppedittlaben. {level} har privilegium."
+  },
+  {
+    "en": "Encrypted, decrypted, celebrated: {level}.",
+    "nn": "Kryptert, dekryptert, feira: {level}."
+  },
+  {
+    "en": "Pity I can't say it aloud. {level} is wonderful.",
+    "nn": "Synd eg ikkje kan seie det høgt. {level} er flott."
+  },
+  {
+    "en": "Over the rooftops and up to {level}. Nicely done.",
+    "nn": "Over takryggane og opp til {level}. Pent gjort."
+  },
+  {
+    "en": "That's {level} in the bag, and the bag is bulletproof.",
+    "nn": "Det er {level} i boks, og boksen er skotsikker."
+  },
+  {
+    "en": "Signal received from the field: {level}. Over.",
+    "nn": "Signal motteke frå felten: {level}. Over."
+  },
+  {
+    "en": "Under all that calm, I bet you grinned at {level}.",
+    "nn": "Under all den roa gliste du nok over {level}."
+  },
+  {
+    "en": "Lucky villains everywhere just got unluckier. You're {level}.",
+    "nn": "Heldige skurkar overalt vart nett mindre heldige. Du er {level}."
+  },
+  {
+    "en": "Elegantly done, agent. {level} and nary a scuff.",
+    "nn": "Elegant gjort, agent. {level} og ikkje eit merke."
+  },
+  {
+    "en": "Enjoy {level} while it lasts. The next mission is waiting.",
+    "nn": "Nyt {level} medan det varer. Neste oppdrag ventar."
+  },
+  {
+    "en": "Headquarters will frame your {level}. Tastefully.",
+    "nn": "Hovudkvarteret rammar inn {level}. Smakfullt."
+  },
+  {
+    "en": "Cufflinks polished for {level}. Mine, in your honour.",
+    "nn": "Mansjettknappane pussa for {level}. Mine, til ære for deg."
+  }
+]

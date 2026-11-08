@@ -111,10 +111,9 @@ notifications, and captions already in your log keep their wording. See
 The same voices can also speak your **reactions**: the whisper a friend gets when you
 click GZ!, F or Congrats! on their notification. These go out in your name, so they
 have their own setting, the **Notifications → Reaction voice** dropdown or `/wstatus voice <name>`. The
-default is the gentle **Wholesome** voice; you can also pick Random, **Classic** (the plain
-GZ!/F/Congrats! texts) or any personality except Secret agent and Middle-school legend,
-whose whispers are still to come. Each voice has 300 whispers for every reaction; the
-button keeps its short label.
+default is the gentle **Wholesome** voice; you can also pick any of the eleven personalities,
+Random or **Classic** (the plain GZ!/F/Congrats! texts). Each voice has 300
+whispers for every reaction; the button keeps its short label.
 
 ## Announcements
 

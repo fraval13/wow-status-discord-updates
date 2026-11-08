@@ -1,0 +1,1202 @@
+[
+  {
+    "en": "Promoted at the workbench, I hear. Splendid work, old friend.",
+    "nn": "Forfremja ved arbeidsbenken, høyrer eg. Strålande arbeid, gamle ven."
+  },
+  {
+    "en": "A new title for your trade. I'll have headquarters update your file.",
+    "nn": "Ein ny tittel i handverket ditt. Eg skal be hovudkvarteret oppdatere mappa di."
+  },
+  {
+    "en": "Congratulations on the promotion. Do keep it quiet, of course.",
+    "nn": "Gratulerer med forfremjinga. Hald det for deg sjølv, sjølvsagt."
+  },
+  {
+    "en": "Your craft just went up a rank. The quartermaster would approve.",
+    "nn": "Handverket ditt gjekk nettopp opp ein grad. Kvartermeisteren ville godkjent det."
+  },
+  {
+    "en": "Well done. Steady hands like yours are wasted on paperwork.",
+    "nn": "Godt gjort. Støe hender som dine er bortkasta på papirarbeid."
+  },
+  {
+    "en": "I've raised my teacup to your new rank. Discreetly.",
+    "nn": "Eg har løfta tekoppen for den nye graden din. Diskret."
+  },
+  {
+    "en": "Excellent. Your cover as a humble craftsman grows ever more convincing.",
+    "nn": "Framifrå. Dekket ditt som enkel handverkar blir stadig meir truverdig."
+  },
+  {
+    "en": "A promotion in your trade. I'd expect nothing less from you.",
+    "nn": "Ei forfremjing i faget ditt. Eg venta ikkje noko mindre av deg."
+  },
+  {
+    "en": "Your workshop must be the envy of the quartermaster now.",
+    "nn": "Kvartermeisteren misunner deg nok verkstaden no."
+  },
+  {
+    "en": "New rank, same composure. I like that in an agent.",
+    "nn": "Ny grad, same ro. Det likar eg hos ein agent."
+  },
+  {
+    "en": "I hear you've moved up in your craft. Shall we celebrate with tea?",
+    "nn": "Eg høyrer du har gått opp i handverket ditt. Skal vi feire med te?"
+  },
+  {
+    "en": "Promoted? Splendid. I'll file the paperwork myself.",
+    "nn": "Forfremja? Strålande. Eg skal ordne papira sjølv."
+  },
+  {
+    "en": "That's a fine new title. Wear it like a well-cut dinner jacket.",
+    "nn": "Det er ein fin ny tittel. Ber han som ein velsydd smoking."
+  },
+  {
+    "en": "Congratulations. Your skills could rival any gadget in the lab.",
+    "nn": "Gratulerer. Dugleiken din kan måle seg med kva duppeditt som helst i laben."
+  },
+  {
+    "en": "Nicely done. Even the handler cracked a smile at the news.",
+    "nn": "Fint gjort. Sjølv kontaktpersonen smilte litt då han fekk høyre det."
+  },
+  {
+    "en": "A promotion! I knew those late nights in the workshop would pay off.",
+    "nn": "Ei forfremjing! Eg visste at dei seine nettene på verkstaden ville løne seg."
+  },
+  {
+    "en": "Your mastery grows. Somewhere, a villain is nervously checking his locks.",
+    "nn": "Meisterskapen din veks. Ein stad sjekkar ein skurk låsane sine nervøst."
+  },
+  {
+    "en": "Congratulations, agent. The Ministry likes a specialist.",
+    "nn": "Gratulerer, agent. Departementet likar ein spesialist."
+  },
+  {
+    "en": "Up a rank already? You do work quickly.",
+    "nn": "Alt opp ein grad? Du arbeider då fort."
+  },
+  {
+    "en": "I've told the quartermaster. He wants to borrow your tools.",
+    "nn": "Eg har sagt det til kvartermeisteren. Han vil låne verktøya dine."
+  },
+  {
+    "en": "New rank in your trade, then. Shall I order you a monogrammed apron?",
+    "nn": "Ny grad i faget ditt, altså. Skal eg tinge eit forkle med monogram til deg?"
+  },
+  {
+    "en": "Splendid promotion. Your dossier now needs a second folder.",
+    "nn": "Strålande forfremjing. Mappa di treng no ei mappe til."
+  },
+  {
+    "en": "Congratulations. That kind of precision could defuse a bomb.",
+    "nn": "Gratulerer. Slik presisjon kunne desarmert ei bombe."
+  },
+  {
+    "en": "Moving up, I see. Do keep your cuffs clean at the bench.",
+    "nn": "Du går oppover, ser eg. Hald mansjettane reine ved benken."
+  },
+  {
+    "en": "Promoted. I'd shake your hand, but we're not supposed to know each other.",
+    "nn": "Forfremja. Eg ville teke deg i handa, men vi skal ikkje kjenne kvarandre."
+  },
+  {
+    "en": "Your craft has a new rank and I have a new reason to brag about you.",
+    "nn": "Handverket ditt har ein ny grad, og eg har ein ny grunn til å skryte av deg."
+  },
+  {
+    "en": "A fine achievement. I'll mention it at the next briefing.",
+    "nn": "Ei fin bragd. Eg skal nemne det på neste orientering."
+  },
+  {
+    "en": "New title earned. The secret's out, at least among friends.",
+    "nn": "Ny tittel fortent. Løyndomen er ute, i alle fall blant vener."
+  },
+  {
+    "en": "Excellent work at the bench. Not one singed eyebrow, I trust?",
+    "nn": "Framifrå arbeid ved benken. Ikkje eit svidd augebryn, håpar eg?"
+  },
+  {
+    "en": "Good show. The academy instructors would be astonished.",
+    "nn": "Flott. Instruktørane på akademiet ville vore forbløffa."
+  },
+  {
+    "en": "That promotion was well earned. I've been watching. Professionally.",
+    "nn": "Den forfremjinga var vel fortent. Eg har følgt med. Profesjonelt."
+  },
+  {
+    "en": "Congratulations. Your trade secrets are safe with me.",
+    "nn": "Gratulerer. Fagløyndomane dine er trygge hos meg."
+  },
+  {
+    "en": "Headquarters has been informed of your new rank by coded telegram.",
+    "nn": "Hovudkvarteret er varsla om den nye graden din med koda telegram."
+  },
+  {
+    "en": "Your skills have outgrown your old title. As I suspected they would.",
+    "nn": "Dugleiken din har vakse frå den gamle tittelen. Som eg mistenkte."
+  },
+  {
+    "en": "Bravo. Even the quartermaster rarely gets promoted that fast.",
+    "nn": "Bravo. Sjølv kvartermeisteren blir sjeldan forfremja så fort."
+  },
+  {
+    "en": "Promoted in your craft. Shall I arrange a modest cocktail party?",
+    "nn": "Forfremja i handverket ditt. Skal eg skipe til eit lite cocktailselskap?"
+  },
+  {
+    "en": "I always said you had a gift for fine work. Congratulations.",
+    "nn": "Eg har alltid sagt at du har eit talent for fint arbeid. Gratulerer."
+  },
+  {
+    "en": "You've climbed another step in your trade. Very elegant.",
+    "nn": "Du har klatra endå eit steg i faget ditt. Svært elegant."
+  },
+  {
+    "en": "Splendid. Your new rank would look fine on a business card.",
+    "nn": "Strålande. Den nye graden din ville sett fin ut på eit visittkort."
+  },
+  {
+    "en": "A promotion, and you didn't even blow up the workshop. Impressive.",
+    "nn": "Ei forfremjing, og du sprengde ikkje eingong verkstaden. Imponerande."
+  },
+  {
+    "en": "Well done. I'll inform the Ministry over a cup of tea.",
+    "nn": "Godt gjort. Eg skal melde frå til departementet over ein kopp te."
+  },
+  {
+    "en": "Your expertise grows by the day. Most reassuring.",
+    "nn": "Kunnskapen din veks for kvar dag. Svært roande."
+  },
+  {
+    "en": "Congratulations on the new rank. Your codename suits you even better now.",
+    "nn": "Gratulerer med den nye graden. Kodenamnet ditt passar deg endå betre no."
+  },
+  {
+    "en": "I hear your craft has reached a new level. The handler is delighted.",
+    "nn": "Eg høyrer handverket ditt har nådd eit nytt nivå. Kontaktpersonen er begeistra."
+  },
+  {
+    "en": "Another title for your collection. Very distinguished.",
+    "nn": "Endå ein tittel til samlinga di. Svært fornemt."
+  },
+  {
+    "en": "That promotion calls for a martini. Or tea, if you're on duty.",
+    "nn": "Den forfremjinga krev ein martini. Eller te, om du er på vakt."
+  },
+  {
+    "en": "Promoted at last. I knew patience was one of your talents.",
+    "nn": "Endeleg forfremja. Eg visste at tolmod var eitt av talenta dine."
+  },
+  {
+    "en": "Fine work, old friend. Even the villains would hire you now.",
+    "nn": "Fint arbeid, gamle ven. Sjølv skurkane ville tilsett deg no."
+  },
+  {
+    "en": "Your craft has a new rank. I'll keep it out of the newspapers.",
+    "nn": "Handverket ditt har fått ein ny grad. Eg skal halde det ute av avisene."
+  },
+  {
+    "en": "A craftsman of your calibre is rare indeed. Congratulations.",
+    "nn": "Ein handverkar av ditt kaliber er sjeldan. Gratulerer."
+  },
+  {
+    "en": "Excellent promotion. The lab boys are already jealous.",
+    "nn": "Framifrå forfremjing. Gutane i laben er alt misunnelege."
+  },
+  {
+    "en": "You've been promoted. I trust you'll still take my calls?",
+    "nn": "Du er forfremja. Eg går ut frå at du framleis tek telefonane mine?"
+  },
+  {
+    "en": "That new rank deserves a raised eyebrow of respect. Here it is.",
+    "nn": "Den nye graden fortener eit løfta augebryn av respekt. Her er det."
+  },
+  {
+    "en": "I'll make sure your next cover story mentions the new title.",
+    "nn": "Eg skal sjå til at neste dekkhistorie nemner den nye tittelen."
+  },
+  {
+    "en": "Your trade has never been in better hands. Literally.",
+    "nn": "Faget ditt har aldri vore i betre hender. Bokstaveleg talt."
+  },
+  {
+    "en": "Congratulations. The workshop lights burn late for a reason.",
+    "nn": "Gratulerer. Lysa i verkstaden brenn seint av ein grunn."
+  },
+  {
+    "en": "Promotion confirmed. Your file has moved to a more impressive drawer.",
+    "nn": "Forfremjinga er stadfesta. Mappa di er flytta til ein meir imponerande skuff."
+  },
+  {
+    "en": "Brilliant. I knew you'd master the craft before the season was out.",
+    "nn": "Glimrande. Eg visste du ville meistre handverket før sesongen var omme."
+  },
+  {
+    "en": "I'm told you've moved up a rank. The rumours were true.",
+    "nn": "Eg har fått vite at du har gått opp ein grad. Rykta var sanne."
+  },
+  {
+    "en": "That's the sort of skill one can't buy at a casino. Congratulations.",
+    "nn": "Det er den sortens dugleik ein ikkje kan kjøpe på eit kasino. Gratulerer."
+  },
+  {
+    "en": "Take a moment to admire your work. That rank is well earned.",
+    "nn": "Ta deg tid til å beundre arbeidet ditt. Den graden er vel fortent."
+  },
+  {
+    "en": "Your craft has been elevated. So has my opinion of you, if possible.",
+    "nn": "Handverket ditt er løfta eit hakk. Det er òg synet mitt på deg, om mogleg."
+  },
+  {
+    "en": "Promoted, and with style. I'd expect nothing else.",
+    "nn": "Forfremja, og med stil. Eg ville ikkje venta noko anna."
+  },
+  {
+    "en": "Headquarters will want to study your methods. Well done.",
+    "nn": "Hovudkvarteret vil gjerne studere metodane dine. Godt gjort."
+  },
+  {
+    "en": "Few agents can say they've mastered a trade too. Congratulations.",
+    "nn": "Få agentar kan seie at dei òg har meistra eit fag. Gratulerer."
+  },
+  {
+    "en": "A fine promotion. I'll arrange for a discreet bouquet.",
+    "nn": "Ei fin forfremjing. Eg skal ordne med ein diskret bukett."
+  },
+  {
+    "en": "Your new title has been noted in invisible ink.",
+    "nn": "Den nye tittelen din er notert med usynleg blekk."
+  },
+  {
+    "en": "Up a rank! You must have the steadiest hands in the service.",
+    "nn": "Opp ein grad! Du må ha dei støaste hendene i tenesta."
+  },
+  {
+    "en": "Bravo. Your mentor would be proud, wherever he's hiding now.",
+    "nn": "Bravo. Læremeisteren din ville vore stolt, kvar han no gøymer seg."
+  },
+  {
+    "en": "I'll toast your promotion at the baccarat table tonight.",
+    "nn": "Eg skal skåle for forfremjinga di ved baccaratbordet i kveld."
+  },
+  {
+    "en": "Splendid. Your skills are now officially above my security clearance.",
+    "nn": "Strålande. Dugleiken din er no offisielt over klareringa mi."
+  },
+  {
+    "en": "You've earned that rank. I shan't pretend I'm surprised.",
+    "nn": "Du har fortent den graden. Eg skal ikkje late som eg er overraska."
+  },
+  {
+    "en": "New rank, new operation. Shall we call it Operation Workbench?",
+    "nn": "Ny grad, nytt oppdrag. Skal vi kalle det operasjon Arbeidsbenk?"
+  },
+  {
+    "en": "My friend, the quartermaster sends a grudging nod. Well done.",
+    "nn": "Ven, kvartermeisteren sender eit motvillig nikk. Godt gjort."
+  },
+  {
+    "en": "Congratulations on moving up. The view is better from there.",
+    "nn": "Gratulerer med opprykket. Utsikta er betre derifrå."
+  },
+  {
+    "en": "Promoted. I've already updated my little black notebook.",
+    "nn": "Forfremja. Eg har alt oppdatert den vesle svarte notatboka mi."
+  },
+  {
+    "en": "That's a handsome new title. It suits you like a tailored suit.",
+    "nn": "Det er ein flott ny tittel. Han kler deg som ein skreddarsydd dress."
+  },
+  {
+    "en": "Excellent. Your work is getting too good for a mere cover story.",
+    "nn": "Framifrå. Arbeidet ditt blir for godt til å vere berre ei dekkhistorie."
+  },
+  {
+    "en": "I suspect the villains will start ordering from you. Congratulations.",
+    "nn": "Eg mistenkjer at skurkane vil byrje å tinge frå deg. Gratulerer."
+  },
+  {
+    "en": "A promotion! I knew you had it in you, agent.",
+    "nn": "Ei forfremjing! Eg visste du hadde det i deg, agent."
+  },
+  {
+    "en": "Your craft keeps improving. Mine is mostly pretending to read newspapers.",
+    "nn": "Handverket ditt blir stadig betre. Mitt er mest å late som eg les avisa."
+  },
+  {
+    "en": "A skill like that could get you out of any locked room. Well done.",
+    "nn": "Ein slik dugleik kunne fått deg ut av kva låst rom som helst. Godt gjort."
+  },
+  {
+    "en": "Promoted. The archive clerk needs a bigger filing cabinet for you.",
+    "nn": "Forfremja. Arkivaren treng eit større arkivskap til deg."
+  },
+  {
+    "en": "That's a quieter victory than most, but just as fine. Congratulations.",
+    "nn": "Det er ein stillare siger enn dei fleste, men like fin. Gratulerer."
+  },
+  {
+    "en": "To celebrate, I suggest a perfectly brewed pot of tea.",
+    "nn": "Til feiringa føreslår eg ei perfekt trekt kanne te."
+  },
+  {
+    "en": "Moving up in the world, I see. Do send a postcard from the top.",
+    "nn": "Du stig i verda, ser eg. Send eit postkort frå toppen."
+  },
+  {
+    "en": "I salute your promotion. Very subtly, from across the room.",
+    "nn": "Eg gjer honnør for forfremjinga di. Svært diskret, frå andre sida av rommet."
+  },
+  {
+    "en": "Excellent work. The trade guild should be honoured to have you.",
+    "nn": "Framifrå arbeid. Lauget kan skatte seg lukkeleg som har deg."
+  },
+  {
+    "en": "Your skill now matches your impeccable taste. Congratulations.",
+    "nn": "Dugleiken din står no i stil med den ulastelege smaken din. Gratulerer."
+  },
+  {
+    "en": "Promoted in your craft. Shall I tell headquarters, or will you?",
+    "nn": "Forfremja i handverket ditt. Skal eg seie det til hovudkvarteret, eller gjer du det?"
+  },
+  {
+    "en": "Another rank earned. You make it look effortless, which is the point.",
+    "nn": "Endå ein grad fortent. Du får det til å sjå lett ut, og det er poenget."
+  },
+  {
+    "en": "Precision, patience and a dash of flair. Classic you.",
+    "nn": "Presisjon, tolmod og ein dæsj stil. Typisk deg."
+  },
+  {
+    "en": "Your new title arrived in a sealed envelope. I peeked. Congratulations.",
+    "nn": "Den nye tittelen din kom i ein forsegla konvolutt. Eg kika. Gratulerer."
+  },
+  {
+    "en": "The coded message about your promotion read simply: impressive.",
+    "nn": "Den koda meldinga om forfremjinga di sa berre: imponerande."
+  },
+  {
+    "en": "I'll requisition a new workbench in your honour. Congratulations.",
+    "nn": "Eg skal rekvirere ein ny arbeidsbenk til ære for deg. Gratulerer."
+  },
+  {
+    "en": "Bravo, agent. Your craft is all anyone talks about at the hideout.",
+    "nn": "Bravo, agent. Handverket ditt er alt nokon snakkar om i gøymestaden."
+  },
+  {
+    "en": "Promoted, eh? I always knew your talents went beyond disguises.",
+    "nn": "Forfremja, altså? Eg visste alltid at talenta dine gjekk lenger enn forkledningar."
+  },
+  {
+    "en": "Excellent. Your trade has gained a fine hand and lost a beginner.",
+    "nn": "Framifrå. Faget ditt har vunne ei dyktig hand og mista ein nybyrjar."
+  },
+  {
+    "en": "A fine promotion. My compliments to your tools and your nerves.",
+    "nn": "Ei fin forfremjing. Mine komplimentar til verktøya og nervane dine."
+  },
+  {
+    "en": "The next mission may need your particular skills. Well done.",
+    "nn": "Neste oppdrag kan trenge dei særlege dugleikane dine. Godt gjort."
+  },
+  {
+    "en": "I've heard the quartermaster muttering your name with respect.",
+    "nn": "Eg har høyrt kvartermeisteren mumle namnet ditt med respekt."
+  },
+  {
+    "en": "Clearly the hours at the bench weren't wasted. A new rank!",
+    "nn": "Timane ved benken var tydelegvis ikkje bortkasta. Ein ny grad!"
+  },
+  {
+    "en": "Promoted. Your craftsmanship would make a villain's henchmen weep.",
+    "nn": "Forfremja. Handverket ditt kunne fått handlangarane til ein skurk til å gråte."
+  },
+  {
+    "en": "I'm delighted. Do tell me how you did it, in a whisper.",
+    "nn": "Eg er strålande nøgd. Fortel meg korleis du gjorde det, kviskrande."
+  },
+  {
+    "en": "Splendid news from the workshop. My hat is off to you.",
+    "nn": "Strålande nytt frå verkstaden. Eg tek av meg hatten for deg."
+  },
+  {
+    "en": "Even a trick watch couldn't keep time with your progress.",
+    "nn": "Sjølv eit triksur kunne ikkje halde takt med framgangen din."
+  },
+  {
+    "en": "I'll have the tailor add a little ribbon to your jacket. Well earned.",
+    "nn": "Eg skal be skreddaren sy eit lite band på jakka di. Vel fortent."
+  },
+  {
+    "en": "Your craft has gone up a step. Mine remains strictly confidential.",
+    "nn": "Handverket ditt har gått opp eit steg. Mitt er framleis strengt fortruleg."
+  },
+  {
+    "en": "You've earned a weekend off. Headquarters disagrees, of course.",
+    "nn": "Du har fortent ei fri helg. Hovudkvarteret er sjølvsagt usamd."
+  },
+  {
+    "en": "Congratulations on the new rank. The dossier photo needs updating.",
+    "nn": "Gratulerer med den nye graden. Biletet i mappa må oppdaterast."
+  },
+  {
+    "en": "Promoted. Clearly you've been practising when no one was watching.",
+    "nn": "Forfremja. Du har tydelegvis øvd når ingen såg på."
+  },
+  {
+    "en": "Excellent progress. The quartermaster wants to know your secret.",
+    "nn": "Framifrå framgang. Kvartermeisteren vil vite kva løyndomen din er."
+  },
+  {
+    "en": "Shall I have your new title engraved on a pocket watch?",
+    "nn": "Skal eg få den nye tittelen din gravert på eit lommeur?"
+  },
+  {
+    "en": "Your skill has been promoted. Your modesty, I trust, remains intact.",
+    "nn": "Dugleiken din er forfremja. Audmjukskapen din er vel framleis intakt."
+  },
+  {
+    "en": "I've seen gadgets less sophisticated than your work. Congratulations.",
+    "nn": "Eg har sett duppedittar som er mindre avanserte enn arbeidet ditt. Gratulerer."
+  },
+  {
+    "en": "Splendid. That rank took nerve, and you have plenty.",
+    "nn": "Strålande. Den graden kravde nerve, og det har du nok av."
+  },
+  {
+    "en": "The handler wants your promotion in writing. Twice.",
+    "nn": "Kontaktpersonen vil ha forfremjinga di skriftleg. To gonger."
+  },
+  {
+    "en": "I shall raise a glass at the casino tonight. You've earned it.",
+    "nn": "Eg skal løfte glaset på kasinoet i kveld. Du har fortent det."
+  },
+  {
+    "en": "Congratulations, old chap. The workshop suits you.",
+    "nn": "Gratulerer, gamle kar. Verkstaden kler deg."
+  },
+  {
+    "en": "Up a rank, and not a crease on you. Remarkable.",
+    "nn": "Opp ein grad, og ikkje ei skrukke på deg. Imponerande."
+  },
+  {
+    "en": "Promoted. I'll pretend I didn't already know from my sources.",
+    "nn": "Forfremja. Eg skal late som eg ikkje alt visste det frå kjeldene mine."
+  },
+  {
+    "en": "A fine new rank. It almost makes up for the hours of grinding.",
+    "nn": "Ein fin ny grad. Det veg nesten opp for alle dei timane med slit."
+  },
+  {
+    "en": "Your talents are wasted on villains. Keep crafting. Congratulations.",
+    "nn": "Talenta dine er bortkasta på skurkar. Hald fram med handverket. Gratulerer."
+  },
+  {
+    "en": "Your trade just gained some prestige. Mostly from you.",
+    "nn": "Faget ditt fekk nettopp litt meir prestisje. Mest frå deg."
+  },
+  {
+    "en": "I knew you'd crack that rank like a safe. Well done.",
+    "nn": "Eg visste du ville knekke den graden som ein safe. Godt gjort."
+  },
+  {
+    "en": "Excellent. The craft guild has a new name to whisper about.",
+    "nn": "Framifrå. Handverkarlauget har eit nytt namn å kviskre om."
+  },
+  {
+    "en": "I'll send a congratulatory telegram, in code, naturally.",
+    "nn": "Eg skal sende eit gratulasjonstelegram, i kode, naturlegvis."
+  },
+  {
+    "en": "That's a rank most agents never bother to earn. Congratulations.",
+    "nn": "Det er ein grad dei fleste agentar aldri bryr seg om å nå. Gratulerer."
+  },
+  {
+    "en": "Promoted in your craft. The lab coat suits you almost as well as a tuxedo.",
+    "nn": "Forfremja i handverket ditt. Labfrakken kler deg nesten like godt som ein smoking."
+  },
+  {
+    "en": "Splendid. Your workbench must be spotless. Mine is covered in maps.",
+    "nn": "Strålande. Arbeidsbenken din må vere skinande rein. Min er full av kart."
+  },
+  {
+    "en": "The Ministry likes its agents multitalented. You've delivered.",
+    "nn": "Departementet likar at agentane har mange talent. Du har levert."
+  },
+  {
+    "en": "That's a promotion worth whispering about, agent. Well done.",
+    "nn": "Det er ei forfremjing verd å kviskre om, agent. Godt gjort."
+  },
+  {
+    "en": "You could teach the lab a thing or two now. Congratulations.",
+    "nn": "No kunne du lært laben eitt og anna. Gratulerer."
+  },
+  {
+    "en": "A new title! I'd buy you dinner, but we'd have to sit at separate tables.",
+    "nn": "Ein ny tittel! Eg ville spandert middag, men vi måtte sitje ved kvart vårt bord."
+  },
+  {
+    "en": "Promoted. Your eye for detail would make a fine spy.",
+    "nn": "Forfremja. Auget ditt for detaljar ville gjort deg til ein god spion."
+  },
+  {
+    "en": "Splendid news. I'll mark it in my diary with a tiny star.",
+    "nn": "Strålande nytt. Eg skal merke det i dagboka mi med ei lita stjerne."
+  },
+  {
+    "en": "Your craft now outranks my driving. Congratulations.",
+    "nn": "Handverket ditt har no høgare grad enn køyringa mi. Gratulerer."
+  },
+  {
+    "en": "A new rank, earned the hard way. The only way that counts.",
+    "nn": "Ein ny grad, fortent på den harde måten. Den einaste måten som tel."
+  },
+  {
+    "en": "I suspect your rivals are quietly fuming. Nicely done.",
+    "nn": "Eg mistenkjer at rivalane dine kokar i det stille. Fint gjort."
+  },
+  {
+    "en": "Excellent. That rank deserves a polished brass nameplate.",
+    "nn": "Framifrå. Den graden fortener eit pussa namneskilt i messing."
+  },
+  {
+    "en": "Promoted, my friend. Do mind the jealous trainees.",
+    "nn": "Forfremja, ven. Pass deg for misunnelege rekruttar."
+  },
+  {
+    "en": "Your progress report reads like a thriller. Congratulations.",
+    "nn": "Framgangsrapporten din les seg som ein thriller. Gratulerer."
+  },
+  {
+    "en": "I'll have a dry martini in your honour this evening.",
+    "nn": "Eg tek ein tørr martini til ære for deg i kveld."
+  },
+  {
+    "en": "Your new rank is official. I've seen the stamp myself.",
+    "nn": "Den nye graden din er offisiell. Eg har sett stempelet sjølv."
+  },
+  {
+    "en": "Splendid. You handle your tools the way a croupier handles cards.",
+    "nn": "Strålande. Du handterer verktøya dine som ein croupier handterer korta."
+  },
+  {
+    "en": "I hear the trainers were sad to see you go. Congratulations.",
+    "nn": "Eg høyrer at trenarane var lei seg då du gjekk vidare. Gratulerer."
+  },
+  {
+    "en": "The craft has a new rising star, codename: you.",
+    "nn": "Handverket har ei ny stigande stjerne, kodenamn: deg."
+  },
+  {
+    "en": "Shall I order a cake, or is that too conspicuous? Congratulations.",
+    "nn": "Skal eg tinge kake, eller er det for iaugefallande? Gratulerer."
+  },
+  {
+    "en": "Promoted. You've clearly been studying the manuals under your pillow.",
+    "nn": "Forfremja. Du har tydelegvis studert handbøkene under puta."
+  },
+  {
+    "en": "Excellent work. Your rank now matches your considerable talent.",
+    "nn": "Framifrå arbeid. Graden din står no i stil med det store talentet ditt."
+  },
+  {
+    "en": "Congratulations on the new title. I'll pass it on to the right people.",
+    "nn": "Gratulerer med den nye tittelen. Eg skal gje det vidare til dei rette folka."
+  },
+  {
+    "en": "The secret workshop applauds your new rank, very quietly.",
+    "nn": "Den løynde verkstaden applauderer den nye graden din, svært stille."
+  },
+  {
+    "en": "Your fingers must be as quick as a safecracker's. Well done.",
+    "nn": "Fingrane dine må vere like snøgge som fingrane til ein safeknekkar. Godt gjort."
+  },
+  {
+    "en": "Splendid. The next time I need a gadget fixed, I know who to call.",
+    "nn": "Strålande. Neste gong eg treng ein duppeditt fiksa, veit eg kven eg skal ringje."
+  },
+  {
+    "en": "Promoted. A fine reward for all that patient work.",
+    "nn": "Forfremja. Ei fin løn for alt det tolmodige arbeidet."
+  },
+  {
+    "en": "Even my exploding pen is impressed. Congratulations.",
+    "nn": "Sjølv den eksploderande pennen min er imponert. Gratulerer."
+  },
+  {
+    "en": "They say a new title opens doors. Possibly secret ones.",
+    "nn": "Dei seier at ein ny tittel opnar dører. Kanskje løynde dører."
+  },
+  {
+    "en": "Your skill is climbing faster than a villain's ambitions.",
+    "nn": "Dugleiken din klatrar fortare enn ambisjonane til ein skurk."
+  },
+  {
+    "en": "You've made the mission files look rather dull. Well done.",
+    "nn": "Du har fått oppdragsmappene til å sjå ganske kjedelege ut. Godt gjort."
+  },
+  {
+    "en": "Excellent. I'll tell the handler you're overqualified now.",
+    "nn": "Framifrå. Eg skal seie til kontaktpersonen at du er overkvalifisert no."
+  },
+  {
+    "en": "I'd expect a rank like that to come with a car. Congratulations.",
+    "nn": "Eg ville venta at ein slik grad kom med bil. Gratulerer."
+  },
+  {
+    "en": "Your mentor sends a postcard with a single word: finally.",
+    "nn": "Læremeisteren din sender eit postkort med eitt ord: endeleg."
+  },
+  {
+    "en": "Promoted. You've turned a hobby into a formidable weapon.",
+    "nn": "Forfremja. Du har gjort ein hobby til eit fryktinngytande våpen."
+  },
+  {
+    "en": "Splendid work. I'd ask how, but you'd only say it's classified.",
+    "nn": "Strålande arbeid. Eg ville spurt korleis, men du ville berre sagt at det er hemmeleg."
+  },
+  {
+    "en": "Your name has been moved up the list at headquarters. Congratulations.",
+    "nn": "Namnet ditt er flytta opp på lista ved hovudkvarteret. Gratulerer."
+  },
+  {
+    "en": "Well deserved, and handled with your usual grace. Bravo.",
+    "nn": "Vel fortent, og handtert med den vanlege ynden din. Bravo."
+  },
+  {
+    "en": "My friend, your work speaks louder than any briefing.",
+    "nn": "Ven, arbeidet ditt talar høgare enn nokon orientering."
+  },
+  {
+    "en": "Excellent. A skilled craftsman and a secret agent. What a combination.",
+    "nn": "Framifrå. Ein dyktig handverkar og ein hemmeleg agent. For ein kombinasjon."
+  },
+  {
+    "en": "That rank took dedication. I'm suitably impressed.",
+    "nn": "Den graden kravde innsats. Eg er passeleg imponert."
+  },
+  {
+    "en": "Promoted at the bench. The tea is on me this time.",
+    "nn": "Forfremja ved benken. Eg spanderer teen denne gongen."
+  },
+  {
+    "en": "A fine promotion. The lab has asked for your autograph. Discreetly.",
+    "nn": "Ei fin forfremjing. Laben har bede om autografen din. Diskret."
+  },
+  {
+    "en": "Splendid. Your trade has a new star and I have a new hero.",
+    "nn": "Strålande. Faget ditt har ei ny stjerne, og eg har ein ny helt."
+  },
+  {
+    "en": "Your skills grow sharper than the crease in a tuxedo. Congratulations.",
+    "nn": "Dugleiken din blir kvassare enn pressen på ein smoking. Gratulerer."
+  },
+  {
+    "en": "A promotion like that deserves a quiet word of praise. Consider it given.",
+    "nn": "Ei slik forfremjing fortener eit stille rosande ord. Rekn det som gitt."
+  },
+  {
+    "en": "Clearly the training regime suited you. Up a rank!",
+    "nn": "Treningsopplegget passa deg tydelegvis. Opp ein grad!"
+  },
+  {
+    "en": "Promoted, and the workshop is still standing. Bravo.",
+    "nn": "Forfremja, og verkstaden står framleis. Bravo."
+  },
+  {
+    "en": "Excellent. I'll alert the Ministry to your growing expertise.",
+    "nn": "Framifrå. Eg skal varsle departementet om den aukande kunnskapen din."
+  },
+  {
+    "en": "Even the villain's scientists couldn't match you now. Congratulations.",
+    "nn": "Sjølv forskarane til skurken kunne ikkje måle seg med deg no. Gratulerer."
+  },
+  {
+    "en": "Shall I fetch the good china for the tea? This calls for it.",
+    "nn": "Skal eg hente fram det fine porselenet til teen? Dette krev det."
+  },
+  {
+    "en": "Your skill would make the quartermaster retire early.",
+    "nn": "Dugleiken din kunne fått kvartermeisteren til å gå av tidleg."
+  },
+  {
+    "en": "Splendid. Another title, and still as modest as ever.",
+    "nn": "Strålande. Endå ein tittel, og framleis like audmjuk."
+  },
+  {
+    "en": "I'll be sure to commission something from you. Congratulations.",
+    "nn": "Eg skal sørgje for å bestille noko frå deg. Gratulerer."
+  },
+  {
+    "en": "Promoted. Your handiwork is now officially top secret.",
+    "nn": "Forfremja. Handverket ditt er no offisielt topphemmeleg."
+  },
+  {
+    "en": "I've informed my contacts in three cities of your promotion.",
+    "nn": "Eg har fortalt kontaktane mine i tre byar om forfremjinga di."
+  },
+  {
+    "en": "Excellent work. The trainees will be studying you for years.",
+    "nn": "Framifrå arbeid. Rekruttane kjem til å studere deg i årevis."
+  },
+  {
+    "en": "Every great agent needs a trade to fall back on. Well done.",
+    "nn": "Kvar stor agent treng eit fag å ty til. Godt gjort."
+  },
+  {
+    "en": "That's not a promotion, that's a statement. Congratulations.",
+    "nn": "Det er ikkje ei forfremjing, det er ei markering. Gratulerer."
+  },
+  {
+    "en": "I'd tip my hat to your new title, but it hides a radio.",
+    "nn": "Eg ville lette på hatten for den nye tittelen din, men han skjuler ein radio."
+  },
+  {
+    "en": "Splendid. Your trade bows to you now, if only a little.",
+    "nn": "Strålande. Faget ditt bukkar for deg no, om enn berre litt."
+  },
+  {
+    "en": "Congratulations, agent. Your patience at the bench is legendary.",
+    "nn": "Gratulerer, agent. Tolmodet ditt ved benken er legendarisk."
+  },
+  {
+    "en": "Promoted. I've ordered champagne. It's actually ginger ale.",
+    "nn": "Forfremja. Eg har tinga champagne. Det er eigentleg ingefærøl."
+  },
+  {
+    "en": "Now the real work begins, as they say at headquarters. Congratulations.",
+    "nn": "No byrjar det verkelege arbeidet, som dei seier på hovudkvarteret. Gratulerer."
+  },
+  {
+    "en": "You've proven that craft and cunning go together. Well done.",
+    "nn": "Du har prova at handverk og list høyrer saman. Godt gjort."
+  },
+  {
+    "en": "Excellent. Your new rank makes my old gadgets look primitive.",
+    "nn": "Framifrå. Den nye graden din får dei gamle duppedittane mine til å sjå primitive ut."
+  },
+  {
+    "en": "I once needed a year for what you just did. Congratulations.",
+    "nn": "Eg trong ein gong eit år på det du nettopp gjorde. Gratulerer."
+  },
+  {
+    "en": "The villain's workshop is now officially second best. Bravo.",
+    "nn": "Verkstaden til skurken er no offisielt nest best. Bravo."
+  },
+  {
+    "en": "Promoted. Do put your feet up. Briefly. Duty calls soon enough.",
+    "nn": "Forfremja. Legg beina høgt. Kort. Plikta kallar snart nok."
+  },
+  {
+    "en": "Splendid. That title will look marvellous on your next cover identity.",
+    "nn": "Strålande. Den tittelen vil sjå fantastisk ut på neste dekkidentitet."
+  },
+  {
+    "en": "I'll leave a congratulatory note under the usual loose brick.",
+    "nn": "Eg legg ein gratulasjonslapp under den vanlege lause mursteinen."
+  },
+  {
+    "en": "Your progress has been entered into the record, quietly.",
+    "nn": "Framgangen din er ført inn i protokollen, i all stilleheit."
+  },
+  {
+    "en": "I knew your talents were wasted on mere sabotage. Here's the proof.",
+    "nn": "Eg visste at talenta dine var bortkasta på berre sabotasje. Her er provet."
+  },
+  {
+    "en": "Promoted. Your craft has gone from useful to downright dangerous.",
+    "nn": "Forfremja. Handverket ditt har gått frå nyttig til direkte farleg."
+  },
+  {
+    "en": "Excellent. I'll see that your workbench gets a better lamp.",
+    "nn": "Framifrå. Eg skal sjå til at arbeidsbenken din får ei betre lampe."
+  },
+  {
+    "en": "That rank suits you like a white dinner jacket. Congratulations.",
+    "nn": "Den graden kler deg som ein kvit smoking. Gratulerer."
+  },
+  {
+    "en": "The cipher clerks had to invent a new code for your title.",
+    "nn": "Kodekontoret måtte finne opp ein ny kode for tittelen din."
+  },
+  {
+    "en": "Your secret training sessions have been rewarded. Promoted!",
+    "nn": "Dei løynde treningsøktene dine er blitt løna. Forfremja!"
+  },
+  {
+    "en": "Splendid. I hear your work is in high demand in certain circles.",
+    "nn": "Strålande. Eg høyrer arbeidet ditt er etterspurt i visse krinsar."
+  },
+  {
+    "en": "Even my handler had to admit you're rather good. Congratulations.",
+    "nn": "Sjølv kontaktpersonen min måtte innrømme at du er ganske god. Gratulerer."
+  },
+  {
+    "en": "Promoted. One more title, and you'll need a longer business card.",
+    "nn": "Forfremja. Éin tittel til, og du treng eit lengre visittkort."
+  },
+  {
+    "en": "A fine new rank. I'll wear my best tie in your honour tomorrow.",
+    "nn": "Ein fin ny grad. Eg tek på meg det beste slipset mitt til ære for deg i morgon."
+  },
+  {
+    "en": "The quiet hours of practice have spoken for themselves. Well done.",
+    "nn": "Dei stille timane med øving har tala for seg sjølve. Godt gjort."
+  },
+  {
+    "en": "Excellent. You've gone from tinkerer to proper craftsman.",
+    "nn": "Framifrå. Du har gått frå fiklar til skikkeleg handverkar."
+  },
+  {
+    "en": "Your mission: keep improving. You're doing splendidly.",
+    "nn": "Oppdraget ditt: bli stadig betre. Det går strålande."
+  },
+  {
+    "en": "I hope your new rank comes with a bigger toolbox.",
+    "nn": "Eg håpar den nye graden din kjem med ei større verktøykasse."
+  },
+  {
+    "en": "Promoted. I raised an eyebrow when I heard. That's high praise.",
+    "nn": "Forfremja. Eg løfta eit augebryn då eg høyrde det. Det er stor ros."
+  },
+  {
+    "en": "Splendid. Your talent would get you past any border guard.",
+    "nn": "Strålande. Talentet ditt ville fått deg forbi kva grensevakt som helst."
+  },
+  {
+    "en": "The workshop has never smelled so much of success. Congratulations.",
+    "nn": "Verkstaden har aldri lukta så mykje suksess. Gratulerer."
+  },
+  {
+    "en": "I'll have the motor pool polish a car for your celebration.",
+    "nn": "Eg ber bilparken pusse ein bil til feiringa di."
+  },
+  {
+    "en": "A new rank earned. Your rivals have been notified. Gently.",
+    "nn": "Ein ny grad fortent. Rivalane dine er varsla. Varsamt."
+  },
+  {
+    "en": "Excellent. You turn raw materials into gold, almost literally.",
+    "nn": "Framifrå. Du gjer råvarer til gull, nesten bokstaveleg."
+  },
+  {
+    "en": "Your next cover could be a celebrated craftsman. Congratulations.",
+    "nn": "Den neste dekkrolla di kan vere ein feira handverkar. Gratulerer."
+  },
+  {
+    "en": "Promoted. Such dedication would make headquarters blush.",
+    "nn": "Forfremja. Slik iver kunne fått hovudkvarteret til å raudme."
+  },
+  {
+    "en": "I'd send flowers, but they'd probably hide a microphone. Congratulations.",
+    "nn": "Eg ville sendt blomar, men dei ville nok skjule ein mikrofon. Gratulerer."
+  },
+  {
+    "en": "You've earned the respect of every gadget in the lab. Nicely done.",
+    "nn": "Du har fortent respekten til kvar duppeditt i laben. Fint gjort."
+  },
+  {
+    "en": "Splendid. A new title, and you didn't even need a disguise for it.",
+    "nn": "Strålande. Ein ny tittel, og du trong ikkje eingong forkledning for å få han."
+  },
+  {
+    "en": "Your progress is a model for all trainees. Congratulations.",
+    "nn": "Framgangen din er eit føredøme for alle rekruttar. Gratulerer."
+  },
+  {
+    "en": "A new rank! I knew those calloused hands meant business.",
+    "nn": "Ein ny grad! Eg visste at dei hardhuda hendene meinte alvor."
+  },
+  {
+    "en": "Promoted. I'll update your codename to something more distinguished.",
+    "nn": "Forfremja. Eg skal oppdatere kodenamnet ditt til noko meir fornemt."
+  },
+  {
+    "en": "Excellent work. Even the villain's tailor would be envious.",
+    "nn": "Framifrå arbeid. Sjølv skreddaren til skurken ville vore misunneleg."
+  },
+  {
+    "en": "Promotion suits you. So does that air of quiet competence.",
+    "nn": "Forfremjing kler deg. Det gjer òg det stille, dyktige preget ditt."
+  },
+  {
+    "en": "That rank is a fine addition to your arsenal. Congratulations.",
+    "nn": "Den graden er eit fint tilskot til arsenalet ditt. Gratulerer."
+  },
+  {
+    "en": "The briefing room will hear of your promotion at once.",
+    "nn": "Orienteringsrommet skal få høyre om forfremjinga di med ein gong."
+  },
+  {
+    "en": "Splendid. Your craft is now as polished as your shoes.",
+    "nn": "Strålande. Handverket ditt er no like blankpussa som skoa dine."
+  },
+  {
+    "en": "Promoted. I've marked the occasion with an extra sugar cube in my tea.",
+    "nn": "Forfremja. Eg har markert dagen med ein ekstra sukkerbit i teen."
+  },
+  {
+    "en": "I'm told even the guild elders took notice. Congratulations.",
+    "nn": "Eg har høyrt at sjølv dei eldste i lauget la merke til det. Gratulerer."
+  },
+  {
+    "en": "Do try to look surprised when headquarters tells you.",
+    "nn": "Prøv å sjå overraska ut når hovudkvarteret fortel deg om graden."
+  },
+  {
+    "en": "Your mission log now includes one fine promotion. Well done.",
+    "nn": "Oppdragsloggen din har no med ei fin forfremjing. Godt gjort."
+  },
+  {
+    "en": "Excellent. With skill like that, you could build your own volcano lair.",
+    "nn": "Framifrå. Med slik dugleik kunne du bygd din eigen skjulestad i ein vulkan."
+  },
+  {
+    "en": "I'd call it luck, but I know better. Congratulations.",
+    "nn": "Eg ville kalla det flaks, men eg veit betre. Gratulerer."
+  },
+  {
+    "en": "At last, a new rank. The bench and the hours were worth it.",
+    "nn": "Endeleg ein ny grad. Benken og timane var verdt det."
+  },
+  {
+    "en": "A fine promotion. You'll be giving the instructors lessons soon.",
+    "nn": "Ei fin forfremjing. Snart gjev du instruktørane timar."
+  },
+  {
+    "en": "Splendid. A new title, freshly pressed like a Sunday shirt.",
+    "nn": "Strålande. Ein ny tittel, nypressa som ei søndagsskjorte."
+  },
+  {
+    "en": "The Ministry has quietly added a gold star to your file.",
+    "nn": "Departementet har i det stille sett ei gullstjerne i mappa di."
+  },
+  {
+    "en": "Your rise through the ranks is most efficient. Congratulations.",
+    "nn": "Klatringa di gjennom gradane er svært effektiv. Gratulerer."
+  },
+  {
+    "en": "Promoted. The quartermaster asked if you're looking for work.",
+    "nn": "Forfremja. Kvartermeisteren spurde om du er på jakt etter arbeid."
+  },
+  {
+    "en": "One more triumph for our side. Lovely promotion.",
+    "nn": "Endå ein triumf for vår side. Nydeleg forfremjing."
+  },
+  {
+    "en": "Excellent. You've earned a nice comfortable chair at the workbench.",
+    "nn": "Framifrå. Du har fortent ein god og komfortabel stol ved arbeidsbenken."
+  },
+  {
+    "en": "That's a rank to be proud of, my friend. Congratulations.",
+    "nn": "Det er ein grad å vere stolt av, ven. Gratulerer."
+  },
+  {
+    "en": "The training films will feature you next year. Well done.",
+    "nn": "Opplæringsfilmane kjem til å vise deg neste år. Godt gjort."
+  },
+  {
+    "en": "A new rank! You've made the old manuals obsolete.",
+    "nn": "Ein ny grad! Du har gjort dei gamle handbøkene utdaterte."
+  },
+  {
+    "en": "Splendid promotion. I'd challenge you to cards, but you'd win.",
+    "nn": "Strålande forfremjing. Eg ville utfordra deg til kortspel, men du ville vunne."
+  },
+  {
+    "en": "Promoted. Remind me never to compete with you at anything.",
+    "nn": "Forfremja. Minn meg på at eg aldri skal konkurrere med deg i noko."
+  },
+  {
+    "en": "Your skill is now a matter of national interest. Congratulations.",
+    "nn": "Dugleiken din er no ei sak av nasjonal interesse. Gratulerer."
+  },
+  {
+    "en": "I'll inform the night shift at headquarters. They'll be thrilled.",
+    "nn": "Eg skal varsle nattskiftet på hovudkvarteret. Dei blir begeistra."
+  },
+  {
+    "en": "Excellent. Your work at the bench has been flawless, I'm told.",
+    "nn": "Framifrå. Arbeidet ditt ved benken har vore feilfritt, har eg høyrt."
+  },
+  {
+    "en": "Promotion achieved, cover intact. Very good, agent.",
+    "nn": "Forfremjinga er i boks, dekket er intakt. Svært bra, agent."
+  },
+  {
+    "en": "Your new rank deserves a proper dinner party. Congratulations.",
+    "nn": "Den nye graden din fortener eit skikkeleg middagsselskap. Gratulerer."
+  },
+  {
+    "en": "A new title. My sources say you earned every bit of it.",
+    "nn": "Ein ny tittel. Kjeldene mine seier at du har fortent kvar bit av han."
+  },
+  {
+    "en": "Splendid. I knew you were more than just a fine dinner jacket.",
+    "nn": "Strålande. Eg visste du var meir enn berre ein fin smoking."
+  },
+  {
+    "en": "Promoted. That kind of dedication can't be taught at any academy.",
+    "nn": "Forfremja. Den sortens iver kan ingen akademi lære bort."
+  },
+  {
+    "en": "I hear your workbench is now a protected site. Congratulations.",
+    "nn": "Eg høyrer arbeidsbenken din no er eit verna område. Gratulerer."
+  },
+  {
+    "en": "A step up in your trade and a step ahead of the villains.",
+    "nn": "Eit steg opp i faget og eit steg føre skurkane."
+  },
+  {
+    "en": "Excellent. I'll update the files before the coffee gets cold.",
+    "nn": "Framifrå. Eg skal oppdatere mappene før kaffien blir kald."
+  },
+  {
+    "en": "You must teach me sometime, in a safe location. Congratulations.",
+    "nn": "Du må lære meg ein gong, på ein trygg stad. Gratulerer."
+  },
+  {
+    "en": "That rank was a mission in itself. Accomplished. Congratulations.",
+    "nn": "Den graden var eit oppdrag i seg sjølv. Utført. Gratulerer."
+  },
+  {
+    "en": "Promoted. The trick watch on my wrist beeped twice in celebration.",
+    "nn": "Forfremja. Triksuret på handleddet mitt pip to gonger i feiring."
+  },
+  {
+    "en": "Splendid. Your new rank has made my week, frankly.",
+    "nn": "Strålande. Den nye graden din har redda veka mi, ærleg talt."
+  },
+  {
+    "en": "I've arranged a small, very secret celebration for your new rank.",
+    "nn": "Eg har ordna ei lita, svært hemmeleg feiring for den nye graden din."
+  },
+  {
+    "en": "Few have the patience. Fewer have your flair. Well done.",
+    "nn": "Få har tolmodet. Endå færre har stilen din. Godt gjort."
+  },
+  {
+    "en": "The lab wants you on loan for a fortnight. Congratulations.",
+    "nn": "Laben vil låne deg i fjorten dagar. Gratulerer."
+  },
+  {
+    "en": "Your workshop door now needs a fancier sign.",
+    "nn": "Verkstaddøra di treng no eit gildare skilt."
+  },
+  {
+    "en": "Excellent. I trust your new tools are already in a locked case.",
+    "nn": "Framifrå. Eg går ut frå at dei nye verktøya dine alt ligg i eit låst skrin."
+  },
+  {
+    "en": "Promoted. Your steady progress is the envy of the service.",
+    "nn": "Forfremja. Den jamne framgangen din er misunt i heile tenesta."
+  },
+  {
+    "en": "It seems the student has become the teacher, or close. Well done.",
+    "nn": "Det ser ut til at eleven har blitt læraren, eller nesten. Godt gjort."
+  },
+  {
+    "en": "I'd hire you, but the Ministry would never pay your rate.",
+    "nn": "Eg ville tilsett deg, men departementet ville aldri betalt det du tek."
+  },
+  {
+    "en": "Your fingerprints are now worth framing. Promoted, I hear.",
+    "nn": "Fingeravtrykka dine er no verdt å rame inn. Forfremja, høyrer eg."
+  },
+  {
+    "en": "Splendid. I can already see the villains copying your designs.",
+    "nn": "Strålande. Eg ser alt skurkane kopiere modellane dine."
+  },
+  {
+    "en": "Promoted. I've told the doorman to salute you from now on.",
+    "nn": "Forfremja. Eg har sagt til dørvakta at ho skal helse deg frå no av."
+  },
+  {
+    "en": "A promotion earned in silence is the finest kind. Congratulations.",
+    "nn": "Ei forfremjing vunnen i stilleheit er den finaste sorten. Gratulerer."
+  },
+  {
+    "en": "Even the shark tank would applaud, if sharks could. Well done.",
+    "nn": "Sjølv haitanken ville klappa, om haiar kunne det. Godt gjort."
+  },
+  {
+    "en": "Excellent. Your skill is rising like a periscope from the sea.",
+    "nn": "Framifrå. Dugleiken din stig som eit periskop frå havet."
+  },
+  {
+    "en": "Pack a small bag. Promoted agents get the special work.",
+    "nn": "Pakk ei lita veske. Forfremja agentar får det særskilde arbeidet."
+  },
+  {
+    "en": "That's the kind of news that goes straight to the top. Congratulations.",
+    "nn": "Det er den sortens nyheit som går rett til toppen. Gratulerer."
+  },
+  {
+    "en": "Promoted. Your craft has come a long way since that first clumsy attempt.",
+    "nn": "Forfremja. Handverket ditt har komme langt sidan det første klønete forsøket."
+  },
+  {
+    "en": "Splendid. I'll leave the champagne on ice and the gadgets on standby.",
+    "nn": "Strålande. Eg lèt champagnen stå på is og duppedittane stå klare."
+  },
+  {
+    "en": "You make hard work look like a stroll on the promenade. Well done.",
+    "nn": "Du får hardt arbeid til å sjå ut som ein spasertur på strandpromenaden. Godt gjort."
+  },
+  {
+    "en": "Clearly a natural. The Ministry suspected as much. Congratulations.",
+    "nn": "Openbert eit naturtalent. Departementet mistenkte det. Gratulerer."
+  },
+  {
+    "en": "I've put your name forward for the next medal. Congratulations.",
+    "nn": "Eg har føreslått namnet ditt til neste medalje. Gratulerer."
+  },
+  {
+    "en": "Excellent work. Every rank you earn is one more trick up your sleeve.",
+    "nn": "Framifrå arbeid. Kvar grad du får, er endå eit ess i ermet."
+  },
+  {
+    "en": "Promoted. You've become rather alarmingly good at that bench.",
+    "nn": "Forfremja. Du har blitt ganske skremmande god ved den benken."
+  },
+  {
+    "en": "I'm afraid your humble days are officially over. Promoted!",
+    "nn": "Eg er redd dei audmjuke dagane dine er offisielt over. Forfremja!"
+  },
+  {
+    "en": "The tailor can let out your jacket to fit the extra pride.",
+    "nn": "Skreddaren kan sleppe ut jakka di så ho rommar den ekstra stoltheita."
+  },
+  {
+    "en": "Nobody else at headquarters can do what you do. Congratulations.",
+    "nn": "Ingen andre på hovudkvarteret kan gjere det du gjer. Gratulerer."
+  },
+  {
+    "en": "Splendid. Your rank went up and my tea went cold. Worth it.",
+    "nn": "Strålande. Graden din gjekk opp og teen min vart kald. Verdt det."
+  },
+  {
+    "en": "The cover story writes itself these days. Another rank!",
+    "nn": "Dekkhistoria skriv seg sjølv for tida. Endå ein grad!"
+  },
+  {
+    "en": "Promoted. I'll have to stop calling you a rookie now.",
+    "nn": "Forfremja. No må eg slutte å kalle deg ferskling."
+  },
+  {
+    "en": "A new title, a quiet nod, and back to work. Perfect.",
+    "nn": "Ein ny tittel, eit stille nikk og attende til arbeidet. Perfekt."
+  },
+  {
+    "en": "I knew your trade was in safe, skilled hands. Congratulations.",
+    "nn": "Eg visste at faget ditt var i trygge, dyktige hender. Gratulerer."
+  },
+  {
+    "en": "Excellent. The workshop rings with your success. Discreetly, of course.",
+    "nn": "Framifrå. Verkstaden ljomar av suksessen din. Diskret, sjølvsagt."
+  },
+  {
+    "en": "A promotion. I've filed it under: unsurprising, but delightful.",
+    "nn": "Ei forfremjing. Eg har arkivert det under: venta, men herleg."
+  }
+]
