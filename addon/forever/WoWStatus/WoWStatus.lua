@@ -772,6 +772,19 @@ SlashCmdList.WOWSTATUS = function(message)
         else
             say(T("Reaction voices:") .. " " .. P.reactionNames() .. ". " .. T("Use /wstatus voice <name>."))
         end
+    elseif command == "voicetest" then
+        -- Spoken reactions (Forever): hear a recorded line as a friend's reaction
+        -- would sound, without a friend. /wstatus voicetest [voice] [level]
+        local V, P = WoWStatusVoices, WoWStatusPersonalities
+        local text, voice
+        if V then text, voice = V.simulate(rest) end
+        if text then
+            say(T("Spoken reaction test:") .. " " .. P.name(voice) .. ": " .. text)
+        elseif voice == "busy" then
+            say("A voice is already playing.")
+        else
+            say("No recorded voice to test here. Spoken reactions are for WoW Forever.")
+        end
     elseif command == "debug" then
         local value = rest:lower()
         if value == "on" or value == "off" then

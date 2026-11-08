@@ -1,0 +1,28 @@
+{
+  "about": "Ten WoW Forever reaction voice samples in Nynorsk, one per personality plus a sombre dwarf. Each sample is stitched from separately generated pieces (opener, body, closer), as the voice pack would do in game. Voices and style prompts are first guesses to compare by ear.",
+  "language_code": "nn-NO",
+  "gap_ms": 120,
+  "personalities": {
+    "bard": {"voice": "Sadachbia", "prompt": "You are a cheerful travelling bard in a medieval fantasy tavern. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Theatrical, warm and a little sing-song, like announcing a ballad."},
+    "christian": {"voice": "Vindemiatrix", "prompt": "You are a kind, gentle village priestess. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Calm, warm and sincerely glad, like giving a blessing."},
+    "drama": {"voice": "Pulcherrima", "prompt": "You are an over-the-top dramatic friend. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Breathless, exaggerated, as if this is the biggest moment of your life."},
+    "dwarf": {"voice": "Algenib", "prompt": "You are a hearty old dwarf warrior in a mountain ale hall. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Deep, gruff, loud and jolly, rolling the r."},
+    "goblin": {"voice": "Fenrir", "prompt": "You are a fast-talking, scheming goblin merchant. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Quick, nasal, sly and greedy, with a sneaky grin in the voice."},
+    "jealous": {"voice": "Leda", "prompt": "You are a jealous friend trying and failing to sound happy for someone. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Flat, sulky and passive-aggressive."},
+    "smug": {"voice": "Algieba", "prompt": "You are a smug know-it-all. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Slow, smooth, unimpressed and condescending."},
+    "veteran": {"voice": "Gacrux", "prompt": "You are a tired, battle-hardened veteran who has seen everything. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Dry, low-key, grudgingly approving."},
+    "wholesome": {"voice": "Sulafat", "prompt": "You are a sweet, supportive friend. Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål. Bright, warm and genuinely happy."}
+  },
+  "samples": [
+    {"id": "01_bard_level", "personality": "bard", "pieces": ["Høyr, høyr!", "Eit nytt nivå, og soga di veks!", "Eg skal kvede om dette i kveld!"]},
+    {"id": "02_christian_quest", "personality": "christian", "pieces": ["Å, for ein velsigna dag!", "Hundre oppdrag fullført, og du gav aldri opp.", "Gud signe vegen din vidare!"]},
+    {"id": "03_drama_epicmount", "personality": "drama", "pieces": ["Nei, nei, nei!", "Eit episk ridedyr! Eg trur eg dett i svime!", "Nokon må halde meg, eg klarer ikkje meir!"]},
+    {"id": "04_dwarf_maxlevel", "personality": "dwarf", "pieces": ["Ved skjegget mitt!", "Nivå seksti! No er du hard som fjell!", "Eg spanderer neste krus!"]},
+    {"id": "05_goblin_loot", "personality": "goblin", "pieces": ["[laughs] Hehe, sjå der!", "Den der er verd ei formue på auksjonshuset!", "Eg tek berre ti prosent, eg lovar."]},
+    {"id": "06_jealous_pvp", "personality": "jealous", "pieces": ["Å. Så kjekt for deg.", "Ein ny rang på slagmarka, og eg står framleis på same staden.", "Gratulerer, då. Eg meiner det. Nesten."]},
+    {"id": "07_smug_death", "personality": "smug", "pieces": ["Hm.", "Det såg eg kome.", "Prøv igjen, då."]},
+    {"id": "08_veteran_dungeon", "personality": "veteran", "pieces": ["Greitt.", "Første tur gjennom den hola, og alle kom ut i live.", "Eg har sett verre. Mykje verre."]},
+    {"id": "09_wholesome_welcome", "personality": "wholesome", "pieces": ["Å, hei!", "Velkomen i gruppa, så kjekt å ha deg med!", "Berre sei frå om du treng noko!"]},
+    {"id": "10_dwarf_death", "personality": "dwarf", "mood": "Sombre and quiet now, mourning a fallen friend.", "pieces": ["Å, nei …", "Der fall ein god krigar.", "Vi løftar kruset for deg i kveld."]}
+  ]
+}

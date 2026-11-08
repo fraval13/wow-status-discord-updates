@@ -32,6 +32,8 @@ FlavourJealous.lua
 FlavourDrama.lua
 FlavourAgent.lua
 FlavourLegend.lua
+VoiceData.lua
+Voices.lua
 Theme.lua
 MainWindow.lua
 Overview.lua

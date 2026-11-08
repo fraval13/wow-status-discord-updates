@@ -184,7 +184,10 @@ function P.reactionLine(key, value)
     local useNN = WoWStatusLocale and WoWStatusLocale.lang() == "nn"
     local pool = (useNN and nn and nn[key]) or en[key]
     if type(pool) ~= "table" or #pool == 0 then return nil end
-    return fill(pool[math.random(#pool)], value)
+    -- Nynorsk lines with a recorded voice (Forever) are favoured, so friends hear them.
+    local V = WoWStatusVoices
+    local index = (pool == (nn and nn[key]) and V and V.available()) and V.pick(voice, key, #pool) or math.random(#pool)
+    return fill(pool[index], value)
 end
 
 -- A received whisper that is one of the voices' reaction lines, in either

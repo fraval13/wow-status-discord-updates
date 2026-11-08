@@ -53,7 +53,10 @@ function P.show(host)
         end
         -- Settings first; below a line, the previews.
         local options = 150
-        local previews = options + 802
+        -- Spoken reactions (Forever only) add their own rows below the sounds.
+        local V = WoWStatusVoices
+        local voiceRows = V and V.available() and 290 or 0
+        local previews = options + 802 + voiceRows
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -142,6 +145,43 @@ function P.show(host)
             widget.kind=kind
             panel.sounds[kind]=widget
         end
+        -- Spoken reactions: friends' Nynorsk reactions read aloud, at most one per
+        -- interval. WoW cannot download files, so the pack link is shown to copy.
+        if voiceRows > 0 then
+            local y=-options-800
+            text(panel,"Spoken reactions",24,y,300)
+            panel.voices=check("Read friends' reactions aloud",y-36,function() return V.enabled() end,V.setEnabled)
+            panel.voiceTest=button(panel,"Play a sample",400,y-36,160,function() V.test() end)
+            text(panel,"Minutes between spoken reactions:",24,y-84,300)
+            panel.voiceInterval=button(panel,"",330,y-78,140,function(self)
+                local items={}
+                for _,minutes in ipairs(V.INTERVALS) do items[#items+1]={label=V.intervalLabel(minutes),value=minutes} end
+                WoWStatusUI.menu(self,items,function(minutes) V.setInterval(minutes);panel.refreshSpoken() end)
+            end)
+            text(panel,"Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini).",24,y-124,540)
+            panel.voicePack=text(panel,"",24,y-164,540)
+            text(panel,"Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW.",
+                24,y-204,540)
+            panel.voiceLink=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+            panel.voiceLink:SetPoint("TOPLEFT",30,y-252);panel.voiceLink:SetSize(530,30);panel.voiceLink:SetAutoFocus(false)
+            local function selectLink(self)
+                self:SetText(V.packURL() or "")
+                WoWStatusUI.call(self,"HighlightText")
+            end
+            panel.voiceLink:SetScript("OnEditFocusGained",selectLink)
+            panel.voiceLink:SetScript("OnMouseUp",function(self) self:SetFocus();selectLink(self) end)
+            -- The link is for copying only; typing puts it back.
+            panel.voiceLink:SetScript("OnTextChanged",function(self,typed) if typed then selectLink(self) end end)
+            panel.voiceLink:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+            function panel.refreshSpoken()
+                panel.voices:SetChecked(V.enabled())
+                panel.voiceInterval:SetText(V.intervalLabel())
+                local version=V.packVersion()
+                panel.voicePack:SetText(version and WoWStatusLocale.F("Voice pack %d is installed.",version)
+                    or WoWStatusLocale.T("Voice pack: not installed. The lines that come with the addon are still read aloud."))
+                panel.voiceLink:SetText(V.packURL() or "")
+            end
+        end
         panel.quietKinds={}
         for i,entry in ipairs({{"pvp","Battlegrounds"},{"raid","Raids"},{"party","Dungeons"}}) do
             local key=entry[1]
@@ -198,6 +238,7 @@ function P.show(host)
     panel.refreshLanguage()
     panel.theme:SetText(WoWStatusTheme.label())
     panel.refreshVoices()
+    if panel.refreshSpoken then panel.refreshSpoken() end
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)

@@ -34,7 +34,8 @@ ROOT = Path(__file__).resolve().parents[1]
 # (the repository test in tests/test_sync_addons.py fails first).
 EDITIONS: dict[str, frozenset[str]] = {
     'vanilla': frozenset({'Vanilla.lua'}),
-    'forever': frozenset({'Forever.lua'}),
+    # VoiceData.lua: the recorded reaction voices (scripts/voices.py build), Forever only.
+    'forever': frozenset({'Forever.lua', 'VoiceData.lua'}),
     'tbc': frozenset({'TBC.lua'}),
     'retail': frozenset({'Retail.lua'}),
 }
