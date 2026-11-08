@@ -220,7 +220,8 @@ def test_settings_windows_opened_on_their_own_use_the_window_theme():
             local r, g, b = WoWStatusTheme.colour()
             return texture.colour[1] == r and texture.colour[2] == g and texture.colour[3] == b
         end
-        WoWStatusGroups.show()                    -- standalone, as in combat
+        WoWStatusGroups.show()                    -- also used by the setup guide
+        WoWStatusTheme.apply()                    -- frames were built before the colour spy
         local groups = WoWStatusGroupWindow.background
         assert(groups:IsShown() ~= false and same(groups))
         WoWStatusPreviews.show()

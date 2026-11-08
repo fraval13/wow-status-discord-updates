@@ -1,4 +1,5 @@
 """Regression coverage for the open compatibility and milestone issues."""
+import pytest
 from test_addon import STUBS, make_lua
 from test_journal import actor, clock, deliver_popup, mesh
 
@@ -29,15 +30,42 @@ def test_classic_empty_modern_professions_use_skill_lines():
     ''')
 
 
-def test_settings_failure_falls_back_to_addon_panel():
-    lua = make_lua(STUBS + '''
-        Settings={RegisterCanvasLayoutCategory=function() return {GetID=function() return 1 end} end,
-            RegisterAddOnCategory=function() end,
-            RegisterCanvasLayoutSubcategory=function() return {GetID=function() return 2 end} end,
-            OpenToCategory=function() error("blocked settings API") end}
+@pytest.mark.parametrize('api', ['modern', 'legacy', 'missing'])
+@pytest.mark.parametrize('mode', ['', 'groups', 'previews'])
+def test_settings_failures_explain_why_without_standalone_windows(api, mode):
+    extra = {
+        'modern': 'Settings.OpenToCategory=function() error("blocked settings API") end',
+        'legacy': '''
+            Settings=nil
+            function InterfaceOptions_AddCategory(page) end
+            function InterfaceOptionsFrame_OpenToCategory() error("blocked legacy settings API") end
+        ''',
+        'missing': 'Settings=nil',
+    }[api]
+    lua = make_lua(STUBS + extra)
+    lua.execute('''
+        DEFAULT_CHAT_FRAME.AddMessage = function(_, text) __message = text end
+        __parents = {}
+        for _, name in ipairs({"WoWStatusSetup", "WoWStatusGroupWindow", "WoWStatusNotificationPreviews"}) do
+            local panel = _G[name]
+            if panel then
+                panel:Hide()
+                __parents[name] = panel:GetParent()
+            end
+        end
     ''')
-    lua.eval('SlashCmdList.WOWSTATUS')('')
-    assert lua.eval('WoWStatusSetup:IsShown()')
+    lua.eval('SlashCmdList.WOWSTATUS')(mode)
+    lua.execute('''
+        for _, name in ipairs({"WoWStatusSetup", "WoWStatusGroupWindow", "WoWStatusNotificationPreviews"}) do
+            local panel = _G[name]
+            assert(not panel or not panel:IsShown())
+            assert(not panel or panel:GetParent() == __parents[name])
+        end
+    ''')
+    message = lua.eval('__message')
+    assert 'Cannot open now' in message
+    assert ('not ready' if api == 'missing' else 'WoW could not open settings') in message
+
 
 
 def test_raid_only_records_successful_first_kill_per_encounter():

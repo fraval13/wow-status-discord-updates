@@ -37,6 +37,9 @@ local function recap(text)
 end
 
 W.add({
+    ["Cannot open now: settings cannot be opened during combat. Try again after combat."] = "Kan ikkje opne no: innstillingane kan ikkje opnast i kamp. Prøv att etter kampen.",
+    ["Cannot open now: WoW's addon settings are not ready. Try again shortly."] = "Kan ikkje opne no: tilleggsinnstillingane i WoW er ikkje klare. Prøv att om litt.",
+    ["Cannot open now: WoW could not open settings. Try Options > AddOns > WoW Status."] = "Kan ikkje opne no: WoW kunne ikkje opne innstillingane. Prøv Options > AddOns > WoW Status.",
     -- Fixed facts
     ["Died"] = "Døydde",
     ["Joined the WoW Status group"] = "Vart med i WoW Status-gruppa",
