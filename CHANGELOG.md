@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Secret agent and Middle-school legend can now speak your GZ!, F and Congrats! whispers as reaction voices
+
 ## 1.40.0
 
 - Two new caption personalities: Secret agent and Middle-school legend, in English and Nynorsk
