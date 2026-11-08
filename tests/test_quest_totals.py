@@ -110,10 +110,9 @@ def test_offline_alts_keep_their_own_saved_total_in_lists_and_sync():
     assert board(thora, 'Mira-TestRealm').quests == 247
     thora.execute('''
         WoWStatusLocale.set("nn")
-        SlashCmdList.WOWSTATUS("records")
-        WoWStatusRecordsPage.viewBoard.OnClick()
+        SlashCmdList.WOWSTATUS("leaderboard")
     ''')
-    quest_labels = [r.quests.text for r in thora.eval('WoWStatusRecordsPage.board').values()]
+    quest_labels = [r.quests.text for r in thora.eval('WoWStatusLeaderboardPage.board').values()]
     assert '83 (spora)' in quest_labels and '247' in quest_labels
 
 

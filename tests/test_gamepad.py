@@ -305,6 +305,69 @@ def test_combat_lets_go_and_takes_back_after(lua):
     assert lua.eval('WoWStatusGamepadDriver.padButtons') is True
 
 
+def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
+    main_window(lua)
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetText(text) self.text=text end
+        function methods:SetWordWrap() end
+        function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function methods:SetScrollChild(child) self.child=child end
+        function methods:SetShown(value) self.visible=value end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusSafe={}
+        WoWStatusUI={
+            text=function(parent) return CreateFrame("FontString",nil,parent) end,
+            call=function(frame,method,...) if frame[method] then return frame[method](frame,...) end end,
+            classColour=function() end,
+        }
+        WoWStatusFirsts={groups=function() return {{id="one",label="One"},{id="two",label="Two"}} end}
+        WoWStatusRoster={leaderboard=function() return {{name="Mira-Realm",level=20,deaths=1,quests=247}} end}
+        WoWStatusMainWindow.register=function(key,title,build,refresh)
+            assert(key=="leaderboard")
+            __boardBuild,__boardRefresh=build,refresh
+            __pages={"overview","activity","records","leaderboard","characters"}
+        end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Leaderboard.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        local show=WoWStatusMainWindow.show
+        WoWStatusMainWindow.show=function(key)
+            show(key)
+            if key=="leaderboard" then
+                __board=__board or __boardBuild(main)
+                __board:Show();__boardRefresh()
+                __board.sort.rect={500,380,140,24}
+                for i,tab in ipairs(__board.tabs) do tab.rect={120+(i-1)*140,440,128,24} end
+            elseif __board then __board:Hide() end
+        end
+        WoWStatusGamepad.update()
+        press("PADRSHOULDER")
+        assert(__active=="records")
+        press("PADRSHOULDER")
+        assert(__active=="leaderboard")
+        local controls=WoWStatusGamepad.controls(main,{main})
+        local sort,group=false,false
+        for _,control in ipairs(controls) do
+            if control==__board.sort then sort=true end
+            if control==__board.tabs[2] then group=true end
+            assert(control~=__board.tabs[1]) -- the selected group is disabled
+        end
+        assert(sort and group)
+        press("PADDDOWN")
+        WoWStatusGamepad.setFocus(__board.sort);press("PAD1")
+        assert(WoWStatusDB.leaderboard.sort=="deaths")
+        WoWStatusGamepad.setFocus(__board.tabs[2]);press("PAD1")
+        assert(WoWStatusDB.leaderboard.tab=="two")
+        press("PADRSHOULDER")
+        assert(__active=="characters")
+        press("PADLSHOULDER")
+        assert(__active=="leaderboard")
+        press("PAD2")
+        assert(not main:IsShown())
+    ''')
+
+
 def test_mouse_use_hides_the_highlight_until_the_next_controller_press(lua):
     main_window(lua)
     lua.execute('WoWStatusGamepad.update(); press("PADDDOWN"); fire("GAME_PAD_ACTIVE_CHANGED", false)')

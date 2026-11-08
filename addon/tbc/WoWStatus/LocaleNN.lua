@@ -277,6 +277,7 @@ W.add({
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
     -- Leaderboard
+    ["Join a group to compare your characters with friends."] = "Bli med i ei gruppe for å samanlikne figurane dine med venene dine.",
     ["Firsts"] = "Rekordar", ["Leaderboard"] = "Toppliste", ["Sort:"] = "Sorter:", ["Level"] = "Nivå",
     ["Character"] = "Figur", ["Nobody in this group yet. Members appear when their character list arrives."] =
         "Ingen i denne gruppa enno. Medlemer dukkar opp når figurlista deira kjem fram.",

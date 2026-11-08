@@ -56,7 +56,7 @@ def test_every_page_draws_on_every_edition(edition):
     lua = client_runtime(edition)
     lua.execute('''
         WoWStatusGroups.update("dawnwatch","")
-        for _,key in ipairs({"overview","activity","records","characters"}) do
+        for _,key in ipairs({"overview","activity","records","leaderboard","characters"}) do
             assert(WoWStatusMainWindow.show(key))
         end
         assert(#WoWStatusRecordsPage.rows==#WoWStatusFirsts.medals())

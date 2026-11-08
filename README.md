@@ -86,6 +86,11 @@ older clients retain their last 100-quest milestone. Counts marked **tracked**
 include only quests recorded by the addon when the game cannot provide completed
 quest history. **Character details → Completed quests** controls sharing.
 
+**Leaderboard** (**Toppliste** in Nynorsk) has its own tab in the main window,
+alongside Records and Characters, or opens with `/wstatus leaderboard`. Choose a
+group and sort by level, deaths or completed quests. **Records** holds Firsts,
+This week and Fun records.
+
 ## Language
 
 WoW Status is in English by default. Nynorsk is optional: choose it under

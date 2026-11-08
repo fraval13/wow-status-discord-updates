@@ -1588,6 +1588,7 @@ function R.refreshQuests()
 end
 
 function R.render()
+    if WoWStatusMainWindow then WoWStatusMainWindow.refresh("leaderboard") end
     if WoWStatusProfile and WoWStatusProfile.refreshQuests then WoWStatusProfile.refreshQuests() end
     if not page or not page.IsShown or not page:IsShown() then return end
     local index, headers, sections, y = 0, 0, 0, 0
