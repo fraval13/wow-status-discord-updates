@@ -1298,6 +1298,8 @@ function J.reaction(text,sender)
             if key and (e.reactions[key] or count<20) then
                 e.reactions[key]={name=sender:match("^[^-]+") or sender,text=text,at=now}
                 if refresh then refresh() end
+                -- A voiced Nynorsk line is read aloud (Forever), within the listener's limits.
+                if WoWStatusVoices then WoWStatusVoices.heard(text) end
                 return true
             end
             return false

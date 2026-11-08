@@ -26,7 +26,10 @@ EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 # Files the game loads without a TOC line. Anything else committed beside the addon
 # (editor files, a WTF/ folder, notes) stays out of the public ZIP.
 # Dot files such as macOS ._Logo.tga resource forks never match.
-ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE), re.compile(r'Bindings\.xml'))
+# Sounds/Voices/<clip>.ogg are the spoken reactions that ship inside the addon
+# (scripts/voices.py sample), named by their 12-character clip id.
+ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE), re.compile(r'Bindings\.xml'),
+          re.compile(r'Sounds/Voices/[0-9a-f]{12}\.ogg'))
 # Website notes that never ship, and file-manager files (Finder, Explorer) anywhere in website/.
 NOT_SHIPPED = ('README.md', 'ARTWORK.md')
 DESKTOP_FILES = ('.DS_Store', 'Thumbs.db', 'desktop.ini')

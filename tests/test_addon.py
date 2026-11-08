@@ -238,6 +238,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'FlavourNN.lua')
     for name in PERSONALITY_FILES:
         run_addon_file(runtime, root / name)
+    run_addon_file(runtime, root / 'Voices.lua')
     run_addon_file(runtime, root / 'Theme.lua')
     run_addon_file(runtime, root / 'MainWindow.lua')
     run_addon_file(runtime, root / 'Overview.lua')

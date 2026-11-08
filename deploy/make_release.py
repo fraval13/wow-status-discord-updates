@@ -69,8 +69,10 @@ def discord_config(raw):
 
 # The receiver accepts at most 64 MiB and only needs the application, the edition
 # TOCs and the built homepage (whose ZIPs carry the full addon). Leave out the
-# caption sources and generated caption banks, which grow with each personality.
-ARCHIVE_PATHSPEC = ('.', ':(exclude)docs/caption-personalities', ':(exclude,glob)addon/**/Flavour*.lua')
+# caption sources and generated caption banks, which grow with each personality,
+# and the spoken-reaction clips and their records (the Forever ZIP carries the clips).
+ARCHIVE_PATHSPEC = ('.', ':(exclude)docs/caption-personalities', ':(exclude,glob)addon/**/Flavour*.lua',
+                    ':(exclude,glob)addon/**/Sounds/**', ':(exclude)docs/voices')
 
 
 def main():

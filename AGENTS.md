@@ -68,6 +68,12 @@ be checked against Git and the environment rather than assumed permanently true.
   edit the JSON, rebuild, then sync. See `docs/caption-personalities/README.md`.
   To add or extend a personality, follow the `caption-personality` skill
   (`.agents/skills/caption-personality/`, mirrored in `.claude/skills/`).
+- `Voices.lua`, Forever-only `VoiceData.lua`: spoken reactions. A friend's voiced
+  Nynorsk reaction is read aloud from pre-recorded Gemini clips, at most one per
+  interval. `scripts/voices.py` chooses lines, records only missing clips, builds
+  `VoiceData.lua` and the in-addon sample (`Sounds/Voices/`), and releases the
+  full pack as GitHub release `voice-pack`. Audio is never committed except the
+  sample; `dist/voices/` is only a cache. See `docs/voices/README.md`.
 - `src/wow_status/`: preserved Python companion, ingestion, Discord and storage.
 - `tests/`: Python tests and mocked Lua clients/transports. Mocks do not establish
   live game API availability, rendering or cross-realm delivery.

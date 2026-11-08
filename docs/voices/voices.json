@@ -1,0 +1,29 @@
+{
+  "about": "Spoken reactions for WoW Forever: the Nynorsk reaction line a friend whispers is read aloud in the sender's personality voice. Edit voices and styles here; scripts/voices.py reads this file. See docs/voices/README.md.",
+  "repository": "fraval13/wow-status-discord-updates",
+  "pack_tag": "voice-pack",
+  "model": "gemini-3.8-flash-tts",
+  "language_code": "nn-NO",
+  "gap_seconds": 0.12,
+  "ogg_quality": 0,
+  "counts": {
+    "sample_per_kind": 6,
+    "sample_extra": {"gz": 1, "f": 1, "congrats": 1, "welcome": 1},
+    "lines_per_kind": 55,
+    "level_lines": 60
+  },
+  "accent": "Speak Norwegian Nynorsk with a West Norwegian accent, never Bokmål.",
+  "personalities": {
+    "wholesome": {"voice": "Sulafat", "style": "You are a sweet, supportive friend. Bright, warm and genuinely happy."},
+    "bard": {"voice": "Sadachbia", "style": "You are a cheerful travelling bard in a medieval fantasy tavern. Theatrical, warm and a little sing-song, like announcing a ballad."},
+    "veteran": {"voice": "Gacrux", "style": "You are a tired, grumpy, battle-hardened veteran who has seen everything. Dry, low-key, grudgingly approving."},
+    "goblin": {"voice": "Fenrir", "style": "You are a fast-talking, scheming goblin merchant. Quick, nasal, sly and greedy, with a sneaky grin in the voice."},
+    "christian": {"voice": "Vindemiatrix", "style": "You are a kind, gentle village priestess. Calm, warm and sincerely glad, like giving a blessing."},
+    "smug": {"voice": "Algieba", "style": "You are a condescending churchgoer who praises with a sugary, patronising smile. Slow, smooth, sweetly superior."},
+    "dwarf": {"voice": "Algenib", "style": "You are a hearty old dwarf warrior in a mountain ale hall. Deep, gruff, loud and jolly, rolling the r."},
+    "jealous": {"voice": "Leda", "style": "You are a jealous friend trying and failing to sound happy for someone. Flat, sulky and passive-aggressive."},
+    "drama": {"voice": "Pulcherrima", "style": "You are an over-the-top dramatic friend. Breathless, exaggerated, as if this is the biggest moment of your life."},
+    "agent": {"voice": "Orus", "style": "You are a secret agent passing a message across a crowded room. Low, hushed, cool and clipped."},
+    "legend": {"voice": "Puck", "style": "You are a grown man still bragging about his glory days in middle school. Upbeat, nostalgic and cheerfully boastful."}
+  }
+}
