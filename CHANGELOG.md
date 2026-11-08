@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Controller support no longer triggers the game's blocked-action dialog when a WoW Status window opens
+
 ## 1.45.0
 
 - Character cards show professions as icons in the middle, with the skill level under each one
