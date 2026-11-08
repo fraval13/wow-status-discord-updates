@@ -191,7 +191,8 @@ def test_cards_use_a_full_bottom_xp_bar_and_show_item_level_on_the_overview():
         WoWStatusMainWindow.show("characters")
     ''')
     card = next(c for c in lua.eval('WoWStatusCharactersPage.lines').values() if c.IsShown(c))
-    assert card.height == 84 and card.xp.width == 660 and card.xp.height == 14
+    # The card is taller than its texts: the profession strip sits above the XP bar.
+    assert card.height == 114 and card.xp.width == 660 and card.xp.height == 14
     assert card.xp.point[1] == 'BOTTOMLEFT'
     assert card.itemLevel.text.endswith('45')
     lua.eval('WoWStatusMainWindow.show')('overview')
