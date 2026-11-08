@@ -182,10 +182,46 @@ local function instance()
     local ok, name, kind, _, _, _, _, _, id = pcall(GetInstanceInfo)
     if ok and S.string(kind)=="party" then return S.string(name), S.number(id) end
 end
+-- Terminal encounters in Classic dungeons. Match both map and encounter ID:
+-- IDs/names alone cannot distinguish an intermediate boss or another edition.
+-- Blizzard's DungeonEncounter data (1.15.8 and Forever 1.60.1), sources and
+-- supported wings are documented in docs/DUNGEON_RECORDING.md.
+local CLASSIC_ENDS = {
+    [33]={[2755]=true}, -- Shadowfang Keep: Arugal
+    [34]={[2760]=true}, -- Stockades: Bazil Thredd
+    [36]={[2747]=true}, -- Deadmines: VanCleef (Cookie is optional)
+    [43]={[592]=true}, -- Wailing Caverns: Mutanus
+    [47]={[2778]=true}, -- Razorfen Kraul: Charlga
+    [48]={[2767]=true}, -- Blackfathom Deeps: Aku'mai
+    [70]={[554]=true}, -- Uldaman: Archaedas
+    [90]={[2772]=true}, -- Gnomeregan: Thermaplugg
+    [109]={[493]=true,[3584]=true}, -- Sunken Temple: Shade of Eranikus
+    [129]={[2785]=true}, -- Razorfen Downs: Amnennar
+    [189]={[2779]=true,[447]=true,[448]=true,[450]=true}, -- Scarlet Monastery wings
+    [209]={[600]=true}, -- Zul'Farrak: Chief Ukorz
+    [229]={[275]=true,[3069]=true}, -- Lower/Upper Blackrock Spire
+    [230]={[2790]=true}, -- Blackrock Depths: Emperor Thaurissan
+    [289]={[2801]=true}, -- Scholomance: Gandling
+    [329]={[478]=true,[484]=true}, -- Stratholme living/undead
+    [349]={[429]=true}, -- Maraudon: Theradras
+    [389]={[2735]=true}, -- Ragefire Chasm: Bazzalan
+    [429]={[346]=true,[361]=true,[368]=true}, -- Dire Maul east/west/north
+}
+local FOREVER_ENDS = {
+    [2998]={[3482]=true}, -- Excavation Site: Wetlands: Relic Guardian
+    [2999]={[3354]=true}, -- Ruins of Lordaeron: Rath'mael (later side bosses are optional)
+    [3065]={[3496]=true}, -- Hall of Thanes: Durgen Dirgehammer
+}
+local function finalEncounter(id, encounter)
+    local client=WoWStatusAdapter.client_id
+    if client~="classic-era" and client~="tbc-anniversary" and client~="forever" then return false end
+    local finals=(client=="forever" and FOREVER_ENDS[id]) or CLASSIC_ENDS[id]
+    return finals and finals[encounter] == true
+end
 local function recordDungeon(name, id)
     name=clean(name,80)
     id=S.number(id)
-    if not name or not id or id<1 or id>1000000000 then return false end
+    if not name or not id or id<1 or id>1000000000 or id~=math.floor(id) then return false end
     local value=state()
     local key=name:lower()
     if value.automatic_dungeons[key] then return false end
@@ -201,11 +237,14 @@ function M.checkDungeon(event, ...)
         local _, _, _, _, success = ...
         if S.number(success)~=1 then return end
     end
+    if event~="ENCOUNTER_END" and event~="BOSS_KILL" then return end
+    local encounter=S.number((...))
+    if encounter and finalEncounter(id,encounter) then recordDungeon(name,id); return end
     -- An arbitrary boss kill is not a dungeon clear. Require a complete roster.
     -- The second return is the lock-extension flag; the encounter count is third.
     local _, _, count = S.call(GetInstanceLockTimeRemaining)
     count=S.number(count)
-    if not count or count<1 or count>64 or not GetInstanceLockTimeRemainingEncounter then return end
+    if not count or count<1 or count>64 or count~=math.floor(count) or not GetInstanceLockTimeRemainingEncounter then return end
     for index=1,count do
         local _, _, killed = S.call(GetInstanceLockTimeRemainingEncounter,index)
         if killed~=true then return end

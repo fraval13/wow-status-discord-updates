@@ -78,6 +78,29 @@ before their own equipment can be saved. Previously received gear remains
 available offline.
 See [equipment profiles and live checks](docs/EQUIPMENT_PROFILES.md).
 
+Character profiles, card tooltips and the quests ranking show each character's
+latest shared completed-quest count, including saved counts for offline alts.
+Changed totals sync quietly at most once every 30 seconds, and with the character
+list at login or Sync now. Both players need the updated addon for exact counts;
+older clients retain their last 100-quest milestone. Counts marked **tracked**
+include only quests recorded by the addon when the game cannot provide completed
+quest history. **Character details → Completed quests** controls sharing.
+
+**Leaderboard** (**Toppliste** in Nynorsk) has its own tab in the main window,
+alongside Records and Characters, or opens with `/wstatus leaderboard`. Choose a
+group and sort by level, deaths, completed quests or played time. **Records** holds Firsts,
+This week and Fun records.
+
+In **Settings → WoW Status → Characters shown to friends**, untick any of your
+saved characters to hide bank alts from everyone's character list, Overview and
+leaderboard. Tick them again to restore them. Offline alts can be managed without
+logging into them; saved progress and activity history stay intact. Updates reach
+online friends automatically and others at the next character-list sync while
+someone on your account is online. Everyone needs the updated addon to respect
+these settings. The Characters page has a **Character visibility** shortcut.
+Played time uses the latest shared total; **Character details → Played time**
+controls whether it is shared.
+
 ## Language
 
 WoW Status is in English by default. Nynorsk is optional: choose it under
@@ -123,7 +146,10 @@ click GZ!, F or Congrats! on their notification. These go out in your name, so t
 have their own setting, the **Notifications → Reaction voice** dropdown or `/wstatus voice <name>`. The
 default is the gentle **Wholesome** voice; you can also pick any of the eleven personalities,
 Random or **Classic** (the plain GZ!/F/Congrats! texts). Each voice has 300
-whispers for every reaction; the button keeps its short label.
+whispers for every reaction; the button keeps its short label. In Nynorsk,
+buttons describe the action: **Vis respekt**, **Ert litt**, **Gratuler**,
+**Feir nivået**, **Ynsk god tur** or **Ynsk velkomen**. The whispered message
+still comes from the selected reaction voice.
 
 ## Announcements
 
@@ -161,8 +187,11 @@ It respects your current announcement and character-detail choices. Friends need
 a version supporting recap sharing to see it; older clients ignore the new events.
 Recovery stays quiet, with the usual log bounds.
 
-Dungeon completion requires a supported game completion signal; unsupported
-clients skip it. See [in-game testing and coverage](docs/LIVE_POPUPS.md).
+Dungeon completion requires a supported game signal. Classic-family clients
+also recognize known final bosses when no complete encounter roster is available;
+intermediate bosses do not count. Earlier unrecorded clears cannot reconstruct
+the group's first-clear record. See [dungeon recording](docs/DUNGEON_RECORDING.md)
+and [in-game testing and coverage](docs/LIVE_POPUPS.md).
 
 Malformed log data is rejected silently and never enters the activity log. The
 group warning popup that earlier versions showed for it was removed after false

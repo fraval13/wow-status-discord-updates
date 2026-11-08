@@ -1035,7 +1035,7 @@ end
 P.reactionKey = reactionKey
 -- The text a reaction whispers, kept for that notification: a line in the chosen
 -- reaction voice, or Classic: in Nynorsk a random line for GZ!, F and
--- "Enjoy <zone>!" (shown on the button too), else the translation.
+-- "Enjoy <zone>!", else the translation.
 function P.reactionText(item, reaction)
     if type(item) ~= "table" or type(reaction) ~= "string" then return reaction end
     item.reactionTexts = item.reactionTexts or {}
@@ -1062,10 +1062,17 @@ function P.reactionText(item, reaction)
     item.reactionTexts[reaction] = chosen
     return chosen
 end
--- What a reaction button shows: the short reaction when a voice whispers a line
--- of its own, else the whispered text itself (Classic Nynorsk shows its line).
+-- Nynorsk buttons describe the action, independently of the chosen whisper.
+-- Keep the message translations separate: received reactions still recognise them.
+local REACTION_ACTIONS = {gz="Congratulate", f="Pay respects", gitgood="Tease a little",
+    welcome="Welcome them", level="Celebrate the level", enjoy="Wish a good journey"}
 function P.reactionLabel(item, reaction)
     local text = P.reactionText(item, reaction)
+    if WoWStatusLocale.lang() == "nn" then
+        local key = reactionKey(reaction)
+        local action = REACTION_ACTIONS[key] or (key and key:match("^congrats") and "Congratulate")
+        if action then return T(action) end
+    end
     if type(item) == "table" and item.reactionVoiced and item.reactionVoiced[reaction] then return T(reaction) end
     return text
 end
@@ -1083,13 +1090,13 @@ function P.react(item, text)
         if toast and toast:IsShown() then reactionButtons() end
     end
     if WoWStatusJournal and WoWStatusJournal.redraw then WoWStatusJournal.redraw() end
-    -- Whispered as the button showed it (Nynorsk: one of many lines).
+    -- Send the chosen whisper; the button describes its intent.
     item.whispered = P.reactionText(item, text)
     if entry then entry.whispered = item.whispered end
     return pcall(send, item.whispered, "WHISPER", nil, item.sender) == true
 end
--- Reaction buttons sit top right beside the heading. Long ones (the Nynorsk
--- lines, "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
+-- Reaction buttons sit top right beside the heading. Long ones (such as
+-- "Enjoy Stranglethorn Vale!") get a row along the bottom instead, and the
 -- notification grows to make room.
 local TOAST_HEIGHT, BESIDE_HEADING, COUNTDOWN_ROOM = 124, 300, 36
 -- During the click guard the buttons are greyed out and count down: "GZ! (1.2)".

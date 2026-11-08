@@ -5,6 +5,7 @@
 -- the group's members on the WoWStatusChr prefix:
 --   C <group> <playerID> <playerName|-> <Name-Realm> <RACE> <sex> <CLASS> <level>
 --   X <group> <playerID>        (stop sharing: forget this player's list)
+--   Z <group> <playerID> <Name-Realm> <revision> <hidden 0|1>
 -- Receivers accept only known members of a joined group and strictly
 -- validated fields. Nothing is sent when sharing the list is turned off.
 WoWStatusRoster = {}
@@ -35,6 +36,9 @@ local function redacted(text)
 end
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
 local lastXp, xpSent, statsSent = 0, nil, nil
+local lastQuest, questsSent = 0, nil
+local questPending, questQueued = nil, {}
+R.QUEST_INTERVAL = 30
 -- The Sync button: usable once a minute; list requests answered once a minute per member.
 R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
@@ -258,6 +262,21 @@ end
 
 -- "gold earned kills played" for an "S" line, or nil when none is shared.
 local STAT_LIMIT = 1e12
+-- A saved snapshot is also available for this account's offline characters.
+-- Keep the source so an addon-tracked subset is never labelled as lifetime data.
+function R.questTotal(character)
+    local fields = character.settings and character.settings.fields
+    local snapshot = character.snapshot
+    local n = fields and fields.quests and snapshot and S.number(snapshot.quests_completed)
+    local source = snapshot and snapshot.quests_source
+    if n and n >= 0 and n < STAT_LIMIT and n == math.floor(n)
+        and (source == "game_api" or source == "tracked_since") then return n, source end
+    return nil, "private"
+end
+function R.questLine(character)
+    local n, source = R.questTotal(character)
+    return n and (tostring(n) .. " " .. source) or "- -"
+end
 local function numbers(info, keys)
     local values, any = {}, false
     for _, k in ipairs(keys) do
@@ -270,10 +289,47 @@ end
 function R.statsLine(info) return numbers(info, {"gold", "earned", "kills", "played"}) end
 -- "honor_kills dungeons mounts" for a "Q" line.
 function R.extrasLine(info) return numbers(info, {"honor_kills", "dungeons", "mounts"}) end
+-- Visibility belongs to this account's saved characters, including offline alts.
+function R.ownedCharacters()
+    local list = {}
+    for _, character in pairs(db and db.characters or {}) do
+        if character.identity and character.identity.client == WoWStatusAdapter.client_id then
+            local name = WoWStatusPopups.characterName(character)
+            if key(name) then list[#list + 1] = {name=name, character=character} end
+        end
+    end
+    table.sort(list, function(a,b) return a.name < b.name end)
+    return list
+end
+local function visibility()
+    local roster = state()
+    roster.visibility = type(roster.visibility) == "table" and roster.visibility or {}
+    return roster.visibility
+end
+function R.hiddenNames()
+    local hidden = {}
+    for _, item in ipairs(R.ownedCharacters()) do
+        if item.character.hide_from_list then hidden[key(item.name)] = true end
+    end
+    for _, owner in pairs(db and visibility() or {}) do
+        for name, item in pairs(owner.characters) do
+            if item.hidden then hidden[name] = true end
+        end
+    end
+    return hidden
+end
+function R.isHidden(name) return R.hiddenNames()[key(name) or ""] == true end
+
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
+        local name = WoWStatusPopups.characterName(c)
+        if c.identity and c.identity.client == WoWStatusAdapter.client_id and WoWStatusPopups.fullName(name)
+            and (c.hide_from_list or (S.number(c.visibility_revision) or 0) > 0) then
+            table.insert(lines, table.concat({"Z", group, roster.id, name:gsub(" ", "_"),
+                c.visibility_revision or 0, c.hide_from_list and 1 or 0}, " "))
+        end
         -- WoW Forever: a character whose full name is not learnt yet would arrive as
         -- a first name only, which members drop; it is sent once the name is known.
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
@@ -290,6 +346,8 @@ local function ownLines(group)
             if stats then table.insert(lines, table.concat({"S", group, roster.id, name, stats}, " ")) end
             local extras = R.extrasLine(info)
             if extras then table.insert(lines, table.concat({"Q", group, roster.id, name, extras}, " ")) end
+            -- Separate line: older clients still receive their unchanged stats packets.
+            table.insert(lines, table.concat({"O", group, roster.id, name, R.questLine(c)}, " "))
             -- Level milestones with their times, for records ("e" exact, "a" by then).
             for level, item in pairs(R.milestones(c)) do
                 table.insert(lines, table.concat({"M", group, roster.id, name, level, item.at, item.exact and "e" or "a"}, " "))
@@ -320,8 +378,12 @@ local function enqueue(group, target)
     sentTo[group] = sentTo[group] or {}
     if sentTo[group][peerKey] then return end
     sentTo[group][peerKey] = true
-    if not state().share then return end
-    for _, line in ipairs(ownLines(group)) do table.insert(outgoing, {target=target, text=line}) end
+    for _, line in ipairs(ownLines(group)) do
+        if state().share or line:sub(1,2) == "Z " then
+            local questName = line:match("^O [^ ]+ [^ ]+ ([^ ]+) ")
+            table.insert(outgoing, {target=target, text=line, questName=questName, questGroup=questName and group})
+        end
+    end
 end
 
 -- Members seen in a group's channel roster, saved so everyone in the group is
@@ -646,6 +708,7 @@ end
 function R.changed()
     if not db or not current then return end
     local roster = state()
+    questPending, questQueued = nil, {}
     local equipment = {}
     for _, item in ipairs(outgoing) do if item.equipmentSync then equipment[#equipment + 1] = item end end
     outgoing, sentTo = {}, {}
@@ -699,8 +762,48 @@ function R.setSharing(enabled)
 end
 
 function R.setHidden(character, hidden)
-    character.hide_from_list = hidden == true or nil
+    local owned = false
+    for _, item in ipairs(R.ownedCharacters()) do if item.character == character then owned = true; break end end
+    if not owned then return false end
+    hidden = hidden == true
+    if (character.hide_from_list == true) == hidden then return true end
+    character.hide_from_list = hidden or nil
+    character.visibility_revision = (S.number(character.visibility_revision) or 0) + 1
     R.changed()
+    R.render()
+    if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
+    return true
+end
+
+function R.buildVisibilitySettings(parent, y)
+    local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", 24, y); scroll:SetSize(528, 160)
+    scroll.list = CreateFrame("Frame", nil, scroll); scroll.list:SetSize(500, 1)
+    scroll:SetScrollChild(scroll.list)
+    scroll.rows = {}
+    function scroll:refresh()
+        local owned = R.ownedCharacters()
+        for i, item in ipairs(owned) do
+            local row = self.rows[i]
+            if not row then
+                row = CreateFrame("CheckButton", nil, self.list, "UICheckButtonTemplate")
+                row:SetPoint("TOPLEFT", 0, -(i-1)*34); row:SetSize(32, 32)
+                row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+                row.label:SetPoint("LEFT", row, "RIGHT", 6, 0); row.label:SetWidth(450); row.label:SetJustifyH("LEFT")
+                row:SetScript("OnClick", function(button)
+                    R.setHidden(button.character, not button:GetChecked())
+                    self:refresh()
+                end)
+                self.rows[i] = row
+            end
+            row.character = item.character
+            row.label:SetText(item.name:gsub("|", "||"))
+            row:SetChecked(not item.character.hide_from_list); row:Show()
+        end
+        for i = #owned+1, #self.rows do self.rows[i]:Hide() end
+        self.list:SetHeight(math.max(1, #owned*34))
+    end
+    return scroll
 end
 
 -- Equipment is requested only when opening a profile. An online character on
@@ -799,7 +902,7 @@ end
 -- offline owner is online now. Existing live roster details are retained.
 function R.storeEquipment(record,group)
     local players, k = state().players, key(record.name)
-    if not k then return end
+    if not k or R.isHidden(record.name) then return end
     local player=players[record.owner]
     if not player and not record.hidden then
         local count,oldest,at=0,nil,math.huge
@@ -882,6 +985,38 @@ function R.tick()
     if page and page.sync and page:IsShown() then updateSyncButton() end
     local now = GetTime and GetTime() or time()
     if now - lastScan >= 30 then lastScan = now; R.scan() end
+    if now - lastQuest >= R.QUEST_INTERVAL then
+        lastQuest = now
+        local line = R.questLine(current)
+        if line ~= questsSent and state().share and not current.hide_from_list then
+            if questPending ~= line then questPending, questQueued = line, {} end
+            local complete = true
+            local name = WoWStatusPopups.characterName(current):gsub(" ", "_")
+            for group in pairs(WoWStatusGroups.selected(current)) do
+                for index, peer in ipairs(WoWStatusPopups.peers(group)) do
+                    if index > 200 then break end
+                    local targetKey = group .. ":" .. (key(peer) or peer)
+                    if not questQueued[targetKey] then
+                        local replaced = false
+                        for _, item in ipairs(outgoing) do
+                            if item.questGroup == group and item.target == peer and item.questName == name then
+                                item.text = table.concat({"O", group, state().id, name, line}, " ")
+                                replaced = true; break
+                            end
+                        end
+                        if not replaced then
+                            if #outgoing < 256 then
+                                outgoing[#outgoing + 1] = {target=peer, questGroup=group, questName=name,
+                                    text=table.concat({"O", group, state().id, name, line}, " ")}
+                                questQueued[targetKey] = true
+                            else complete = false end
+                        else questQueued[targetKey] = true end
+                    end
+                end
+            end
+            questsSent = complete and line or nil
+        end
+    end
     -- XP moves between level-ups: tell members at most every five minutes.
     local info = current.roster_info
     if now - lastXp >= XP_INTERVAL then
@@ -913,6 +1048,17 @@ function R.tick()
     if #outgoing == 0 or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
     if outgoing[1].notBefore and now < outgoing[1].notBefore then return end
     local item = table.remove(outgoing, 1)
+    -- Recheck queued totals at send time: changed privacy must not leak an old count.
+    if item.text:sub(1, 2) == "O " then
+        local group, pid, name = item.text:match("^O ([^ ]+) ([^ ]+) ([^ ]+) ")
+        if not group or not state().share or not WoWStatusGroups.contains(current, group) then return end
+        local owner
+        for _, character in pairs(db.characters or {}) do
+            if key(WoWStatusPopups.characterName(character)) == key(name:gsub("_", " ")) then owner = character; break end
+        end
+        if not owner or owner.hide_from_list then return end
+        item.text = table.concat({"O", group, pid, name, R.questLine(owner)}, " ")
+    end
     if item.equipmentAt and time() - item.equipmentAt >= 180 then return end
     if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
     -- A privacy change can happen while a snapshot is queued for transmission.
@@ -968,6 +1114,37 @@ receive = function(message, sender, distribution)
         return WoWStatusEquipmentSync and WoWStatusEquipmentSync.receive(words,sender) or false
     end
     if op == "D" or op == "E" then return equipmentMessage(words, sender) end
+    -- Revisioned owner visibility survives stale list packets and log fallbacks.
+    if op == "Z" and #words == 6 then
+        local name, revision, flag = words[4], tonumber(words[5]), words[6]
+        if #name > 64 or name:find(S.CONTROL_OR_PIPE) or not name:match("^[^%-]+%-[^%-]+$")
+            or not revision or revision < 0 or revision >= 1e12 or revision ~= math.floor(revision)
+            or (flag ~= "0" and flag ~= "1") then return false end
+        name = name:gsub("_", " ")
+        local k = key(name)
+        if not k or not WoWStatusPopups.fullName(name) then return false end
+        local all, owner = visibility(), visibility()[pid]
+        if not owner then
+            local count, oldest, at = 0, nil, math.huge
+            for id, item in pairs(all) do
+                count = count+1
+                if (item.at or 0) < at then oldest, at = id, item.at or 0 end
+            end
+            if count >= MAX_PLAYERS and oldest then all[oldest] = nil end
+            owner = {characters={}}; all[pid] = owner
+        end
+        local old = owner.characters[k]
+        if old and revision <= old.revision then return revision == old.revision and old.hidden == (flag == "1") end
+        local count = 0
+        for _ in pairs(owner.characters) do count = count+1 end
+        if not old and count >= 200 then return false end
+        owner.characters[k] = {name=name, revision=revision, hidden=flag == "1"}
+        owner.at = time()
+        R.render()
+        if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
+        if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
+        return true
+    end
     if op == "X" and #words == 3 then
         players[pid] = nil
         if WoWStatusEquipmentSync then WoWStatusEquipmentSync.withdraw(pid) end
@@ -1066,6 +1243,20 @@ receive = function(message, sender, distribution)
             item.by[pid] = nil
             if not next(item.by) then listings()[words[4]] = nil end
         end
+        return true
+    end
+    if op == "O" and #words == 6 then
+        local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
+        local player = players[pid]
+        if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player then return false, "bad quest total line" end
+        local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
+        if not character then return false, "unknown character" end
+        local n, source = tonumber(words[5]), words[6]
+        if words[5] == "-" and source == "-" then n, source = nil, "private"
+        elseif not (n and n >= 0 and n < STAT_LIMIT and n == math.floor(n) and words[5]:match("^%d+$")
+            and (source == "game_api" or source == "tracked_since")) then return false, "bad quest total" end
+        character.quests, character.quests_source = n, source
+        R.refreshQuests()
         return true
     end
     if op == "Q" and #words == 7 then
@@ -1190,6 +1381,7 @@ end
 
 -- Groups for the Characters page: {title, rows={{name, race, sex, class, level, status, latest}}}.
 function R.groups()
+    local hidden = R.hiddenNames()
     local online, latest, lastSeen, shared, deaths = {}, {}, {}, {}, {}
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
@@ -1238,6 +1430,9 @@ function R.groups()
     for _, player in pairs(state().players) do
         for _, character in pairs(player.characters) do note(character.name) end
     end
+    for _, owner in pairs(visibility()) do
+        for _, item in pairs(owner.characters) do note(item.name) end
+    end
     for _, c in pairs(db.characters or {}) do note(WoWStatusPopups.characterName(c)) end
     local function resolve(name)
         local k = key(name)
@@ -1248,13 +1443,15 @@ function R.groups()
         if not self then
             character = {name=resolve(character.name), race=character.race, sex=character.sex,
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups,
-                deaths=character.deaths, gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
+                deaths=character.deaths, quests=character.quests, quests_source=character.quests_source,
+                gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
                 honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
             local newer = fresher[key(character.name) or ""]
             if newer and newer > (S.number(character.level) or 0) then character.level, character.xp = newer, nil end
         end
+        if hidden[key(character.name) or ""] then return end
         -- WoW Forever: first-name-only characters come from older versions; your
         -- current character stays even before its full name is known.
         if not WoWStatusPopups.fullName(character.name) and not (self and character.current) then return end
@@ -1284,7 +1481,8 @@ function R.groups()
         table.sort(labels)
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
             level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels, groupIds=ids,
-            deaths=S.number(character.deaths) or deaths[k] or nil, gold=S.number(character.gold),
+            deaths=S.number(character.deaths) or deaths[k] or nil, quests=S.number(character.quests),
+            quests_source=character.quests_source, gold=S.number(character.gold),
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
             honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts)})
     end
@@ -1292,9 +1490,11 @@ function R.groups()
         local info = c.roster_info
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id then
             local own = WoWStatusPopups.runtimeVersion
+            local quests, questsSource = R.questTotal(c)
             add((playerName() or "You") .. " (you)", {name=WoWStatusPopups.characterName(c),
                 race=info.race, sex=info.sex, class=info.class, level=info.level, xp=info.xp, at=info.at,
                 deaths=c == current and current.settings.fields.deaths and WoWStatusProgress.totalDeaths(current) or info.deaths,
+                quests=quests, quests_source=questsSource,
                 gold=info.gold, earned=info.earned, kills=info.kills, played=info.played,
                 honor_kills=info.honor_kills, dungeons=info.dungeons, mounts=info.mounts,
                 current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
@@ -1304,6 +1504,7 @@ function R.groups()
         for _, character in pairs(player.characters) do
             add(player.name or "Unnamed player", {name=character.name, race=character.race, sex=character.sex,
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups,
+                quests=character.quests, quests_source=character.quests_source,
                 gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
                 honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts},
                 nil, S.string(player.version) and ("v" .. player.version) or "older version")
@@ -1373,6 +1574,8 @@ local function card(index)
             local function line(label, value) if value then GameTooltip:AddDoubleLine(T(label), value, .8, .8, .8, 1, 1, 1) end end
             line("Gold", S.number(character.gold) and UI.money(character.gold))
             line("Gold earned", S.number(character.earned) and UI.money(character.earned))
+            line(character.quests_source == "tracked_since" and "Quests (tracked)" or "Quests",
+                S.number(character.quests) and tostring(character.quests))
             line("Monsters killed", S.number(character.kills) and tostring(character.kills))
             line("Played", S.number(character.played) and UI.duration(character.played))
             line("Honorable kills", S.number(character.honor_kills) and character.honor_kills > 0 and tostring(character.honor_kills))
@@ -1438,7 +1641,7 @@ function R.sections()
 end
 -- A group's leaderboard: this account's characters and every member listed in
 -- the group, with level, XP, total deaths (newest death announcement) and
--- completed quests (newest quest milestone). Sorted by the caller.
+-- completed quests (current shared total, or an older client's milestone). Sorted by the caller.
 function R.leaderboard(group)
     local quests = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
@@ -1455,13 +1658,11 @@ function R.leaderboard(group)
                     if k and not seen[k] then
                         seen[k] = true
                         local own = section.key == "you"
-                        local q = quests[k]
-                        if own and current and row.name == WoWStatusPopups.characterName(current) then
-                            q = S.number(current.snapshot and current.snapshot.quests_completed) or q
-                        end
+                        local q = S.number(row.quests)
+                        if q == nil and not row.quests_source then q = quests[k] end
                         table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
-                            deaths=S.number(row.deaths), quests=q, online=row.status == "online", own=own,
-                            gold=S.number(row.gold), kills=S.number(row.kills)})
+                            deaths=S.number(row.deaths), quests=q, quests_source=row.quests_source, online=row.status == "online", own=own,
+                            gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played)})
                     end
                 end
             end
@@ -1494,7 +1695,16 @@ local function section(index)
     return b
 end
 
+function R.refreshQuests()
+    if not db then return end
+    R.render()
+    if WoWStatusFirsts and WoWStatusFirsts.render then WoWStatusFirsts.render() end
+    if WoWStatusMainWindow and WoWStatusMainWindow.active() == "overview" and WoWStatusOverview then WoWStatusOverview.render() end
+end
+
 function R.render()
+    if WoWStatusMainWindow then WoWStatusMainWindow.refresh("leaderboard") end
+    if WoWStatusProfile and WoWStatusProfile.refreshQuests then WoWStatusProfile.refreshQuests() end
     if not page or not page.IsShown or not page:IsShown() then return end
     local index, headers, sections, y = 0, 0, 0, 0
     for _, part in ipairs(R.sections()) do
@@ -1592,11 +1802,10 @@ local function build(parent)
     local shareLabel = page.share:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText(T("Share my character list"))
     page.share:SetScript("OnClick", function(self) R.setSharing(self:GetChecked() and true or false) end)
-    page.hide = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
-    page.hide:SetPoint("TOPLEFT", 330, -486); page.hide:SetSize(32, 32)
-    local hideLabel = page.hide:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    hideLabel:SetPoint("TOPLEFT", 38, -8); hideLabel:SetText(T("Hide this character from the list"))
-    page.hide:SetScript("OnClick", function(self) R.setHidden(current, self:GetChecked() and true or false) end)
+    page.visibility = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+    page.visibility:SetPoint("TOPLEFT", 330, -486); page.visibility:SetSize(240, 28)
+    page.visibility:SetText(T("Character visibility"))
+    page.visibility:SetScript("OnClick", function() SlashCmdList.WOWSTATUS("") end)
     page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
     page.sync:SetScript("OnClick", function() if R.syncNow() then R.whoLookup() end end)
@@ -1614,7 +1823,6 @@ end
 WoWStatusMainWindow.register("characters", "Characters", build, function()
     if not page then return end
     page.share:SetChecked(state().share)
-    page.hide:SetChecked(current and current.hide_from_list == true)
     updateSyncButton()
     R.render()
 end)
@@ -1650,6 +1858,8 @@ function R.init(database, character, reporter)
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
     equipmentSendState = {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
+    lastQuest, questsSent = 0, character and R.questLine(character)
+    questPending, questQueued = nil, {}
     xpSent = character and character.roster_info and character.roster_info.xp
     statsSent = character and character.roster_info and R.statsLine(character.roster_info)
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix

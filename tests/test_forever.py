@@ -24,7 +24,7 @@ def forever_runtime(name='Thora', extra=''):
         at, timezone.utc).strftime(fmt.lstrip('!'))
     root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
     for name in ('Safe.lua', 'Locale.lua', 'LocaleNN.lua', 'Features.lua', 'CaseFold.lua', 'Forever.lua', 'Loot.lua', 'Progress.lua', 'History.lua', 'HistoryUI.lua',
-                 'Groups.lua', 'Share.lua', 'Flavour.lua', 'FlavourNN.lua', *PERSONALITY_FILES, 'Theme.lua', 'MainWindow.lua', 'Overview.lua', 'Guide.lua', 'Presentation.lua', 'Popups.lua', 'Journal.lua', 'WhatsNewData.lua', 'WhatsNew.lua', 'Firsts.lua', 'Recaps.lua', 'Equipment.lua', 'EquipmentSync.lua', 'Roster.lua', 'Profile.lua', 'Minimap.lua', 'StatusLine.lua', 'Previews.lua', 'Screenshots.lua', 'Milestones.lua', 'Gamepad.lua', 'WoWStatus.lua'):
+                 'Groups.lua', 'Share.lua', 'Flavour.lua', 'FlavourNN.lua', *PERSONALITY_FILES, 'Theme.lua', 'MainWindow.lua', 'Overview.lua', 'Guide.lua', 'Presentation.lua', 'Popups.lua', 'Journal.lua', 'WhatsNewData.lua', 'WhatsNew.lua', 'Firsts.lua', 'Leaderboard.lua', 'Recaps.lua', 'Equipment.lua', 'EquipmentSync.lua', 'Roster.lua', 'Profile.lua', 'Minimap.lua', 'StatusLine.lua', 'Previews.lua', 'Screenshots.lua', 'Milestones.lua', 'Gamepad.lua', 'WoWStatus.lua'):
         run_addon_file(runtime, root / name)
     return runtime
 

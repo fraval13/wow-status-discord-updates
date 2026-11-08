@@ -250,6 +250,9 @@ W.add({
     ["Use /wstatus language nn for Nynorsk or /wstatus language en for English."] =
         "Bruk /wstatus language nn for nynorsk eller /wstatus language en for engelsk.",
     -- Notifications
+    ["Quests (tracked)"] = "Oppdrag (spora)", ["tracked"] = "spora",
+    ["Congratulate"] = "Gratuler", ["Pay respects"] = "Vis respekt", ["Tease a little"] = "Ert litt",
+    ["Welcome them"] = "Ynsk velkomen", ["Celebrate the level"] = "Feir nivået", ["Wish a good journey"] = "Ynsk god tur",
     ["Congrats!"] = "Gratulerer!",
     ["Congrats on the new gear!"] = "Gratulerer med det nye utstyret!",
     ["Congrats on all those quests!"] = "Gratulerer med alle dei oppdraga!",
@@ -261,6 +264,7 @@ W.add({
     ["Congrats on the new ability!"] = "Gratulerer med den nye evna!",
     ["Congrats on the promotion!"] = "Gratulerer med opprykket!", ["Congrats on the record!"] = "Gratulerer med rekorden!", ["Welcome!"] = "Velkomen!", ["You whispered"] = "Du kviskra",
     -- Records
+    ["No dungeon clear recorded yet."] = "Ingen rydding av fangehol er registrert enno.",
     ["Firsts in"] = "Rekordar i", ["Join a group to compete for records with your friends."] =
         "Bli med i ei gruppe for å kjempe om rekordar med venene dine.",
     ["before WoW Status, by"] = "før WoW Status, seinast", ["nobody yet"] = "ingen enno",
@@ -274,6 +278,7 @@ W.add({
     ["First epic item"] = "Første episke gjenstand", ["First epic item!"] = "Første episke gjenstand!",
     ["First Artisan profession"] = "Første yrke på Kunstnar-nivå", ["First Artisan profession!"] = "Første yrke på Kunstnar-nivå!",
     -- Leaderboard
+    ["Join a group to compare your characters with friends."] = "Bli med i ei gruppe for å samanlikne figurane dine med venene dine.",
     ["Firsts"] = "Rekordar", ["Leaderboard"] = "Toppliste", ["Sort:"] = "Sorter:", ["Level"] = "Nivå",
     ["Character"] = "Figur", ["Nobody in this group yet. Members appear when their character list arrives."] =
         "Ingen i denne gruppa enno. Medlemer dukkar opp når figurlista deira kjem fram.",
@@ -396,6 +401,7 @@ W.add({
     {"^(This morning)(.+)$", function(a, b) return recap(a .. b) end},
     {"^(This afternoon)(.+)$", function(a, b) return recap(a .. b) end},
     {"^(Tonight)(.+)$", function(a, b) return recap(a .. b) end},
+
 })
 
 -- Armor headings by slot: the adjective follows the noun's gender and number
@@ -414,8 +420,8 @@ do
     end}})
 end
 
--- Nynorsk reaction whispers: each notification's button shows one of these at
--- random, and that line is whispered. "{zone}" stands for the zone's name. A
+-- Nynorsk Classic reaction whispers: choose one line per notification, while
+-- the button keeps its short action label. "{zone}" stands for the zone's name. A
 -- friend's client links every line to its kind of event, in either language.
 WoWStatusLocale.POOLS = {
     ["GZ!"] = {
@@ -512,4 +518,7 @@ W.add({
     ["Finger 1"] = "Finger 1", ["Finger 2"] = "Finger 2", ["Trinket 1"] = "Prydgjenstand 1",
     ["Trinket 2"] = "Prydgjenstand 2", ["Main hand"] = "Hovudhand", ["Off hand"] = "Andre hand",
     ["Ranged / relic"] = "Avstand / relikvie", ["Ammunition"] = "Ammunisjon",
+    ["Character visibility"] = "Synlege figurar",
+    ["Characters shown to friends"] = "Figurar som venene ser",
+    ["Untick bank alts to hide them from everyone's character list and leaderboard."] = "Fjern haken for å gøyme bankfigurar frå figurlista og topplista til alle.",
 })

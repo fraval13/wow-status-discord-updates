@@ -195,23 +195,27 @@ def test_leaderboard_ranks_the_group_and_sorts():
     mira.execute('__level = 15; WoWStatusRoster.observe(character())')
     pump(mira, thora)
     thora.execute('''
+        -- Simulate a friend on an older release, without exact quest totals.
+        for _, player in pairs(WoWStatusDB.roster.players) do
+            for _, character in pairs(player.characters) do character.quests, character.quests_source=nil,nil end
+        end
         local group = next(character().group_ids)
         WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="death",text="Total deaths: 3",at=time(),group_id=group})
         WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-2-b",kind="quest",text="Completed 100 quests!",at=time(),group_id=group})
         local board = WoWStatusRoster.leaderboard(group)
         assert(#board == 2)
-        SlashCmdList.WOWSTATUS("records")
-        local page = WoWStatusRecordsPage
-        page.viewBoard.OnClick(page.viewBoard)
-        assert(WoWStatusDB.firsts.view == "leaderboard" and page.heading.text:find("Leaderboard", 1, true))
+        SlashCmdList.WOWSTATUS("leaderboard")
+        local page = WoWStatusLeaderboardPage
+        assert(WoWStatusMainWindow.active() == "leaderboard" and page.heading.text:find("Leaderboard", 1, true))
         assert(page.board[1].name.text:find("Mira", 1, true) and page.board[1].level.text == "Level 15")
         assert(page.board[1].deaths.text == "3" and page.board[1].quests.text == "100")
         assert(page.board[2].name.text:find("Thora", 1, true))
         -- Sort by deaths, then quests; remembered.
         page.sort.OnClick(page.sort)
-        assert(WoWStatusDB.firsts.sort == "deaths" and page.sort.text == "Sort: Deaths")
+        assert(WoWStatusDB.leaderboard.sort == "deaths" and page.sort.text == "Sort: Deaths")
         page.sort.OnClick(page.sort)
-        assert(WoWStatusDB.firsts.sort == "quests")
-        page.viewFirsts.OnClick(page.viewFirsts)
-        assert(WoWStatusDB.firsts.view == "firsts" and page.rows[1]:IsShown())
+        assert(WoWStatusDB.leaderboard.sort == "quests")
+        SlashCmdList.WOWSTATUS("records")
+        assert(WoWStatusRecordsPage.viewBoard == nil)
+        assert(WoWStatusRecordsPage.rows[1]:IsShown())
     ''')

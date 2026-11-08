@@ -34,12 +34,12 @@ function F.data(row)
     fact("Level", S.number(row.level) and (row.level .. (xp and (" (" .. math.floor(xp / 10) .. "%)") or "")))
     fact("Deaths", S.number(row.deaths))
     fact("Monsters killed", S.number(row.kills))
-    local quests
-    for _, e in ipairs(entries) do
+    local quests = S.number(row.quests)
+    for _, e in ipairs(not row.quests_source and entries or {}) do
         local n = e.kind == "quest" and tonumber(tostring(e.text or ""):match("^Completed (%d+) quests!$"))
         if n and (not quests or n > quests) then quests = n end
     end
-    fact("Quests", quests)
+    fact(row.quests_source == "tracked_since" and "Quests (tracked)" or "Quests", quests)
     fact("Gold", S.number(row.gold) and UI.money(row.gold))
     fact("Gold earned", S.number(row.earned) and UI.money(row.earned, true))
     fact("Played", S.number(row.played) and UI.duration(row.played))
@@ -247,6 +247,24 @@ local function build(page)
     view.gear = column("Recent gear", 492, 218)
     buildEquipment(view.body)
     if UISpecialFrames then table.insert(UISpecialFrames, "WoWStatusProfileView") end
+end
+
+-- Update the visible facts without reopening the profile or moving its scroll.
+function F.refreshQuests()
+    if not view or not view.row or not view:IsShown() then return end
+    for _, group in ipairs(WoWStatusRoster.groups()) do
+        for _, row in ipairs(group.rows) do
+            if key(row.name) == key(view.row.name) then
+                view.row.quests, view.row.quests_source = row.quests, row.quests_source
+                local data = F.data(view.row)
+                for i, cell in ipairs(view.stats.cells) do
+                    local item = data.facts[i]
+                    cell:SetText(item and ("|cffd0b070" .. item[1] .. ":|r " .. tostring(item[2])) or "")
+                end
+                return
+            end
+        end
+    end
 end
 
 -- Open the profile of a row from the Characters page (entry is its player heading).

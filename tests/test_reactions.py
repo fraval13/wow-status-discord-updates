@@ -141,7 +141,7 @@ def pool(lua, key):
     return list(lua.eval(f'WoWStatusLocale.POOLS["{key}"]').values())
 
 
-def test_nynorsk_gz_whispers_the_line_its_button_shows_and_counts_as_gz():
+def test_nynorsk_gz_has_an_action_label_and_whispers_a_random_greeting():
     own, friend = actor('Mira'), actor('Thora')
     friend.execute('WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard')
     clock(own, 10)
@@ -152,9 +152,10 @@ def test_nynorsk_gz_whispers_the_line_its_button_shows_and_counts_as_gz():
     shown = friend.eval('''(function()
         WoWStatusPopups.tick()
         local toast = WoWStatusLevelPopup
-        local text = toast.reactions[1].label
+        assert(toast.reactions[1].label == "Gratuler")
+        local item = toast.item
         toast.reactions[1].OnClick(toast.reactions[1])
-        return text
+        return item.whispered
     end)()''')
     assert shown in pool(friend, 'GZ!')
     assert sent_whispers(friend) == [(shown, 'Mira-TestRealm')]
@@ -207,14 +208,11 @@ def test_short_reactions_sit_beside_the_heading():
     assert [label(toast.reactions[i]) for i in (1, 2)] == ['F', 'Git Good']
 
 
-def test_long_reactions_get_rows_along_the_bottom():
+def test_nynorsk_death_actions_stay_compact_beside_the_heading():
     toast = death_toast('nn')
-    # Long lines go under the text, one row or one each, at full width.
-    assert toast.reactionRow in ('bottom', 'stacked') and toast.height > 124
-    for i in (1, 2):
-        button = toast.reactions[i]
-        assert label(button) == button.label
-        assert button.width == max(86, len(button.label.encode()) * 6 + 24 + 36) and button.width <= 536
+    assert toast.reactionRow == 'top'
+    assert [label(toast.reactions[i]) for i in (1, 2)] == ['Vis respekt', 'Ert litt']
+    assert toast.reactions[1].width + toast.reactions[2].width + 4 <= 300
 
 
 def test_caption_stays_under_the_fact_when_long_reactions_are_stacked():
@@ -226,6 +224,8 @@ def test_caption_stays_under_the_fact_when_long_reactions_are_stacked():
         local methods=getmetatable(CreateFrame("Frame")).__index
         function methods:SetPoint(...) self.point={...} end
         function methods:GetStringHeight() return 46 end
+        -- Exercise wrapping independently of the now-short action labels.
+        WoWStatusPopups.reactionLabel=function() return string.rep("Long button text ",4) end
         WoWStatusFlavour.text=function() return "Ei lang linje under dødsfallet, med plass til heile teksten." end
     ''')
     own.eval('fire')('PLAYER_DEAD')
@@ -442,3 +442,46 @@ def test_random_lines_link_to_their_event_and_zone():
 def test_english_buttons_keep_their_one_line():
     toast = death_toast('en')
     assert [toast.reactions[i].label for i in (1, 2)] == ['F', 'Git Good']
+
+
+def test_nynorsk_action_labels_are_stable_across_events_and_reaction_voices():
+    lua = actor('Thora')
+    lua.execute('''
+        WoWStatusLocale.set("nn")
+        local P = WoWStatusPopups
+        local expected = {
+            ["GZ!"]="Gratuler", ["F"]="Vis respekt", ["Git Good"]="Ert litt",
+            ["Congrats on level 42!"]="Feir nivået", ["Enjoy Stranglethorn Vale!"]="Ynsk god tur",
+            ["Welcome!"]="Ynsk velkomen", ["Congrats!"]="Gratuler",
+        }
+        for _, reaction in pairs(P.CONGRATS) do expected[reaction]="Gratuler" end
+        for _, voice in ipairs(WoWStatusPersonalities.reactionVoices()) do
+            assert(WoWStatusPersonalities.setReaction(voice))
+            for reaction, label in pairs(expected) do
+                local item = {}
+                assert(P.reactionLabel(item, reaction)==label, voice..":"..reaction)
+                assert(P.reactionLabel(item, reaction)==label)
+                assert(P.reactionText(item, reaction)~=label)
+            end
+        end
+    ''')
+    assert sent_whispers(lua) == []
+
+
+def test_nynorsk_log_actions_send_the_whisper_and_record_it_once():
+    friend = level_up_shown()
+    friend.execute('''
+        WoWStatusLocale.set("nn")
+        WoWStatusPersonalities.setReaction("wholesome")
+    ''')
+    row = log_card(friend)
+    assert row.reactions[1].text == 'Gratuler'
+    assert row.reactions[2].text == 'Feir nivået'
+    expected = friend.eval('WoWStatusPopups.reactionText')(row.entry, 'GZ!')
+    bank = friend.eval('WoWStatusPersonalities.reactionBanks("wholesome")')[1]
+    assert expected in list(bank.gz.values())
+    row.reactions[1].OnClick(row.reactions[1])
+    assert sent_whispers(friend) == [(expected, 'Mira-TestRealm')]
+    assert row.entry.whispered == expected
+    row.reactions[1].OnClick(row.reactions[1])
+    assert len(sent_whispers(friend)) == 1

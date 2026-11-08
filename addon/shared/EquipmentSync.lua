@@ -91,7 +91,7 @@ local function records(group)
         if record and (not record.hidden or record.groups[group]) then list[#list+1]=record end
     end
     for _, record in pairs(cache()) do
-        if record.owner~=id() and not record.withdrawn and record.groups and record.groups[group] then list[#list+1]=record end
+        if record.owner~=id() and not record.withdrawn and not WoWStatusRoster.isHidden(record.name) and record.groups and record.groups[group] then list[#list+1]=record end
     end
     table.sort(list,function(a,b)
         if (a.own~=nil)~=(b.own~=nil) then return a.own~=nil end
@@ -161,6 +161,7 @@ local function store(record,group)
 end
 function G.get(name)
     if not db or touring() then return nil end
+    if WoWStatusRoster.isHidden(name) then return nil,true,true end
     local best
     for _, record in pairs(cache()) do
         if key(record.name)==key(name) then
@@ -277,7 +278,7 @@ function G.receive(words,sender)
             end
         else
             local candidate=cache()[recordKey(owner,name)]
-            if candidate and candidate.groups[group] then record=candidate end
+            if candidate and candidate.groups[group] and not WoWStatusRoster.isHidden(name) then record=candidate end
         end
         if not record then return false end
         if record.hidden or record.revision~=revision then metadata(record,group,sender); return true end

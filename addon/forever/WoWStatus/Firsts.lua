@@ -149,55 +149,6 @@ local function tabs(groups, chosen)
     return math.ceil(#groups / 5) * 28
 end
 
--- The Leaderboard view: everyone in the group, sorted by level, deaths or quests.
-local SORTS = {{"level", "Level"}, {"deaths", "Deaths"}, {"quests", "Quests"}}
-local function sorted(list, by)
-    table.sort(list, function(a, b)
-        local x, y = a[by] or -1, b[by] or -1
-        if x ~= y then return x > y end
-        if by == "level" and (a.xp or -1) ~= (b.xp or -1) then return (a.xp or -1) > (b.xp or -1) end
-        return a.name < b.name
-    end)
-    return list
-end
-local function boardRow(index)
-    local UI = WoWStatusUI
-    local row = CreateFrame("Frame", nil, page.list)
-    row:SetSize(680, 26)
-    row.bg = row:CreateTexture(nil, "BACKGROUND"); row.bg:SetAllPoints()
-    row.rank = UI.text(row, "GameFontNormal", 8, -6, 30)
-    row.name = UI.text(row, "GameFontHighlight", 44, -6, 260)
-    row.level = UI.text(row, "GameFontHighlight", 310, -6, 130)
-    row.deaths = UI.text(row, "GameFontHighlight", 450, -6, 100, "RIGHT")
-    row.quests = UI.text(row, "GameFontHighlight", 560, -6, 110, "RIGHT")
-    page.board[index] = row
-    return row
-end
-local function renderBoard(chosen)
-    local data, UI = state() or {}, WoWStatusUI
-    local by = data.sort or "level"
-    local list = chosen and sorted(WoWStatusRoster.leaderboard(chosen.id), by) or {}
-    page.board = page.board or {}
-    for i, entry in ipairs(list) do
-        local row = page.board[i] or boardRow(i)
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * 28)
-        row.bg:SetColorTexture(1, .82, 0, entry.own and .12 or (i % 2 == 0 and .04 or 0))
-        row.rank:SetText(i .. ".")
-        local name = (entry.name:match("^[^-]+") or entry.name):gsub("|", "||")
-        local colour = UI.classColour(entry.class)
-        row.name:SetText((entry.online and "|cff40ff40•|r " or "  ") .. (colour and (colour .. name .. "|r") or name))
-        row.level:SetText(entry.level and (TF("Level %d", entry.level) .. (entry.xp and (" (" .. math.floor(entry.xp / 10) .. " %)") or "")) or "–")
-        row.deaths:SetText(entry.deaths and tostring(entry.deaths) or "–")
-        row.quests:SetText(entry.quests and tostring(entry.quests) or "–")
-        row:Show()
-    end
-    for i = #list + 1, #page.board do page.board[i]:Hide() end
-    page.boardHeader:SetShown(true)
-    page.list:SetHeight(math.max(1, #list * 28))
-    page.boardEmpty:SetShown(#list == 0)
-    page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or "Level"))
-end
-
 -- This week (Monday to Sunday, the log's Oslo time) in one group, or an earlier
 -- week (offset 1, 2, ...): highlights and one line per person.
 local function dayOf(at) return WoWStatusHistory.oslo(at):sub(1, 10) end
@@ -334,18 +285,15 @@ local function render()
     local groups = F.groups()
     local chosen = selectedGroup(groups)
     local top = tabs(groups, chosen)
-    -- Firsts, Leaderboard, This week or Fun records, remembered.
+    -- Firsts, This week or Fun records, remembered.
     local data = state() or {}
     local view = data.view or "firsts"
-    local board = view == "leaderboard"
-    for i, b in ipairs({{page.viewFirsts, "firsts"}, {page.viewBoard, "leaderboard"}, {page.viewWeek, "week"}, {page.viewFun, "fun"}}) do
+    if view == "leaderboard" then view, data.view = "firsts", "firsts" end
+    for i, b in ipairs({{page.viewFirsts, "firsts"}, {page.viewWeek, "week"}, {page.viewFun, "fun"}}) do
         UI.call(b[1], "SetEnabled", view ~= b[2])
-        b[1]:ClearAllPoints(); b[1]:SetPoint("TOPLEFT", ({250, 354, 472, 586})[i], -4 - top)
+        b[1]:ClearAllPoints(); b[1]:SetPoint("TOPLEFT", ({354, 458, 572})[i], -4 - top)
     end
-    page.sort:ClearAllPoints(); page.sort:SetPoint("TOPLEFT", 570, -32 - top)
-    page.sort:SetShown(board); page.boardHeader:SetShown(false); page.boardEmpty:SetShown(false)
     page.weekBack:SetShown(view == "week"); page.weekNext:SetShown(view == "week")
-    if page.board then for _, row in ipairs(page.board) do row:Hide() end end
     if page.textRows then for _, row in ipairs(page.textRows) do row:Hide() end end
     for _, row in ipairs(page.rows) do row:SetShown(view == "firsts") end
     if page.recapBox then page.recapBox:SetShown(view == "firsts") end
@@ -354,14 +302,6 @@ local function render()
     local label = chosen and chosen.label:gsub("|", "||")
     if not chosen then
         page.heading:SetText(T("Join a group to compete for records with your friends."))
-    end
-    if board then
-        if chosen then page.heading:SetText(T("Leaderboard") .. " · " .. label) end
-        page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -66 - top)
-        page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -88 - top)
-        page.scroll:SetHeight(442 - top)
-        renderBoard(chosen)
-        return
     end
     if view == "week" or view == "fun" then
         page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -66 - top)
@@ -397,7 +337,8 @@ local function render()
         local when = e and WoWStatusHistory.oslo(e.at):sub(1, 16)
         -- Reached before WoW Status tracked it: the date is "by then".
         if e and e.milestone and not e.exact then when = T("before WoW Status, by") .. " " .. when:sub(1, 10) end
-        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or T("nobody yet")
+        local empty = medal.key == "dungeon" and T("No dungeon clear recorded yet.") or T("nobody yet")
+        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or empty
         c.holder:SetText(e and holder or ("|cff808080" .. holder .. "|r"))
         UI.tint(c, e ~= nil)
         c.text = medal.title .. " — " .. holder -- Plain summary of the card.
@@ -473,7 +414,10 @@ function F.update()
         end
     end
     data.initialized = true
-    if WoWStatusMainWindow then WoWStatusMainWindow.refresh("records") end
+    if WoWStatusMainWindow then
+        WoWStatusMainWindow.refresh("records")
+        WoWStatusMainWindow.refresh("leaderboard")
+    end
 end
 
 function F.buildRecords(parent)
@@ -492,30 +436,11 @@ function F.buildRecords(parent)
         return b
     end
     page.viewFirsts = button("Firsts", 100, function() local d = state(); if d then d.view = "firsts" end; F.render() end)
-    page.viewBoard = button("Leaderboard", 114, function() local d = state(); if d then d.view = "leaderboard" end; F.render() end)
     page.viewWeek = button("This week", 110, function() local d = state(); if d then d.view = "week" end; page.weekOffset = 0; F.render() end)
     page.viewFun = button("Fun records", 124, function() local d = state(); if d then d.view = "fun" end; F.render() end)
     -- Earlier weeks (until /reload the view starts at this week).
     page.weekBack = button("<", 64, function() page.weekOffset = (page.weekOffset or 0) + 1; F.render() end)
     page.weekNext = button(">", 64, function() page.weekOffset = math.max(0, (page.weekOffset or 0) - 1); F.render() end)
-    page.sort = button("", 140, function()
-        local d = state()
-        if not d then return end
-        local index = 1
-        for i, s in ipairs(SORTS) do if s[1] == (d.sort or "level") then index = i end end
-        d.sort = SORTS[index % #SORTS + 1][1]
-        F.render()
-    end)
-    local UI = WoWStatusUI
-    page.boardHeader = CreateFrame("Frame", nil, page); page.boardHeader:SetSize(680, 20)
-    UI.text(page.boardHeader, "GameFontNormal", 44, 0, 260):SetText(T("Character"))
-    UI.text(page.boardHeader, "GameFontNormal", 310, 0, 130):SetText(T("Level"))
-    UI.text(page.boardHeader, "GameFontNormal", 450, 0, 100, "RIGHT"):SetText(T("Deaths"))
-    UI.text(page.boardHeader, "GameFontNormal", 560, 0, 110, "RIGHT"):SetText(T("Quests"))
-    page.boardHeader:Hide()
-    page.boardEmpty = UI.text(page.list, "GameFontDisable", 0, -6, 660)
-    page.boardEmpty:SetText(T("Nobody in this group yet. Members appear when their character list arrives."))
-    page.boardEmpty:Hide()
     return page
 end
 

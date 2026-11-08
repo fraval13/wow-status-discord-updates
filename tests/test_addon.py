@@ -240,6 +240,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'WhatsNewData.lua')
     run_addon_file(runtime, root / 'WhatsNew.lua')
     run_addon_file(runtime, root / 'Firsts.lua')
+    run_addon_file(runtime, root / 'Leaderboard.lua')
     run_addon_file(runtime, root / 'Recaps.lua')
     run_addon_file(runtime, root / 'Equipment.lua')
     run_addon_file(runtime, root / 'EquipmentSync.lua')
