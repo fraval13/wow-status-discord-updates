@@ -78,6 +78,14 @@ before their own equipment can be saved. Previously received gear remains
 available offline.
 See [equipment profiles and live checks](docs/EQUIPMENT_PROFILES.md).
 
+Character profiles, card tooltips and the quests ranking show each character's
+latest shared completed-quest count, including saved counts for offline alts.
+Changed totals sync quietly at most once every 30 seconds, and with the character
+list at login or Sync now. Both players need the updated addon for exact counts;
+older clients retain their last 100-quest milestone. Counts marked **tracked**
+include only quests recorded by the addon when the game cannot provide completed
+quest history. **Character details → Completed quests** controls sharing.
+
 ## Language
 
 WoW Status is in English by default. Nynorsk is optional: choose it under
@@ -123,7 +131,10 @@ click GZ!, F or Congrats! on their notification. These go out in your name, so t
 have their own setting, the **Notifications → Reaction voice** dropdown or `/wstatus voice <name>`. The
 default is the gentle **Wholesome** voice; you can also pick any of the eleven personalities,
 Random or **Classic** (the plain GZ!/F/Congrats! texts). Each voice has 300
-whispers for every reaction; the button keeps its short label.
+whispers for every reaction; the button keeps its short label. In Nynorsk,
+buttons describe the action: **Vis respekt**, **Ert litt**, **Gratuler**,
+**Feir nivået**, **Ynsk god tur** or **Ynsk velkomen**. The whispered message
+still comes from the selected reaction voice.
 
 ## Announcements
 

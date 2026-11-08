@@ -188,7 +188,8 @@ local function renderBoard(chosen)
         row.name:SetText((entry.online and "|cff40ff40•|r " or "  ") .. (colour and (colour .. name .. "|r") or name))
         row.level:SetText(entry.level and (TF("Level %d", entry.level) .. (entry.xp and (" (" .. math.floor(entry.xp / 10) .. " %)") or "")) or "–")
         row.deaths:SetText(entry.deaths and tostring(entry.deaths) or "–")
-        row.quests:SetText(entry.quests and tostring(entry.quests) or "–")
+        row.quests:SetText(entry.quests and (tostring(entry.quests)
+            .. (entry.quests_source == "tracked_since" and (" (" .. T("tracked") .. ")") or "")) or "–")
         row:Show()
     end
     for i = #list + 1, #page.board do page.board[i]:Hide() end

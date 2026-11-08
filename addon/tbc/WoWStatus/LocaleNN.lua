@@ -250,6 +250,9 @@ W.add({
     ["Use /wstatus language nn for Nynorsk or /wstatus language en for English."] =
         "Bruk /wstatus language nn for nynorsk eller /wstatus language en for engelsk.",
     -- Notifications
+    ["Quests (tracked)"] = "Oppdrag (spora)", ["tracked"] = "spora",
+    ["Congratulate"] = "Gratuler", ["Pay respects"] = "Vis respekt", ["Tease a little"] = "Ert litt",
+    ["Welcome them"] = "Ynsk velkomen", ["Celebrate the level"] = "Feir nivået", ["Wish a good journey"] = "Ynsk god tur",
     ["Congrats!"] = "Gratulerer!",
     ["Congrats on the new gear!"] = "Gratulerer med det nye utstyret!",
     ["Congrats on all those quests!"] = "Gratulerer med alle dei oppdraga!",
@@ -414,8 +417,8 @@ do
     end}})
 end
 
--- Nynorsk reaction whispers: each notification's button shows one of these at
--- random, and that line is whispered. "{zone}" stands for the zone's name. A
+-- Nynorsk Classic reaction whispers: choose one line per notification, while
+-- the button keeps its short action label. "{zone}" stands for the zone's name. A
 -- friend's client links every line to its kind of event, in either language.
 WoWStatusLocale.POOLS = {
     ["GZ!"] = {

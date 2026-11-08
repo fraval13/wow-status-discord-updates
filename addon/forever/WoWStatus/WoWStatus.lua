@@ -639,13 +639,14 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if not (still_dead == true or still_dead == 1) then current.death_latched = false end
     elseif event == "PLAYER_XP_UPDATE" then WoWStatusRecaps.activity(); snapshot()
     elseif event == "QUEST_QUERY_COMPLETE" or event == "QUEST_LOG_UPDATE" then
-        WoWStatusProgress.queryComplete(); snapshot(); questMilestone()
+        WoWStatusProgress.queryComplete(); snapshot(); questMilestone(); WoWStatusRoster.refreshQuests()
     elseif event == "QUEST_TURNED_IN" then
         local id = S.number(...)
         if current.settings.enabled and current.settings.fields.quests then
             WoWStatusProgress.quest(current,id)
             snapshot()
             questMilestone()
+            WoWStatusRoster.refreshQuests()
         end
     elseif event == "SKILL_LINES_CHANGED" then
         if current.settings.enabled and current.settings.fields.professions then

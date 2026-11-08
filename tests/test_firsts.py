@@ -195,6 +195,10 @@ def test_leaderboard_ranks_the_group_and_sorts():
     mira.execute('__level = 15; WoWStatusRoster.observe(character())')
     pump(mira, thora)
     thora.execute('''
+        -- Simulate a friend on an older release, without exact quest totals.
+        for _, player in pairs(WoWStatusDB.roster.players) do
+            for _, character in pairs(player.characters) do character.quests, character.quests_source=nil,nil end
+        end
         local group = next(character().group_ids)
         WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="death",text="Total deaths: 3",at=time(),group_id=group})
         WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-2-b",kind="quest",text="Completed 100 quests!",at=time(),group_id=group})
