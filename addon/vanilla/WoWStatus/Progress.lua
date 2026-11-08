@@ -3,14 +3,25 @@ WoWStatusProgress = {}
 local P, S = WoWStatusProgress, WoWStatusSafe
 local questReady, questRequested = false, false
 local professionAt, professionCache, professionComplete, questAt
+-- {learning spell, skill line, English name, game icon}. The key is what travels
+-- between clients, so a receiver looks the name and icon up here instead of
+-- trusting what was sent. Popup art has its own name-based map in Presentation.
 local knownProfessions = {
-    alchemy={2259,171,"Alchemy"}, blacksmithing={2018,164,"Blacksmithing"},
-    enchanting={7411,333,"Enchanting"}, engineering={4036,202,"Engineering"},
-    herbalism={2366,182,"Herbalism"}, leatherworking={2108,165,"Leatherworking"},
-    mining={2575,186,"Mining"}, skinning={8613,393,"Skinning"}, tailoring={3908,197,"Tailoring"},
-    jewelcrafting={25229,755,"Jewelcrafting"},
-    cooking={2550,185,"Cooking"}, first_aid={3273,129,"First Aid"}, fishing={7620,356,"Fishing"},
+    alchemy={2259,171,"Alchemy","Trade_Alchemy"}, blacksmithing={2018,164,"Blacksmithing","Trade_BlackSmithing"},
+    enchanting={7411,333,"Enchanting","Trade_Engraving"}, engineering={4036,202,"Engineering","Trade_Engineering"},
+    herbalism={2366,182,"Herbalism","Trade_Herbalism"}, leatherworking={2108,165,"Leatherworking","Trade_LeatherWorking"},
+    mining={2575,186,"Mining","Trade_Mining"}, skinning={8613,393,"Skinning","INV_Misc_Pelt_Wolf_01"},
+    tailoring={3908,197,"Tailoring","Trade_Tailoring"},
+    jewelcrafting={25229,755,"Jewelcrafting","INV_Misc_Gem_01"},
+    cooking={2550,185,"Cooking","INV_Misc_Food_15"}, first_aid={3273,129,"First Aid","Spell_Holy_SealOfSacrifice"},
+    fishing={7620,356,"Fishing","Trade_Fishing"},
 }
+-- The English name and icon file for a profession key, or nil for an unknown key.
+function P.professionInfo(key)
+    local definition = S.string(key) and knownProfessions[key]
+    if not definition then return nil end
+    return definition[3], definition[4]
+end
 local function stats(character)
     if not character.progress then
         local now = S.now()

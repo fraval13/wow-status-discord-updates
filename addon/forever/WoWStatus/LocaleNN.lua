@@ -106,6 +106,10 @@ W.add({
     ["Played"] = "Spelt", ["Gold and gold earned"] = "Gull og gull tent",
     ["Click to see this character's activity."] = "Klikk for å sjå aktiviteten til figuren.",
     ["No characters yet."] = "Ingen figurar enno.", ["Share my character list"] = "Del figurlista mi",
+    ["Online only"] = "Berre pålogga", ["Nobody is online right now."] = "Ingen er pålogga no.",
+    ["Nobody from this group is online right now."] = "Ingen frå denne gruppa er pålogga no.",
+    ["Shows only the characters online right now. Nothing is hidden from your friends and no progress is lost."] =
+        "Viser berre figurane som er pålogga no. Ingenting vert gøymt for venene, og ingen framgang går tapt.",
     ["Hide this character from the list"] = "Gøym denne figuren frå lista",
     ["Sync with everyone online"] = "Synk med alle som er pålogga",
     ["Sends your character list, asks for theirs, looks up one friend's level with /who and catches up the activity log. Once a minute."] =

@@ -1,5 +1,11 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.45.0", notes={
+        "Character cards show professions as icons in the middle, with the skill level under each one",
+        "Friends' professions are shared only while profession sharing is on, and only as the game reported them",
+        "The Characters page has an Online only filter that shows just the characters logged in right now",
+        "The Back button is gone from pages with nothing behind them, and never leads back to the page you are on",
+    }},
     {version="1.44.0", notes={
         "The group chat channel now waits for General and Trade, taking a high channel number instead of /1 or /2",
     }},
@@ -10,12 +16,5 @@ WoWStatusWhatsNewData = {
         "Leaderboard has its own main-window tab, beside Records, with group selection and sorting by level, deaths or quests",
         "Character profiles and the quests ranking show current completed quest totals, quietly shared between milestones",
         "Nynorsk reaction buttons use short action labels, such as Vis respekt and Ert litt, while whispers keep their voice",
-    }},
-    {version="1.42.0", notes={
-        "Settings always use WoW's scrollable Options; chat explains when they cannot open instead of showing a fallback window",
-        "Gear syncs at login and with Sync now; changes update friends automatically, without opening a profile",
-        "Friends can share cached gear for offline owners; newer complete owner revisions always win",
-        "Average equipped item level on character cards and Overview, with taller cards and a full-width XP bar",
-        "Popup captions stay below the notification facts, above long reaction buttons",
     }},
 }

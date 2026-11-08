@@ -16,6 +16,13 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - Forever: Options set the time between spoken reactions (0 to 60 minutes) or turn them off; voices are AI-generated
 - Forever: about 100 lines per voice come with the addon; the optional WoW Status Voices pack adds the rest
 
+## 1.45.0
+
+- Character cards show professions as icons in the middle, with the skill level under each one
+- Friends' professions are shared only while profession sharing is on, and only as the game reported them
+- The Characters page has an Online only filter that shows just the characters logged in right now
+- The Back button is gone from pages with nothing behind them, and never leads back to the page you are on
+
 ## 1.44.0
 
 - The group chat channel now waits for General and Trade, taking a high channel number instead of /1 or /2
