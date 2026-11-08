@@ -31,9 +31,17 @@ function UnitName() return "Thora" end
 function GetRealmName() return "Test Realm" end
 function GetNormalizedRealmName() return "TestRealm" end
 function InCombatLockdown() return __combat end
-function GetChannelName(name)
-    __channelNames[1] = name
-    if __joined then return 8,name end return 0,nil
+-- The channels the client joins by itself fill the low numbers, as they do a
+-- moment after login; a group channel waits for them (see Popups.lua).
+CLIENT_CHANNELS = {"General - Dun Morogh", "Trade - City", "LocalDefense - Dun Morogh", "LookingForGroup"}
+function GetChannelName(which)
+    if type(which) == "number" then
+        local name = CLIENT_CHANNELS[which]
+        if name then return which,name end
+        return 0,nil
+    end
+    __channelNames[1] = which
+    if __joined then return 8,which end return 0,nil
 end
 -- Joined channels as the chat UI lists them: names already looked up, plus every
 -- selected group channel while __joined, since GetChannelName reports them joined.

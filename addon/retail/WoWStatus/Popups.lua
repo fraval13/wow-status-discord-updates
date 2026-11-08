@@ -8,6 +8,19 @@ local incoming, outgoing = {}, {}
 local lastDisplay, nextSend = 0, 0
 local pacing = {} -- Throttles in a row on this prefix: see P.retryWait.
 local joinedByAddon, syncPending = {}, false
+-- Chat channel numbers. The game gives a joined channel the lowest free number
+-- and no API can ask for a particular one. The client joins General, Trade and
+-- the zone channels a moment after this addon loads, so joining a group channel
+-- at once would take /1 or /2 from them. A group channel therefore waits for the
+-- client's own channels to fill the low numbers: first for a free slot at
+-- PREFERRED_SLOT or above, then, once PREFERRED_WAIT has passed, for one at
+-- REQUIRED_SLOT, and after REQUIRED_WAIT it takes whatever is free rather than
+-- leaving friend sharing broken, because a player can turn General and Trade
+-- off and those numbers would then never be taken. Discovery, rosters and
+-- sending do not depend on the number; only the player's own typing does.
+local PREFERRED_SLOT, PREFERRED_WAIT = 5, 15
+local REQUIRED_SLOT, REQUIRED_WAIT = 3, 60
+local syncStart
 local frame = CreateFrame("Frame")
 local PREFIX = "WSTATUS1"
 local ADDON_PREFIX = "WoWStatus"
@@ -562,7 +575,7 @@ function P.groupsChanged()
     for _, item in ipairs(outgoing) do
         if item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id) then table.insert(kept, item) end
     end
-    outgoing, syncPending = kept, true
+    outgoing, syncPending, syncStart = kept, true, nil
     local history = {}
     for _, item in ipairs(prefs.activity or {}) do
         if item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id) then table.insert(history, item) end
@@ -570,8 +583,45 @@ function P.groupsChanged()
     prefs.activity = history
     if WoWStatusJournal then WoWStatusJournal.groupsChanged() end
 end
+-- Seconds since this join started waiting for the client's own channels. A
+-- group added later waits the same way, and waits at all only while the low
+-- numbers are still free.
+-- GetTime is the client's own clock and keeps counting while time() may jump.
+local function waited()
+    local now = S.number(S.call(GetTime)) or time()
+    if not syncStart then syncStart = now end
+    local since = now - syncStart
+    -- A clock that went backwards (another edition's stub, or time() after a
+    -- correction) must not look like a long wait.
+    if since < 0 then syncStart = now; return 0 end
+    return since
+end
+-- The lowest channel number a group channel may take right now.
+local function slotFloor()
+    local since = waited()
+    if since < PREFERRED_WAIT then return PREFERRED_SLOT end
+    if since < REQUIRED_WAIT then return REQUIRED_SLOT end
+    return 1
+end
+-- True when every number below floor already belongs to a channel this addon
+-- did not join, so taking the next free one cannot push the player's own
+-- channels aside. An unreadable channel list counts as free and keeps waiting
+-- until the deadlines above give up.
+local function lowSlotsTaken(floor)
+    if not GetChannelName then return true end
+    for i = 1, floor - 1 do
+        local _, name = S.call(GetChannelName, i)
+        name = S.string(name)
+        if not name or joinedByAddon[name:lower()] then return false end
+    end
+    return true
+end
 local function syncGroups()
     if not syncPending or combat() then return end
+    local floor = slotFloor()
+    -- Still pending: the next tick tries again, and the deadlines above make
+    -- sure the wait ends.
+    if floor > 1 and not lowSlotsTaken(floor) then return end
     syncPending = false
     for id in pairs(WoWStatusGroups.selected(getCharacter())) do
         if WoWStatusGroups.valid(id) and not joined(id) and JoinTemporaryChannel then
@@ -673,7 +723,7 @@ function P.init(database, getter, reporter)
     if register then pcall(register, ADDON_PREFIX) end
     clear()
     pruneSeen(time())
-    syncPending = true
+    syncPending, syncStart = true, nil
     syncGroups()
 end
 
