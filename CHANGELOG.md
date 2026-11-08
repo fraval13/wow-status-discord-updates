@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Forever on CurseForge includes every spoken-reaction voice; the homepage download is small again and uses the voice pack
+
 ## 1.47.0
 
 - Forever: friends' Nynorsk reactions can be read aloud in their personality's voice, at most one a minute

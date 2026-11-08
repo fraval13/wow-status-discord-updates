@@ -6,6 +6,7 @@
   "language_code": "nn-NO",
   "gap_seconds": 0.12,
   "ogg_quality": 0,
+  "addon_sample": false,
   "counts": {
     "sample_per_kind": 6,
     "sample_extra": {"gz": 1, "f": 1, "congrats": 1, "welcome": 1},

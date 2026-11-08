@@ -253,11 +253,13 @@ W.add({
     ["Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini)."] =
         "Berre reaksjonar på nynorsk blir lesne opp. Røystene er laga med KI (Google Gemini).",
     ["Voice pack %d is installed."] = "Røystepakke %d er installert.",
+    ["Every voice comes with this download; no voice pack is needed."] =
+        "Alle røystene følgjer med denne nedlastinga; du treng inga røystepakke.",
     ["Spoken reaction test:"] = "Test av opplesen reaksjon:", ["A voice is already playing."] = "Ei røyst blir alt spelt av.",
     ["No recorded voice to test here. Spoken reactions are for WoW Forever."] =
         "Inga innspelt røyst å teste her. Opplesne reaksjonar finst berre i WoW Forever.",
-    ["Voice pack: not installed. The lines that come with the addon are still read aloud."] =
-        "Røystepakke: ikkje installert. Replikkane som følgjer med tillegget, blir framleis lesne opp.",
+    ["Voice pack: not installed. Install it to hear friends' reactions read aloud."] =
+        "Røystepakke: ikkje installert. Installer han for å høyre reaksjonar frå vener lesne opp.",
     ["Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW."] =
         "Hent heile røystepakken: kopier lenkja inn i nettlesaren, pakk ho ut i Interface/AddOns og start WoW på nytt.",
     ["Next voice"] = "Neste røyst", ["Use /wstatus voice <name>."] = "Skriv /wstatus voice <namn>.", ["Use /wstatus personality <name>."] = "Skriv /wstatus personality <namn>.",
