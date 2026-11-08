@@ -255,6 +255,10 @@ jobs:
           ref: ${{ needs.deploy-gate.outputs.revision }}
       - name: Build addon packages for this release
         run: python3 scripts/build_homepage.py --addon-ref HEAD
+      # CurseForge's Forever file carries every spoken-reaction clip, taken from the
+      # published voice pack; the homepage ZIP stays small (docs/voices/README.md).
+      - name: Put every voice clip into the Forever ZIP
+        run: python3 scripts/voices.py bundle --zip dist/homepage/downloads/WoWStatus-forever.zip
       - name: Upload to CurseForge
         env:
           CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}

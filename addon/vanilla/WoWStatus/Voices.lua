@@ -23,6 +23,14 @@ local function data()
 end
 function V.available() return data() ~= nil end
 function V.packInstalled() return type(WoWStatusVoicePack) == "table" end
+-- The CurseForge build of Forever carries every clip itself (scripts/voices.py
+-- bundle marks it): then nothing needs the separate pack.
+function V.bundled()
+    local d = data()
+    return d ~= nil and d.bundled == true
+end
+-- Whether a clip of this tier is on disk: in the addon, or in the pack.
+local function canPlay(tier) return tier == 1 or V.bundled() or V.packInstalled() end
 function V.packVersion() return V.packInstalled() and tonumber(WoWStatusVoicePack.version) or nil end
 function V.packURL()
     local d = data()
@@ -134,7 +142,7 @@ local function play(file)
     local willPlay = S.call(PlaySoundFile, file, "Dialog")
     return willPlay and true or false
 end
-local function clipFile(clip, tier) return (tier == 1 and SAMPLE_PATH or PACK_PATH) .. clip .. ".ogg" end
+local function clipFile(clip, tier) return ((tier == 1 or V.bundled()) and SAMPLE_PATH or PACK_PATH) .. clip .. ".ogg" end
 
 -- Play a clip (and a level's number after it); returns false if nothing played.
 local function speak(clip, tier, number)
@@ -143,7 +151,7 @@ local function speak(clip, tier, number)
     local length = tonumber(d.seconds[clip]) or 3
     if number then
         local after = length + (tonumber(d.gap) or .12)
-        if C_Timer and C_Timer.After then C_Timer.After(after, function() play(PACK_PATH .. number .. ".ogg") end) end
+        if C_Timer and C_Timer.After then C_Timer.After(after, function() play(clipFile(number, 2)) end) end
         length = after + (tonumber(d.seconds[number]) or 1)
     end
     busyUntil = clock() + length
@@ -157,12 +165,12 @@ function V.heard(text)
     local voice, entry, level = V.lookup(text)
     if not voice then return false end
     local clip, tier = entry[1], entry[2]
-    if tier ~= 1 and not V.packInstalled() then return false end
+    if not canPlay(tier) then return false end
     local number
     if level then
         local numbers = data().numbers[voice]
         number = numbers and numbers[level]
-        if not number or not V.packInstalled() then return false end
+        if not number or not canPlay(2) then return false end
     end
     if clock() < busyUntil then return false end
     local last, now = tonumber(settings().last_at), S.now()
@@ -193,8 +201,8 @@ function V.simulate(request)
     for key, entries in pairs(voice and nn and d.lines[voice] or {}) do
         if not levelOnly or key == "level" then
             for index, entry in pairs(entries) do
-                local playable = entry[2] == 1 or V.packInstalled()
-                if key == "level" then playable = V.packInstalled() and d.numbers[voice] ~= nil end
+                local playable = canPlay(entry[2])
+                if key == "level" then playable = canPlay(2) and d.numbers[voice] ~= nil end
                 if playable and nn[key] and nn[key][index] then choices[#choices + 1] = {key, index, entry} end
             end
         end

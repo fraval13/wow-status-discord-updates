@@ -151,7 +151,8 @@ function P.show(host)
             local y=-options-800
             text(panel,"Spoken reactions",24,y,300)
             panel.voices=check("Read friends' reactions aloud",y-36,function() return V.enabled() end,V.setEnabled)
-            panel.voiceTest=button(panel,"Play a sample",400,y-36,160,function() V.test() end)
+            -- The addon's own lines when it carries some, else one from the pack.
+            panel.voiceTest=button(panel,"Play a sample",400,y-36,160,function() if not V.test() then V.simulate() end end)
             text(panel,"Minutes between spoken reactions:",24,y-84,300)
             panel.voiceInterval=button(panel,"",330,y-78,140,function(self)
                 local items={}
@@ -160,7 +161,7 @@ function P.show(host)
             end)
             text(panel,"Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini).",24,y-124,540)
             panel.voicePack=text(panel,"",24,y-164,540)
-            text(panel,"Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW.",
+            panel.voiceGet=text(panel,"Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW.",
                 24,y-204,540)
             panel.voiceLink=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
             panel.voiceLink:SetPoint("TOPLEFT",30,y-252);panel.voiceLink:SetSize(530,30);panel.voiceLink:SetAutoFocus(false)
@@ -177,8 +178,14 @@ function P.show(host)
                 panel.voices:SetChecked(V.enabled())
                 panel.voiceInterval:SetText(V.intervalLabel())
                 local version=V.packVersion()
-                panel.voicePack:SetText(version and WoWStatusLocale.F("Voice pack %d is installed.",version)
-                    or WoWStatusLocale.T("Voice pack: not installed. The lines that come with the addon are still read aloud."))
+                if V.bundled() then
+                    panel.voicePack:SetText(WoWStatusLocale.T("Every voice comes with this download; no voice pack is needed."))
+                else
+                    panel.voicePack:SetText(version and WoWStatusLocale.F("Voice pack %d is installed.",version)
+                        or WoWStatusLocale.T("Voice pack: not installed. Install it to hear friends' reactions read aloud."))
+                end
+                -- A build with every voice inside has no pack to fetch.
+                panel.voiceGet:SetShown(not V.bundled());panel.voiceLink:SetShown(not V.bundled())
                 panel.voiceLink:SetText(V.packURL() or "")
             end
         end

@@ -71,9 +71,11 @@ be checked against Git and the environment rather than assumed permanently true.
 - `Voices.lua`, Forever-only `VoiceData.lua`: spoken reactions. A friend's voiced
   Nynorsk reaction is read aloud from pre-recorded Gemini clips, at most one per
   interval. `scripts/voices.py` chooses lines, records only missing clips, builds
-  `VoiceData.lua` and the in-addon sample (`Sounds/Voices/`), and releases the
-  full pack as GitHub release `voice-pack`. Audio is never committed except the
-  sample; `dist/voices/` is only a cache. See `docs/voices/README.md`.
+  `VoiceData.lua`, and releases every clip in the `WoWStatus_Voices` pack as
+  GitHub release `voice-pack`. The addon carries no audio (`addon_sample` is
+  false), so the homepage Forever ZIP stays small; the `curseforge` job bundles
+  every clip into CurseForge's Forever file from that release. Audio is never
+  committed and `dist/voices/` is only a cache. See `docs/voices/README.md`.
 - `src/wow_status/`: preserved Python companion, ingestion, Discord and storage.
 - `tests/`: Python tests and mocked Lua clients/transports. Mocks do not establish
   live game API availability, rendering or cross-realm delivery.

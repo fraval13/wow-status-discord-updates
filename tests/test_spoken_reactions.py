@@ -261,3 +261,40 @@ def test_voicetest_plays_a_recorded_line_without_a_friend():
         SlashCmdList.WOWSTATUS("voicetest")
         assert(said:find("only", 1, true) == nil and said:find("WoW Forever", 1, true))
     ''')
+
+
+def test_with_every_clip_in_the_pack_the_sample_button_plays_from_the_pack():
+    lua = voiced_lua()
+    lua.execute('WoWStatusVoiceData.lines.wholesome.gz[1] = nil')  # no clip inside the addon
+    run_addon_file(lua, ROOT / 'addon/vanilla/WoWStatus/Previews.lua')
+    lua.execute(f'''
+        WoWStatusPreviews.show()
+        local panel = WoWStatusNotificationPreviews
+        panel.voiceTest.OnClick(panel.voiceTest)
+        assert(#__played == 0)  -- without the pack there is nothing to play
+        WoWStatusVoicePack = {{version = 2}}
+        __mono = __mono + 10
+        panel.voiceTest.OnClick(panel.voiceTest)
+        assert(#__played >= 1 and __played[1][1]:find("{LUA_PACK}", 1, true) == 1)
+    ''')
+
+
+def test_a_bundled_build_plays_every_clip_from_its_own_folder_without_the_pack():
+    lua = voiced_lua()
+    lua.execute('WoWStatusVoiceData.bundled = true')
+    run_addon_file(lua, ROOT / 'addon/vanilla/WoWStatus/Previews.lua')
+    lua.execute(f'''
+        local V = WoWStatusVoices
+        assert(V.bundled() and not V.packInstalled())
+        local level = __nn.level[__levelIndex]:gsub("{{level}}", "37")
+        assert(V.heard(level))
+        assert(__played[1][1] == "{LUA_SAMPLE}cccccccccccc.ogg")
+        __after[1][2]()
+        assert(__played[2][1] == "{LUA_SAMPLE}dddddddddddd.ogg")
+        __mono = __mono + 10; __now = __now + 61
+        assert(V.heard(__nn.gz[2]) and __played[3][1] == "{LUA_SAMPLE}bbbbbbbbbbbb.ogg")
+        WoWStatusPreviews.show()
+        local panel = WoWStatusNotificationPreviews
+        assert(panel.voicePack.text:find("no voice pack is needed", 1, true))
+        assert(panel.voiceGet.visible == false and panel.voiceLink.visible == false)
+    ''')

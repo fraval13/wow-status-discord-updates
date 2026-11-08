@@ -3,17 +3,21 @@
 When a friend whispers you a reaction (GZ!, F, Congrats! and the personality
 lines) in **Nynorsk**, WoW Status on **Forever** can read it aloud in the voice
 of the personality that wrote it. The clips are recorded in advance with
-Google's Gemini 3.8 Flash TTS; nothing is generated in the game.
+Google's Gemini 3.8 Flash TTS; nothing is generated in the game. All audio is
+in the optional **WoW Status Voices** pack (`WoWStatus_Voices`); the addon
+itself carries only the list of voiced lines, so the Forever download stays
+small and the server deploy stays far below its 64 MiB limit. On **CurseForge**
+the Forever file carries every clip itself (`voices.py bundle` in the
+`curseforge` job, see `docs/CURSEFORGE.md`), so no pack is needed there.
 
 - **Receiver:** at most one reaction is read per interval (0–60 minutes,
   1 by default) and clips never overlap. Reactions in between stay text-only
   and are not queued. Options → Notifications → *Spoken reactions* turns it off,
   sets the interval and shows the voice pack link (WoW cannot download files,
   so the link is there to copy).
-- **Sender:** in Nynorsk, 90 % of reactions use a recorded line; a quarter of
-  those come from the lines that ship inside the addon, so friends without the
-  pack hear voices too (`V.VOICED_SHARE` and `V.SAMPLE_SHARE` in
-  `addon/shared/Voices.lua`). Nothing extra is sent.
+- **Sender:** in Nynorsk, 90 % of reactions use a recorded line
+  (`V.VOICED_SHARE` in `addon/shared/Voices.lua`). Nothing extra is sent.
+- **Without the pack** nothing is read aloud; Options say so and show the link.
 - **Not voiced yet:** "Enjoy <zone>!" lines (no list of Forever zone names to
   record), English lines and Classic reactions.
 
@@ -25,7 +29,7 @@ Google's Gemini 3.8 Flash TTS; nothing is generated in the game.
 | Chosen lines per personality | `docs/voices/selection/<id>.json` | yes |
 | Every recorded clip (id, text, length, voice, model) | `docs/voices/clips.json` | yes |
 | What the addon can play | `addon/forever/WoWStatus/VoiceData.lua` (generated) | yes |
-| Sample clips inside the addon (~100 per personality) | `addon/forever/WoWStatus/Sounds/Voices/<id>.ogg` | yes |
+| Clips inside the addon: none (`"addon_sample": false` in `voices.json`) | `addon/forever/WoWStatus/Sounds/Voices/` | — |
 | Full pack for players | GitHub release `voice-pack` → `WoWStatus_Voices.zip` | release |
 | Lossless masters (FLAC), one ZIP per personality | GitHub release `voice-pack` → `voices-masters-<id>.zip` | release |
 | Working copy of all audio | `dist/voices/clips/*.ogg`, `dist/voices/masters/*.flac` | no (cache) |
@@ -58,7 +62,7 @@ python scripts/voices.py restore            # on a fresh computer: fetch the pub
 python scripts/voices.py select             # choose lines; earlier choices are kept
 python scripts/voices.py generate --dry-run # how many clips, how long, what it costs
 python scripts/voices.py generate           # record only what is missing (about $0.75 per 1,000 lines)
-python scripts/voices.py sample             # copy the sample clips into the Forever addon
+python scripts/voices.py sample             # keep the addon free of audio (or copy a sample in)
 python scripts/voices.py build              # write VoiceData.lua
 python scripts/voices.py release            # upload a new draft pack (voice-pack-vN)
 # listen to the draft, then:

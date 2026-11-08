@@ -38,6 +38,13 @@ settings after changing it.
   listed patch of the same `major.minor` is used, with a warning. If it lists
   nothing for the edition (possibly Forever, `1.60.x`), that edition is skipped
   with a warning; the homepage still offers it.
+- The Forever file carries every spoken-reaction clip (about 300 MB): the job runs
+  `scripts/voices.py bundle`, which adds the clips `VoiceData.lua` lists from the
+  published `voice-pack` release and marks the build as bundled. The homepage's
+  Forever ZIP stays small and uses the separate pack. If the pack lacks a clip the
+  addon lists, the job stops before uploading anything; publish a newer pack and
+  re-run it. CurseForge publishes no size limit; if it refuses the file, the job
+  fails with its reason and the other editions are still uploaded.
 - Display name: `WoW Status <version> (<edition>)`. Release type: `release`.
   Changelog: that version's lines from `CHANGELOG.md`.
 - The job runs only after `deploy` succeeds. A file that fails fails the job.

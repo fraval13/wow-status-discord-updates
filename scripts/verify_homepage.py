@@ -31,9 +31,7 @@ from urllib.parse import urlparse
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 UNREACHABLE = 3
 WRONG_CONTENT = 4
-# The most a download (or an unpacked ZIP) may hold: the server's own limit in
-# deploy/install_release.py. The Forever ZIP carries the spoken-reaction sample.
-MAX_BYTES = 64 * 1024 * 1024
+MAX_BYTES = 32 * 1024 * 1024
 FOLDER = 'WoWStatus/'
 
 

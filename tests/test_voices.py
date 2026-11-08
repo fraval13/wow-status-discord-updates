@@ -145,6 +145,7 @@ def test_generate_records_only_missing_clips_and_pack_holds_the_pack_tier(voices
     monkeypatch.setattr(voices, 'CLIPS', tmp_path / 'clips.json')
     monkeypatch.setattr(voices, 'CACHE', tmp_path / 'cache')
     monkeypatch.setattr(voices, 'SAMPLE_DIR', tmp_path / 'addon' / 'Voices')
+    monkeypatch.setattr(voices, 'config', lambda: CFG)  # with an in-addon sample, unlike the shipped setup
     tts = load('voice_samples')
     monkeypatch.setitem(sys.modules, 'voice_samples', tts)
     said = []
@@ -234,3 +235,74 @@ def test_one_failed_clip_is_reported_and_the_rest_are_still_recorded(voices, tmp
     known = json.loads((tmp_path / 'clips.json').read_text(encoding='utf-8'))['clips']
     assert len(known) == len(voices.required(CFG)) - 1
     assert all(entry['text'] != bad for entry in known.values())
+
+
+def test_without_an_addon_sample_every_clip_ships_in_the_pack(voices, tmp_path, monkeypatch):
+    monkeypatch.setattr(voices.personalities, 'REACTION_VOICES', ('dwarf',))
+    source, target = fake_captions(voices, tmp_path / 'c'), tmp_path / 'selection'
+    voices.select(CFG, source=source, target=target)
+    cfg = {**CFG, 'addon_sample': False}
+    clips = voices.required(cfg, source=source, selection=target)
+    assert {clip.tier for clip in clips} == {2}
+    # The same lines and ids as with a sample: only where they ship changes.
+    assert [c.id for c in clips] == [c.id for c in voices.required(CFG, source=source, selection=target)]
+    for name, value in (('CAPTIONS', source), ('SELECTION', target), ('CLIPS', tmp_path / 'clips.json'),
+                        ('SAMPLE_DIR', tmp_path / 'Sounds' / 'Voices')):
+        monkeypatch.setattr(voices, name, value)
+    (tmp_path / 'Sounds' / 'Voices').mkdir(parents=True)
+    (tmp_path / 'Sounds' / 'Voices' / 'old.ogg').write_bytes(b'ogg')
+    voices.write_json(tmp_path / 'clips.json', {'release': None, 'clips': recorded(clips)})
+    assert voices.sample(cfg) == 0
+    assert not (tmp_path / 'Sounds').exists()
+    text = voices.render(cfg, clips, recorded(clips), tmp_path / 'Sounds' / 'Voices')
+    assert ', 1}' not in text and ', 2}' in text
+
+
+def test_the_shipped_addon_carries_no_audio(voices):
+    assert voices.config()['addon_sample'] is False
+    assert not voices.SAMPLE_DIR.exists()
+
+
+def test_bundle_puts_every_listed_clip_into_the_forever_zip(voices, tmp_path):
+    data = ('WoWStatusVoiceData = {lines = {dwarf = {gz = {[1] = {"aaaaaaaaaaaa", 2}}}},\n'
+            '    numbers = {dwarf = {[37] = "bbbbbbbbbbbb"}}, seconds = {["aaaaaaaaaaaa"] = 2}}\n')
+    archive = tmp_path / 'WoWStatus-forever.zip'
+    with zipfile.ZipFile(archive, 'w') as out:
+        out.writestr('WoWStatus/WoWStatus.toc', '## Interface: 16001\nVoiceData.lua\n')
+        out.writestr('WoWStatus/VoiceData.lua', data)
+    pack_path = tmp_path / 'WoWStatus_Voices.zip'
+    with zipfile.ZipFile(pack_path, 'w') as out:
+        out.writestr('WoWStatus_Voices/Pack.lua', 'WoWStatusVoicePack = {version = 2}\n')
+        for cid in ('aaaaaaaaaaaa', 'bbbbbbbbbbbb', 'cccccccccccc'):
+            out.writestr(f'WoWStatus_Voices/Sounds/{cid}.ogg', cid.encode())
+    assert voices.bundle(CFG, archive, pack_path) == 0
+    with zipfile.ZipFile(archive) as result:
+        names = set(result.namelist())
+        assert {'WoWStatus/Sounds/Voices/aaaaaaaaaaaa.ogg', 'WoWStatus/Sounds/Voices/bbbbbbbbbbbb.ogg'} <= names
+        assert 'WoWStatus/Sounds/Voices/cccccccccccc.ogg' not in names  # not listed by this addon
+        assert result.read('WoWStatus/Sounds/Voices/bbbbbbbbbbbb.ogg') == b'bbbbbbbbbbbb'
+        lua = lupa.LuaRuntime()
+        lua.execute(result.read('WoWStatus/VoiceData.lua').decode('utf-8'))
+        assert lua.globals().WoWStatusVoiceData.bundled is True
+        assert all(name.startswith('WoWStatus/') for name in names)
+    # A pack older than the addon's list stops the upload instead of shipping silent lines.
+    with zipfile.ZipFile(pack_path, 'w') as out:
+        out.writestr('WoWStatus_Voices/Sounds/aaaaaaaaaaaa.ogg', b'a')
+    archive.unlink()
+    with zipfile.ZipFile(archive, 'w') as out:
+        out.writestr('WoWStatus/VoiceData.lua', data)
+    with pytest.raises(voices.VoiceError, match='lacks 1 clips'):
+        voices.bundle(CFG, archive, pack_path)
+    vanilla = tmp_path / 'WoWStatus-vanilla.zip'
+    with zipfile.ZipFile(vanilla, 'w') as out:
+        out.writestr('WoWStatus/WoWStatus.toc', '## Interface: 11509\n')
+    with pytest.raises(voices.VoiceError, match='only the Forever build'):
+        voices.bundle(CFG, vanilla, pack_path)
+
+
+def test_the_curseforge_job_bundles_the_voices_before_uploading():
+    workflow = (ROOT / '.github/workflows/checks.yml').read_text(encoding='utf-8')
+    job = workflow[workflow.index('\n  curseforge:'):]
+    build = job.index('run: python3 scripts/build_homepage.py')
+    bundle = job.index('run: python3 scripts/voices.py bundle --zip dist/homepage/downloads/WoWStatus-forever.zip')
+    assert build < bundle < job.index('run: python3 scripts/upload_curseforge.py')

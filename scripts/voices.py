@@ -16,6 +16,8 @@ docs/voices/README.md for the whole workflow.
     python scripts/voices.py release           # upload them as a draft GitHub release
     python scripts/voices.py publish 3         # publish voice-pack-v3 as the current pack
     python scripts/voices.py restore           # fetch the published audio into dist/voices/
+    python scripts/voices.py bundle --zip dist/homepage/downloads/WoWStatus-forever.zip
+                                               # CurseForge: put every clip into the Forever ZIP
 """
 from __future__ import annotations
 
@@ -29,6 +31,7 @@ import sys
 import tempfile
 import threading
 import time
+import urllib.request
 import wave
 import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -225,7 +228,9 @@ def required(cfg: dict, source: Path | None = None, selection: Path | None = Non
         levels = False
         for kind in personalities.REACTIONS:
             lines = bank(pid, kind, source) if kind not in UNVOICED_KINDS else []
-            for tier, group in ((1, 'sample'), (2, 'pack')):
+            # addon_sample false: the sample lines ship in the pack too, and the addon carries no audio.
+            sample_tier = 1 if cfg.get('addon_sample', True) else 2
+            for tier, group in ((sample_tier, 'sample'), (2, 'pack')):
                 for template in chosen[group].get(kind, []):
                     if template not in lines:
                         raise VoiceError(f'{pid}/{kind}: {template!r} is no longer a reaction line; '
@@ -384,7 +389,8 @@ def reencode(cfg: dict, workers: int) -> int:
 
 
 def sample(cfg: dict) -> int:
-    """Copy the tier-1 clips into the Forever addon and remove stale ones."""
+    """Copy the tier-1 clips into the Forever addon and remove stale ones (all of them when
+    addon_sample is false: then the pack carries every clip)."""
     known = registry()['clips']
     wanted = {clip.id for clip in required(cfg) if clip.tier == 1 and clip.id in known}
     SAMPLE_DIR.mkdir(parents=True, exist_ok=True)
@@ -402,6 +408,12 @@ def sample(cfg: dict) -> int:
             removed += 1
     if missing:
         raise VoiceError(f'{len(missing)} sample clips are neither cached nor in the addon; run restore')
+    if not wanted:  # no audio in the addon: leave no empty folders behind
+        for folder in (SAMPLE_DIR, SAMPLE_DIR.parent):
+            if folder.is_dir() and not any(folder.iterdir()):
+                folder.rmdir()
+        print(f'No clips in the addon; {removed} removed. Every clip ships in the voice pack.')
+        return 0
     size = sum(path.stat().st_size for path in SAMPLE_DIR.glob('*.ogg'))
     print(f'{len(wanted)} sample clips in {shown(SAMPLE_DIR)} ({size / 1e6:.1f} MB), {removed} removed.')
     return 0
@@ -526,6 +538,56 @@ def pack(cfg: dict, version: int) -> list[Path]:
     return paths
 
 
+def bundle(cfg: dict, archive: Path, pack_file: Path | None = None) -> int:
+    """Put every clip the addon lists into an edition ZIP (the CurseForge Forever build).
+
+    The clips come from the published voice pack (or pack_file), so audio never
+    enters Git or the homepage deploy. VoiceData.lua in the ZIP is marked
+    bundled, so the addon plays the clips from its own folder.
+    """
+    folder, data_name = 'WoWStatus/', 'WoWStatus/VoiceData.lua'
+    with zipfile.ZipFile(archive) as source:
+        names = source.namelist()
+        if data_name not in names:
+            raise VoiceError(f'{archive.name} has no VoiceData.lua; only the Forever build carries voices')
+        data = source.read(data_name).decode('utf-8')
+    wanted = sorted(set(re.findall(r'"([0-9a-f]{12})"', data)))
+    if not wanted:
+        raise VoiceError('VoiceData.lua lists no clips; there is nothing to bundle')
+    with tempfile.TemporaryDirectory() as temp:
+        if pack_file is None:
+            url = f'https://github.com/{cfg["repository"]}/releases/download/{cfg["pack_tag"]}/{PACK_ZIP}'
+            pack_file = Path(temp) / PACK_ZIP
+            request = urllib.request.Request(url, headers={'User-Agent': 'wow-status-release'})
+            with urllib.request.urlopen(request, timeout=600) as response, pack_file.open('wb') as target:
+                shutil.copyfileobj(response, target)
+        with zipfile.ZipFile(pack_file) as pack_zip:
+            clips = {Path(name).stem: name for name in pack_zip.namelist()
+                     if name.startswith(f'{PACK_ADDON}/Sounds/') and name.endswith('.ogg')}
+            missing = [cid for cid in wanted if cid not in clips]
+            if missing:
+                raise VoiceError(f'The voice pack lacks {len(missing)} clips this addon lists; '
+                                 'publish a newer pack (scripts/voices.py release, then publish)')
+            bundled = Path(temp) / archive.name
+            with zipfile.ZipFile(archive) as source, zipfile.ZipFile(bundled, 'w', zipfile.ZIP_DEFLATED) as out:
+                for info in source.infolist():
+                    content = source.read(info)
+                    if info.filename == data_name:
+                        content += b'-- This build carries every clip itself (scripts/voices.py bundle).\n'
+                        content += b'WoWStatusVoiceData.bundled = true\n'
+                    out.writestr(info, content)
+                for cid in wanted:
+                    name = f'{folder}Sounds/Voices/{cid}.ogg'
+                    if name in names:
+                        continue
+                    entry = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+                    entry.external_attr = 0o100644 << 16  # a regular file, as the other entries
+                    out.writestr(entry, pack_zip.read(clips[cid]), zipfile.ZIP_STORED)
+        shutil.move(str(bundled), str(archive))
+    print(f'{archive.name}: {len(wanted)} clips added, {archive.stat().st_size / 1e6:.1f} MB.')
+    return 0
+
+
 def gh(*args: str) -> str:
     if not shutil.which('gh'):
         raise VoiceError('The GitHub CLI (gh) is needed; install it and run gh auth login')
@@ -628,6 +690,9 @@ def main(argv: list[str] | None = None) -> int:
     published = sub.add_parser('publish', help='publish a draft and make it the current pack')
     published.add_argument('version', type=int)
     sub.add_parser('restore', help='fetch the current pack audio into dist/voices/')
+    bundled = sub.add_parser('bundle', help='put every clip into an edition ZIP (the CurseForge Forever build)')
+    bundled.add_argument('--zip', type=Path, required=True, help='the built WoWStatus-forever.zip, changed in place')
+    bundled.add_argument('--pack', type=Path, help='a local WoWStatus_Voices.zip instead of the published one')
     args = parser.parse_args(argv)
     try:
         cfg = config()
@@ -653,6 +718,8 @@ def main(argv: list[str] | None = None) -> int:
             return release(cfg, args.force)
         if args.command == 'publish':
             return publish(cfg, args.version)
+        if args.command == 'bundle':
+            return bundle(cfg, args.zip, args.pack)
         return restore(cfg)
     except VoiceError as error:
         print(f'voices: {error}', file=sys.stderr)
