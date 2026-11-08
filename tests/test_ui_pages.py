@@ -94,7 +94,7 @@ def test_overview_lists_everyone_online_and_fits_the_summary():
             WoWStatusJournal.received({sender="Cid"..i.."-TestRealm",nonce="3-"..i.."-cccc",kind="death",text="Died",at=time(),group_id=group})
         end
         WoWStatusMainWindow.show("overview")
-        assert(page.since.height == 218)
+        assert(page.since.height == 202)
     ''')
 
 
@@ -220,7 +220,8 @@ def test_settings_windows_opened_on_their_own_use_the_window_theme():
             local r, g, b = WoWStatusTheme.colour()
             return texture.colour[1] == r and texture.colour[2] == g and texture.colour[3] == b
         end
-        WoWStatusGroups.show()                    -- standalone, as in combat
+        WoWStatusGroups.show()                    -- also used by the setup guide
+        WoWStatusTheme.apply()                    -- frames were built before the colour spy
         local groups = WoWStatusGroupWindow.background
         assert(groups:IsShown() ~= false and same(groups))
         WoWStatusPreviews.show()

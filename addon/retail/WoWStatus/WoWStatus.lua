@@ -146,6 +146,7 @@ local function scrub()
     end
     if not current.settings.fields.professions then current.professions = nil end
     if WoWStatusEquipment and not current.settings.fields.gear then current.equipment_profile = nil end
+    if WoWStatusEquipmentSync then WoWStatusEquipmentSync.privacyChanged() end
     snapshot()
 end
 
@@ -387,18 +388,22 @@ openSettings = function(mode)
     if mode=="discord" and not WoWStatusFeatures.discord then mode=nil end
     registerSettings()
     local category = mode == "previews" and previewsCategory or mode == "discord" and discordCategory or (mode == "groups" and groupsCategory or settingsCategory)
-    -- Blizzard's Settings panel is restricted in combat; our own frames are not.
-    if S.call(InCombatLockdown) == true then category = nil end
+    if S.call(InCombatLockdown) == true then
+        say("Cannot open now: settings cannot be opened during combat. Try again after combat.")
+        return
+    end
+    local ok
     if category and category.GetID and Settings and Settings.OpenToCategory then
-        local ok=pcall(function() Settings.OpenToCategory(category:GetID()) end)
-        if not ok then showPanel() end
+        ok=pcall(function() Settings.OpenToCategory(category:GetID()) end)
     elseif category and InterfaceOptionsFrame_OpenToCategory then
-        local ok=pcall(InterfaceOptionsFrame_OpenToCategory,category)
-        if not ok then showPanel() end
-    elseif mode == "previews" then WoWStatusPreviews.show()
-    elseif mode == "discord" then showDiscord()
-    elseif mode == "groups" then WoWStatusGroups.show()
-    else showPanel() end
+        ok=pcall(InterfaceOptionsFrame_OpenToCategory,category)
+    else
+        say("Cannot open now: WoW's addon settings are not ready. Try again shortly.")
+        return
+    end
+    if not ok then
+        say("Cannot open now: WoW could not open settings. Try Options > AddOns > WoW Status.")
+    end
 end
 
 refresh = function()

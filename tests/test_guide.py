@@ -13,7 +13,7 @@ def button(lua, text):
 def test_guide_appears_once_on_a_new_account_and_can_be_skipped():
     lua = make_lua(guide=True)
     assert lua.eval('WoWStatusGuideFrame:IsShown()') is True
-    assert lua.eval('WoWStatusSetup') is None  # The guide replaces the Options page.
+    assert lua.eval('WoWStatusSetup:IsShown()') is False  # Options stays hidden behind the guide.
     assert lua.eval('WoWStatusGuideFrame.progress.text') == 'Step 1 of 4'
     skip = button(lua, 'Skip')
     skip.OnClick(skip)

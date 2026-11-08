@@ -68,6 +68,11 @@ function E.capture(character)
         return nil
     end
     local snapshot = {at=math.floor(S.now()), items={}, stats={}}
+    -- Retail and Forever use this equipped value in their character sheet.
+    -- The first return includes bag gear and must not be used here.
+    local _, average = S.call(GetAverageItemLevel)
+    average = S.number(average)
+    snapshot.average_item_level = average and average >= 0 and average < 1000000 and average or nil
     for slot = 0, 19 do snapshot.items[slot] = slotValue(slot) end
     local stats = snapshot.stats
     stats.health = number(S.call(UnitHealthMax, "player"))
@@ -94,7 +99,19 @@ function E.capture(character)
         value = S.number(value)
         stats[field] = value and math.abs(value * 100) < LIMIT and math.floor(value * 100 + .5) or nil
     end
+    local previous, changed, gearChanged = character.equipment_profile, false, false
+    for slot = 0, 19 do
+        if not previous or not previous.items or previous.items[slot] ~= snapshot.items[slot] then changed, gearChanged = true, true end
+    end
+    for _, spec in ipairs(E.STATS) do
+        if not previous or not previous.stats or previous.stats[spec[1]] ~= stats[spec[1]] then changed = true end
+    end
+    if not previous or previous.average_item_level ~= snapshot.average_item_level then changed = true end
+    local revision = S.number(character.equipment_revision) or 0
+    if changed or revision < 1 then revision = revision + 1 end
+    character.equipment_revision, snapshot.revision = revision, revision
     character.equipment_profile = snapshot
+    if changed and WoWStatusEquipmentSync then WoWStatusEquipmentSync.changed(character, gearChanged) end
     return snapshot
 end
 -- Twenty slots (including explicit empty/unavailable slots), two stat blocks
@@ -115,6 +132,11 @@ function E.parts(snapshot, hidden)
     return parts
 end
 function E.part(part, value)
+    if part == "l" then
+        if value == "-" then return value end
+        local n=tonumber(value)
+        return n and value:match("^%d+$") and n>=0 and n<100000000 and n==math.floor(n) and n or nil
+    end
     if part == "x" or part == "n" then return value == "-" end
     if part == "t" then
         local at = tonumber(value)

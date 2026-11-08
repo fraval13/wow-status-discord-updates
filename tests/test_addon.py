@@ -125,6 +125,34 @@ function CreateFrame(kind, name, parent, template)
     if name then _G[name]=f end
     return f
 end
+-- Model the native canvas host so settings tests exercise the scrollable page.
+__categories = {}
+Settings = {
+    RegisterCanvasLayoutCategory = function(page, name)
+        local category = {page=page,name=name,GetID=function(self) return self.name end}
+        __categories[name] = category
+        for _, child in ipairs(__frames) do
+            if child.parent == page and child.child then
+                category.content = child.child
+                child.child:Hide()
+            end
+        end
+        return category
+    end,
+    RegisterCanvasLayoutSubcategory = function(parent, page, name)
+        local category = Settings.RegisterCanvasLayoutCategory(page, name)
+        category.parent = parent
+        return category
+    end,
+    RegisterAddOnCategory = function(category)
+        category.registrations = (category.registrations or 0) + 1
+    end,
+    OpenToCategory = function(id)
+        __opened = id
+        for _, category in pairs(__categories) do category.content:Hide() end
+        __categories[id].page.OnShow()
+    end,
+}
 function fire(event, ...)
     for _,f in ipairs(__events[event] or {}) do f.OnEvent(f,event,...) end
 end
@@ -214,6 +242,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Firsts.lua')
     run_addon_file(runtime, root / 'Recaps.lua')
     run_addon_file(runtime, root / 'Equipment.lua')
+    run_addon_file(runtime, root / 'EquipmentSync.lua')
     run_addon_file(runtime, root / 'Roster.lua')
     run_addon_file(runtime, root / 'Profile.lua')
     run_addon_file(runtime, root / 'Minimap.lua')
@@ -685,28 +714,9 @@ def test_group_editor_rejects_invalid_duplicate_and_ninth_group(lua):
 
 def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
     lua.execute('''
-        __categories = {}
-        Settings = {
-            RegisterCanvasLayoutCategory = function(page, name)
-                local c = {page=page,name=name,GetID=function(self) return self.name end}
-                __categories[name] = c
-                return c
-            end,
-            RegisterCanvasLayoutSubcategory = function(parent, page, name)
-                local c = Settings.RegisterCanvasLayoutCategory(page, name)
-                c.parent = parent
-                return c
-            end,
-            RegisterAddOnCategory = function(category)
-                category.registrations = (category.registrations or 0) + 1
-            end,
-            OpenToCategory = function(id)
-                __opened = id
-                __categories[id].page.OnShow()
-            end,
-        }
         WoWStatusGroups.update("emberhold", "Frank")
         fire("ADDON_LOADED", "Blizzard_Settings")
+        __categories.Groups.page.OnShow()
         assert(__categories["WoW Status"] ~= nil)
         -- Sidebar first-open path: Blizzard can call OnRefresh without OnShow.
         -- The content must already exist and be populated before either callback.
@@ -758,14 +768,17 @@ def test_native_settings_register_once_and_keep_groups_on_separate_page(lua):
 
 
 
-def test_legacy_options_menu_registers_both_pages(lua):
-    lua.execute('''
+def test_legacy_options_menu_registers_both_pages():
+    lua = make_lua(STUBS + '''
+        Settings = nil
         __pages = {}
         function InterfaceOptions_AddCategory(page) __pages[page.name] = page end
         function InterfaceOptionsFrame_OpenToCategory(page)
             __opened = page.name
             page.OnShow()
         end
+    ''')
+    lua.execute('''
         SlashCmdList.WOWSTATUS("")
         assert(__opened == "WoW Status")
         SlashCmdList.WOWSTATUS("groups")
@@ -812,7 +825,7 @@ def test_ingame_default_does_not_enable_discord(lua):
     assert lua.eval('character().settings.discord_enabled') is False
     lua.eval('SlashCmdList.WOWSTATUS')('discord')
     assert lua.eval('WoWStatusDiscordSettings') is None
-    lua.execute('WoWStatusFeatures.discord=true')
+    lua = make_lua(discord_feature=True)
     lua.eval('SlashCmdList.WOWSTATUS')('discord')
     assert lua.eval('WoWStatusDiscordSettings.checks[1].widget:GetChecked()') is False
     lua.execute('''
@@ -1053,10 +1066,8 @@ def test_removed_legacy_quest_event_does_not_abort_addon_startup(has_event_valid
     assert runtime.eval('character().identity.name') == 'Thora'
     assert runtime.eval('type(SlashCmdList.WOWSTATUS)') == 'function'
     runtime.execute('''
-        __optionPages = {}
-        InterfaceOptions_AddCategory = function(page) table.insert(__optionPages, page.name) end
         fire("ADDON_LOADED", "Blizzard_Settings")
-        assert(__optionPages[1] == "WoW Status")
+        assert(__categories["WoW Status"] ~= nil)
         SlashCmdList.WOWSTATUS("")
     ''')
 
@@ -1372,36 +1383,43 @@ def test_names_with_spaces_are_peers_for_sending_and_receiving(lua):
     assert lua.eval('WoWStatusLevelPopup:IsShown()') is True
 
 
-def test_settings_command_in_combat_uses_standalone_panels(lua):
-    # Blizzard's Settings panel is restricted in combat (issue #25).
+@pytest.mark.parametrize('mode', ['', 'groups', 'previews', 'discord'])
+@pytest.mark.parametrize('language', ['en', 'nn'])
+def test_settings_in_combat_explain_why_without_detaching_pages(mode, language):
+    lua = make_lua(discord_feature=True)
+    lua.globals().WoWStatusDB['language'] = language
     lua.execute('''
         __opened = nil
-        Settings = {
-            RegisterCanvasLayoutCategory = function(page, name)
-                return {page=page,name=name,GetID=function(self) return self.name end}
-            end,
-            RegisterCanvasLayoutSubcategory = function(parent, page, name)
-                return Settings.RegisterCanvasLayoutCategory(page, name)
-            end,
-            RegisterAddOnCategory = function() end,
-            OpenToCategory = function(id) __opened = id end,
-        }
-        fire("ADDON_LOADED", "Blizzard_Settings")
+        __message = nil
+        DEFAULT_CHAT_FRAME.AddMessage = function(_, text) __message = text end
+        WoWStatusSetup:Hide()
+        __originalParent = WoWStatusSetup:GetParent()
         __combat = true
-        SlashCmdList.WOWSTATUS("")
-        assert(__opened == nil)
-        assert(WoWStatusSetup:IsShown() and WoWStatusSetup:GetParent() == UIParent)
-        SlashCmdList.WOWSTATUS("groups")
-        assert(__opened == nil)
-        assert(WoWStatusGroupWindow:IsShown() and WoWStatusGroupWindow:GetParent() == UIParent)
-        __combat = false
-        SlashCmdList.WOWSTATUS("groups")
-        assert(__opened == "Groups")
     ''')
-
-
-def test_notifications_page_has_settings_first_and_previews_below_a_line(lua):
+    lua.eval('SlashCmdList.WOWSTATUS')(mode)
     lua.execute('''
+        assert(__opened == nil)
+        assert(not WoWStatusSetup:IsShown())
+        assert(WoWStatusSetup:GetParent() == __originalParent)
+        for _, name in ipairs(UISpecialFrames) do
+            assert(name ~= "WoWStatusSetup" and name ~= "WoWStatusGroupWindow"
+                and name ~= "WoWStatusNotificationPreviews" and name ~= "WoWStatusDiscordSettings")
+        end
+        __combat = false
+        fire("PLAYER_REGEN_ENABLED")
+        assert(__opened == nil) -- No surprise window after combat.
+    ''')
+    message = lua.eval('__message')
+    assert ('Cannot open now' if language == 'en' else 'Kan ikkje opne no') in message
+    assert ('combat' if language == 'en' else 'kamp') in message
+    lua.eval('SlashCmdList.WOWSTATUS')(mode)
+    assert lua.eval('__opened') == {'': 'WoW Status', 'groups': 'Groups',
+                                    'previews': 'Notifications', 'discord': 'Discord (optional)'}[mode]
+
+
+
+def test_notifications_page_has_settings_first_and_previews_below_a_line():
+    lua = make_lua(STUBS + '''
         local methods = getmetatable(CreateFrame("Frame")).__index
         function methods:SetPoint(_, _, y) self.y = y end
     ''')

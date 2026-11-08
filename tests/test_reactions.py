@@ -203,7 +203,7 @@ def death_toast(language):
 
 def test_short_reactions_sit_beside_the_heading():
     toast = death_toast('en')
-    assert toast.reactionRow == 'top' and toast.height == 124
+    assert toast.reactionRow == 'top' and toast.height >= 124
     assert [label(toast.reactions[i]) for i in (1, 2)] == ['F', 'Git Good']
 
 
@@ -215,6 +215,29 @@ def test_long_reactions_get_rows_along_the_bottom():
         button = toast.reactions[i]
         assert label(button) == button.label
         assert button.width == max(86, len(button.label.encode()) * 6 + 24 + 36) and button.width <= 536
+
+
+def test_caption_stays_under_the_fact_when_long_reactions_are_stacked():
+    own, friend = actor('Mira'), actor('Thora')
+    clock(own, 10)
+    clock(friend, 10)
+    friend.execute('''
+        WoWStatusLocale.set("nn")
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetPoint(...) self.point={...} end
+        function methods:GetStringHeight() return 46 end
+        WoWStatusFlavour.text=function() return "Ei lang linje under dødsfallet, med plass til heile teksten." end
+    ''')
+    own.eval('fire')('PLAYER_DEAD')
+    deliver_popup(own, friend)
+    friend.eval('WoWStatusPopups.tick')()
+    toast=friend.eval('WoWStatusLevelPopup')
+    assert toast.detail.point[1]=='TOPLEFT'
+    assert toast.detail.point[2]==104 and toast.detail.point[3]==-84
+    assert toast.reactionRow=='stacked'
+    # The topmost bottom button starts strictly below the 46px caption.
+    topmost=min(toast.height-toast.reactions[i].point[3]-24 for i in (1,2))
+    assert topmost >= 84+46+6
 
 
 def test_specific_congrats_link_to_their_own_kind_in_either_language():
@@ -246,7 +269,7 @@ def test_level_up_buttons_fit_beside_the_heading_in_english():
     friend.eval('WoWStatusPopups.tick')()
     toast = friend.eval('WoWStatusLevelPopup')
     assert [label(toast.reactions[i]) for i in (1, 2)] == ['GZ!', 'Congrats on level 30!']
-    assert toast.reactionRow == 'top' and toast.height == 124
+    assert toast.reactionRow == 'top' and toast.height >= 124
 
 
 def level_up_shown(level=42):

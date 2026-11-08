@@ -10,6 +10,14 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Settings always use WoW's scrollable Options; chat explains when they cannot open instead of showing a fallback window
+- Gear syncs at login and with Sync now; changes update friends automatically, without opening a profile
+- Friends can share cached gear for offline owners; newer complete owner revisions always win
+- Average equipped item level on character cards and Overview, with taller cards and a full-width XP bar
+- Popup captions stay below the notification facts, above long reaction buttons
+
 ## 1.41.0
 
 - Secret agent and Middle-school legend can now speak your GZ!, F and Congrats! whispers as reaction voices

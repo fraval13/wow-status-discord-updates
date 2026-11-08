@@ -29,6 +29,10 @@ GEAR = r'''
 
 def clients():
     own, friend = pair()
+    # These retain coverage of the original D/E handshake for older peers.
+    # Automatic versioned sync is exercised by test_equipment_sync.py.
+    for lua in (own, friend):
+        lua.execute('WoWStatusEquipmentSync = nil')
     own.execute(GEAR)
     pump(own, friend)
     pump(friend, own)

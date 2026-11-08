@@ -42,7 +42,7 @@ def pair():
 
 def test_characters_are_announced_once_per_member_and_grouped_by_player():
     mira, thora = pair()
-    sent = [line for line in pump(mira, thora) if line[0] not in 'RSQ']
+    sent = [line for line in pump(mira, thora) if line[0] not in 'RSQHJFT']
     assert len(sent) == 1
     assert sent[0].split(' ')[0] == 'C' and sent[0].endswith('Mira-TestRealm Dwarf 3 WARRIOR 1')
     assert pump(mira, thora, start=200) == []  # not repeated to the same member
@@ -111,13 +111,13 @@ def test_hiding_a_character_and_turning_sharing_off():
     pump(mira, thora)
     assert thora.eval('next(WoWStatusDB.roster.players)') is not None
     mira.execute('WoWStatusRoster.setHidden(character(), true)')
-    assert pump(mira, thora, start=300) == []
+    assert [p for p in pump(mira, thora, start=300) if p[0] not in 'HJFT'] == []
     mira.execute('WoWStatusRoster.setHidden(character(), false); WoWStatusRoster.setSharing(false)')
-    sent = pump(mira, thora, start=400)
+    sent = [p for p in pump(mira, thora, start=400) if p[0] not in 'HJFT']
     assert len(sent) == 1 and sent[0].startswith('X ')
     assert thora.eval('next(WoWStatusDB.roster.players)') is None
     mira.execute('WoWStatusRoster.setSharing(true)')
-    assert [line[0] for line in pump(mira, thora, start=500)] == ['C', 'Q', 'S']
+    assert [line[0] for line in pump(mira, thora, start=500) if line[0] not in 'HJFT'] == ['C', 'Q', 'S']
 
 
 def test_log_senders_without_a_list_show_as_never_met():

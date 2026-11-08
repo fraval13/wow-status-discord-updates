@@ -6,7 +6,7 @@ WoWStatusOverview = {}
 local O, S = WoWStatusOverview, WoWStatusSafe
 local T, TF = WoWStatusLocale.T, WoWStatusLocale.F
 local MAX_LINES = 40
-local SINCE_MIN, SINCE_MAX = 90, 218
+local SINCE_MIN, SINCE_MAX = 90, 202
 local page
 
 local function state()
@@ -159,6 +159,8 @@ local function renderYou()
     local played = S.number(snapshot.playtime)
     if played then table.insert(more, T("Played:") .. " " .. UI.duration(played)) end
     you.stats2:SetText(table.concat(more, "   "))
+    local average=character and fields.gear and WoWStatusRoster.itemLevel(WoWStatusPopups.characterName(character))
+    you.itemLevel:SetText(T("Average item level:") .. " " .. (average and math.floor(average) or "—"))
     local newer = WoWStatusRoster.newerVersion and WoWStatusRoster.newerVersion()
     you.update:SetText(newer and (T("Update available:") .. " " .. newer .. " — wow.frankvalde.com") or "")
 end
@@ -260,7 +262,7 @@ local function build(parent)
     local UI = WoWStatusUI
     page = CreateFrame("Frame", "WoWStatusOverviewPage", parent); page:SetAllPoints(parent)
     -- You
-    local you = UI.box(page, 350, 150); you:SetPoint("TOPLEFT", 24, -4); page.you = you
+    local you = UI.box(page, 350, 166); you:SetPoint("TOPLEFT", 24, -4); page.you = you
     you.portrait = you:CreateTexture(nil, "ARTWORK"); you.portrait:SetPoint("TOPLEFT", 12, -12); you.portrait:SetSize(56, 56)
     you.badge = UI.levelBadge(you, 28); you.badge:SetPoint("TOPLEFT", 46, -48)
     you.name = UI.text(you, "GameFontNormalLarge", 84, -12, 256)
@@ -269,9 +271,10 @@ local function build(parent)
     page.status = UI.text(you, "GameFontHighlightSmall", 12, -86, 326)
     you.stats = UI.text(you, "GameFontHighlightSmall", 12, -102, 326)
     you.stats2 = UI.text(you, "GameFontHighlightSmall", 12, -118, 326)
-    you.update = UI.text(you, "GameFontNormalSmall", 12, -134, 326)
+    you.itemLevel = UI.text(you, "GameFontHighlightSmall", 12, -134, 326)
+    you.update = UI.text(you, "GameFontNormalSmall", 12, -150, 326)
     -- Your group
-    local group = UI.box(page, 336, 150); group:SetPoint("TOPLEFT", 386, -4); page.group = group
+    local group = UI.box(page, 336, 166); group:SetPoint("TOPLEFT", 386, -4); page.group = group
     UI.header(group, T("Your group"), 12, -10, 312)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
     group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
@@ -280,7 +283,7 @@ local function build(parent)
     group.scroll:SetScrollChild(group.list)
     group.names = UI.text(group.list, "GameFontHighlightSmall", 0, 0, 280)
     -- Since you were last here
-    local since = UI.box(page, 698, 218); since:SetPoint("TOPLEFT", 24, -162); page.since = since
+    local since = UI.box(page, 698, 202); since:SetPoint("TOPLEFT", 24, -178); page.since = since
     page.heading = UI.text(since, "GameFontNormalLarge", 12, -10, 674)
     page.scroll = CreateFrame("ScrollFrame", nil, since, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 12, -38); page.scroll:SetSize(650, 184)

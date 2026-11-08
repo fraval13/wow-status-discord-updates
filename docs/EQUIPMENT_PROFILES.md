@@ -31,43 +31,83 @@ scrubs the local equipment snapshot. Character-list sharing and Hide this
 character also gate responses; queued gear packets re-check those choices and
 current group membership before sending. No gear changes become announcements.
 
-Friends fetch one snapshot when a profile opens or Refresh gear is clicked,
-at most once a minute per character. An online character on the owner's account
-can answer for an offline alt that previously logged in with the new addon.
-Receivers retain completed snapshots across logout and character-list refreshes.
-The date displayed is the snapshot's capture time, not the time it was opened.
-There is no periodic equipment broadcast and no remote Inspect request.
+Equipment is exchanged automatically on login, on Sync now, and when a member's
+equipment changes. Opening a profile is no longer required. A short version
+advertisement prompts a bounded snapshot request; rapid gear changes are
+coalesced, and stat-only changes advertise at most once a minute. These are quiet
+addon messages, not chat announcements or popups.
+
+Friends can relay complete saved snapshots for offline owners, but only within
+the group in which that snapshot was received. The cache holds up to 256 snapshots
+or privacy tombstones. A newer owner revision wins over older data, irrespective
+of relay arrival time; the revision and capture timestamp are preserved by relays.
+Revisions are persistent per character under the owner's player ID. After an
+owner resets that ID, capture time orders the different identities. A newer
+advertisement supersedes older pending transfers. Incomplete snapshots keep the
+previous complete display until the new one is ready.
+
+Disabling sharing or hiding a character publishes a newer privacy state for
+previously shared groups. Revocations are retained and relayed too, so an old
+cached copy cannot restore withdrawn gear. An account's existing X withdrawal
+also hides/quarantines its cache immediately, awaiting authoritative state.
+
+## Average equipped item level
+
+Both Retail and Forever's character-sheet code take the **second** return from
+GetAverageItemLevel(). The first return includes bag gear. We read the public
+second return on the owner and exchange it with the snapshot, so the game handles
+weapon weighting, empty slots and other client-specific rules. We do not average
+required character levels or guess an item level from rarity. Missing/restricted
+values remain unavailable. The visible whole number is floored, matching the
+character sheet; transmitted hundredths are truncated to preserve that floor.
+
+Primary references:
+
+- [Forever character sheet](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_UIPanels_Game/Camelot/PaperDollFrame.lua)
+- [Retail character sheet](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_UIPanels_Game/Mainline/PaperDollFrame.lua)
+- [Forever item API, including actual item level](https://github.com/Gethe/wow-ui-source/blob/forever/Interface/AddOns/Blizzard_APIDocumentationGenerated/ItemDocumentation.lua)
+
+The Characters page shows the value in each taller card, above its full-width
+bottom XP bar. Maximum-level characters show a full bar; missing XP is labelled
+unavailable. Overview shows the local character's equipped average. A live-client
+comparison is still necessary; documentation and mocks do not establish values
+on the owner's installed build.
 
 ## Transport and bounds
 
-Uses the existing WoWStatusChr whisper prefix and joined-group membership checks.
-Older clients ignore the new operations. All words are bounded; packets are at
-most 250 bytes and use the roster's existing half-second send interval.
-Explicit game throttles/lockdown results use the existing 2/4/8/16-second
-backoff. Queued equipment traffic expires after three minutes; permanent errors
-do not create an unbounded retry loop.
+EquipmentSync.lua uses the existing WoWStatusChr whisper prefix and joined-group
+membership checks. Older clients ignore its new operations and keep the original
+D/E profile-request handshake. Background sync uses:
 
-- D group playerID character requestID requests a character's snapshot.
-- E group playerID character requestID part value replies to that request.
-- Request IDs are eight hexadecimal digits. Responses must match the requested
-  account, sending character, group, target character and request ID.
-- A snapshot has 23 parts: t (capture time), slots 0–19, and a/b (ten stats each).
-  Slots carry a validated item string, - (empty), or ? (unavailable).
-  Stats are fixed fields, with percentages in integer hundredths and - for
-  unavailable values. Arbitrary hyperlinks and nonfinite/oversized numbers fail.
-- x clears a snapshot when sharing is off; n means no saved snapshot exists yet.
-- Eight requests can be pending, each for at most three minutes. Requests and
-  replies are rate-limited per character/member; response rate-limit state is
-  bounded to 128 entries. New equipment traffic cannot grow the roster queue
-  beyond 256 packets. Each request stages only one bounded snapshot.
-- The receiver commits a new snapshot only after all 23 unique validated parts
-  arrive. Duplicate/reordered parts are harmless; incomplete/expired transfers
-  leave the previous snapshot intact. No journal event or popup is generated.
+- J: request a group inventory (rate-limited per member/group).
+- H: advertise owner ID, character, owner revision, capture time, privacy state
+  and validated character identity. Inventories include scoped cached records.
+- F: request a specific owner/character/revision from an available provider.
+- T: send a requested snapshot part. Replies must match the request's token,
+  group, provider ID and whisper sender. Only the complete advertised revision
+  can be committed. Unsolicited, older, malformed or mismatched replies fail.
 
-API references: Blizzard's generated [unit API documentation](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_APIDocumentationGenerated/UnitDocumentation.lua)
-and [character-sheet code](https://github.com/Gethe/wow-ui-source/blob/live/Interface/AddOns/Blizzard_UIPanels_Game/Mainline/PaperDollFrame.lua).
-Calls use Safe.lua and skip unavailable, failing or secret values; mocks do not
-establish live game availability.
+A background snapshot has 24 parts: timestamp, slots 0–19, two ten-stat blocks,
+and equipped average item level. Slots distinguish empty (-) from unavailable
+(?). Stats and item levels use bounded integers on the wire. Item strings retain
+enchants/gems/suffixes; arbitrary hyperlinks and nonfinite values fail.
+
+Up to four background requests can be active, with at most four providers per
+record and 64 queued compact jobs. Inventories prioritize owned and newest gear.
+Only a small packet window enters the shared queue (hard limit 256 packets);
+responses precede inventory traffic. Group membership and own privacy are
+rechecked when packets are sent. Metadata requests are limited to one per 15
+seconds/member/group; explicit Sync now still has its one-minute cooldown.
+Individual data responses are also rate-limited. In-progress work retries with
+bounded requests and rotates providers, so a missing owner need not block a
+cached relay. Idle synchronized gear does not poll periodically.
+
+All packets are at most 250 bytes and use the existing half-second send interval.
+Explicit game throttles/lockdown results use the existing 2/4/8/16-second backoff.
+Transfers expire after three minutes; no-part requests can rotate providers after
+30 seconds. Partial/reordered/duplicate data cannot replace newer complete data.
+The original D/E protocol still has 23 parts and does not carry an average; older
+peers require an update to share that field and use background sync.
 
 ## Owner's live-client checks
 
@@ -79,13 +119,20 @@ On each supported client, with two updated accounts in a test group:
 2. Hover an enchanted or random-suffix item; compare the tooltip with C. Change
    equipment and reopen/refresh. Compare public stats with the character sheet
    under the same buffs. Check unavailable stats display a dash.
-3. Open the friend's profile and let the transfer finish. Verify all items and
-   stats belong to that character. Repeat for an offline alt while its owner is
-   online. Log the owner off and reopen the cached snapshot.
+3. Log in with two updated accounts without opening profiles. Check gear arrives
+   in the background. Change gear and confirm the other client updates; repeat
+   with Sync now. Log the owner off and use a third updated account to recover
+   the latest cached snapshot from a friend. Replay an older snapshot and check
+   it cannot replace the newer one. No popup/log milestone should be generated.
 4. Turn Equipment and combat stats off while a reply is pending; check no further
    gear arrives. Refresh after a minute and confirm the cache clears. Repeat with
    Hide this character and character-list sharing off. Leave the group during a
    transfer. Check no milestone, popup or journal entry is produced.
-5. Try combat/restricted values, missing item-cache data, an older peer, English
+5. Compare the equipped average with GetAverageItemLevel()'s second return,
+   including a two-handed weapon, a one-hander plus an off-hand, and empty slots.
+   Check item level on Characters and Overview, the taller cards and full-width
+   XP bar. In Nynorsk, verify a long popup caption remains directly below the
+   fact text, with long reaction buttons below it.
+6. Try combat/restricted values, missing item-cache data, an older peer, English
    and Nynorsk, the window sizes/themes, and a public live unit versus an offline
    portrait. Report any client-specific model/API or clipping issues.
