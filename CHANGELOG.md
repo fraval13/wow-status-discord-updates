@@ -16,6 +16,10 @@ plain text, at most 120 characters, without `|` or markup. An optional
 - Forever: Options set the time between spoken reactions (0 to 60 minutes) or turn them off; voices are AI-generated
 - Forever: about 100 lines per voice come with the addon; the optional WoW Status Voices pack adds the rest
 
+## 1.46.0
+
+- Controller support no longer triggers the game's blocked-action dialog when a WoW Status window opens
+
 ## 1.45.0
 
 - Character cards show professions as icons in the middle, with the skill level under each one

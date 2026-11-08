@@ -7,10 +7,15 @@
 --   B (PAD2)    leave a text field, else close a menu, go Back, or close the window
 --   LB / RB     previous / next page of the main window
 --   right stick scroll the list under the highlight
--- Every other button passes through to the game, and nothing is taken in combat:
--- the frame lets go on PLAYER_REGEN_DISABLED, while that is still allowed, and
--- only takes the buttons again after combat. Controls are found by walking the
--- window's visible frames, so pages need no changes to be reachable. With the
+-- The buttons are claimed with override bindings that click a hidden button, and
+-- the right stick is read with C_GamePad.GetDeviceMappedState. Frame:EnableGamePadButton
+-- and EnableGamePadStick are protected functions: called from WoW Status they raised
+-- the game's "blocked from an action only available to the Blizzard UI" dialog
+-- (WoW Forever, November 2026), so they are not used. Every other button keeps
+-- its own binding, and nothing is taken in combat: the bindings are cleared on
+-- PLAYER_REGEN_DISABLED, while that is still allowed, and claimed again after
+-- combat. Controls are found by walking the window's visible frames, so pages need
+-- no changes to be reachable. With the
 -- ConsolePort addon loaded this steps aside, as ConsolePort has its own cursor.
 -- Bindings.xml adds key bindings (open, activity log, dismiss notification) that
 -- players can put on controller buttons in the game's key binding menu.
@@ -25,7 +30,12 @@ local STRATA = {BACKGROUND=1, LOW=2, MEDIUM=3, HIGH=4, DIALOG=5, FULLSCREEN=6, F
 local DIRECTIONS = {PADDUP={0, 1}, PADDDOWN={0, -1}, PADDLEFT={-1, 0}, PADDRIGHT={1, 0}}
 local CLICKABLE = {Button=true, CheckButton=true}
 
-local driver, highlight, root, focus, capturing, revealed
+-- Buttons claimed while a window is open; LB/RB only for the main window's pages.
+G.KEYS = {"PADDUP", "PADDDOWN", "PADDLEFT", "PADDRIGHT", "PAD1", "PAD2", "PAD3"}
+G.PAGE_KEYS = {"PADLSHOULDER", "PADRSHOULDER"}
+local INPUT = "WoWStatusGamepadInput"
+
+local driver, input, highlight, root, focus, bound, revealed
 local stick = 0
 local shownOrder, counter = {}, 0
 local remembered = setmetatable({}, {__mode="k"}) -- The last focus in each window.
@@ -63,9 +73,11 @@ function G.consolePort()
     return ok and result == true
 end
 
--- The game's gamepad support is switched on, and this client can route its buttons to a frame.
+-- The game's gamepad support is switched on, and this client has override bindings.
 function G.supported()
-    if not driver or type(driver.EnableGamePadButton) ~= "function" then return false end
+    if not input or type(SetOverrideBindingClick) ~= "function" or type(ClearOverrideBindings) ~= "function" then
+        return false
+    end
     if not (C_GamePad and type(C_GamePad.IsEnabled) == "function") then return false end
     local ok, enabled = pcall(C_GamePad.IsEnabled)
     return ok and enabled == true
@@ -319,12 +331,33 @@ local function valid(control, candidates)
     return false
 end
 
-local function release()
-    if capturing and driver and not combat() then
-        call(driver, "EnableGamePadButton", false)
-        call(driver, "EnableGamePadStick", false)
-        capturing = false
+-- The buttons a window needs: page changes only where there are pages.
+function G.keys(window)
+    local keys = {}
+    for _, key in ipairs(G.KEYS) do keys[#keys + 1] = key end
+    if window and window == rawget(_G, "WoWStatusMainFrame") then
+        for _, key in ipairs(G.PAGE_KEYS) do keys[#keys + 1] = key end
     end
+    return keys
+end
+-- The claimed buttons, space-separated, or nil.
+function G.bound() return bound end
+
+local function unbind()
+    if bound then pcall(ClearOverrideBindings, input); bound = nil end
+    stick = 0
+end
+local function claim(window)
+    if combat() then return end
+    local keys = G.keys(window)
+    local id = table.concat(keys, " ")
+    if bound == id then return end
+    unbind()
+    for _, key in ipairs(keys) do pcall(SetOverrideBindingClick, input, true, key, INPUT, key) end
+    bound = id
+end
+local function release()
+    if not combat() then unbind() end
     stick = 0
 end
 
@@ -339,11 +372,7 @@ function G.update()
         root, focus = window, window and remembered[window] or nil
     end
     if window and not combat() then
-        if not capturing then
-            call(driver, "EnableGamePadButton", true)
-            call(driver, "EnableGamePadStick", true)
-            capturing = true
-        end
+        claim(window)
     elseif not window then
         release()
     end
@@ -483,8 +512,31 @@ function G.stick(name, y)
     stick = math.abs(y) >= G.STICK_DEADZONE and y or 0
     return true
 end
+-- The right stick's vertical position on the active controller, or nil.
+local function ask(fn, ...)
+    if type(fn) ~= "function" then return nil end
+    local ok, value = pcall(fn, ...)
+    if ok then return value end
+    return nil
+end
+function G.readStick()
+    local pad = C_GamePad
+    if type(pad) ~= "table" then return nil end
+    local state = ask(pad.GetDeviceMappedState, number(ask(pad.GetActiveDeviceID)))
+    if type(state) ~= "table" or type(state.sticks) ~= "table" then return nil end
+    for i, value in ipairs(state.sticks) do
+        local name = ask(pad.StickIndexToConfigName, i)
+        if name == "Right" or (name == nil and i == 2) then
+            return type(value) == "table" and number(value.y) or nil
+        end
+    end
+    return nil
+end
 function G.tick(elapsed)
-    if stick == 0 or not root then return end
+    if not (bound and root) then return end
+    local y = G.readStick()
+    if y then G.stick("Right", y) end
+    if stick == 0 then return end
     local scroll = scrollTarget()
     if not scroll then return end
     local current = number(call(scroll, "GetVerticalScroll")) or 0
@@ -523,12 +575,14 @@ local function init()
     if driver or type(CreateFrame) ~= "function" then return end
     driver = CreateFrame("Frame", "WoWStatusGamepadDriver", UIParent)
     createHighlight()
-    -- A client without these script types raises an error; call() keeps it quiet.
-    call(driver, "SetScript", "OnGamePadButtonDown", function(self, button)
-        local used = G.press(button) and true or false
-        if not combat() then call(self, "SetPropagateKeyboardInput", not used) end
+    -- The override bindings click this button with the controller button's name.
+    -- Clients that report both press and release act on the press only.
+    input = CreateFrame("Button", INPUT, UIParent)
+    call(input, "EnableMouse", false)
+    call(input, "RegisterForClicks", "AnyDown", "AnyUp")
+    input:SetScript("OnClick", function(_, button, down)
+        if down ~= false then G.press(button) end
     end)
-    call(driver, "SetScript", "OnGamePadStick", function(_, name, _, y) G.stick(name, y) end)
     local waited = 0
     driver:SetScript("OnUpdate", function(_, elapsed)
         elapsed = number(elapsed) or 0
@@ -539,12 +593,7 @@ local function init()
     driver:SetScript("OnEvent", function(_, event, active)
         if event == "PLAYER_REGEN_DISABLED" then
             -- Still allowed during this event; combat lockdown starts after it.
-            if capturing then
-                call(driver, "EnableGamePadButton", false)
-                call(driver, "EnableGamePadStick", false)
-                capturing = false
-            end
-            stick = 0
+            unbind()
         elseif event == "GAME_PAD_ACTIVE_CHANGED" then
             -- The mouse took over: hide the highlight until a controller button is pressed.
             if active == false then leave(focus); revealed = false; place() end
