@@ -48,3 +48,56 @@ def test_tabs_are_steps_too():
     assert crumbs(thora) == ['Home', 'Activity']
     thora.eval('WoWStatusMainWindow.back')()
     assert thora.eval('WoWStatusMainWindow.active()') == 'records'
+
+
+def back_button(lua):
+    return lua.eval('WoWStatusMainFrame.back')
+
+
+def history(lua):
+    steps = lua.eval('WoWStatusMainWindow.history()')
+    return [(s.page, s.profile, s.character) for s in steps.values()]
+
+
+def test_a_page_with_nothing_behind_it_offers_no_back_button():
+    _, thora = pair()
+    thora.eval('WoWStatusMainWindow.show')('activity')
+    assert history(thora) == []
+    assert thora.eval('WoWStatusMainWindow.canGoBack()') is False
+    assert back_button(thora).IsShown(back_button(thora)) is False
+    # Pressing it anyway (a controller's B, Profile's own Back) reports nothing done.
+    assert thora.eval('WoWStatusMainWindow.back()') is False
+
+
+def test_a_step_that_would_redraw_the_open_page_is_no_step_at_all():
+    # The symptom reported in game: Back on Activity led straight back to Activity.
+    _, thora = pair()
+    thora.eval('WoWStatusMainWindow.show')('activity')
+    thora.execute('table.insert(WoWStatusMainWindow.history(), {page="activity"})')
+    assert thora.eval('WoWStatusMainWindow.canGoBack()') is False
+    assert back_button(thora).IsShown(back_button(thora)) is False
+    assert thora.eval('WoWStatusMainWindow.back()') is False
+    assert history(thora) == []          # the dead step is dropped, not followed
+    assert thora.eval('WoWStatusMainWindow.active()') == 'activity'
+
+
+def test_back_passes_over_dead_steps_to_the_last_real_one():
+    _, thora = pair()
+    thora.eval('WoWStatusMainWindow.show')('records')
+    thora.eval('WoWStatusMainWindow.show')('activity')
+    thora.execute('table.insert(WoWStatusMainWindow.history(), {page="activity"})')
+    assert thora.eval('WoWStatusMainWindow.canGoBack()') is True
+    assert back_button(thora).IsShown(back_button(thora)) is True
+    assert thora.eval('WoWStatusMainWindow.back()') is True
+    assert thora.eval('WoWStatusMainWindow.active()') == 'records'
+    assert history(thora) == []
+
+
+def test_moving_between_pages_still_offers_back():
+    _, thora = pair()
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    thora.eval('WoWStatusMainWindow.show')('activity')
+    assert thora.eval('WoWStatusMainWindow.canGoBack()') is True
+    assert back_button(thora).IsShown(back_button(thora)) is True
+    assert thora.eval('WoWStatusMainWindow.back()') is True
+    assert thora.eval('WoWStatusMainWindow.active()') == 'characters'

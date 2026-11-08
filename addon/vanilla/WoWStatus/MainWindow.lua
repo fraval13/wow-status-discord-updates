@@ -129,7 +129,28 @@ local function apply(target)
     state = target
     if M.path then M.path() end
 end
+-- The newest step that shows something other than what is on screen now. A
+-- step that would only redraw the open view is no step at all: Back would look
+-- like it did nothing, and reopening a page that is already open is exactly
+-- where it can fail. Such steps are dropped instead of followed.
+local function previousView()
+    local current = state or {page=active}
+    for i = #history, 1, -1 do
+        if not same(history[i], current) then return i end
+    end
+    return nil
+end
+-- Whether Back has anywhere to go. The button is hidden when it has not, so a
+-- top-level page with nothing behind it does not offer one at all.
+function M.canGoBack() return previousView() ~= nil end
 function M.back()
+    local index = previousView()
+    if not index then
+        -- Only steps showing this same view are left: they lead nowhere.
+        for i = #history, 1, -1 do table.remove(history, i) end
+        return false
+    end
+    for i = #history, index + 1, -1 do table.remove(history, i) end
     local previous = table.remove(history)
     if not previous then return false end
     apply(previous)
@@ -230,7 +251,9 @@ function M.path()
         x = x + width + 4
     end
     for i = #list + 1, #window.crumbs do window.crumbs[i]:Hide() end
-    if window.back.SetEnabled then window.back:SetEnabled(#history > 0) end
+    local canBack = M.canGoBack()
+    if window.back.SetShown then window.back:SetShown(canBack) end
+    if window.back.SetEnabled then window.back:SetEnabled(canBack) end
 end
 M.history = function() return history end
 

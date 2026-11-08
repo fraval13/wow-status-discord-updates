@@ -6,6 +6,9 @@
 --   C <group> <playerID> <playerName|-> <Name-Realm> <RACE> <sex> <CLASS> <level>
 --   X <group> <playerID>        (stop sharing: forget this player's list)
 --   Z <group> <playerID> <Name-Realm> <revision> <hidden 0|1>
+--   Y <group> <playerID> <Name-Realm> <key:skill:max,...>   (professions)
+-- H, J, F and T belong to EquipmentSync on this same prefix: a new line needs a
+-- letter no module uses yet.
 -- Receivers accept only known members of a joined group and strictly
 -- validated fields. Nothing is sent when sharing the list is turned off.
 WoWStatusRoster = {}
@@ -35,7 +38,7 @@ local function redacted(text)
     return op and (op .. " <group>" .. rest) or "?"
 end
 local outgoing, sentTo, lastSend, lastScan = {}, {}, 0, 0
-local lastXp, xpSent, statsSent = 0, nil, nil
+local lastXp, xpSent, statsSent, professionsSent = 0, nil, nil, nil
 local lastQuest, questsSent = 0, nil
 local questPending, questQueued = nil, {}
 R.QUEST_INTERVAL = 30
@@ -73,6 +76,8 @@ local function state()
         db.roster.id = table.concat(digits)
     end
     if db.roster.share == nil then db.roster.share = true end
+    -- "Online only" is a view choice for this account, like the share switch.
+    db.roster.online_only = db.roster.online_only == true
     return db.roster
 end
 
@@ -289,6 +294,55 @@ end
 function R.statsLine(info) return numbers(info, {"gold", "earned", "kills", "played"}) end
 -- "honor_kills dungeons mounts" for a "Q" line.
 function R.extrasLine(info) return numbers(info, {"honor_kills", "dungeons", "mounts"}) end
+-- "key:skill:max,..." for a "Y" line, or nil when professions are not shared.
+-- Only the game's own readings travel: each key comes from Progress's fixed
+-- catalogue, so a receiver never has to trust a sent name, and the
+-- player-entered labels of /wstatus professions are left out. A profession the
+-- client could not identify has no key and is skipped rather than guessed.
+R.PROFESSION_MAX, R.SKILL_LIMIT = 6, 1000
+-- Progress keeps the catalogue. A client without that module (or an older one)
+-- simply has no professions to show, rather than failing the roster tick.
+local function professionInfo(professionKey)
+    if not WoWStatusProgress or not WoWStatusProgress.professionInfo then return nil end
+    return WoWStatusProgress.professionInfo(professionKey)
+end
+function R.professionLine(character)
+    local fields = character and character.settings and character.settings.fields
+    if not (fields and fields.professions) then return nil end
+    local list = character.progress and character.progress.professions
+    if type(list) ~= "table" then return nil end
+    local parts = {}
+    for _, item in ipairs(list) do
+        local name = professionInfo(item.key)
+        local skill, maximum = S.number(item.skill), S.number(item.max_skill)
+        if name and skill and maximum and #parts < R.PROFESSION_MAX
+            and skill >= 0 and skill <= R.SKILL_LIMIT and skill == math.floor(skill)
+            and maximum >= 1 and maximum <= R.SKILL_LIMIT and maximum == math.floor(maximum) then
+            parts[#parts + 1] = item.key .. ":" .. skill .. ":" .. maximum
+        end
+    end
+    return #parts > 0 and table.concat(parts, ",") or nil
+end
+-- The professions to show on a card, best skill first: a friend's shared list,
+-- or, for this account's own characters, what the game reported here. Keys this
+-- version does not know are left out, so an older or newer catalogue cannot put
+-- a nameless icon on a card.
+function R.professionsOf(character)
+    local list = (character.progress and character.progress.professions) or character.professions
+    local result = {}
+    for _, item in ipairs(type(list) == "table" and list or {}) do
+        local name, icon = professionInfo(item.key)
+        local skill = S.number(item.skill)
+        if name and icon and skill and skill >= 0 and #result < R.PROFESSION_MAX then
+            result[#result + 1] = {name=name, icon=icon, skill=math.floor(skill), max=S.number(item.max_skill)}
+        end
+    end
+    table.sort(result, function(a, b)
+        if a.skill ~= b.skill then return a.skill > b.skill end
+        return a.name < b.name
+    end)
+    return result
+end
 -- Visibility belongs to this account's saved characters, including offline alts.
 function R.ownedCharacters()
     local list = {}
@@ -346,6 +400,9 @@ local function ownLines(group)
             if stats then table.insert(lines, table.concat({"S", group, roster.id, name, stats}, " ")) end
             local extras = R.extrasLine(info)
             if extras then table.insert(lines, table.concat({"Q", group, roster.id, name, extras}, " ")) end
+            -- Professions with their skill levels; older versions ignore the line.
+            local professions = R.professionLine(c)
+            if professions then table.insert(lines, table.concat({"Y", group, roster.id, name, professions}, " ")) end
             -- Separate line: older clients still receive their unchanged stats packets.
             table.insert(lines, table.concat({"O", group, roster.id, name, R.questLine(c)}, " "))
             -- Level milestones with their times, for records ("e" exact, "a" by then).
@@ -761,6 +818,15 @@ function R.setSharing(enabled)
     R.changed()
 end
 
+-- Showing only the characters that are online now. It hides cards and nothing
+-- else: no list is changed, nothing is unshared, and R.groups() still answers
+-- for every character, so a profile opened from a card keeps working.
+function R.onlineOnly() return state().online_only == true end
+function R.setOnlineOnly(enabled)
+    state().online_only = enabled == true
+    R.render()
+end
+
 function R.setHidden(character, hidden)
     local owned = false
     for _, item in ipairs(R.ownedCharacters()) do if item.character == character then owned = true; break end end
@@ -1034,6 +1100,19 @@ function R.tick()
                 end
             end
         end
+        -- Professions change rarely, so only a changed line is sent.
+        local professions = R.professionLine(current)
+        if professions ~= professionsSent and state().share and not current.hide_from_list then
+            professionsSent = professions
+            if professions then
+                local name = (WoWStatusPopups.characterName(current):gsub(" ", "_"))
+                for group in pairs(WoWStatusGroups.selected(current)) do
+                    for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                        table.insert(outgoing, {target=peer, text=table.concat({"Y", group, state().id, name, professions}, " ")})
+                    end
+                end
+            end
+        end
         if info and S.number(info.xp) and info.xp ~= xpSent and state().share and not current.hide_from_list then
             xpSent = info.xp
             local name = (WoWStatusPopups.characterName(current):gsub(" ", "_"))
@@ -1058,6 +1137,16 @@ function R.tick()
         end
         if not owner or owner.hide_from_list then return end
         item.text = table.concat({"O", group, pid, name, R.questLine(owner)}, " ")
+    end
+    -- Recheck shared professions at send time, like the quest totals above.
+    if item.text:sub(1, 2) == "Y " then
+        local group, name = item.text:match("^Y ([^ ]+) [^ ]+ ([^ ]+) ")
+        if not group or not state().share or not WoWStatusGroups.contains(current, group) then return end
+        local owner
+        for _, character in pairs(db.characters or {}) do
+            if key(WoWStatusPopups.characterName(character)) == key(name:gsub("_", " ")) then owner = character; break end
+        end
+        if not owner or owner.hide_from_list or not R.professionLine(owner) then return end
     end
     if item.equipmentAt and time() - item.equipmentAt >= 180 then return end
     if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
@@ -1295,6 +1384,28 @@ receive = function(message, sender, distribution)
         R.render()
         return true
     end
+    if op == "Y" and #words == 5 then
+        local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
+        local player = players[pid]
+        if not short or #words[4] > 64 or words[4]:find(S.CONTROL_OR_PIPE) or not player then return false, "bad profession line" end
+        local character = player.characters[key(short:gsub("_", " ") .. "-" .. realmPart) or ""]
+        if not character then return false, "unknown character" end
+        if #words[5] > 160 then return false, "profession line too long" end
+        local list = {}
+        for part in words[5]:gmatch("[^,]+") do
+            local professionKey, skill, maximum = part:match("^([a-z_]+):(%d+):(%d+)$")
+            skill, maximum = tonumber(skill), tonumber(maximum)
+            if not (professionKey and professionInfo(professionKey)) then return false, "unknown profession" end
+            if not (skill and maximum and skill <= R.SKILL_LIMIT and maximum >= 1 and maximum <= R.SKILL_LIMIT) then
+                return false, "bad profession value"
+            end
+            if #list >= R.PROFESSION_MAX then return false, "too many professions" end
+            list[#list + 1] = {key=professionKey, skill=skill, max_skill=maximum}
+        end
+        character.professions = #list > 0 and list or nil
+        R.render()
+        return true
+    end
     if op == "P" and #words == 5 then
         local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
         local permille = tonumber(words[5])
@@ -1445,7 +1556,8 @@ function R.groups()
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=character.groups,
                 deaths=character.deaths, quests=character.quests, quests_source=character.quests_source,
                 gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
-                honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts}
+                honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts,
+                professions=character.professions}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
             local newer = fresher[key(character.name) or ""]
@@ -1484,7 +1596,8 @@ function R.groups()
             deaths=S.number(character.deaths) or deaths[k] or nil, quests=S.number(character.quests),
             quests_source=character.quests_source, gold=S.number(character.gold),
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
-            honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts)})
+            honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts),
+            professions=character.professions})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
@@ -1497,6 +1610,8 @@ function R.groups()
                 quests=quests, quests_source=questsSource,
                 gold=info.gold, earned=info.earned, kills=info.kills, played=info.played,
                 honor_kills=info.honor_kills, dungeons=info.dungeons, mounts=info.mounts,
+                -- Your own characters, including offline alts, from what the game read here.
+                professions=c.progress and c.progress.professions or nil,
                 current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
         end
     end
@@ -1506,7 +1621,8 @@ function R.groups()
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups,
                 quests=character.quests, quests_source=character.quests_source,
                 gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
-                honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts},
+                honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts,
+                professions=character.professions},
                 nil, S.string(player.version) and ("v" .. player.version) or "older version")
         end
     end
@@ -1539,7 +1655,10 @@ end
 
 -- Characters page: one bordered card per character under each player's header.
 local UI = WoWStatusUI
-local CARD, HEADER, GAP = 84, 26, 6
+-- The card grew by the profession strip's height: a row of icons with each
+-- skill level under its icon, centred between the texts and the XP bar.
+local CARD, HEADER, GAP = 114, 26, 6
+local PROFESSION_ICON, PROFESSION_PITCH, PROFESSION_TOP = 18, 26, -62
 local function header(index)
     local h = CreateFrame("Frame", nil, page.list)
     h:SetSize(680, HEADER)
@@ -1556,6 +1675,19 @@ local function card(index)
     c.status = UI.text(c, "GameFontHighlightSmall", 82, -33, 200)
     c.itemLevel = UI.text(c, "GameFontHighlightSmall", 66, -48, 280)
     c.xp = UI.xpBar(c, 660, 14); c.xp:SetPoint("BOTTOMLEFT", 10, 6)
+    -- Professions: the game's icon with its skill level underneath. Plain
+    -- textures, so there is nothing here for a controller to step onto; the
+    -- names and maximums are in the card's tooltip, and the card itself still
+    -- opens the character's profile.
+    c.professions = {}
+    for i = 1, R.PROFESSION_MAX do
+        local slot = {}
+        slot.icon = c:CreateTexture(nil, "ARTWORK"); slot.icon:SetSize(PROFESSION_ICON, PROFESSION_ICON)
+        slot.icon:SetPoint("TOPLEFT", 0, PROFESSION_TOP)
+        slot.skill = UI.text(c, "GameFontHighlightSmall", 0, PROFESSION_TOP - PROFESSION_ICON - 1, PROFESSION_PITCH, "CENTER")
+        c.professions[i] = slot
+    end
+
     c.class = UI.text(c, "GameFontHighlight", 380, -10, 280, "RIGHT")
     c.latest = UI.text(c, "GameFontDisableSmall", 380, -30, 280, "RIGHT")
     c.groups = UI.text(c, "GameFontHighlightSmall", 380, -44, 280, "RIGHT")
@@ -1583,6 +1715,9 @@ local function card(index)
             line("Mounts", S.number(character.mounts) and character.mounts > 0 and tostring(character.mounts))
             local average=R.itemLevel(character.name)
             line("Average item level", average and string.format("%.2f",average))
+            for _, item in ipairs(R.professionsOf(character)) do
+                line(item.name, item.max and (item.skill .. " / " .. item.max) or tostring(item.skill))
+            end
             if R.isUnreachable(character.name) then
                 GameTooltip:AddLine(T("Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."), 1, .4, .4, true)
             end
@@ -1720,21 +1855,39 @@ function R.render()
         b:Show()
         y = y + SECTION
         if not closed then
-            if #part.entries == 0 then
+            -- The rows a player's heading covers right now: all of them, or only
+            -- the ones online while the filter is on.
+            local function visible(group)
+                if not R.onlineOnly() then return group.rows end
+                local shown = {}
+                for _, character in ipairs(group.rows) do
+                    if character.status == "online" then shown[#shown + 1] = character end
+                end
+                return shown
+            end
+            local covered = 0
+            for _, group in ipairs(part.entries) do covered = covered + #visible(group) end
+            if covered == 0 then
                 headers = headers + 1
                 local h = page.headers[headers] or header(headers)
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
-                h.text:SetText("|cff9d9d9d" .. T("Nobody else seen in this group yet.") .. "|r"); h:Show()
+                -- Say which of the two it is: nobody met yet, or nobody online now.
+                local note = (#part.entries > 0 and R.onlineOnly()) and "Nobody from this group is online right now."
+                    or "Nobody else seen in this group yet."
+                h.text:SetText("|cff9d9d9d" .. T(note) .. "|r"); h:Show()
                 y = y + HEADER
             end
             for _, group in ipairs(part.entries) do
+                local rows = visible(group)
+                if #rows > 0 then
                 headers = headers + 1
                 local h = page.headers[headers] or header(headers)
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
+                -- The heading counts the cards under it, so the filter shows in it.
                 -- The version note stays small and grey beside the title.
-                h.text:SetText(shownTitle(group.title):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
+                h.text:SetText(shownTitle(counted(group.name, #rows)):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
                 y = y + HEADER
-                for _, character in ipairs(group.rows) do
+                for _, character in ipairs(rows) do
                     if index >= 200 then break end
                     index = index + 1
                     local c = page.lines[index] or card(index)
@@ -1761,6 +1914,22 @@ function R.render()
                     end
                     local average=R.itemLevel(character.name)
                     c.itemLevel:SetText(T("Average item level:") .. " " .. (average and math.floor(average) or "—"))
+                    local professions = R.professionsOf(character)
+                    local span = #professions * PROFESSION_ICON + math.max(0, #professions - 1) * (PROFESSION_PITCH - PROFESSION_ICON)
+                    local left = math.floor((680 - span) / 2)
+                    for i, slot in ipairs(c.professions) do
+                        local item = professions[i]
+                        if item then
+                            local x = left + (i - 1) * PROFESSION_PITCH
+                            slot.icon:ClearAllPoints(); slot.icon:SetPoint("TOPLEFT", x, PROFESSION_TOP)
+                            slot.icon:SetTexture("Interface\\Icons\\" .. item.icon); slot.icon:Show()
+                            slot.skill:ClearAllPoints()
+                            slot.skill:SetPoint("TOPLEFT", x - math.floor((PROFESSION_PITCH - PROFESSION_ICON) / 2), PROFESSION_TOP - PROFESSION_ICON - 1)
+                            slot.skill:SetText(tostring(item.skill))
+                        else
+                            slot.icon:Hide(); slot.skill:SetText("")
+                        end
+                    end
                     -- Level and total deaths at the end of the card.
                     local facts = {}
                     if character.level then table.insert(facts, TF("Level %d", character.level)) end
@@ -1777,6 +1946,7 @@ function R.render()
                     c:Show()
                     y = y + CARD + GAP
                 end
+                end -- #rows > 0: a heading with no cards under it is left out
             end
         end
         y = y + 4
@@ -1785,6 +1955,7 @@ function R.render()
     for i = headers + 1, #page.headers do page.headers[i]:Hide() end
     for i = sections + 1, #page.sections do page.sections[i]:Hide() end
     page.list:SetHeight(math.max(1, y))
+    page.empty:SetText(T(R.onlineOnly() and "Nobody is online right now." or "No characters yet."))
     page.empty:SetShown(index == 0 and sections == 0)
     page.count = index
 end
@@ -1802,6 +1973,19 @@ local function build(parent)
     local shareLabel = page.share:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText(T("Share my character list"))
     page.share:SetScript("OnClick", function(self) R.setSharing(self:GetChecked() and true or false) end)
+    page.onlineOnly = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
+    page.onlineOnly:SetPoint("TOPLEFT", 206, -486); page.onlineOnly:SetSize(32, 32)
+    local onlineLabel = page.onlineOnly:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    onlineLabel:SetPoint("TOPLEFT", 34, -8); onlineLabel:SetText(T("Online only"))
+    page.onlineOnly:SetScript("OnClick", function(self) R.setOnlineOnly(self:GetChecked() and true or false) end)
+    page.onlineOnly:SetScript("OnEnter", function(self)
+        if GameTooltip then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Online only"))
+            GameTooltip:AddLine(T("Shows only the characters online right now. Nothing is hidden from your friends and no progress is lost."), 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    end)
+    page.onlineOnly:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     page.visibility = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.visibility:SetPoint("TOPLEFT", 330, -486); page.visibility:SetSize(240, 28)
     page.visibility:SetText(T("Character visibility"))
@@ -1823,6 +2007,7 @@ end
 WoWStatusMainWindow.register("characters", "Characters", build, function()
     if not page then return end
     page.share:SetChecked(state().share)
+    page.onlineOnly:SetChecked(R.onlineOnly())
     updateSyncButton()
     R.render()
 end)
@@ -1862,6 +2047,7 @@ function R.init(database, character, reporter)
     questPending, questQueued = nil, {}
     xpSent = character and character.roster_info and character.roster_info.xp
     statsSent = character and character.roster_info and R.statsLine(character.roster_info)
+    professionsSent = character and R.professionLine(character)
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register, PREFIX) end
 end
