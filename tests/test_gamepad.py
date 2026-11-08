@@ -403,3 +403,45 @@ def test_bindings_xml_calls_existing_functions():
     for binding in ('WOWSTATUS_TOGGLE', 'WOWSTATUS_ACTIVITY', 'WOWSTATUS_DISMISS'):
         assert f'name="{binding}"' in text
         assert f'BINDING_NAME_{binding}' in lua_source
+
+
+def test_settings_character_visibility_checkboxes_are_reachable(lua):
+    main_window(lua)
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function methods:SetText(text) self.text=text end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function methods:SetChecked(value) self.checked=value end
+        function methods:GetChecked() return self.checked end
+        local click=methods.Click
+        function methods:Click(button)
+            if self.kind=="CheckButton" then self.checked=not self.checked end
+            click(self,button)
+        end
+        function methods:SetJustifyH() end
+        function methods:SetScrollChild(child) self.child=child end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusSafe={}
+        WoWStatusMainWindow.register=function() end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        local bank={hide_from_list=true}
+        local active={}
+        WoWStatusRoster.ownedCharacters=function() return {
+            {name="Bank-Realm",character=bank},{name="Active-Realm",character=active}} end
+        WoWStatusRoster.setHidden=function(character,hidden) character.hide_from_list=hidden end
+        local scroll=WoWStatusRoster.buildVisibilitySettings(main,-40)
+        scroll:refresh()
+        local controls=WoWStatusGamepad.controls(main,{main})
+        local reached={}
+        for _,control in ipairs(controls) do reached[control]=true end
+        assert(reached[scroll.rows[1]] and reached[scroll.rows[2]])
+        assert(not scroll.rows[1]:GetChecked() and scroll.rows[2]:GetChecked())
+        scroll.rows[1].rect={120,400,32,32}
+        WoWStatusGamepad.update()
+        press("PADDDOWN")
+        WoWStatusGamepad.setFocus(scroll.rows[1]);press("PAD1")
+        assert(not bank.hide_from_list)
+    ''')

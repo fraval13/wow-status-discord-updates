@@ -50,6 +50,8 @@ def test_group_and_sort_choices_move_from_records_and_remain_independent():
         assert(page.group==second and page.sort.text=="Sort: Quests")
         assert(WoWStatusDB.leaderboard.sort=="quests")
         page.sort.OnClick(page.sort)
+        assert(WoWStatusDB.leaderboard.sort=="played")
+        page.sort.OnClick(page.sort)
         assert(WoWStatusDB.leaderboard.sort=="level")
         local another
         for _, tab in ipairs(page.tabs) do if tab.group~=second then another=tab end end
@@ -79,4 +81,27 @@ def test_empty_leaderboard_disables_sort_and_does_not_keep_removed_group_tabs():
         WoWStatusLeaderboard.render()
         assert(page.sort.enabled==false and page.group==nil and page.boardEmpty:IsShown())
         for _, tab in ipairs(page.tabs) do assert(not tab:IsShown()) end
+    ''')
+
+
+def test_played_time_uses_shared_seconds_and_sorts_missing_values_last():
+    lua = make_lua(WINDOW)
+    lua.execute('''
+        WoWStatusGroups.update("Example Crew", "")
+        local info=character().roster_info
+        info.played=86400
+        local id=next(character().group_ids)
+        local own
+        for _, row in ipairs(WoWStatusRoster.leaderboard(id)) do if row.own then own=row end end
+        assert(own and own.played==86400)
+        WoWStatusRoster.leaderboard=function() return {
+            {name="Missing-Realm"},{name="New-Realm",played=3600},{name="Veteran-Realm",played=172800}} end
+        WoWStatusDB.leaderboard={sort="played"}
+        SlashCmdList.WOWSTATUS("leaderboard")
+        local page=WoWStatusLeaderboardPage
+        assert(page.sort.text=="Sort: Played time")
+        assert(page.board[1].name.text:find("Veteran",1,true))
+        assert(page.board[1].played.text==WoWStatusUI.duration(172800))
+        assert(page.board[3].name.text:find("Missing",1,true))
+        assert(page.board[3].played.text=="–")
     ''')

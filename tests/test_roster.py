@@ -111,13 +111,13 @@ def test_hiding_a_character_and_turning_sharing_off():
     pump(mira, thora)
     assert thora.eval('next(WoWStatusDB.roster.players)') is not None
     mira.execute('WoWStatusRoster.setHidden(character(), true)')
-    assert [p for p in pump(mira, thora, start=300) if p[0] not in 'HJFT'] == []
+    assert [p for p in pump(mira, thora, start=300) if p[0] not in 'HJFTZ'] == []
     mira.execute('WoWStatusRoster.setHidden(character(), false); WoWStatusRoster.setSharing(false)')
-    sent = [p for p in pump(mira, thora, start=400) if p[0] not in 'HJFT']
+    sent = [p for p in pump(mira, thora, start=400) if p[0] not in 'HJFTZ']
     assert len(sent) == 1 and sent[0].startswith('X ')
     assert thora.eval('next(WoWStatusDB.roster.players)') is None
     mira.execute('WoWStatusRoster.setSharing(true)')
-    assert [line[0] for line in pump(mira, thora, start=500) if line[0] not in 'HJFT'] == ['C', 'O', 'Q', 'S']
+    assert [line[0] for line in pump(mira, thora, start=500) if line[0] not in 'HJFT'] == ['C', 'O', 'Q', 'S', 'Z']
 
 
 def test_log_senders_without_a_list_show_as_never_met():

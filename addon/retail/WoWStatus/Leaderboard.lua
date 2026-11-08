@@ -12,12 +12,12 @@ local function state()
         WoWStatusDB.leaderboard = {tab=old.tab, sort=old.sort}
     end
     local data = WoWStatusDB.leaderboard
-    if data.sort ~= "level" and data.sort ~= "deaths" and data.sort ~= "quests" then data.sort="level" end
+    if data.sort ~= "level" and data.sort ~= "deaths" and data.sort ~= "quests" and data.sort ~= "played" then data.sort="level" end
     return data
 end
 
--- The Leaderboard view: everyone in the group, sorted by level, deaths or quests.
-local SORTS = {{"level", "Level"}, {"deaths", "Deaths"}, {"quests", "Quests"}}
+-- The Leaderboard view: everyone in the group, sorted by level, deaths, quests or played time.
+local SORTS = {{"level", "Level"}, {"deaths", "Deaths"}, {"quests", "Quests"}, {"played", "Played time"}}
 local function sorted(list, by)
     table.sort(list, function(a, b)
         local x, y = a[by] or -1, b[by] or -1
@@ -33,10 +33,11 @@ local function boardRow(index)
     row:SetSize(680, 26)
     row.bg = row:CreateTexture(nil, "BACKGROUND"); row.bg:SetAllPoints()
     row.rank = UI.text(row, "GameFontNormal", 8, -6, 30)
-    row.name = UI.text(row, "GameFontHighlight", 44, -6, 260)
-    row.level = UI.text(row, "GameFontHighlight", 310, -6, 130)
-    row.deaths = UI.text(row, "GameFontHighlight", 450, -6, 100, "RIGHT")
-    row.quests = UI.text(row, "GameFontHighlight", 560, -6, 110, "RIGHT")
+    row.name = UI.text(row, "GameFontHighlight", 44, -6, 230)
+    row.level = UI.text(row, "GameFontHighlight", 280, -6, 105)
+    row.deaths = UI.text(row, "GameFontHighlight", 390, -6, 70, "RIGHT")
+    row.quests = UI.text(row, "GameFontHighlight", 465, -6, 100, "RIGHT")
+    row.played = UI.text(row, "GameFontHighlight", 570, -6, 100, "RIGHT")
     page.board[index] = row
     return row
 end
@@ -57,13 +58,14 @@ local function renderBoard(chosen)
         row.deaths:SetText(entry.deaths and tostring(entry.deaths) or "–")
         row.quests:SetText(entry.quests and (tostring(entry.quests)
             .. (entry.quests_source == "tracked_since" and (" (" .. T("tracked") .. ")") or "")) or "–")
+        row.played:SetText(entry.played and UI.duration(entry.played) or "–")
         row:Show()
     end
     for i = #list + 1, #page.board do page.board[i]:Hide() end
     page.boardHeader:SetShown(true)
     page.list:SetHeight(math.max(1, #list * 28))
     page.boardEmpty:SetShown(#list == 0)
-    page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or "Level"))
+    page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or by == "played" and "Played time" or "Level"))
 end
 
 function L.render()
@@ -124,10 +126,11 @@ local function build(parent)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)
     page.scroll:SetScrollChild(page.list)
     page.boardHeader = CreateFrame("Frame", nil, page); page.boardHeader:SetSize(680, 20)
-    UI.text(page.boardHeader, "GameFontNormal", 44, 0, 260):SetText(T("Character"))
-    UI.text(page.boardHeader, "GameFontNormal", 310, 0, 130):SetText(T("Level"))
-    UI.text(page.boardHeader, "GameFontNormal", 450, 0, 100, "RIGHT"):SetText(T("Deaths"))
-    UI.text(page.boardHeader, "GameFontNormal", 560, 0, 110, "RIGHT"):SetText(T("Quests"))
+    UI.text(page.boardHeader, "GameFontNormal", 44, 0, 230):SetText(T("Character"))
+    UI.text(page.boardHeader, "GameFontNormal", 280, 0, 105):SetText(T("Level"))
+    UI.text(page.boardHeader, "GameFontNormal", 390, 0, 70, "RIGHT"):SetText(T("Deaths"))
+    UI.text(page.boardHeader, "GameFontNormal", 465, 0, 100, "RIGHT"):SetText(T("Quests"))
+    UI.text(page.boardHeader, "GameFontNormal", 570, 0, 100, "RIGHT"):SetText(T("Played time"))
     page.boardEmpty = UI.text(page.list, "GameFontDisable", 0, -6, 660)
     page.boardEmpty:SetText(T("Nobody in this group yet. Members appear when their character list arrives."))
     return page

@@ -88,8 +88,18 @@ quest history. **Character details → Completed quests** controls sharing.
 
 **Leaderboard** (**Toppliste** in Nynorsk) has its own tab in the main window,
 alongside Records and Characters, or opens with `/wstatus leaderboard`. Choose a
-group and sort by level, deaths or completed quests. **Records** holds Firsts,
+group and sort by level, deaths, completed quests or played time. **Records** holds Firsts,
 This week and Fun records.
+
+In **Settings → WoW Status → Characters shown to friends**, untick any of your
+saved characters to hide bank alts from everyone's character list, Overview and
+leaderboard. Tick them again to restore them. Offline alts can be managed without
+logging into them; saved progress and activity history stay intact. Updates reach
+online friends automatically and others at the next character-list sync while
+someone on your account is online. Everyone needs the updated addon to respect
+these settings. The Characters page has a **Character visibility** shortcut.
+Played time uses the latest shared total; **Character details → Played time**
+controls whether it is shared.
 
 ## Language
 

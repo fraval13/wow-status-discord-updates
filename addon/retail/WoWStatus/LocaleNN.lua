@@ -401,6 +401,7 @@ W.add({
     {"^(This morning)(.+)$", function(a, b) return recap(a .. b) end},
     {"^(This afternoon)(.+)$", function(a, b) return recap(a .. b) end},
     {"^(Tonight)(.+)$", function(a, b) return recap(a .. b) end},
+
 })
 
 -- Armor headings by slot: the adjective follows the noun's gender and number
@@ -517,4 +518,7 @@ W.add({
     ["Finger 1"] = "Finger 1", ["Finger 2"] = "Finger 2", ["Trinket 1"] = "Prydgjenstand 1",
     ["Trinket 2"] = "Prydgjenstand 2", ["Main hand"] = "Hovudhand", ["Off hand"] = "Andre hand",
     ["Ranged / relic"] = "Avstand / relikvie", ["Ammunition"] = "Ammunisjon",
+    ["Character visibility"] = "Synlege figurar",
+    ["Characters shown to friends"] = "Figurar som venene ser",
+    ["Untick bank alts to hide them from everyone's character list and leaderboard."] = "Fjern haken for å gøyme bankfigurar frå figurlista og topplista til alle.",
 })

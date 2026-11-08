@@ -174,7 +174,7 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, WoWStatusScreenshots.available() and 1270 or 1130)
+        panel:SetSize(600, WoWStatusScreenshots.available() and 1530 or 1390)
         panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
         panel.background=panel:CreateTexture(nil,"BACKGROUND")
         panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
@@ -231,6 +231,10 @@ local function showPanel(host)
             checkbox("hide_ui","Hide interface in screenshots",24,-1150,"screenshots")
             bottom=-1212
         end
+        section("Characters shown to friends",bottom)
+        label(panel,"Untick bank alts to hide them from everyone's character list and leaderboard.",24,bottom-32,520)
+        panel.visibility=WoWStatusRoster.buildVisibilitySettings(panel,bottom-84)
+        bottom=bottom-260
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
     end
@@ -408,6 +412,7 @@ end
 
 refresh = function()
     if not panel then return end
+    if panel.visibility then panel.visibility:refresh() end
     for _, entry in ipairs(panel.checks) do
         local target = entry.group and current.settings[entry.group] or current.settings
         entry.widget:SetChecked(target[entry.key])

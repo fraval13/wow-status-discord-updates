@@ -5,6 +5,7 @@
 -- the group's members on the WoWStatusChr prefix:
 --   C <group> <playerID> <playerName|-> <Name-Realm> <RACE> <sex> <CLASS> <level>
 --   X <group> <playerID>        (stop sharing: forget this player's list)
+--   Z <group> <playerID> <Name-Realm> <revision> <hidden 0|1>
 -- Receivers accept only known members of a joined group and strictly
 -- validated fields. Nothing is sent when sharing the list is turned off.
 WoWStatusRoster = {}
@@ -288,10 +289,47 @@ end
 function R.statsLine(info) return numbers(info, {"gold", "earned", "kills", "played"}) end
 -- "honor_kills dungeons mounts" for a "Q" line.
 function R.extrasLine(info) return numbers(info, {"honor_kills", "dungeons", "mounts"}) end
+-- Visibility belongs to this account's saved characters, including offline alts.
+function R.ownedCharacters()
+    local list = {}
+    for _, character in pairs(db and db.characters or {}) do
+        if character.identity and character.identity.client == WoWStatusAdapter.client_id then
+            local name = WoWStatusPopups.characterName(character)
+            if key(name) then list[#list + 1] = {name=name, character=character} end
+        end
+    end
+    table.sort(list, function(a,b) return a.name < b.name end)
+    return list
+end
+local function visibility()
+    local roster = state()
+    roster.visibility = type(roster.visibility) == "table" and roster.visibility or {}
+    return roster.visibility
+end
+function R.hiddenNames()
+    local hidden = {}
+    for _, item in ipairs(R.ownedCharacters()) do
+        if item.character.hide_from_list then hidden[key(item.name)] = true end
+    end
+    for _, owner in pairs(db and visibility() or {}) do
+        for name, item in pairs(owner.characters) do
+            if item.hidden then hidden[name] = true end
+        end
+    end
+    return hidden
+end
+function R.isHidden(name) return R.hiddenNames()[key(name) or ""] == true end
+
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
+        local name = WoWStatusPopups.characterName(c)
+        if c.identity and c.identity.client == WoWStatusAdapter.client_id and WoWStatusPopups.fullName(name)
+            and (c.hide_from_list or (S.number(c.visibility_revision) or 0) > 0) then
+            table.insert(lines, table.concat({"Z", group, roster.id, name:gsub(" ", "_"),
+                c.visibility_revision or 0, c.hide_from_list and 1 or 0}, " "))
+        end
         -- WoW Forever: a character whose full name is not learnt yet would arrive as
         -- a first name only, which members drop; it is sent once the name is known.
         if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
@@ -340,10 +378,11 @@ local function enqueue(group, target)
     sentTo[group] = sentTo[group] or {}
     if sentTo[group][peerKey] then return end
     sentTo[group][peerKey] = true
-    if not state().share then return end
     for _, line in ipairs(ownLines(group)) do
-        local questName = line:match("^O [^ ]+ [^ ]+ ([^ ]+) ")
-        table.insert(outgoing, {target=target, text=line, questName=questName, questGroup=questName and group})
+        if state().share or line:sub(1,2) == "Z " then
+            local questName = line:match("^O [^ ]+ [^ ]+ ([^ ]+) ")
+            table.insert(outgoing, {target=target, text=line, questName=questName, questGroup=questName and group})
+        end
     end
 end
 
@@ -723,8 +762,48 @@ function R.setSharing(enabled)
 end
 
 function R.setHidden(character, hidden)
-    character.hide_from_list = hidden == true or nil
+    local owned = false
+    for _, item in ipairs(R.ownedCharacters()) do if item.character == character then owned = true; break end end
+    if not owned then return false end
+    hidden = hidden == true
+    if (character.hide_from_list == true) == hidden then return true end
+    character.hide_from_list = hidden or nil
+    character.visibility_revision = (S.number(character.visibility_revision) or 0) + 1
     R.changed()
+    R.render()
+    if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
+    return true
+end
+
+function R.buildVisibilitySettings(parent, y)
+    local scroll = CreateFrame("ScrollFrame", nil, parent, "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", 24, y); scroll:SetSize(528, 160)
+    scroll.list = CreateFrame("Frame", nil, scroll); scroll.list:SetSize(500, 1)
+    scroll:SetScrollChild(scroll.list)
+    scroll.rows = {}
+    function scroll:refresh()
+        local owned = R.ownedCharacters()
+        for i, item in ipairs(owned) do
+            local row = self.rows[i]
+            if not row then
+                row = CreateFrame("CheckButton", nil, self.list, "UICheckButtonTemplate")
+                row:SetPoint("TOPLEFT", 0, -(i-1)*34); row:SetSize(32, 32)
+                row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+                row.label:SetPoint("LEFT", row, "RIGHT", 6, 0); row.label:SetWidth(450); row.label:SetJustifyH("LEFT")
+                row:SetScript("OnClick", function(button)
+                    R.setHidden(button.character, not button:GetChecked())
+                    self:refresh()
+                end)
+                self.rows[i] = row
+            end
+            row.character = item.character
+            row.label:SetText(item.name:gsub("|", "||"))
+            row:SetChecked(not item.character.hide_from_list); row:Show()
+        end
+        for i = #owned+1, #self.rows do self.rows[i]:Hide() end
+        self.list:SetHeight(math.max(1, #owned*34))
+    end
+    return scroll
 end
 
 -- Equipment is requested only when opening a profile. An online character on
@@ -823,7 +902,7 @@ end
 -- offline owner is online now. Existing live roster details are retained.
 function R.storeEquipment(record,group)
     local players, k = state().players, key(record.name)
-    if not k then return end
+    if not k or R.isHidden(record.name) then return end
     local player=players[record.owner]
     if not player and not record.hidden then
         local count,oldest,at=0,nil,math.huge
@@ -1035,6 +1114,37 @@ receive = function(message, sender, distribution)
         return WoWStatusEquipmentSync and WoWStatusEquipmentSync.receive(words,sender) or false
     end
     if op == "D" or op == "E" then return equipmentMessage(words, sender) end
+    -- Revisioned owner visibility survives stale list packets and log fallbacks.
+    if op == "Z" and #words == 6 then
+        local name, revision, flag = words[4], tonumber(words[5]), words[6]
+        if #name > 64 or name:find(S.CONTROL_OR_PIPE) or not name:match("^[^%-]+%-[^%-]+$")
+            or not revision or revision < 0 or revision >= 1e12 or revision ~= math.floor(revision)
+            or (flag ~= "0" and flag ~= "1") then return false end
+        name = name:gsub("_", " ")
+        local k = key(name)
+        if not k or not WoWStatusPopups.fullName(name) then return false end
+        local all, owner = visibility(), visibility()[pid]
+        if not owner then
+            local count, oldest, at = 0, nil, math.huge
+            for id, item in pairs(all) do
+                count = count+1
+                if (item.at or 0) < at then oldest, at = id, item.at or 0 end
+            end
+            if count >= MAX_PLAYERS and oldest then all[oldest] = nil end
+            owner = {characters={}}; all[pid] = owner
+        end
+        local old = owner.characters[k]
+        if old and revision <= old.revision then return revision == old.revision and old.hidden == (flag == "1") end
+        local count = 0
+        for _ in pairs(owner.characters) do count = count+1 end
+        if not old and count >= 200 then return false end
+        owner.characters[k] = {name=name, revision=revision, hidden=flag == "1"}
+        owner.at = time()
+        R.render()
+        if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
+        if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
+        return true
+    end
     if op == "X" and #words == 3 then
         players[pid] = nil
         if WoWStatusEquipmentSync then WoWStatusEquipmentSync.withdraw(pid) end
@@ -1271,6 +1381,7 @@ end
 
 -- Groups for the Characters page: {title, rows={{name, race, sex, class, level, status, latest}}}.
 function R.groups()
+    local hidden = R.hiddenNames()
     local online, latest, lastSeen, shared, deaths = {}, {}, {}, {}, {}
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
@@ -1319,6 +1430,9 @@ function R.groups()
     for _, player in pairs(state().players) do
         for _, character in pairs(player.characters) do note(character.name) end
     end
+    for _, owner in pairs(visibility()) do
+        for _, item in pairs(owner.characters) do note(item.name) end
+    end
     for _, c in pairs(db.characters or {}) do note(WoWStatusPopups.characterName(c)) end
     local function resolve(name)
         local k = key(name)
@@ -1337,6 +1451,7 @@ function R.groups()
             local newer = fresher[key(character.name) or ""]
             if newer and newer > (S.number(character.level) or 0) then character.level, character.xp = newer, nil end
         end
+        if hidden[key(character.name) or ""] then return end
         -- WoW Forever: first-name-only characters come from older versions; your
         -- current character stays even before its full name is known.
         if not WoWStatusPopups.fullName(character.name) and not (self and character.current) then return end
@@ -1547,7 +1662,7 @@ function R.leaderboard(group)
                         if q == nil and not row.quests_source then q = quests[k] end
                         table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
                             deaths=S.number(row.deaths), quests=q, quests_source=row.quests_source, online=row.status == "online", own=own,
-                            gold=S.number(row.gold), kills=S.number(row.kills)})
+                            gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played)})
                     end
                 end
             end
@@ -1687,11 +1802,10 @@ local function build(parent)
     local shareLabel = page.share:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText(T("Share my character list"))
     page.share:SetScript("OnClick", function(self) R.setSharing(self:GetChecked() and true or false) end)
-    page.hide = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
-    page.hide:SetPoint("TOPLEFT", 330, -486); page.hide:SetSize(32, 32)
-    local hideLabel = page.hide:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-    hideLabel:SetPoint("TOPLEFT", 38, -8); hideLabel:SetText(T("Hide this character from the list"))
-    page.hide:SetScript("OnClick", function(self) R.setHidden(current, self:GetChecked() and true or false) end)
+    page.visibility = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+    page.visibility:SetPoint("TOPLEFT", 330, -486); page.visibility:SetSize(240, 28)
+    page.visibility:SetText(T("Character visibility"))
+    page.visibility:SetScript("OnClick", function() SlashCmdList.WOWSTATUS("") end)
     page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
     page.sync:SetScript("OnClick", function() if R.syncNow() then R.whoLookup() end end)
@@ -1709,7 +1823,6 @@ end
 WoWStatusMainWindow.register("characters", "Characters", build, function()
     if not page then return end
     page.share:SetChecked(state().share)
-    page.hide:SetChecked(current and current.hide_from_list == true)
     updateSyncButton()
     R.render()
 end)

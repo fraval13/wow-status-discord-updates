@@ -174,13 +174,13 @@ local function renderGroup()
         groups = groups + 1
         for _, peer in ipairs(WoWStatusPopups.peers(id)) do
             local key = WoWStatusPopups.senderKey(peer)
-            if key and not seen[key] and WoWStatusPopups.fullName(peer) then
+            if key and not seen[key] and WoWStatusPopups.fullName(peer) and not WoWStatusRoster.isHidden(peer) then
                 seen[key] = true; table.insert(names, ((peer:match("^[^-]+") or peer):gsub("|", "||")))
             end
         end
     end
     table.sort(names)
-    local count = WoWStatusPopups.onlineCount()
+    local count = #names
     group.count:SetText(groups == 0 and T("Join a group in Options to share with friends.")
         or ("|cff40ff40" .. count .. "|r " .. T("online") .. " · " .. groups .. " " .. T(groups == 1 and "group" or "groups")))
     -- Everyone online, scrolling when the box is full.
