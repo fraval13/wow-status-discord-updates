@@ -76,6 +76,8 @@ local function state()
         db.roster.id = table.concat(digits)
     end
     if db.roster.share == nil then db.roster.share = true end
+    -- "Online only" is a view choice for this account, like the share switch.
+    db.roster.online_only = db.roster.online_only == true
     return db.roster
 end
 
@@ -814,6 +816,15 @@ end
 function R.setSharing(enabled)
     state().share = enabled == true
     R.changed()
+end
+
+-- Showing only the characters that are online now. It hides cards and nothing
+-- else: no list is changed, nothing is unshared, and R.groups() still answers
+-- for every character, so a profile opened from a card keeps working.
+function R.onlineOnly() return state().online_only == true end
+function R.setOnlineOnly(enabled)
+    state().online_only = enabled == true
+    R.render()
 end
 
 function R.setHidden(character, hidden)
@@ -1844,21 +1855,39 @@ function R.render()
         b:Show()
         y = y + SECTION
         if not closed then
-            if #part.entries == 0 then
+            -- The rows a player's heading covers right now: all of them, or only
+            -- the ones online while the filter is on.
+            local function visible(group)
+                if not R.onlineOnly() then return group.rows end
+                local shown = {}
+                for _, character in ipairs(group.rows) do
+                    if character.status == "online" then shown[#shown + 1] = character end
+                end
+                return shown
+            end
+            local covered = 0
+            for _, group in ipairs(part.entries) do covered = covered + #visible(group) end
+            if covered == 0 then
                 headers = headers + 1
                 local h = page.headers[headers] or header(headers)
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
-                h.text:SetText("|cff9d9d9d" .. T("Nobody else seen in this group yet.") .. "|r"); h:Show()
+                -- Say which of the two it is: nobody met yet, or nobody online now.
+                local note = (#part.entries > 0 and R.onlineOnly()) and "Nobody from this group is online right now."
+                    or "Nobody else seen in this group yet."
+                h.text:SetText("|cff9d9d9d" .. T(note) .. "|r"); h:Show()
                 y = y + HEADER
             end
             for _, group in ipairs(part.entries) do
+                local rows = visible(group)
+                if #rows > 0 then
                 headers = headers + 1
                 local h = page.headers[headers] or header(headers)
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
+                -- The heading counts the cards under it, so the filter shows in it.
                 -- The version note stays small and grey beside the title.
-                h.text:SetText(shownTitle(group.title):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
+                h.text:SetText(shownTitle(counted(group.name, #rows)):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
                 y = y + HEADER
-                for _, character in ipairs(group.rows) do
+                for _, character in ipairs(rows) do
                     if index >= 200 then break end
                     index = index + 1
                     local c = page.lines[index] or card(index)
@@ -1917,6 +1946,7 @@ function R.render()
                     c:Show()
                     y = y + CARD + GAP
                 end
+                end -- #rows > 0: a heading with no cards under it is left out
             end
         end
         y = y + 4
@@ -1925,6 +1955,7 @@ function R.render()
     for i = headers + 1, #page.headers do page.headers[i]:Hide() end
     for i = sections + 1, #page.sections do page.sections[i]:Hide() end
     page.list:SetHeight(math.max(1, y))
+    page.empty:SetText(T(R.onlineOnly() and "Nobody is online right now." or "No characters yet."))
     page.empty:SetShown(index == 0 and sections == 0)
     page.count = index
 end
@@ -1942,6 +1973,19 @@ local function build(parent)
     local shareLabel = page.share:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText(T("Share my character list"))
     page.share:SetScript("OnClick", function(self) R.setSharing(self:GetChecked() and true or false) end)
+    page.onlineOnly = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
+    page.onlineOnly:SetPoint("TOPLEFT", 206, -486); page.onlineOnly:SetSize(32, 32)
+    local onlineLabel = page.onlineOnly:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    onlineLabel:SetPoint("TOPLEFT", 34, -8); onlineLabel:SetText(T("Online only"))
+    page.onlineOnly:SetScript("OnClick", function(self) R.setOnlineOnly(self:GetChecked() and true or false) end)
+    page.onlineOnly:SetScript("OnEnter", function(self)
+        if GameTooltip then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Online only"))
+            GameTooltip:AddLine(T("Shows only the characters online right now. Nothing is hidden from your friends and no progress is lost."), 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    end)
+    page.onlineOnly:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     page.visibility = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.visibility:SetPoint("TOPLEFT", 330, -486); page.visibility:SetSize(240, 28)
     page.visibility:SetText(T("Character visibility"))
@@ -1963,6 +2007,7 @@ end
 WoWStatusMainWindow.register("characters", "Characters", build, function()
     if not page then return end
     page.share:SetChecked(state().share)
+    page.onlineOnly:SetChecked(R.onlineOnly())
     updateSyncButton()
     R.render()
 end)

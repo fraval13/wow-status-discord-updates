@@ -14,6 +14,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 - Character cards show professions as icons in the middle, with the skill level under each one
 - Friends' professions are shared only while profession sharing is on, and only as the game reported them
+- The Characters page has an Online only filter that shows just the characters logged in right now
 
 ## 1.44.0
 
