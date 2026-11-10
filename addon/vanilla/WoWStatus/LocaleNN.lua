@@ -248,6 +248,7 @@ W.add({
     ["Reaction voice:"] = "Røyst i reaksjonane:", ["Reaction voices:"] = "Røyster i reaksjonane:",
     -- Spoken reactions (Forever)
     ["Spoken reactions"] = "Opplesne reaksjonar", ["Read friends' reactions aloud"] = "Les opp reaksjonar frå vener",
+    ["Always send a voiced reaction when one is available"] = "Send alltid ein reaksjon med røyst når det finst ein",
     ["Play a sample"] = "Spel av ei prøve", ["Minutes between spoken reactions:"] = "Minutt mellom opplesne reaksjonar:",
     ["Every reaction"] = "Kvar reaksjon", ["%d min"] = "%d min",
     ["Volume slider for voices:"] = "Volumkontroll for røystene:", ["Dialog"] = "Dialog",

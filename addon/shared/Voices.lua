@@ -13,8 +13,10 @@ V.DEFAULT_INTERVAL = 0
 V.MAX_QUEUE = 10
 V.MAX_INTERVAL = 60
 V.INTERVALS = {0, 1, 2, 3, 5, 10, 15, 20, 30, 45, 60}
--- Sender side, Nynorsk only: how often a reaction uses a voiced line, and how
--- many of those come from the lines inside the addon (the rest need the pack).
+-- Sender side, Nynorsk only: how often a reaction uses a voiced line when the
+-- player has turned "always send a voiced reaction" off (it is on by default,
+-- and then every reaction with a voiced line uses one), and how many of those
+-- come from the lines inside the addon (the rest need the pack).
 V.VOICED_SHARE = .9
 V.SAMPLE_SHARE = .25
 local SAMPLE_PATH = "Interface\\AddOns\\WoWStatus\\Sounds\\Voices\\"
@@ -54,6 +56,12 @@ end
 local function validInterval(value)
     value = tonumber(value)
     return value and value >= 0 and value <= V.MAX_INTERVAL and value == math.floor(value) and value or nil
+end
+-- Sender side: always whisper a voiced line when the reaction has one (default).
+function V.alwaysVoiced() return settings().always_voiced ~= false end
+function V.setAlwaysVoiced(on)
+    if on then settings().always_voiced = nil else settings().always_voiced = false end
+    return true
 end
 function V.interval() return validInterval(settings().interval) or V.DEFAULT_INTERVAL end
 function V.setInterval(value)
@@ -106,10 +114,11 @@ local function voicedIndexes(voice, key)
     end
     return picks[cacheKey]
 end
--- The Nynorsk line to whisper for a reaction: usually a voiced one.
+-- The Nynorsk line to whisper for a reaction: a voiced one when there is one
+-- (always by default, else usually).
 function V.pick(voice, key, count)
     local found = voicedIndexes(voice, key)
-    if not found or math.random() >= V.VOICED_SHARE then return math.random(count) end
+    if not found or (not V.alwaysVoiced() and math.random() >= V.VOICED_SHARE) then return math.random(count) end
     local list = found.pack
     if #found.sample > 0 and (#list == 0 or math.random() < V.SAMPLE_SHARE) then list = found.sample end
     local index = #list > 0 and list[math.random(#list)]

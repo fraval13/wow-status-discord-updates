@@ -18,8 +18,10 @@ the Forever file carries every clip itself (`voices.py bundle` in the
   Options → Notifications → *Spoken reactions* turns it off, sets the interval, chooses the volume slider the voices follow (Dialog by
   default, Sound effects, or Master, which ignores the Dialog slider) and shows
   the voice pack link (WoW cannot download files, so the link is there to copy).
-- **Sender:** in Nynorsk, 90 % of reactions use a recorded line
-  (`V.VOICED_SHARE` in `addon/shared/Voices.lua`). Nothing extra is sent.
+- **Sender:** in Nynorsk, every reaction that has a recorded line uses one.
+  Options → *Always send a voiced reaction when one is available* (on by
+  default) turns this off; then 90 % do (`V.VOICED_SHARE` in
+  `addon/shared/Voices.lua`). Nothing extra is sent.
 - **Without the pack** nothing is read aloud; Options say so and show the link.
 - **Not voiced yet:** "Enjoy <zone>!" lines (no list of Forever zone names to
   record), English lines and Classic reactions.
