@@ -163,19 +163,27 @@ def test_pack_lines_need_the_pack_and_level_lines_add_their_number():
     ''')
 
 
-def test_nynorsk_senders_favour_voiced_lines_and_english_is_unchanged():
+def test_nynorsk_senders_always_send_voiced_lines_by_default_and_english_is_unchanged():
     lua = voiced_lua()
     counts = lua.eval('''(function()
         math.randomseed(7)
-        local P = WoWStatusPersonalities
+        local P, V = WoWStatusPersonalities, WoWStatusVoices
         P.setReaction("wholesome")
         WoWStatusLocale.set("nn")
-        local sample, pack, other = 0, 0, 0
-        for _ = 1, 4000 do
-            local line = P.reactionLine("gz")
-            if line == __nn.gz[1] then sample = sample + 1
-            elseif line == __nn.gz[2] then pack = pack + 1 else other = other + 1 end
+        local function count()
+            local sample, pack, other = 0, 0, 0
+            for _ = 1, 4000 do
+                local line = P.reactionLine("gz")
+                if line == __nn.gz[1] then sample = sample + 1
+                elseif line == __nn.gz[2] then pack = pack + 1 else other = other + 1 end
+            end
+            return sample, pack, other
         end
+        assert(V.alwaysVoiced() and (WoWStatusDB.voices == nil or WoWStatusDB.voices.always_voiced == nil))
+        local always = {count()}
+        assert(V.setAlwaysVoiced(false) and WoWStatusDB.voices.always_voiced == false and not V.alwaysVoiced())
+        local sample, pack, other = count()
+        assert(V.setAlwaysVoiced(true) and WoWStatusDB.voices.always_voiced == nil)
         WoWStatusLocale.set("en")
         local en = P.reactionBanks("wholesome")
         local voicedEnglish = 0
@@ -183,10 +191,12 @@ def test_nynorsk_senders_favour_voiced_lines_and_english_is_unchanged():
             local line = P.reactionLine("gz")
             if line == en.gz[1] or line == en.gz[2] then voicedEnglish = voicedEnglish + 1 end
         end
-        return {sample, pack, other, voicedEnglish}
+        return {always[1], always[2], always[3], sample, pack, other, voicedEnglish}
     end)()''')
-    sample, pack, other, english = (counts[i] for i in range(1, 5))
-    assert 0.87 < (sample + pack) / 4000 < 0.93
+    a_sample, a_pack, a_other, sample, pack, other, english = (counts[i] for i in range(1, 8))
+    assert a_other == 0 and a_sample + a_pack == 4000  # on (the default): every reaction is voiced
+    assert 0.20 < a_sample / 4000 < 0.30
+    assert 0.87 < (sample + pack) / 4000 < 0.93  # off: most are
     assert 0.20 < sample / (sample + pack) < 0.30
     assert english < 100  # 2 of 300 lines: no weighting in English
 
@@ -199,7 +209,7 @@ def test_a_friends_voiced_gz_is_read_aloud_on_arrival():
         WoWStatusPopups.CLICK_GUARD = 0  -- this test is not about the click guard
         WoWStatusPersonalities.setReaction("wholesome")
         WoWStatusLocale.set("nn")
-        WoWStatusVoices.VOICED_SHARE, WoWStatusVoices.SAMPLE_SHARE = 1, 1
+        WoWStatusVoices.SAMPLE_SHARE = 1
     ''')
     clock(own, 10)
     clock(friend, 10)
@@ -249,6 +259,13 @@ def test_settings_turn_voices_off_choose_the_interval_and_show_the_pack_link():
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
         assert(panel.voices.checked == true and panel.voiceInterval.text == "Every reaction")
+        -- Always sending a voiced reaction is on by default; the box turns it off.
+        local always = panel.voiceAlways
+        assert(always.kind == "CheckButton" and always.OnClick and always.checked == true)
+        always:SetChecked(false); always.OnClick(always)
+        assert(not V.alwaysVoiced() and WoWStatusDB.voices.always_voiced == false)
+        always:SetChecked(true); always.OnClick(always)
+        assert(V.alwaysVoiced() and WoWStatusDB.voices.always_voiced == nil)
         assert(panel.voiceLink.text == "https://example.invalid/WoWStatus_Voices.zip")
         assert(panel.voicePack.text:find("not installed", 1, true))
         panel.voices:SetChecked(false); panel.voices.OnClick(panel.voices)
@@ -269,7 +286,7 @@ def test_settings_turn_voices_off_choose_the_interval_and_show_the_pack_link():
         WoWStatusLocale.set("nn")
         WoWStatusPreviews.show()
         assert(panel.voicePack.text == "Røystepakke 2 er installert." and panel.voiceInterval.text == "10 min")
-        assert(panel.voiceChannel.text == "Hovudvolum (høgast)")
+        assert(panel.voiceChannel.text == "Hovudvolum (høgast)" and panel.voiceAlways.checked == true)
         pick(panel.voiceInterval, "Kvar reaksjon")
         assert(V.interval() == 0 and #__sent == 0)
     ''')
