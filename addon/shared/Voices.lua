@@ -3,15 +3,20 @@
 -- in advance (docs/voices/README.md). VoiceData.lua, shipped only with Forever,
 -- lists the voiced lines; without it this file does nothing. Nothing is sent:
 -- the sender only favours voiced lines, and the receiver decides what plays.
--- At most one reaction is read per interval (0-60 minutes, 1 by default) and
--- clips never overlap; reactions in between stay text-only and are not queued.
+-- By default every voiced reaction is read: clips never overlap, so one that
+-- arrives while another plays waits its turn in a short queue (MAX_QUEUE). A
+-- player may choose an interval (1-60 minutes) instead; reactions inside it stay
+-- text-only.
 WoWStatusVoices = {}
 local V, S = WoWStatusVoices, WoWStatusSafe
-V.DEFAULT_INTERVAL = 1
+V.DEFAULT_INTERVAL = 0
+V.MAX_QUEUE = 10
 V.MAX_INTERVAL = 60
 V.INTERVALS = {0, 1, 2, 3, 5, 10, 15, 20, 30, 45, 60}
--- Sender side, Nynorsk only: how often a reaction uses a voiced line, and how
--- many of those come from the lines inside the addon (the rest need the pack).
+-- Sender side, Nynorsk only: how often a reaction uses a voiced line when the
+-- player has turned "always send a voiced reaction" off (it is on by default,
+-- and then every reaction with a voiced line uses one), and how many of those
+-- come from the lines inside the addon (the rest need the pack).
 V.VOICED_SHARE = .9
 V.SAMPLE_SHARE = .25
 local SAMPLE_PATH = "Interface\\AddOns\\WoWStatus\\Sounds\\Voices\\"
@@ -51,6 +56,12 @@ end
 local function validInterval(value)
     value = tonumber(value)
     return value and value >= 0 and value <= V.MAX_INTERVAL and value == math.floor(value) and value or nil
+end
+-- Sender side: always whisper a voiced line when the reaction has one (default).
+function V.alwaysVoiced() return settings().always_voiced ~= false end
+function V.setAlwaysVoiced(on)
+    if on then settings().always_voiced = nil else settings().always_voiced = false end
+    return true
 end
 function V.interval() return validInterval(settings().interval) or V.DEFAULT_INTERVAL end
 function V.setInterval(value)
@@ -108,15 +119,16 @@ local function zonesOf(voice)
     local d = data()
     return d and type(d.zones) == "table" and d.zones[voice] or nil
 end
--- The Nynorsk line to whisper for a reaction: usually a voiced one. A zone line
--- (value is the zone) counts as voiced only when the voice has that zone.
+-- The Nynorsk line to whisper for a reaction: a voiced one when there is one
+-- (always by default, else usually). A zone line (value is the zone) counts as
+-- voiced only when the voice has that zone.
 function V.pick(voice, key, count, value)
     local found = voicedIndexes(voice, key)
     if found and key == "enjoy" then
         local zones = zonesOf(voice)
         if not (type(value) == "string" and zones and zones[value]) then found = nil end
     end
-    if not found or math.random() >= V.VOICED_SHARE then return math.random(count) end
+    if not found or (not V.alwaysVoiced() and math.random() >= V.VOICED_SHARE) then return math.random(count) end
     local list = found.pack
     if #found.sample > 0 and (#list == 0 or math.random() < V.SAMPLE_SHARE) then list = found.sample end
     local index = #list > 0 and list[math.random(#list)]
@@ -178,7 +190,7 @@ function V.lookup(text)
     end
 end
 
-local busyUntil = 0
+local busyUntil, generation, queue = 0, 0, {}
 local function clock() return S.number(S.call(GetTime)) or time() end
 local function play(file)
     local willPlay = S.call(PlaySoundFile, file, V.channel())
@@ -186,9 +198,10 @@ local function play(file)
 end
 local function clipFile(clip, tier) return ((tier == 1 or V.bundled()) and SAMPLE_PATH or PACK_PATH) .. clip .. ".ogg" end
 
+local drain
 -- Play a clip and its tail (a level's number or a zone, always in the pack):
 -- the tail follows the line, or comes first when tailFirst is set. Returns false
--- if nothing played.
+-- if nothing played. When it ends, the next queued reaction (if any) plays.
 local function speak(clip, tier, tail, tailFirst)
     local d = data()
     local one, two = {clip, tier, 3}, tail and {tail, 2, 1}
@@ -201,11 +214,31 @@ local function speak(clip, tier, tail, tailFirst)
         length = after + (tonumber(d.seconds[two[1]]) or two[3])
     end
     busyUntil = clock() + length
+    generation = generation + 1
+    local mine = generation
+    if C_Timer and C_Timer.After then
+        C_Timer.After(length, function()
+            if mine ~= generation then return end
+            busyUntil = 0
+            drain()
+        end)
+    end
     return true
 end
 
+-- Play the queued reactions in order once nothing is playing.
+drain = function()
+    if not V.available() or not V.enabled() then queue = {}; return end
+    while #queue > 0 and clock() >= busyUntil do
+        local item = table.remove(queue, 1)
+        if speak(item[1], item[2], item[3], item[4]) then return end
+    end
+end
+function V.queued() return #queue end
+
 -- A friend's reaction has been accepted (Journal): read it aloud if it is voiced,
--- the voices are on, nothing is playing and the interval has passed.
+-- the voices are on and the interval (if any) has passed. While another clip
+-- plays it is queued instead; a full queue drops it to text only.
 function V.heard(text)
     if not V.available() or not V.enabled() then return false end
     local voice, entry, level, zone = V.lookup(text)
@@ -223,10 +256,14 @@ function V.heard(text)
         tail = found and found[zone.asked and 2 or 1]
         if not tail or not canPlay(2) then return false end
     end
-    if clock() < busyUntil then return false end
     local last, now = tonumber(settings().last_at), S.now()
     if last and now >= last and now - last < V.interval() * 60 then return false end
-    if not speak(clip, tier, tail, zone and zone.first) then return false end
+    if clock() < busyUntil then
+        if #queue >= V.MAX_QUEUE then return false end
+        queue[#queue + 1] = {clip, tier, tail, zone and zone.first}
+    elseif not speak(clip, tier, tail, zone and zone.first) then
+        return false
+    end
     settings().last_at = now
     return true
 end

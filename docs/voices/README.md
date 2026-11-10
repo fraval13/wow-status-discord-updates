@@ -10,14 +10,18 @@ small and the server deploy stays far below its 64 MiB limit. On **CurseForge**
 the Forever file carries every clip itself (`voices.py bundle` in the
 `curseforge` job, see `docs/CURSEFORGE.md`), so no pack is needed there.
 
-- **Receiver:** at most one reaction is read per interval (0–60 minutes,
-  1 by default) and clips never overlap. Reactions in between stay text-only
-  and are not queued. Options → Notifications → *Spoken reactions* turns it off,
-  sets the interval, chooses the volume slider the voices follow (Dialog by
+- **Receiver:** by default every voiced reaction is read. Clips never
+  overlap: one that arrives while another plays waits in a queue of at most
+  ten (`V.MAX_QUEUE`) and plays when the clip before it ends; past that it
+  stays text-only. A player may instead choose an interval (1–60 minutes):
+  then at most one reaction is read per interval and the rest stay text-only.
+  Options → Notifications → *Spoken reactions* turns it off, sets the interval, chooses the volume slider the voices follow (Dialog by
   default, Sound effects, or Master, which ignores the Dialog slider) and shows
   the voice pack link (WoW cannot download files, so the link is there to copy).
-- **Sender:** in Nynorsk, 90 % of reactions use a recorded line
-  (`V.VOICED_SHARE` in `addon/shared/Voices.lua`). Nothing extra is sent.
+- **Sender:** in Nynorsk, every reaction that has a recorded line uses one.
+  Options → *Always send a voiced reaction when one is available* (on by
+  default) turns this off; then 90 % do (`V.VOICED_SHARE` in
+  `addon/shared/Voices.lua`). Nothing extra is sent.
 - **Without the pack** nothing is read aloud; Options say so and show the link.
 - **Not voiced:** English lines, Classic reactions, "Enjoy <zone>!" lines with
   the zone in the middle, and zones missing from `docs/voices/zones.json`.

@@ -14,6 +14,14 @@ plain text, at most 120 characters, without `|` or markup. An optional
 
 - Forever: "Enjoy <zone>!" reactions are read aloud too, with the zone name, for 131 Forever zones and dungeons
 
+## 1.51.0
+
+- Forever: your Nynorsk reactions always use a voiced line when one exists; Options can turn this off
+
+## 1.50.0
+
+- Forever: every voiced reaction from a friend is now read aloud by default, one after another
+
 ## 1.49.0
 
 - Forever: spoken reactions are louder and even in level; get the new voice pack if you installed it by hand
