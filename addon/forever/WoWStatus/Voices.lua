@@ -59,6 +59,27 @@ function V.setInterval(value)
     settings().interval = value ~= V.DEFAULT_INTERVAL and value or nil
     return true
 end
+-- The game volume slider a clip follows. Dialog (the default) is scaled by the
+-- Master and Dialog sliders; Master by the Master slider alone, so it is the
+-- loudest choice for players who keep Dialog low.
+V.DEFAULT_CHANNEL = "Dialog"
+V.CHANNELS = {{"Dialog", "Dialog"}, {"SFX", "Sound effects"}, {"Master", "Master (loudest)"}}
+local function validChannel(value)
+    for _, entry in ipairs(V.CHANNELS) do if entry[1] == value then return value end end
+end
+function V.channel() return validChannel(settings().channel) or V.DEFAULT_CHANNEL end
+function V.setChannel(value)
+    value = validChannel(value)
+    if not value then return false end
+    settings().channel = value ~= V.DEFAULT_CHANNEL and value or nil
+    return true
+end
+function V.channelLabel(value)
+    value = validChannel(value) or V.channel()
+    for _, entry in ipairs(V.CHANNELS) do
+        if entry[1] == value then return WoWStatusLocale.T(entry[2]) end
+    end
+end
 function V.intervalLabel(value)
     value = value or V.interval()
     if value == 0 then return WoWStatusLocale.T("Every reaction") end
@@ -139,7 +160,7 @@ end
 local busyUntil = 0
 local function clock() return S.number(S.call(GetTime)) or time() end
 local function play(file)
-    local willPlay = S.call(PlaySoundFile, file, "Dialog")
+    local willPlay = S.call(PlaySoundFile, file, V.channel())
     return willPlay and true or false
 end
 local function clipFile(clip, tier) return ((tier == 1 or V.bundled()) and SAMPLE_PATH or PACK_PATH) .. clip .. ".ogg" end

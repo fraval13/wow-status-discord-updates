@@ -250,6 +250,8 @@ W.add({
     ["Spoken reactions"] = "Opplesne reaksjonar", ["Read friends' reactions aloud"] = "Les opp reaksjonar frå vener",
     ["Play a sample"] = "Spel av ei prøve", ["Minutes between spoken reactions:"] = "Minutt mellom opplesne reaksjonar:",
     ["Every reaction"] = "Kvar reaksjon", ["%d min"] = "%d min",
+    ["Volume slider for voices:"] = "Volumkontroll for røystene:", ["Dialog"] = "Dialog",
+    ["Sound effects"] = "Lydeffektar", ["Master (loudest)"] = "Hovudvolum (høgast)",
     ["Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini)."] =
         "Berre reaksjonar på nynorsk blir lesne opp. Røystene er laga med KI (Google Gemini).",
     ["Voice pack %d is installed."] = "Røystepakke %d er installert.",

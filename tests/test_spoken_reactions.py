@@ -92,6 +92,24 @@ def test_a_voiced_reaction_is_read_at_most_once_per_interval():
     ''')
 
 
+def test_the_chosen_volume_slider_plays_the_voice_and_is_saved_only_when_changed():
+    lua = voiced_lua()
+    lua.execute('''
+        local V = WoWStatusVoices
+        assert(V.channel() == "Dialog" and V.channelLabel() == "Dialog")
+        assert(not V.setChannel("Music") and not V.setChannel(nil) and V.channel() == "Dialog")
+        assert(V.setChannel("Master") and WoWStatusDB.voices.channel == "Master")
+        assert(V.channelLabel() == "Master (loudest)")
+        assert(V.heard(__nn.gz[1]) and __played[1][2] == "Master")
+        assert(V.setChannel("SFX") and V.channel() == "SFX")
+        __mono = __mono + 10
+        assert(V.test() and __played[2][2] == "SFX")
+        assert(V.setChannel("Dialog") and WoWStatusDB.voices.channel == nil)
+        WoWStatusDB.voices.channel = "Nonsense"            -- an old or edited setting
+        assert(V.channel() == "Dialog")
+    ''')
+
+
 def test_pack_lines_need_the_pack_and_level_lines_add_their_number():
     lua = voiced_lua()
     lua.execute(f'''
@@ -208,6 +226,12 @@ def test_settings_turn_voices_off_choose_the_interval_and_show_the_pack_link():
         local names = pick(panel.voiceInterval, "10 min")
         assert(names[1] == "Every reaction" and names[#names] == "60 min" and V.interval() == 10)
         assert(panel.voiceInterval.text == "10 min")
+        -- The volume slider: picking one saves it and plays a sample through it.
+        assert(panel.voiceChannel.text == "Dialog")
+        names = pick(panel.voiceChannel, "Master (loudest)")
+        assert(names[1] == "Dialog" and names[2] == "Sound effects" and #names == 3)
+        assert(V.channel() == "Master" and panel.voiceChannel.text == "Master (loudest)")
+        assert(__played[#__played][2] == "Master")
         -- Typing in the link box puts the link back; it is there to copy.
         panel.voiceLink.OnTextChanged(panel.voiceLink, true)
         assert(panel.voiceLink.text == "https://example.invalid/WoWStatus_Voices.zip")
@@ -215,6 +239,7 @@ def test_settings_turn_voices_off_choose_the_interval_and_show_the_pack_link():
         WoWStatusLocale.set("nn")
         WoWStatusPreviews.show()
         assert(panel.voicePack.text == "Røystepakke 2 er installert." and panel.voiceInterval.text == "10 min")
+        assert(panel.voiceChannel.text == "Hovudvolum (høgast)")
         pick(panel.voiceInterval, "Kvar reaksjon")
         assert(V.interval() == 0 and #__sent == 0)
     ''')
