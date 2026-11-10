@@ -3,11 +3,14 @@
 -- in advance (docs/voices/README.md). VoiceData.lua, shipped only with Forever,
 -- lists the voiced lines; without it this file does nothing. Nothing is sent:
 -- the sender only favours voiced lines, and the receiver decides what plays.
--- At most one reaction is read per interval (0-60 minutes, 1 by default) and
--- clips never overlap; reactions in between stay text-only and are not queued.
+-- By default every voiced reaction is read: clips never overlap, so one that
+-- arrives while another plays waits its turn in a short queue (MAX_QUEUE). A
+-- player may choose an interval (1-60 minutes) instead; reactions inside it stay
+-- text-only.
 WoWStatusVoices = {}
 local V, S = WoWStatusVoices, WoWStatusSafe
-V.DEFAULT_INTERVAL = 1
+V.DEFAULT_INTERVAL = 0
+V.MAX_QUEUE = 10
 V.MAX_INTERVAL = 60
 V.INTERVALS = {0, 1, 2, 3, 5, 10, 15, 20, 30, 45, 60}
 -- Sender side, Nynorsk only: how often a reaction uses a voiced line, and how
@@ -157,7 +160,7 @@ function V.lookup(text)
     end
 end
 
-local busyUntil = 0
+local busyUntil, generation, queue = 0, 0, {}
 local function clock() return S.number(S.call(GetTime)) or time() end
 local function play(file)
     local willPlay = S.call(PlaySoundFile, file, V.channel())
@@ -165,7 +168,9 @@ local function play(file)
 end
 local function clipFile(clip, tier) return ((tier == 1 or V.bundled()) and SAMPLE_PATH or PACK_PATH) .. clip .. ".ogg" end
 
+local drain
 -- Play a clip (and a level's number after it); returns false if nothing played.
+-- When it ends, the next queued reaction (if any) plays.
 local function speak(clip, tier, number)
     local d = data()
     if not play(clipFile(clip, tier)) then return false end
@@ -176,11 +181,31 @@ local function speak(clip, tier, number)
         length = after + (tonumber(d.seconds[number]) or 1)
     end
     busyUntil = clock() + length
+    generation = generation + 1
+    local mine = generation
+    if C_Timer and C_Timer.After then
+        C_Timer.After(length, function()
+            if mine ~= generation then return end
+            busyUntil = 0
+            drain()
+        end)
+    end
     return true
 end
 
+-- Play the queued reactions in order once nothing is playing.
+drain = function()
+    if not V.available() or not V.enabled() then queue = {}; return end
+    while #queue > 0 and clock() >= busyUntil do
+        local item = table.remove(queue, 1)
+        if speak(item[1], item[2], item[3]) then return end
+    end
+end
+function V.queued() return #queue end
+
 -- A friend's reaction has been accepted (Journal): read it aloud if it is voiced,
--- the voices are on, nothing is playing and the interval has passed.
+-- the voices are on and the interval (if any) has passed. While another clip
+-- plays it is queued instead; a full queue drops it to text only.
 function V.heard(text)
     if not V.available() or not V.enabled() then return false end
     local voice, entry, level = V.lookup(text)
@@ -193,10 +218,14 @@ function V.heard(text)
         number = numbers and numbers[level]
         if not number or not canPlay(2) then return false end
     end
-    if clock() < busyUntil then return false end
     local last, now = tonumber(settings().last_at), S.now()
     if last and now >= last and now - last < V.interval() * 60 then return false end
-    if not speak(clip, tier, number) then return false end
+    if clock() < busyUntil then
+        if #queue >= V.MAX_QUEUE then return false end
+        queue[#queue + 1] = {clip, tier, number}
+    elseif not speak(clip, tier, number) then
+        return false
+    end
     settings().last_at = now
     return true
 end
