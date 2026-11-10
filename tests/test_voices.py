@@ -1,7 +1,12 @@
 """scripts/voices.py: choosing voiced lines, recording only what is missing, and packaging."""
+import array
 import importlib.util
 import json
+import math
+import shutil
+import subprocess
 import sys
+import wave
 import zipfile
 from pathlib import Path
 
@@ -306,3 +311,31 @@ def test_the_curseforge_job_bundles_the_voices_before_uploading():
     build = job.index('run: python3 scripts/build_homepage.py')
     bundle = job.index('run: python3 scripts/voices.py bundle --zip dist/homepage/downloads/WoWStatus-forever.zip')
     assert build < bundle < job.index('run: python3 scripts/upload_curseforge.py')
+
+
+@pytest.mark.skipif(not shutil.which('ffmpeg'), reason='needs ffmpeg')
+def test_a_quiet_recording_becomes_a_loud_clip_that_does_not_clip(voices, tmp_path):
+    # Two seconds of a quiet, speech-like tone: 220 Hz with harmonics, pulsing like syllables.
+    rate, samples = 24000, []
+    for n in range(rate * 2):
+        t = n / rate
+        syllable = max(0.0, math.sin(2 * math.pi * 4 * t)) ** 2
+        tone = sum(math.sin(2 * math.pi * 220 * k * t) / k for k in (1, 2, 3, 5))
+        samples.append(int(1800 * syllable * tone))
+    source = tmp_path / 'quiet.wav'
+    with wave.open(str(source), 'wb') as target:
+        target.setnchannels(1)
+        target.setsampwidth(2)
+        target.setframerate(rate)
+        target.writeframes(array.array('h', samples).tobytes())
+    before = voices.loudness(source, 'anull')
+    clip = tmp_path / 'clip.ogg'
+    voices.to_clip(source, clip, 0)
+    after = voices.loudness(clip, 'anull')
+    # This tone is peakier than speech, so the limiter keeps it a little under the
+    # target; recorded speech lands within half a decibel.
+    assert after > before + 10 and abs(after - voices.LOUDNESS_LUFS) < 3
+    # Decoded as the game would, the clip keeps clear of full scale.
+    decoded = subprocess.run([shutil.which('ffmpeg'), '-loglevel', 'error', '-i', str(clip), '-f', 's16le', '-'],
+                             capture_output=True, check=True).stdout
+    assert max(abs(value) for value in array.array('h', decoded)) < 32767 * 10 ** (-1 / 20)

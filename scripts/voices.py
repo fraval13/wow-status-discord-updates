@@ -272,12 +272,54 @@ def ffmpeg() -> str:
     return found
 
 
+# How loud a game clip is. -18 LUFS (packs v1-v2) was too quiet next to the game's
+# own sounds, so clips are compressed, raised to LOUDNESS_LUFS and limited.
+# Vorbis at quality 0 adds 2-3 dB to the peaks, so the limiter stays at
+# CEILING_DB and the decoded clip still does not clip.
+LOUDNESS_LUFS = -14.0
+CEILING_DB = -5.0
+SHAPE = 'highpass=f=70,acompressor=threshold=-28dB:ratio=4:attack=5:release=120'
+
+
+def loudness(source: Path, chain: str) -> float | None:
+    """Integrated loudness (LUFS) of a file after a filter chain; None for silence."""
+    report = subprocess.run([ffmpeg(), '-hide_banner', '-nostats', '-i', str(source), '-af',
+                             chain + ',loudnorm=print_format=json', '-f', 'null', '-'],
+                            capture_output=True, text=True, encoding='utf-8', check=True).stderr
+    value = json.loads(report[report.rindex('{'):report.rindex('}') + 1])['input_i']
+    try:
+        measured = float(value)
+    except ValueError:  # "-inf"
+        return None
+    return measured if measured > -70 else None
+
+
+def louder(gain: float) -> str:
+    """The filter chain for a clip: shape, raise by gain dB, resample, limit."""
+    return (f'{SHAPE},volume={gain:.2f}dB,aresample=44100,'
+            f'alimiter=limit={10 ** (CEILING_DB / 20):.4f}:attack=2:release=50:level=0')
+
+
+def clip_gain(source: Path) -> float:
+    """The gain that brings a clip to LOUDNESS_LUFS after the limiter (which takes some back)."""
+    before = loudness(source, SHAPE)
+    if before is None:
+        return 0.0
+    gain = LOUDNESS_LUFS - before
+    for _ in range(3):
+        after = loudness(source, louder(gain))
+        if after is None or abs(LOUDNESS_LUFS - after) < .3:
+            break
+        gain += LOUDNESS_LUFS - after
+    return max(-12.0, min(30.0, gain))
+
+
 # WoW Forever cuts MP3s under 64 kbps short (it stops where a 64 kbps file would
 # end), so clips are Ogg Vorbis, WoW's own format, which plays to the end.
 def to_clip(source: Path, clip: Path, quality: int) -> None:
-    """Encode one clip for the game: loudness-normalised mono Ogg Vorbis, 44.1 kHz."""
+    """Encode one clip for the game: loud, limited mono Ogg Vorbis, 44.1 kHz."""
     clip.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run([ffmpeg(), '-y', '-loglevel', 'error', '-i', str(source), '-af', 'loudnorm=I=-18:TP=-2:LRA=7',
+    subprocess.run([ffmpeg(), '-y', '-loglevel', 'error', '-i', str(source), '-af', louder(clip_gain(source)),
                     '-ac', '1', '-ar', '44100', '-c:a', 'libvorbis', '-q:a', str(quality), str(clip)], check=True)
 
 

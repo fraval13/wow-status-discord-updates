@@ -13,8 +13,9 @@ the Forever file carries every clip itself (`voices.py bundle` in the
 - **Receiver:** at most one reaction is read per interval (0–60 minutes,
   1 by default) and clips never overlap. Reactions in between stay text-only
   and are not queued. Options → Notifications → *Spoken reactions* turns it off,
-  sets the interval and shows the voice pack link (WoW cannot download files,
-  so the link is there to copy).
+  sets the interval, chooses the volume slider the voices follow (Dialog by
+  default, Sound effects, or Master, which ignores the Dialog slider) and shows
+  the voice pack link (WoW cannot download files, so the link is there to copy).
 - **Sender:** in Nynorsk, 90 % of reactions use a recorded line
   (`V.VOICED_SHARE` in `addon/shared/Voices.lua`). Nothing extra is sent.
 - **Without the pack** nothing is read aloud; Options say so and show the link.
@@ -34,10 +35,18 @@ the Forever file carries every clip itself (`voices.py bundle` in the
 | Lossless masters (FLAC), one ZIP per personality | GitHub release `voice-pack` → `voices-masters-<id>.zip` | release |
 | Working copy of all audio | `dist/voices/clips/*.ogg`, `dist/voices/masters/*.flac` | no (cache) |
 
-Clips are mono Ogg Vorbis at 44.1 kHz (quality 0, about 52 kbps). WoW Forever
+Clips are mono Ogg Vorbis at 44.1 kHz (quality 0, about 52 kbps). Each one is
+compressed, raised to -14 LUFS (measured after the limiter, so short and long
+lines sound equally loud) and limited at -5 dBFS, because Vorbis adds 2-3 dB to
+the peaks. Packs v1 and v2 used -18 LUFS, which was too quiet in game. The
+levels are `LOUDNESS_LUFS` and `CEILING_DB` in `scripts/voices.py`. WoW Forever
 stops MP3s under 64 kbps early, at the point where a 64 kbps file would end
 (tested in game on 8 November 2026), so do not switch to small MP3s.
-`reencode` rebuilds every clip from its lossless master after a format change.
+`reencode` rebuilds every clip from its lossless master after a format or
+loudness change; then run `release` and `publish` as below. The CurseForge
+Forever file copies its clips from the current pack when a release is built, so
+publish the new pack before the next release; players who installed the pack by
+hand get the change only when they download it again.
 
 A clip's id comes from its personality, kind and exact Nynorsk text, so the
 same line always has the same file and an edited line gets a new one. Your own

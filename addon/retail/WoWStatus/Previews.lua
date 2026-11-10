@@ -55,7 +55,7 @@ function P.show(host)
         local options = 150
         -- Spoken reactions (Forever only) add their own rows below the sounds.
         local V = WoWStatusVoices
-        local voiceRows = V and V.available() and 290 or 0
+        local voiceRows = V and V.available() and 330 or 0
         local previews = options + 802 + voiceRows
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
@@ -159,12 +159,22 @@ function P.show(host)
                 for _,minutes in ipairs(V.INTERVALS) do items[#items+1]={label=V.intervalLabel(minutes),value=minutes} end
                 WoWStatusUI.menu(self,items,function(minutes) V.setInterval(minutes);panel.refreshSpoken() end)
             end)
-            text(panel,"Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini).",24,y-124,540)
-            panel.voicePack=text(panel,"",24,y-164,540)
+            -- Which volume slider the voices follow; picking one plays a sample on it.
+            text(panel,"Volume slider for voices:",24,y-124,300)
+            panel.voiceChannel=button(panel,"",330,y-118,200,function(self)
+                local items={}
+                for _,entry in ipairs(V.CHANNELS) do items[#items+1]={label=V.channelLabel(entry[1]),value=entry[1]} end
+                WoWStatusUI.menu(self,items,function(channel)
+                    V.setChannel(channel);panel.refreshSpoken()
+                    if not V.test() then V.simulate() end
+                end)
+            end)
+            text(panel,"Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini).",24,y-164,540)
+            panel.voicePack=text(panel,"",24,y-204,540)
             panel.voiceGet=text(panel,"Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW.",
-                24,y-204,540)
+                24,y-244,540)
             panel.voiceLink=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
-            panel.voiceLink:SetPoint("TOPLEFT",30,y-252);panel.voiceLink:SetSize(530,30);panel.voiceLink:SetAutoFocus(false)
+            panel.voiceLink:SetPoint("TOPLEFT",30,y-292);panel.voiceLink:SetSize(530,30);panel.voiceLink:SetAutoFocus(false)
             local function selectLink(self)
                 self:SetText(V.packURL() or "")
                 WoWStatusUI.call(self,"HighlightText")
@@ -177,6 +187,7 @@ function P.show(host)
             function panel.refreshSpoken()
                 panel.voices:SetChecked(V.enabled())
                 panel.voiceInterval:SetText(V.intervalLabel())
+                panel.voiceChannel:SetText(V.channelLabel())
                 local version=V.packVersion()
                 if V.bundled() then
                     panel.voicePack:SetText(WoWStatusLocale.T("Every voice comes with this download; no voice pack is needed."))
