@@ -45,6 +45,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VOICES = ROOT / 'docs' / 'voices'
 CONFIG = VOICES / 'voices.json'
 CLIPS = VOICES / 'clips.json'
+ZONES = VOICES / 'zones.json'
 SELECTION = VOICES / 'selection'
 CAPTIONS = ROOT / 'docs' / 'caption-personalities'
 CACHE = ROOT / 'dist' / 'voices'
@@ -57,11 +58,17 @@ PACK_ZIP = 'WoWStatus_Voices.zip'
 MASTERS_ZIP = 'voices-masters-{}.zip'
 FOREVER_INTERFACE = 16001
 MAX_LEVEL = 60
-# Zone names are not recorded yet, so "Enjoy <zone>!" lines stay text-only.
-UNVOICED_KINDS = ('enjoy',)
 # Text that only works when read: emoticons, salutes, asterisks.
 UNSPOKEN = re.compile(r'[:;]-?[()DPp]|<3|\bxD\b|\bo7\b|\blol\b|\*', re.IGNORECASE)
 LEVEL_AT_END = re.compile(r'^(.*\S)\s*\{level\}([!.?…]*)$')
+# "Enjoy <zone>!" lines read with a recorded zone name, which ends the line
+# ("Kos deg i {zone}!") or opens it, followed by punctuation ("{zone}? Nydeleg.").
+ZONE_AT_END = re.compile(r'^(.*\S)\s*\{zone\}([!.]?)$')
+ZONE_AT_START = re.compile(r'^\{zone\}([?!.,]+)\s*(\S.*)$')
+# Every zone is recorded twice: said as an exclamation, and as a question for
+# lines that open with "{zone}?".
+ZONE_KINDS = (('zone', '!'), ('zone_question', '?'))
+TAIL_KINDS = ('number',) + tuple(kind for kind, _ in ZONE_KINDS)
 # Rough clip lengths for estimates (measured on the first samples).
 SECONDS_LINE, SECONDS_NUMBER = 3.4, 0.9
 AUDIO_TOKENS_PER_SECOND = 25
@@ -152,6 +159,28 @@ def level_parts(template: str) -> tuple[str, str] | None:
     return (match.group(1), match.group(2)) if match else None
 
 
+def zone_parts(template: str) -> tuple[str, bool] | None:
+    """A zone line a voice can read: (the text around the zone, whether the zone opens it as a question)."""
+    if template.count('{zone}') != 1:
+        return None
+    match = ZONE_AT_END.match(template)
+    if match:
+        return match.group(1), False
+    match = ZONE_AT_START.match(template)
+    if match:
+        return match.group(2), match.group(1).startswith('?')
+    return None
+
+
+def zone_names(path: Path | None = None) -> list[str]:
+    """The Forever zone names recorded for every voice, in docs/voices/zones.json order."""
+    data = read_json(path or ZONES, {'zones': []})
+    names = data.get('zones', [])
+    if len(set(names)) != len(names):
+        raise VoiceError('docs/voices/zones.json lists a zone twice')
+    return names
+
+
 def spread(items: list, count: int) -> list:
     """count items evenly spread over the list, keeping its order."""
     if count <= 0:
@@ -166,6 +195,8 @@ def spread(items: list, count: int) -> list:
 def candidates(lines: list[str], kind: str) -> list[str]:
     if kind == 'level':
         return [line for line in lines if level_parts(line) and not UNSPOKEN.search(line)]
+    if kind == 'enjoy':
+        return [line for line in lines if zone_parts(line) and not UNSPOKEN.search(line)]
     return [line for line in lines if not UNSPOKEN.search(line)]
 
 
@@ -191,13 +222,11 @@ def select(cfg: dict, only: str | None = None, source: Path | None = None, targe
         old = read_json(path, {'sample': {}, 'pack': {}})
         result = {'sample': {}, 'pack': {}}
         for kind in personalities.REACTIONS:
-            if kind in UNVOICED_KINDS:
-                continue
             lines = bank(pid, kind, source)
             earlier = old['sample'].get(kind, []) + old['pack'].get(kind, [])
             total = counts['level_lines'] if kind == 'level' else counts['lines_per_kind']
             picked = choose(lines, kind, total, earlier)
-            sample_count = 0 if kind == 'level' else counts['sample_per_kind'] + counts['sample_extra'].get(kind, 0)
+            sample_count = 0 if kind in ('level', 'enjoy') else counts['sample_per_kind'] + counts['sample_extra'].get(kind, 0)
             sample = [line for line in old['sample'].get(kind, []) if line in picked]
             sample += spread([line for line in picked if line not in sample], sample_count - len(sample))
             sample = sorted(sample, key=lines.index)
@@ -225,9 +254,9 @@ def required(cfg: dict, source: Path | None = None, selection: Path | None = Non
         chosen = read_json(selection / f'{pid}.json')
         if not chosen:
             continue
-        levels = False
+        levels = zones = False
         for kind in personalities.REACTIONS:
-            lines = bank(pid, kind, source) if kind not in UNVOICED_KINDS else []
+            lines = bank(pid, kind, source)
             # addon_sample false: the sample lines ship in the pack too, and the addon carries no audio.
             sample_tier = 1 if cfg.get('addon_sample', True) else 2
             for tier, group in ((sample_tier, 'sample'), (2, 'pack')):
@@ -241,6 +270,11 @@ def required(cfg: dict, source: Path | None = None, selection: Path | None = Non
                         if not parts:
                             raise VoiceError(f'{pid}/level: {template!r} does not end with its level')
                         said, levels = spoken(parts[0]), True
+                    elif kind == 'enjoy':
+                        parts = zone_parts(template)
+                        if not parts:
+                            raise VoiceError(f'{pid}/enjoy: {template!r} neither starts nor ends with its zone')
+                        said, zones = spoken(parts[0]), True
                     else:
                         said = spoken(template)
                     clips.append(Clip(clip_id(pid, kind, template), pid, kind, said, tier, index))
@@ -248,6 +282,10 @@ def required(cfg: dict, source: Path | None = None, selection: Path | None = Non
             for level in range(2, MAX_LEVEL + 1):
                 clips.append(Clip(clip_id(pid, 'number', str(level)), pid, 'number',
                                   number_words(level) + '!', 2, level))
+        if zones:
+            for index, name in enumerate(zone_names(), 1):
+                for kind, mark in ZONE_KINDS:
+                    clips.append(Clip(clip_id(pid, kind, name), pid, kind, name + mark, 2, index))
     ids = [clip.id for clip in clips]
     if len(set(ids)) != len(ids):
         raise VoiceError('Two clips share an id; a line is chosen twice')
@@ -259,7 +297,7 @@ def registry() -> dict:
 
 
 def estimate(clips: list[Clip], model: str) -> str:
-    seconds = sum(SECONDS_NUMBER if clip.kind == 'number' else SECONDS_LINE for clip in clips)
+    seconds = sum(SECONDS_NUMBER if clip.kind in TAIL_KINDS else SECONDS_LINE for clip in clips)
     price = AUDIO_PRICE.get(model)
     cost = f'about ${seconds * AUDIO_TOKENS_PER_SECOND / 1e6 * price:.2f}' if price else 'unknown cost'
     return f'{len(clips)} clips, about {seconds / 3600:.1f} h of audio, {cost} with {model}'
@@ -373,7 +411,9 @@ def generate(cfg: dict, args) -> int:
 
     def record(clip: Clip) -> tuple[Clip, float]:
         voice = cfg['personalities'][clip.personality]
-        style = voice['style'] + ' ' + cfg['accent']
+        # A zone is an English place name in the game; it is said as one.
+        accent = cfg.get('zone_accent', cfg['accent']) if clip.kind in TAIL_KINDS[1:] else cfg['accent']
+        style = voice['style'] + ' ' + accent
         audio = tts.trim(tts.synthesize(clip.text, style, voice['voice'], cfg['model'], cfg['language_code'],
                                         headers, None))
         encode(audio, tts.RATE, cached_flac(clip.id), cached_clip(clip.id), cfg['ogg_quality'])
@@ -470,6 +510,7 @@ def render(cfg: dict, clips: list[Clip], known: dict, sample_dir: Path | None = 
     sample_dir = sample_dir or SAMPLE_DIR
     lines: dict[str, dict[str, list[tuple[int, str, int]]]] = {}
     numbers: dict[str, list[tuple[int, str]]] = {}
+    zones: dict[str, dict[str, dict[str, str]]] = {}
     seconds: dict[str, float] = {}
     for clip in clips:
         if clip.id not in known:
@@ -479,18 +520,30 @@ def render(cfg: dict, clips: list[Clip], known: dict, sample_dir: Path | None = 
         seconds[clip.id] = known[clip.id]['seconds']
         if clip.kind == 'number':
             numbers.setdefault(clip.personality, []).append((clip.index, clip.id))
+        elif clip.kind in TAIL_KINDS:
+            zones.setdefault(clip.personality, {}).setdefault(clip.text[:-1], {})[clip.kind] = clip.id
         else:
             lines.setdefault(clip.personality, {}).setdefault(clip.kind, []).append((clip.index, clip.id, clip.tier))
     # A level line can only play with its number.
     for pid, kinds in lines.items():
         if 'level' in kinds and len(numbers.get(pid, [])) < MAX_LEVEL - 1:
             del kinds['level']
+    # A zone plays only with both of its recordings; a zone line only with some zone.
+    for pid in list(zones):
+        zones[pid] = {name: found for name, found in zones[pid].items() if len(found) == len(ZONE_KINDS)}
+        if not zones[pid]:
+            del zones[pid]
+    for pid, kinds in lines.items():
+        if 'enjoy' in kinds and pid not in zones:
+            del kinds['enjoy']
     url = f'https://github.com/{cfg["repository"]}/releases/download/{cfg["pack_tag"]}/{PACK_ZIP}'
     out = [
         '-- Generated by scripts/voices.py build from docs/voices/. Do not edit.',
         '-- Reaction lines with a recorded Nynorsk voice (Forever only): lines[voice][kind][index]',
         '-- = {clip, tier}; tier 1 ships in Sounds/Voices/, tier 2 in the WoWStatus_Voices pack.',
         '-- A level line is the text before the number; numbers[voice][level] is the number.',
+        '-- A zone line is the text after or before the zone; zones[voice][name] = {said, asked}',
+        '-- is the zone said as an exclamation and as a question.',
         'WoWStatusVoiceData = {',
         f'    pack = {{addon = {lua_string(PACK_ADDON)}, url = {lua_string(url)}}},',
         f'    gap = {cfg["gap_seconds"]},',
@@ -508,6 +561,12 @@ def render(cfg: dict, clips: list[Clip], known: dict, sample_dir: Path | None = 
     out.append('    numbers = {')
     for pid in sorted(numbers):
         body = ', '.join(f'[{level}] = "{cid}"' for level, cid in sorted(numbers[pid]))
+        out.append(f'        {pid} = {{{body}}},')
+    out.append('    },')
+    out.append('    zones = {')
+    for pid in sorted(zones):
+        body = ', '.join(f'[{lua_string(name)}] = {{"{found["zone"]}", "{found["zone_question"]}"}}'
+                         for name, found in sorted(zones[pid].items()))
         out.append(f'        {pid} = {{{body}}},')
     out.append('    },')
     out.append('    seconds = {')

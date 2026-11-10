@@ -19,8 +19,8 @@ the Forever file carries every clip itself (`voices.py bundle` in the
 - **Sender:** in Nynorsk, 90 % of reactions use a recorded line
   (`V.VOICED_SHARE` in `addon/shared/Voices.lua`). Nothing extra is sent.
 - **Without the pack** nothing is read aloud; Options say so and show the link.
-- **Not voiced yet:** "Enjoy <zone>!" lines (no list of Forever zone names to
-  record), English lines and Classic reactions.
+- **Not voiced:** English lines, Classic reactions, "Enjoy <zone>!" lines with
+  the zone in the middle, and zones missing from `docs/voices/zones.json`.
 
 ## Where everything lives
 
@@ -28,6 +28,7 @@ the Forever file carries every clip itself (`voices.py bundle` in the
 | --- | --- | --- |
 | Voices, styles, model and counts | `docs/voices/voices.json` | yes |
 | Chosen lines per personality | `docs/voices/selection/<id>.json` | yes |
+| Forever zone names for "Enjoy <zone>!" | `docs/voices/zones.json` | yes |
 | Every recorded clip (id, text, length, voice, model) | `docs/voices/clips.json` | yes |
 | What the addon can play | `addon/forever/WoWStatus/VoiceData.lua` (generated) | yes |
 | Clips inside the addon: none (`"addon_sample": false` in `voices.json`) | `addon/forever/WoWStatus/Sounds/Voices/` | — |
@@ -55,6 +56,19 @@ computer only holds a cache: `restore` fetches the published audio again.
 Level lines are recorded up to the number ("Skål for nivå") and the number is a
 clip of its own ("trettisju!"), played 0.12 s later. Only lines that end with
 their level are chosen for this.
+
+"Enjoy <zone>!" lines work the same way with a recorded zone name. A line that
+ends with its zone ("Kos deg i {zone}!") plays the line, then the zone; a line
+that opens with its zone and punctuation ("{zone}? Nydeleg stad.") plays the
+zone first, then the rest. Every zone is recorded twice for each voice, said
+("Elwynn Forest!") and asked ("Elwynn Forest?", for lines that open with
+"{zone}?"), in English with a light Norwegian accent (`zone_accent` in
+`voices.json`). Lines with the zone in the middle stay text-only. The zones are
+the names WoW Forever returns from `GetRealZoneText` (top-level areas, dungeons,
+raids and battlegrounds) in `docs/voices/zones.json`, taken from the client's
+AreaTable and Map tables on wago.tools. Add a new zone there and run `generate`:
+only its clips are recorded. A zone missing from the list, or a client in
+another language, gives a text-only reaction.
 
 ## Setup (any computer)
 

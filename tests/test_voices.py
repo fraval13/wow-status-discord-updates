@@ -48,8 +48,8 @@ def fake_captions(voices, root):
         for i in range(20):
             if kind == 'level':
                 text = f'Nivå {{level}}, linje {i}!' if i % 2 else f'Linje {i}: nivå {{level}}!'
-            elif kind == 'enjoy':
-                text = f'Kos deg i {{zone}}, {i}!'
+            elif kind == 'enjoy':  # the zone in the middle, at the end, or opening as a question
+                text = (f'Kos deg i {{zone}}, {i}!', f'Linje {i} til {{zone}}!', f'{{zone}}? Linje {i}.')[i % 3]
             else:
                 text = f'{kind} linje {i}' + (' :)' if i == 3 else '') + '.' * (i % 4)
             rows.append({'en': text, 'nn': text})
@@ -77,7 +77,8 @@ def test_select_spreads_short_lines_keeps_earlier_choices_and_tops_up(voices, tm
     monkeypatch.setattr(voices.personalities, 'REACTION_VOICES', ('dwarf',))
     source, target = fake_captions(voices, tmp_path / 'captions'), tmp_path / 'selection'
     first = voices.select(CFG, source=source, target=target)['dwarf']
-    assert 'enjoy' not in first['pack'] and 'enjoy' not in first['sample']
+    assert first['sample']['enjoy'] == [] and len(first['pack']['enjoy']) == 6
+    assert not any(', ' in line for line in first['pack']['enjoy'])  # a zone in the middle cannot be read
     assert len(first['sample']['gz']) == 3 and len(first['sample']['f']) == 2 and first['sample']['level'] == []
     for kind in ('gz', 'f', 'congrats_loot'):
         chosen = first['sample'][kind] + first['pack'][kind]
@@ -109,6 +110,43 @@ def test_required_clips_are_unique_include_numbers_and_notice_edited_lines(voice
     (target / 'dwarf.json').write_text(json.dumps(chosen), encoding='utf-8')
     with pytest.raises(voices.VoiceError, match='select'):
         voices.required(CFG, source=source, selection=target)
+
+
+def test_zone_lines_take_a_recorded_zone_said_or_asked(voices, tmp_path, monkeypatch):
+    assert voices.zone_parts('Kos deg i {zone}!') == ('Kos deg i', False)
+    assert voices.zone_parts('Ha det fint i {zone}') == ('Ha det fint i', False)
+    assert voices.zone_parts('{zone}? Nydeleg stad.') == ('Nydeleg stad.', True)
+    assert voices.zone_parts('{zone}, ja. Kos deg!') == ('ja. Kos deg!', False)
+    for unread in ('Kos deg i {zone}, ven!', '{zone} ventar.', '{zone} og {zone}!', 'Kos deg i {zone}?'):
+        assert voices.zone_parts(unread) is None, unread
+    zones = tmp_path / 'zones.json'
+    zones.write_text(json.dumps({'zones': ['Elwynn Forest', "Un'Goro Crater"]}), encoding='utf-8')
+    monkeypatch.setattr(voices, 'ZONES', zones)
+    monkeypatch.setattr(voices.personalities, 'REACTION_VOICES', ('dwarf',))
+    source, target = fake_captions(voices, tmp_path / 'c'), tmp_path / 's'
+    voices.select(CFG, source=source, target=target)
+    clips = voices.required(CFG, source=source, selection=target)
+    said = sorted(clip.text for clip in clips if clip.kind in ('zone', 'zone_question'))
+    assert said == ['Elwynn Forest!', 'Elwynn Forest?', "Un'Goro Crater!", "Un'Goro Crater?"]
+    lines = [clip for clip in clips if clip.kind == 'enjoy']
+    assert lines and all('{zone}' not in clip.text and clip.tier == 2 for clip in lines)
+    assert any(clip.text.startswith('Linje') and clip.text.endswith('.') for clip in lines)  # "{zone}? Linje 2."
+    lua = lupa.LuaRuntime()
+    lua.execute(voices.render(CFG, clips, recorded(clips), tmp_path))
+    data = lua.globals().WoWStatusVoiceData
+    assert data.lines.dwarf.enjoy is not None and data.zones.dwarf["Un'Goro Crater"] is not None
+    elwynn = data.zones.dwarf['Elwynn Forest']
+    assert elwynn[1] == voices.clip_id('dwarf', 'zone', 'Elwynn Forest')
+    assert elwynn[2] == voices.clip_id('dwarf', 'zone_question', 'Elwynn Forest')
+    # A zone needs both recordings; zone lines need some zone.
+    asked = voices.clip_id('dwarf', 'zone_question', 'Elwynn Forest')
+    lua.execute(voices.render(CFG, clips, recorded(clips, {asked}), tmp_path))
+    data = lua.globals().WoWStatusVoiceData
+    assert data.zones.dwarf['Elwynn Forest'] is None and data.zones.dwarf["Un'Goro Crater"] is not None
+    no_zones = {clip.id for clip in clips if clip.kind == 'zone'}
+    lua.execute(voices.render(CFG, clips, recorded(clips, no_zones), tmp_path))
+    data = lua.globals().WoWStatusVoiceData
+    assert data.lines.dwarf.enjoy is None and data.zones.dwarf is None and data.lines.dwarf.gz is not None
 
 
 def recorded(clips, skip=()):

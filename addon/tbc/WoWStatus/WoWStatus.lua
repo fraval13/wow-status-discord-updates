@@ -774,7 +774,7 @@ SlashCmdList.WOWSTATUS = function(message)
         end
     elseif command == "voicetest" then
         -- Spoken reactions (Forever): hear a recorded line as a friend's reaction
-        -- would sound, without a friend. /wstatus voicetest [voice] [level]
+        -- would sound, without a friend. /wstatus voicetest [voice] [level|zone]
         local V, P = WoWStatusVoices, WoWStatusPersonalities
         local text, voice
         if V then text, voice = V.simulate(rest) end
