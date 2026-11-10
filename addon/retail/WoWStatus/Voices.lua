@@ -114,10 +114,20 @@ local function voicedIndexes(voice, key)
     end
     return picks[cacheKey]
 end
+-- The recorded zone names of a voice (zones[name] = {said, asked}).
+local function zonesOf(voice)
+    local d = data()
+    return d and type(d.zones) == "table" and d.zones[voice] or nil
+end
 -- The Nynorsk line to whisper for a reaction: a voiced one when there is one
--- (always by default, else usually).
-function V.pick(voice, key, count)
+-- (always by default, else usually). A zone line (value is the zone) counts as
+-- voiced only when the voice has that zone.
+function V.pick(voice, key, count, value)
     local found = voicedIndexes(voice, key)
+    if found and key == "enjoy" then
+        local zones = zonesOf(voice)
+        if not (type(value) == "string" and zones and zones[value]) then found = nil end
+    end
     if not found or (not V.alwaysVoiced() and math.random() >= V.VOICED_SHARE) then return math.random(count) end
     local list = found.pack
     if #found.sample > 0 and (#list == 0 or math.random() < V.SAMPLE_SHARE) then list = found.sample end
@@ -128,10 +138,10 @@ end
 
 -- Receiver side ------------------------------------------------------------
 
--- Exact Nynorsk lines and level lines (text before and after the number).
-local exact, levels
+-- Exact Nynorsk lines, and level and zone lines (text before and after the slot).
+local exact, slots
 local function buildIndex()
-    exact, levels = {}, {}
+    exact, slots = {}, {}
     local d, P = data(), WoWStatusPersonalities
     if not d or not P then return end
     local voices = {}
@@ -142,29 +152,40 @@ local function buildIndex()
         for key, entries in pairs(nn and d.lines[voice] or {}) do
             for index, entry in pairs(entries) do
                 local line = nn[key] and nn[key][index]
-                local at = line and line:find("{level}", 1, true)
-                if at then
-                    levels[#levels + 1] = {line:sub(1, at - 1), line:sub(at + 7), voice, entry}
+                local slot = line and (line:find("{level}", 1, true) and "{level}"
+                    or line:find("{zone}", 1, true) and "{zone}")
+                if slot then
+                    local at = line:find(slot, 1, true)
+                    local rule = {line:sub(1, at - 1), line:sub(at + #slot), voice, entry, slot}
+                    -- A line that opens with its zone plays the zone first; "{zone}?" asks it.
+                    rule.first = at == 1
+                    rule.asked = rule.first and rule[2]:sub(1, 1) == "?"
+                    slots[#slots + 1] = rule
                 elseif line and not exact[line] then
                     exact[line] = {voice, entry}
                 end
             end
         end
     end
-    table.sort(levels, function(a, b) return #a[1] + #a[2] > #b[1] + #b[2] end)
+    table.sort(slots, function(a, b) return #a[1] + #a[2] > #b[1] + #b[2] end)
 end
--- A received text's voice, clip entry and (for a level line) the level.
+-- A received text's voice and clip entry, then the level (a level line) or the
+-- zone {name, first, asked} (a zone line).
 function V.lookup(text)
     if type(text) ~= "string" or not data() then return nil end
     if not exact then buildIndex() end
     local found = exact[text]
     if found then return found[1], found[2] end
-    for _, rule in ipairs(levels) do
+    for _, rule in ipairs(slots) do
         local before, after = rule[1], rule[2]
         if #text > #before + #after and text:sub(1, #before) == before
             and (after == "" or text:sub(-#after) == after) then
             local middle = text:sub(#before + 1, #text - #after)
-            if middle:match("^%d+$") then return rule[3], rule[4], tonumber(middle) end
+            if rule[5] == "{level}" then
+                if middle:match("^%d+$") then return rule[3], rule[4], tonumber(middle) end
+            else
+                return rule[3], rule[4], nil, {name = middle, first = rule.first, asked = rule.asked}
+            end
         end
     end
 end
@@ -178,16 +199,19 @@ end
 local function clipFile(clip, tier) return ((tier == 1 or V.bundled()) and SAMPLE_PATH or PACK_PATH) .. clip .. ".ogg" end
 
 local drain
--- Play a clip (and a level's number after it); returns false if nothing played.
--- When it ends, the next queued reaction (if any) plays.
-local function speak(clip, tier, number)
+-- Play a clip and its tail (a level's number or a zone, always in the pack):
+-- the tail follows the line, or comes first when tailFirst is set. Returns false
+-- if nothing played. When it ends, the next queued reaction (if any) plays.
+local function speak(clip, tier, tail, tailFirst)
     local d = data()
-    if not play(clipFile(clip, tier)) then return false end
-    local length = tonumber(d.seconds[clip]) or 3
-    if number then
+    local one, two = {clip, tier, 3}, tail and {tail, 2, 1}
+    if two and tailFirst then one, two = two, one end
+    if not play(clipFile(one[1], one[2])) then return false end
+    local length = tonumber(d.seconds[one[1]]) or one[3]
+    if two then
         local after = length + (tonumber(d.gap) or .12)
-        if C_Timer and C_Timer.After then C_Timer.After(after, function() play(clipFile(number, 2)) end) end
-        length = after + (tonumber(d.seconds[number]) or 1)
+        if C_Timer and C_Timer.After then C_Timer.After(after, function() play(clipFile(two[1], two[2])) end) end
+        length = after + (tonumber(d.seconds[two[1]]) or two[3])
     end
     busyUntil = clock() + length
     generation = generation + 1
@@ -207,7 +231,7 @@ drain = function()
     if not V.available() or not V.enabled() then queue = {}; return end
     while #queue > 0 and clock() >= busyUntil do
         local item = table.remove(queue, 1)
-        if speak(item[1], item[2], item[3]) then return end
+        if speak(item[1], item[2], item[3], item[4]) then return end
     end
 end
 function V.queued() return #queue end
@@ -217,39 +241,46 @@ function V.queued() return #queue end
 -- plays it is queued instead; a full queue drops it to text only.
 function V.heard(text)
     if not V.available() or not V.enabled() then return false end
-    local voice, entry, level = V.lookup(text)
+    local voice, entry, level, zone = V.lookup(text)
     if not voice then return false end
     local clip, tier = entry[1], entry[2]
     if not canPlay(tier) then return false end
-    local number
+    local tail
     if level then
         local numbers = data().numbers[voice]
-        number = numbers and numbers[level]
-        if not number or not canPlay(2) then return false end
+        tail = numbers and numbers[level]
+        if not tail or not canPlay(2) then return false end
+    elseif zone then
+        -- A zone this voice has not recorded (or another client language) stays text.
+        local found = (zonesOf(voice) or {})[zone.name]
+        tail = found and found[zone.asked and 2 or 1]
+        if not tail or not canPlay(2) then return false end
     end
     local last, now = tonumber(settings().last_at), S.now()
     if last and now >= last and now - last < V.interval() * 60 then return false end
     if clock() < busyUntil then
         if #queue >= V.MAX_QUEUE then return false end
-        queue[#queue + 1] = {clip, tier, number}
-    elseif not speak(clip, tier, number) then
+        queue[#queue + 1] = {clip, tier, tail, zone and zone.first}
+    elseif not speak(clip, tier, tail, zone and zone.first) then
         return false
     end
     settings().last_at = now
     return true
 end
 
--- /wstatus voicetest [voice] [level]: play a recorded line exactly as a friend's
--- reaction would sound (pack lines too when the pack is installed; "level" for a
--- level line with its number) and return its text and voice. A local test with
+-- /wstatus voicetest [voice] [level|zone]: play a recorded line exactly as a
+-- friend's reaction would sound (pack lines too when the pack is installed;
+-- "level" for a level line with its number, "zone" for a zone line with its
+-- zone) and return its text and voice. A local test with
 -- no friend needed: nothing is sent and the interval is not touched.
 function V.simulate(request)
     local d, P = data(), WoWStatusPersonalities
     if not d or not P then return nil end
     if clock() < busyUntil then return nil, "busy" end
     request = type(request) == "string" and request:lower() or ""
-    local levelOnly = request:find("level", 1, true) or request:find("nivå", 1, true)
-    local named = P.findReaction((request:gsub("level", ""):gsub("nivå", "")))
+    local only = (request:find("level", 1, true) or request:find("nivå", 1, true)) and "level"
+        or (request:find("zone", 1, true) or request:find("sone", 1, true)) and "enjoy"
+    local named = P.findReaction((request:gsub("level", ""):gsub("nivå", ""):gsub("zone", ""):gsub("sone", "")))
     local voices = {}
     for voice in pairs(d.lines) do voices[#voices + 1] = voice end
     table.sort(voices)
@@ -258,10 +289,11 @@ function V.simulate(request)
     local _, nn = P.reactionBanks(voice or "")
     local choices = {}
     for key, entries in pairs(voice and nn and d.lines[voice] or {}) do
-        if not levelOnly or key == "level" then
+        if not only or key == only then
             for index, entry in pairs(entries) do
                 local playable = canPlay(entry[2])
                 if key == "level" then playable = canPlay(2) and d.numbers[voice] ~= nil end
+                if key == "enjoy" then playable = canPlay(2) and zonesOf(voice) ~= nil end
                 if playable and nn[key] and nn[key][index] then choices[#choices + 1] = {key, index, entry} end
             end
         end
@@ -270,16 +302,25 @@ function V.simulate(request)
     if #choices == 0 then return nil end
     local chosen = choices[math.random(#choices)]
     local key, index, entry = chosen[1], chosen[2], chosen[3]
-    local text, number = nn[key][index], nil
+    local text, tail, tailFirst = nn[key][index], nil, nil
     if key == "level" then
         local levels = {}
         for level in pairs(d.numbers[voice]) do levels[#levels + 1] = level end
         table.sort(levels)
         local level = levels[math.random(#levels)]
-        number = d.numbers[voice][level]
+        tail = d.numbers[voice][level]
         text = (text:gsub("{level}", tostring(level)))
+    elseif key == "enjoy" then
+        local zones, names = zonesOf(voice), {}
+        for name in pairs(zones) do names[#names + 1] = name end
+        table.sort(names)
+        local name = names[math.random(#names)]
+        local at = text:find("{zone}", 1, true)
+        tailFirst = at == 1
+        tail = zones[name][(tailFirst and text:sub(at + 6, at + 6) == "?") and 2 or 1]
+        text = text:sub(1, at - 1) .. name .. text:sub(at + 6)
     end
-    if not speak(entry[1], entry[2], number) then return nil end
+    if not speak(entry[1], entry[2], tail, tailFirst) then return nil end
     return text, voice
 end
 

@@ -163,6 +163,99 @@ def test_pack_lines_need_the_pack_and_level_lines_add_their_number():
     ''')
 
 
+# Three Wholesome zone lines: one ends with the zone, one opens with "{zone}!" and
+# one with "{zone}?"; Elwynn Forest is recorded said and asked.
+ZONE_DATA = r'''
+for i, line in ipairs(__nn.enjoy) do
+    local one = select(2, line:gsub("{zone}", "")) == 1
+    if one and not __endIndex and line:sub(-7) == "{zone}!" then __endIndex = i end
+    if one and not __startIndex and line:sub(1, 7) == "{zone}!" then __startIndex = i end
+    if one and not __askIndex and line:sub(1, 7) == "{zone}?" then __askIndex = i end
+end
+WoWStatusVoiceData.lines.wholesome.enjoy = {[__endIndex] = {"eeeeeeeeeeee", 2},
+    [__startIndex] = {"ffffffffffff", 2}, [__askIndex] = {"999999999999", 2}}
+WoWStatusVoiceData.zones = {wholesome = {["Elwynn Forest"] = {"111111111111", "222222222222"}}}
+for _, clip in ipairs({"eeeeeeeeeeee", "ffffffffffff", "999999999999"}) do WoWStatusVoiceData.seconds[clip] = 2 end
+WoWStatusVoiceData.seconds["111111111111"], WoWStatusVoiceData.seconds["222222222222"] = .8, .9
+function __zoned(index, zone) return (__nn.enjoy[index]:gsub("{zone}", zone)) end
+'''
+
+
+def test_zone_lines_play_the_zone_after_or_before_the_line():
+    lua = voiced_lua()
+    lua.execute(ZONE_DATA)
+    lua.execute(f'''
+        local V = WoWStatusVoices
+        V.setInterval(0)
+        local function file(clip) return "{LUA_PACK}" .. clip .. ".ogg" end
+        -- Run the timers set so far (the tail, then the queue's next turn).
+        local function run() local due = __after; __after = {{}}; for _, t in ipairs(due) do t[2]() end end
+        assert(__endIndex and __startIndex and __askIndex)
+        assert(not V.heard(__zoned(__endIndex, "Elwynn Forest")))   -- the pack is needed
+        WoWStatusVoicePack = {{version = 4}}
+        -- The zone ends the line: the line, then the zone said.
+        assert(V.heard(__zoned(__endIndex, "Elwynn Forest")))
+        assert(__played[1][1] == file("eeeeeeeeeeee") and math.abs(__after[1][1] - 2.1) < 1e-9)
+        run()
+        assert(__played[2][1] == file("111111111111"))
+        -- The zone opens the line: the zone first, then the rest.
+        __mono = __mono + 10
+        assert(V.heard(__zoned(__startIndex, "Elwynn Forest")))
+        assert(__played[3][1] == file("111111111111") and math.abs(__after[1][1] - .9) < 1e-9)
+        run()
+        assert(__played[4][1] == file("ffffffffffff"))
+        -- "{{zone}}?" asks the zone.
+        __mono = __mono + 10
+        assert(V.heard(__zoned(__askIndex, "Elwynn Forest")) and __played[5][1] == file("222222222222"))
+        run()
+        -- A zone the voice has not recorded stays text and does not count.
+        __mono = __mono + 10
+        local last = WoWStatusDB.voices.last_at
+        assert(not V.heard(__zoned(__endIndex, "Narnia")) and #__played == 6 and WoWStatusDB.voices.last_at == last)
+        -- A zone line that arrives while another plays waits in the queue, tail and order kept.
+        __mono = __mono + 10
+        assert(V.heard(__nn.gz[1]) and V.heard(__zoned(__startIndex, "Elwynn Forest")) and V.queued() == 1)
+        __mono = __mono + 10; run(); run()
+        assert(__played[8][1] == file("111111111111") and __played[9][1] == file("ffffffffffff"))
+        run()
+        -- The voice test plays a zone line with a recorded zone.
+        __mono = __mono + 10
+        local text = V.simulate("wholesome zone")
+        assert(text and text:find("Elwynn Forest", 1, true), text)
+    ''')
+
+
+def test_senders_use_voiced_zone_lines_only_for_recorded_zones():
+    lua = voiced_lua()
+    lua.execute(ZONE_DATA)
+    counts = lua.eval('''(function()
+        math.randomseed(3)
+        local P = WoWStatusPersonalities
+        P.setReaction("wholesome")
+        WoWStatusLocale.set("nn")
+        local voiced = {}
+        for _, i in ipairs({__endIndex, __startIndex, __askIndex}) do
+            voiced[__zoned(i, "Elwynn Forest")] = true; voiced[__zoned(i, "Narnia")] = true
+        end
+        local function count()
+            local known, unknown = 0, 0
+            for _ = 1, 1000 do
+                if voiced[P.reactionLine("enjoy", "Elwynn Forest")] then known = known + 1 end
+                if voiced[P.reactionLine("enjoy", "Narnia")] then unknown = unknown + 1 end
+            end
+            return known, unknown
+        end
+        local always, alwaysUnknown = count()
+        WoWStatusVoices.setAlwaysVoiced(false)
+        local usually, usuallyUnknown = count()
+        return {always, alwaysUnknown, usually, usuallyUnknown}
+    end)()''')
+    always, always_unknown, usually, usually_unknown = (counts[i] for i in range(1, 5))
+    assert always == 1000 and 850 < usually < 950
+    # 3 of 300 lines: no weighting for a zone without a voice.
+    assert always_unknown < 50 and usually_unknown < 50
+
+
 def test_nynorsk_senders_always_send_voiced_lines_by_default_and_english_is_unchanged():
     lua = voiced_lua()
     counts = lua.eval('''(function()

@@ -611,6 +611,22 @@
       "Pussa, øvd og perfekt timea. Fantastisk.",
       "Klar, ferdig, låst opp. Og ikkje eit hår på feil plass."
     ],
+    "enjoy": [
+      "{zone}, så eksotisk. Pakk smokingen.",
+      "Eg dekkjer for deg på kontoret medan du ser deg om i {zone}.",
+      "{zone}! Eg er litt misunneleg, må eg innrømme.",
+      "{zone}, endeleg. Eg skal varsle kodeskrivarane.",
+      "{zone}, altså. Veit dei lokale at det er ein spion blant dei?",
+      "Ei stille helsing frå Hovudkvarteret til deg i {zone}.",
+      "Eg løftar tekoppen for deg og {zone}.",
+      "Departementet sender helsingar til deg i {zone}.",
+      "Ny region, ny smoking. Nyt {zone}.",
+      "Unn deg eit lite, stille eventyr i {zone}.",
+      "{zone}! Kom du med speedbåt? Ver så snill og sei speedbåt.",
+      "Håpar du pakka armbandsuret med entringskrok til {zone}.",
+      "Hald hovudet kaldt og klokka nær i {zone}.",
+      "Hei frå orienteringsrommet. Vi er alle svært misunnelege på {zone}."
+    ],
     "f": [
       "Eitt minutts stillheit ved baccaratbordet. F.",
       "Eg held plassen din varm på kasinoet. F.",
@@ -973,6 +989,7 @@
       "Godt gjort. Kvartermeisteren har bede om ein demonstrasjon.",
       "Dei fleste agentar berre drøymer om den evna. Du har ho."
     ],
+    "enjoy": [],
     "f": [
       "Ein god agent, kortvarig vassrett. F.",
       "Med respekt, F. Den kunne ingen ha styrt.",

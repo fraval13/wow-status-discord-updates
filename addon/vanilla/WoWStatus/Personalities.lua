@@ -186,7 +186,7 @@ function P.reactionLine(key, value)
     if type(pool) ~= "table" or #pool == 0 then return nil end
     -- Nynorsk lines with a recorded voice (Forever) are favoured, so friends hear them.
     local V = WoWStatusVoices
-    local index = (pool == (nn and nn[key]) and V and V.available()) and V.pick(voice, key, #pool) or math.random(#pool)
+    local index = (pool == (nn and nn[key]) and V and V.available()) and V.pick(voice, key, #pool, value) or math.random(#pool)
     return fill(pool[index], value)
 end
 
