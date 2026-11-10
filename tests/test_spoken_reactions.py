@@ -1,4 +1,4 @@
-"""Spoken reactions (Forever): a friend's voiced Nynorsk reaction is read aloud, within limits."""
+"""Spoken reactions (Forever): every voiced Nynorsk reaction from a friend is read aloud, one at a time."""
 from pathlib import Path
 
 from test_addon import make_lua, run_addon_file
@@ -55,27 +55,57 @@ def test_without_voice_data_nothing_is_read_and_nothing_changes():
     ''')
 
 
-def test_a_voiced_reaction_is_read_at_most_once_per_interval():
+def test_every_voiced_reaction_is_read_by_default_one_after_another():
     lua = voiced_lua()
     lua.execute(f'''
         local V = WoWStatusVoices
-        assert(V.available() and V.enabled() and V.interval() == 1)
+        assert(V.available() and V.enabled() and V.interval() == 0 and V.intervalLabel() == "Every reaction")
         assert(V.heard(__nn.gz[1]))
         assert(__played[1][1] == "{LUA_SAMPLE}aaaaaaaaaaaa.ogg" and __played[1][2] == "Dialog")
-        assert(not V.heard(__nn.gz[1]))           -- still playing
+        assert(#__after == 1 and __after[1][1] == 2)    -- the next one starts when this clip ends
+        -- Reactions that arrive while a clip plays wait their turn, in order.
+        local packLine = __nn.gz[2]
+        WoWStatusVoicePack = {{version = 1}}
+        assert(V.heard(packLine) and V.heard(__nn.gz[1]) and V.queued() == 2 and #__played == 1)
+        __after[1][2]()
+        assert(#__played == 2 and __played[2][1] == "{LUA_PACK}bbbbbbbbbbbb.ogg" and V.queued() == 1)
+        __after[1][2]()                                 -- an old timer does not cut the new clip short
+        assert(#__played == 2 and V.queued() == 1)
+        __after[2][2]()
+        assert(#__played == 3 and __played[3][1] == "{LUA_SAMPLE}aaaaaaaaaaaa.ogg" and V.queued() == 0)
+        -- The queue is bounded: past it, a reaction stays text-only.
+        for _ = 1, V.MAX_QUEUE do assert(V.heard(__nn.gz[1])) end
+        assert(not V.heard(__nn.gz[1]) and V.queued() == V.MAX_QUEUE)
+        -- A clip the game refuses is skipped and the next one plays.
+        __willPlay = false
+        __after[3][2]()
+        assert(V.queued() == 0)
+        __willPlay = true
+        -- Turning the voices off drops what is waiting.
+        __mono = __mono + 10
+        assert(V.heard(__nn.gz[1]) and V.heard(__nn.gz[1]) and V.queued() == 1)
+        V.setEnabled(false)
+        local played = #__played
+        __after[#__after][2]()
+        assert(V.queued() == 0 and #__played == played)
+        V.setEnabled(true)
+    ''')
+
+
+def test_a_chosen_interval_reads_at_most_one_reaction_per_interval():
+    lua = voiced_lua()
+    lua.execute('''
+        local V = WoWStatusVoices
+        assert(V.setInterval(1) and WoWStatusDB.voices.interval == 1 and V.intervalLabel() == "1 min")
+        assert(V.heard(__nn.gz[1]))
+        assert(not V.heard(__nn.gz[1]) and V.queued() == 0)  -- inside the minute: text only
         __mono = __mono + 10; __now = __now + 30
-        assert(not V.heard(__nn.gz[1]))           -- inside the minute
+        assert(not V.heard(__nn.gz[1]))
         __now = __now + 31
         assert(V.heard(__nn.gz[1]) and #__played == 2)
-        -- 0 minutes: every reaction, but never two at once.
-        assert(V.setInterval(0) and V.interval() == 0 and WoWStatusDB.voices.interval == 0)
-        __mono = __mono + 10
-        assert(V.heard(__nn.gz[1]) and not V.heard(__nn.gz[1]))
-        __mono = __mono + 10
-        assert(V.heard(__nn.gz[1]) and #__played == 4)
-        assert(not V.setInterval(61) and not V.setInterval(2.5) and not V.setInterval(-1) and V.interval() == 0)
+        assert(not V.setInterval(61) and not V.setInterval(2.5) and not V.setInterval(-1) and V.interval() == 1)
         assert(V.setInterval(5) and WoWStatusDB.voices.interval == 5)
-        assert(V.setInterval(1) and WoWStatusDB.voices.interval == nil)
+        assert(V.setInterval(0) and WoWStatusDB.voices.interval == nil and V.interval() == 0)
         -- Off, English, unknown and muted reactions are not read and do not count.
         V.setEnabled(false)
         __mono = __mono + 10; __now = __now + 400
@@ -88,7 +118,7 @@ def test_a_voiced_reaction_is_read_at_most_once_per_interval():
         local last = WoWStatusDB.voices.last_at
         assert(not V.heard(__nn.gz[1]) and WoWStatusDB.voices.last_at == last)
         __willPlay = true
-        assert(V.heard(__nn.gz[1]) and #__played == 6)
+        assert(V.heard(__nn.gz[1]) and #__played == 4)  -- the refused clip was tried too
     ''')
 
 
@@ -119,7 +149,7 @@ def test_pack_lines_need_the_pack_and_level_lines_add_their_number():
         WoWStatusVoicePack = {{version = 3}}
         assert(V.packVersion() == 3)
         assert(V.heard(level))
-        assert(__played[1][1] == "{LUA_PACK}cccccccccccc.ogg" and #__after == 1)
+        assert(__played[1][1] == "{LUA_PACK}cccccccccccc.ogg" and #__after == 2)
         assert(math.abs(__after[1][1] - 1.6) < 1e-9)
         __after[1][2]()
         assert(__played[2][1] == "{LUA_PACK}dddddddddddd.ogg" and __played[2][2] == "Dialog")
@@ -218,7 +248,7 @@ def test_settings_turn_voices_off_choose_the_interval_and_show_the_pack_link():
         end
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
-        assert(panel.voices.checked == true and panel.voiceInterval.text == "1 min")
+        assert(panel.voices.checked == true and panel.voiceInterval.text == "Every reaction")
         assert(panel.voiceLink.text == "https://example.invalid/WoWStatus_Voices.zip")
         assert(panel.voicePack.text:find("not installed", 1, true))
         panel.voices:SetChecked(false); panel.voices.OnClick(panel.voices)
@@ -274,7 +304,7 @@ def test_voicetest_plays_a_recorded_line_without_a_friend():
         WoWStatusVoicePack = {{version = 1}}
         __mono = __mono + 10
         SlashCmdList.WOWSTATUS("voicetest hjartevarm level")
-        assert(said:find("37", 1, true) and __played[2][1] == "{LUA_PACK}cccccccccccc.ogg" and #__after == 1, said)
+        assert(said:find("37", 1, true) and __played[2][1] == "{LUA_PACK}cccccccccccc.ogg" and #__after == 3, said)
         assert(WoWStatusDB.voices == nil or WoWStatusDB.voices.last_at == nil)
         __mono = __mono + 10
         assert(V.heard(__nn.gz[1]))  -- a real reaction still plays at once afterwards
