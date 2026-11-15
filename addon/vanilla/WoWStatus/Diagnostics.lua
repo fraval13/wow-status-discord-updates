@@ -17,7 +17,7 @@ D.MAX_ERRORS = MAX_ERRORS
 -- Errors raised before SavedVariables are readable: the game loads them only
 -- after every file of the addon has run.
 local pending = {}
-local lastRaw, lastEntry, busy, previous, installed = nil, nil, false, nil, false
+local lastEntry, busy, previous, installed = nil, nil, false, nil, false
 local registered, page
 
 local function account()
@@ -56,7 +56,8 @@ local NEUTRAL = {Interface=true, FrameXML=true, SharedXML=true, AddOns=true,
 -- The addon folder of the first stack frame that is not the game's own code.
 local function firstAddon(stack)
     for line in stack:gmatch("[^\n]+") do
-        local path = line:match("([^ \t%[%]\"']+)%.lua:")
+        -- "path.lua:12:", or bracketed: [string "@path.lua"]:12: and [path.lua]:12:
+        local path = line:match("([^ \t%[%]\"']+)%.lua[\"%]]*:%d")
         if path then
             path = path:gsub("^@", "")
             local folder = path:match("[Aa][Dd][Dd][Oo][Nn][Ss][/\\]([^/\\]+)") or path:match("^([^/\\]+)[/\\]")
@@ -73,16 +74,20 @@ function D.ours(message, stack)
     return folder == "WoWStatus" or folder == "WoWStatus_Voices"
 end
 
--- The handler's own frames say nothing; the rest is kept, bounded.
-local function cleanStack(stack)
+-- The stack, bounded. own: it comes from our handler, whose frames lead it and
+-- say nothing; only those leading frames go (an error in this file's page code
+-- keeps its frames).
+local function cleanStack(stack, own)
     if type(stack) ~= "string" then return "" end
-    local lines = {}
+    local lines, leading = {}, own
     for line in stack:gmatch("[^\n]+") do
-        if not line:find("WoWStatus[/\\]Diagnostics%.lua") and #lines < MAX_STACK_LINES then
+        if leading and line:find("WoWStatus[/\\]Diagnostics%.lua") then
+        elseif #lines < MAX_STACK_LINES then
+            leading = false
             lines[#lines + 1] = line
         end
     end
-    return cut(table.concat(lines, "\n"), MAX_STACK)
+    return table.concat(lines, "\n")
 end
 
 -- Redaction --------------------------------------------------------------
@@ -93,17 +98,24 @@ local function wordByte(byte)
     return byte ~= nil and (byte >= 128 or (byte >= 48 and byte <= 57) or (byte >= 65 and byte <= 90)
         or (byte >= 97 and byte <= 122))
 end
-local LOWER = {}
-for byte = 65, 90 do LOWER[string.char(byte)] = string.char(byte + 32) end
-local function lower(text) return (text:gsub("[A-Z]", LOWER)) end
--- Replace every whole-word occurrence of word (any ASCII case) with mark.
-local function replaceWord(text, word, mark)
-    local folded, needle = lower(text), lower(word)
+-- A match that is part of a file path ("WoWStatus/Groups.lua") is left alone,
+-- so a friend called Groups does not hide which file failed.
+local function inPath(text, s, e)
+    local before, after = text:sub(s - 1, s - 1), text:sub(e + 1, e + 4)
+    return before == "/" or before == "\\" or after == ".lua" or after:sub(1, 1) == "/"
+end
+-- Replace every whole-word occurrence of word with mark. Group names compare in
+-- any ASCII case (as group IDs do); character names exactly, so a friend called
+-- Value never turns "a nil value" into "a nil <name>".
+local function replaceWord(text, word, mark, anyCase)
+    local lower = WoWStatusSafe.lowerASCII
+    local folded, needle = text, word
+    if anyCase then folded, needle = lower(text), lower(word) end
     local out, init, from = {}, 1, 1
     while true do
         local s, e = folded:find(needle, init, true)
         if not s then break end
-        if not wordByte(folded:byte(s - 1)) and not wordByte(folded:byte(e + 1)) then
+        if not wordByte(folded:byte(s - 1)) and not wordByte(folded:byte(e + 1)) and not inPath(text, s, e) then
             out[#out + 1] = text:sub(from, s - 1); out[#out + 1] = mark
             from = e + 1
         end
@@ -117,18 +129,20 @@ end
 -- account knows, each with the mark that replaces it, longest first.
 local function secrets()
     local list, seen = {}, {}
+    local db, S, G = WoWStatusDB, WoWStatusSafe, WoWStatusGroups
+    if type(db) ~= "table" or type(S) ~= "table" then return list end
     local function add(value, mark)
         if type(value) ~= "string" then return end
-        value = value:match("^[ \t\r\n]*(.-)[ \t\r\n]*$")
-        if value == "" or #value > 120 or seen[lower(value)] then return end
-        seen[lower(value)] = true
-        list[#list + 1] = {value, mark}
+        value = S.trim(value)
+        if value == "" or #value > 120 or seen[value] then return end
+        seen[value] = true
+        list[#list + 1] = {value, mark, mark ~= "<name>"}
     end
     local function group(id, label)
         add(label, "<group>")
         if type(id) == "string" then
             add(id, "<group>")
-            add("WStatus" .. id, "<group channel>")
+            if type(G) == "table" and G.channel then add(G.channel(id), "<group channel>") end
         end
     end
     local function name(value)
@@ -136,8 +150,6 @@ local function secrets()
         add(value, "<name>")
         add(value:match("^([^-]+)%-"), "<name>")
     end
-    local db = WoWStatusDB
-    if type(db) ~= "table" then return list end
     for id, label in pairs(type(db.account_groups) == "table" and db.account_groups or {}) do group(id, label) end
     for id in pairs(type(db.listed_groups) == "table" and db.listed_groups or {}) do group(id) end
     local popups = type(db.popups) == "table" and db.popups or {}
@@ -178,10 +190,19 @@ local function secrets()
     table.sort(list, function(a, b) return #a[1] > #b[1] end)
     return list
 end
+-- During an error storm the list is built at most every few seconds.
+local cachedSecrets, cachedAt = nil, nil
+local function recentSecrets()
+    local at = now()
+    if not cachedSecrets or not cachedAt or math.abs(at - cachedAt) >= 5 then
+        cachedSecrets, cachedAt = secrets(), at
+    end
+    return cachedSecrets
+end
 -- text with every known secret replaced by a mark such as "<group>".
 function D.redact(text, list)
     if type(text) ~= "string" or text == "" then return text end
-    for _, secret in ipairs(list or secrets()) do text = replaceWord(text, secret[1], secret[2]) end
+    for _, secret in ipairs(list or secrets()) do text = replaceWord(text, secret[1], secret[2], secret[3]) end
     return text
 end
 
@@ -194,9 +215,12 @@ end
 local function flush()
     local data = account()
     if not data or #pending == 0 then return end
-    local list = data.errors
+    local list, hidden = data.errors, secrets()
     for i = #pending, 1, -1 do
         local entry = pending[i]
+        -- Names were unknown when it was caught: hide them before it is stored.
+        entry.message = cut(D.redact(entry.message, hidden), MAX_MESSAGE)
+        entry.stack = cut(D.redact(entry.stack, hidden), MAX_STACK)
         local merged = false
         for _, saved in ipairs(list) do
             if type(saved) == "table" and saved.message == entry.message then
@@ -239,38 +263,57 @@ local function openPage()
     return ok and type(key) == "string" and key or "none"
 end
 
--- Record one error. Returns the entry, or nil when it was not ours.
-function D.capture(message, stack)
-    if type(message) ~= "string" then message = tostring(message) end
-    -- An error raised every frame (an OnUpdate script) arrives sixty times a
-    -- second: a repeat of the last one only counts.
-    if message == lastRaw then
-        if lastEntry then
-            lastEntry.count = (tonumber(lastEntry.count) or 1) + 1
-            lastEntry.last_at, lastEntry.unseen = now(), true
-        end
-        return lastEntry or nil
+-- Raw messages seen lately, each with its entry (false: not ours). An error
+-- raised every frame (an OnUpdate script) arrives sixty times a second, maybe
+-- taking turns with another: a repeat only counts.
+local recent, recentCount, RECENT_MAX = {}, 0, 32
+local function remember(message, entry)
+    if recent[message] == nil then
+        if recentCount >= RECENT_MAX then recent, recentCount = {}, 0 end
+        recentCount = recentCount + 1
     end
-    lastRaw, lastEntry = message, nil
-    stack = cleanStack(stack)
-    if not D.ours(message, stack) then return nil end
+    recent[message] = entry or false
+end
+-- Record one error. Returns the entry, or nil when it was not ours. own: the
+-- stack comes from our handler (its leading frames are dropped).
+function D.capture(message, stack, own)
+    if type(message) ~= "string" then message = tostring(message) end
+    local known = recent[message]
+    if known == false then return nil end
+    if known then
+        -- Still listed (not cleared, evicted or merged): it only counts.
+        local list = errors()
+        for i, saved in ipairs(list) do
+            if saved == known then
+                if i > 1 then table.remove(list, i); table.insert(list, 1, known) end
+                known.count = (tonumber(known.count) or 1) + 1
+                known.last_at, known.unseen = now(), true
+                return known
+            end
+        end
+    end
+    stack = cleanStack(stack, own)
+    if not D.ours(message, stack) then remember(message, false); return nil end
     flush()
-    local list, hidden, at = errors(), secrets(), now()
-    local text = D.redact(cut(message, MAX_MESSAGE), hidden)
+    local list, hidden, at = errors(), account() and recentSecrets() or {}, now()
+    local text = cut(D.redact(message, hidden), MAX_MESSAGE)
     for i, saved in ipairs(list) do
         if type(saved) == "table" and saved.message == text then
             table.remove(list, i); table.insert(list, 1, saved)
             saved.count = (tonumber(saved.count) or 1) + 1
             saved.last_at, saved.unseen = at, true
             lastEntry = saved
+            remember(message, saved)
             return saved
         end
     end
-    local entry = {message=text, stack=D.redact(stack, hidden), count=1, at=at, last_at=at, unseen=true,
+    -- Before SavedVariables load nothing is known to hide; flush() redacts then.
+    local entry = {message=text, stack=cut(D.redact(stack, hidden), MAX_STACK), count=1, at=at, last_at=at, unseen=true,
         version=addonVersion(), edition=edition(), build=clientBuild(), page=openPage()}
     table.insert(list, 1, entry)
     while #list > MAX_ERRORS do table.remove(list) end
     lastEntry = entry
+    remember(message, entry)
     return entry
 end
 
@@ -279,7 +322,7 @@ local function handler(message, ...)
     if not busy then
         busy = true
         local stack = type(debugstack) == "function" and debugstack(2, MAX_STACK_LINES, 0) or nil
-        pcall(D.capture, message, stack)
+        pcall(D.capture, message, stack, true)
         busy = false
     end
     if previous then return previous(message, ...) end
@@ -294,8 +337,9 @@ local function install()
     pcall(seterrorhandler, handler)
 end
 install()
--- Whether the game passes errors to our handler. False with BugGrabber, which
--- makes seterrorhandler do nothing for other addons.
+-- Whether our handler is the game's current one. False with BugGrabber, which
+-- makes seterrorhandler do nothing for other addons, and when an addon loaded
+-- later put its own handler on top (it may still pass errors on to ours).
 function D.chained()
     return type(geterrorhandler) == "function" and geterrorhandler() == handler
 end
@@ -309,6 +353,9 @@ local function listenToBugGrabber()
     end)
     listening = ok
 end
+-- !BugGrabber always loads before us: listen at once, so errors in our later
+-- files are caught too.
+listenToBugGrabber()
 
 -- Counts and report ----------------------------------------------------------
 local function count(map)
@@ -359,7 +406,7 @@ function D.markSeen()
     for _, entry in ipairs(D.errors()) do if type(entry) == "table" then entry.unseen = nil end end
 end
 function D.clear()
-    pending, lastRaw, lastEntry = {}, nil, nil
+    pending, lastEntry, recent, recentCount = {}, nil, {}, 0
     local data = account()
     if data then data.errors = {} end
 end
@@ -377,7 +424,8 @@ function D.report()
         "Saved log: " .. facts.own .. " own entries, " .. facts.received .. " received",
         "Cached gear snapshots: " .. facts.gear,
         "Groups joined: " .. facts.groups .. " - group channel joined: " .. (facts.channel and "yes" or "no"),
-        "Error capture: " .. (D.chained() and "chained" or listening and "via BugGrabber" or "unavailable"),
+        "Error capture: " .. (D.chained() and "chained" or listening and "via BugGrabber"
+            or installed and "another addon's handler is on top" or "unavailable"),
         "Generated: " .. stamp(now()),
         "",
     }

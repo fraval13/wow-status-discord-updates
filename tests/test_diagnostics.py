@@ -278,3 +278,90 @@ def test_a_failing_capture_never_blocks_the_error_display():
         raise({OWN!r}, "")
         assert(#__shown == 1 and __shown[1] == {OWN!r})
     ''')
+
+
+def test_early_errors_are_redacted_before_they_are_stored():
+    runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
+    runtime.execute(STUBS + HANDLER)
+    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Diagnostics.lua')
+    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Safe.lua')
+    runtime.execute('''
+        raise("Interface/AddOns/WoWStatus/Locale.lua:3: early from Eldrin-TestRealm", "")
+        WoWStatusDB = {version = 1, characters = {}, account_groups = {abc = "Moonwell Secret"},
+            journal = {entries = {{sender = "Eldrin-TestRealm"}}}}
+        fire("ADDON_LOADED", "WoWStatus")
+        raise("Interface/AddOns/WoWStatus/Locale.lua:3: early from Eldrin-TestRealm", "")
+    ''')
+    assert runtime.eval('#WoWStatusDB.diagnostics.errors') == 1
+    assert runtime.eval('WoWStatusDB.diagnostics.errors[1].message') == \
+        'Interface/AddOns/WoWStatus/Locale.lua:3: early from <name>'
+    assert runtime.eval('WoWStatusDB.diagnostics.errors[1].count') == 2
+
+
+def test_names_are_hidden_before_long_messages_are_cut():
+    lua = diagnostics()
+    lua.execute('''
+        table.insert(WoWStatusDB.journal.entries, {id = "x:1", sender = "Aronsson-TestRealm", kind = "level",
+            at = 1793000000, text = "Reached level 2!", groups = {}})
+        raise("Interface/AddOns/WoWStatus/X.lua:1: " .. string.rep("x ", 290) .. "Aronsson", "")
+    ''')
+    assert 'Aro' not in lua.eval('WoWStatusDB.diagnostics.errors[1].message')
+
+
+def test_names_that_are_words_or_file_names_keep_errors_readable():
+    lua = diagnostics()
+    lua.execute('''
+        for _, sender in ipairs({"Value-TestRealm", "Groups-TestRealm"}) do
+            table.insert(WoWStatusDB.journal.entries, {id = sender, sender = sender, kind = "level",
+                at = 1793000000, text = "Reached level 2!", groups = {}})
+        end
+        raise("Interface/AddOns/WoWStatus/Groups.lua:12: attempt to index a nil value, Value said", "")
+    ''')
+    assert lua.eval('WoWStatusDB.diagnostics.errors[1].message') == \
+        'Interface/AddOns/WoWStatus/Groups.lua:12: attempt to index a nil value, <name> said'
+
+
+def test_bracketed_stack_frames_and_this_files_own_frames_count():
+    lua = diagnostics()
+    lua.execute('''
+        raise("Interface/AddOns/Blizzard_SharedXML/Util.lua:10: bad argument #1",
+            '[string "@Interface/AddOns/Blizzard_SharedXML/Util.lua"]:10: in function\\n'
+            .. '[string "@Interface/AddOns/WoWStatus/Theme.lua"]:44: in function <...>')
+        raise("Interface/AddOns/Blizzard_SharedXML/Util.lua:11: bad argument #1",
+            '[Interface/AddOns/Blizzard_SharedXML/Util.lua]:11: in function\\n'
+            .. '[Interface/AddOns/WoWStatus/Diagnostics.lua]:400: in function "render"')
+        assert(#WoWStatusDB.diagnostics.errors == 2)
+        assert(WoWStatusDB.diagnostics.errors[1].stack:find("Diagnostics.lua", 1, true))
+    ''')
+
+
+def test_errors_taking_turns_are_counted():
+    lua = diagnostics()
+    lua.execute('''
+        for _ = 1, 20 do
+            raise("Interface/AddOns/WoWStatus/A.lua:1: a", "")
+            raise("Interface/AddOns/WoWStatus/B.lua:1: b", "")
+        end
+        local list = WoWStatusDB.diagnostics.errors
+        assert(#list == 2 and list[1].count == 20 and list[2].count == 20)
+        WoWStatusDiagnostics.clear()
+        raise("Interface/AddOns/WoWStatus/A.lua:1: a", "")
+        assert(#WoWStatusDB.diagnostics.errors == 1 and WoWStatusDB.diagnostics.errors[1].count == 1)
+    ''')
+
+
+def test_bugGrabber_listens_from_load_and_a_handler_on_top_is_reported():
+    stubs = STUBS + HANDLER + '''
+        seterrorhandler = function() end
+        BugGrabber = {RegisterCallback = function(owner, event, fn) __grabber = fn end}
+    '''
+    runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
+    runtime.execute(stubs)
+    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Diagnostics.lua')
+    runtime.execute('''
+        __grabber("BugGrabber_BugGrabbed", {message = "WoWStatus/Popups.lua:1: during load", stack = ""})
+        assert(#WoWStatusDiagnostics.errors() == 1)
+    ''')
+    lua = diagnostics()
+    lua.execute('local ours = geterrorhandler(); seterrorhandler(function(...) return ours(...) end)')
+    assert "Error capture: another addon's handler is on top" in lua.eval('WoWStatusDiagnostics.report()')

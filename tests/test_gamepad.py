@@ -547,4 +547,9 @@ def test_diagnostics_controls_are_reachable(lua):
         WoWStatusGamepad.setFocus(__page.clear);press("PAD1")
         assert(#WoWStatusDB.diagnostics.errors==0)
         assert(__page.clear.enabled==false)
+        -- From the tabless page RB goes to the first tab, LB to the last.
+        press("PADRSHOULDER")
+        assert(__active=="overview")
+        WoWStatusDiagnostics.show();press("PADLSHOULDER")
+        assert(__active=="characters")
     ''')
