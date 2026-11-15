@@ -569,4 +569,6 @@ W.add({
     ["Whisper"] = "Kviskre", ["Invite"] = "Inviter", ["Invite to your group"] = "Inviter til gruppa di",
     ["Already in your group"] = "Alt i gruppa di", ["Different faction"] = "Anna fraksjon",
     ["Invite sent"] = "Invitasjon sendt",
+    ["Only the group leader can invite"] = "Berre gruppeleiaren kan invitere",
+    ["Your party is full"] = "Gruppa di er full",
 })

@@ -890,21 +890,24 @@ function R.inviteBlocked(row, party)
     if theirs and (own == "Alliance" or own == "Horde") and own ~= theirs then return "Different faction" end
     local now = GetTime and GetTime() or time()
     if k and invitedAt[k] and now - invitedAt[k] < INVITE_WAIT then return "Invite sent" end
+    -- In someone else's group only its leader (or a raid assistant) invites; a party holds five.
+    local members = S.number(S.call(GetNumGroupMembers)) or 0
+    if members > 0 then
+        local raid = S.call(IsInRaid)
+        if S.call(UnitIsGroupLeader, "player") == false and not (raid and S.call(UnitIsGroupAssistant, "player")) then
+            return "Only the group leader can invite"
+        end
+        if not raid and members >= 5 then return "Your party is full" end
+    end
     return nil
 end
--- The most recent zone a friend's log names (first visits only), if it is from
--- the last hour; older ones say nothing about where they are now. Log stamps
--- are realm time (S.now).
-local ZONE_SECONDS = 3600
-local function recentZones()
-    local zones, now = {}, S.now()
-    for _, e in ipairs(WoWStatusJournal.entries()) do
-        local k = key(e.sender)
-        local zone = k and not zones[k] and e.kind == "zone" and (S.number(e.at) or 0) > now - ZONE_SECONDS
-            and S.string(e.text) and e.text:match("^Entered (.+)$")
-        if zone then zones[k] = zone end
+-- Whether an invite's wait ended since the page was drawn: clears it and says so.
+local function inviteExpired()
+    local now, expired = GetTime and GetTime() or time(), false
+    for k, at in pairs(invitedAt) do
+        if now - at >= INVITE_WAIT then invitedAt[k], expired = nil, true end
     end
-    return zones
+    return expired
 end
 -- {level, range, rows, inRange, online, above, below}: rows within range,
 -- closest first (at most R.TOGETHER_ROWS of the inRange); with nobody in range,
@@ -917,7 +920,7 @@ function R.together(groups)
     local level = WoWStatusAdapter.level() or (current.roster_info and S.number(current.roster_info.level))
     result.level = level
     if not level then return result end
-    local party, zones, candidates = grouped(), recentZones(), {}
+    local party, candidates = grouped(), {}
     -- R.groups lists each character once, so no key repeats here.
     for _, entry in ipairs(groups or R.groups()) do
         if not entry.self then
@@ -927,8 +930,9 @@ function R.together(groups)
                 if k and row.listed and row.status == "online" and theirs then
                     local blocked = R.inviteBlocked(row, party)
                     candidates[#candidates + 1] = {name=row.name, class=row.class, race=row.race, level=theirs,
-                        diff=theirs - level, zone=zones[k], player=entry.name, blocked=blocked,
-                        noWhisper=blocked == "Different faction"}
+                        diff=theirs - level, zone=row.zone, player=entry.name, blocked=blocked,
+                        -- The Classic editions refuse a whisper across factions; Retail allows some.
+                        noWhisper=blocked == "Different faction" and WoWStatusAdapter.client_id ~= "retail"}
                 end
             end
         end
@@ -967,14 +971,11 @@ function R.partyInvite(row)
     if k then invitedAt[k] = GetTime and GetTime() or time() end
     return true
 end
--- The online friends as one string, to notice logins and logouts between renders.
+-- The online friends as one value, to notice logins and logouts between renders.
+-- P.onlineCount reads the cached roster and recently heard members and asks
+-- the game for no roster, so polling it selects no chat channel.
 local function onlineSignature()
-    local keys = {}
-    for group in pairs(WoWStatusGroups.selected(current)) do
-        for _, peer in ipairs(WoWStatusPopups.peers(group)) do keys[#keys + 1] = key(peer) or "" end
-    end
-    table.sort(keys)
-    return table.concat(keys, ",")
+    return tostring(WoWStatusPopups.onlineCount and WoWStatusPopups.onlineCount() or 0)
 end
 R.onlineSignature = onlineSignature
 
@@ -1202,13 +1203,12 @@ function R.tick()
     if page and page.sync and page:IsShown() then updateSyncButton() end
     local now = GetTime and GetTime() or time()
     -- "Play together now" follows friends logging in or out while the page is open.
-    if page and page:IsShown() and (partyChanged or now - onlineCheckedAt >= R.ONLINE_CHECK) then
+    -- R.render notes what it drew, so only a change since then redraws.
+    if page and page:IsShown() then
         local redraw = partyChanged
-        partyChanged = false
         if now - onlineCheckedAt >= R.ONLINE_CHECK then
             onlineCheckedAt = now
-            local signature = onlineSignature()
-            if signature ~= onlineSeen then onlineSeen, redraw = signature, true end
+            redraw = redraw or onlineSignature() ~= onlineSeen or inviteExpired()
         end
         if redraw then R.render() end
     end
@@ -1655,7 +1655,10 @@ end
 -- Groups for the Characters page: {title, rows={{name, race, sex, class, level, status, latest}}}.
 function R.groups()
     local hidden = R.hiddenNames()
-    local online, latest, lastSeen, shared, deaths = {}, {}, {}, {}, {}
+    local online, latest, lastSeen, shared, deaths, zones = {}, {}, {}, {}, {}, {}
+    -- A friend's newest first-visit zone, if under an hour old ("Play together now").
+    -- Log stamps are realm time (S.now).
+    local zoneSince = S.now() - 3600
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
         if k and selected[group] then shared[k] = shared[k] or {}; shared[k][group] = true end
@@ -1681,6 +1684,9 @@ function R.groups()
             deaths[k] = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$")) or false
         end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
+        if k and zones[k] == nil and e.kind == "zone" then
+            zones[k] = (S.number(e.at) or 0) > zoneSince and S.string(e.text) and e.text:match("^Entered (.+)$") or false
+        end
     end
     -- First-name-only entries (older WoW Forever clients announced "Unshaved")
     -- show as the one full name known for them ("Unshaved Brittlebeard").
@@ -1759,7 +1765,7 @@ function R.groups()
             quests_source=character.quests_source, gold=S.number(character.gold),
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
             honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts),
-            professions=character.professions, listed=character.listed == true})
+            professions=character.professions, listed=character.listed == true, zone=zones[k] or nil})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
@@ -2109,6 +2115,7 @@ function R.render()
     if WoWStatusProfile and WoWStatusProfile.refreshQuests then WoWStatusProfile.refreshQuests() end
     if not page or not page.IsShown or not page:IsShown() then return end
     local index, headers, sections, y = 0, 0, 0, 0
+    onlineSeen, partyChanged = onlineSignature(), false
     local groups = R.groups()
     y = renderTogether(y, groups)
     local band = y

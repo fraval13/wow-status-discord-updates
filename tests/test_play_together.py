@@ -245,6 +245,7 @@ def test_whisper_invite_and_range_buttons_are_reachable_with_a_controller():
         function methods:SetShown(value) self.visible=value end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
         WoWStatusSafe={}
+        WoWStatusPopups={}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
             call=function() return false end, classColour=function() end}
         WoWStatusMainWindow.register=function(key,title,build) __build=build end
@@ -298,3 +299,53 @@ def test_party_changes_redraw_once_on_the_next_tick():
     thora.eval('WoWStatusRoster.tick')()
     assert thora.eval('__renders') == 1
     assert thora.eval('WoWStatusCharactersPage.together[1].info.text') == '|cffff7777Already in your group|r'
+
+
+def test_invite_rests_when_only_the_leader_may_invite_or_the_party_is_full():
+    _, thora, _ = setup()
+    row = '{name="Mira-TestRealm", race="Dwarf"}'
+    thora.execute('''
+        __members, __leader, __raid, __assistant = 0, false, false, false
+        function GetNumGroupMembers() return __members end
+        function UnitIsGroupLeader() return __leader end
+        function UnitIsGroupAssistant() return __assistant end
+        function IsInRaid() return __raid end
+    ''')
+    blocked = f'WoWStatusRoster.inviteBlocked({row})'
+    assert thora.eval(blocked) is None                      # alone: anyone may invite
+    thora.execute('__members = 3')
+    assert thora.eval(blocked) == 'Only the group leader can invite'
+    thora.execute('__leader = true')
+    assert thora.eval(blocked) is None
+    thora.execute('__members = 5')
+    assert thora.eval(blocked) == 'Your party is full'
+    thora.execute('__raid, __members, __leader, __assistant = true, 12, false, true')
+    assert thora.eval(blocked) is None                      # a raid assistant may invite
+
+
+def test_invite_comes_back_by_itself_after_the_wait():
+    _, thora, words = setup()
+    friend(thora, words, 'Mira-TestRealm', 20)
+    online(thora, 'Mira-TestRealm')
+    thora.execute('C_PartyInfo = {InviteUnit=function() end}; __mono = 1000')
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    row = thora.eval('WoWStatusCharactersPage.together[1]')
+    row.invite.OnClick(row.invite)
+    assert row.invite.enabled is False
+    for step in range(0, 70, 5):
+        thora.execute(f'__mono = 1001 + {step}')
+        thora.eval('WoWStatusRoster.tick')()
+    assert row.invite.enabled is True and row.info.text == ''
+
+
+def test_retail_keeps_whisper_for_the_other_faction():
+    _, thora, words = setup()
+    friend(thora, words, 'Grom-TestRealm', 20, race='Orc')
+    online(thora, 'Mira-TestRealm', 'Grom-TestRealm')
+
+    def grom():
+        rows = thora.eval('WoWStatusRoster.together()').rows
+        return next(r for r in rows.values() if r.name == 'Grom-TestRealm')
+    assert grom().noWhisper is True
+    thora.execute('WoWStatusAdapter.client_id = "retail"')
+    assert grom().noWhisper is False
