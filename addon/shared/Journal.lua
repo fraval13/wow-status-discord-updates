@@ -557,7 +557,9 @@ function J.validText(kind,detail,level)
     if type(detail)~="string" then return false end
     if kind=="level" then return detail=="Reached level "..tostring(level).."!" end
     if kind=="introduction" then return detail=="Joined the group" or detail=="Joined the WoW Status group" end
-    if kind=="death" then return detail=="Died" or detail:match("^Total deaths: %d+$")~=nil end
+    if kind=="death" then
+        return detail=="Died" or detail==WoWStatusProgress.HARDCORE_DEATH or detail:match("^Total deaths: %d+$")~=nil
+    end
     if kind=="quest" then return detail:match("^Completed %d+ quests!$")~=nil end
     if kind=="zone" then return named(detail,"Entered ") end
     if kind=="profession" then return named(detail,"Learned ") or rankUp(detail) end

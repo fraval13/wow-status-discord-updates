@@ -1043,6 +1043,8 @@ function P.reactions(item)
     if P.isSelf(item.sender) or not P.senderKey(item.sender) then return {} end
     local level = S.number(item.level)
     if level then return {"GZ!", "Congrats on level " .. level .. "!"} end
+    -- A Hardcore death is permanent: paying respects only, no teasing (#163).
+    if WoWStatusProgress.hardcoreDeath(item) then return {"F"} end
     if item.kind == "death" then return {"F", "Git Good"} end
     if item.kind == "introduction" then return {"Welcome!"} end
     if item.kind == "zone" then
@@ -1091,6 +1093,12 @@ function P.reactionText(item, reaction)
     item.reactionTexts = item.reactionTexts or {}
     local chosen = item.reactionTexts[reaction]
     if chosen then return chosen end
+    -- For a Hardcore death "F" whispers only its plain, respectful wording: the
+    -- voices' and the random Nynorsk lines include jokes about corpse runs (#163).
+    if WoWStatusProgress.hardcoreDeath(item) then
+        item.reactionTexts[reaction] = T(reaction)
+        return item.reactionTexts[reaction]
+    end
     local key, value = reactionKey(reaction)
     local voiced = key and WoWStatusPersonalities and WoWStatusPersonalities.reactionLine(key, value)
     if voiced then
@@ -1598,6 +1606,7 @@ local function eventText(event)
         return "Learned " .. (data.name or "Profession") .. (title and (" ("..title..")") or "")
     end
     if event.kind == "profession" then return (data.name or "Profession") .. ": " .. (data.title or WoWStatusProgress.professionTitle(data.max_skill)) .. " (" .. (data.max_skill or "?") .. " max)" end
+    if event.kind == "death" and data.hardcore == true then return WoWStatusProgress.HARDCORE_DEATH end
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end

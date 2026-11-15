@@ -306,11 +306,28 @@ function P.totalDeaths(character)
     if not base then return value.deaths end
     return base.lifetime + math.max(0, value.deaths - base.tracked)
 end
-function P.death(character)
+-- Hardcore (#163): a death there is permanent, so it gets no roast, no death
+-- count and no death record. Only positive evidence counts: Classic Era's
+-- C_GameRules.IsHardcoreActive returning true. A missing API, an error or any
+-- other answer (TBC, Retail, Forever, normal realms) means not Hardcore.
+P.HARDCORE_DEATH = "Died in Hardcore"
+function P.hardcore()
+    local rules = C_GameRules
+    if type(rules) ~= "table" then return false end
+    return S.call(rules.IsHardcoreActive) == true
+end
+-- A Hardcore death: an own event (data.hardcore) or a log entry or received
+-- notification, whose fixed text says so.
+function P.hardcoreDeath(e)
+    if type(e) ~= "table" or e.kind ~= "death" then return false end
+    return e.text == P.HARDCORE_DEATH or (type(e.data) == "table" and e.data.hardcore == true)
+end
+-- A Hardcore death is latched like any other but never added to the total.
+function P.death(character, hardcore)
     local value = stats(character)
     if character.death_latched then return false end
     character.death_latched = true
-    value.deaths = value.deaths + 1
+    if not hardcore then value.deaths = value.deaths + 1 end
     return true
 end
 function P.quest(character, id)

@@ -29,7 +29,8 @@ function F.medals()
     end
     -- A group record, not the character's first death: the death popup next to it
     -- shows the lifetime total ("Total deaths: 33"), so the title must say "group".
-    kind("death", "First in the group to die", "death")
+    -- A Hardcore death is permanent and never a record (#163).
+    kind("death", "First in the group to die", "death", function(e) return not WoWStatusProgress.hardcoreDeath(e) end)
     kind("dungeon", "First dungeon clear", "dungeon")
     kind("mount", "First mount", "mount")
     kind("raid", "First raid boss", "raid")
@@ -168,7 +169,9 @@ function F.week(group, offset)
     local people, order = {}, {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local day = S.number(e.at) and dayOf(e.at)
-        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e) then
+        -- A Hardcore death never counts toward "Most deaths" or a person's line (#163).
+        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e)
+            and not WoWStatusProgress.hardcoreDeath(e) then
             local name = shortName(e.sender)
             local p = people[name]
             if not p then p = {name=name, level=0, death=0, zone=0, loot=0, quest=0}; people[name] = p; order[#order + 1] = p end
@@ -206,7 +209,7 @@ end
 -- Fun records in one group, only when they are remarkable (high thresholds).
 F.FUN = {zone_deaths=5, life_days=3, evening_levels=4, deaths=25, kills=1000, gold=1000000, armor=5}
 function F.funRecords(group)
-    local deathsIn, lastDeath, longest, evenings, armor = {}, {}, {}, {}, {}
+    local deathsIn, lastDeath, longest, evenings, armor, fallen = {}, {}, {}, {}, {}, {}
     local entries = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if inGroup(e, group) and WoWStatusJournal.visible(e) and S.number(e.at) then entries[#entries + 1] = e end
@@ -216,7 +219,11 @@ function F.funRecords(group)
     for _, e in ipairs(entries) do
         local name = shortName(e.sender)
         firstSeen[name] = firstSeen[name] or e.at
-        if e.kind == "death" then
+        if WoWStatusProgress.hardcoreDeath(e) then
+            -- Hardcore (#163): no "dangerous zone" count, and a fallen character
+            -- never holds "Longest without dying".
+            fallen[name] = true
+        elseif e.kind == "death" then
             local d = WoWStatusJournal.details(e)
             if d and d.zone then deathsIn[d.zone] = (deathsIn[d.zone] or 0) + 1 end
             local since = lastDeath[name] or firstSeen[name]
@@ -238,7 +245,7 @@ function F.funRecords(group)
     for z, n in pairs(deathsIn) do if n > count then zone, count = z, n end end
     if zone and count >= F.FUN.zone_deaths then add("Most dangerous zone:", zone, count .. " " .. T("deaths")) end
     local who, span = nil, 0
-    for name, s in pairs(longest) do if s > span then who, span = name, s end end
+    for name, s in pairs(longest) do if s > span and not fallen[name] then who, span = name, s end end
     if who and span >= F.FUN.life_days * 86400 then add("Longest without dying:", who, math.floor(span / 86400) .. " " .. T("days")) end
     local best, levels = nil, 0
     for k, n in pairs(evenings) do if n > levels then best, levels = k, n end end
