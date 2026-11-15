@@ -237,7 +237,7 @@ function M.choices(name)
     if id then
         local who = player and player:gsub("|", "||") or T("this player")
         for _, mode in ipairs(M.MODES) do
-            items[#items + 1] = {label=T("All characters of") .. " " .. who .. ": " .. T(M.LABELS[mode]):lower(),
+            items[#items + 1] = {label=T("All characters of") .. " " .. who .. ": " .. S.lowerASCII(T(M.LABELS[mode])),
                 value={kind="player", id=id, mode=mode, name=player}}
         end
     end
