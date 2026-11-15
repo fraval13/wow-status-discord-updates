@@ -377,6 +377,47 @@ function R.hiddenNames()
 end
 function R.isHidden(name) return R.hiddenNames()[key(name) or ""] == true end
 
+-- What a group member's unit tooltip may show (#183), from the stored list only:
+-- no request is sent. nil for anyone a member of a group this account is in has
+-- not listed, for hidden characters and for this account's own characters. A
+-- value the character does not share is nil, never zero. liveLevel is the level
+-- the game shows now: the saved XP progress belongs to the saved level only.
+function R.tooltipFacts(name, liveLevel)
+    if not db or not current then return nil end
+    local k = key(name)
+    if not k or WoWStatusPopups.isSelf(name) then return nil end
+    local hidden = R.hiddenNames()
+    if hidden[k] then return nil end
+    local selected = WoWStatusGroups.selected(current)
+    for _, player in pairs(state().players) do
+        local character = type(player.characters) == "table" and player.characters[k]
+        local member = false
+        for group in pairs(type(character) == "table" and type(player.groups) == "table" and player.groups or {}) do
+            if selected[group] then member = true; break end
+        end
+        if member and WoWStatusPopups.fullName(character.name) then
+            local alts = 0
+            for other, alt in pairs(player.characters) do
+                if other ~= k and type(alt) == "table" and not hidden[other] and WoWStatusPopups.fullName(alt.name) then alts = alts + 1 end
+            end
+            -- Total deaths from their newest death announcement, as the Characters page reads it.
+            local deaths
+            for _, e in ipairs(WoWStatusJournal.entries()) do
+                if e.kind == "death" and key(e.sender) == k then
+                    deaths = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$"))
+                    break
+                end
+            end
+            local level, xp = S.number(character.level), S.number(character.xp)
+            if xp and (xp < 0 or xp > 999 or (S.number(liveLevel) and liveLevel ~= level)) then xp = nil end
+            local quests = S.number(character.quests)
+            return {name=character.name, player=S.string(player.name), alts=alts, level=level, xp=xp, deaths=deaths,
+                quests=quests, quests_source=quests and character.quests_source or nil, played=S.number(character.played)}
+        end
+    end
+    return nil
+end
+
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
