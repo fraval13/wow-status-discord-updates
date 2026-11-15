@@ -5,6 +5,7 @@
 ## IconTexture: Interface\AddOns\WoWStatus\Textures\Logo
 ## Version: 1.54.0
 ## SavedVariables: WoWStatusDB
+## OptionalDeps: !BugGrabber
 ## X-Client-Support: Vanilla Classic / Classic Era only
 Diagnostics.lua
 Safe.lua

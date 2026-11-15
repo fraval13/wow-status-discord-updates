@@ -696,10 +696,14 @@ end)
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match(S.SPLIT_WORD)
-    -- Diagnostics open even when the character never became ready: an error
-    -- may be exactly why.
-    if command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show(); return end
-    if not current then say(A.display_name .. " character is not ready or identity is currently restricted."); return end
+    if not current then
+        -- The main window's pages need a ready character; say how many errors wait.
+        if command == "errors" or command == "diagnostics" then
+            say(WoWStatusLocale.F("WoW Status errors recorded: %d. They can be read here once the character is ready.",
+                #WoWStatusDiagnostics.errors()))
+        end
+        say(A.display_name .. " character is not ready or identity is currently restricted."); return
+    end
     if command == "groups" then
         if rest == "legacy" then
             current.group_ids = {}
@@ -730,6 +734,7 @@ SlashCmdList.WOWSTATUS = function(message)
         if choice == "on" or choice == "off" then WoWStatusGamepad.setAllowed(choice == "on")
         elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
         say(WoWStatusGamepad.report())
+    elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

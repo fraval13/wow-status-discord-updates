@@ -240,7 +240,7 @@ def test_page_opens_by_command_without_a_tab_and_clears():
     ''')
 
 
-def test_page_opens_from_the_options_and_before_the_character_is_ready():
+def test_page_opens_from_the_options_and_waits_for_a_ready_character():
     lua = diagnostics()
     lua.execute('''
         for _, f in ipairs(__frames) do
@@ -251,8 +251,13 @@ def test_page_opens_from_the_options_and_before_the_character_is_ready():
     waiting = STUBS.replace('function UnitGUID() return "Player-123-0001" end', 'function UnitGUID() return nil end')
     lua = make_lua(waiting + HANDLER)
     lua.execute('''
+        __said = {}
+        DEFAULT_CHAT_FRAME = {AddMessage = function(_, text) table.insert(__said, text) end}
+        raise("Interface/AddOns/WoWStatus/WoWStatus.lua:1: boom", "")
         SlashCmdList.WOWSTATUS("errors")
-        assert(WoWStatusMainWindow.active() == "diagnostics" and WoWStatusDiagnosticsPage:IsShown())
+        -- The pages need a ready character: no window, a count in chat.
+        assert(not WoWStatusMainFrame or not WoWStatusMainFrame:IsShown())
+        assert(table.concat(__said, "\\n"):find("WoW Status errors recorded: 1.", 1, true))
     ''')
 
 
@@ -423,3 +428,17 @@ def test_bugGrabber_repeat_counts_come_from_its_error_object():
         __err.counter = 500
     ''')
     assert '#1 - 500 times' in lua.eval('WoWStatusDiagnostics.report()')
+
+
+def test_shortened_paths_and_group_names_that_are_file_names():
+    lua = diagnostics()
+    lua.eval('WoWStatusGroups.update')('Groups', '')
+    lua.execute('''
+        -- Lua shortens long chunk names: "...dOns/" is no addon, so the stack decides.
+        raise("...dOns/Blizzard_SharedXMLBase/Mixins/Long.lua:3: bad argument",
+            "Interface/AddOns/WoWStatus/Theme.lua:44: in function <...>")
+        raise("Interface/AddOns/WoWStatus/Groups.lua:41: Groups failed", "")
+        local list = WoWStatusDB.diagnostics.errors
+        assert(#list == 2)
+        assert(list[1].message == "Interface/AddOns/WoWStatus/Groups.lua:41: <group> failed")
+    ''')

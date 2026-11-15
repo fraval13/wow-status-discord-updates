@@ -63,7 +63,9 @@ local function firstAddon(stack)
         if path then
             path = path:gsub("^@", "")
             local folder = path:match("[Aa][Dd][Dd][Oo][Nn][Ss][/\\]([^/\\]+)") or path:match("^([^/\\]+)[/\\]")
-            if folder and not NEUTRAL[folder] and not folder:find("^Blizzard_") then return folder end
+            -- "...dOns/X": Lua shortened a long path; the folder is unknown.
+            if folder and not NEUTRAL[folder] and not folder:find("^Blizzard_") and not folder:find("^%.")
+                then return folder end
         end
     end
 end
@@ -121,22 +123,22 @@ local function charAfter(text, e)
     local size = byte >= 240 and 4 or byte >= 224 and 3 or byte >= 192 and 2 or 1
     return text:sub(e + 1, e + size)
 end
--- A name that is a file name ("WoWStatus/Groups.lua") is left alone, so a
--- friend called Groups does not hide which file failed.
+-- A name or group that is a file name ("WoWStatus/Groups.lua") is left alone,
+-- so a friend or group called Groups does not hide which file failed.
 local function fileName(text, e) return text:sub(e + 1, e + 4) == ".lua" end
 -- Replace every whole-word occurrence of word with mark. Group names compare in
 -- any ASCII case (as group IDs do); character names exactly, so a friend called
 -- Value never turns "a nil value" into "a nil <name>".
-local function replaceWord(text, word, mark, anyCase)
-    local lower = WoWStatusSafe.lowerASCII
-    local folded, needle = text, word
-    if anyCase then folded, needle = lower(text), lower(word) end
+-- folded: text in ASCII lowercase, passed in so it is made once per redaction.
+local function replaceWord(text, word, mark, anyCase, folded)
+    local needle = word
+    if anyCase then needle = WoWStatusSafe.lowerASCII(word) else folded = text end
     local out, init, from = {}, 1, 1
     while true do
         local s, e = folded:find(needle, init, true)
         if not s then break end
         if not wordChar(charBefore(folded, s)) and not wordChar(charAfter(folded, e))
-            and not (mark == "<name>" and fileName(text, e)) then
+            and not fileName(text, e) then
             out[#out + 1] = text:sub(from, s - 1); out[#out + 1] = mark
             from = e + 1
         end
@@ -223,7 +225,12 @@ end
 -- text with every known secret replaced by a mark such as "<group>".
 function D.redact(text, list)
     if type(text) ~= "string" or text == "" then return text end
-    for _, secret in ipairs(list or secrets()) do text = replaceWord(text, secret[1], secret[2], secret[3]) end
+    local folded
+    for _, secret in ipairs(list or secrets()) do
+        if secret[3] and not folded then folded = WoWStatusSafe.lowerASCII(text) end
+        local result = replaceWord(text, secret[1], secret[2], secret[3], folded)
+        if result ~= text then text, folded = result, nil end
+    end
     return text
 end
 
@@ -346,9 +353,12 @@ local function handler(message, ...)
         busy = true
         -- Level 1 is debugstack itself and 2 this handler: start at the error.
         -- Another addon's error storm skips building a stack at all.
-        local stack = recent[message] == nil and type(debugstack) == "function"
+        -- rawget under pcall: a message that cannot be a table key (a Retail
+        -- secret value) must not stop the error reaching the display.
+        local ok, cached = pcall(rawget, recent, message)
+        local stack = ok and cached == nil and type(debugstack) == "function"
             and debugstack(3, MAX_STACK_LINES, 0) or nil
-        pcall(D.capture, message, stack)
+        if ok then pcall(D.capture, message, stack) end
         busy = false
     end
     if previous then return previous(message, ...) end
@@ -475,6 +485,7 @@ function D.report()
         if type(entry) == "table" and type(entry.message) == "string" then
             shown = shown + 1
             local times = timesOf(entry)
+            entry.count = times -- BugGrabber's count, kept past a /reload
             lines[#lines + 1] = "#" .. shown .. " - " .. times .. (times == 1 and " time" or " times")
                 .. " - first " .. stamp(entry.at) .. " - last " .. stamp(entry.last_at or entry.at)
             lines[#lines + 1] = "Version " .. field(entry.version) .. " - " .. field(entry.edition)
@@ -495,7 +506,9 @@ end
 local function render()
     if not page then return end
     local T, F = WoWStatusLocale.T, WoWStatusLocale.F
-    local unseen = D.unseen()
+    local list = D.errors()
+    local unseen = 0
+    for _, entry in ipairs(list) do if type(entry) == "table" and entry.unseen then unseen = unseen + 1 end end
     page.status:SetText(unseen == 1 and T("1 error recorded since you last looked.")
         or unseen > 1 and F("%d errors recorded since you last looked.", unseen)
         or T("No new errors since you last looked."))
@@ -504,8 +517,8 @@ local function render()
     page.box:SetText((page.report:gsub("|", "||")))
     if page.box.SetCursorPosition then page.box:SetCursorPosition(0) end
     if page.scroll.SetVerticalScroll then page.scroll:SetVerticalScroll(0) end
-    if page.clear.SetEnabled then page.clear:SetEnabled(#D.errors() > 0) end
-    D.markSeen()
+    if page.clear.SetEnabled then page.clear:SetEnabled(#list > 0) end
+    for _, entry in ipairs(list) do if type(entry) == "table" then entry.unseen = nil end end
 end
 D.render = render
 

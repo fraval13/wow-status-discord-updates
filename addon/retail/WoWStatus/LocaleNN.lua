@@ -555,4 +555,6 @@ W.add({
         "Kopier denne rapporten inn i ein feilrapport på GitHub eller Discord. Ingenting vert sendt av seg sjølv.",
     ["Select all"] = "Merk alt",
     ["Clear errors"] = "Tøm feillista",
+    ["WoW Status errors recorded: %d. They can be read here once the character is ready."] =
+        "Feil registrerte i WoW Status: %d. Dei kan lesast her når figuren er klar.",
 })
