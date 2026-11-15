@@ -29,7 +29,8 @@ local function stats(character)
         if started < 1 or started > now then started = now end
         local deaths = 0
         for _, event in ipairs(character.history and character.history.events or {}) do
-            if event.kind == "death" then deaths = deaths + 1 end
+            -- A Hardcore death never counts (#163).
+            if event.kind == "death" and not P.hardcoreDeath(event) then deaths = deaths + 1 end
         end
         character.progress = {started_at=started, deaths=deaths, quest_ids={}}
     end

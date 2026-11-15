@@ -1095,19 +1095,16 @@ function P.reactionText(item, reaction)
     if chosen then return chosen end
     -- For a Hardcore death "F" whispers only its plain, respectful wording: the
     -- voices' and the random Nynorsk lines include jokes about corpse runs (#163).
-    if WoWStatusProgress.hardcoreDeath(item) then
-        item.reactionTexts[reaction] = T(reaction)
-        return item.reactionTexts[reaction]
-    end
+    local plain = WoWStatusProgress.hardcoreDeath(item)
     local key, value = reactionKey(reaction)
-    local voiced = key and WoWStatusPersonalities and WoWStatusPersonalities.reactionLine(key, value)
+    local voiced = key and not plain and WoWStatusPersonalities and WoWStatusPersonalities.reactionLine(key, value)
     if voiced then
         item.reactionVoiced = item.reactionVoiced or {}
         item.reactionVoiced[reaction] = true
         item.reactionTexts[reaction] = voiced
         return voiced
     end
-    local pools = WoWStatusLocale.lang() == "nn" and WoWStatusLocale.POOLS or {}
+    local pools = not plain and WoWStatusLocale.lang() == "nn" and WoWStatusLocale.POOLS or {}
     local zone = reaction:match("^Enjoy (.+)!$")
     local pool = zone and pools.Enjoy or pools[reaction]
     if type(pool) == "table" and #pool > 0 then

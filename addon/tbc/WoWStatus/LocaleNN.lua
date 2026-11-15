@@ -11,7 +11,7 @@ local function title(word) return TITLES[(word:gsub(" ", "_"))] or word end
 local RECAP = {
     {"This morning", "I dag tidleg"}, {"This afternoon", "I ettermiddag"}, {"Tonight", "I kveld"},
     {"went from (%d+) to (%d+)", "gjekk frå %1 til %2"}, {"reached level (%d+)", "nådde nivå %1"},
-    {"died once", "døydde éin gong"}, {"died twice", "døydde to gonger"}, {"died (%d+) times", "døydde %1 gonger"},
+    {"died in Hardcore", "døydde i Hardcore"}, {"died once", "døydde éin gong"}, {"died twice", "døydde to gonger"}, {"died (%d+) times", "døydde %1 gonger"},
     {"discovered a new zone", "fann eit nytt område"}, {"discovered (%d+) new zones", "fann %1 nye område"},
     {"reached a profession milestone", "nådde eit yrkesmål"}, {"(%d+) profession milestones", "%1 yrkesmål"},
     {"got a first mount", "fekk sitt første ridedyr"}, {"got a first epic mount", "fekk sitt første episke ridedyr"},
@@ -403,6 +403,7 @@ W.add({
     {"^gained (%d+) levels$", "gjekk opp %1 nivå"},
     {"^cleared a dungeon$", "rydda eit fangehol"},
     {"^cleared (.+)$", "rydda %1"},
+    {"^died in Hardcore$", "døydde i Hardcore"},
     {"^died once$", "døydde éin gong"},
     {"^died (%d+) times$", "døydde %1 gonger"},
     {"^discovered a new zone$", "fann eit nytt område"},

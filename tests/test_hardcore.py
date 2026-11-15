@@ -172,3 +172,28 @@ def test_a_session_recap_does_not_tally_a_hardcore_death():
         end
     ''')
 
+
+
+def test_overview_says_died_in_hardcore_instead_of_a_tally():
+    lua = make_lua()
+    lua.execute('''
+        local entries = {
+            {id="a", sender="Mira-TestRealm", kind="death", text="Died in Hardcore", at=200},
+            {id="b", sender="Bob-TestRealm", kind="death", text="Total deaths: 4", at=210},
+        }
+        local text = {}
+        for _, p in ipairs(WoWStatusOverview.summary(entries, 100)) do text[#text + 1] = WoWStatusOverview.sentence(p) end
+        text = table.concat(text, "\\n")
+        assert(text:find("Mira died in Hardcore", 1, true) and text:find("Bob died once", 1, true), text)
+        WoWStatusLocale.set("nn")
+        assert(WoWStatusLocale.T("died in Hardcore") == "døydde i Hardcore")
+    ''')
+
+
+def test_rebuilt_death_total_leaves_out_hardcore_deaths():
+    lua = make_lua()
+    lua.execute('''
+        local c = {epoch="1700000000", history={events={
+            {kind="death", data={hardcore=true}}, {kind="death", data={total_deaths=1}}}}}
+        assert(WoWStatusProgress.totalDeaths(c) == 1)
+    ''')

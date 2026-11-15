@@ -209,7 +209,7 @@ end
 -- Fun records in one group, only when they are remarkable (high thresholds).
 F.FUN = {zone_deaths=5, life_days=3, evening_levels=4, deaths=25, kills=1000, gold=1000000, armor=5}
 function F.funRecords(group)
-    local deathsIn, lastDeath, longest, evenings, armor, fallen = {}, {}, {}, {}, {}, {}
+    local deathsIn, lastDeath, longest, evenings, armor = {}, {}, {}, {}, {}
     local entries = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if inGroup(e, group) and WoWStatusJournal.visible(e) and S.number(e.at) then entries[#entries + 1] = e end
@@ -219,11 +219,8 @@ function F.funRecords(group)
     for _, e in ipairs(entries) do
         local name = shortName(e.sender)
         firstSeen[name] = firstSeen[name] or e.at
-        if WoWStatusProgress.hardcoreDeath(e) then
-            -- Hardcore (#163): no "dangerous zone" count, and a fallen character
-            -- never holds "Longest without dying".
-            fallen[name] = true
-        elseif e.kind == "death" then
+        -- A Hardcore death (#163) adds nothing: no "dangerous zone", no streak.
+        if e.kind == "death" and not WoWStatusProgress.hardcoreDeath(e) then
             local d = WoWStatusJournal.details(e)
             if d and d.zone then deathsIn[d.zone] = (deathsIn[d.zone] or 0) + 1 end
             local since = lastDeath[name] or firstSeen[name]
@@ -245,7 +242,7 @@ function F.funRecords(group)
     for z, n in pairs(deathsIn) do if n > count then zone, count = z, n end end
     if zone and count >= F.FUN.zone_deaths then add("Most dangerous zone:", zone, count .. " " .. T("deaths")) end
     local who, span = nil, 0
-    for name, s in pairs(longest) do if s > span and not fallen[name] then who, span = name, s end end
+    for name, s in pairs(longest) do if s > span then who, span = name, s end end
     if who and span >= F.FUN.life_days * 86400 then add("Longest without dying:", who, math.floor(span / 86400) .. " " .. T("days")) end
     local best, levels = nil, 0
     for k, n in pairs(evenings) do if n > levels then best, levels = k, n end end
