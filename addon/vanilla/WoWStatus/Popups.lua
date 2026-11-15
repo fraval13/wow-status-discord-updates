@@ -891,7 +891,7 @@ local function commit(c, now)
     -- marks an update that arrived in them and waited for the roster past their end.
     if c.quiet or P.quietHoursActive() then noteReceive("quiet_hours", c, now); return false, "logged only (quiet hours)" end
     -- A muted friend (#169): logged above as usual, only the popup is skipped.
-    if muted then noteReceive("muted", c, now); return false end
+    if muted then noteReceive("muted", c, now); return false, "muted: logged without a popup" end
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true

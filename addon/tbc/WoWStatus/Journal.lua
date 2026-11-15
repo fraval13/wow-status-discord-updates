@@ -1294,10 +1294,9 @@ function J.reaction(text,sender)
     local member=false
     for group in pairs(WoWStatusGroups.selected(current)) do if peer(group,sender) then member=true end end
     if not member then return false end
-    -- Muted friends (#169): a hidden one's reactions are not kept or shown, and a
-    -- muted one is never read aloud. Nothing is sent either way.
+    -- Muted friends (#169) are never read aloud; a hidden one's reactions are
+    -- kept but not shown (J.reactionsText), so unmuting brings them back.
     local mode=WoWStatusMutes and WoWStatusMutes.mode(sender) or "show"
-    if mode=="hide" then return false end
     local now=S.now()
     for _,e in ipairs(db.journal.entries) do
         if e.owner==current.identity.guid and e.client==current.identity.client and kinds[e.kind]
@@ -1323,7 +1322,9 @@ end
 function J.reactionsText(e)
     if type(e)~="table" or type(e.reactions)~="table" then return nil end
     local list={}
-    for _,r in pairs(e.reactions) do list[#list+1]=r end
+    for key,r in pairs(e.reactions) do
+        if not (WoWStatusMutes and WoWStatusMutes.hidden(key)) then list[#list+1]=r end
+    end
     if #list==0 then return nil end
     table.sort(list,function(a,b) return (a.at or 0)<(b.at or 0) end)
     local byText,order={},{}

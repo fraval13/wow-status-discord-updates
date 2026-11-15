@@ -545,6 +545,8 @@ function UI.menu(owner, items, onPick, minWidth)
             row:SetScript("OnClick", function(self) menu:Hide(); if menu.onPick then menu.onPick(self.value) end end)
             menu.rows[i] = row
         end
+        -- The list is shared: rows made for a narrower menu take this one's width.
+        row:SetSize(width, rowHeight); row.text:SetWidth(width - 12)
         row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * rowHeight)
         row.text:SetText(item.label); row.value = item.value; row:Show()
     end

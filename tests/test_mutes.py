@@ -364,7 +364,7 @@ def test_one_character_under_two_player_ids_follows_either_mute():
         assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'show'
 
 
-def test_hidden_friends_reactions_are_not_kept_and_muted_ones_are_not_read_aloud():
+def test_hidden_friends_reactions_are_kept_but_not_shown_and_muted_ones_are_silent():
     lua = actor('Thora')
     clock(lua, 10)
     lua.execute('''
@@ -380,10 +380,73 @@ def test_hidden_friends_reactions_are_not_kept_and_muted_ones_are_not_read_aloud
         fire("CHAT_MSG_WHISPER", "GZ!", "Bob-TestRealm")
         local own
         for _, e in ipairs(WoWStatusJournal.entries()) do if e.owner and e.kind == "level" then own = e end end
-        assert(not own.reactions["mira-testrealm"])
-        assert(own.reactions["bob-testrealm"].text == "GZ!")
-        assert(#__heard == 0)
+        assert(own.reactions["mira-testrealm"].text == "GZ!")  -- kept
+        assert(WoWStatusJournal.reactionsText(own) == "GZ! from Bob")  -- but not shown
+        assert(#__heard == 0)  -- and neither is read aloud
+        WoWStatusMutes.setCharacter("Mira-TestRealm", "show")
+        local text = WoWStatusJournal.reactionsText(own)
+        assert(text:find("Mira", 1, true) and text:find("Bob", 1, true))
     ''')
+
+
+def test_the_overview_leaves_hidden_friends_out_of_who_is_online():
+    lua = actor('Thora')
+    lua.execute('''
+        __peers = {"Thora-TestRealm", "Mira-TestRealm", "Bob-TestRealm"}
+        WoWStatusMutes.setCharacter("Mira-TestRealm", "hide")
+        WoWStatusMutes.setCharacter("Bob-TestRealm", "log")
+        SlashCmdList.WOWSTATUS("overview")
+    ''')
+    names = lua.eval('WoWStatusOverviewPage.group.names.text')
+    assert 'Bob' in names and 'Mira' not in names
+
+
+def test_muted_updates_say_why_in_the_debug_log():
+    mira, thora = actor('Mira'), actor('Thora')
+    clock(mira, 10)
+    clock(thora, 10)
+    thora.eval('SlashCmdList.WOWSTATUS')('debug on')
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'log')
+    mira.eval('fire')('PLAYER_LEVEL_UP', 40)
+    deliver_popup(mira, thora)
+    log = thora.eval('WoWStatusDB.debug_log')
+    assert any('muted: logged without a popup' in str(v) for v in log.values())
+
+
+def test_the_menu_offers_the_players_show_while_the_player_is_muted():
+    mira, thora = pair()
+    pump(mira, thora)
+    pid = thora.eval('WoWStatusRoster.playerIdOf("Mira-TestRealm")')
+    # Listed under a second player ID too, both muted.
+    thora.execute(f'''
+        local old = WoWStatusDB.roster.players["{pid}"]
+        local copy = {{name=old.name, groups=old.groups, characters={{}}}}
+        for k, c in pairs(old.characters) do copy.characters[k] = c end
+        WoWStatusDB.roster.players["0000000000000000"] = copy
+        WoWStatusMutes.set("player", "{pid}", "log")
+        WoWStatusMutes.set("player", "0000000000000000", "hide")
+    ''')
+    choices = thora.eval('WoWStatusMutes.choices("Mira-TestRealm")')
+    labels = [choices[i].label for i in range(1, len(choices) + 1)]
+    assert 'Show popups' not in labels and labels[0] == 'Log only'
+    show = next(choices[i].value for i in range(1, len(choices) + 1)
+                if choices[i].label == 'All characters of Frank: show popups')
+    assert thora.eval('WoWStatusMutes.pick')('Mira-TestRealm', show) is True
+    assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'show'
+    assert thora.eval('WoWStatusMutes.count()') == 0
+
+
+def test_shared_menu_rows_take_each_menus_width():
+    thora = actor('Thora')
+    thora.execute('''
+        local narrow = CreateFrame("Button"); narrow:SetSize(100, 20)
+        WoWStatusUI.menu(narrow, {{label="One", value=1}}, function() end)
+        WoWStatusMenu:Hide()
+        local other = CreateFrame("Button"); other:SetSize(100, 20)
+        WoWStatusUI.menu(other, {{label="Two", value=2}}, function() end, 300)
+    ''')
+    assert thora.eval('WoWStatusMenu.rows[1]:GetWidth()') == 300
+    assert thora.eval('WoWStatusMenu.rows[1].text.text') == 'Two'
 
 
 def test_the_profile_redraws_when_hidden_and_unmuted():

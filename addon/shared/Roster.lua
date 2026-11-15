@@ -154,13 +154,20 @@ function R.playerOf(sender)
 end
 -- The random player ID behind a friend's character, from the lists they
 -- announced; nil when unknown. Mutes (#169) use it for "all their characters".
+-- After a reinstall one character can be listed under an old and a new ID: the
+-- one that announced it most recently wins.
 function R.playerIdOf(sender)
     local k = db and key(sender)
     if not k then return nil end
+    local best, bestAt
     for id, player in pairs(state().players) do
-        if type(player.characters) == "table" and player.characters[k] then return id end
+        local character = type(player.characters) == "table" and player.characters[k]
+        if character then
+            local at = type(character) == "table" and S.number(character.at) or 0
+            if not best or at > bestAt or (at == bestAt and id < best) then best, bestAt = id, at end
+        end
     end
-    return nil
+    return best
 end
 -- "Unshaved Brittlebeard (Frank)": the character as the game names it, and the
 -- player behind it when they chose a name that adds something.

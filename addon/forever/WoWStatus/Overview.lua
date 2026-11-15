@@ -181,7 +181,9 @@ local function renderGroup()
         groups = groups + 1
         for _, peer in ipairs(WoWStatusPopups.peers(id)) do
             local key = WoWStatusPopups.senderKey(peer)
-            if key and not seen[key] and WoWStatusPopups.fullName(peer) and not WoWStatusRoster.isHidden(peer) then
+            -- Bank alts hidden from lists, and friends muted with "Hide completely" (#169).
+            if key and not seen[key] and WoWStatusPopups.fullName(peer) and not WoWStatusRoster.isHidden(peer)
+                and not (WoWStatusMutes and WoWStatusMutes.hidden(peer)) then
                 seen[key] = true; table.insert(names, ((peer:match("^[^-]+") or peer):gsub("|", "||")))
             end
         end

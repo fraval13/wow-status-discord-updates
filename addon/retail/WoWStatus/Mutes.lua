@@ -16,7 +16,7 @@ local STRENGTH = {show=0, log=1, hide=2}
 M.MAX = 200 -- Saved mutes per kind (characters, players).
 M.MAX_KNOWN = 40 -- Character keys remembered per muted player.
 local db, frame
-local revision, cache, total = 0, nil, 0
+local revision, cache = 0, nil
 
 -- Saved mutes as {players={[playerID]=item}, characters={[characterKey]=item}},
 -- item = {mode="log"|"hide", name=, at=}; a player's item also remembers the
@@ -50,19 +50,18 @@ end
 -- The saved mutes, or nil when there are none; only M.set creates them.
 local function state()
     local mutes = db and db.mutes
-    if type(mutes) ~= "table" or type(mutes.players) ~= "table" or type(mutes.characters) ~= "table" then return nil end
+    if type(mutes) ~= "table" or type(mutes.players) ~= "table" or type(mutes.characters) ~= "table"
+        or (next(mutes.players) == nil and next(mutes.characters) == nil) then return nil end
     return mutes
 end
 
 function M.init(database)
     db = database
-    total = 0
     if db.mutes ~= nil then
         local saved = type(db.mutes) == "table" and db.mutes or {}
         local players, a = clean(saved.players, true)
         local characters, b = clean(saved.characters, false)
-        total = a + b
-        db.mutes = total > 0 and {players=players, characters=characters} or nil
+        db.mutes = a + b > 0 and {players=players, characters=characters} or nil
     end
     revision, cache = revision + 1, nil
 end
@@ -82,10 +81,10 @@ local function stronger(a, b) return a and STRENGTH[a] >= STRENGTH[b] and a or b
 -- page render, so it must stay cheap.
 local CACHE_SECONDS = 5
 local function modes()
-    local mutes = total > 0 and state()
+    local mutes = state()
     if not mutes then return nil end
     local now = time()
-    if cache and cache.revision == revision and now - cache.at < CACHE_SECONDS then return cache.modes end
+    if cache and cache.revision == revision and now - cache.at < CACHE_SECONDS then return cache end
     local result = {}
     for k, item in pairs(mutes.characters) do result[k] = stronger(result[k], item.mode) end
     local roster = type(db.roster) == "table" and type(db.roster.players) == "table" and db.roster.players or {}
@@ -103,18 +102,22 @@ local function modes()
         item.characters = keys(known)
         for _, k in ipairs(item.characters) do result[k] = stronger(result[k], item.mode) end
     end
-    cache = {revision=revision, at=now, modes=result}
-    return result
+    -- senders: each sender name's answer, so a long log asks once per name.
+    cache = {revision=revision, at=now, modes=result, senders={}}
+    return cache
 end
 
 -- The effective mode for a sender: "show", "log" or "hide". This account's own
 -- characters are never muted.
 function M.mode(sender)
-    local map = modes()
-    local k = map and characterKey(sender)
-    local mode = k and map[k]
-    if not mode then return "show" end
-    if WoWStatusPopups and WoWStatusPopups.isSelf and WoWStatusPopups.isSelf(sender) then return "show" end
+    local current = modes()
+    if not current or type(sender) ~= "string" then return "show" end
+    local mode = current.senders[sender]
+    if mode then return mode end
+    local k = characterKey(sender)
+    mode = k and current.modes[k] or "show"
+    if mode ~= "show" and WoWStatusPopups and WoWStatusPopups.isSelf and WoWStatusPopups.isSelf(sender) then mode = "show" end
+    current.senders[sender] = mode
     return mode
 end
 function M.popupsMuted(sender) return M.mode(sender) ~= "show" end
@@ -146,20 +149,19 @@ function M.set(kind, id, mode, name)
     end
     local map = kind == "player" and mutes.players or mutes.characters
     if mode == "show" then
-        if map[id] then map[id] = nil; total = total - 1 end
+        map[id] = nil
     else
         if not map[id] then
             local count = 0
             for _ in pairs(map) do count = count + 1 end
             if count >= M.MAX then return false end
-            total = total + 1
         end
         name = S.string(name)
         local old = map[id]
         map[id] = {mode=mode, name=name and name:sub(1, 120) or (old and old.name), at=time(),
             characters=kind == "player" and (old and old.characters or {}) or nil}
     end
-    if total <= 0 then db.mutes, total = nil, 0 end
+    if next(mutes.players) == nil and next(mutes.characters) == nil then db.mutes = nil end
     refresh()
     modes() -- Remember a muted player's name and characters right away.
     return true
@@ -190,13 +192,31 @@ function M.list()
     end)
     return list
 end
-function M.count() return total end
+function M.count() return #M.list() end
 
 -- The menu choices for a friend's character and, when known, their player.
+-- Player mutes whose characters include this one (one character can be listed
+-- under two player IDs after a reinstall).
+local function playersOf(name)
+    local mutes, k, ids = state(), characterKey(name), {}
+    if not mutes or not k then return ids end
+    modes() -- Brings each player's remembered characters up to date.
+    for id, item in pairs(mutes.players) do
+        for _, known in ipairs(item.characters or {}) do
+            if known == k then ids[#ids + 1] = id; break end
+        end
+    end
+    return ids
+end
 function M.choices(name)
     local items = {}
+    -- While their player is muted, showing one character's popups cannot win
+    -- (the stronger setting does): that choice is the player's "show popups".
+    local playerMuted = #playersOf(name) > 0
     for _, mode in ipairs(M.MODES) do
-        items[#items + 1] = {label=T(M.LABELS[mode]), value={kind="character", mode=mode}}
+        if not (mode == "show" and playerMuted) then
+            items[#items + 1] = {label=T(M.LABELS[mode]), value={kind="character", mode=mode}}
+        end
     end
     local id = playerID(name)
     local player = id and WoWStatusRoster.playerOf and WoWStatusRoster.playerOf(name)
@@ -211,6 +231,12 @@ function M.choices(name)
 end
 function M.pick(name, choice)
     if type(choice) ~= "table" then return false end
+    if choice.kind == "player" and choice.mode == "show" then
+        -- Unmute every player record this character is muted under.
+        local ok = true
+        for _, id in ipairs(playersOf(name)) do ok = M.set("player", id, "show") and ok end
+        return ok
+    end
     if choice.kind == "player" then return M.set("player", choice.id, choice.mode, choice.name) end
     return M.setCharacter(name, choice.mode)
 end

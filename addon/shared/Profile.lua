@@ -285,21 +285,30 @@ function F.refreshQuests()
     end
 end
 
+-- The statistics and history from the log, without anything else F.show does
+-- (no page step, no equipment request).
+local function history(row)
+    local data = F.data(row)
+    for i, cell in ipairs(view.stats.cells) do
+        local item = data.facts[i]
+        cell:SetText(item and ("|cffd0b070" .. item[1] .. ":|r " .. tostring(item[2])) or "")
+    end
+    list(view.levels, data.levels, "No level-ups in the log yet.")
+    list(view.recent, data.recent, "No activity in the log yet.")
+    list(view.gear, data.gear, "No new gear yet.")
+end
+
 -- The Mute button names the friend's current setting. A change while the
--- profile is open redraws it: "Hide completely" empties its history, and
--- unmuting fills it again.
+-- profile is open redraws its history: "Hide completely" empties it, and
+-- unmuting fills it again. Only the log lists change, so nothing is sent.
 local shownMode
 function F.refreshMute()
     if not view or not view.row then return end
     local mode = WoWStatusMutes and WoWStatusMutes.mode(view.row.name) or "show"
     view.mute:SetText(T(({show="Mute", log="Muted", hide="Hidden"})[mode]))
-    local redraw = shownMode ~= nil and (shownMode == "hide") ~= (mode == "hide") and view:IsShown()
+    local redraw = shownMode ~= nil and (shownMode == "hide") ~= (mode == "hide")
     shownMode = mode
-    if redraw then
-        local scroll = view.scroll:GetVerticalScroll()
-        F.show(view.row, view.entry)
-        view.scroll:SetVerticalScroll(scroll)
-    end
+    if redraw then history(view.row) end
 end
 
 -- Open the profile of a row from the Characters page (entry is its player heading).
@@ -327,14 +336,7 @@ function F.show(row, entry)
     F.refreshMute()
     if view.invite.SetEnabled then view.invite:SetEnabled(row.status == "online") end
     view.message:SetText(friend and row.status ~= "online" and T("Invites need them online.") or "")
-    local data = F.data(row)
-    for i, cell in ipairs(view.stats.cells) do
-        local item = data.facts[i]
-        cell:SetText(item and ("|cffd0b070" .. item[1] .. ":|r " .. tostring(item[2])) or "")
-    end
-    list(view.levels, data.levels, "No level-ups in the log yet.")
-    list(view.recent, data.recent, "No activity in the log yet.")
-    list(view.gear, data.gear, "No new gear yet.")
+    history(row)
     view.scroll:SetVerticalScroll(0)
     view:Show()
     WoWStatusRoster.requestEquipment(row.name)
