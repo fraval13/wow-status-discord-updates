@@ -1,5 +1,9 @@
 # Invalid log data
 
+> **Historical, moved to `docs/history/` in November 2026.** The warning popup was
+> removed in 1.9.0. The [README](../../README.md#announcements) paragraph on
+> malformed log data describes what happens now.
+
 **Since 1.9.0 the warning popup described below is removed.** Invalid incoming
 data is still rejected before it enters the activity log, but nothing is shown
 or sent: no popup, and no `J2 W` report to the group. Reports from older

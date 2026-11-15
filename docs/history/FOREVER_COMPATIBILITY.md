@@ -1,5 +1,10 @@
 # Forever compatibility audit — 29 October 2026
 
+> **Historical, moved to `docs/history/` in November 2026.** A Forever audit from
+> 29 October 2026. Superseded first by the [4 November
+> check](CLIENT_COMPATIBILITY.md) and now by the Forever adapter and
+> `tests/test_forever.py`.
+
 See the [4 November Forever/Retail check](CLIENT_COMPATIBILITY.md) for newer
 source revisions, the dungeon API fix and current validation results.
 

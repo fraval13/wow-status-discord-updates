@@ -1,6 +1,6 @@
 # Add and remove account groups directly in WoW
 
-**Version 0.9.0:** in-game sharing is the default. The addon alone joins your group
+**Since 0.9.0,** in-game sharing is the default. The addon alone joins your group
 and shares updates through addon whispers to its channel members. No companion,
 HTTP service or Discord destination is required. Any matching group ID can be used
 in-game; the server mapping described below is needed only for optional Discord.

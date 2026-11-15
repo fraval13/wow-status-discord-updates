@@ -103,45 +103,40 @@ be checked against Git and the environment rather than assumed permanently true.
   group configuration, and how to render the Caddyfile and rotate a group name.
   `deploy/README.md` also contains historical single-instance setup instructions.
 
-## Current release and open handoff (1 November 2026)
+## Current release and handoff
 
-- All four editions are version **0.14.14**; project version is in `pyproject.toml`.
-  The packaged addon revision is in the live `downloads/release.json`.
-- Latest completed feature: random flavour captions below popup facts and on
-  activity-log cards. Event identity selects a varied line; its local saved copy
-  remains stable. Previews and website demo draw randomly, avoiding immediate
-  repeats. No caption/class metadata was added to transport packets.
-- Death bank: 22 general roasts plus six for each of 13 classes. Class-specific
-  jokes require public unit information identifying the sender (player/group/
-  target/focus/mouseover); unknown classes use general jokes. Item `class_id`
-  describes armor, NOT the player's class. Peers can have different caption
-  choices when different class information is available.
-- Latest verified static site release:
-  `/srv/wow-status-homepage/releases/20261030T151554096730Z`.
-  Public homepage/downloads: https://wow.frankvalde.com/ . Each `main` deploy
+Nothing in this file states a version number, so it cannot go stale:
+`tests/test_doc_versions.py` fails if `AGENTS.md`, `README.md` or a current
+document under `docs/` names a release other than the current one without saying
+it is historical ("since", "added in", "or later" and similar).
+
+- The project version is `project.version` in `pyproject.toml`; all four addon
+  TOCs repeat it (`scripts/sync_version.py --check`). What was actually deployed,
+  with its exact source revision, is in the live
+  [`downloads/release.json`](https://wow.frankvalde.com/downloads/release.json).
+  Release notes are in `CHANGELOG.md`.
+- Public homepage and downloads: https://wow.frankvalde.com/ . Each `main` deploy
   verifies the live ZIPs against their hashes, TOCs, links and exact source
-  revision; the deployed version is in the live `downloads/release.json`.
-- Last validation: 270 full tests; 161 addon tests also under Lua 5.1; Ruff and
-  whitespace checks passed. Browser checks passed at widths 1440/820/390/320;
-  random demo-caption checks passed locally and live. The new in-game layout
-  still needs the owner's live-client check. Do not describe mocks as that check.
-- `docs/IMPLEMENTATION_STATUS.md` and older dated notes include historical
-  versions/limitations. Use current source, README and newest decision entries
-  when they disagree with old descriptions.
-- GitHub pushes work again and every push to `main` runs the hosted
-  "Checks and addon packages" workflow (Ubuntu and Windows `validate`, then
-  `deploy`). Check that run's result on GitHub Actions before describing a
-  release as validated or deployed; do not hunt for credentials. `deploy` shows
-  as skipped when `deploy-gate` finds the run's commit is no longer the tip of
-  `main` ("Deploy skipped" notice), so check that `deploy` ran, not just that the
-  run is green. On a "Re-run failed jobs" attempt `deploy` fails on purpose; use
-  "Re-run all jobs" to redeploy.
-- Uncommitted work predating this feature remains: shared/all-edition
-  `Minimap.lua` edits, Vanilla/Forever TOC `IconTexture` lines, `Textures/Logo.tga`
-  files, and `assets/branding/`. These belong to separate branding work. Preserve
-  them; do not discard, silently stage, overwrite or ship them as part of another
-  task. Check `git status` and diffs first. A clean release worktree is useful
-  for validation: the dirty branding state changes an older minimap-icon test.
+  revision.
+- Every push to `main` runs the hosted "Checks and addon packages" workflow
+  (Ubuntu and Windows `validate`, then `deploy`). Check that run's result on
+  GitHub Actions before describing a release as validated or deployed; do not
+  hunt for credentials. `deploy` shows as skipped when `deploy-gate` finds the
+  run's commit is no longer the tip of `main` ("Deploy skipped" notice), so check
+  that `deploy` ran, not just that the run is green. On a "Re-run failed jobs"
+  attempt `deploy` fails on purpose; use "Re-run all jobs" to redeploy.
+- Mocked clients are not live-client checks. Say in the PR which in-game checks
+  are still the owner's, and do not describe mocks as that check.
+- Superseded plans and dated audits live in `docs/history/`, each with a note
+  saying what replaced it. Use current source, `README.md` and `CHANGELOG.md`
+  when they disagree with an old description.
+- Caption selection: event identity selects a varied line and its local saved
+  copy stays stable; previews and the website demo draw randomly, avoiding
+  immediate repeats. No caption or class metadata travels in transport packets.
+  Class-specific death jokes require public unit information identifying the
+  sender (player/group/target/focus/mouseover); unknown classes use general
+  jokes. Item `class_id` describes armor, NOT the player's class, so peers can
+  pick different captions when they see different class information.
 
 ## Editing and validation
 
@@ -167,8 +162,7 @@ the prepared release. Validation and deployment check out that exact returned
 revision. GITHUB_TOKEN pushes do not recursively trigger another run. Retries and
 manual dispatches reuse a prepared release; an intentional version bump is also
 retained. Never force-push a release or bypass the current-main deployment gate.
-Add player-facing notes under `## Unreleased` in feature PRs. The first automatic
-release after the owner's 5 November request is expected to be 0.15.0.
+Add player-facing notes under `## Unreleased` in feature PRs.
 
 `requirements.txt` pins, by version and SHA-256, every package the server's
 receiver installs (runtime dependencies plus the build backend). After changing

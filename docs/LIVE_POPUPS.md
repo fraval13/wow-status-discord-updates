@@ -1,4 +1,4 @@
-# In-game sharing acceptance tests (0.14.0)
+# In-game sharing acceptance tests
 
 Friends use the same group ID and updated addon. No separate application is
 needed. Install the whole client folder and fully restart WoW for the new modules.
@@ -109,13 +109,13 @@ queued popup can appear on the next display tick.
 
 If delivery is one-way, run `/wstatus popup status` on both clients after a real
 qualifying update. Joined=true with zero discovered peers means no outgoing
-recipient was found. Version 0.14.2 handles asynchronous roster loads and can
+recipient was found. Since 0.14.2 the addon handles asynchronous roster loads and can
 learn a peer from their normal chat in the shared custom channel. It does not
 log that chat text. Paste the runtime, peers and last sent/received diagnostics
 when reporting failures. A received addon whisper alone does not authorize
 historical sync to its sender.
 
-## Zone and Rogue changes (0.14.3)
+## Zone and Rogue changes (added in 0.14.3)
 
 Zone notifications now require a character's first recorded visit. Previous zone
 history, the saved snapshot and the login zone seed a persistent visit set, so
@@ -242,7 +242,7 @@ realm time. To test: set one PC's clock 15 minutes ahead (without automatic
 time sync), more than the 10-minute window, and send a level-up or milestone both ways; both popups should show. `/run print(time()-GetServerTime())` should print
 about 900 on that PC and about 0 on the other.
 
-## WoW Forever quick check for each release (1.25.0)
+## WoW Forever quick check for each release (since 1.25.0)
 
 Mocked tests cannot see what the real client blocks: registering for the
 combat log and sending `/who` from a timer both raised "blocked from an action

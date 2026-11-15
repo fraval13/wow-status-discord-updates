@@ -1,4 +1,4 @@
-# Character status cards (0.10.0)
+# Character status cards (added in 0.10.0)
 
 Discord remains opt-in. Reload/login/logout events do not generate notifications.
 The server compares meaningful selected profile observations (level, XP, faction,
@@ -41,7 +41,7 @@ It never writes that fictional character into the tracker database.
 
 The following sections document earlier output modes and are retained for context.
 
-# Optional Discord export summaries (0.9.0)
+# Optional Discord export summaries (added in 0.9.0)
 
 Discord sharing is off by default and independent of in-game sharing. Opt in per
 character with `/wstatus discord`. After `/reload`, logout or relog, the optional

@@ -1,9 +1,15 @@
 # WoW character logs and Discord bot — project plan
 
+> **Historical, moved to `docs/history/` in November 2026.** The original October
+> 2026 plan for an addon → desktop companion → Discord bot pipeline. Superseded by
+> in-game sharing: friends need only the addon and a shared group ID, and the
+> retained Discord code is disabled in the addon. See the
+> [README](../../README.md) for current behaviour.
+
 Status: initial implementation written; runtime and in-game validation pending.
 Independent from the Forever news feed project. See
-[implementation status](docs/IMPLEMENTATION_STATUS.md) and
-[home testing guide](docs/HOME_TESTING.md).
+[implementation status](IMPLEMENTATION_STATUS.md) and
+[home testing guide](../HOME_TESTING.md).
 
 ## Goal
 
@@ -193,7 +199,7 @@ The bot can handle both announcements and commands; a separate webhook is unnece
   Include zero-event characters honestly, late uploads, per-kind counts and highlights.
 - Keep the full detailed data in JSON for later use. Field/category disabling scrubs
   related historical data; deletion removes managed JSON and database records.
-- See [JSON format](docs/JSON_FORMAT.md) for grouping, timestamp and export details.
+- See [JSON format](../JSON_FORMAT.md) for grouping, timestamp and export details.
 
 
 ## Friend-group improvements (approved)
@@ -204,7 +210,7 @@ and authorization tied to Discord user ID, independent of display name. Group th
 roster and combined daily/weekly recaps by that owner. Support one main plus alts,
 celebrations versus routine activity, snapshot progress labeled as inferred, a
 friendly desktop uploader, and structured source metadata for later analysis.
-See [friend-group behavior](docs/FRIENDS_AND_RECAPS.md) for the written implementation,
+See [friend-group behavior](../FRIENDS_AND_RECAPS.md) for the written implementation,
 home acceptance checks, and still-deferred client-dependent context collection.
 
 ## In-game history and level graph (approved)
@@ -214,7 +220,7 @@ line graph with level vertically and elapsed time horizontally. Record complete
 consecutive level durations, label the first mid-level observation as partial, and
 leave missing tracking segments disconnected. Preserve the graph source records
 in character JSON with explicit Europe/Oslo metadata. In-game logs must not claim
-confirmed network delivery. See [history details](docs/IN_GAME_HISTORY.md).
+confirmed network delivery. See [history details](../IN_GAME_HISTORY.md).
 
 ## Experimental in-game level popups (approved)
 
@@ -224,7 +230,7 @@ actual game senders, duplicate/rate limits and combat deferral. Keep sound off b
 default, never merge peer reports into the local character's graph, and respect
 client chat restrictions. The first transport sends visible messages; actual
 cross-guild/faction/realm and Forever compatibility must be established at home.
-See [popup setup and acceptance](docs/LIVE_POPUPS.md).
+See [popup setup and acceptance](../LIVE_POPUPS.md).
 
 ## Direct group IDs (confirmed requirement)
 
@@ -234,4 +240,4 @@ setup. No /link step is required. Store per-installation credentials automatical
 use addon name entry because group-only membership does not verify Discord identity.
 Only selected targets receive post-join events. Removing a group stops local popup
 routing immediately and withdraws the shared character after export/upload.
-See [group design, setup and limits](docs/GROUPS.md).
+See [group design, setup and limits](../GROUPS.md).
