@@ -126,7 +126,7 @@ function methods:CreateFontString(_, _, font) return setmetatable({font=font}, {
 for _, name in ipairs({"SetPoint","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetBlendMode","SetVertexColor","SetTextColor","SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","HighlightText","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
+    "SetBlendMode","SetVertexColor","SetTextColor","SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","HighlightText","SetEnabled","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
 function CreateFrame(kind, name, parent, template)
     local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
     table.insert(__frames,f)

@@ -36,7 +36,8 @@ def test_weak_names_are_short_plain_repetitive_or_this_players_names():
     for name in ('dawnwatch', 'Weekend Crew', 'supercalifragilistic', 'aaaa bbbb aaaa bbbb',
                  'Knights of the Silver Hand', 'knights-of-the-silver-hand', 'BLOODSAIL BUCCANEERS',
                  '1234567890123456', '8104-2275-3391-60', 'password password1', 'abcdefghijklmnop1',
-                 'qwertyuiop asdfgh', 'Thora and the gang 2026', 'the knights of the silver hand!'):
+                 'qwertyuiop asdfgh', 'Thora and the gang 2026', 'the knights of the silver hand!',
+                 'dragonslayer2026', 'Ærlegegjengenfråvoss'):
         assert weak(name), name
     for name in ('the weekend crew meets at nine', 'k7qm-4xfz-pr2d-9hwt-cn3b', 'Ærlege gjengen frå Voss 1999'):
         assert not weak(name), name
@@ -69,8 +70,11 @@ def test_create_a_group_shows_a_copyable_name_and_joins_it():
         -- Read-only: typing puts the name back.
         p.created:SetText("changed"); p.created.OnTextChanged(p.created, true)
         assert(p.created:GetText() == name)
+        -- Replacing a name the player may have sent asks first.
         p.create.OnClick()
-        assert(p.created:GetText() ~= name)  -- each click makes a new one
+        assert(p.created:GetText() == name and p.status:GetText():find("different group", 1, true))
+        p.create.OnClick()
+        assert(p.created:GetText() ~= name)
         name = p.created:GetText()
         -- Closing and reopening keeps a name the player may already have sent.
         WoWStatusGroups.show()
@@ -113,4 +117,50 @@ def test_the_guide_recommends_creating_a_group():
         WoWStatusLocale.set("nn")
         frame.back.OnClick(frame.back); frame.next.OnClick(frame.next)
         assert(frame.body.text:find("Lag ei gruppe", 1, true))
+    ''')
+
+
+def test_created_names_are_never_flagged_as_weak():
+    lua = make_lua()
+    lua.execute('''
+        for _ = 1, 3000 do assert(not WoWStatusGroups.weak(WoWStatusGroups.generate())) end
+    ''')
+
+
+def test_pasting_the_created_name_or_joining_clears_what_it_replaces():
+    lua = make_lua()
+    lua.eval('SlashCmdList.WOWSTATUS')('groups')
+    lua.execute('''
+        local p = WoWStatusGroupWindow
+        -- A pending "Add anyway" is taken back when another add replaces its warning.
+        p.input:SetText("dawnwatch"); p.add.OnClick()
+        assert(p.add:GetText() == "Add anyway")
+        p.create.OnClick(); p.join.OnClick()
+        assert(p.add:GetText() == "Add" and p.status:GetText() == "Groups saved for all characters.")
+        p.add.OnClick()
+        assert(not WoWStatusGroups.contains(character(), WoWStatusGroups.key("dawnwatch")))
+        -- The created name pasted into Group ID: the box and Join it go away.
+        p.create.OnClick()
+        local name = p.created:GetText()
+        p.input:SetText(name); p.add.OnClick()
+        assert(WoWStatusGroups.contains(character(), WoWStatusGroups.key(name)))
+        assert(p.created.value == nil and not p.join:IsShown())
+    ''')
+
+
+def test_create_is_disabled_with_eight_groups_and_names_the_mac_key():
+    lua = make_lua(STUBS + 'function IsMacClient() return true end\n')
+    lua.eval('SlashCmdList.WOWSTATUS')('groups')
+    lua.execute('''
+        local p = WoWStatusGroupWindow
+        function p.create:SetEnabled(value) self.enabled = value end
+        p.create.OnClick()
+        assert(p.createHint:GetText():find("Cmd+C", 1, true))
+        local names = {}
+        for i = 1, 8 do names[i] = "group number " .. i .. " of eight" end
+        WoWStatusGroups.update(table.concat(names, "\\n"), "")
+        WoWStatusGroups.show()
+        assert(p.create.enabled == false)
+        p.rows[1].remove.OnClick()
+        assert(p.create.enabled == true)
     ''')

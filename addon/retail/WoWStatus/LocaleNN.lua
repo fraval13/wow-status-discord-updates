@@ -144,6 +144,10 @@ W.add({
     ["Add anyway"] = "Legg til likevel", ["Create a group"] = "Lag ei gruppe", ["Join it"] = "Bli med",
     ["Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."] =
         "Klikk på det, kopier med Ctrl+C og send det privat. Kvar ven må skrive nøyaktig dette namnet.",
+    ["Click it, copy with Cmd+C and send it privately. Every friend must type exactly this name."] =
+        "Klikk på det, kopier med Cmd+C og send det privat. Kvar ven må skrive nøyaktig dette namnet.",
+    ["Friends who already have the created name would be in a different group. Click again for a new name."] =
+        "Vener som alt har det laga namnet, ville hamne i ei anna gruppe. Klikk igjen for eit nytt namn.",
     ["Recommended: let the addon create a name nobody can guess."] = "Tilrådd: la tillegget lage eit namn som ingen kan gjette.",
     ["Anyone who knows a group's name can read its activity. Share it privately, never in public chat, on a stream or in a screenshot."] =
         "Alle som kjenner namnet på ei gruppe, kan lese kva ho gjer. Del det privat, aldri i open chat, på strøyming eller i eit skjermbilete.",

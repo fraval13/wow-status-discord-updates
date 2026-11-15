@@ -27,10 +27,14 @@ end
 function G.valid(id)
     return type(id)=="string" and #id==22 and id:match("^[a-f0-9]+$")~=nil and not G.retired(id)
 end
+-- Characters, not bytes: UTF-8 continuation bytes are not counted.
+local function characters(text)
+    local _, count = text:gsub("[^\128-\191]", "")
+    return count
+end
 function G.key(text)
     text = S.trim(text)
-    local _, characters = text:gsub("[^\128-\191]", "")
-    if text == "" or characters > 80 or text:find(S.CONTROL) then return nil end
+    if text == "" or characters(text) > 80 or text:find(S.CONTROL) then return nil end
     local canonical=WoWStatusCaseFold(text)
     if G.retired(canonical) then return nil,nil,G.RETIRED_MESSAGE end
     local id=hash(canonical)
@@ -57,8 +61,7 @@ end
 -- The client's random source picks the symbols. Each name also folds in the
 -- moment of the click, so even a client whose source were small or restarted
 -- the same way each session would not give names a stranger could list.
-function G.generate()
-    mix = (mix + clock()) % 4294967296
+local function generate()
     local parts = {}
     for part = 1, GROUPS do
         local symbols = {}
@@ -69,6 +72,17 @@ function G.generate()
         parts[part] = table.concat(symbols)
     end
     return table.concat(parts, "-")
+end
+function G.generate()
+    mix = (mix + clock()) % 4294967296
+    -- Very rarely the draw spells a keyboard run or repeats a block; draw again
+    -- so a created name never trips the weak-name warning.
+    local name
+    for _ = 1, 20 do
+        name = generate()
+        if not G.weak(name) then break end
+    end
+    return name
 end
 G.WEAK_MESSAGE = "Short or ordinary names can be guessed by strangers, who would then see your group's activity. "
     .. "Use a longer, made-up name, or let the addon create one."
@@ -99,15 +113,17 @@ function G.weak(name)
     if type(name) ~= "string" then return false end
     local text = WoWStatusCaseFold(S.trim(name))
     if text == "" then return false end
-    local _, length = text:gsub("[^\128-\191]", "")
-    if length < MIN_LENGTH then return true end
+    if characters(text) < MIN_LENGTH then return true end
     local seen, variety = {}, 0
     for symbol in text:gmatch("[^\128-\191][\128-\191]*") do
         if not symbol:find(S.SPACE) and not seen[symbol] then seen[symbol] = true; variety = variety + 1 end
     end
     if variety < MIN_VARIETY then return true end
-    if not text:find("[^a-z]") then return true end -- a single word of plain letters
     local compact = bare(text)
+    -- One word, maybe with a number on the end ("dragonslayer2026"): letters
+    -- here include non-ASCII ones such as æ, ø and å.
+    local core = compact:gsub("[0-9]+$", "")
+    if compact == text and core ~= "" and not core:find("[0-9]") then return true end
     if not compact:find("[^0-9]") then return true end -- only digits (and separators)
     if hasSequence(compact) then return true end
     local words = {}
@@ -322,6 +338,8 @@ local function renderGroups()
     local groups = groupList()
     panel.count:SetText(T("Groups") .. " (" .. #groups .. " / " .. MAX_GROUPS .. ")")
     panel.empty:SetShown(#groups == 0)
+    -- A ninth group cannot be joined, so no name is created for it.
+    panel.create:SetEnabled(#groups < MAX_GROUPS)
     for i, row in ipairs(panel.rows) do
         local group = groups[i]
         row.id = group and group.id
@@ -337,6 +355,7 @@ local function saveList(groups)
     local labels = {}
     for _, group in ipairs(groups) do table.insert(labels, group.label) end
     local ok, message = update(table.concat(labels, "\n"), panel.name:GetText())
+    panel.resetConfirm()
     panel.status:SetText(T(message))
     report(message)
     if ok then renderGroups() end
@@ -383,10 +402,6 @@ function G.show(host)
         panel.input = input(-234, 80)
         -- A refusal is shown under the input and in chat: in Options the page
         -- scrolls, so a message lower down could go unseen.
-        local function refuse(message)
-            panel.status:SetText(T(message))
-            report(message)
-        end
         local HINT = "Recommended: let the addon create a name nobody can guess."
         -- Back to plain Add after an "Add anyway", or the created name joined.
         local function resetConfirm()
@@ -395,8 +410,16 @@ function G.show(host)
         end
         local function resetCreated()
             panel.created.value = nil
+            panel.replacing = nil
             panel.created:SetText(""); panel.created:Hide(); panel.join:Hide()
             panel.createHint:SetText(T(HINT))
+        end
+        -- Any new message replaces the weak-name warning, so it also takes back
+        -- the "Add anyway" that warning armed.
+        local function refuse(message)
+            resetConfirm()
+            panel.status:SetText(T(message))
+            report(message)
         end
         -- Add one group by name. typed: it came from the Group ID box, which is
         -- then cleared and focused for the next one.
@@ -417,15 +440,16 @@ function G.show(host)
             end
             -- A guessable name is the player's call: warn once, then Add anyway.
             if typed and G.weak(cleaned) and panel.confirmed ~= cleaned then
+                refuse(G.WEAK_MESSAGE)
                 panel.confirmed = cleaned
                 panel.add:SetText(T("Add anyway"))
-                refuse(G.WEAK_MESSAGE)
                 return false
             end
             table.insert(groups, {id = id, label = cleaned})
             if not saveList(groups) then return false end
+            -- The created name may also arrive pasted into the Group ID box.
+            if panel.created.value and G.key(panel.created.value) == id then resetCreated() end
             if typed then
-                resetConfirm()
                 panel.input:SetText("")
                 panel.input:SetFocus()
             end
@@ -444,12 +468,21 @@ function G.show(host)
         panel.status:SetTextColor(1, .82, .25)
         -- The recommended path: let the addon make a name nobody can guess.
         panel.create = button(panel, "Create a group", 24, -318, 170, function()
+            -- Replacing a created name the player may already have sent asks first.
+            if panel.created.value and not panel.replacing then
+                refuse("Friends who already have the created name would be in a different group. Click again for a new name.")
+                panel.replacing = true
+                return
+            end
+            panel.replacing = nil
             local name = G.generate()
             panel.created:SetText(name); panel.created.value = name
             -- Not focused for the player: a focused text box would take the
             -- controller's buttons. Clicking into it selects the whole name.
             panel.created:Show(); panel.join:Show()
-            panel.createHint:SetText(T("Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."))
+            local mac = S.call(IsMacClient) == true
+            panel.createHint:SetText(T(mac and "Click it, copy with Cmd+C and send it privately. Every friend must type exactly this name."
+                or "Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."))
         end)
         -- Read-only but selectable, so it can be copied. The name stays until it
         -- is joined, also when the window closes, so a shared name is not lost.
