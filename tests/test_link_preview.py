@@ -94,8 +94,10 @@ def test_build_fails_fast_without_the_preview(tmp_path):
     (root / 'website').mkdir(parents=True)
     (root / 'website/index.html').write_text(page(), encoding='utf-8')
     subprocess.run(['git', 'init', '-q', str(root)], check=True)
+    # Same isolation as the other homepage tests: no developer hooks or line-ending rewrites.
     subprocess.run(['git', '-C', str(root), '-c', 'user.name=T', '-c', 'user.email=t@example.com',
-                    '-c', 'commit.gpgsign=false', 'commit', '-q', '--allow-empty', '-m', 'x'], check=True)
+                    '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false', '-c', 'core.hooksPath=no-hooks',
+                    'commit', '-q', '--allow-empty', '-m', 'x'], check=True)
     with pytest.raises(ValueError, match='1200×630 JPEG'):
         builder.build(root, tmp_path / 'site', 'HEAD')
     assert not (tmp_path / 'site').exists()

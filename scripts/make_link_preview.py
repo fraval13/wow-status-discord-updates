@@ -8,20 +8,23 @@ from `adventure.webp`, `journal.webp` and the Cinzel font the page already ships
 JPEG keeps the painted image near 270 KB, where some chat clients drop larger
 previews. It needs Pillow (in the dev extras). The deploy job builds the homepage
 with the standard library alone, so the JPEG is committed and the build only checks
-it; `--check` and `tests/test_link_preview.py` fail when it no longer matches the
-artwork, so a changed illustration or text cannot ship with a stale preview.
+it; `--check` and `tests/test_link_preview.py` fail when it no longer matches what
+this script draws, so a changed illustration, logo, font or preview text below
+cannot ship with a stale image. The preview's own text is set here, not taken from
+the page's tags.
 """
 import argparse
 import io
 import sys
 from pathlib import Path
 
+from build_homepage import LINK_PREVIEW
+from build_homepage import LINK_PREVIEW_SIZE as SIZE
 from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'website/assets'
-OUTPUT = ASSETS / 'link-preview.jpg'
-SIZE = (1200, 630)
+OUTPUT = ROOT / 'website' / LINK_PREVIEW.lstrip('/')
 QUALITY = 90
 TITLE = 'WoW Status'
 TAGLINE = ('Your friends’ adventures,', 'right inside World of Warcraft.')
@@ -49,14 +52,18 @@ def render():
     draw = ImageDraw.Draw(image)
     draw.rectangle((58, 58, 58 + 168 + 11, 58 + 168 + 11), outline=(120, 92, 46), width=3)
     image.paste(logo, (64, 64))
-    font = ASSETS / 'fonts/cinzel-latin.woff2'
-    draw.text((64, 262), TITLE, font=ImageFont.truetype(font, 96), fill=GOLD,
+    def font(size):
+        # BASIC layout: Raqm is only present on some builds (not the Windows wheels)
+        # and places glyphs differently, which would make --check platform dependent.
+        return ImageFont.truetype(ASSETS / 'fonts/cinzel-latin.woff2', size,
+                                  layout_engine=ImageFont.Layout.BASIC)
+    draw.text((64, 262), TITLE, font=font(96), fill=GOLD,
               stroke_width=2, stroke_fill=(30, 20, 8))
-    body = ImageFont.truetype(font, 38)
+    body = font(38)
     for number, line in enumerate(TAGLINE):
         draw.text((66, 392 + number * 52), line, font=body, fill=PARCHMENT, stroke_width=1,
                   stroke_fill=(12, 14, 20))
-    draw.text((66, 530), EDITIONS, font=ImageFont.truetype(font, 24), fill=GOLD)
+    draw.text((66, 530), EDITIONS, font=font(24), fill=GOLD)
     return image
 
 

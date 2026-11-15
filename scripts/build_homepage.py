@@ -41,8 +41,9 @@ DESKTOP_FILES = ('.DS_Store', 'Thumbs.db', 'desktop.ini')
 LINK_PREVIEW = '/assets/link-preview.jpg'
 LINK_PREVIEW_SIZE = (1200, 630)
 # Tags whose value is fixed; the text tags below must be present and not empty.
-PREVIEW_TAGS = {'og:type': 'website', 'og:image:type': 'image/jpeg', 'og:image:width': '1200',
-                'og:image:height': '630', 'twitter:card': 'summary_large_image'}
+PREVIEW_TAGS = {'og:type': 'website', 'og:image:type': 'image/jpeg',
+                'og:image:width': str(LINK_PREVIEW_SIZE[0]), 'og:image:height': str(LINK_PREVIEW_SIZE[1]),
+                'twitter:card': 'summary_large_image'}
 PREVIEW_TEXT = ('og:site_name', 'og:title', 'og:description', 'og:url', 'og:image', 'og:image:alt',
                 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:image:alt')
 
