@@ -223,7 +223,9 @@ local function build(page)
         if not row or not WoWStatusMutes then return end
         -- Wide enough for "All characters of <player>: hide completely".
         UI.menu(self, WoWStatusMutes.choices(row.name), function(choice)
-            WoWStatusMutes.pick(row.name, choice)
+            if not WoWStatusMutes.pick(row.name, choice) then
+                view.message:SetText(T("Could not save: unmute someone in Muted friends first."))
+            end
         end, 300)
     end)
     view.mute:SetScript("OnEnter", function(self)

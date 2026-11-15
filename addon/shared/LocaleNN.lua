@@ -565,6 +565,7 @@ W.add({
         "Stopp varsla frå denne venen utan å gå ut av gruppa. Berre du ser dette; ingenting blir sendt.",
     ["Muted friends stay in your groups. Log only keeps their updates in the log without popups; Hide completely also leaves them out of the log, records and leaderboard. Nothing is sent and they are never told."] =
         "Dempa vener blir verande i gruppene dine. «Berre logg» held oppdateringane deira i loggen utan varsel; «Gøym heilt» held dei òg utanfor loggen, rekordane og topplista. Ingenting blir sendt, og dei får aldri vite det.",
+    ["Could not save: unmute someone in Muted friends first."] = "Kunne ikkje lagre: opphev ei demping i «Dempa vener» først.",
     ["Nobody is muted. Mute a friend from their profile on the Characters page."] =
         "Ingen er dempa. Demp ein ven frå profilen deira på Figurar-sida.",
 })

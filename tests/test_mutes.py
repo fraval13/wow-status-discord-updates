@@ -462,3 +462,67 @@ def test_the_profile_redraws_when_hidden_and_unmuted():
     assert 'Level 2' not in view.levels.text.text and view.mute.text == 'Hidden'
     thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
     assert 'Level 2' in view.levels.text.text and view.mute.text == 'Mute'
+
+
+def test_the_menu_still_unmutes_a_player_whose_list_is_gone():
+    mira, thora = pair()
+    pump(mira, thora)
+    pid = thora.eval('WoWStatusRoster.playerIdOf("Mira-TestRealm")')
+    thora.eval('WoWStatusMutes.set')('player', pid, 'log')
+    thora.execute(f'WoWStatusDB.roster.players["{pid}"] = nil')
+    clock(thora, 1000)
+    choices = thora.eval('WoWStatusMutes.choices("Mira-TestRealm")')
+    labels = [choices[i].label for i in range(1, len(choices) + 1)]
+    assert 'All characters of Frank: show popups' in labels
+    show = next(choices[i].value for i in range(1, len(choices) + 1)
+                if choices[i].label == 'All characters of Frank: show popups')
+    assert thora.eval('WoWStatusMutes.pick')('Mira-TestRealm', show) is True
+    assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'show'
+
+
+def test_a_player_choice_applies_to_every_record_and_show_clears_the_character_too():
+    mira, thora = pair()
+    pump(mira, thora)
+    pid = thora.eval('WoWStatusRoster.playerIdOf("Mira-TestRealm")')
+    thora.execute(f'''
+        local old = WoWStatusDB.roster.players["{pid}"]
+        local copy = {{name=old.name, groups=old.groups, characters={{}}}}
+        for k, c in pairs(old.characters) do copy.characters[k] = c end
+        WoWStatusDB.roster.players["0000000000000000"] = copy
+        WoWStatusMutes.set("player", "0000000000000000", "hide")  -- the stale record
+        WoWStatusMutes.setCharacter("Mira-TestRealm", "log")
+    ''')
+    def choose(label):
+        choices = thora.eval('WoWStatusMutes.choices("Mira-TestRealm")')
+        value = next(choices[i].value for i in range(1, len(choices) + 1) if choices[i].label == label)
+        assert thora.eval('WoWStatusMutes.pick')('Mira-TestRealm', value) is True
+    choose('All characters of Frank: log only')
+    assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'log'
+    choose('All characters of Frank: show popups')
+    assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'show'
+    assert thora.eval('WoWStatusMutes.count()') == 0
+
+
+def test_records_follow_a_mute_change_without_a_popup():
+    # Mira sets a record while hidden: nobody holds it yet.
+    _, thora = level_up('hide')
+    group = thora.eval('(next(character().group_ids))')
+    thora.execute('__notices = 0; local notice = WoWStatusPopups.notice; '
+                  'WoWStatusPopups.notice = function(item) __notices = __notices + 1; return notice(item) end')
+    holder = f'WoWStatusDB.firsts.group_holders["{group}:level:40"]'
+    assert thora.eval(holder) is None
+    # Unhiding gives her the record at once, quietly: no late "new record" popup.
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
+    assert thora.eval(holder) is not None
+    assert thora.eval('__notices') == 0
+
+
+def test_the_profile_says_when_a_mute_cannot_be_saved():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('for i = 1, WoWStatusMutes.MAX do assert(WoWStatusMutes.set("character", "c" .. i, "log")) end')
+    view = open_profile(thora, 'Mira')
+    view.mute.OnClick(view.mute)
+    pick = next(r for r in thora.eval('WoWStatusMenu.rows').values() if r.IsShown(r) and r.text.text == 'Log only')
+    pick.OnClick(pick)
+    assert 'Could not save' in view.message.text

@@ -93,9 +93,12 @@ local function modes()
         local player = roster[id]
         -- Keep the player's chosen name for the list, even after their list goes.
         if type(player) == "table" and S.string(player.name) then item.name = player.name:sub(1, 120) end
+        -- Their current characters first (sorted, so what fits is always the
+        -- same), then the ones remembered from earlier lists.
         for k in pairs(type(player) == "table" and type(player.characters) == "table" and player.characters or {}) do
             if type(k) == "string" and not seen[k] then seen[k] = true; known[#known + 1] = k end
         end
+        table.sort(known)
         for _, k in ipairs(item.characters or {}) do
             if not seen[k] then seen[k] = true; known[#known + 1] = k end
         end
@@ -134,6 +137,8 @@ local function refresh()
     end
     if WoWStatusProfile and WoWStatusProfile.refreshMute then WoWStatusProfile.refreshMute() end
     if frame and frame:IsShown() then M.render() end
+    -- Records follow the change quietly: no "new record" popup for it.
+    if WoWStatusFirsts and WoWStatusFirsts.update then WoWStatusFirsts.update(true) end
 end
 
 -- Set a mute: kind "character" (id = WoWStatusRoster.key) or "player" (their
@@ -192,7 +197,13 @@ function M.list()
     end)
     return list
 end
-function M.count() return #M.list() end
+function M.count()
+    local mutes, count = state(), 0
+    for _, map in ipairs(mutes and {mutes.players, mutes.characters} or {}) do
+        for _ in pairs(map) do count = count + 1 end
+    end
+    return count
+end
 
 -- The menu choices for a friend's character and, when known, their player.
 -- Player mutes whose characters include this one (one character can be listed
@@ -218,8 +229,11 @@ function M.choices(name)
             items[#items + 1] = {label=T(M.LABELS[mode]), value={kind="character", mode=mode}}
         end
     end
-    local id = playerID(name)
-    local player = id and WoWStatusRoster.playerOf and WoWStatusRoster.playerOf(name)
+    -- The player: the ID that announced this character last, or (once their
+    -- list is gone) the muted record that remembers it.
+    local id = playerID(name) or playersOf(name)[1]
+    local player = id and (WoWStatusRoster.playerOf and WoWStatusRoster.playerOf(name)
+        or (state() and state().players[id] and state().players[id].name))
     if id then
         local who = player and player:gsub("|", "||") or T("this player")
         for _, mode in ipairs(M.MODES) do
@@ -231,13 +245,21 @@ function M.choices(name)
 end
 function M.pick(name, choice)
     if type(choice) ~= "table" then return false end
-    if choice.kind == "player" and choice.mode == "show" then
-        -- Unmute every player record this character is muted under.
-        local ok = true
-        for _, id in ipairs(playersOf(name)) do ok = M.set("player", id, "show") and ok end
+    if choice.kind == "player" then
+        -- Every player record this character is listed under gets the choice, so
+        -- no stronger leftover wins over it; "show popups" also clears this
+        -- character's own mute, so the friend is really shown again.
+        local ok = choice.mode == "show" or M.set("player", choice.id, choice.mode, choice.name)
+        for _, id in ipairs(playersOf(name)) do
+            if id ~= choice.id then ok = M.set("player", id, choice.mode) and ok end
+        end
+        if choice.mode == "show" then
+            ok = M.set("player", choice.id, "show") and ok
+            local k = characterKey(name)
+            if k then ok = M.set("character", k, "show") and ok end
+        end
         return ok
     end
-    if choice.kind == "player" then return M.set("player", choice.id, choice.mode, choice.name) end
     return M.setCharacter(name, choice.mode)
 end
 
