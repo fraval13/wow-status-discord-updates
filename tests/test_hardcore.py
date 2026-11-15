@@ -180,11 +180,15 @@ def test_overview_says_died_in_hardcore_instead_of_a_tally():
         local entries = {
             {id="a", sender="Mira-TestRealm", kind="death", text="Died in Hardcore", at=200},
             {id="b", sender="Bob-TestRealm", kind="death", text="Total deaths: 4", at=210},
+            -- Same short name on another realm: only the ordinary death is tallied.
+            {id="c", sender="Cid-HcRealm", kind="death", text="Died in Hardcore", at=230},
+            {id="d", sender="Cid-TestRealm", kind="death", text="Total deaths: 2", at=220},
         }
         local text = {}
         for _, p in ipairs(WoWStatusOverview.summary(entries, 100)) do text[#text + 1] = WoWStatusOverview.sentence(p) end
         text = table.concat(text, "\\n")
         assert(text:find("Mira died in Hardcore", 1, true) and text:find("Bob died once", 1, true), text)
+        assert(text:find("Cid died once", 1, true), text)
         WoWStatusLocale.set("nn")
         assert(WoWStatusLocale.T("died in Hardcore") == "døydde i Hardcore")
     ''')
