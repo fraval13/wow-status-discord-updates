@@ -1,7 +1,9 @@
 -- Retail 12.x adapter, checked against the mirrored 12.1.5 client API.
 WoWStatusAdapter = {client_id = "retail", display_name = "WoW Retail", max_level = 90, classicProfessionTitles = false, pvpLabel = "Honor level", max_pvp_rank = 10000,
     -- Midnight forbids addons the combat log (registering is a blocked action).
-    combat_log = false}
+    combat_log = false,
+    -- Party invites reach players on other realms ("Play together now", #156).
+    cross_realm_invite = true}
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local cachedIdentity
 

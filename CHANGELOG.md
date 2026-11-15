@@ -35,6 +35,7 @@ plain text, at most 120 characters, without `|`, markup or `__NAME__` text. An o
 ## 1.53.0
 
 - Behind the scenes: the release pipeline is updated so new versions keep reaching you
+- Characters: "Play together now" lists friends online near your level, with Whisper and Invite buttons
 
 ## 1.52.0
 
