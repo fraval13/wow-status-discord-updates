@@ -20,10 +20,11 @@ T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
 local windows = {}
 local main -- the first window attached (the main window), for its shown scale
 
--- A window size kept in range and rounded to whole percent. Older saves held
--- tenths (.8 to 1.2), which stay exactly as they were.
+-- A scale in whole percent, and a window size kept in range and rounded to
+-- whole percent. Older saves held tenths (.8 to 1.2), which stay as they were.
+local function percent(scale) return math.floor(scale * 100 + .5) end
 local function clampScale(scale)
-    return math.max(T.MIN, math.min(T.MAX, math.floor(scale * 100 + .5) / 100))
+    return math.max(T.MIN, math.min(T.MAX, percent(scale) / 100))
 end
 
 local function settings()
@@ -165,6 +166,16 @@ end
 local watchers = {}
 function T.watch(fn) if type(fn) == "function" then table.insert(watchers, fn) end end
 
+-- The date calendar and dropdown take the window's scale when they open; close
+-- them when it changes rather than leave them at the old scale, away from
+-- their button.
+local function closePopovers()
+    for _, frame in ipairs({WoWStatusUI and WoWStatusUI.calendarFrame, WoWStatusUI and WoWStatusUI.menuFrame}) do
+        if frame and frame.IsShown and frame:IsShown() then frame:Hide() end
+    end
+end
+
+local shownScale
 function T.apply()
     local value = settings()
     for _, window in ipairs(windows) do
@@ -180,8 +191,14 @@ function T.apply()
             window.background:SetColorTexture(.025, .035, .065, .96)
         end
     end
+    local scale = main and T.applied(main)
+    if shownScale and scale ~= shownScale then closePopovers() end
+    shownScale = scale
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
-    for _, fn in ipairs(watchers) do pcall(fn) end
+    for _, fn in ipairs(watchers) do
+        local ok, err = pcall(fn)
+        if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
+    end
 end
 
 function T.next()
@@ -192,16 +209,18 @@ function T.next()
     return value.name
 end
 
+-- Steps from the size shown, so stepping down from a size the screen cannot
+-- hold changes the window at once instead of only the number.
 function T.resize(delta)
     local value = settings()
-    value.scale = clampScale(value.scale + (tonumber(delta) or 0))
+    local base = main and math.min(value.scale, T.applied(main)) or value.scale
+    value.scale = clampScale(base + (tonumber(delta) or 0))
     T.apply()
     return value.scale
 end
 
 -- The window size in whole percent, and setting it from a percentage (the
 -- Options box); false for a value out of range, which keeps the old size.
-local function percent(scale) return math.floor(scale * 100 + .5) end
 function T.windowSize() return percent(settings().scale) end
 function T.setWindowSize(percent)
     percent = tonumber(percent)
@@ -235,13 +254,7 @@ if type(CreateFrame) == "function" then
     for _, event in ipairs({"DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED"}) do
         pcall(events.RegisterEvent, events, event)
     end
-    events:SetScript("OnEvent", function()
-        -- The date calendar takes the window's scale when it opens; close it
-        -- rather than leave it at the old scale, away from its button.
-        local calendar = WoWStatusUI and WoWStatusUI.calendarFrame
-        if calendar and calendar.IsShown and calendar:IsShown() then calendar:Hide() end
-        T.apply()
-    end)
+    events:SetScript("OnEvent", function() T.apply() end)
 end
 
 -- Shared building blocks for the main window's pages: bordered boxes, round
@@ -469,9 +482,7 @@ function UI.calendar(owner, selected, today, counts, onPick)
     cal.render()
     cal:ClearAllPoints(); cal:SetPoint("BOTTOMRIGHT", owner, "TOPRIGHT", 0, 4) -- Inside the window: the button is at its right edge.
     -- The window's size setting applies to the calendar too, so it lines up with the button.
-    local own, screen = owner.GetEffectiveScale and S.number(owner:GetEffectiveScale()),
-        UIParent and UIParent.GetEffectiveScale and S.number(UIParent:GetEffectiveScale())
-    cal:SetScale(own and screen and screen > 0 and own / screen or 1)
+    cal:SetScale(UI.ownerScale(owner))
     cal:Show()
     if cal.Raise then cal:Raise() end
     return cal
@@ -493,6 +504,14 @@ end
 -- A small drop-down list under a button: items {label=, value=}; onPick(value).
 -- One shared list, closed by picking, by clicking its button again or by Escape.
 -- Built from plain buttons, since the game's dropdown menus differ by client.
+-- The scale of owner relative to UIParent: a frame parented to UIParent takes
+-- it to line up with, and match the size of, a control in the main window.
+function UI.ownerScale(owner)
+    local own, screen = owner.GetEffectiveScale and S.number(S.call(owner.GetEffectiveScale, owner)),
+        UIParent and UIParent.GetEffectiveScale and S.number(S.call(UIParent.GetEffectiveScale, UIParent))
+    return own and screen and own > 0 and screen > 0 and own / screen or 1
+end
+
 function UI.menu(owner, items, onPick)
     local menu = UI.menuFrame
     if not menu then
@@ -530,6 +549,7 @@ function UI.menu(owner, items, onPick)
     end
     for i = #items + 1, #menu.rows do menu.rows[i]:Hide() end
     menu.owner, menu.onPick, menu.items = owner, onPick, items
+    menu:SetScale(UI.ownerScale(owner)) -- the window's size, like its button
     menu:ClearAllPoints(); menu:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -2)
     call(menu.scroll, "SetVerticalScroll", 0)
     menu:Show()

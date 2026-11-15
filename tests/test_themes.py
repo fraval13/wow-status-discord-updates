@@ -337,13 +337,48 @@ def test_the_screen_note_is_translated():
     ''')
 
 
-def test_a_screen_change_closes_the_open_calendar():
+def test_a_size_or_screen_change_closes_the_calendar_and_dropdown():
     lua = make_lua(THEMES + SCREEN)
     lua.execute('''
+        __screen = {2560, 1440}
         WoWStatusJournal.show()
-        WoWStatusUI.calendarFrame = CreateFrame("Frame"); WoWStatusUI.calendarFrame:Show()
+        WoWStatusTheme.setWindowSize(200)
+        local calendar = CreateFrame("Frame"); WoWStatusUI.calendarFrame = calendar; calendar:Show()
+        __screen = {1280, 720}
         for _, frame in ipairs(__events.DISPLAY_SIZE_CHANGED) do
             if frame.OnEvent then frame.OnEvent(frame, "DISPLAY_SIZE_CHANGED") end
         end
-        assert(not WoWStatusUI.calendarFrame:IsShown())
+        assert(not calendar:IsShown())
+        -- A size typed in Options closes them too; a theme change keeps them.
+        local menu = CreateFrame("Frame"); WoWStatusUI.menuFrame = menu; menu:Show(); calendar:Show()
+        WoWStatusTheme.next()
+        assert(menu:IsShown() and calendar:IsShown())
+        WoWStatusTheme.setWindowSize(80)
+        assert(not menu:IsShown() and not calendar:IsShown())
+    ''')
+
+
+def test_the_dropdown_takes_the_window_size_like_its_button():
+    lua = make_lua(THEMES + SCREEN)
+    lua.execute('''
+        __screen = {2560, 1440}
+        WoWStatusJournal.show()
+        WoWStatusTheme.setWindowSize(150)
+        local owner = CreateFrame("Button", nil, WoWStatusMainFrame); owner.scale = 1.5
+        local menu = WoWStatusUI.menu(owner, {{label="One", value=1}}, function() end)
+        assert(menu.scale == 1.5)
+        local plain = CreateFrame("Button")                      -- in Options: unscaled
+        WoWStatusUI.menu(plain, {{label="One", value=1}}, function() end)
+        assert(menu.scale == 1)
+    ''')
+
+
+def test_stepping_down_from_a_size_the_screen_caps_changes_the_window_at_once():
+    lua = make_lua(THEMES + SCREEN)
+    lua.execute('''
+        __screen = {1280, 720}
+        WoWStatusJournal.show()
+        WoWStatusTheme.setWindowSize(200)
+        assert(WoWStatusMainFrame.scale == 1.04)
+        assert(WoWStatusTheme.resize(-WoWStatusTheme.STEP) == .94 and WoWStatusMainFrame.scale == .94)
     ''')
