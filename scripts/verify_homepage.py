@@ -182,7 +182,7 @@ def verify(base, revision, fetch=read, *, expected):
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('The homepage contains unexpanded release placeholders')
     # The link preview Discord shows for a pasted link (issue #190), fetched from this site.
-    builder().check_link_preview(html, fetch(base + builder().link_preview_path(html)))
+    builder().check_link_preview(html, lambda path: fetch(base + path))
     return manifest
 
 

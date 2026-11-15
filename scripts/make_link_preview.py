@@ -3,31 +3,36 @@
 Usage: python scripts/make_link_preview.py [--check]
 
 Chat clients such as Discord show `og:image` as a large card only for a widely
-supported format, so this writes `website/assets/link-preview.png` at 1200×630
+supported format, so this writes `website/assets/link-preview.jpg` at 1200×630
 from `adventure.webp`, `journal.webp` and the Cinzel font the page already ships.
-It needs Pillow (in the dev extras). The deploy job builds the homepage with the
-standard library alone, so the PNG is committed and the build only checks it;
-`--check` and `tests/test_link_preview.py` fail when it no longer matches the
-artwork, so a changed illustration cannot ship with a stale preview.
+JPEG keeps the painted image near 270 KB, where some chat clients drop larger
+previews. It needs Pillow (in the dev extras). The deploy job builds the homepage
+with the standard library alone, so the JPEG is committed and the build only checks
+it; `--check` and `tests/test_link_preview.py` fail when it no longer matches the
+artwork, so a changed illustration or text cannot ship with a stale preview.
 """
 import argparse
+import io
 import sys
 from pathlib import Path
 
-from PIL import Image, ImageChops, ImageDraw, ImageFont, ImageStat
+from PIL import Image, ImageChops, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'website/assets'
-OUTPUT = ASSETS / 'link-preview.png'
+OUTPUT = ASSETS / 'link-preview.jpg'
 SIZE = (1200, 630)
+QUALITY = 90
 TITLE = 'WoW Status'
 TAGLINE = ('Your friends’ adventures,', 'right inside World of Warcraft.')
 EDITIONS = 'CLASSIC · TBC · RETAIL · FOREVER'
 GOLD = (241, 201, 116)
 PARCHMENT = (238, 226, 200)
-# Decoders and resamplers may differ by a shade between Pillow and libwebp builds
-# (Windows and Ubuntu CI), so --check allows a small average difference per channel.
-TOLERANCE = 2.0
+# Decoders, resamplers and JPEG encoders may differ by a few shades between builds
+# (Windows and Ubuntu CI), so --check ignores small per-pixel differences but allows
+# only a handful of clearly changed pixels; one changed letter changes hundreds.
+SHADE = 32
+CHANGED_PIXELS = 40
 
 
 def render():
@@ -36,9 +41,9 @@ def render():
     scaled = art.resize((round(art.width * height / art.height), height), Image.Resampling.LANCZOS)
     # The right of the illustration: the road, the gate and the three adventurers.
     image = scaled.crop((scaled.width - width, 0, scaled.width, height))
-    # A dark band on the left, fading out, so the title reads over the valley.
-    shade = Image.new('L', SIZE)
-    shade.putdata([max(0, 215 - x * 215 // 640) for _ in range(height) for x in range(width)])
+    # A dark band on the left, fading out by x = 640, so the title reads over the valley.
+    row = bytes(max(0, 215 - x * 215 // 640) for x in range(width))
+    shade = Image.frombytes('L', (width, 1), row).resize(SIZE, Image.Resampling.NEAREST)
     image = Image.composite(Image.new('RGB', SIZE, (12, 14, 20)), image, shade)
     logo = Image.open(ASSETS / 'journal.webp').convert('RGB').resize((168, 168), Image.Resampling.LANCZOS)
     draw = ImageDraw.Draw(image)
@@ -48,34 +53,46 @@ def render():
     draw.text((64, 262), TITLE, font=ImageFont.truetype(font, 96), fill=GOLD,
               stroke_width=2, stroke_fill=(30, 20, 8))
     body = ImageFont.truetype(font, 38)
-    for row, line in enumerate(TAGLINE):
-        draw.text((66, 392 + row * 52), line, font=body, fill=PARCHMENT, stroke_width=1,
+    for number, line in enumerate(TAGLINE):
+        draw.text((66, 392 + number * 52), line, font=body, fill=PARCHMENT, stroke_width=1,
                   stroke_fill=(12, 14, 20))
     draw.text((66, 530), EDITIONS, font=ImageFont.truetype(font, 24), fill=GOLD)
     return image
 
 
-def difference(first, second):
-    """Average absolute difference per channel, 0 to 255."""
-    return max(ImageStat.Stat(ImageChops.difference(first, second)).mean)
+def encode(image):
+    data = io.BytesIO()
+    # Baseline, no metadata: the same input gives the same bytes on one Pillow build.
+    image.save(data, 'JPEG', quality=QUALITY, optimize=True)
+    return data.getvalue()
+
+
+def changed_pixels(first, second):
+    """How many pixels differ by more than SHADE in some channel."""
+    difference = ImageChops.difference(first, second)
+    mask = Image.merge('RGB', [band.point(lambda value: 255 if value > SHADE else 0)
+                               for band in difference.split()]).convert('L').point(lambda value: 255 if value else 0)
+    return mask.histogram()[255]
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('--check', action='store_true', help='fail if the committed PNG is stale')
+    parser.add_argument('--check', action='store_true', help='fail if the committed preview is stale')
     args = parser.parse_args(argv)
-    image = render()
+    data = encode(render())
+    name = OUTPUT.relative_to(ROOT).as_posix()
     if args.check:
         try:
             committed = Image.open(OUTPUT).convert('RGB')
         except OSError:
-            sys.exit(f'{OUTPUT.relative_to(ROOT)} is missing; run python scripts/make_link_preview.py')
-        if committed.size != SIZE or difference(committed, image) > TOLERANCE:
-            sys.exit(f'{OUTPUT.relative_to(ROOT)} is stale; run python scripts/make_link_preview.py')
-        print(f'{OUTPUT.relative_to(ROOT)} matches the artwork')
+            sys.exit(f'{name} is missing; run python scripts/make_link_preview.py')
+        fresh = Image.open(io.BytesIO(data)).convert('RGB')
+        if committed.size != SIZE or changed_pixels(committed, fresh) > CHANGED_PIXELS:
+            sys.exit(f'{name} is stale; run python scripts/make_link_preview.py')
+        print(f'{name} matches the artwork')
         return
-    image.save(OUTPUT, optimize=True)
-    print(f'Wrote {OUTPUT.relative_to(ROOT)}')
+    OUTPUT.write_bytes(data)
+    print(f'Wrote {name}')
 
 
 if __name__ == '__main__':

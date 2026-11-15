@@ -22,7 +22,7 @@ Each build replaces the output folder as a whole, so a deleted asset or an old Z
 never survives a rebuild, and a failed build leaves the earlier one in place. The
 builder refuses an existing `--output` folder that is not an earlier build.
 The build also fails unless the page's Open Graph and `twitter:` link preview tags
-are complete and `assets/link-preview.png` is a 1200×630 PNG (see `ARTWORK.md`).
+are complete and `assets/link-preview.jpg` is a complete 1200×630 JPEG (see `ARTWORK.md`).
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 

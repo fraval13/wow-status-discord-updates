@@ -135,8 +135,8 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data+b'corrupt'
         if path=='index.html' and fault=='stale_version':
             return data.replace(('VERSION '+manifest['editions']['tbc']['version']).encode(),b'VERSION 0.0.0')
-        # Issue #190: the live site must serve the 1200×630 PNG its tags describe.
-        if path=='assets/link-preview.png' and fault=='webp_link_preview':
+        # Issue #190: the live site must serve the 1200×630 JPEG its tags describe.
+        if path=='assets/link-preview.jpg' and fault=='webp_link_preview':
             return (built_site/'assets/adventure.webp').read_bytes()
         if path=='index.html' and fault=='no_twitter_card':
             return data.replace(b'summary_large_image',b'summary')

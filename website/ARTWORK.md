@@ -13,14 +13,15 @@ Prompt:
 existing `assets/branding/WoWStatus-curseforge.png` logo. The original branding
 files and separate addon branding changes are preserved.
 
-`assets/link-preview.png` is the 1200×630 link preview that Discord and other
+`assets/link-preview.jpg` is the 1200×630 link preview that Discord and other
 chat clients show for a pasted homepage link (`og:image`, `twitter:image`). It is
 drawn by `python scripts/make_link_preview.py` (needs Pillow, in the dev extras)
 from `adventure.webp`, `journal.webp` and Cinzel, so it stays in step with the
-artwork: after changing any of them, run it again and commit the PNG.
-`tests/test_link_preview.py` fails while the committed PNG is stale. The homepage
-build and the live verification check that the page's preview tags are complete
-and that the PNG is 1200×630; WebP stays for the page itself.
+artwork: after changing any of them, or the preview's text in the script, run it
+again and commit the JPEG. `tests/test_link_preview.py` fails while the committed
+JPEG is stale. The homepage build and the live verification check that the page's
+preview tags are complete and that the JPEG is 1200×630; WebP stays for the page
+itself.
 
 Game icons under `assets/icons/` reuse the existing icon pack documented at
 `assets/discord-emojis/README.md`. Blizzard game artwork is credited in the

@@ -38,63 +38,85 @@ NOT_SHIPPED = ('README.md', 'ARTWORK.md')
 DESKTOP_FILES = ('.DS_Store', 'Thumbs.db', 'desktop.ini')
 # The link preview chat clients show for a pasted homepage link (issue #190).
 # scripts/make_link_preview.py draws it from the page's artwork; the build only checks it.
-LINK_PREVIEW = '/assets/link-preview.png'
+LINK_PREVIEW = '/assets/link-preview.jpg'
 LINK_PREVIEW_SIZE = (1200, 630)
-PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+# Tags whose value is fixed; the text tags below must be present and not empty.
+PREVIEW_TAGS = {'og:type': 'website', 'og:image:type': 'image/jpeg', 'og:image:width': '1200',
+                'og:image:height': '630', 'twitter:card': 'summary_large_image'}
+PREVIEW_TEXT = ('og:site_name', 'og:title', 'og:description', 'og:url', 'og:image', 'og:image:alt',
+                'twitter:title', 'twitter:description', 'twitter:image', 'twitter:image:alt')
 
 
 class MetaTags(HTMLParser):
-    """The page's <meta property|name=... content=...> tags."""
+    """Every <meta property|name=... content=...> tag of a page, in order."""
     def __init__(self):
         super().__init__()
-        self.tags = {}
+        self.tags = []
 
     def handle_starttag(self, tag, attrs):
         attrs = dict(attrs)
         key = attrs.get('property') or attrs.get('name')
-        if tag == 'meta' and key and attrs.get('content') is not None:
-            self.tags.setdefault(key, attrs['content'])
+        if tag == 'meta' and key:
+            self.tags.append((key, attrs.get('content') or ''))
 
 
-def png_size(data):
-    """(width, height) of a PNG, or None if data is not one."""
-    if len(data) < 24 or not data.startswith(PNG_SIGNATURE) or data[12:16] != b'IHDR':
+def jpeg_size(data):
+    """(width, height) of a complete baseline or progressive JPEG, or None if data is not one."""
+    if not data.startswith(b'\xff\xd8') or not data.endswith(b'\xff\xd9'):
         return None
-    return struct.unpack('>II', data[16:24])
+    position = 2
+    while position + 4 <= len(data) and data[position] == 0xFF:
+        marker = data[position + 1]
+        length = struct.unpack('>H', data[position + 2:position + 4])[0]
+        # SOF0-SOF15, except DHT (C4), JPG (C8) and DAC (CC), carry the frame size.
+        if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+            if position + 9 > len(data):
+                return None
+            height, width = struct.unpack('>HH', data[position + 5:position + 9])
+            return width, height
+        position += 2 + length
+    return None
 
 
-def link_preview_path(html):
-    """Check the page's Open Graph and Twitter card tags; return the preview image's path.
+def check_link_preview(html, read):
+    """Check the page's Open Graph and Twitter card tags and the image they name.
 
-    Discord and other chat clients show a large card only with the image's size and
-    twitter:card, so a page without them fails the build (and the live verification).
+    read(path) returns the bytes served at that site path. Discord and other chat
+    clients show a large card only with twitter:card and the image's size, so an
+    incomplete set fails the build and the live verification.
     """
     parser = MetaTags()
     parser.feed(html)
-    tags = parser.tags
-    width, height = LINK_PREVIEW_SIZE
-    required = {'og:type': 'website', 'og:image:type': 'image/png', 'og:image:width': str(width),
-                'og:image:height': str(height), 'twitter:card': 'summary_large_image'}
-    wrong = [key for key, value in required.items() if tags.get(key) != value]
-    wrong += [key for key in ('og:site_name', 'og:title', 'og:description', 'og:url', 'og:image:alt',
-                              'twitter:title', 'twitter:description', 'twitter:image:alt')
-              if not tags.get(key, '').strip()]
+    tags, wrong = {}, []
+    for key, value in parser.tags:
+        if key in tags and (key in PREVIEW_TAGS or key in PREVIEW_TEXT):
+            wrong.append(f'{key} (repeated)')  # scrapers disagree on which one wins
+        tags.setdefault(key, value)
+    wrong += [key for key, value in PREVIEW_TAGS.items() if tags.get(key) != value]
+    wrong += [key for key in PREVIEW_TEXT if not tags.get(key, '').strip()]
+    site = urlparse(tags.get('og:url', ''))
     image = urlparse(tags.get('og:image', ''))
-    if image.scheme != 'https' or image.path != LINK_PREVIEW or image.query or image.fragment:
+    if site.scheme != 'https' or not site.hostname:
+        wrong.append('og:url')
+    # The image must come from this site, where the build put it and verification fetched it.
+    if (image.scheme, image.netloc) != (site.scheme, site.netloc) or image.path != LINK_PREVIEW \
+            or image.params or image.query or image.fragment:
         wrong.append('og:image')
     if tags.get('twitter:image') != tags.get('og:image'):
         wrong.append('twitter:image')
     if wrong:
-        raise ValueError(f"Missing or incorrect link preview tags: {', '.join(sorted(wrong))}")
-    return image.path
+        raise ValueError(f"Missing or incorrect link preview tags: {', '.join(sorted(set(wrong)))}")
+    if jpeg_size(read(LINK_PREVIEW)) != LINK_PREVIEW_SIZE:
+        raise ValueError(f'{LINK_PREVIEW} must be a complete {LINK_PREVIEW_SIZE[0]}×{LINK_PREVIEW_SIZE[1]} '
+                         'JPEG; run python scripts/make_link_preview.py')
 
 
-def check_link_preview(html, data):
-    """Raise unless html's preview tags are complete and data is the PNG they describe."""
-    link_preview_path(html)
-    if png_size(data) != LINK_PREVIEW_SIZE:
-        raise ValueError(f'{LINK_PREVIEW} must be a {LINK_PREVIEW_SIZE[0]}×{LINK_PREVIEW_SIZE[1]} PNG; '
-                         'run python scripts/make_link_preview.py')
+def site_file(folder):
+    """A read() for check_link_preview: the file at that site path below folder, or b''."""
+    def read(path):
+        file = folder / path.lstrip('/')
+        return file.read_bytes() if file.is_file() else b''
+    return read
 
 
 def git(root, *args):
@@ -258,8 +280,6 @@ def write_site(root, output, revision, editions, version, notes):
         html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('Unresolved homepage placeholder')
-    preview = output / LINK_PREVIEW.lstrip('/')
-    check_link_preview(html, preview.read_bytes() if preview.is_file() else b'')
     (output / 'index.html').write_text(html, encoding='utf-8')
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
 
@@ -268,6 +288,8 @@ def build(root, output, addon_ref):
     revision = git(root, 'rev-parse', '--verify', f'{addon_ref}^{{commit}}').decode().strip()
     output = Path(output)
     replaceable(output)
+    website = root / 'website'
+    check_link_preview((website / 'index.html').read_text(encoding='utf-8'), site_file(website))
     # Check every edition before writing anything.
     editions = {}
     for edition in EDITIONS:
