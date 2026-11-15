@@ -18,6 +18,7 @@ T.POPUP_FOLLOW_MIN, T.POPUP_FOLLOW_MAX = .8, 1.2
 -- Notification size in percent, separate from the window size.
 T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
 local windows = {}
+local main -- the first window attached (the main window), for its shown scale
 
 -- A window size kept in range and rounded to whole percent. Older saves held
 -- tenths (.8 to 1.2), which stay exactly as they were.
@@ -116,7 +117,6 @@ local function keepOnScreen(frame)
     frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", (left + dx) / ratio + BORDER, (bottom + dy) / ratio + BORDER)
     return true
 end
-T.keepOnScreen = keepOnScreen
 
 -- Register a window background; it is themed now and whenever settings change.
 -- A window (not a popup) also stays on screen: clamped while dragged, and moved
@@ -124,6 +124,7 @@ T.keepOnScreen = keepOnScreen
 function T.attach(frame, background, popup)
     table.insert(windows, {frame=frame, background=background, popup=popup == true})
     if not popup then
+        main = main or frame
         S.call(frame.SetClampedToScreen, frame, true)
         S.call(frame.SetClampRectInsets, frame, -BORDER, BORDER, BORDER, -BORDER)
         if type(frame.HookScript) == "function" then
@@ -145,7 +146,7 @@ end
 -- theme and size for popups too" is on.
 function T.scale(popup)
     local value = settings()
-    if not popup then return T.applied(_G.WoWStatusMainFrame) end
+    if not popup then return T.applied(main) end
     local follow = math.max(T.POPUP_FOLLOW_MIN, math.min(T.POPUP_FOLLOW_MAX, value.scale))
     return (value.popups and follow or 1) * value.popup_size / 100
 end
@@ -217,13 +218,14 @@ end
 
 function T.label()
     local value = settings()
-    local size = T.windowSize()
-    local label = "Theme: " .. T.NAMES[value.name] .. " · size " .. size .. "%"
-    -- Say so when the screen holds the main window only at a smaller size.
-    local main = _G.WoWStatusMainFrame
+    return "Theme: " .. T.NAMES[value.name] .. " · size " .. T.windowSize() .. "%"
+end
+-- A note for when the screen holds the main window only at a smaller size
+-- than chosen; nil when it is shown at the chosen size.
+function T.shownNote()
     local shown = main and percent(T.applied(main))
-    if shown and shown < size then label = label .. " (shown at " .. shown .. "%)" end
-    return label
+    if shown and shown < T.windowSize() then return "Shown at " .. shown .. "% to fit the screen" end
+    return nil
 end
 
 -- A resolution or UI scale change can make the screen smaller or larger:
@@ -233,7 +235,13 @@ if type(CreateFrame) == "function" then
     for _, event in ipairs({"DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED"}) do
         pcall(events.RegisterEvent, events, event)
     end
-    events:SetScript("OnEvent", function() T.apply() end)
+    events:SetScript("OnEvent", function()
+        -- The date calendar takes the window's scale when it opens; close it
+        -- rather than leave it at the old scale, away from its button.
+        local calendar = WoWStatusUI and WoWStatusUI.calendarFrame
+        if calendar and calendar.IsShown and calendar:IsShown() then calendar:Hide() end
+        T.apply()
+    end)
 end
 
 -- Shared building blocks for the main window's pages: bordered boxes, round

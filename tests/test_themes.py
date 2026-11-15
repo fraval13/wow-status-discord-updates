@@ -170,21 +170,29 @@ def test_window_size_box_in_options_is_reachable_with_a_controller():
     lua = make_lua(THEMES + '''
 function methods:GetObjectType() return self.kind end
 function methods:GetScript(name) return self[name] end
+-- As in the game: clearing a focused box's focus fires OnEditFocusLost.
+function methods:SetFocus() self.focused = true; if self.OnEditFocusGained then self.OnEditFocusGained(self) end end
+function methods:ClearFocus()
+    if self.focused then self.focused = false; if self.OnEditFocusLost then self.OnEditFocusLost(self) end end
+end
 ''')
     lua.execute('''
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
         assert(panel.windowSize:GetText() == "100")
-        panel.windowSize:SetText("150"); panel.windowSize.OnEnterPressed(panel.windowSize)
+        panel.windowSize:SetFocus(); panel.windowSize:SetText("150"); panel.windowSize.OnEnterPressed(panel.windowSize)
         assert(WoWStatusTheme.windowSize() == 150 and panel.theme.text == "Theme: Achievement · size 150%")
-        panel.windowSize:SetText("999"); panel.windowSize.OnEnterPressed(panel.windowSize)
+        panel.windowSize:SetFocus(); panel.windowSize:SetText("999"); panel.windowSize.OnEnterPressed(panel.windowSize)
         assert(WoWStatusTheme.windowSize() == 150 and panel.windowSize:GetText() == "150")
-        panel.windowSize:SetText("80"); panel.windowSize.OnEscapePressed(panel.windowSize)
+        panel.windowSize:SetFocus(); panel.windowSize:SetText("80"); panel.windowSize.OnEscapePressed(panel.windowSize)
         assert(WoWStatusTheme.windowSize() == 150 and panel.windowSize:GetText() == "150")
         -- A controller has no Enter: leaving the box (B, or a click elsewhere) applies it.
-        panel.windowSize.OnEditFocusGained(panel.windowSize)
-        panel.windowSize:SetText("120"); panel.windowSize.OnEditFocusLost(panel.windowSize)
+        panel.windowSize:SetFocus(); panel.windowSize:SetText("120"); panel.windowSize:ClearFocus()
         assert(WoWStatusTheme.windowSize() == 120 and panel.theme.text == "Theme: Achievement · size 120%")
+        -- Typing and then pressing + applies the typed size, then steps from it.
+        panel.windowSize:SetFocus(); panel.windowSize:SetText("130")
+        panel.larger.OnClick(panel.larger)
+        assert(WoWStatusTheme.windowSize() == 140 and panel.windowSize:GetText() == "140")
         -- Gamepad.lua reaches a text box and a button with OnClick.
         assert(panel.windowSize.kind == "EditBox" and WoWStatusGamepad.interactive(panel.windowSize))
         assert(WoWStatusGamepad.interactive(panel.smaller) and WoWStatusGamepad.interactive(panel.larger))
@@ -223,13 +231,14 @@ def test_a_size_the_screen_cannot_hold_is_shown_smaller_and_said_so():
         WoWStatusTheme.setWindowSize(200)
         assert(WoWStatusDB.theme.scale == 2)                 -- the choice is kept
         assert(main.scale == 1.04)                           -- what fits is shown
-        assert(WoWStatusTheme.label() == "Theme: Achievement · size 200% (shown at 104%)")
+        assert(WoWStatusTheme.label() == "Theme: Achievement · size 200%")
+        assert(WoWStatusTheme.shownNote() == "Shown at 104% to fit the screen")
         -- A larger screen (or smaller UI scale) shows more of the chosen size.
         __screen = {2560, 1440}; WoWStatusTheme.apply()
-        assert(main.scale == 2 and WoWStatusTheme.label() == "Theme: Achievement · size 200%")
+        assert(main.scale == 2 and WoWStatusTheme.shownNote() == nil)
         -- Sizes that fit are untouched; the default never changes.
         __screen = {1280, 720}; WoWStatusTheme.setWindowSize(100)
-        assert(main.scale == 1 and WoWStatusTheme.label() == "Theme: Achievement · size 100%")
+        assert(main.scale == 1 and WoWStatusTheme.shownNote() == nil)
         -- A client that reports no screen size limits nothing.
         __screen = {0, 0}; WoWStatusTheme.setWindowSize(180)
         assert(main.scale == 1.8)
@@ -293,11 +302,12 @@ def test_options_label_follows_the_screen_and_language():
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
         WoWStatusTheme.setWindowSize(200)
-        assert(panel.theme.text == "Theme: Achievement · size 200%")
+        assert(panel.theme.text == "Theme: Achievement · size 200%" and panel.themeNote.text == "")
         __screen = {1280, 720}; WoWStatusTheme.apply()        -- as on DISPLAY_SIZE_CHANGED
-        assert(panel.theme.text == "Theme: Achievement · size 200% (shown at 104%)")
+        assert(panel.themeNote.text == "Shown at 104% to fit the screen")
         WoWStatusLocale.set("nn"); WoWStatusPreviews.show()
-        assert(panel.theme.text == "Tema: Bragd · storleik 200 % (vist med 104 %)")
+        assert(panel.theme.text == "Tema: Bragd · storleik 200 %")
+        assert(panel.themeNote.text == "Vist med 104 % så det får plass på skjermen")
     ''')
 
 
@@ -321,7 +331,19 @@ def test_the_screen_note_is_translated():
     lua = make_lua(THEMES)
     lua.execute('''
         WoWStatusLocale.set("nn")
-        assert(WoWStatusLocale.T("Theme: Night · size 200% (shown at 104%)")
-            == "Tema: Natt · storleik 200 % (vist med 104 %)")
+        assert(WoWStatusLocale.T("Shown at 104% to fit the screen")
+            == "Vist med 104 % så det får plass på skjermen")
         assert(WoWStatusLocale.T("Theme: Night · size 120%") == "Tema: Natt · storleik 120 %")
+    ''')
+
+
+def test_a_screen_change_closes_the_open_calendar():
+    lua = make_lua(THEMES + SCREEN)
+    lua.execute('''
+        WoWStatusJournal.show()
+        WoWStatusUI.calendarFrame = CreateFrame("Frame"); WoWStatusUI.calendarFrame:Show()
+        for _, frame in ipairs(__events.DISPLAY_SIZE_CHANGED) do
+            if frame.OnEvent then frame.OnEvent(frame, "DISPLAY_SIZE_CHANGED") end
+        end
+        assert(not WoWStatusUI.calendarFrame:IsShown())
     ''')

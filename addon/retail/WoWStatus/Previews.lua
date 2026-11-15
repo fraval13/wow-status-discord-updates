@@ -95,14 +95,25 @@ function P.show(host)
         panel.theme=text(panel,WoWStatusTheme.label(),24,-options-262,300)
         -- The window size (#182) as a percentage to type, with - and + stepping 10 %.
         panel.windowSize=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+        -- A small line under the label when the screen shows the window smaller.
+        panel.themeNote=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        panel.themeNote:SetPoint("TOPLEFT",24,-options-282);panel.themeNote:SetWidth(300);panel.themeNote:SetJustifyH("LEFT")
         local function refreshTheme()
             panel.theme:SetText(T(WoWStatusTheme.label()))
+            local note=WoWStatusTheme.shownNote()
+            panel.themeNote:SetText(note and T(note) or "")
             if not panel.windowSize.typing then panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize())) end
         end
-        -- A resolution or UI scale change can change the "shown at" note.
+        panel.refreshTheme=refreshTheme
+        -- A resolution or UI scale change can change the note.
         WoWStatusTheme.watch(refreshTheme)
+        -- A step applies what was typed first; a button click does not take focus.
+        local function step(delta)
+            panel.windowSize.typing=nil;panel.windowSize:ClearFocus()
+            WoWStatusTheme.resize(delta);refreshTheme()
+        end
         panel.themeNext=button(panel,"Next theme",330,-options-256,120,function() WoWStatusTheme.next();refreshTheme() end)
-        panel.smaller=button(panel,"-",456,-options-256,26,function() WoWStatusTheme.resize(-WoWStatusTheme.STEP);refreshTheme() end)
+        panel.smaller=button(panel,"-",456,-options-256,26,function() step(-WoWStatusTheme.STEP) end)
         panel.windowSize:SetPoint("TOPLEFT",490,-options-256);panel.windowSize:SetSize(36,30)
         panel.windowSize:SetAutoFocus(false);panel.windowSize:SetMaxLetters(3)
         if panel.windowSize.SetNumeric then panel.windowSize:SetNumeric(true) end
@@ -111,14 +122,17 @@ function P.show(host)
         -- B on a controller, which has no Enter); out of range shows the old size.
         local function applyWindowSize()
             panel.windowSize.typing=nil
-            WoWStatusTheme.setWindowSize(panel.windowSize:GetText())
+            if tonumber(panel.windowSize:GetText())~=WoWStatusTheme.windowSize() then
+                WoWStatusTheme.setWindowSize(panel.windowSize:GetText())
+            end
             refreshTheme()
         end
         panel.windowSize:SetScript("OnEditFocusGained",function(self) self.typing=true end)
         panel.windowSize:SetScript("OnEditFocusLost",applyWindowSize)
-        panel.windowSize:SetScript("OnEnterPressed",function(self) self:ClearFocus();applyWindowSize() end)
+        -- Clearing focus applies it (OnEditFocusLost).
+        panel.windowSize:SetScript("OnEnterPressed",function(self) self:ClearFocus() end)
         panel.windowSize:SetScript("OnEscapePressed",function(self) self:SetText(tostring(WoWStatusTheme.windowSize()));self:ClearFocus() end)
-        panel.larger=button(panel,"+",544,-options-256,26,function() WoWStatusTheme.resize(WoWStatusTheme.STEP);refreshTheme() end)
+        panel.larger=button(panel,"+",544,-options-256,26,function() step(WoWStatusTheme.STEP) end)
         panel.themePopups=check("Use the theme and size for popups too",-options-298,function() return WoWStatusTheme.settings().popups end,
             WoWStatusTheme.setPopups)
         -- Notification size in percent (complaints that toasts were too big or small).
@@ -281,8 +295,8 @@ function P.show(host)
     for _,widget in pairs(panel.quietKinds) do widget:SetChecked(widget.get() == true) end
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.refreshLanguage()
-    panel.theme:SetText(T(WoWStatusTheme.label()))
-    panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize()))
+    panel.windowSize.typing=nil
+    panel.refreshTheme()
     panel.refreshVoices()
     if panel.refreshSpoken then panel.refreshSpoken() end
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")

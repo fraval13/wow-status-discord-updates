@@ -385,10 +385,7 @@ W.add({
         local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
         return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " %"
     end},
-    {"^Theme: (%a+) · size (%d+)%% %(shown at (%d+)%%%)$", function(name, size, shown)
-        local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
-        return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " % (vist med " .. shown .. " %)"
-    end},
+    {"^Shown at (%d+)%% to fit the screen$", "Vist med %1 %% så det får plass på skjermen"},
     {"^Notification size %((%d+)–(%d+)%%%)$", "Varselstorleik (%1–%2 %%)"},
     {"^Notification size: (%d+)%%%.$", "Varselstorleik: %1 %%."},
     {"^You already shared WoW Status with (.+) in the last hour%.$", "Du har alt delt WoW Status med %1 den siste timen."},
