@@ -8,7 +8,12 @@ import pytest
 ROOT = Path(__file__).parents[1]
 WORKFLOWS = sorted((ROOT / '.github/workflows').glob('*.yml'))
 # owner/repo[/path]@<full commit SHA> # v<tag>, so the tag can be read and updated.
-PINNED = re.compile(r'uses: [\w.-]+/[\w.-]+(?:/[\w.-]+)*@[0-9a-f]{40} # v\d+(?:\.\d+)+')
+PINNED = re.compile(r'uses: (?P<action>[\w.-]+/[\w.-]+)(?:/[\w.-]+)*@[0-9a-f]{40} # v(?P<major>\d+)(?:\.\d+)+')
+
+
+def uses_lines(workflow):
+    return [line.strip().removeprefix('- ') for line in workflow.read_text(encoding='utf-8').splitlines()
+            if re.match(r'\s*(?:- )?uses:', line)]
 
 
 def steps(text):
@@ -34,8 +39,7 @@ def test_no_plain_value_holds_a_colon_and_space(workflow):
 
 @pytest.mark.parametrize('workflow', WORKFLOWS, ids=lambda path: path.name)
 def test_every_action_is_pinned_to_a_full_commit_sha(workflow):
-    uses = [line.strip().removeprefix('- ') for line in workflow.read_text(encoding='utf-8').splitlines()
-            if re.match(r'\s*(?:- )?uses:', line)]
+    uses = uses_lines(workflow)
     assert uses and [line for line in uses if not PINNED.fullmatch(line)] == []
 
 
@@ -46,7 +50,7 @@ NODE24_MAJOR = {'actions/checkout': 5, 'actions/setup-python': 6, 'actions/uploa
 
 @pytest.mark.parametrize('workflow', WORKFLOWS, ids=lambda path: path.name)
 def test_every_action_runs_on_node24(workflow):
-    pins = re.findall(r'uses: ([\w.-]+/[\w.-]+)(?:/[\w.-]+)*@[0-9a-f]{40} # v(\d+)', workflow.read_text(encoding='utf-8'))
+    pins = [(match['action'], match['major']) for line in uses_lines(workflow) if (match := PINNED.fullmatch(line))]
     assert pins and {action for action, _ in pins} <= NODE24_MAJOR.keys()  # a new action needs a floor here
     assert [(action, major) for action, major in pins if int(major) < NODE24_MAJOR[action]] == []
 
