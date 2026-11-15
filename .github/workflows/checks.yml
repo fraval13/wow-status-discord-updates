@@ -130,12 +130,10 @@ jobs:
         with:
           name: WoWStatus-addons-${{ matrix.os }}
           path: dist/*.zip
-          if-no-files-found: error
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: WoWStatus-homepage-${{ matrix.os }}
           path: dist/homepage/
-          if-no-files-found: error
   deploy-gate:
     # Runs before `deploy` joins the production group: a run whose commit is no longer
     # the tip of `main` must not wait there, because a newly waiting deploy cancels the

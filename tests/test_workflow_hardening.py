@@ -46,7 +46,7 @@ NODE24_MAJOR = {'actions/checkout': 5, 'actions/setup-python': 6, 'actions/uploa
 
 @pytest.mark.parametrize('workflow', WORKFLOWS, ids=lambda path: path.name)
 def test_every_action_runs_on_node24(workflow):
-    pins = re.findall(r'uses: ([\w.-]+/[\w.-]+)@[0-9a-f]{40} # v(\d+)', workflow.read_text(encoding='utf-8'))
+    pins = re.findall(r'uses: ([\w.-]+/[\w.-]+)(?:/[\w.-]+)*@[0-9a-f]{40} # v(\d+)', workflow.read_text(encoding='utf-8'))
     assert pins and {action for action, _ in pins} <= NODE24_MAJOR.keys()  # a new action needs a floor here
     assert [(action, major) for action, major in pins if int(major) < NODE24_MAJOR[action]] == []
 
