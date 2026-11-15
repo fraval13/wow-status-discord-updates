@@ -381,19 +381,23 @@ function R.isHidden(name) return R.hiddenNames()[key(name) or ""] == true end
 local function deathTotal(text)
     return tonumber(tostring(text or ""):match("^Total deaths: (%d+)$"))
 end
--- Total deaths per character key from each one's newest death announcement,
--- rebuilt only when the log changes (tooltips ask on every mouseover).
+-- Total deaths per character key from each one's newest death announcement.
+-- Tooltips ask on every mouseover, so the map is rebuilt only when the log
+-- gains or loses entries, or every few seconds (an entry's text can be completed
+-- in place); the Characters page always rebuilds it (fresh).
 local deathsCache = {}
-local function deathTotals()
+local DEATHS_CACHE_SECONDS = 5
+local function deathTotals(fresh)
     local entries = WoWStatusJournal.entries()
     local first = entries[1]
-    if deathsCache.entries ~= entries or deathsCache.count ~= #entries or deathsCache.first ~= (first and first.id) then
+    if fresh or deathsCache.entries ~= entries or deathsCache.count ~= #entries or deathsCache.first ~= (first and first.id)
+        or time() - (deathsCache.at or 0) >= DEATHS_CACHE_SECONDS then
         local map = {}
         for _, e in ipairs(entries) do
             local k = e.kind == "death" and key(e.sender)
             if k and map[k] == nil then map[k] = deathTotal(e.text) or false end
         end
-        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map}
+        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map, at=time()}
     end
     return deathsCache.map
 end
@@ -423,10 +427,10 @@ end
 
 -- What a group member's unit tooltip may show (#183), from the stored list only:
 -- no request is sent. nil for anyone a member of a group this account is in has
--- not listed, and for hidden characters (this account's own characters are never
--- in the list). A value the character does not share is nil, never zero.
--- liveLevel is the level the game shows now: saved XP progress belongs to the
--- saved level only.
+-- not listed, for hidden characters and for this account's own characters (a
+-- stale list under an old player ID can hold them). A value the character does
+-- not share is nil, never zero. liveLevel is the level the game shows now: saved
+-- XP progress belongs to the saved level only.
 function R.tooltipFacts(name, liveLevel)
     if not db or not current then return nil end
     local k = key(name)
@@ -443,8 +447,13 @@ function R.tooltipFacts(name, liveLevel)
         end
     end
     if not found then return nil end
+    -- Only for a listed friend, so strangers under the mouse cost no more than the lookup above.
     local hidden = R.hiddenNames()
     if hidden[k] then return nil end
+    -- By full key, not first name: a friend's namesake on another realm still counts.
+    for _, item in ipairs(R.ownedCharacters()) do
+        if key(item.name) == k then return nil end
+    end
     local alts = 0
     for other, alt in pairs(owner.characters) do
         if other ~= k and type(alt) == "table" and not hidden[other] and WoWStatusPopups.fullName(alt.name) then alts = alts + 1 end
@@ -1735,7 +1744,8 @@ end
 -- Groups for the Characters page: {title, rows={{name, race, sex, class, level, status, latest}}}.
 function R.groups()
     local hidden = R.hiddenNames()
-    local online, latest, lastSeen, shared, deaths, zones = {}, {}, {}, {}, {}, {}
+    local online, latest, lastSeen, shared, zones = {}, {}, {}, {}, {}
+    local deaths = deathTotals(true)
     -- A friend's newest first-visit zone, if under an hour old ("Play together now").
     -- Log stamps are realm time (S.now).
     local zoneSince = S.now() - 3600
@@ -1759,10 +1769,6 @@ function R.groups()
         local level = k and e.kind == "level" and S.number(e.level)
         if level and (not fresher[k] or level > fresher[k]) then fresher[k] = level end
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
-        -- A friend's total deaths, from their newest death announcement.
-        if k and deaths[k] == nil and e.kind == "death" then
-            deaths[k] = deathTotal(e.text) or false
-        end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
         if k and zones[k] == nil and e.kind == "zone" then
             zones[k] = (S.number(e.at) or 0) > zoneSince and S.string(e.text) and e.text:match("^Entered (.+)$") or false

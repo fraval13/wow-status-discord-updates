@@ -219,40 +219,57 @@ end
 '''
 
 
-@pytest.mark.parametrize('kind', ['data', 'script', 'processor-without-tooltip-data', 'neither',
-                                  'modern-without-script'])
+@pytest.mark.parametrize('kind', ['data', 'script', 'script-and-processor', 'neither'])
 def test_each_client_gets_one_guarded_hook_and_never_errors(kind):
     lua = person('Thora', 'Ada')
     lua.execute(HOOKS)
-    if kind == 'data':
-        lua.execute('''
-            makeTooltip(true)
-            Enum = {TooltipDataType={Unit=2}}
-            C_TooltipInfo = {}
-            TooltipDataProcessor = {AddTooltipPostCall=function(kind, fn) assert(kind == 2); __hooks.data = fn end}
-        ''')
-    elif kind == 'script':
+    processor = '''
+        Enum = {TooltipDataType={Unit=2}}
+        TooltipDataProcessor = {AddTooltipPostCall=function(kind, fn) assert(kind == 2); __hooks.data = fn end}
+    '''
+    if kind == 'data':  # Retail and modern Classic: the script is gone.
+        lua.execute('makeTooltip(false)' + processor)
+    elif kind == 'script':  # Older clients: only the script.
         lua.execute('makeTooltip(true); TooltipDataProcessor = nil')
-    elif kind == 'processor-without-tooltip-data':
-        # The shared table exists, but unit tooltips are still built the old way.
-        lua.execute('''
-            makeTooltip(true); C_TooltipInfo = nil; Enum = {TooltipDataType={Unit=2}}
-            TooltipDataProcessor = {AddTooltipPostCall=function() error("must not be used") end}
-        ''')
-    elif kind == 'modern-without-script':
-        lua.execute('makeTooltip(false); TooltipDataProcessor = nil')
+    elif kind == 'script-and-processor':  # The shared table exists, but units still fire the script.
+        lua.execute('makeTooltip(true)' + processor)
     else:
         lua.execute('GameTooltip = nil; TooltipDataProcessor = nil')
-    expected = {'data': 'data', 'script': 'script', 'processor-without-tooltip-data': 'script'}.get(kind, False)
+    expected = {'data': 'data', 'script': 'script', 'script-and-processor': 'script'}.get(kind, False)
     assert lua.eval('WoWStatusUnitTooltip.hook()') == expected
     assert lua.eval('WoWStatusUnitTooltip.hook()') == expected  # installed once
     if kind == 'data':
-        assert lua.eval('__hooks.script') is None  # never both
-        lua.eval('__hooks.data')(lua.eval('GameTooltip'), {})
+        assert lua.eval('__hooks.script') is None
+        lua.eval('__hooks.data')(lua.eval('GameTooltip'), {})  # a broken GetUnit does not raise
         lua.execute('__hooks.data({AddLine=GameTooltip.AddLine}, {})')  # other tooltips are ignored
         assert lua.eval('__added') is None
-    elif kind in ('script', 'processor-without-tooltip-data'):
+    elif kind != 'neither':
+        assert lua.eval('__hooks.data') is None  # never both
         lua.eval('__hooks.script')(lua.eval('GameTooltip'))
+
+
+def test_without_a_unit_token_mouseover_counts_only_with_the_tooltips_guid():
+    _, thora = friends()
+    thora.execute('''
+        __tipUnit = nil
+        function UnitGUID(unit) return unit == "mouseover" and "Player-1-MIRA" or "Player-123-Thora" end
+    ''')
+    assert thora.eval('#hover()') == 0  # no tooltip data: nothing is guessed
+    thora.execute('__tip = {}; WoWStatusUnitTooltip.add(GameTooltip, {guid="Player-1-OTHER"})')
+    assert thora.eval('#__tip') == 0  # the tooltip shows someone else
+    thora.execute('__tip = {}; WoWStatusUnitTooltip.add(GameTooltip, {guid="Player-1-MIRA"})')
+    assert thora.eval('#__tip') > 0
+
+
+def test_your_own_character_in_a_stale_list_gets_no_block():
+    _, thora = friends()
+    thora.execute('''
+        local _, player = next(WoWStatusDB.roster.players)
+        player.characters["thora-testrealm"] = {name="Thora-TestRealm", level=1, played=60}
+        __units.mouseover = {name="Thora", level=1, player=true}
+    ''')
+    assert thora.eval('WoWStatusRoster.tooltipFacts("Thora-TestRealm")') is None
+    assert shown(thora) == []
 
 
 def test_the_settings_controls_are_reachable_with_a_controller(gamepad_lua):  # noqa: F811

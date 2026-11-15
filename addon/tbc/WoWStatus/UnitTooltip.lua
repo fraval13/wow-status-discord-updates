@@ -8,9 +8,10 @@
 -- values (1-3). Defaults: on, two values, so the block is three lines.
 --
 -- Modern clients (Retail, and Classic clients built on it) build tooltips from
--- tooltip data (C_TooltipInfo, TooltipDataProcessor) and no longer fire
--- OnTooltipSetUnit; older ones have only the script. Exactly one is used, each
--- guarded, so a client with neither simply shows no block.
+-- tooltip data (TooltipDataProcessor) and no longer have OnTooltipSetUnit;
+-- older ones have only the script. The script is used where it exists, the
+-- processor otherwise: exactly one, each guarded, so a client with neither
+-- simply shows no block.
 WoWStatusUnitTooltip = {}
 local U, S = WoWStatusUnitTooltip, WoWStatusSafe
 local T = WoWStatusLocale.T
@@ -54,10 +55,16 @@ function U.lines(name, liveLevel)
     return {header=header, rows=rows}
 end
 
-function U.add(tooltip)
+-- data is the tooltip data on modern clients. Without a unit token from the
+-- tooltip, "mouseover" counts only when its GUID is the one the tooltip shows,
+-- so a block never lands on someone else's tooltip.
+function U.add(tooltip, data)
     if not tooltip or tooltip ~= GameTooltip then return end
-    local unit = select(2, S.call(tooltip.GetUnit, tooltip))
-    unit = S.string(unit) or (S.call(UnitExists, "mouseover") and "mouseover") or nil
+    local unit = S.string((select(2, S.call(tooltip.GetUnit, tooltip))))
+    if not unit then
+        local guid = type(data) == "table" and S.string(data.guid)
+        if guid and S.stringCall(UnitGUID, "mouseover") == guid then unit = "mouseover" end
+    end
     local name = WoWStatusRoster and WoWStatusRoster.unitName and WoWStatusRoster.unitName(unit)
     if not name then return end
     local block = U.lines(name, S.number(S.call(UnitLevel, unit)))
@@ -67,20 +74,19 @@ function U.add(tooltip)
     if tooltip.Show then tooltip:Show() end -- Resize to fit the added lines.
 end
 
-local function safely(tooltip) pcall(U.add, tooltip) end
+local function safely(tooltip, data) pcall(U.add, tooltip, data) end
 -- Installs one hook, once. Returns which: "data", "script" or nil.
 function U.hook()
     if U.hooked ~= nil then return U.hooked end
     U.hooked = false
     local processor = type(TooltipDataProcessor) == "table" and TooltipDataProcessor.AddTooltipPostCall
     local unitType = type(Enum) == "table" and type(Enum.TooltipDataType) == "table" and Enum.TooltipDataType.Unit
-    -- The data path only where tooltips are built from tooltip data (C_TooltipInfo);
-    -- a client with the processor table but the old unit tooltip gets the script.
-    local dataTooltips = type(C_TooltipInfo) == "table" and type(processor) == "function" and unitType ~= nil
+    -- The script wherever GameTooltip still has it (it fires for units there,
+    -- even if the shared processor table exists too); the data path otherwise.
     local hasScript = GameTooltip and GameTooltip.HookScript
         and (not GameTooltip.HasScript or GameTooltip:HasScript("OnTooltipSetUnit"))
-    if dataTooltips and pcall(processor, unitType, safely) then U.hooked = "data"
-    elseif hasScript and pcall(GameTooltip.HookScript, GameTooltip, "OnTooltipSetUnit", safely) then U.hooked = "script" end
+    if hasScript and pcall(GameTooltip.HookScript, GameTooltip, "OnTooltipSetUnit", safely) then U.hooked = "script"
+    elseif type(processor) == "function" and unitType ~= nil and pcall(processor, unitType, safely) then U.hooked = "data" end
     return U.hooked
 end
 
