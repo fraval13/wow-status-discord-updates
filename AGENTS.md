@@ -105,10 +105,12 @@ be checked against Git and the environment rather than assumed permanently true.
 
 ## Current release and handoff
 
-Nothing in this file states a version number, so it cannot go stale:
-`tests/test_doc_versions.py` fails if `AGENTS.md`, `README.md` or a current
-document under `docs/` names a release other than the current one without saying
-it is historical ("since", "added in", "or later" and similar).
+Nothing in this file states a version number, so it cannot go stale. Each merge
+bumps the version, so `tests/test_doc_versions.py` fails if `AGENTS.md`,
+`README.md`, or a Markdown file under `docs/` (except `docs/history/`), `deploy/`
+or `website/` names any release in the current major series, the current or the
+next one included, without saying it is historical ("since", "added in",
+"or later" and similar).
 
 - The project version is `project.version` in `pyproject.toml`; all four addon
   TOCs repeat it (`scripts/sync_version.py --check`). What was actually deployed,
