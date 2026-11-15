@@ -5,6 +5,7 @@
 ## Version: 1.54.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Burning Crusade Classic Anniversary 2.5.x only
+Diagnostics.lua
 Safe.lua
 Locale.lua
 LocaleNN.lua

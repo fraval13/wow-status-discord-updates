@@ -17,6 +17,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## 1.53.0
 
 - Behind the scenes: the release pipeline is updated so new versions keep reaching you
+- New Diagnostics page (/wstatus errors) keeps WoW Status's own Lua errors as a report to copy into bug reports
 
 ## 1.52.0
 

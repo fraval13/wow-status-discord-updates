@@ -6,6 +6,7 @@
 ## Version: 1.54.0
 ## SavedVariables: WoWStatusDB
 ## X-Client-Support: Vanilla Classic / Classic Era only
+Diagnostics.lua
 Safe.lua
 Locale.lua
 LocaleNN.lua

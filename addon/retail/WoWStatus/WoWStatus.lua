@@ -236,6 +236,7 @@ local function showPanel(host)
         panel.visibility=WoWStatusRoster.buildVisibilitySettings(panel,bottom-84)
         bottom=bottom-260
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
+        button(panel,"Diagnostics",214,bottom,170,function() WoWStatusDiagnostics.show() end)
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
@@ -695,6 +696,9 @@ end)
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match(S.SPLIT_WORD)
+    -- Diagnostics open even when the character never became ready: an error
+    -- may be exactly why.
+    if command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show(); return end
     if not current then say(A.display_name .. " character is not ready or identity is currently restricted."); return end
     if command == "groups" then
         if rest == "legacy" then

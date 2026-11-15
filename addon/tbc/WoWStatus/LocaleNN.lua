@@ -545,3 +545,14 @@ W.add({
     ["Characters shown to friends"] = "Figurar som venene ser",
     ["Untick bank alts to hide them from everyone's character list and leaderboard."] = "Fjern haken for å gøyme bankfigurar frå figurlista og topplista til alle.",
 })
+-- Diagnostics page (#153). The report itself stays English.
+W.add({
+    ["Diagnostics"] = "Diagnostikk",
+    ["1 error recorded since you last looked."] = "1 feil registrert sidan du sist såg.",
+    ["%d errors recorded since you last looked."] = "%d feil registrerte sidan du sist såg.",
+    ["No new errors since you last looked."] = "Ingen nye feil sidan du sist såg.",
+    ["Copy this report into a bug report on GitHub or Discord. Nothing is sent automatically."] =
+        "Kopier denne rapporten inn i ein feilrapport på GitHub eller Discord. Ingenting vert sendt av seg sjølv.",
+    ["Select all"] = "Merk alt",
+    ["Clear errors"] = "Tøm feillista",
+})
