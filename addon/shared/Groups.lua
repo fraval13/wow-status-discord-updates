@@ -88,27 +88,33 @@ G.WEAK_MESSAGE = "Short or ordinary names can be guessed by strangers, who would
     .. "Use a longer, made-up name, or let the addon create one."
 local MIN_LENGTH, MIN_VARIETY = 16, 8
 -- Runs of keys or characters that people type when they make something up.
-local SEQUENCES = {"abcdefghijklmnopqrstuvwxyz", "0123456789", "9876543210", "qwertyuiop", "asdfghjkl", "zxcvbnm"}
+-- Runs of keys or characters that people type when they make something up,
+-- as every five-character piece, built once.
 local SEQUENCE_LENGTH = 5
+local FRAGMENTS = {}
+for _, run in ipairs({"abcdefghijklmnopqrstuvwxyz", "0123456789", "9876543210", "qwertyuiop", "asdfghjkl", "zxcvbnm"}) do
+    for at = 1, #run - SEQUENCE_LENGTH + 1 do FRAGMENTS[#FRAGMENTS + 1] = run:sub(at, at + SEQUENCE_LENGTH - 1) end
+end
+-- Explicit byte ranges for ASCII that is not a letter or digit, not %w or %p,
+-- which follow the C library's locale.
+local SEPARATOR = "[%z\1-\47\58-\64\91-\96\123-\127]"
 -- Only letters and digits of already case-folded text: "silver-hand" and
--- "silver hand" compare equal. Explicit byte ranges, not %w or %p, which
--- follow the C library's locale.
+-- "silver hand" compare equal.
 local function bare(folded)
-    return (folded:gsub("[%z\1-\47\58-\64\91-\96\123-\127]", ""))
+    return (folded:gsub(SEPARATOR, ""))
 end
 local function hasSequence(compact)
-    for _, run in ipairs(SEQUENCES) do
-        for at = 1, #run - SEQUENCE_LENGTH + 1 do
-            if compact:find(run:sub(at, at + SEQUENCE_LENGTH - 1), 1, true) then return true end
-        end
+    for _, fragment in ipairs(FRAGMENTS) do
+        if compact:find(fragment, 1, true) then return true end
     end
     return false
 end
--- True when a typed group name is easy to guess: short, one plain word, only
--- digits, few different characters, a repeated word, a keyboard or alphabet
--- run, or containing this character's, guild's or realm's name. A heuristic
--- without a dictionary, and only a warning: the player may use the name anyway,
--- and saved groups are never checked.
+-- True when a typed group name is easy to guess: short, one plain word (maybe
+-- with a number before or after), only digits, few different characters, one
+-- or two words repeated, a keyboard or alphabet run, or containing this
+-- character's, guild's or realm's name. A heuristic without a dictionary, and
+-- only a warning: the player may use the name anyway, and saved groups are
+-- never checked.
 function G.weak(name)
     if type(name) ~= "string" then return false end
     local text = WoWStatusCaseFold(S.trim(name))
@@ -120,21 +126,23 @@ function G.weak(name)
     end
     if variety < MIN_VARIETY then return true end
     local compact = bare(text)
-    -- One word, maybe with a number on the end ("dragonslayer2026"): letters
-    -- here include non-ASCII ones such as æ, ø and å.
-    local core = compact:gsub("[0-9]+$", "")
-    if compact == text and core ~= "" and not core:find("[0-9]") then return true end
     if not compact:find("[^0-9]") then return true end -- only digits (and separators)
     if hasSequence(compact) then return true end
-    local words = {}
-    for word in text:gmatch("[^ \t\n\v\f\r%-_.,]+") do
-        local plain = bare(word):gsub("[0-9]+$", "")
-        if #plain >= 3 and words[plain] then return true end
-        words[plain] = true
+    -- Words split at spaces and ASCII punctuation, numbers trimmed off their
+    -- ends; letters include non-ASCII ones such as æ, ø and å.
+    local words, distinct, repeated, plainOnly = {}, 0, false, true
+    for word in text:gsub(SEPARATOR, " "):gmatch("[^ ]+") do
+        local plain = word:gsub("^[0-9]+", ""):gsub("[0-9]+$", "")
+        if plain ~= "" then
+            if plain:find("[0-9]") then plainOnly = false end
+            if words[plain] then repeated = true
+            else words[plain] = true; distinct = distinct + 1 end
+        end
     end
-    local known = {S.string(S.call(UnitName, "player")) or "", S.string(S.call(GetGuildInfo, "player")) or "",
-        S.string(S.call(GetRealmName)) or ""}
-    for _, own in ipairs(known) do
+    if distinct == 1 and plainOnly then return true end -- "dragonslayer2026!"
+    if repeated and distinct <= 2 then return true end -- "password password1"
+    for _, own in ipairs({S.stringCall(UnitName, "player") or "", S.stringCall(GetGuildInfo, "player") or "",
+        S.stringCall(GetRealmName) or ""}) do
         local folded = bare(WoWStatusCaseFold(own))
         if #folded >= 3 and compact:find(folded, 1, true) then return true end
     end
@@ -340,6 +348,7 @@ local function renderGroups()
     panel.empty:SetShown(#groups == 0)
     -- A ninth group cannot be joined, so no name is created for it.
     panel.create:SetEnabled(#groups < MAX_GROUPS)
+    panel.join:SetEnabled(#groups < MAX_GROUPS)
     for i, row in ipairs(panel.rows) do
         local group = groups[i]
         row.id = group and group.id
@@ -400,24 +409,39 @@ function G.show(host)
         label("Group ID", -146)
         label("Use the same ID as your friends.\nAdding or removing a group saves for all your characters.", -182)
         panel.input = input(-234, 80)
-        -- A refusal is shown under the input and in chat: in Options the page
-        -- scrolls, so a message lower down could go unseen.
         local HINT = "Recommended: let the addon create a name nobody can guess."
         -- Back to plain Add after an "Add anyway", or the created name joined.
         local function resetConfirm()
             panel.confirmed = nil
             panel.add:SetText(T("Add"))
         end
+        -- The created name is saved until it is joined or replaced, so neither
+        -- a closed window nor a /reload loses a name the player may have sent.
+        -- Joined groups are saved the same way, so this exposes nothing new.
         local function resetCreated()
             panel.created.value = nil
             panel.replacing = nil
+            database.created_group = nil
             panel.created:SetText(""); panel.created:Hide(); panel.join:Hide()
             panel.createHint:SetText(T(HINT))
         end
-        -- Any new message replaces the weak-name warning, so it also takes back
-        -- the "Add anyway" that warning armed.
+        local function showCreated(name)
+            panel.created:SetText(name); panel.created.value = name
+            database.created_group = name
+            -- Not focused for the player: a focused text box would take the
+            -- controller's buttons. Clicking into it selects the whole name.
+            panel.created:Show(); panel.join:Show()
+            local mac = S.call(IsMacClient) == true
+            panel.createHint:SetText(T(mac and "Click it, copy with Cmd+C and send it privately. Every friend must type exactly this name."
+                or "Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."))
+        end
+        -- A refusal is shown under the input and in chat: in Options the page
+        -- scrolls, so a message lower down could go unseen. Any new message
+        -- replaces an earlier warning, so it also disarms what that warning
+        -- armed ("Add anyway", or a second Create a group click).
         local function refuse(message)
             resetConfirm()
+            panel.replacing = nil
             panel.status:SetText(T(message))
             report(message)
         end
@@ -475,17 +499,9 @@ function G.show(host)
                 return
             end
             panel.replacing = nil
-            local name = G.generate()
-            panel.created:SetText(name); panel.created.value = name
-            -- Not focused for the player: a focused text box would take the
-            -- controller's buttons. Clicking into it selects the whole name.
-            panel.created:Show(); panel.join:Show()
-            local mac = S.call(IsMacClient) == true
-            panel.createHint:SetText(T(mac and "Click it, copy with Cmd+C and send it privately. Every friend must type exactly this name."
-                or "Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."))
+            showCreated(G.generate())
         end)
-        -- Read-only but selectable, so it can be copied. The name stays until it
-        -- is joined, also when the window closes, so a shared name is not lost.
+        -- Read-only but selectable, so it can be copied.
         panel.created = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
         panel.created:SetPoint("TOPLEFT", 206, -318); panel.created:SetSize(236, 30)
         panel.created:SetFontObject("ChatFontNormal")
@@ -498,14 +514,14 @@ function G.show(host)
         panel.created:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
         -- Joins the created name directly: the Group ID box and focus stay as they were.
         panel.join = button(panel, "Join it", 454, -318, 120, function()
-            if panel.created.value and add(panel.created.value, false) then resetCreated() end
+            if panel.created.value then add(panel.created.value, false) end  -- add() clears it
         end)
         panel.createHint = label(HINT, -354)
         panel.createHint:SetFontObject("GameFontHighlight")
         panel.protection = label("Anyone who knows a group's name can read its activity. Share it privately, "
             .. "never in public chat, on a stream or in a screenshot.", -386)
         panel.protection:SetFontObject("GameFontHighlight")
-        panel.resetConfirm, panel.resetCreated = resetConfirm, resetCreated
+        panel.resetConfirm, panel.resetCreated, panel.showCreated = resetConfirm, resetCreated, showCreated
         panel.count = label("", -424, 400)
         -- Groups friends listed, to join with one click.
         panel.browse = button(panel, "Browse groups", 430, -418, 144, function(self)
@@ -586,8 +602,14 @@ function G.show(host)
     panel.name:SetText(database.player_name or "")
     panel.input:SetText("")
     panel.resetConfirm()
+    panel.replacing = nil
     -- A created name that is not joined yet stays: the player may have sent it.
-    if not panel.created.value then panel.resetCreated() end
+    local created = database.created_group
+    if type(created) == "string" and G.key(created) and not (database.account_groups or {})[G.key(created)] then
+        panel.showCreated(created)
+    else
+        panel.resetCreated()
+    end
     renderGroups()
     panel:Show()
 end

@@ -530,7 +530,7 @@ def test_group_name_generator_controls_are_reachable(lua):
         WoWStatusGroups.init(db,function() return nil end,function() end)
         WoWStatusGroups.show()
         local p=WoWStatusGroupWindow
-        p.rect={100,100,620,866}
+        p.rect={100,100,620,756}
         p.create.rect={124,600,170,28}; p.created.rect={306,600,236,30}; p.join.rect={554,600,120,28}
         local function reached(control)
             for _,item in ipairs(WoWStatusGamepad.controls(p,{p})) do if item==control then return true end end

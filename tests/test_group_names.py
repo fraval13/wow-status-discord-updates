@@ -37,9 +37,11 @@ def test_weak_names_are_short_plain_repetitive_or_this_players_names():
                  'Knights of the Silver Hand', 'knights-of-the-silver-hand', 'BLOODSAIL BUCCANEERS',
                  '1234567890123456', '8104-2275-3391-60', 'password password1', 'abcdefghijklmnop1',
                  'qwertyuiop asdfgh', 'Thora and the gang 2026', 'the knights of the silver hand!',
-                 'dragonslayer2026', 'Ærlegegjengenfråvoss'):
+                 'dragonslayer2026', 'Ærlegegjengenfråvoss', 'Dragonslayer2026!', '2026dragonslayer',
+                 'supercalifragilistic!'):
         assert weak(name), name
-    for name in ('the weekend crew meets at nine', 'k7qm-4xfz-pr2d-9hwt-cn3b', 'Ærlege gjengen frå Voss 1999'):
+    for name in ('the weekend crew meets at nine', 'k7qm-4xfz-pr2d-9hwt-cn3b', 'Ærlege gjengen frå Voss 1999',
+                 'the cat and the hat sat on a mat'):
         assert not weak(name), name
     assert not weak('') and not weak(None)
 
@@ -163,4 +165,28 @@ def test_create_is_disabled_with_eight_groups_and_names_the_mac_key():
         assert(p.create.enabled == false)
         p.rows[1].remove.OnClick()
         assert(p.create.enabled == true)
+    ''')
+
+
+def test_a_created_name_survives_a_reload_and_a_stale_replace_click_asks_again():
+    lua = make_lua()
+    lua.eval('SlashCmdList.WOWSTATUS')('groups')
+    lua.execute('''
+        local p = WoWStatusGroupWindow
+        p.create.OnClick()
+        local name = p.created:GetText()
+        assert(WoWStatusDB.created_group == name)
+        -- A /reload builds the window again: the saved name comes back.
+        p.created.value = nil; p.created:SetText("")
+        WoWStatusGroups.show()
+        assert(p.created:GetText() == name and p.join:IsShown())
+        -- The replace warning is disarmed by any later message or by reopening.
+        p.create.OnClick()
+        p.input:SetText("dawnwatch"); p.add.OnClick()
+        p.create.OnClick()
+        assert(p.created:GetText() == name)
+        WoWStatusGroups.show(); p.create.OnClick()  -- armed by the click above, disarmed by reopening
+        assert(p.created:GetText() == name)
+        p.join.OnClick()
+        assert(WoWStatusDB.created_group == nil and not p.join:IsShown())
     ''')
