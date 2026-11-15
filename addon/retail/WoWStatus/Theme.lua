@@ -36,7 +36,7 @@ local function settings()
     end
     if not T.NAMES[value.name] then value.name = "achievement" end
     local scale = S.number(value.scale)
-    value.scale = scale and scale == scale and clampScale(scale) or 1
+    value.scale = scale and clampScale(scale) or 1
     -- Notifications follow the theme by default since 1.15 (moved once; unticking stays).
     if not value.popups_default then value.popups = true; value.popups_default = true end
     value.popups = value.popups == true
@@ -59,15 +59,25 @@ function T.colour(alpha)
     return .025, .035, .065, alpha or .98
 end
 
--- The largest scale at which a frame, with its 6-pixel border, fits inside
--- UIParent; nil when the client cannot say (then nothing is limited).
+-- The gold border drawn 6 units outside the main window, kept on screen too.
+local BORDER = 6
+
+-- UIParent's width and height (the screen in UI units), or nil when the client
+-- cannot say.
+local function screenSize()
+    local width = UIParent and S.number(S.call(UIParent.GetWidth, UIParent))
+    local height = UIParent and S.number(S.call(UIParent.GetHeight, UIParent))
+    if not width or not height or width <= 0 or height <= 0 then return nil end
+    return width, height
+end
+
+-- The largest scale at which a frame, with its border, fits inside UIParent;
+-- nil when the client cannot say (then nothing is limited).
 local function fitting(frame)
     local width, height = S.number(S.call(frame.GetWidth, frame)), S.number(S.call(frame.GetHeight, frame))
-    local screenWidth = UIParent and S.number(S.call(UIParent.GetWidth, UIParent))
-    local screenHeight = UIParent and S.number(S.call(UIParent.GetHeight, UIParent))
-    if not width or not height or not screenWidth or not screenHeight or width <= 0 or height <= 0
-        or screenWidth <= 0 or screenHeight <= 0 then return nil end
-    return math.min(screenWidth / (width + 12), screenHeight / (height + 12))
+    local screenWidth, screenHeight = screenSize()
+    if not width or not height or not screenWidth or width <= 0 or height <= 0 then return nil end
+    return math.min(screenWidth / (width + 2 * BORDER), screenHeight / (height + 2 * BORDER))
 end
 
 -- The scale a window is shown at: the chosen size, or less when the screen
@@ -80,20 +90,22 @@ function T.applied(frame)
     return scale
 end
 
--- Moves a window back inside the screen when a size or resolution change left
--- part of it outside. The top and left edges win, so the title bar (where the
--- window is dragged) and the close button stay reachable.
+-- Moves a window, border included, back inside the screen when a size or
+-- resolution change left part of it outside. The engine's own clamp
+-- (SetClampedToScreen) is documented for dragging only, so this does the same
+-- after a scale change, on every client. The top and left edges win, so the
+-- title bar (where the window is dragged) and the close button stay reachable.
 local function keepOnScreen(frame)
     local left, right = S.number(S.call(frame.GetLeft, frame)), S.number(S.call(frame.GetRight, frame))
     local top, bottom = S.number(S.call(frame.GetTop, frame)), S.number(S.call(frame.GetBottom, frame))
     local own = S.number(S.call(frame.GetEffectiveScale, frame))
     local parent = UIParent and S.number(S.call(UIParent.GetEffectiveScale, UIParent))
-    local screenWidth = UIParent and S.number(S.call(UIParent.GetWidth, UIParent))
-    local screenHeight = UIParent and S.number(S.call(UIParent.GetHeight, UIParent))
+    local screenWidth, screenHeight = screenSize()
     if not left or not right or not top or not bottom or not own or not parent or not screenWidth
-        or not screenHeight or own <= 0 or parent <= 0 then return false end
+        or own <= 0 or parent <= 0 then return false end
     local ratio = own / parent -- frame units to UIParent units
-    left, right, top, bottom = left * ratio, right * ratio, top * ratio, bottom * ratio
+    left, right = (left - BORDER) * ratio, (right + BORDER) * ratio
+    top, bottom = (top + BORDER) * ratio, (bottom - BORDER) * ratio
     local dx, dy = 0, 0
     if right > screenWidth then dx = screenWidth - right end
     if left + dx < 0 then dx = -left end
@@ -101,7 +113,7 @@ local function keepOnScreen(frame)
     if top + dy > screenHeight then dy = screenHeight - top end
     if dx == 0 and dy == 0 then return false end
     frame:ClearAllPoints()
-    frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", (left + dx) / ratio, (bottom + dy) / ratio)
+    frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", (left + dx) / ratio + BORDER, (bottom + dy) / ratio + BORDER)
     return true
 end
 T.keepOnScreen = keepOnScreen
@@ -113,6 +125,7 @@ function T.attach(frame, background, popup)
     table.insert(windows, {frame=frame, background=background, popup=popup == true})
     if not popup then
         S.call(frame.SetClampedToScreen, frame, true)
+        S.call(frame.SetClampRectInsets, frame, -BORDER, BORDER, BORDER, -BORDER)
         if type(frame.HookScript) == "function" then
             pcall(frame.HookScript, frame, "OnShow", function(self) keepOnScreen(self) end)
         end
@@ -127,11 +140,12 @@ function T.attachBackground(background)
     T.apply()
 end
 
--- Window scale; for notifications, their own size times the window size when
--- "Use the theme and size for popups too" is on.
+-- Window scale as shown (the chosen size, or less where the screen cannot hold
+-- it); for notifications, their own size times the window size when "Use the
+-- theme and size for popups too" is on.
 function T.scale(popup)
     local value = settings()
-    if not popup then return value.scale end
+    if not popup then return T.applied(_G.WoWStatusMainFrame) end
     local follow = math.max(T.POPUP_FOLLOW_MIN, math.min(T.POPUP_FOLLOW_MAX, value.scale))
     return (value.popups and follow or 1) * value.popup_size / 100
 end
@@ -144,6 +158,11 @@ function T.setPopupSize(percent)
     T.apply()
     return true
 end
+
+-- Functions called after every change of theme, size or screen, such as the
+-- Options label that shows the size.
+local watchers = {}
+function T.watch(fn) if type(fn) == "function" then table.insert(watchers, fn) end end
 
 function T.apply()
     local value = settings()
@@ -161,6 +180,7 @@ function T.apply()
         end
     end
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
+    for _, fn in ipairs(watchers) do pcall(fn) end
 end
 
 function T.next()
@@ -180,7 +200,8 @@ end
 
 -- The window size in whole percent, and setting it from a percentage (the
 -- Options box); false for a value out of range, which keeps the old size.
-function T.windowSize() return math.floor(settings().scale * 100 + .5) end
+local function percent(scale) return math.floor(scale * 100 + .5) end
+function T.windowSize() return percent(settings().scale) end
 function T.setWindowSize(percent)
     percent = tonumber(percent)
     if not percent or percent ~= percent or percent < T.MIN * 100 or percent > T.MAX * 100 then return false end
@@ -196,13 +217,12 @@ end
 
 function T.label()
     local value = settings()
-    local label = "Theme: " .. T.NAMES[value.name] .. " · size " .. math.floor(value.scale * 100 + .5) .. "%"
+    local size = T.windowSize()
+    local label = "Theme: " .. T.NAMES[value.name] .. " · size " .. size .. "%"
     -- Say so when the screen holds the main window only at a smaller size.
     local main = _G.WoWStatusMainFrame
-    local shown = main and math.floor(T.applied(main) * 100 + .5)
-    if shown and shown < math.floor(value.scale * 100 + .5) then
-        label = label .. " (" .. shown .. "% fits the screen)"
-    end
+    local shown = main and percent(T.applied(main))
+    if shown and shown < size then label = label .. " (shown at " .. shown .. "%)" end
     return label
 end
 

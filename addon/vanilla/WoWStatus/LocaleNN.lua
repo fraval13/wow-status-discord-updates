@@ -385,9 +385,9 @@ W.add({
         local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
         return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " %"
     end},
-    {"^Theme: (%a+) · size (%d+)%% %((%d+)%% fits the screen%)$", function(name, size, shown)
+    {"^Theme: (%a+) · size (%d+)%% %(shown at (%d+)%%%)$", function(name, size, shown)
         local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
-        return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " % (" .. shown .. " % får plass på skjermen)"
+        return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " % (vist med " .. shown .. " %)"
     end},
     {"^Notification size %((%d+)–(%d+)%%%)$", "Varselstorleik (%1–%2 %%)"},
     {"^Notification size: (%d+)%%%.$", "Varselstorleik: %1 %%."},

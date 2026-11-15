@@ -96,21 +96,27 @@ function P.show(host)
         -- The window size (#182) as a percentage to type, with - and + stepping 10 %.
         panel.windowSize=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
         local function refreshTheme()
-            panel.theme:SetText(WoWStatusTheme.label())
-            panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize()))
+            panel.theme:SetText(T(WoWStatusTheme.label()))
+            if not panel.windowSize.typing then panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize())) end
         end
+        -- A resolution or UI scale change can change the "shown at" note.
+        WoWStatusTheme.watch(refreshTheme)
         panel.themeNext=button(panel,"Next theme",330,-options-256,120,function() WoWStatusTheme.next();refreshTheme() end)
         panel.smaller=button(panel,"-",456,-options-256,26,function() WoWStatusTheme.resize(-WoWStatusTheme.STEP);refreshTheme() end)
         panel.windowSize:SetPoint("TOPLEFT",490,-options-256);panel.windowSize:SetSize(36,30)
         panel.windowSize:SetAutoFocus(false);panel.windowSize:SetMaxLetters(3)
         if panel.windowSize.SetNumeric then panel.windowSize:SetNumeric(true) end
         text(panel,"%",528,-options-262,14)
+        -- Applied on Enter and whenever the box loses focus (a click elsewhere, or
+        -- B on a controller, which has no Enter); out of range shows the old size.
         local function applyWindowSize()
+            panel.windowSize.typing=nil
             WoWStatusTheme.setWindowSize(panel.windowSize:GetText())
-            panel.windowSize:ClearFocus()
-            refreshTheme() -- an out-of-range value shows the old size again
+            refreshTheme()
         end
-        panel.windowSize:SetScript("OnEnterPressed",applyWindowSize)
+        panel.windowSize:SetScript("OnEditFocusGained",function(self) self.typing=true end)
+        panel.windowSize:SetScript("OnEditFocusLost",applyWindowSize)
+        panel.windowSize:SetScript("OnEnterPressed",function(self) self:ClearFocus();applyWindowSize() end)
         panel.windowSize:SetScript("OnEscapePressed",function(self) self:SetText(tostring(WoWStatusTheme.windowSize()));self:ClearFocus() end)
         panel.larger=button(panel,"+",544,-options-256,26,function() WoWStatusTheme.resize(WoWStatusTheme.STEP);refreshTheme() end)
         panel.themePopups=check("Use the theme and size for popups too",-options-298,function() return WoWStatusTheme.settings().popups end,
@@ -275,7 +281,7 @@ function P.show(host)
     for _,widget in pairs(panel.quietKinds) do widget:SetChecked(widget.get() == true) end
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.refreshLanguage()
-    panel.theme:SetText(WoWStatusTheme.label())
+    panel.theme:SetText(T(WoWStatusTheme.label()))
     panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize()))
     panel.refreshVoices()
     if panel.refreshSpoken then panel.refreshSpoken() end

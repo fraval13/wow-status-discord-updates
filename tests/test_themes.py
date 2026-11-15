@@ -181,6 +181,10 @@ function methods:GetScript(name) return self[name] end
         assert(WoWStatusTheme.windowSize() == 150 and panel.windowSize:GetText() == "150")
         panel.windowSize:SetText("80"); panel.windowSize.OnEscapePressed(panel.windowSize)
         assert(WoWStatusTheme.windowSize() == 150 and panel.windowSize:GetText() == "150")
+        -- A controller has no Enter: leaving the box (B, or a click elsewhere) applies it.
+        panel.windowSize.OnEditFocusGained(panel.windowSize)
+        panel.windowSize:SetText("120"); panel.windowSize.OnEditFocusLost(panel.windowSize)
+        assert(WoWStatusTheme.windowSize() == 120 and panel.theme.text == "Theme: Achievement · size 120%")
         -- Gamepad.lua reaches a text box and a button with OnClick.
         assert(panel.windowSize.kind == "EditBox" and WoWStatusGamepad.interactive(panel.windowSize))
         assert(WoWStatusGamepad.interactive(panel.smaller) and WoWStatusGamepad.interactive(panel.larger))
@@ -204,6 +208,7 @@ function methods:GetBottom() return self.at and self.at[2] end
 function methods:GetRight() return self.at and self.at[1] + self:GetWidth() end
 function methods:GetTop() return self.at and self.at[2] + self:GetHeight() end
 function methods:SetClampedToScreen(value) self.clamped = value end
+function methods:SetClampRectInsets(...) self.insets = {...} end
 function methods:HookScript(name, fn) self.hooks = self.hooks or {}; self.hooks[name] = fn end
 '''
 
@@ -218,7 +223,7 @@ def test_a_size_the_screen_cannot_hold_is_shown_smaller_and_said_so():
         WoWStatusTheme.setWindowSize(200)
         assert(WoWStatusDB.theme.scale == 2)                 -- the choice is kept
         assert(main.scale == 1.04)                           -- what fits is shown
-        assert(WoWStatusTheme.label() == "Theme: Achievement · size 200% (104% fits the screen)")
+        assert(WoWStatusTheme.label() == "Theme: Achievement · size 200% (shown at 104%)")
         -- A larger screen (or smaller UI scale) shows more of the chosen size.
         __screen = {2560, 1440}; WoWStatusTheme.apply()
         assert(main.scale == 2 and WoWStatusTheme.label() == "Theme: Achievement · size 200%")
@@ -240,19 +245,23 @@ def test_a_window_pushed_off_screen_moves_back_with_the_title_bar_visible():
         -- Dragged to the top right at 100 %, then made twice as large.
         main.at = {2560 - 790, 1440 - 690}
         WoWStatusTheme.setWindowSize(200)
-        local left, bottom = main.at[1] * 2, main.at[2] * 2  -- in UIParent units
-        assert(left >= 0 and left + 780 * 2 <= 2560 and bottom >= 0 and bottom + 680 * 2 <= 1440)
+        -- The window and its 6-unit gold border, in UIParent units, are all inside.
+        local function inside(w, h)
+            local s = main.scale
+            return (main.at[1] - 6) * s >= -1e-6 and (main.at[1] + 786) * s <= w + 1e-6
+                and (main.at[2] - 6) * s >= -1e-6 and (main.at[2] + 686) * s <= h + 1e-6
+        end
+        assert(main.scale == 2 and inside(2560, 1440))
         -- A smaller resolution after that: the window comes back inside.
         __screen = {1280, 720}; main.at = {500, 300}
         WoWStatusTheme.apply()
-        local s = main.scale
-        assert(main.at[1] * s >= 0 and (main.at[1] + 780) * s <= 1280 + 1e-6)
-        assert(main.at[2] * s >= 0 and (main.at[2] + 680) * s <= 720 + 1e-6)
+        assert(inside(1280, 720))
         -- Opening the window checks again; a window already inside stays put.
         main.at = {-200, -200}; main.hooks.OnShow(main)
-        assert(main.at[1] == 0 and main.at[2] == 0)
-        main.at = {10, 10}; main.hooks.OnShow(main)
-        assert(main.at[1] == 10 and main.at[2] == 10)
+        assert(math.abs(main.at[1] - 6) < 1e-9 and math.abs(main.at[2] - 6) < 1e-9)
+        main.at = {10, 6.2}; main.hooks.OnShow(main)   -- at 104 % only a sliver of height is spare
+        assert(main.at[1] == 10 and main.at[2] == 6.2)
+        assert(main.insets[1] == -6 and main.insets[2] == 6 and main.insets[3] == 6 and main.insets[4] == -6)
     ''')
 
 
@@ -272,6 +281,23 @@ def test_resolution_and_ui_scale_changes_size_the_window_again():
             assert(handled, event)
         end
         assert(WoWStatusMainFrame.scale == 1.04)
+        assert(WoWStatusTheme.scale() == 1.04)  -- the scale as shown, not as chosen
+    ''')
+
+
+def test_options_label_follows_the_screen_and_language():
+    lua = make_lua(THEMES + SCREEN)
+    lua.execute('''
+        __screen = {2560, 1440}
+        WoWStatusJournal.show()
+        WoWStatusPreviews.show()
+        local panel = WoWStatusNotificationPreviews
+        WoWStatusTheme.setWindowSize(200)
+        assert(panel.theme.text == "Theme: Achievement · size 200%")
+        __screen = {1280, 720}; WoWStatusTheme.apply()        -- as on DISPLAY_SIZE_CHANGED
+        assert(panel.theme.text == "Theme: Achievement · size 200% (shown at 104%)")
+        WoWStatusLocale.set("nn"); WoWStatusPreviews.show()
+        assert(panel.theme.text == "Tema: Bragd · storleik 200 % (vist med 104 %)")
     ''')
 
 
@@ -295,7 +321,7 @@ def test_the_screen_note_is_translated():
     lua = make_lua(THEMES)
     lua.execute('''
         WoWStatusLocale.set("nn")
-        assert(WoWStatusLocale.T("Theme: Night · size 200% (104% fits the screen)")
-            == "Tema: Natt · storleik 200 % (104 % får plass på skjermen)")
+        assert(WoWStatusLocale.T("Theme: Night · size 200% (shown at 104%)")
+            == "Tema: Natt · storleik 200 % (vist med 104 %)")
         assert(WoWStatusLocale.T("Theme: Night · size 120%") == "Tema: Natt · storleik 120 %")
     ''')
