@@ -1095,7 +1095,7 @@ local function people()
     local list,seen={},{}
     for _,e in ipairs(J.displayEntries()) do
         local key=P.senderKey(e.sender)
-        if key and not seen[key] and (e.sample or permitted(e)) then
+        if key and not seen[key] and J.visible(e) then
             seen[key]=true
             local shown=(not e.owner and WoWStatusRoster and WoWStatusRoster.displayName) and WoWStatusRoster.displayName(e.sender)
                 or (e.sender:match("^[^-]+") or e.sender)
@@ -1294,6 +1294,10 @@ function J.reaction(text,sender)
     local member=false
     for group in pairs(WoWStatusGroups.selected(current)) do if peer(group,sender) then member=true end end
     if not member then return false end
+    -- Muted friends (#169): a hidden one's reactions are not kept or shown, and a
+    -- muted one is never read aloud. Nothing is sent either way.
+    local mode=WoWStatusMutes and WoWStatusMutes.mode(sender) or "show"
+    if mode=="hide" then return false end
     local now=S.now()
     for _,e in ipairs(db.journal.entries) do
         if e.owner==current.identity.guid and e.client==current.identity.client and kinds[e.kind]
@@ -1307,7 +1311,7 @@ function J.reaction(text,sender)
                 if refresh then refresh() end
                 -- A voiced Nynorsk line is read aloud (Forever), within the listener's limits.
                 -- Never in quiet hours (#180): someone may be asleep nearby.
-                if WoWStatusVoices and not WoWStatusPopups.quietHoursActive() then WoWStatusVoices.heard(text) end
+                if WoWStatusVoices and mode=="show" and not WoWStatusPopups.quietHoursActive() then WoWStatusVoices.heard(text) end
                 return true
             end
             return false

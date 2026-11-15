@@ -867,8 +867,11 @@ local function commit(c, now)
         logged = true
     end
     local claims = c.level and prefs.level_claims[c.key]
-    if prefs.seen[duplicate] or (claims and claims.levels[c.level]) or #incoming >= 128 then return false end
-    if queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
+    -- A muted friend (#169) takes no popup slot, so a full queue cannot keep
+    -- their update out of the log.
+    local muted = WoWStatusMutes and WoWStatusMutes.popupsMuted(c.sender)
+    if prefs.seen[duplicate] or (claims and claims.levels[c.level]) or (not muted and #incoming >= 128) then return false end
+    if not muted and queuedFrom(c.key) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
     prefs.seen[duplicate] = now
     if c.level then
         if not claims then
@@ -888,7 +891,7 @@ local function commit(c, now)
     -- marks an update that arrived in them and waited for the roster past their end.
     if c.quiet or P.quietHoursActive() then noteReceive("quiet_hours", c, now); return false, "logged only (quiet hours)" end
     -- A muted friend (#169): logged above as usual, only the popup is skipped.
-    if WoWStatusMutes and WoWStatusMutes.popupsMuted(c.sender) then noteReceive("muted", c, now); return false end
+    if muted then noteReceive("muted", c, now); return false end
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
@@ -1467,6 +1470,18 @@ function P.notice(item)
     item.preview, item.key, item.received_at = true, "local-notice", time()
     table.insert(notices, item)
     return true
+end
+-- A friend muted just now (#169) loses the popups and record notices already
+-- waiting, and the one on screen goes away. Their log entries stay.
+local function mutedItem(item)
+    return (not item.preview or item.key == "local-notice") and WoWStatusMutes.popupsMuted(item.sender)
+end
+function P.dropMuted()
+    if not WoWStatusMutes then return end
+    for _, list in ipairs({incoming, notices}) do
+        for i = #list, 1, -1 do if mutedItem(list[i]) then table.remove(list, i) end end
+    end
+    if active and mutedItem(active) then P.dismiss() end
 end
 
 function P.preview(kind)

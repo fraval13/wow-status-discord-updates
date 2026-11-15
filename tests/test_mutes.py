@@ -4,7 +4,7 @@ from pathlib import Path
 
 from test_addon import lupa
 from test_gamepad import FRAMES, main_window
-from test_journal import actor, clock, deliver_popup
+from test_journal import actor, clock, deliver_popup, join_roster
 from test_profile import open_profile
 from test_roster import pair, pump
 
@@ -263,6 +263,7 @@ def test_the_muted_list_is_reachable_with_a_controller():
         WoWStatusSafe={string=function(v) return type(v)=="string" and v~="" and v or nil end,
             number=function(v) return type(v)=="number" and v or nil end, lowerASCII=string.lower}
         WoWStatusRoster={key=function(name) return name:lower() end}
+        WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end}
         function time() return 1793000000 end
     ''')
     lua.execute((ROOT / 'addon/shared/Mutes.lua').read_text(encoding='utf-8'))
@@ -284,3 +285,117 @@ def test_the_muted_list_is_reachable_with_a_controller():
         press("PAD2")
         assert(not frame:IsShown())
     ''')
+
+
+def deliver_latest(sender, receiver):
+    """Deliver the sender's newest live update (deliver_popup sends the first)."""
+    packet = sender.eval('__sent[#__sent].text')
+    name = sender.eval('WoWStatusAdapter.playerName()') + '-TestRealm'
+    join_roster(receiver, name)
+    receiver.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', name)
+
+
+def test_muting_drops_popups_already_waiting():
+    mira, thora = level_up()
+    assert popup_shown(thora)
+    mira.eval('fire')('PLAYER_LEVEL_UP', 41)
+    for t in range(11, 20):  # the second update goes out on a later tick
+        clock(mira, t)
+        mira.eval('WoWStatusPopups.tick')()
+    deliver_latest(mira, thora)
+    assert popup_shown(thora)
+    assert logged(thora, 41)
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'log')
+    assert not popup_shown(thora)  # the one on screen goes away
+    for t in range(11, 40):
+        clock(thora, t)
+        thora.eval('WoWStatusPopups.tick')()
+        assert not popup_shown(thora)  # and the waiting one never shows
+    assert logged(thora, 40) and logged(thora, 41)
+
+
+def test_log_only_entries_are_logged_even_when_the_popup_queue_is_full():
+    mira, thora = actor('Mira'), actor('Thora')
+    clock(mira, 10)
+    clock(thora, 10)
+    thora.execute('''
+        for i = 1, 130 do WoWStatusPopups.notice({sender="Eldrin-TestRealm", kind="first", text="Record " .. i}) end
+        WoWStatusPopups.tick()
+        WoWStatusPopups.notice({sender="Eldrin-TestRealm", kind="first", text="One more"})
+        WoWStatusPopups.tick()
+    ''')
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'log')
+    mira.eval('fire')('PLAYER_LEVEL_UP', 40)
+    deliver_popup(mira, thora)
+    assert logged(thora)
+    assert thora.eval('WoWStatusDB.popups.last_receive.state') == 'muted'
+
+
+def test_a_player_mute_holds_after_their_list_is_forgotten():
+    mira, thora = pair()
+    pump(mira, thora)
+    pid = thora.eval('WoWStatusRoster.playerIdOf("Mira-TestRealm")')
+    thora.eval('WoWStatusMutes.set')('player', pid, 'hide')
+    assert thora.eval('WoWStatusMutes.hidden("Mira-TestRealm")') is True
+    # Mira stops sharing her list (or newer players push it out).
+    thora.execute(f'WoWStatusDB.roster.players["{pid}"] = nil')
+    clock(thora, 1000)
+    assert thora.eval('WoWStatusRoster.playerIdOf("Mira-TestRealm")') is None
+    assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'hide'
+    rows = thora.eval('WoWStatusMutes.list()')
+    assert rows[1].kind == 'player' and rows[1].name == 'Frank'
+
+
+def test_one_character_under_two_player_ids_follows_either_mute():
+    mira, thora = pair()
+    pump(mira, thora)
+    pid = thora.eval('WoWStatusRoster.playerIdOf("Mira-TestRealm")')
+    # After a reinstall Mira's character is also listed under a new player ID.
+    thora.execute(f'''
+        local old = WoWStatusDB.roster.players["{pid}"]
+        local copy = {{name=old.name, groups=old.groups, characters={{}}}}
+        for k, c in pairs(old.characters) do copy.characters[k] = c end
+        WoWStatusDB.roster.players["ffffffffffffffff"] = copy
+    ''')
+    for id in (pid, 'ffffffffffffffff'):
+        thora.eval('WoWStatusMutes.set')('player', id, 'log')
+        assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'log'
+        thora.eval('WoWStatusMutes.set')('player', id, 'show')
+        assert thora.eval('WoWStatusMutes.mode("Mira-TestRealm")') == 'show'
+
+
+def test_hidden_friends_reactions_are_not_kept_and_muted_ones_are_not_read_aloud():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        __peers = {"Thora-TestRealm", "Mira-TestRealm", "Bob-TestRealm"}
+        for id in pairs(character().group_ids) do WoWStatusPopups.peers(id) end
+        for _ = 1, 3 do WoWStatusPopups.tick() end
+        __heard = {}
+        WoWStatusVoices.heard = function(text) table.insert(__heard, text) end
+        WoWStatusMutes.setCharacter("Mira-TestRealm", "hide")
+        WoWStatusMutes.setCharacter("Bob-TestRealm", "log")
+        fire("PLAYER_LEVEL_UP", 2)
+        fire("CHAT_MSG_WHISPER", "GZ!", "Mira-TestRealm")
+        fire("CHAT_MSG_WHISPER", "GZ!", "Bob-TestRealm")
+        local own
+        for _, e in ipairs(WoWStatusJournal.entries()) do if e.owner and e.kind == "level" then own = e end end
+        assert(not own.reactions["mira-testrealm"])
+        assert(own.reactions["bob-testrealm"].text == "GZ!")
+        assert(#__heard == 0)
+    ''')
+
+
+def test_the_profile_redraws_when_hidden_and_unmuted():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=2,at=time()-60,group_id=group})
+    ''')
+    view = open_profile(thora, 'Mira')
+    assert 'Level 2' in view.levels.text.text
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'hide')
+    assert 'Level 2' not in view.levels.text.text and view.mute.text == 'Hidden'
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
+    assert 'Level 2' in view.levels.text.text and view.mute.text == 'Mute'

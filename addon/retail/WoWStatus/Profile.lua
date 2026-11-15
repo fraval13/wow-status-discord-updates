@@ -221,9 +221,10 @@ local function build(page)
     view.mute = button("Mute", 594, -48, 104, function(self)
         local row = view.row
         if not row or not WoWStatusMutes then return end
+        -- Wide enough for "All characters of <player>: hide completely".
         UI.menu(self, WoWStatusMutes.choices(row.name), function(choice)
             WoWStatusMutes.pick(row.name, choice)
-        end)
+        end, 300)
     end)
     view.mute:SetScript("OnEnter", function(self)
         if GameTooltip then
@@ -284,11 +285,21 @@ function F.refreshQuests()
     end
 end
 
--- The Mute button names the friend's current setting.
+-- The Mute button names the friend's current setting. A change while the
+-- profile is open redraws it: "Hide completely" empties its history, and
+-- unmuting fills it again.
+local shownMode
 function F.refreshMute()
     if not view or not view.row then return end
     local mode = WoWStatusMutes and WoWStatusMutes.mode(view.row.name) or "show"
     view.mute:SetText(T(({show="Mute", log="Muted", hide="Hidden"})[mode]))
+    local redraw = shownMode ~= nil and (shownMode == "hide") ~= (mode == "hide") and view:IsShown()
+    shownMode = mode
+    if redraw then
+        local scroll = view.scroll:GetVerticalScroll()
+        F.show(view.row, view.entry)
+        view.scroll:SetVerticalScroll(scroll)
+    end
 end
 
 -- Open the profile of a row from the Characters page (entry is its player heading).
@@ -312,6 +323,7 @@ function F.show(row, entry)
     local friend = not (entry and entry.self)
     view.invite:SetShown(friend)
     view.mute:SetShown(friend and WoWStatusMutes ~= nil)
+    shownMode = nil -- A new profile: name its setting, no redraw.
     F.refreshMute()
     if view.invite.SetEnabled then view.invite:SetEnabled(row.status == "online") end
     view.message:SetText(friend and row.status ~= "online" and T("Invites need them online.") or "")
