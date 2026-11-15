@@ -39,6 +39,18 @@ def test_every_action_is_pinned_to_a_full_commit_sha(workflow):
     assert uses and [line for line in uses if not PINNED.fullmatch(line)] == []
 
 
+# The first major release of each action that runs on node24 (issue #162): older pins
+# run on Node 20, which GitHub has deprecated and will stop running.
+NODE24_MAJOR = {'actions/checkout': 5, 'actions/setup-python': 6, 'actions/upload-artifact': 6}
+
+
+@pytest.mark.parametrize('workflow', WORKFLOWS, ids=lambda path: path.name)
+def test_every_action_runs_on_node24(workflow):
+    pins = re.findall(r'uses: ([\w.-]+/[\w.-]+)@[0-9a-f]{40} # v(\d+)', workflow.read_text(encoding='utf-8'))
+    assert pins and {action for action, _ in pins} <= NODE24_MAJOR.keys()  # a new action needs a floor here
+    assert [(action, major) for action, major in pins if int(major) < NODE24_MAJOR[action]] == []
+
+
 @pytest.mark.parametrize('workflow', WORKFLOWS, ids=lambda path: path.name)
 def test_no_checkout_leaves_the_github_token_in_the_repository(workflow):
     checkouts = [step for step in steps(workflow.read_text(encoding='utf-8')) if 'uses: actions/checkout@' in step]
