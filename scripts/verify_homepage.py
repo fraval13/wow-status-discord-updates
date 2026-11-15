@@ -50,11 +50,6 @@ def builder():
     return module
 
 
-def package_files():
-    """The builder's rule for what ships in each ZIP."""
-    return builder().package_files
-
-
 def valid_release(edition, release):
     return (isinstance(release, dict) and set(release) == set(RELEASE_FIELDS)
             and release['file'] == f'WoWStatus-{edition}.zip'
@@ -122,7 +117,7 @@ def check_entries(edition, package):
         raise ValueError(f'The public {edition} ZIP has no TOC')
     toc = package.read(FOLDER + 'WoWStatus.toc').decode('utf-8')
     try:
-        expected = package_files()(toc, present)
+        expected = builder().package_files(toc, present)
     except ValueError as error:
         raise ValueError(f'The public {edition} ZIP does not match its TOC: {error}') from error
     unexpected = sorted(present.difference(expected))

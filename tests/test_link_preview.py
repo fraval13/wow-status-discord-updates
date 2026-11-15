@@ -110,3 +110,10 @@ def test_committed_preview_matches_the_artwork():
     result = subprocess.run([sys.executable, str(ROOT / 'scripts/make_link_preview.py'), '--check'],
                             capture_output=True, encoding='utf-8')
     assert result.returncode == 0, result.stderr
+
+
+def test_a_version_query_on_the_image_is_allowed():
+    # ?v=2 makes Discord fetch a regenerated preview instead of its cached copy.
+    html = page().replace('assets/link-preview.jpg"', 'assets/link-preview.jpg?v=2"')
+    assert html.count('?v=2') == 2
+    builder.check_link_preview(html, served(PREVIEW.read_bytes()))

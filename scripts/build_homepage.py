@@ -100,8 +100,9 @@ def check_link_preview(html, read):
     if site.scheme != 'https' or not site.hostname:
         wrong.append('og:url')
     # The image must come from this site, where the build put it and verification fetched it.
+    # A query such as ?v=2 is allowed: it makes chat clients fetch a changed image again.
     if (image.scheme, image.netloc) != (site.scheme, site.netloc) or image.path != LINK_PREVIEW \
-            or image.params or image.query or image.fragment:
+            or image.params or image.fragment:
         wrong.append('og:image')
     if tags.get('twitter:image') != tags.get('og:image'):
         wrong.append('twitter:image')

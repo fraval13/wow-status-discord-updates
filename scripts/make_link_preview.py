@@ -14,6 +14,7 @@ cannot ship with a stale image. The preview's own text is set here, not taken fr
 the page's tags.
 """
 import argparse
+import functools
 import io
 import sys
 from pathlib import Path
@@ -33,9 +34,9 @@ GOLD = (241, 201, 116)
 PARCHMENT = (238, 226, 200)
 # Decoders, resamplers and JPEG encoders may differ by a few shades between builds
 # (Windows and Ubuntu CI), so --check ignores small per-pixel differences but allows
-# only a handful of clearly changed pixels; one changed letter changes hundreds.
+# only a handful of clearly changed pixels; a changed full stop changes about ten.
 SHADE = 32
-CHANGED_PIXELS = 40
+CHANGED_PIXELS = 4
 
 
 def render():
@@ -76,10 +77,8 @@ def encode(image):
 
 def changed_pixels(first, second):
     """How many pixels differ by more than SHADE in some channel."""
-    difference = ImageChops.difference(first, second)
-    mask = Image.merge('RGB', [band.point(lambda value: 255 if value > SHADE else 0)
-                               for band in difference.split()]).convert('L').point(lambda value: 255 if value else 0)
-    return mask.histogram()[255]
+    difference = functools.reduce(ImageChops.lighter, ImageChops.difference(first, second).split())
+    return difference.point(lambda value: 255 if value > SHADE else 0).histogram()[255]
 
 
 def main(argv=None):
