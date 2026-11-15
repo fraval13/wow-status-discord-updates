@@ -853,7 +853,8 @@ for _, race in ipairs({"Human", "Dwarf", "NightElf", "Gnome", "Draenei", "Worgen
 for _, race in ipairs({"Orc", "Scourge", "Tauren", "Troll", "BloodElf", "Goblin", "Nightborne", "HighmountainTauren",
     "MagharOrc", "ZandalariTroll", "Vulpera"}) do FACTIONS[race] = "Horde" end
 R.FACTIONS = FACTIONS
--- Keys of everyone in this character's party or raid right now.
+-- This character's group right now, read once per render: {keys of everyone
+-- in the party or raid, faction, members, raid, leader, assistant, now}.
 local function grouped()
     local keys = {}
     local function note(unit)
@@ -863,9 +864,14 @@ local function grouped()
         local k = name and key(realm and (name .. "-" .. realm) or name)
         if k then keys[k] = true end
     end
+    local raid = S.call(IsInRaid) and true or false
     for i = 1, 4 do note("party" .. i) end
-    if S.call(IsInRaid) then for i = 1, 40 do note("raid" .. i) end end
-    return keys
+    if raid then for i = 1, 40 do note("raid" .. i) end end
+    return {keys=keys, raid=raid, faction=S.stringCall(UnitFactionGroup, "player"),
+        members=S.number(S.call(GetNumGroupMembers)) or 0,
+        notLeader=S.call(UnitIsGroupLeader, "player") == false,
+        assistant=raid and S.call(UnitIsGroupAssistant, "player") and true or false,
+        now=GetTime and GetTime() or time()}
 end
 -- The name to whisper or invite: the plain name on this realm and on WoW Forever
 -- (its whispers bounce with a realm, see recentMembers), "Name-Realm" otherwise.
@@ -882,22 +888,18 @@ local invitedAt = {}
 -- No realm rule: a friend shows as online only through the group channel and
 -- addon whispers, which reach other realms only where the game groups across
 -- them (Retail, connected Classic realms), so an invite works there too.
-function R.inviteBlocked(row, party)
+function R.inviteBlocked(row, group)
+    group = group or grouped()
     local k = key(row.name)
-    if k and (party or grouped())[k] then return "Already in your group" end
-    local own = S.stringCall(UnitFactionGroup, "player")
-    local theirs = row.race and FACTIONS[row.race]
+    if k and group.keys[k] then return "Already in your group" end
+    local own, theirs = group.faction, row.race and FACTIONS[row.race]
     if theirs and (own == "Alliance" or own == "Horde") and own ~= theirs then return "Different faction" end
-    local now = GetTime and GetTime() or time()
-    if k and invitedAt[k] and now - invitedAt[k] < INVITE_WAIT then return "Invite sent" end
-    -- In someone else's group only its leader (or a raid assistant) invites; a party holds five.
-    local members = S.number(S.call(GetNumGroupMembers)) or 0
-    if members > 0 then
-        local raid = S.call(IsInRaid)
-        if S.call(UnitIsGroupLeader, "player") == false and not (raid and S.call(UnitIsGroupAssistant, "player")) then
-            return "Only the group leader can invite"
-        end
-        if not raid and members >= 5 then return "Your party is full" end
+    if k and invitedAt[k] and group.now - invitedAt[k] < INVITE_WAIT then return "Invite sent" end
+    -- In someone else's group only its leader (or a raid assistant) invites; a
+    -- party holds five and a raid forty.
+    if group.members > 0 then
+        if group.notLeader and not group.assistant then return "Only the group leader can invite" end
+        if group.members >= (group.raid and 40 or 5) then return "Your group is full" end
     end
     return nil
 end
@@ -1204,13 +1206,12 @@ function R.tick()
     local now = GetTime and GetTime() or time()
     -- "Play together now" follows friends logging in or out while the page is open.
     -- R.render notes what it drew, so only a change since then redraws.
-    if page and page:IsShown() then
-        local redraw = partyChanged
-        if now - onlineCheckedAt >= R.ONLINE_CHECK then
-            onlineCheckedAt = now
-            redraw = redraw or onlineSignature() ~= onlineSeen or inviteExpired()
-        end
-        if redraw then R.render() end
+    -- At most once per R.ONLINE_CHECK, and only while the window shows the page.
+    local visible = page and (page.IsVisible and page:IsVisible() or (not page.IsVisible and page:IsShown()))
+    if visible and now - onlineCheckedAt >= R.ONLINE_CHECK then
+        onlineCheckedAt = now
+        local expired = inviteExpired()
+        if partyChanged or expired or onlineSignature() ~= onlineSeen then R.render() end
     end
     if now - lastScan >= 30 then lastScan = now; R.scan() end
     if now - lastQuest >= R.QUEST_INTERVAL then
@@ -2013,7 +2014,9 @@ end
 -- The "Play together now" band at the top of the list: its section heading, a
 -- level-window control, then one row per friend with Whisper and Invite.
 local TOGETHER_BAR, TOGETHER_ROW = 30, 30
-local function enable(button, on) UI.call(button, "SetEnabled", on) end
+local function enable(button, on)
+    if not UI.call(button, on and "Enable" or "Disable") then UI.call(button, "SetEnabled", on) end
+end
 local function smallButton(parent, label, x, width, onClick)
     local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     b:SetPoint("TOPLEFT", x, -4); b:SetSize(width, 22); b:SetText(T(label))
@@ -2062,7 +2065,7 @@ local function renderTogether(y, groups)
     b.key = "together"
     b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
     b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-    b.text:SetText(T("Play together now") .. "   |cff9d9d9d" .. TF("%d within %d levels", data.inRange, data.range) .. "|r")
+    b.text:SetText(T("Play together now") .. "   |cff9d9d9d" .. (data.range == 1 and TF("%d within 1 level", data.inRange) or TF("%d within %d levels", data.inRange, data.range)) .. "|r")
     b:Show()
     y = y + SECTION
     local bar = page.togetherBar or togetherBar()
@@ -2333,15 +2336,15 @@ end
 
 local frame = CreateFrame("Frame")
 for _, event in ipairs({"CHAT_MSG_ADDON", "PLAYER_LEVEL_UP", "PLAYER_XP_UPDATE", "WHO_LIST_UPDATE", "CHAT_MSG_SYSTEM",
-    "ADDON_ACTION_BLOCKED", "ADDON_ACTION_FORBIDDEN", "GROUP_ROSTER_UPDATE"}) do pcall(frame.RegisterEvent, frame, event) end
+    "ADDON_ACTION_BLOCKED", "ADDON_ACTION_FORBIDDEN", "GROUP_ROSTER_UPDATE", "CHANNEL_ROSTER_UPDATE"}) do pcall(frame.RegisterEvent, frame, event) end
 frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sender)
     if event == "ADDON_ACTION_BLOCKED" or event == "ADDON_ACTION_FORBIDDEN" then
         if S.string(prefix) == "WoWStatus" then S.debug(event .. ": " .. tostring(S.string(message))) end
         return
     end
     -- Joining or leaving a party changes which "Play together now" invites can work.
-    -- A forming raid sends many at once: the next tick draws once for all of them.
-    if event == "GROUP_ROSTER_UPDATE" then
+    -- Party changes and freshly read channel rosters: R.tick draws once for many.
+    if event == "GROUP_ROSTER_UPDATE" or event == "CHANNEL_ROSTER_UPDATE" then
         partyChanged = true
         return
     end

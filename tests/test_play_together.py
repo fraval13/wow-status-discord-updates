@@ -296,7 +296,9 @@ def test_party_changes_redraw_once_on_the_next_tick():
         for _ = 1, 25 do fire("GROUP_ROSTER_UPDATE") end
     ''')
     assert thora.eval('__renders') == 0
-    thora.eval('WoWStatusRoster.tick')()
+    for step in range(0, 6):                    # ticks every 0.25 s; draws at most every 5 s
+        thora.execute(f'__mono = 900 + {step}')
+        thora.eval('WoWStatusRoster.tick')()
     assert thora.eval('__renders') == 1
     assert thora.eval('WoWStatusCharactersPage.together[1].info.text') == '|cffff7777Already in your group|r'
 
@@ -318,9 +320,11 @@ def test_invite_rests_when_only_the_leader_may_invite_or_the_party_is_full():
     thora.execute('__leader = true')
     assert thora.eval(blocked) is None
     thora.execute('__members = 5')
-    assert thora.eval(blocked) == 'Your party is full'
+    assert thora.eval(blocked) == 'Your group is full'
     thora.execute('__raid, __members, __leader, __assistant = true, 12, false, true')
     assert thora.eval(blocked) is None                      # a raid assistant may invite
+    thora.execute('__members = 40')
+    assert thora.eval(blocked) == 'Your group is full'
 
 
 def test_invite_comes_back_by_itself_after_the_wait():
@@ -349,3 +353,31 @@ def test_retail_keeps_whisper_for_the_other_faction():
     assert grom().noWhisper is True
     thora.execute('WoWStatusAdapter.client_id = "retail"')
     assert grom().noWhisper is False
+
+
+def test_the_heading_says_level_for_a_window_of_one():
+    _, thora, words = setup()
+    online(thora, 'Mira-TestRealm')
+    thora.eval('WoWStatusRoster.setTogetherRange')(1)
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    assert thora.eval('WoWStatusCharactersPage.togetherHead.text.text').endswith('0 within 1 level|r')
+
+
+def test_a_closed_window_stops_the_live_redraws():
+    _, thora, words = setup()
+    friend(thora, words, 'Mira-TestRealm', 20)
+    online(thora, 'Mira-TestRealm')
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    thora.execute('''
+        __renders = 0
+        local render = WoWStatusRoster.render
+        WoWStatusRoster.render = function(...) __renders = __renders + 1; return render(...) end
+        -- The window closed; its page frame itself stays shown.
+        WoWStatusCharactersPage.IsVisible = function() return false end
+        fire("GROUP_ROSTER_UPDATE")
+    ''')
+    online(thora)
+    for step in range(0, 30, 5):
+        thora.execute(f'__mono = 2000 + {step}')
+        thora.eval('WoWStatusRoster.tick')()
+    assert thora.eval('__renders') == 0
