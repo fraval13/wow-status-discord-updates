@@ -17,13 +17,12 @@ local function display(message) table.insert(__shown, message) end
 local current = display
 function geterrorhandler() return current end
 function seterrorhandler(fn) current = fn end
-function debugstack() return __stack end
+function debugstack(start) __start = start; return __stack end
 -- Raise an error the way the game reports one: through the current handler.
 function raise(message, stack) __stack = stack or ""; return geterrorhandler()(message) end
 '''
 OWN = 'Interface/AddOns/WoWStatus/Journal.lua:120: attempt to index field "entries" (a nil value)'
-OWN_STACK = ('[string "@Interface/AddOns/WoWStatus/Diagnostics.lua"]:300: in function <...>\n'
-             '[string "@Interface/AddOns/WoWStatus/Journal.lua"]:120: in function "insert"\n'
+OWN_STACK = ('[string "@Interface/AddOns/WoWStatus/Journal.lua"]:120: in function "insert"\n'
              '[string "@Interface/AddOns/WoWStatus/Popups.lua"]:900: in function "receive"\n'
              '[C]: in ?')
 OTHER = 'Interface/AddOns/OtherAddon/Core.lua:5: attempt to call a nil value'
@@ -44,7 +43,7 @@ def test_own_error_is_recorded_with_its_stack_and_still_reaches_the_display():
         local e = list[1]
         assert(e.message == {OWN!r} and e.count == 1 and e.unseen)
         assert(e.stack:find("Journal.lua\\"]:120", 1, true) and e.stack:find("Popups.lua", 1, true))
-        assert(not e.stack:find("Diagnostics.lua", 1, true)) -- the handler's own frames are left out
+        assert(__start == 3) -- the stack starts at the error, past debugstack and the handler
         assert(e.page == "activity" and e.edition == "Vanilla Classic (classic-era)")
         assert(e.build == "test build 12345 (interface 11507)" and e.at == 1793000000)
     ''')
@@ -365,3 +364,62 @@ def test_bugGrabber_listens_from_load_and_a_handler_on_top_is_reported():
     lua = diagnostics()
     lua.execute('local ours = geterrorhandler(); seterrorhandler(function(...) return ours(...) end)')
     assert "Error capture: another addon's handler is on top" in lua.eval('WoWStatusDiagnostics.report()')
+
+
+def test_the_same_game_error_from_another_addon_does_not_hide_ours():
+    lua = diagnostics()
+    lua.execute('''
+        local message = "Interface/AddOns/Blizzard_SharedXML/Backdrop.lua:226: attempt to perform arithmetic"
+        raise(message, "Interface/AddOns/OtherAddon/Core.lua:5: in function <...>")
+        raise(message, "Interface/AddOns/WoWStatus/Theme.lua:44: in function <...>")
+        raise(message, "Interface/AddOns/OtherAddon/Core.lua:5: in function <...>")
+        assert(#WoWStatusDB.diagnostics.errors == 1 and WoWStatusDB.diagnostics.errors[1].count == 1)
+        -- Another addon's own error storm builds no stack after the first time.
+        raise("Interface/AddOns/OtherAddon/Core.lua:9: storm", "")
+        __start = nil
+        raise("Interface/AddOns/OtherAddon/Core.lua:9: storm", "")
+        assert(__start == nil and #__shown == 5)
+    ''')
+
+
+def test_secrets_next_to_slashes_and_punctuation_are_hidden():
+    lua = diagnostics()
+    lua.eval('WoWStatusGroups.update')('MyGroup', '')
+    lua.execute('''
+        table.insert(WoWStatusDB.journal.entries, {id = "x:1", sender = "Mira-TestRealm", kind = "level",
+            at = 1793000000, text = "Reached level 2!", groups = {}})
+        raise("Interface/AddOns/WoWStatus/X.lua:1: bad group 'MyGroup/abc' Thora/Mira «Thora» Mira’s", "")
+    ''')
+    assert lua.eval('WoWStatusDB.diagnostics.errors[1].message') == \
+        "Interface/AddOns/WoWStatus/X.lua:1: bad group '<group>/abc' <name>/<name> «<name>» <name>’s"
+
+
+def test_long_early_stacks_are_redacted_before_they_are_cut():
+    runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
+    runtime.execute(STUBS + HANDLER)
+    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Diagnostics.lua')
+    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Safe.lua')
+    runtime.execute('''
+        local lines = {}
+        for i = 1, 23 do lines[i] = "Interface/AddOns/WoWStatus/X.lua:" .. i .. ": " .. string.rep("y", 90) end
+        lines[24] = string.rep("z", 220) .. " Nordlys"
+        raise("Interface/AddOns/WoWStatus/X.lua:1: early", table.concat(lines, "\\n"))
+        WoWStatusDB = {version = 1, characters = {}, account_groups = {abc = "Nordlys"}}
+        fire("ADDON_LOADED", "WoWStatus")
+    ''')
+    stack = runtime.eval('WoWStatusDB.diagnostics.errors[1].stack')
+    assert 'Nord' not in stack and len(stack) <= 2400
+
+
+def test_bugGrabber_repeat_counts_come_from_its_error_object():
+    stubs = STUBS + HANDLER + '''
+        seterrorhandler = function() end
+        BugGrabber = {RegisterCallback = function(owner, event, fn) __grabber = fn end}
+    '''
+    lua = make_lua(stubs)
+    lua.execute('''
+        __err = {message = "WoWStatus/Popups.lua:1: storm", stack = "", counter = 1}
+        __grabber("BugGrabber_BugGrabbed", __err)
+        __err.counter = 500
+    ''')
+    assert '#1 - 500 times' in lua.eval('WoWStatusDiagnostics.report()')

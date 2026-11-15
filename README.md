@@ -113,7 +113,8 @@ and the release notes stay English.
 
 When WoW Status itself raises a Lua error, it keeps a copy: the last 10 errors from
 its own files, each with its stack, the addon version, edition, client build, the
-page that was open and the UTC time, saved so they survive a `/reload` or a crash.
+page that was open and the UTC time, saved so they survive a `/reload` and logging
+out (a client crash loses errors since the last `/reload`; the game saves only then).
 Errors from other addons are ignored, and the game's error frame, BugSack and other
 error displays still get every error as before. `/wstatus errors` (or **Options →
 Diagnostics**) opens the Diagnostics page: one report to copy into a bug report, with
