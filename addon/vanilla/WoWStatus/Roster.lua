@@ -50,7 +50,7 @@ local requested, whoAsked = {}, {}
 local XP_INTERVAL = 300
 -- Seconds between checks for friends logging in or out while the page is open.
 R.ONLINE_CHECK = 5
-local onlineCheckedAt, onlineSeen = 0, nil
+local onlineCheckedAt, onlineSeen, partyChanged = 0, nil, false
 local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
 local equipmentSendState = {}
 
@@ -853,56 +853,51 @@ for _, race in ipairs({"Human", "Dwarf", "NightElf", "Gnome", "Draenei", "Worgen
 for _, race in ipairs({"Orc", "Scourge", "Tauren", "Troll", "BloodElf", "Goblin", "Nightborne", "HighmountainTauren",
     "MagharOrc", "ZandalariTroll", "Vulpera"}) do FACTIONS[race] = "Horde" end
 R.FACTIONS = FACTIONS
--- The realm part of "Name-Realm", as senderKey compares it; nil without one.
-local function realmOf(name)
-    local realm = S.string(name) and name:match("^[^-]+%-(.+)$")
-    return realm and S.lowerASCII(S.stripSpace(realm)) or nil
-end
 -- Keys of everyone in this character's party or raid right now.
 local function grouped()
     local keys = {}
-    local own = S.stripSpace(WoWStatusAdapter.realmName() or "")
     local function note(unit)
         local name, realm = S.call(UnitName, unit)
         name, realm = S.string(name), S.string(realm)
-        local k = name and key(name .. "-" .. (realm or own))
+        -- key() adds the home realm to a bare name.
+        local k = name and key(realm and (name .. "-" .. realm) or name)
         if k then keys[k] = true end
     end
     for i = 1, 4 do note("party" .. i) end
-    local raid = S.call(IsInRaid)
-    if raid then for i = 1, 40 do note("raid" .. i) end end
+    if S.call(IsInRaid) then for i = 1, 40 do note("raid" .. i) end end
     return keys
 end
 -- The name to whisper or invite: the plain name on this realm and on WoW Forever
 -- (its whispers bounce with a realm, see recentMembers), "Name-Realm" otherwise.
 local function chatTarget(name)
     local short = name:match("^[^-]+") or name
-    if WoWStatusAdapter.full_names then return short end
-    local realm = realmOf(name)
-    if not realm or realm == S.lowerASCII(S.stripSpace(WoWStatusAdapter.realmName() or "")) then return short end
+    if WoWStatusAdapter.full_names or key(name) == key(short) then return short end
     return name
 end
 R.chatTarget = chatTarget
+-- Party invites sent from the band: {[key] = time}, so Invite rests while one waits.
+local INVITE_WAIT = 60
+local invitedAt = {}
 -- Why the game would refuse a party invite to this row, or nil when it can work.
--- Retail groups across realms; the Classic editions only within one realm. WoW
--- Forever names leave the realm out, so it is never the reason there.
+-- No realm rule: a friend shows as online only through the group channel and
+-- addon whispers, which reach other realms only where the game groups across
+-- them (Retail, connected Classic realms), so an invite works there too.
 function R.inviteBlocked(row, party)
     local k = key(row.name)
     if k and (party or grouped())[k] then return "Already in your group" end
     local own = S.stringCall(UnitFactionGroup, "player")
     local theirs = row.race and FACTIONS[row.race]
     if theirs and (own == "Alliance" or own == "Horde") and own ~= theirs then return "Different faction" end
-    if not WoWStatusAdapter.full_names and not WoWStatusAdapter.cross_realm_invite then
-        local realm, home = realmOf(row.name), S.lowerASCII(S.stripSpace(WoWStatusAdapter.realmName() or ""))
-        if realm and home ~= "" and realm ~= home then return "Another realm" end
-    end
+    local now = GetTime and GetTime() or time()
+    if k and invitedAt[k] and now - invitedAt[k] < INVITE_WAIT then return "Invite sent" end
     return nil
 end
 -- The most recent zone a friend's log names (first visits only), if it is from
--- the last hour; older ones say nothing about where they are now.
+-- the last hour; older ones say nothing about where they are now. Log stamps
+-- are realm time (S.now).
 local ZONE_SECONDS = 3600
 local function recentZones()
-    local zones, now = {}, time()
+    local zones, now = {}, S.now()
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local k = key(e.sender)
         local zone = k and not zones[k] and e.kind == "zone" and (S.number(e.at) or 0) > now - ZONE_SECONDS
@@ -911,26 +906,29 @@ local function recentZones()
     end
     return zones
 end
--- {level, range, rows, above, below}: rows within range, closest first (at most
--- R.TOGETHER_ROWS); with nobody in range, the nearest online friend above and
--- below. Only friends whose shared list R.groups shows (hidden characters and
--- players who share no list are left out), online now, with a known level.
-function R.together()
-    local result = {range=R.togetherRange(), rows={}}
+-- {level, range, rows, inRange, online, above, below}: rows within range,
+-- closest first (at most R.TOGETHER_ROWS of the inRange); with nobody in range,
+-- the nearest online friend above and below. Only friends whose shared list
+-- R.groups shows (hidden characters and players who share no list are left
+-- out), online now, with a known level. Pass R.groups() when it is at hand.
+function R.together(groups)
+    local result = {range=R.togetherRange(), rows={}, inRange=0}
     if not db or not current then return result end
     local level = WoWStatusAdapter.level() or (current.roster_info and S.number(current.roster_info.level))
     result.level = level
     if not level then return result end
-    local party, zones, seen, candidates = grouped(), recentZones(), {}, {}
-    for _, entry in ipairs(R.groups()) do
+    local party, zones, candidates = grouped(), recentZones(), {}
+    -- R.groups lists each character once, so no key repeats here.
+    for _, entry in ipairs(groups or R.groups()) do
         if not entry.self then
             for _, row in ipairs(entry.rows) do
                 local k = key(row.name)
                 local theirs = S.number(row.level)
-                if k and not seen[k] and row.listed and row.status == "online" and theirs then
-                    seen[k] = true
+                if k and row.listed and row.status == "online" and theirs then
+                    local blocked = R.inviteBlocked(row, party)
                     candidates[#candidates + 1] = {name=row.name, class=row.class, race=row.race, level=theirs,
-                        diff=theirs - level, zone=zones[k], player=entry.name, blocked=R.inviteBlocked(row, party)}
+                        diff=theirs - level, zone=zones[k], player=entry.name, blocked=blocked,
+                        noWhisper=blocked == "Different faction"}
                 end
             end
         end
@@ -943,6 +941,7 @@ function R.together()
     result.online = #candidates
     for _, item in ipairs(candidates) do
         if math.abs(item.diff) <= result.range then
+            result.inRange = result.inRange + 1
             if #result.rows < R.TOGETHER_ROWS then result.rows[#result.rows + 1] = item end
         elseif item.diff > 0 then result.above = result.above or item
         else result.below = result.below or item end
@@ -959,12 +958,14 @@ function R.whisper(name)
     return false
 end
 -- A party invite through the game, only when R.inviteBlocked finds no reason
--- the game would refuse it.
+-- the game would refuse it. Invite then rests for a minute or until they join.
 function R.partyInvite(row)
     if not row or not S.string(row.name) or R.inviteBlocked(row) then return false end
     local invite = (C_PartyInfo and C_PartyInfo.InviteUnit) or InviteUnit
-    if not invite then return false end
-    return pcall(invite, chatTarget(row.name))
+    if not invite or not pcall(invite, chatTarget(row.name)) then return false end
+    local k = key(row.name)
+    if k then invitedAt[k] = GetTime and GetTime() or time() end
+    return true
 end
 -- The online friends as one string, to notice logins and logouts between renders.
 local function onlineSignature()
@@ -1201,10 +1202,15 @@ function R.tick()
     if page and page.sync and page:IsShown() then updateSyncButton() end
     local now = GetTime and GetTime() or time()
     -- "Play together now" follows friends logging in or out while the page is open.
-    if page and page:IsShown() and now - onlineCheckedAt >= R.ONLINE_CHECK then
-        onlineCheckedAt = now
-        local signature = onlineSignature()
-        if signature ~= onlineSeen then onlineSeen = signature; R.render() end
+    if page and page:IsShown() and (partyChanged or now - onlineCheckedAt >= R.ONLINE_CHECK) then
+        local redraw = partyChanged
+        partyChanged = false
+        if now - onlineCheckedAt >= R.ONLINE_CHECK then
+            onlineCheckedAt = now
+            local signature = onlineSignature()
+            if signature ~= onlineSeen then onlineSeen, redraw = signature, true end
+        end
+        if redraw then R.render() end
     end
     if now - lastScan >= 30 then lastScan = now; R.scan() end
     if now - lastQuest >= R.QUEST_INTERVAL then
@@ -1892,8 +1898,8 @@ end
 -- The page's collapsible sections: your characters, one per group you are in
 -- (a friend in two of your groups is in both), and characters in none of them.
 -- Each section holds player entries as R.groups returns them.
-function R.sections()
-    local entries, sections = R.groups(), {}
+function R.sections(groups)
+    local entries, sections = groups or R.groups(), {}
     local mine = {key="you", title="Your characters", entries={}}
     for _, entry in ipairs(entries) do if entry.self then table.insert(mine.entries, entry) end end
     if #mine.entries > 0 then table.insert(sections, mine) end
@@ -2001,12 +2007,7 @@ end
 -- The "Play together now" band at the top of the list: its section heading, a
 -- level-window control, then one row per friend with Whisper and Invite.
 local TOGETHER_BAR, TOGETHER_ROW = 30, 30
-local function enable(button, on)
-    button.usable = on
-    if button.SetEnabled then button:SetEnabled(on)
-    elseif on and button.Enable then button:Enable()
-    elseif not on and button.Disable then button:Disable() end
-end
+local function enable(button, on) UI.call(button, "SetEnabled", on) end
 local function smallButton(parent, label, x, width, onClick)
     local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
     b:SetPoint("TOPLEFT", x, -4); b:SetSize(width, 22); b:SetText(T(label))
@@ -2047,15 +2048,15 @@ local function togetherRow(index)
     return row
 end
 -- Draws the band from y down and returns the y below it.
-local function renderTogether(y)
+local function renderTogether(y, groups)
     page.togetherHead = page.togetherHead or sectionButton()
     local b = page.togetherHead
     local closed = R.collapsed("together")
-    local data = R.together()
+    local data = R.together(groups)
     b.key = "together"
     b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
     b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-    b.text:SetText(T("Play together now") .. "   |cff9d9d9d" .. TF("%d within %d levels", #data.rows, data.range) .. "|r")
+    b.text:SetText(T("Play together now") .. "   |cff9d9d9d" .. TF("%d within %d levels", data.inRange, data.range) .. "|r")
     b:Show()
     y = y + SECTION
     local bar = page.togetherBar or togetherBar()
@@ -2091,7 +2092,7 @@ local function renderTogether(y)
             row.info:SetText(item.blocked and ("|cffff7777" .. T(item.blocked) .. "|r")
                 or (item.zone and item.zone:gsub("|", "||")) or "")
             row.whisper.target, row.invite.target = item, item
-            enable(row.whisper, true)
+            enable(row.whisper, not item.noWhisper)
             enable(row.invite, item.blocked == nil)
             row:Show()
             y = y + TOGETHER_ROW
@@ -2108,9 +2109,10 @@ function R.render()
     if WoWStatusProfile and WoWStatusProfile.refreshQuests then WoWStatusProfile.refreshQuests() end
     if not page or not page.IsShown or not page:IsShown() then return end
     local index, headers, sections, y = 0, 0, 0, 0
-    y = renderTogether(y)
+    local groups = R.groups()
+    y = renderTogether(y, groups)
     local band = y
-    for _, part in ipairs(R.sections()) do
+    for _, part in ipairs(R.sections(groups)) do
         sections = sections + 1
         local b = page.sections[sections] or section(sections)
         local closed = R.collapsed(part.key)
@@ -2331,8 +2333,9 @@ frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sen
         return
     end
     -- Joining or leaving a party changes which "Play together now" invites can work.
+    -- A forming raid sends many at once: the next tick draws once for all of them.
     if event == "GROUP_ROSTER_UPDATE" then
-        if page and page:IsShown() then R.render() end
+        partyChanged = true
         return
     end
     -- A short /who answer arrives as a chat line; its results are readable then.

@@ -568,5 +568,5 @@ W.add({
     ["Closest level first."] = "Nærast nivå først.",
     ["Whisper"] = "Kviskre", ["Invite"] = "Inviter", ["Invite to your group"] = "Inviter til gruppa di",
     ["Already in your group"] = "Alt i gruppa di", ["Different faction"] = "Anna fraksjon",
-    ["Another realm"] = "Anna verd",
+    ["Invite sent"] = "Invitasjon sendt",
 })

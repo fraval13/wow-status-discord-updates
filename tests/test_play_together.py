@@ -21,6 +21,8 @@ def setup(level=20, peers=('Thora-TestRealm', 'Mira-TestRealm')):
     mira, thora = pair()
     words = next(line for line in pump(mira, thora) if line.startswith('C ')).split(' ')
     thora.execute(f'__level = {level}; __peers = {{{",".join(chr(34) + p + chr(34) for p in peers)}}}')
+    # Buttons in this harness keep their enabled state, as the game's do.
+    thora.execute('getmetatable(CreateFrame("Button")).__index.SetEnabled = function(self, on) self.enabled = on end')
     return mira, thora, words
 
 
@@ -95,9 +97,9 @@ def test_the_window_is_adjustable_remembered_and_clamped():
     for _ in range(20):
         thora.eval('WoWStatusRoster.setTogetherRange')(thora.eval('WoWStatusRoster.togetherRange()') + 1)
     assert thora.eval('WoWStatusRoster.togetherRange()') == 10
-    assert bar.more.usable is False and bar.less.usable is True
+    assert bar.more.enabled is False and bar.less.enabled is True
     thora.eval('WoWStatusRoster.setTogetherRange')(-4)
-    assert thora.eval('WoWStatusRoster.togetherRange()') == 1 and bar.less.usable is False
+    assert thora.eval('WoWStatusRoster.togetherRange()') == 1 and bar.less.enabled is False
     for bad in ('"x"', '0', '11', '2.5', '0/0', '{}'):
         thora.execute(f'WoWStatusDB.roster.together_range = {bad}')
         assert thora.eval('WoWStatusRoster.togetherRange()') == 3, bad
@@ -111,21 +113,21 @@ def test_invite_is_disabled_where_the_game_would_refuse_it():
     friend(thora, words, 'Far-OtherRealm', 20)
     online(thora, 'Mira-TestRealm', 'Grom-TestRealm', 'Pan-TestRealm', 'Far-OtherRealm')
     blocked = {r.name: r.blocked for r in thora.eval('WoWStatusRoster.together()').rows.values()}
+    # A friend on another realm is online only where the game groups across realms.
     assert blocked == {'Mira-TestRealm': None, 'Grom-TestRealm': 'Different faction',
-                       'Pan-TestRealm': None, 'Far-OtherRealm': 'Another realm'}
-    # Retail groups across realms.
-    thora.execute('WoWStatusAdapter.cross_realm_invite = true')
-    assert thora.eval('WoWStatusRoster.inviteBlocked({name="Far-OtherRealm", race="Dwarf"})') is None
+                       'Pan-TestRealm': None, 'Far-OtherRealm': None}
     # Already in the party.
     thora.execute('function UnitName(unit) if unit == "party1" then return "Mira" end return "Thora" end')
     assert thora.eval('WoWStatusRoster.inviteBlocked({name="Mira-TestRealm", race="Dwarf"})') == 'Already in your group'
     thora.eval('WoWStatusMainWindow.show')('characters')
     rows = thora.eval('WoWStatusCharactersPage.together')
     by_name = {rows[i].whisper.target.name: rows[i] for i in range(1, len(rows) + 1) if rows[i].IsShown(rows[i])}
-    assert by_name['Mira-TestRealm'].invite.usable is False
+    assert by_name['Mira-TestRealm'].invite.enabled is False
     assert by_name['Mira-TestRealm'].info.text == '|cffff7777Already in your group|r'
-    assert by_name['Grom-TestRealm'].invite.usable is False and by_name['Grom-TestRealm'].whisper.usable is True
-    assert by_name['Pan-TestRealm'].invite.usable is True
+    # The other faction can neither be invited nor whispered by name.
+    assert by_name['Grom-TestRealm'].invite.enabled is False and by_name['Grom-TestRealm'].whisper.enabled is False
+    assert by_name['Pan-TestRealm'].whisper.enabled is True
+    assert by_name['Pan-TestRealm'].invite.enabled is True
 
 
 def test_whisper_and_invite_use_the_games_own_actions_and_send_nothing_of_ours():
@@ -147,9 +149,16 @@ def test_whisper_and_invite_use_the_games_own_actions_and_send_nothing_of_ours()
     assert list(thora.eval('__tells').values()) == ['Mira']
     assert list(thora.eval('__invites').values()) == ['Mira']
     assert thora.eval('#__sent') == before
+    # Invite rests while the invite waits, so a second click sends nothing.
+    row = thora.eval('WoWStatusCharactersPage.together[1]')
+    assert row.invite.enabled is False and row.info.text == '|cffff7777Invite sent|r'
+    assert thora.eval('WoWStatusRoster.partyInvite')(row.invite.target) is False
+    assert len(thora.eval('__invites')) == 1
+    thora.execute('__mono = __mono + 61')
+    assert thora.eval('WoWStatusRoster.together().rows[1].blocked') is None
     # Another realm keeps its realm in the name; a blocked invite never reaches the game.
     assert thora.eval('WoWStatusRoster.chatTarget("Far-OtherRealm")') == 'Far-OtherRealm'
-    assert thora.eval('WoWStatusRoster.partyInvite({name="Far-OtherRealm", race="Dwarf"})') is False
+    assert thora.eval('WoWStatusRoster.partyInvite({name="Orc-TestRealm", race="Orc"})') is False
     assert len(thora.eval('__invites')) == 1
 
 
@@ -245,8 +254,9 @@ def test_whisper_invite_and_range_buttons_are_reachable_with_a_controller():
         local R=WoWStatusRoster
         R.collapsed=function() return false end
         R.onlineOnly=function() return false end
+        R.groups=function() return {} end
         R.sections=function() return {} end
-        R.together=function() return {level=20, range=3, online=1,
+        R.together=function() return {level=20, range=3, online=1, inRange=1,
             rows={{name="Mira-Realm", class="WARRIOR", level=21, diff=1}}} end
         local page=__build(main); page.visible=true; page.list.visible=true
         R.render()
@@ -258,3 +268,33 @@ def test_whisper_invite_and_range_buttons_are_reachable_with_a_controller():
         assert(reached[row.whisper] and reached[row.invite] and reached[bar.less] and reached[bar.more])
         assert(row.whisper.kind=="Button" and row.whisper.scripts.OnClick and row.invite.scripts.OnClick)
     ''')
+
+
+def test_the_heading_counts_everyone_in_range_beyond_the_rows_shown():
+    _, thora, words = setup()
+    names = [f'F{chr(97 + i)}-TestRealm' for i in range(10)]
+    for name in names:
+        friend(thora, words, name, 20)
+    online(thora, *names)
+    data, rows = together(thora)
+    assert data.inRange == 10 and len(rows) == 8
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    assert '10 within 3 levels' in thora.eval('WoWStatusCharactersPage.togetherHead.text.text')
+
+
+def test_party_changes_redraw_once_on_the_next_tick():
+    _, thora, words = setup()
+    friend(thora, words, 'Mira-TestRealm', 20)
+    online(thora, 'Mira-TestRealm')
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    thora.execute('''
+        __renders = 0
+        local render = WoWStatusRoster.render
+        WoWStatusRoster.render = function(...) __renders = __renders + 1; return render(...) end
+        function UnitName(unit) if unit == "party1" then return "Mira" end return "Thora" end
+        for _ = 1, 25 do fire("GROUP_ROSTER_UPDATE") end
+    ''')
+    assert thora.eval('__renders') == 0
+    thora.eval('WoWStatusRoster.tick')()
+    assert thora.eval('__renders') == 1
+    assert thora.eval('WoWStatusCharactersPage.together[1].info.text') == '|cffff7777Already in your group|r'
