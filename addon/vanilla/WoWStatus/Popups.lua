@@ -887,6 +887,8 @@ local function commit(c, now)
     -- Quiet hours: logged, never queued, so it can never pop up later. c.quiet
     -- marks an update that arrived in them and waited for the roster past their end.
     if c.quiet or P.quietHoursActive() then noteReceive("quiet_hours", c, now); return false, "logged only (quiet hours)" end
+    -- A muted friend (#169): logged above as usual, only the popup is skipped.
+    if WoWStatusMutes and WoWStatusMutes.popupsMuted(c.sender) then noteReceive("muted", c, now); return false end
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
@@ -1461,6 +1463,7 @@ function P.notice(item)
     -- Quiet hours: a notice about a friend is skipped; the Records page has it.
     if not prefs or #incoming + #notices >= 128 then return false end
     if P.quietHoursActive() and not P.isSelf(item.sender) then return false end
+    if item.sender and WoWStatusMutes and WoWStatusMutes.popupsMuted(item.sender) then return false end
     item.preview, item.key, item.received_at = true, "local-notice", time()
     table.insert(notices, item)
     return true

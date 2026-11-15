@@ -100,7 +100,8 @@ function R.milestoneHolders(group, level)
         if type(player.groups) == "table" and player.groups[group] then
             for _, character in pairs(player.characters) do
                 local item = type(character.milestones) == "table" and character.milestones[level]
-                if type(item) == "table" and S.number(item.at) and WoWStatusPopups.fullName(character.name) then
+                if type(item) == "table" and S.number(item.at) and WoWStatusPopups.fullName(character.name)
+                    and not (WoWStatusMutes and WoWStatusMutes.hidden(character.name)) then
                     table.insert(list, {name=character.name, at=item.at, exact=item.exact == true})
                 end
             end
@@ -148,6 +149,16 @@ function R.playerOf(sender)
     if not k then return nil end
     for _, player in pairs(state().players) do
         if player.characters[k] and S.string(player.name) then return player.name end
+    end
+    return nil
+end
+-- The random player ID behind a friend's character, from the lists they
+-- announced; nil when unknown. Mutes (#169) use it for "all their characters".
+function R.playerIdOf(sender)
+    local k = db and key(sender)
+    if not k then return nil end
+    for id, player in pairs(state().players) do
+        if type(player.characters) == "table" and player.characters[k] then return id end
     end
     return nil
 end
@@ -1948,7 +1959,7 @@ local function card(index)
     c.badge = UI.levelBadge(c, 24); c.badge:SetPoint("TOPLEFT", 34, -30)
     c.name = UI.text(c, "GameFontNormalLarge", 66, -8, 300)
     c.dot = c:CreateTexture(nil, "OVERLAY"); c.dot:SetPoint("TOPLEFT", 66, -32); c.dot:SetSize(14, 14)
-    c.status = UI.text(c, "GameFontHighlightSmall", 82, -33, 200)
+    c.status = UI.text(c, "GameFontHighlightSmall", 82, -33, 290)
     c.itemLevel = UI.text(c, "GameFontHighlightSmall", 66, -48, 280)
     c.xp = UI.xpBar(c, 660, 14); c.xp:SetPoint("BOTTOMLEFT", 10, 6)
     -- Professions: the game's icon with its skill level underneath. Plain
@@ -2066,7 +2077,9 @@ function R.leaderboard(group)
             for _, entry in ipairs(section.entries) do
                 for _, row in ipairs(entry.rows) do
                     local k = key(row.name)
-                    if k and not seen[k] then
+                    -- A friend muted with "Hide completely" (#169) is left out.
+                    local hidden = section.key ~= "you" and WoWStatusMutes and WoWStatusMutes.hidden(row.name)
+                    if k and not seen[k] and not hidden then
                         seen[k] = true
                         local own = section.key == "you"
                         local q = S.number(row.quests)
@@ -2290,7 +2303,10 @@ function R.render()
                     local gold = S.number(character.gold) and UI.money(character.gold, true)
                     -- Live updates did not reach them (their client never confirmed).
                     local lost = not group.self and R.isUnreachable(character.name) and ("   |cffff5555" .. T("not reached") .. "|r") or ""
-                    c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or "") .. lost)
+                    -- A muted friend says so on the card, so nobody wonders why they went quiet (#169).
+                    local mode = not group.self and WoWStatusMutes and WoWStatusMutes.mode(character.name) or "show"
+                    local muted = mode ~= "show" and ("   |cff9d9d9d" .. T(mode == "hide" and "hidden" or "muted") .. "|r") or ""
+                    c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or "") .. lost .. muted)
                     local xp = S.number(character.xp)
                     if character.level and character.level >= (WoWStatusAdapter.max_level or 999) then
                         c.xp:SetProgress(1,T("Maximum level"))

@@ -52,6 +52,7 @@ EquipmentSync.lua
 Roster.lua
 Profile.lua
 UnitTooltip.lua
+Mutes.lua
 Minimap.lua
 StatusLine.lua
 Previews.lua

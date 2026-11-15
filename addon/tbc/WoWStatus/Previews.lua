@@ -62,6 +62,8 @@ function P.show(host)
         text(panel,"Notifications",24,-20)
         panel.guide=button(panel,"Setup guide",24,-96,170,function() WoWStatusGuide.show() end)
         panel.tour=button(panel,"Show me around",210,-96,170,function() WoWStatusGuide.tour() end)
+        -- Friends muted from their profile (#169), to check and unmute.
+        panel.mutes=button(panel,"Muted friends",396,-96,170,function() WoWStatusMutes.show() end)
         panel.divider=panel:CreateTexture(nil,"ARTWORK")
         panel.divider:SetPoint("TOPLEFT",24,-previews);panel.divider:SetSize(540,1);panel.divider:SetColorTexture(.82,.68,.32,.6)
         text(panel,"Previews",24,-previews-16)

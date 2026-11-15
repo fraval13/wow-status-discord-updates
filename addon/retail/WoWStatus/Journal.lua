@@ -980,7 +980,7 @@ local function visibleEntries(allDays)
         local wanted=(panel.filter=="all" or panel.filter=="character" or (panel.filter=="mine")==not not e.owner)
             and (not panel.character or P.senderKey(e.sender)==panel.character)
             and (not kinds or kinds[e.kind])
-        if (e.sample or permitted(e)) and wanted then list[#list+1]=e end
+        if J.visible(e) and wanted then list[#list+1]=e end
     end
     if not samples and not panel.character and not kinds and (panel.filter=="all" or panel.filter=="mine") then
         for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
@@ -1227,12 +1227,17 @@ function J.focus(id)
     panel.scroll:SetVerticalScroll(0);render()
     return false
 end
-function J.visible(entry) return db~=nil and (entry.sample==true or permitted(entry)) end
+-- A friend muted with "Hide completely" (#169): their entries stay in the log
+-- (and are relayed as before), but no page shows or counts them.
+local function hiddenSender(entry)
+    return not entry.owner and WoWStatusMutes~=nil and WoWStatusMutes.hidden(entry.sender)
+end
+function J.visible(entry) return db~=nil and (entry.sample==true or (permitted(entry) and not hiddenSender(entry))) end
 -- A friend's newest entry (not recaps), for the minimap tooltip.
 function J.latestFriend()
     local latest
     for _,e in ipairs(J.entries()) do
-        if not e.owner and e.kind~="recap" and permitted(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
+        if not e.owner and e.kind~="recap" and J.visible(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
     end
     return latest
 end

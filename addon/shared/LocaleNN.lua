@@ -556,6 +556,17 @@ W.add({
     ["Show WoW Status in group members' tooltips"] = "Vis WoW Status-info når musa er over gruppemedlemer",
     ["Values shown, top first:"] = "Verdiar som blir viste, den øvste først:", ["Move up"] = "Flytt opp",
     ["Level progress"] = "Nivåframgang",
+    -- Muting one friend (#169)
+    ["Mute"] = "Demp", ["Muted"] = "Dempa", ["Hidden"] = "Gøymd", ["muted"] = "dempa", ["hidden"] = "gøymd",
+    ["Show popups"] = "Vis varsel", ["Log only"] = "Berre logg", ["Hide completely"] = "Gøym heilt",
+    ["Unmute"] = "Opphev demping", ["Muted friends"] = "Dempa vener", ["this player"] = "denne spelaren",
+    ["All characters of"] = "Alle figurane til", ["all characters"] = "alle figurar",
+    ["Stop this friend's popups without leaving the group. Only you can see this; nothing is sent."] =
+        "Stopp varsla frå denne venen utan å gå ut av gruppa. Berre du ser dette; ingenting blir sendt.",
+    ["Muted friends stay in your groups. Log only keeps their updates in the log without popups; Hide completely also leaves them out of the log, records and leaderboard. Nothing is sent and they are never told."] =
+        "Dempa vener blir verande i gruppene dine. «Berre logg» held oppdateringane deira i loggen utan varsel; «Gøym heilt» held dei òg utanfor loggen, rekordane og topplista. Ingenting blir sendt, og dei får aldri vite det.",
+    ["Nobody is muted. Mute a friend from their profile on the Characters page."] =
+        "Ingen er dempa. Demp ein ven frå profilen deira på Figurar-sida.",
 })
 -- Diagnostics page (#153). The report itself stays English.
 W.add({

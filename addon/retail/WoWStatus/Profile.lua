@@ -216,6 +216,23 @@ local function build(page)
             view.message:SetText(T(message))
         end)
     end)
+    -- Mute this friend (#169): Show popups, Log only or Hide completely, for this
+    -- character or all of their player's characters. Purely local.
+    view.mute = button("Mute", 594, -48, 104, function(self)
+        local row = view.row
+        if not row or not WoWStatusMutes then return end
+        UI.menu(self, WoWStatusMutes.choices(row.name), function(choice)
+            WoWStatusMutes.pick(row.name, choice)
+        end)
+    end)
+    view.mute:SetScript("OnEnter", function(self)
+        if GameTooltip then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Mute"))
+            GameTooltip:AddLine(T("Stop this friend's popups without leaving the group. Only you can see this; nothing is sent."), 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    end)
+    view.mute:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     view.message = UI.text(head, "GameFontNormalSmall", 434, -76, 264, "RIGHT")
     -- A fixed header and a scrollable body, with equipment below the history.
     view.scroll = CreateFrame("ScrollFrame", nil, view, "UIPanelScrollFrameTemplate")
@@ -267,6 +284,13 @@ function F.refreshQuests()
     end
 end
 
+-- The Mute button names the friend's current setting.
+function F.refreshMute()
+    if not view or not view.row then return end
+    local mode = WoWStatusMutes and WoWStatusMutes.mode(view.row.name) or "show"
+    view.mute:SetText(T(({show="Mute", log="Muted", hide="Hidden"})[mode]))
+end
+
 -- Open the profile of a row from the Characters page (entry is its player heading).
 function F.show(row, entry)
     local page = WoWStatusCharactersPage
@@ -287,6 +311,8 @@ function F.show(row, entry)
     head.status:SetText(T(row.status or "") .. groups)
     local friend = not (entry and entry.self)
     view.invite:SetShown(friend)
+    view.mute:SetShown(friend and WoWStatusMutes ~= nil)
+    F.refreshMute()
     if view.invite.SetEnabled then view.invite:SetEnabled(row.status == "online") end
     view.message:SetText(friend and row.status ~= "online" and T("Invites need them online.") or "")
     local data = F.data(row)
