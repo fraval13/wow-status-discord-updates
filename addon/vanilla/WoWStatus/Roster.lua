@@ -377,45 +377,83 @@ function R.hiddenNames()
 end
 function R.isHidden(name) return R.hiddenNames()[key(name) or ""] == true end
 
+-- A friend's total deaths from a death announcement's text, or nil.
+local function deathTotal(text)
+    return tonumber(tostring(text or ""):match("^Total deaths: (%d+)$"))
+end
+-- Total deaths per character key from each one's newest death announcement,
+-- rebuilt only when the log changes (tooltips ask on every mouseover).
+local deathsCache = {}
+local function deathTotals()
+    local entries = WoWStatusJournal.entries()
+    local first = entries[1]
+    if deathsCache.entries ~= entries or deathsCache.count ~= #entries or deathsCache.first ~= (first and first.id) then
+        local map = {}
+        for _, e in ipairs(entries) do
+            local k = e.kind == "death" and key(e.sender)
+            if k and map[k] == nil then map[k] = deathTotal(e.text) or false end
+        end
+        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map}
+    end
+    return deathsCache.map
+end
+
+-- A unit's name as the character list keys it ("Name-Realm"), or nil. Secret
+-- values stay nil. WoW Forever's UnitName gives only the first name, so the
+-- game's GUID lookup supplies the full one there, as for this character's own
+-- name (WoWStatusPopups.learnOwnName). The realm is normalized like chat names.
+function R.unitName(unit)
+    if not S.string(unit) or not S.call(UnitIsPlayer, unit) then return nil end
+    local name, realm = S.call(UnitName, unit)
+    name, realm = S.string(name), S.string(realm)
+    if not name then return nil end
+    if WoWStatusAdapter.full_names and GetPlayerInfoByGUID then
+        local guid = S.stringCall(UnitGUID, unit)
+        local full
+        if guid then
+            local ok, _, _, _, _, _, found = pcall(GetPlayerInfoByGUID, guid)
+            full = ok and S.string(found)
+        end
+        if full and #full <= 48 and not full:find(S.CONTROL_OR_PIPE)
+            and S.lowerASCII(full):sub(1, #name) == S.lowerASCII(name) then name = full end
+    end
+    realm = (realm or WoWStatusAdapter.realmName() or ""):gsub(S.SPACE, ""):gsub("%-", "")
+    return realm ~= "" and (name .. "-" .. realm) or nil
+end
+
 -- What a group member's unit tooltip may show (#183), from the stored list only:
 -- no request is sent. nil for anyone a member of a group this account is in has
--- not listed, for hidden characters and for this account's own characters. A
--- value the character does not share is nil, never zero. liveLevel is the level
--- the game shows now: the saved XP progress belongs to the saved level only.
+-- not listed, and for hidden characters (this account's own characters are never
+-- in the list). A value the character does not share is nil, never zero.
+-- liveLevel is the level the game shows now: saved XP progress belongs to the
+-- saved level only.
 function R.tooltipFacts(name, liveLevel)
     if not db or not current then return nil end
     local k = key(name)
-    if not k or WoWStatusPopups.isSelf(name) then return nil end
-    local hidden = R.hiddenNames()
-    if hidden[k] then return nil end
-    local selected = WoWStatusGroups.selected(current)
+    if not k then return nil end
+    -- The newest list wins when two player IDs hold the character (a reinstall).
+    local selected, found, owner = WoWStatusGroups.selected(current), nil, nil
     for _, player in pairs(state().players) do
         local character = type(player.characters) == "table" and player.characters[k]
-        local member = false
-        for group in pairs(type(character) == "table" and type(player.groups) == "table" and player.groups or {}) do
-            if selected[group] then member = true; break end
-        end
-        if member and WoWStatusPopups.fullName(character.name) then
-            local alts = 0
-            for other, alt in pairs(player.characters) do
-                if other ~= k and type(alt) == "table" and not hidden[other] and WoWStatusPopups.fullName(alt.name) then alts = alts + 1 end
+        if type(character) == "table" and type(player.groups) == "table" and WoWStatusPopups.fullName(character.name)
+            and (not owner or (S.number(player.at) or 0) > (S.number(owner.at) or 0)) then
+            for group in pairs(player.groups) do
+                if selected[group] then found, owner = character, player; break end
             end
-            -- Total deaths from their newest death announcement, as the Characters page reads it.
-            local deaths
-            for _, e in ipairs(WoWStatusJournal.entries()) do
-                if e.kind == "death" and key(e.sender) == k then
-                    deaths = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$"))
-                    break
-                end
-            end
-            local level, xp = S.number(character.level), S.number(character.xp)
-            if xp and (xp < 0 or xp > 999 or (S.number(liveLevel) and liveLevel ~= level)) then xp = nil end
-            local quests = S.number(character.quests)
-            return {name=character.name, player=S.string(player.name), alts=alts, level=level, xp=xp, deaths=deaths,
-                quests=quests, quests_source=quests and character.quests_source or nil, played=S.number(character.played)}
         end
     end
-    return nil
+    if not found then return nil end
+    local hidden = R.hiddenNames()
+    if hidden[k] then return nil end
+    local alts = 0
+    for other, alt in pairs(owner.characters) do
+        if other ~= k and type(alt) == "table" and not hidden[other] and WoWStatusPopups.fullName(alt.name) then alts = alts + 1 end
+    end
+    local level, xp = S.number(found.level), S.number(found.xp)
+    if xp and (xp < 0 or xp > 999 or (S.number(liveLevel) and liveLevel ~= level)) then xp = nil end
+    local quests = S.number(found.quests)
+    return {name=found.name, player=S.string(owner.name), alts=alts, level=level, xp=xp, deaths=deathTotals()[k] or nil,
+        quests=quests, quests_source=quests and found.quests_source or nil, played=S.number(found.played)}
 end
 
 local function ownLines(group)
@@ -1723,7 +1761,7 @@ function R.groups()
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         -- A friend's total deaths, from their newest death announcement.
         if k and deaths[k] == nil and e.kind == "death" then
-            deaths[k] = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$")) or false
+            deaths[k] = deathTotal(e.text) or false
         end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
         if k and zones[k] == nil and e.kind == "zone" then

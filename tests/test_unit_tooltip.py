@@ -120,6 +120,38 @@ def test_non_members_hidden_characters_and_yourself_get_no_lines():
     assert shown(thora) == []
 
 
+def test_unit_names_match_list_keys_on_forever_and_hyphenated_realms():
+    _, thora = friends()
+    thora.execute('__units.mouseover = {name="Mira", realm="Azjol-Nerub", level=1, player=true}')
+    assert thora.eval('WoWStatusRoster.unitName("mouseover")') == 'Mira-AzjolNerub'
+    # WoW Forever: UnitName gives the first name only; the GUID lookup the full one.
+    thora.execute('''
+        WoWStatusAdapter.full_names = true
+        __units.mouseover = {name="Edith", level=1, player=true}
+        function UnitGUID(unit) return unit == "mouseover" and "Player-1-EDITH" or "Player-123-Thora" end
+        function GetPlayerInfoByGUID(guid)
+            if guid == "Player-1-EDITH" then return "Warrior", "WARRIOR", "Dwarf", "Dwarf", 3, "Edith Aateigen", "" end
+        end
+    ''')
+    assert thora.eval('WoWStatusRoster.unitName("mouseover")') == 'Edith Aateigen-TestRealm'
+    # Never someone else's name.
+    thora.execute('''function GetPlayerInfoByGUID() return "Warrior", "WARRIOR", "Dwarf", "Dwarf", 3, "Bob Builder", "" end''')
+    assert thora.eval('WoWStatusRoster.unitName("mouseover")') == 'Edith-TestRealm'
+
+
+def test_the_newest_list_wins_when_two_player_ids_hold_a_character():
+    _, thora = friends()
+    thora.execute('''
+        local players = WoWStatusDB.roster.players
+        local id, player = next(players)
+        local copy = {name="Old", at=(player.at or 0) - 100, groups=player.groups, characters={}}
+        for k, ch in pairs(player.characters) do copy.characters[k] = {name=ch.name, level=1, played=60} end
+        players["0123456789abcdef"] = copy
+        for _, ch in pairs(player.characters) do ch.played = 7200 end
+    ''')
+    assert ('Played', '2h 0m') in shown(thora)
+
+
 def test_leaving_the_group_removes_the_block():
     _, thora = friends()
     assert shown(thora) != []
@@ -181,13 +213,14 @@ function makeTooltip(script)
             __hooks.script = fn
         end,
         GetUnit=function() error("broken tooltip") end,
-        AddLine=function() error("must not add") end,
+        AddLine=function() __added = true end,
     }
 end
 '''
 
 
-@pytest.mark.parametrize('kind', ['data', 'script', 'neither', 'modern-without-script'])
+@pytest.mark.parametrize('kind', ['data', 'script', 'processor-without-tooltip-data', 'neither',
+                                  'modern-without-script'])
 def test_each_client_gets_one_guarded_hook_and_never_errors(kind):
     lua = person('Thora', 'Ada')
     lua.execute(HOOKS)
@@ -195,22 +228,30 @@ def test_each_client_gets_one_guarded_hook_and_never_errors(kind):
         lua.execute('''
             makeTooltip(true)
             Enum = {TooltipDataType={Unit=2}}
+            C_TooltipInfo = {}
             TooltipDataProcessor = {AddTooltipPostCall=function(kind, fn) assert(kind == 2); __hooks.data = fn end}
         ''')
     elif kind == 'script':
         lua.execute('makeTooltip(true); TooltipDataProcessor = nil')
+    elif kind == 'processor-without-tooltip-data':
+        # The shared table exists, but unit tooltips are still built the old way.
+        lua.execute('''
+            makeTooltip(true); C_TooltipInfo = nil; Enum = {TooltipDataType={Unit=2}}
+            TooltipDataProcessor = {AddTooltipPostCall=function() error("must not be used") end}
+        ''')
     elif kind == 'modern-without-script':
         lua.execute('makeTooltip(false); TooltipDataProcessor = nil')
     else:
         lua.execute('GameTooltip = nil; TooltipDataProcessor = nil')
-    expected = {'data': 'data', 'script': 'script'}.get(kind, False)
+    expected = {'data': 'data', 'script': 'script', 'processor-without-tooltip-data': 'script'}.get(kind, False)
     assert lua.eval('WoWStatusUnitTooltip.hook()') == expected
     assert lua.eval('WoWStatusUnitTooltip.hook()') == expected  # installed once
     if kind == 'data':
         assert lua.eval('__hooks.script') is None  # never both
         lua.eval('__hooks.data')(lua.eval('GameTooltip'), {})
-        lua.eval('__hooks.data')({}, {})  # other tooltips are ignored
-    elif kind == 'script':
+        lua.execute('__hooks.data({AddLine=GameTooltip.AddLine}, {})')  # other tooltips are ignored
+        assert lua.eval('__added') is None
+    elif kind in ('script', 'processor-without-tooltip-data'):
         lua.eval('__hooks.script')(lua.eval('GameTooltip'))
 
 
