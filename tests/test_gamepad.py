@@ -509,7 +509,10 @@ def test_group_name_generator_controls_are_reachable(lua):
     # Issue #151: Create a group, the copyable name and Join it work with a controller.
     lua.execute('''
         local methods=getmetatable(CreateFrame("Frame")).__index
-        setmetatable(methods,{__index=function() return function() end end})
+        -- Any other widget method is a no-op; plain fields stay nil.
+        setmetatable(methods,{__index=function(_,key)
+            if type(key)=="string" and key:match("^%u") then return function() end end
+        end})
         function methods:SetText(text) self.text=text end
         function methods:GetText() return self.text or "" end
         function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end

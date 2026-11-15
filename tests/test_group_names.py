@@ -34,7 +34,9 @@ def test_weak_names_are_short_plain_repetitive_or_this_players_names():
     ''')
     weak = lua.eval('WoWStatusGroups.weak')
     for name in ('dawnwatch', 'Weekend Crew', 'supercalifragilistic', 'aaaa bbbb aaaa bbbb',
-                 'Knights of the Silver Hand', 'knights-of-the-silver-hand', 'BLOODSAIL BUCCANEERS'):
+                 'Knights of the Silver Hand', 'knights-of-the-silver-hand', 'BLOODSAIL BUCCANEERS',
+                 '1234567890123456', '8104-2275-3391-60', 'password password1', 'abcdefghijklmnop1',
+                 'qwertyuiop asdfgh', 'Thora and the gang 2026', 'the knights of the silver hand!'):
         assert weak(name), name
     for name in ('the weekend crew meets at nine', 'k7qm-4xfz-pr2d-9hwt-cn3b', 'Ærlege gjengen frå Voss 1999'):
         assert not weak(name), name
@@ -70,8 +72,13 @@ def test_create_a_group_shows_a_copyable_name_and_joins_it():
         p.create.OnClick()
         assert(p.created:GetText() ~= name)  -- each click makes a new one
         name = p.created:GetText()
+        -- Closing and reopening keeps a name the player may already have sent.
+        WoWStatusGroups.show()
+        assert(p.created:GetText() == name and p.join:IsShown())
+        p.input:SetText("half typed"); p.input.focused = false
         p.join.OnClick()
         assert(WoWStatusGroups.contains(character(), WoWStatusGroups.key(name)))
+        assert(p.input:GetText() == "half typed" and not p.input.focused)  -- the Group ID box is left alone
         assert(p.rows[1].label:GetText() == name and not p.created:IsShown() and not p.join:IsShown())
         assert(p.add:GetText() == "Add")  -- a strong name never asks
     ''')

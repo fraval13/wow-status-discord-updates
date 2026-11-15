@@ -42,21 +42,23 @@ end
 -- one that cannot be. The hash and channel scheme stay as they are.
 -- Letters and digits that cannot be mistaken for each other (no 0/o, 1/i/l).
 local ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"
-local GROUPS, GROUP_LENGTH = 5, 4 -- 20 symbols of about 5 bits: roughly 99 bits
-local mix
+local GROUPS, GROUP_LENGTH = 5, 4 -- 20 symbols of about 5 bits each
+local mix = 0
+-- The clock in microseconds: when the player clicks is not knowable to others.
+local function clock()
+    return math.floor((tonumber(S.call(debugprofilestop)) or 0) * 1000)
+        + math.floor((tonumber(S.call(GetTime)) or 0) * 1000) + (tonumber(S.call(time)) or 0)
+end
 local function draw(count)
-    -- The client's random source does the work. The clock-seeded offset only
-    -- keeps two sessions apart on a client whose source restarts the same way.
-    if not mix then
-        mix = (tonumber(S.call(time)) or 0) + math.floor((tonumber(S.call(GetTime)) or 0) * 1000)
-            + math.floor(tonumber(S.call(debugprofilestop)) or 0)
-        mix = mix % 4294967296
-    end
     mix = (mix * 69069 + 1) % 4294967296
     return (math.random(count) - 1 + mix) % count + 1
 end
 -- A new, long, made-up group name such as "k7qm-4xfz-pr2d-9hwt-cn3b".
+-- The client's random source picks the symbols. Each name also folds in the
+-- moment of the click, so even a client whose source were small or restarted
+-- the same way each session would not give names a stranger could list.
 function G.generate()
+    mix = (mix + clock()) % 4294967296
     local parts = {}
     for part = 1, GROUPS do
         local symbols = {}
@@ -71,14 +73,28 @@ end
 G.WEAK_MESSAGE = "Short or ordinary names can be guessed by strangers, who would then see your group's activity. "
     .. "Use a longer, made-up name, or let the addon create one."
 local MIN_LENGTH, MIN_VARIETY = 16, 8
--- Only letters and digits: "Silver-Hand" and "silver hand" compare equal.
--- Explicit byte ranges, not %w or %p, which follow the C library's locale.
-local function bare(text)
-    return (WoWStatusCaseFold(text):gsub("[%z\1-\47\58-\64\91-\96\123-\127]", ""))
+-- Runs of keys or characters that people type when they make something up.
+local SEQUENCES = {"abcdefghijklmnopqrstuvwxyz", "0123456789", "9876543210", "qwertyuiop", "asdfghjkl", "zxcvbnm"}
+local SEQUENCE_LENGTH = 5
+-- Only letters and digits of already case-folded text: "silver-hand" and
+-- "silver hand" compare equal. Explicit byte ranges, not %w or %p, which
+-- follow the C library's locale.
+local function bare(folded)
+    return (folded:gsub("[%z\1-\47\58-\64\91-\96\123-\127]", ""))
 end
--- True when a typed group name is easy to guess: short, one plain word, few
--- different characters, or just this player's, guild's or realm's name. Only a
--- warning: the player may use it anyway, and saved groups are never checked.
+local function hasSequence(compact)
+    for _, run in ipairs(SEQUENCES) do
+        for at = 1, #run - SEQUENCE_LENGTH + 1 do
+            if compact:find(run:sub(at, at + SEQUENCE_LENGTH - 1), 1, true) then return true end
+        end
+    end
+    return false
+end
+-- True when a typed group name is easy to guess: short, one plain word, only
+-- digits, few different characters, a repeated word, a keyboard or alphabet
+-- run, or containing this character's, guild's or realm's name. A heuristic
+-- without a dictionary, and only a warning: the player may use the name anyway,
+-- and saved groups are never checked.
 function G.weak(name)
     if type(name) ~= "string" then return false end
     local text = WoWStatusCaseFold(S.trim(name))
@@ -92,10 +108,19 @@ function G.weak(name)
     if variety < MIN_VARIETY then return true end
     if not text:find("[^a-z]") then return true end -- a single word of plain letters
     local compact = bare(text)
-    local player, realm = S.string(S.call(UnitName, "player")), S.string(S.call(GetRealmName))
-    local guild = S.string(S.call(GetGuildInfo, "player"))
-    for _, known in ipairs({player or "", guild or "", realm or "", (player or "") .. (realm or "")}) do
-        if known ~= "" and compact == bare(known) then return true end
+    if not compact:find("[^0-9]") then return true end -- only digits (and separators)
+    if hasSequence(compact) then return true end
+    local words = {}
+    for word in text:gmatch("[^ \t\n\v\f\r%-_.,]+") do
+        local plain = bare(word):gsub("[0-9]+$", "")
+        if #plain >= 3 and words[plain] then return true end
+        words[plain] = true
+    end
+    local known = {S.string(S.call(UnitName, "player")) or "", S.string(S.call(GetGuildInfo, "player")) or "",
+        S.string(S.call(GetRealmName)) or ""}
+    for _, own in ipairs(known) do
+        local folded = bare(WoWStatusCaseFold(own))
+        if #folded >= 3 and compact:find(folded, 1, true) then return true end
     end
     return false
 end
@@ -320,7 +345,7 @@ end
 function G.show(host)
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusGroupWindow", UIParent)
-        panel:SetSize(620, 866)
+        panel:SetSize(620, 756)
         panel:SetPoint("CENTER")
         panel:SetFrameStrata("DIALOG")
         panel:EnableMouse(true)
@@ -362,49 +387,63 @@ function G.show(host)
             panel.status:SetText(T(message))
             report(message)
         end
-        local function add()
-            local id, cleaned, reason = G.key(panel.input:GetText())
+        local HINT = "Recommended: let the addon create a name nobody can guess."
+        -- Back to plain Add after an "Add anyway", or the created name joined.
+        local function resetConfirm()
+            panel.confirmed = nil
+            panel.add:SetText(T("Add"))
+        end
+        local function resetCreated()
+            panel.created.value = nil
+            panel.created:SetText(""); panel.created:Hide(); panel.join:Hide()
+            panel.createHint:SetText(T(HINT))
+        end
+        -- Add one group by name. typed: it came from the Group ID box, which is
+        -- then cleared and focused for the next one.
+        local function add(text, typed)
+            local id, cleaned, reason = G.key(text)
             if not id then
                 refuse(reason or "Enter one group ID of up to 80 characters.")
-                return
+                return false
             end
             if (database.account_groups or {})[id] then
                 refuse("That group is already in your list.")
-                return
+                return false
             end
             local groups = groupList()
             if #groups >= MAX_GROUPS then
                 refuse("You can add up to 8 groups. Remove one before adding another.")
-                return
+                return false
             end
             -- A guessable name is the player's call: warn once, then Add anyway.
-            if G.weak(cleaned) and panel.confirmed ~= cleaned then
+            if typed and G.weak(cleaned) and panel.confirmed ~= cleaned then
                 panel.confirmed = cleaned
                 panel.add:SetText(T("Add anyway"))
                 refuse(G.WEAK_MESSAGE)
-                return
+                return false
             end
             table.insert(groups, {id = id, label = cleaned})
-            if saveList(groups) then
-                panel.confirmed = nil
-                panel.add:SetText(T("Add"))
+            if not saveList(groups) then return false end
+            if typed then
+                resetConfirm()
                 panel.input:SetText("")
                 panel.input:SetFocus()
             end
+            return true
         end
-        panel.add = button(panel, "Add", 454, -234, 120, add)
-        panel.input:SetScript("OnEnterPressed", add)
+        local function addTyped() add(panel.input:GetText(), true) end
+        panel.add = button(panel, "Add", 454, -234, 120, addTyped)
+        panel.input:SetScript("OnEnterPressed", addTyped)
         -- Editing the name takes back an earlier "Add anyway".
         panel.input:SetScript("OnTextChanged", function(self)
-            if panel.confirmed and S.trim(self:GetText()) ~= panel.confirmed then
-                panel.confirmed = nil
-                panel.add:SetText(T("Add"))
-            end
+            if panel.confirmed and S.trim(self:GetText()) ~= panel.confirmed then resetConfirm() end
         end)
+        -- Normal size: the weak-name warning wraps to three lines here.
         panel.status = label("", -270)
+        panel.status:SetFontObject("GameFontHighlight")
         panel.status:SetTextColor(1, .82, .25)
         -- The recommended path: let the addon make a name nobody can guess.
-        panel.create = button(panel, "Create a group", 24, -330, 170, function()
+        panel.create = button(panel, "Create a group", 24, -318, 170, function()
             local name = G.generate()
             panel.created:SetText(name); panel.created.value = name
             -- Not focused for the player: a focused text box would take the
@@ -412,9 +451,10 @@ function G.show(host)
             panel.created:Show(); panel.join:Show()
             panel.createHint:SetText(T("Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."))
         end)
-        -- Read-only but selectable, so it can be copied.
+        -- Read-only but selectable, so it can be copied. The name stays until it
+        -- is joined, also when the window closes, so a shared name is not lost.
         panel.created = CreateFrame("EditBox", nil, panel, "InputBoxTemplate")
-        panel.created:SetPoint("TOPLEFT", 206, -330); panel.created:SetSize(236, 30)
+        panel.created:SetPoint("TOPLEFT", 206, -318); panel.created:SetSize(236, 30)
         panel.created:SetFontObject("ChatFontNormal")
         panel.created:SetAutoFocus(false); panel.created:SetMultiLine(false); panel.created:SetMaxLetters(80)
         panel.created:SetScript("OnTextChanged", function(self, typed)
@@ -423,25 +463,19 @@ function G.show(host)
         panel.created:SetScript("OnEditFocusGained", function(self) self:HighlightText() end)
         panel.created:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
         panel.created:SetScript("OnEnterPressed", function(self) self:ClearFocus() end)
-        panel.join = button(panel, "Join it", 454, -330, 120, function()
-            local name = panel.created.value
-            if not name then return end
-            panel.input:SetText(name)
-            add()
-            if (database.account_groups or {})[G.key(name)] then
-                panel.created.value = nil
-                panel.created:SetText(""); panel.created:Hide(); panel.join:Hide()
-                panel.createHint:SetText(T("Recommended: let the addon create a name nobody can guess."))
-            end
+        -- Joins the created name directly: the Group ID box and focus stay as they were.
+        panel.join = button(panel, "Join it", 454, -318, 120, function()
+            if panel.created.value and add(panel.created.value, false) then resetCreated() end
         end)
-        panel.createHint = label("Recommended: let the addon create a name nobody can guess.", -366)
+        panel.createHint = label(HINT, -354)
         panel.createHint:SetFontObject("GameFontHighlight")
         panel.protection = label("Anyone who knows a group's name can read its activity. Share it privately, "
-            .. "never in public chat, on a stream or in a screenshot.", -400)
+            .. "never in public chat, on a stream or in a screenshot.", -386)
         panel.protection:SetFontObject("GameFontHighlight")
-        panel.count = label("", -446, 400)
+        panel.resetConfirm, panel.resetCreated = resetConfirm, resetCreated
+        panel.count = label("", -424, 400)
         -- Groups friends listed, to join with one click.
-        panel.browse = button(panel, "Browse groups", 430, -440, 144, function(self)
+        panel.browse = button(panel, "Browse groups", 430, -418, 144, function(self)
             local list = WoWStatusRoster and WoWStatusRoster.listings and WoWStatusRoster.listings() or {}
             if #list == 0 then refuse("No listed groups yet. Friends list a group by ticking Listed on their Groups page."); return end
             local items = {}
@@ -454,11 +488,11 @@ function G.show(host)
                 if ok then renderGroups() end
             end)
         end)
-        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -484)
+        panel.empty = label("No groups selected. Enter a group ID above and click Add.", -460)
         panel.rows = {}
         for i = 1, MAX_GROUPS do
             local row = CreateFrame("Frame", nil, panel)
-            row:SetPoint("TOPLEFT", 24, -478 - (i - 1) * 36)
+            row:SetPoint("TOPLEFT", 24, -456 - (i - 1) * 32)
             row:SetSize(550, 32)
             row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
             row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(290)
@@ -495,7 +529,7 @@ function G.show(host)
             end)
             table.insert(panel.rows, row)
         end
-        panel.close = button(panel, "Close", 454, -810, 120, function() panel:Hide() end)
+        panel.close = button(panel, "Close", 454, -718, 120, function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusGroupWindow" then table.remove(UISpecialFrames, i) end
@@ -518,11 +552,9 @@ function G.show(host)
     panel.status:SetText(database.retired_groups_removed and T(G.RETIRED_MESSAGE) or "")
     panel.name:SetText(database.player_name or "")
     panel.input:SetText("")
-    panel.confirmed = nil
-    panel.add:SetText(T("Add"))
-    panel.created.value = nil
-    panel.created:SetText(""); panel.created:Hide(); panel.join:Hide()
-    panel.createHint:SetText(T("Recommended: let the addon create a name nobody can guess."))
+    panel.resetConfirm()
+    -- A created name that is not joined yet stays: the player may have sent it.
+    if not panel.created.value then panel.resetCreated() end
     renderGroups()
     panel:Show()
 end
