@@ -33,8 +33,9 @@ class portraits, adds window themes and a size setting, a first-time setup guide
 and Show me around tour, session recaps, Firsts medals, and catches group history
 up from friends. It also keeps live updates working when players' clocks disagree,
 delivers every update to every member, and stops one player filling the activity
-log. Updates and log sync also run during combat (WoW Forever could report
-combat all the time). See `CHANGELOG.md` for what each release changed.
+log. Updates and log sync also run during combat, because WoW Forever could
+report combat all the time and that stopped both. See `CHANGELOG.md` for what
+each release changed.
 
 1. Copy the appropriate `addon/vanilla/WoWStatus`, `addon/tbc/WoWStatus` (TBC Anniversary),
    `addon/retail/WoWStatus` (Retail), or `addon/forever/WoWStatus`

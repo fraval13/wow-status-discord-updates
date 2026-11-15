@@ -11,11 +11,10 @@ A release number may still appear when the text marks it as history: "since
 1.9.0", "added in 0.10.0", "1.25.0 or later", "1.25.0+". Superseded documents in
 ``docs/history/`` and ``CHANGELOG.md`` are not scanned. Game client versions are
 told apart from addon releases by a newer major version, or by a
-"build" number, interface mapping or client branch name next to them.
+client, tool or build named next to them.
 """
-import importlib.util
 import re
-import sys
+import tomllib
 from pathlib import Path
 
 import pytest
@@ -27,28 +26,29 @@ ROOT = Path(__file__).parents[1]
 # word. Two-part numbers are left alone: "Lua 5.1" and interface patches use them.
 VERSION = re.compile(r'(?<![\w.])v?(\d+)\.(\d+)\.(\d+)(?![\w]|\.\d)')
 # Words just before a version that say it is history rather than the current state.
+# "before" and "until" are deliberately absent: they usually introduce predictions.
 BEFORE = re.compile(
-    r'(?:\bsince|\b(?:added|introduced|removed|changed|fixed) in|\bbefore|\buntil)'
-    r'[:\s]+$',
+    r'(?:\bsince|\b(?:added|introduced|removed|changed|fixed) in)[:\s]+$',
     re.IGNORECASE,
 )
 AFTER = re.compile(r'^(?:\+|\s+(?:or|and) (?:later|newer)\b)')
-# Game client versions written next to their build number, interface number or
-# client branch name.
-CLIENT = re.compile(r'^\s+build\b')
-CLIENT_BEFORE = re.compile(r'(?:interface \d+ \(|`\d+` → `|`[a-z_]+` )$')
-
-
-def _load_sync_version():
-    spec = importlib.util.spec_from_file_location('sync_version', ROOT / 'scripts/sync_version.py')
-    module = importlib.util.module_from_spec(spec)
-    sys.modules.setdefault(spec.name, module)
-    spec.loader.exec_module(module)
-    return module
+# Game clients and tools whose own versions share the addon's major numbers
+# (WoW Forever 1.60.x, Classic Era 1.15.x), named just before the version, or a
+# build number just after it.
+CLIENT_BEFORE = re.compile(
+    r'(?:\binterface \d+ |`\d+` → `'
+    r'|\b(?:forever|classic(?:[ _]era|[ _]anniversary)?|era|retail|live|tbc|anniversary'
+    r'|client|patch|build|lua|lupa|python|node|ruff|pytest|uv|pip)`?:?\s+)$',
+    re.IGNORECASE,
+)
+CLIENT_AFTER = re.compile(r'^\s+build\b')
+# How far back a marker may sit, so that one wrapped onto the previous line counts.
+CONTEXT = 40
 
 
 def project_version() -> tuple[int, int, int]:
-    version = _load_sync_version().project_version(ROOT)
+    with (ROOT / 'pyproject.toml').open('rb') as handle:
+        version = tomllib.load(handle)['project']['version']
     match = re.fullmatch(r'(\d+)\.(\d+)\.(\d+)', version)
     assert match, f'project.version {version!r} is not a three-part version'
     return tuple(int(part) for part in match.groups())
@@ -57,35 +57,33 @@ def project_version() -> tuple[int, int, int]:
 def scanned_documents() -> list[Path]:
     history = ROOT / 'docs' / 'history'
     documents = [ROOT / 'AGENTS.md', ROOT / 'README.md']
-    documents += sorted(
-        path for path in (ROOT / 'docs').rglob('*.md') if history not in path.parents
-    )
-    documents += sorted((ROOT / 'deploy').glob('*.md'))
-    documents += sorted((ROOT / 'website').glob('*.md'))
+    for folder in ('docs', 'deploy', 'website'):
+        documents += sorted(
+            path for path in (ROOT / folder).rglob('*.md') if history not in path.parents
+        )
     return [path for path in documents if path.exists()]
 
 
 def unmarked_versions(text: str, current: tuple[int, int, int]) -> list[tuple[int, str]]:
     """Return ``(line, version)`` for each release number stated as a plain fact.
 
-    Every release in the current major series counts, the current one and any
-    predicted future one included: the next merge bumps the version, so both go
-    stale. A newer major series is taken to be a game client version.
+    Every version whose major number is at most the current one counts, the current
+    release and any predicted future one included: the next merge bumps the
+    version, so both go stale. A newer major number is taken to be a game client
+    version. Markers may sit on the neighbouring line of hard-wrapped Markdown.
     """
     found = []
-    for number, line in enumerate(text.splitlines(), start=1):
-        for match in VERSION.finditer(line):
-            version = tuple(int(part) for part in match.groups())
-            if version[0] > current[0]:
-                continue  # A game client version (TBC 2.5.6, Retail 12.1.5).
-            before = line[:match.start()]
-            after = line[match.end():]
-            if CLIENT.match(after) or CLIENT_BEFORE.search(before):
-                continue
-            plain = re.sub(r'[*_`(]', '', before)
-            if BEFORE.search(plain) or AFTER.match(after.lstrip('`*_')):
-                continue
-            found.append((number, match.group(0)))
+    for match in VERSION.finditer(text):
+        version = tuple(int(part) for part in match.groups())
+        if version[0] > current[0]:
+            continue  # A game client version (TBC 2.5.6, Retail 12.1.5).
+        before = re.sub(r'\s+', ' ', text[max(0, match.start() - CONTEXT):match.start()])
+        after = re.sub(r'\s+', ' ', text[match.end():match.end() + CONTEXT])
+        if CLIENT_BEFORE.search(re.sub(r'[*(]', '', before)) or CLIENT_AFTER.match(after):
+            continue
+        if BEFORE.search(re.sub(r'[*_`(]', '', before)) or AFTER.match(after.lstrip('`*_')):
+            continue
+        found.append((text.count('\n', 0, match.start()) + 1, match.group(0)))
     return found
 
 
@@ -109,6 +107,8 @@ def test_documents_do_not_state_a_release_as_current():
     'Current release: 1.52.0',
     'Current release: v1.52.0',
     'The next release is expected to be 1.53.0.',
+    'Keep the old path until 1.53.0 ships.',
+    'Install `wowstatus` 1.52.0 from the downloads page.',
 ])
 def test_plain_release_numbers_are_reported(text):
     assert unmarked_versions(text, (1, 52, 0))
@@ -123,6 +123,11 @@ def test_plain_release_numbers_are_reported(text):
     'Since: 1.9.0',
     'since `1.9.0`',
     'friends on 1.40.0 and later',
+    'Status cards were added in\n0.10.0 and work.',
+    'Since\n1.9.0 the popup is gone.',
+    'WoW Forever 1.60.2 changed the roster API.',
+    'Classic Era 1.15.9 still lacks C_Item.',
+    'Pinned ruff 0.14.2 in CI.',
     'The TBC Anniversary build targets interface 20506 (2.5.6),',
     '`68e0a2e` (2.5.6 build 70577).',
     '(`120105` → `12.1.5`).',
