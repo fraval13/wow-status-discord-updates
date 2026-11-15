@@ -105,13 +105,13 @@ be checked against Git and the environment rather than assumed permanently true.
 
 ## Current release and handoff
 
-Nothing in this file states a version number, so it cannot go stale. Each merge
-bumps the version, so `tests/test_doc_versions.py` fails if `AGENTS.md`,
-`README.md`, or a Markdown file under `docs/` (except `docs/history/`), `deploy/`
-or `website/` names a version whose major number is at most the current one
-(the current and next releases included) without saying it is historical
-("since", "added in", "or later" and similar). Game client and tool versions
-named as such ("Forever 1.60.1", "ruff 0.14.2") are allowed.
+This section states no release number, so it cannot go stale. Each merge bumps
+the version, so `tests/test_doc_versions.py` fails if `AGENTS.md`, `README.md`,
+or a Markdown file under `docs/` (except `docs/history/`), `deploy/` or
+`website/` names an addon release as a plain fact: the current one, any
+`CHANGELOG.md` release or older one not marked as history ("since", "added in",
+"or later" and similar), or any predicted later release. Game client and tool
+versions that are not addon releases are ignored.
 
 - The project version is `project.version` in `pyproject.toml`; all four addon
   TOCs repeat it (`scripts/sync_version.py --check`). What was actually deployed,
