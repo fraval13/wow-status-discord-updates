@@ -126,7 +126,7 @@ function methods:CreateFontString(_, _, font) return setmetatable({font=font}, {
 for _, name in ipairs({"SetPoint","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
     "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
-    "SetBlendMode","SetVertexColor","SetTextColor","SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
+    "SetBlendMode","SetVertexColor","SetTextColor","SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","HighlightText","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
 function CreateFrame(kind, name, parent, template)
     local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
     table.insert(__frames,f)
@@ -667,7 +667,12 @@ def test_group_editor_adds_and_removes_account_groups_immediately(lua):
         p.name:SetText("Frank")
         p.input:SetText("  dawnwatch  ")
         p.input.OnEnterPressed(p.input)
+        -- A short name warns first; pressing again adds it anyway.
+        assert(next(WoWStatusDB.account_groups) == nil and p.add:GetText() == "Add anyway")
+        assert(p.status:GetText():find("guessed by strangers", 1, true))
+        p.input.OnEnterPressed(p.input)
         assert(WoWStatusGroups.text(character(), true) == "dawnwatch")
+        assert(p.add:GetText() == "Add")
         assert(p.input:GetText() == "")
         assert(p.input.focused)
         assert(p.rows[1].label:GetText() == "dawnwatch")
@@ -675,7 +680,7 @@ def test_group_editor_adds_and_removes_account_groups_immediately(lua):
         assert(not p.rows[2]:IsShown())
         assert(not p.empty:IsShown())
         p.input:SetText("emberhold")
-        p.add.OnClick()
+        p.add.OnClick(); p.add.OnClick()
         assert(WoWStatusDB.player_name == "Frank")
         assert(p.rows[2].label:GetText() == "emberhold")
         p.rows[2].remove.OnClick()
@@ -705,7 +710,7 @@ def test_group_editor_rejects_invalid_duplicate_and_ninth_group(lua):
         assert(next(WoWStatusDB.account_groups) == nil)
         for i=1,8 do
             p.input:SetText("Group " .. i)
-            p.add.OnClick()
+            p.add.OnClick(); p.add.OnClick()  -- warned as guessable, then added anyway
         end
         assert(p.count:GetText() == "Groups (8 / 8)")
         p.input:SetText("GROUP 1")
@@ -715,7 +720,7 @@ def test_group_editor_rejects_invalid_duplicate_and_ninth_group(lua):
         p.add.OnClick()
         assert(p.status:GetText():find("up to 8"))
         p.rows[4].remove.OnClick()
-        p.add.OnClick()
+        p.add.OnClick(); p.add.OnClick()
         assert(p.count:GetText() == "Groups (8 / 8)")
         assert(not WoWStatusGroups.contains(character(), WoWStatusGroups.key("Group 4")))
         assert(WoWStatusGroups.contains(character(), WoWStatusGroups.key("Group 9")))

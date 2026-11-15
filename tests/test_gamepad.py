@@ -503,3 +503,44 @@ def test_settings_character_visibility_checkboxes_are_reachable(lua):
         WoWStatusGamepad.setFocus(scroll.rows[1]);press("PAD1")
         assert(not bank.hide_from_list)
     ''')
+
+
+def test_group_name_generator_controls_are_reachable(lua):
+    # Issue #151: Create a group, the copyable name and Join it work with a controller.
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        setmetatable(methods,{__index=function() return function() end end})
+        function methods:SetText(text) self.text=text end
+        function methods:GetText() return self.text or "" end
+        function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function methods:SetShown(value) self.visible=value end
+        function methods:GetChecked() return self.checked end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusCaseFold=string.lower
+        function time() return 1793000000 end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
+    lua.execute((ROOT / 'addon/shared/Groups.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        local db={characters={}}
+        WoWStatusGroups.init(db,function() return nil end,function() end)
+        WoWStatusGroups.show()
+        local p=WoWStatusGroupWindow
+        p.rect={100,100,620,866}
+        p.create.rect={124,600,170,28}; p.created.rect={306,600,236,30}; p.join.rect={554,600,120,28}
+        local function reached(control)
+            for _,item in ipairs(WoWStatusGamepad.controls(p,{p})) do if item==control then return true end end
+            return false
+        end
+        assert(reached(p.create) and not reached(p.join))  -- Join it waits for a name
+        WoWStatusGamepad.update()
+        press("PADDDOWN")
+        WoWStatusGamepad.setFocus(p.create);press("PAD1")
+        assert(p.created.value and p.created:GetText()==p.created.value)
+        assert(reached(p.created) and reached(p.join))
+        WoWStatusGamepad.setFocus(p.join);press("PAD1")
+        local count=0
+        for _ in pairs(db.account_groups) do count=count+1 end
+        assert(count==1 and not reached(p.join))
+    ''')

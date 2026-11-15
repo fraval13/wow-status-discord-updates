@@ -138,6 +138,15 @@ W.add({
     ["Use a name of up to 40 characters."] = "Bruk eit namn på høgst 40 teikn.",
     ["Groups saved for all characters."] = "Gruppene er lagra for alle figurane.",
     ["Enter one group ID of up to 80 characters."] = "Skriv éin gruppe-ID på høgst 80 teikn.",
+    -- Group names nobody can guess (#151)
+    ["Short or ordinary names can be guessed by strangers, who would then see your group's activity. Use a longer, made-up name, or let the addon create one."] =
+        "Korte eller vanlege namn kan gjettast av framande, som då ser kva gruppa di gjer. Bruk eit lengre, oppdikta namn, eller la tillegget lage eitt.",
+    ["Add anyway"] = "Legg til likevel", ["Create a group"] = "Lag ei gruppe", ["Join it"] = "Bli med",
+    ["Click it, copy with Ctrl+C and send it privately. Every friend must type exactly this name."] =
+        "Klikk på det, kopier med Ctrl+C og send det privat. Kvar ven må skrive nøyaktig dette namnet.",
+    ["Recommended: let the addon create a name nobody can guess."] = "Tilrådd: la tillegget lage eit namn som ingen kan gjette.",
+    ["Anyone who knows a group's name can read its activity. Share it privately, never in public chat, on a stream or in a screenshot."] =
+        "Alle som kjenner namnet på ei gruppe, kan lese kva ho gjer. Del det privat, aldri i open chat, på strøyming eller i eit skjermbilete.",
     ["Use a non-empty group name of up to 80 characters, one per line."] = "Bruk eit gruppenamn på høgst 80 teikn, eitt per linje.",
     ["This exposed group is retired. Ask its owner privately for the replacement name."] =
         "Denne offentleggjorde gruppa er pensjonert. Spør eigaren privat om det nye namnet.",
@@ -147,8 +156,8 @@ W.add({
     ["WoW Status shares your milestones with friends inside the game: level-ups, first dungeon clears, new professions and more. They appear as popups and in a shared activity log. Everyone only needs this addon."] =
         "WoW Status deler måla dine med vener inne i spelet: nye nivå, første fangehol, nye yrke og meir. Dei dukkar opp som varsel og i ein felles aktivitetslogg. Alle treng berre dette tillegget.",
     ["Choose or join a group"] = "Lag eller bli med i ei gruppe",
-    ["Pick a group ID and give the same ID to your friends. Everyone with the same ID shares updates. Groups are saved for your whole account."] =
-        "Vel ein gruppe-ID og gje same ID til venene dine. Alle med same ID deler oppdateringar. Gruppene blir lagra for heile kontoen.",
+    ["Best: open Groups and click Create a group. The addon makes a long name nobody can guess; send it privately to your friends. Or type a name you have agreed on. Everyone with the same name shares updates. Groups are saved for your whole account."] =
+        "Best: opne Grupper og klikk Lag ei gruppe. Tillegget lagar eit langt namn som ingen kan gjette; send det privat til venene dine. Eller skriv eit namn de har vorte samde om. Alle med same namn deler oppdateringar. Gruppene blir lagra for heile kontoen.",
     ["Open Groups"] = "Opne Grupper", ["Choose your announcements"] = "Vel kva du vil kunngjere",
     ["Decide which milestones you share: levels, deaths, first zone visits, professions, dungeon clears and more. You can change this at any time."] =
         "Bestem kva mål du deler: nivå, dødsfall, første besøk i område, yrke, fangehol og meir. Du kan endre dette når som helst.",

@@ -10,6 +10,11 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Groups: Create a group makes a long name nobody can guess, ready to copy and send to friends privately
+- Groups: a short or ordinary group name now shows a warning first; Add anyway still joins it
+
 ## 1.52.0
 
 - Forever: "Enjoy <zone>!" reactions are read aloud too, with the zone name, for 131 Forever zones and dungeons

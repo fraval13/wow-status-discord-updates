@@ -14,8 +14,9 @@ local STEPS = {
      text="WoW Status shares your milestones with friends inside the game: level-ups, first dungeon clears, "
         .. "new professions and more. They appear as popups and in a shared activity log. Everyone only needs this addon."},
     {title="Choose or join a group",
-     text="Pick a group ID and give the same ID to your friends. Everyone with the same ID shares updates. "
-        .. "Groups are saved for your whole account.",
+     text="Best: open Groups and click Create a group. The addon makes a long name nobody can guess; "
+        .. "send it privately to your friends. Or type a name you have agreed on. "
+        .. "Everyone with the same name shares updates. Groups are saved for your whole account.",
      action={"Open Groups", function() SlashCmdList.WOWSTATUS("groups") end}},
     {title="Choose your announcements",
      text="Decide which milestones you share: levels, deaths, first zone visits, professions, dungeon clears and more. "
