@@ -25,6 +25,7 @@ plain text, at most 120 characters, without `|` or markup. An optional
 ## 1.53.0
 
 - Behind the scenes: the release pipeline is updated so new versions keep reaching you
+- The WoW Status window can now be sized from 70 to 200 %, typed in Options, and always stays on screen
 
 ## 1.52.0
 

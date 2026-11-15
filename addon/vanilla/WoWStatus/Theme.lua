@@ -8,10 +8,22 @@ local T, S = WoWStatusTheme, WoWStatusSafe
 -- achievement window, drawn with plain colour so every client shows it.
 T.ORDER = {"achievement", "night", "journal", "faction"}
 T.NAMES = {achievement="Achievement", night="Night", journal="Journal", faction="Faction"}
-T.MIN, T.MAX, T.STEP = .8, 1.2, .1
+-- Window size (#182): 70 to 200 % in whole percent, 100 % by default. A size
+-- the screen cannot hold is shown smaller (see T.applied), never cut off.
+T.MIN, T.MAX, T.STEP = .7, 2, .1
+-- Notifications that follow the window size take it only within the old window
+-- range, so a 200 % window does not also double every toast; their own size
+-- (below) still goes from 50 to 200 %.
+T.POPUP_FOLLOW_MIN, T.POPUP_FOLLOW_MAX = .8, 1.2
 -- Notification size in percent, separate from the window size.
 T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
 local windows = {}
+
+-- A window size kept in range and rounded to whole percent. Older saves held
+-- tenths (.8 to 1.2), which stay exactly as they were.
+local function clampScale(scale)
+    return math.max(T.MIN, math.min(T.MAX, math.floor(scale * 100 + .5) / 100))
+end
 
 local function settings()
     if type(WoWStatusDB) ~= "table" then return {name="night", scale=1, popups=false} end
@@ -24,7 +36,7 @@ local function settings()
     end
     if not T.NAMES[value.name] then value.name = "achievement" end
     local scale = S.number(value.scale)
-    value.scale = scale and math.max(T.MIN, math.min(T.MAX, math.floor(scale * 10 + .5) / 10)) or 1
+    value.scale = scale and scale == scale and clampScale(scale) or 1
     -- Notifications follow the theme by default since 1.15 (moved once; unticking stays).
     if not value.popups_default then value.popups = true; value.popups_default = true end
     value.popups = value.popups == true
@@ -47,9 +59,64 @@ function T.colour(alpha)
     return .025, .035, .065, alpha or .98
 end
 
+-- The largest scale at which a frame, with its 6-pixel border, fits inside
+-- UIParent; nil when the client cannot say (then nothing is limited).
+local function fitting(frame)
+    local width, height = S.number(S.call(frame.GetWidth, frame)), S.number(S.call(frame.GetHeight, frame))
+    local screenWidth = UIParent and S.number(S.call(UIParent.GetWidth, UIParent))
+    local screenHeight = UIParent and S.number(S.call(UIParent.GetHeight, UIParent))
+    if not width or not height or not screenWidth or not screenHeight or width <= 0 or height <= 0
+        or screenWidth <= 0 or screenHeight <= 0 then return nil end
+    return math.min(screenWidth / (width + 12), screenHeight / (height + 12))
+end
+
+-- The scale a window is shown at: the chosen size, or less when the screen
+-- (resolution and UI scale) cannot hold the window at that size. Never below
+-- half size, in case a client reports a nonsense screen while loading.
+function T.applied(frame)
+    local scale = settings().scale
+    local fit = frame and fitting(frame)
+    if fit then scale = math.min(scale, math.max(.5, math.floor(fit * 100) / 100)) end
+    return scale
+end
+
+-- Moves a window back inside the screen when a size or resolution change left
+-- part of it outside. The top and left edges win, so the title bar (where the
+-- window is dragged) and the close button stay reachable.
+local function keepOnScreen(frame)
+    local left, right = S.number(S.call(frame.GetLeft, frame)), S.number(S.call(frame.GetRight, frame))
+    local top, bottom = S.number(S.call(frame.GetTop, frame)), S.number(S.call(frame.GetBottom, frame))
+    local own = S.number(S.call(frame.GetEffectiveScale, frame))
+    local parent = UIParent and S.number(S.call(UIParent.GetEffectiveScale, UIParent))
+    local screenWidth = UIParent and S.number(S.call(UIParent.GetWidth, UIParent))
+    local screenHeight = UIParent and S.number(S.call(UIParent.GetHeight, UIParent))
+    if not left or not right or not top or not bottom or not own or not parent or not screenWidth
+        or not screenHeight or own <= 0 or parent <= 0 then return false end
+    local ratio = own / parent -- frame units to UIParent units
+    left, right, top, bottom = left * ratio, right * ratio, top * ratio, bottom * ratio
+    local dx, dy = 0, 0
+    if right > screenWidth then dx = screenWidth - right end
+    if left + dx < 0 then dx = -left end
+    if bottom < 0 then dy = -bottom end
+    if top + dy > screenHeight then dy = screenHeight - top end
+    if dx == 0 and dy == 0 then return false end
+    frame:ClearAllPoints()
+    frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", (left + dx) / ratio, (bottom + dy) / ratio)
+    return true
+end
+T.keepOnScreen = keepOnScreen
+
 -- Register a window background; it is themed now and whenever settings change.
+-- A window (not a popup) also stays on screen: clamped while dragged, and moved
+-- back inside whenever it opens.
 function T.attach(frame, background, popup)
     table.insert(windows, {frame=frame, background=background, popup=popup == true})
+    if not popup then
+        S.call(frame.SetClampedToScreen, frame, true)
+        if type(frame.HookScript) == "function" then
+            pcall(frame.HookScript, frame, "OnShow", function(self) keepOnScreen(self) end)
+        end
+    end
     T.apply()
 end
 -- The theme colour only, for the settings pages' own windows (opened in combat,
@@ -65,7 +132,8 @@ end
 function T.scale(popup)
     local value = settings()
     if not popup then return value.scale end
-    return (value.popups and value.scale or 1) * value.popup_size / 100
+    local follow = math.max(T.POPUP_FOLLOW_MIN, math.min(T.POPUP_FOLLOW_MAX, value.scale))
+    return (value.popups and follow or 1) * value.popup_size / 100
 end
 function T.popupSize() return settings().popup_size end
 -- Sets the notification size from a percentage; false for a value out of range.
@@ -84,7 +152,8 @@ function T.apply()
             window.background:SetColorTexture(T.colour())
         elseif not window.popup then
             window.background:SetColorTexture(T.colour())
-            window.frame:SetScale(value.scale)
+            window.frame:SetScale(T.applied(window.frame))
+            keepOnScreen(window.frame)
         elseif value.popups then
             window.background:SetColorTexture(T.colour(.96))
         else
@@ -104,9 +173,20 @@ end
 
 function T.resize(delta)
     local value = settings()
-    value.scale = math.max(T.MIN, math.min(T.MAX, math.floor((value.scale + delta) * 10 + .5) / 10))
+    value.scale = clampScale(value.scale + (tonumber(delta) or 0))
     T.apply()
     return value.scale
+end
+
+-- The window size in whole percent, and setting it from a percentage (the
+-- Options box); false for a value out of range, which keeps the old size.
+function T.windowSize() return math.floor(settings().scale * 100 + .5) end
+function T.setWindowSize(percent)
+    percent = tonumber(percent)
+    if not percent or percent ~= percent or percent < T.MIN * 100 or percent > T.MAX * 100 then return false end
+    settings().scale = clampScale(percent / 100)
+    T.apply()
+    return true
 end
 
 function T.setPopups(enabled)
@@ -116,7 +196,24 @@ end
 
 function T.label()
     local value = settings()
-    return "Theme: " .. T.NAMES[value.name] .. " · size " .. math.floor(value.scale * 100 + .5) .. "%"
+    local label = "Theme: " .. T.NAMES[value.name] .. " · size " .. math.floor(value.scale * 100 + .5) .. "%"
+    -- Say so when the screen holds the main window only at a smaller size.
+    local main = _G.WoWStatusMainFrame
+    local shown = main and math.floor(T.applied(main) * 100 + .5)
+    if shown and shown < math.floor(value.scale * 100 + .5) then
+        label = label .. " (" .. shown .. "% fits the screen)"
+    end
+    return label
+end
+
+-- A resolution or UI scale change can make the screen smaller or larger:
+-- size and place the windows again for it.
+if type(CreateFrame) == "function" then
+    local events = CreateFrame("Frame")
+    for _, event in ipairs({"DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED"}) do
+        pcall(events.RegisterEvent, events, event)
+    end
+    events:SetScript("OnEvent", function() T.apply() end)
 end
 
 -- Shared building blocks for the main window's pages: bordered boxes, round

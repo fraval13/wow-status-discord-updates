@@ -93,10 +93,26 @@ function P.show(host)
         end
         -- Window theme and size (#60). Account-wide, applied at once.
         panel.theme=text(panel,WoWStatusTheme.label(),24,-options-262,300)
-        local function refreshTheme() panel.theme:SetText(WoWStatusTheme.label()) end
+        -- The window size (#182) as a percentage to type, with - and + stepping 10 %.
+        panel.windowSize=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+        local function refreshTheme()
+            panel.theme:SetText(WoWStatusTheme.label())
+            panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize()))
+        end
         panel.themeNext=button(panel,"Next theme",330,-options-256,120,function() WoWStatusTheme.next();refreshTheme() end)
-        panel.smaller=button(panel,"Smaller",460,-options-256,50,function() WoWStatusTheme.resize(-WoWStatusTheme.STEP);refreshTheme() end)
-        panel.larger=button(panel,"Larger",514,-options-256,50,function() WoWStatusTheme.resize(WoWStatusTheme.STEP);refreshTheme() end)
+        panel.smaller=button(panel,"-",456,-options-256,26,function() WoWStatusTheme.resize(-WoWStatusTheme.STEP);refreshTheme() end)
+        panel.windowSize:SetPoint("TOPLEFT",490,-options-256);panel.windowSize:SetSize(36,30)
+        panel.windowSize:SetAutoFocus(false);panel.windowSize:SetMaxLetters(3)
+        if panel.windowSize.SetNumeric then panel.windowSize:SetNumeric(true) end
+        text(panel,"%",528,-options-262,14)
+        local function applyWindowSize()
+            WoWStatusTheme.setWindowSize(panel.windowSize:GetText())
+            panel.windowSize:ClearFocus()
+            refreshTheme() -- an out-of-range value shows the old size again
+        end
+        panel.windowSize:SetScript("OnEnterPressed",applyWindowSize)
+        panel.windowSize:SetScript("OnEscapePressed",function(self) self:SetText(tostring(WoWStatusTheme.windowSize()));self:ClearFocus() end)
+        panel.larger=button(panel,"+",544,-options-256,26,function() WoWStatusTheme.resize(WoWStatusTheme.STEP);refreshTheme() end)
         panel.themePopups=check("Use the theme and size for popups too",-options-298,function() return WoWStatusTheme.settings().popups end,
             WoWStatusTheme.setPopups)
         -- Notification size in percent (complaints that toasts were too big or small).
@@ -260,6 +276,7 @@ function P.show(host)
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))
     panel.refreshLanguage()
     panel.theme:SetText(WoWStatusTheme.label())
+    panel.windowSize:SetText(tostring(WoWStatusTheme.windowSize()))
     panel.refreshVoices()
     if panel.refreshSpoken then panel.refreshSpoken() end
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
