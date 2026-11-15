@@ -12,12 +12,15 @@ import html as html_text
 import json
 import re
 import shutil
+import struct
 import subprocess
 import sys
 import tempfile
 import tomllib
 import zipfile
+from html.parser import HTMLParser
 from pathlib import Path
+from urllib.parse import urlparse
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from whats_new import parse as parse_changelog  # noqa: E402
@@ -33,6 +36,65 @@ ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE), re.compile(r'B
 # Website notes that never ship, and file-manager files (Finder, Explorer) anywhere in website/.
 NOT_SHIPPED = ('README.md', 'ARTWORK.md')
 DESKTOP_FILES = ('.DS_Store', 'Thumbs.db', 'desktop.ini')
+# The link preview chat clients show for a pasted homepage link (issue #190).
+# scripts/make_link_preview.py draws it from the page's artwork; the build only checks it.
+LINK_PREVIEW = '/assets/link-preview.png'
+LINK_PREVIEW_SIZE = (1200, 630)
+PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
+
+
+class MetaTags(HTMLParser):
+    """The page's <meta property|name=... content=...> tags."""
+    def __init__(self):
+        super().__init__()
+        self.tags = {}
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        key = attrs.get('property') or attrs.get('name')
+        if tag == 'meta' and key and attrs.get('content') is not None:
+            self.tags.setdefault(key, attrs['content'])
+
+
+def png_size(data):
+    """(width, height) of a PNG, or None if data is not one."""
+    if len(data) < 24 or not data.startswith(PNG_SIGNATURE) or data[12:16] != b'IHDR':
+        return None
+    return struct.unpack('>II', data[16:24])
+
+
+def link_preview_path(html):
+    """Check the page's Open Graph and Twitter card tags; return the preview image's path.
+
+    Discord and other chat clients show a large card only with the image's size and
+    twitter:card, so a page without them fails the build (and the live verification).
+    """
+    parser = MetaTags()
+    parser.feed(html)
+    tags = parser.tags
+    width, height = LINK_PREVIEW_SIZE
+    required = {'og:type': 'website', 'og:image:type': 'image/png', 'og:image:width': str(width),
+                'og:image:height': str(height), 'twitter:card': 'summary_large_image'}
+    wrong = [key for key, value in required.items() if tags.get(key) != value]
+    wrong += [key for key in ('og:site_name', 'og:title', 'og:description', 'og:url', 'og:image:alt',
+                              'twitter:title', 'twitter:description', 'twitter:image:alt')
+              if not tags.get(key, '').strip()]
+    image = urlparse(tags.get('og:image', ''))
+    if image.scheme != 'https' or image.path != LINK_PREVIEW or image.query or image.fragment:
+        wrong.append('og:image')
+    if tags.get('twitter:image') != tags.get('og:image'):
+        wrong.append('twitter:image')
+    if wrong:
+        raise ValueError(f"Missing or incorrect link preview tags: {', '.join(sorted(wrong))}")
+    return image.path
+
+
+def check_link_preview(html, data):
+    """Raise unless html's preview tags are complete and data is the PNG they describe."""
+    link_preview_path(html)
+    if png_size(data) != LINK_PREVIEW_SIZE:
+        raise ValueError(f'{LINK_PREVIEW} must be a {LINK_PREVIEW_SIZE[0]}×{LINK_PREVIEW_SIZE[1]} PNG; '
+                         'run python scripts/make_link_preview.py')
 
 
 def git(root, *args):
@@ -196,6 +258,8 @@ def write_site(root, output, revision, editions, version, notes):
         html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('Unresolved homepage placeholder')
+    preview = output / LINK_PREVIEW.lstrip('/')
+    check_link_preview(html, preview.read_bytes() if preview.is_file() else b'')
     (output / 'index.html').write_text(html, encoding='utf-8')
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
 

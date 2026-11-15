@@ -122,7 +122,8 @@ def test_published_site_verification_checks_every_download(built_site):
                              expected=manifest)==manifest
 
 
-@pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version'])
+@pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
+                                   'webp_link_preview','no_twitter_card'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -134,6 +135,11 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data+b'corrupt'
         if path=='index.html' and fault=='stale_version':
             return data.replace(('VERSION '+manifest['editions']['tbc']['version']).encode(),b'VERSION 0.0.0')
+        # Issue #190: the live site must serve the 1200×630 PNG its tags describe.
+        if path=='assets/link-preview.png' and fault=='webp_link_preview':
+            return (built_site/'assets/adventure.webp').read_bytes()
+        if path=='index.html' and fault=='no_twitter_card':
+            return data.replace(b'summary_large_image',b'summary')
         return data
     with pytest.raises(ValueError):
         public_verifier()('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),
