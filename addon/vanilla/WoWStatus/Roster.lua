@@ -381,26 +381,30 @@ function R.isHidden(name) return R.hiddenNames()[key(name) or ""] == true end
 local function deathTotal(text)
     return tonumber(tostring(text or ""):match("^Total deaths: (%d+)$"))
 end
--- Total deaths per character key from each one's newest death announcement.
--- Tooltips ask on every mouseover, so the map is rebuilt only when the log
--- gains or loses entries, or every few seconds (an entry's text can be completed
--- in place); the Characters page always rebuilds it (fresh).
+-- Per character key, from the log: total deaths from the newest death
+-- announcement (deaths) and the highest level-up (levels). Tooltips ask on
+-- every mouseover, so the maps are rebuilt only when the log gains or loses
+-- entries, or every few seconds (an entry's text can be completed in place);
+-- the Characters page always rebuilds them (fresh).
 local deathsCache = {}
 local DEATHS_CACHE_SECONDS = 5
-local function deathTotals(fresh)
+local function journalFacts(fresh)
     local entries = WoWStatusJournal.entries()
     local first = entries[1]
     if fresh or deathsCache.entries ~= entries or deathsCache.count ~= #entries or deathsCache.first ~= (first and first.id)
         or time() - (deathsCache.at or 0) >= DEATHS_CACHE_SECONDS then
-        local map = {}
+        local map, levels = {}, {}
         for _, e in ipairs(entries) do
-            local k = e.kind == "death" and key(e.sender)
-            if k and map[k] == nil then map[k] = deathTotal(e.text) or false end
+            local k = (e.kind == "death" or e.kind == "level") and key(e.sender)
+            if k and e.kind == "death" and map[k] == nil then map[k] = deathTotal(e.text) or false end
+            local level = k and e.kind == "level" and S.number(e.level)
+            if level and level > (levels[k] or 0) then levels[k] = level end
         end
-        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map, at=time()}
+        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map, levels=levels, at=time()}
     end
-    return deathsCache.map
+    return deathsCache.map, deathsCache.levels
 end
+local function deathTotals(fresh) return (journalFacts(fresh)) end
 
 -- A unit's name as the character list keys it ("Name-Realm"), or nil. Secret
 -- values stay nil. WoW Forever's UnitName gives only the first name, so the
@@ -430,11 +434,13 @@ end
 -- not listed, for hidden characters and for this account's own characters (a
 -- stale list under an old player ID can hold them). A value the character does
 -- not share is nil, never zero. liveLevel is the level the game shows now: saved
--- XP progress belongs to the saved level only.
-function R.tooltipFacts(name, liveLevel)
+-- XP progress belongs to the saved level only. guid, when known, is the unit's.
+function R.tooltipFacts(name, liveLevel, guid)
     if not db or not current then return nil end
     local k = key(name)
     if not k then return nil end
+    -- Your own unit, by GUID (exact; a first-name match would hide namesakes).
+    if S.string(guid) and WoWStatusPopups.isSelf(name, guid) then return nil end
     -- The newest list wins when two player IDs hold the character (a reinstall).
     local selected, found, owner = WoWStatusGroups.selected(current), nil, nil
     for _, player in pairs(state().players) do
@@ -458,10 +464,14 @@ function R.tooltipFacts(name, liveLevel)
     for other, alt in pairs(owner.characters) do
         if other ~= k and type(alt) == "table" and not hidden[other] and WoWStatusPopups.fullName(alt.name) then alts = alts + 1 end
     end
+    local deaths, levels = journalFacts()
     local level, xp = S.number(found.level), S.number(found.xp)
-    if xp and (xp < 0 or xp > 999 or (S.number(liveLevel) and liveLevel ~= level)) then xp = nil end
+    -- A newer level (live, or a level-up in the log) makes the saved progress stale.
+    if xp and (xp < 0 or xp > 999 or (S.number(liveLevel) and liveLevel ~= level) or (levels[k] or 0) > (level or 0)) then
+        xp = nil
+    end
     local quests = S.number(found.quests)
-    return {name=found.name, player=S.string(owner.name), alts=alts, level=level, xp=xp, deaths=deathTotals()[k] or nil,
+    return {name=found.name, player=S.string(owner.name), alts=alts, level=level, xp=xp, deaths=deaths[k] or nil,
         quests=quests, quests_source=quests and found.quests_source or nil, played=S.number(found.played)}
 end
 

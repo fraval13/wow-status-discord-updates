@@ -29,6 +29,10 @@ function UnitName(unit)
     return "Thora"
 end
 function UnitLevel(unit) return __units[unit] and __units[unit].level or __level end
+function UnitGUID(unit)
+    if __units[unit] then return __units[unit].guid or ("Player-1-" .. __units[unit].name) end
+    return "Player-123-Thora"
+end
 function hover() __tip = {}; WoWStatusUnitTooltip.add(GameTooltip); return __tip end
 '''
 
@@ -109,7 +113,7 @@ def test_non_members_hidden_characters_and_yourself_get_no_lines():
     assert shown(thora) == []
     thora.execute('__units.mouseover = {name="Mira", level=1, player=false}')
     assert shown(thora) == []
-    thora.execute('__units.mouseover = {name="Thora", level=1, player=true}')
+    thora.execute('__units.mouseover = {name="Thora", level=1, player=true, guid="Player-123-Thora"}')
     assert shown(thora) == []
     # Mira hides her character from friends: the block goes too.
     thora.execute('__units.mouseover = {name="Mira", level=1, player=true}')
@@ -157,6 +161,34 @@ def test_leaving_the_group_removes_the_block():
     assert shown(thora) != []
     thora.execute('for id in pairs(character().group_ids) do character().group_ids[id] = nil end')
     assert shown(thora) == []
+
+
+def test_a_hook_firing_twice_adds_the_block_once():
+    _, thora = friends()
+    thora.execute('''
+        __base = 3
+        function GameTooltip:NumLines() return __base + #__tip end
+        function rebuild() __tip = {}; WoWStatusUnitTooltip.add(GameTooltip) end
+    ''')
+    thora.execute('rebuild(); WoWStatusUnitTooltip.add(GameTooltip)')
+    assert thora.eval('#__tip') == 2  # header and one value, not twice
+    thora.execute('rebuild()')  # cleared and built again: added again
+    assert thora.eval('#__tip') == 2
+
+
+def test_a_level_up_in_the_log_makes_saved_progress_stale():
+    _, thora = friends()
+    thora.execute('''
+        for _, player in pairs(WoWStatusDB.roster.players) do
+            for _, ch in pairs(player.characters) do ch.xp = 850 end
+        end
+        __units.mouseover.level = nil
+    ''')
+    assert ('Level progress', '85%') in shown(thora)
+    thora.execute('''
+        table.insert(WoWStatusJournal.entries(), 1, {id="x", kind="level", level=2, sender="Mira-TestRealm", at=3})
+    ''')
+    assert all(row[0] != 'Level progress' for row in shown(thora))
 
 
 def test_the_player_name_shows_when_you_also_know_their_alts():
@@ -266,7 +298,7 @@ def test_your_own_character_in_a_stale_list_gets_no_block():
     thora.execute('''
         local _, player = next(WoWStatusDB.roster.players)
         player.characters["thora-testrealm"] = {name="Thora-TestRealm", level=1, played=60}
-        __units.mouseover = {name="Thora", level=1, player=true}
+        __units.mouseover = {name="Thora", level=1, player=true, guid="Player-123-Thora"}
     ''')
     assert thora.eval('WoWStatusRoster.tooltipFacts("Thora-TestRealm")') is None
     assert shown(thora) == []

@@ -35,10 +35,10 @@ function U.nextSize()
 end
 
 -- The block for a character name as {header, {label, value}, ...}, or nil.
-function U.lines(name, liveLevel)
+function U.lines(name, liveLevel, guid)
     local value = U.settings()
     if not value.enabled or not WoWStatusRoster or not WoWStatusRoster.tooltipFacts then return nil end
-    local facts = WoWStatusRoster.tooltipFacts(name, liveLevel)
+    local facts = WoWStatusRoster.tooltipFacts(name, liveLevel, guid)
     if not facts then return nil end
     local rows = {}
     local function add(label, shown)
@@ -67,10 +67,16 @@ function U.add(tooltip, data)
     end
     local name = WoWStatusRoster and WoWStatusRoster.unitName and WoWStatusRoster.unitName(unit)
     if not name then return end
-    local block = U.lines(name, S.number(S.call(UnitLevel, unit)))
+    -- Once per build: a hook firing again for the same unit, before the tooltip
+    -- was cleared (it then has fewer lines again), adds nothing.
+    local lines = S.number(S.call(tooltip.NumLines, tooltip))
+    if lines and U.added and U.added.name == name and lines >= U.added.lines then return end
+    local block = U.lines(name, S.number(S.call(UnitLevel, unit)), S.stringCall(UnitGUID, unit))
     if not block then return end
     tooltip:AddLine(block.header, 1, .82, 0)
     for _, row in ipairs(block.rows) do tooltip:AddDoubleLine(row[1], row[2], .8, .8, .8, 1, 1, 1) end
+    local after = S.number(S.call(tooltip.NumLines, tooltip))
+    U.added = after and {name=name, lines=after} or nil
     if tooltip.Show then tooltip:Show() end -- Resize to fit the added lines.
 end
 
