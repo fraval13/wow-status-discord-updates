@@ -318,3 +318,74 @@ def test_gamepad_reaches_the_milestone_checkbox():
         end
         assert(found)
     ''')
+
+
+def test_a_jump_in_logged_death_totals_breaks_no_record():
+    """Totals 1 then 3: a death between them never reached the log."""
+    lua = actor('Thora')
+    clock(lua, 10)
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'death', 30 * DAY, '{text="Total deaths: 1"}'),
+                       ('Mira-TestRealm', '1-2-b', 'death', 3600, '{text="Total deaths: 3"}')])
+    board(lua, {'Mira-TestRealm': 3})
+    text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{lua.eval("__group")}")'))
+    assert 'deathless' not in text, text
+    assert lua.eval('''(function()
+        for _, e in ipairs(WoWStatusJournal.entries()) do
+            if e.text == "Total deaths: 3" then return WoWStatusStreaks.endedText(e) end
+        end
+    end)()''') is None
+
+
+def test_a_friend_who_stopped_sharing_deaths_shows_no_streak():
+    """A friend's row falls back to the log's total; deaths_shared says what they share."""
+    lua, group = crafted()
+    lua.execute('''
+        WoWStatusRoster.leaderboard = function() return {
+            {name="Mira-TestRealm", deaths=2, deaths_shared=false},
+            {name="Bob-TestRealm", deaths=0, deaths_shared=false}} end
+        WoWStatusStreaks.reset()
+    ''')
+    text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{group}")'))
+    assert 'deathless' not in text, text
+    assert lua.eval('WoWStatusStreaks.forRow({name="Bob-TestRealm", deaths=0, deaths_shared=false})') is None
+    assert lua.eval('WoWStatusStreaks.forRow({name="Bob-TestRealm", deaths=0, deaths_shared=0})') is not None
+
+
+def test_a_late_level_entry_does_not_repeat_a_milestone():
+    lua = actor('Thora')
+    clock(lua, 10)
+    notices(lua)
+    lua.execute('WoWStatusStreaks.setMilestones(true)')
+    board(lua, {'Mira-TestRealm': 1})
+    with_entries(lua, [('Mira-TestRealm', '1-0-a', 'death', 3600, None)])
+    with_entries(lua, [('Mira-TestRealm', f'1-1-{level}', 'level', 300 - level, f'{{level={level}}}') for level in range(2, 7)])
+    assert [lua.eval(f'__notices[{i}].text') for i in range(1, lua.eval('#__notices') + 1)] == ['5 levels without a death!']
+    # A repeated level-up and another entry later: still 5 levels, no new notice.
+    with_entries(lua, [('Mira-TestRealm', '1-2-x', 'level', 100, '{level=6}'),
+                       ('Mira-TestRealm', '1-2-y', 'zone', 50, '{text="Entered Duskwood"}')])
+    assert lua.eval('#__notices') == 1
+
+
+def test_milestone_memory_forgets_the_oldest_streak_only():
+    lua = make_lua(STUBS)
+    lua.execute('''
+        WoWStatusDB.streaks = {milestones=true, weeks={}}
+        for i = 1, 200 do WoWStatusDB.streaks.weeks["p" .. i] = {start=1000 + i, weeks=1} end
+    ''')
+    lua.execute('''
+        local weeks = WoWStatusDB.streaks.weeks
+        -- What noted() does for a 201st character, through the same memory.
+        WoWStatusStreaks.reset()
+    ''')
+    # Drive the memory through a real milestone for a new character.
+    lua.execute('''
+        function WoWStatusStreaks.compute() return {current={x={levels=5, seconds=0, exact=true, start=5000}}, total={}} end
+        function WoWStatusRoster.key() return "x" end
+        WoWStatusRoster.leaderboard = function() return {{name="X-TestRealm", deaths=1}} end
+        __n = 0
+        WoWStatusPopups.notice = function() __n = __n + 1 end
+        WoWStatusStreaks.noted({sender="X-TestRealm", kind="level", level=7, at=WoWStatusSafe.now(), origin="live", groups={g=true}})
+        local weeks = WoWStatusDB.streaks.weeks
+        assert(__n == 1 and weeks.x and weeks.x.levels == 5)
+        assert(weeks.p1 == nil and weeks.p2 ~= nil)
+    ''')
