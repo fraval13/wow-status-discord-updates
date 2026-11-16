@@ -198,6 +198,9 @@ def test_groups_page_lists_and_browses_groups():
         local row = panel.rows[1]
         assert(row:IsShown() and row.listed and not row.listed:GetChecked())
         row.listed:SetChecked(true); row.listed.OnClick(row.listed)
+        assert(not WoWStatusGroups.isListed(row.id))
+        local consent = WoWStatusGroupListingConfirm
+        consent.accept.OnClick(consent.accept)
         assert(WoWStatusGroups.isListed(row.id))
         -- A friend's listing, joined from Browse groups.
         local id = WoWStatusGroups.key("Secret Garden")

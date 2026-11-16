@@ -149,6 +149,14 @@ candidates.
 - Share it with the group privately. Never put a real group name or its key in Git,
   issues, pull requests, screenshots or logs. Operators keep production names only
   in the server's private configuration.
+- **Share this group's name with my other groups** is an account-wide opt-in.
+  It sends the name to friends in your other groups, who can find it in **Browse
+  groups** and join. The first opt-in for each group needs confirmation, showing
+  the unique known friends online in those other groups; offline members may
+  receive the name later. A checked **Sharing this group's name with my other
+  groups** control shows that sharing is active. Turning it off cannot recall
+  copies already shared. Removing the group clears its listing and confirmation,
+  so rejoining starts private. Unlisted names never enter listing packets.
 - The two previously exposed production groups are retired. Updated addons remove
   those memberships, leave their old channels and reject rejoining them. The
   companion also rejects those retired destinations. Only one-way fingerprints

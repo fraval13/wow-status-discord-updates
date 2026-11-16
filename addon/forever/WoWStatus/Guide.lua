@@ -15,7 +15,7 @@ local STEPS = {
         .. "new professions and more. They appear as popups and in a shared activity log. Everyone only needs this addon."},
     {title="Choose or join a group",
      text="Pick a group ID and give the same ID to your friends. Everyone with the same ID shares updates. "
-        .. "Groups are saved for your whole account.",
+        .. "Groups are saved for your whole account. Keep the name private: sharing it with your other groups lets their members join too.",
      action={"Open Groups", function() SlashCmdList.WOWSTATUS("groups") end}},
     {title="Choose your announcements",
      text="Decide which milestones you share: levels, deaths, first zone visits, professions, dungeon clears and more. "

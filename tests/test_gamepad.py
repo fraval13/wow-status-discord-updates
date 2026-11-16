@@ -803,3 +803,52 @@ def test_group_goal_editor_controls_are_reachable(lua):
         WoWStatusGamepad.setFocus(__page.nextGroup);press("PAD1")
         assert(WoWStatusDB.goal_editor.group=="two")
     ''')
+
+
+def test_group_listing_checkbox_and_confirmation_are_reachable(lua):
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetText(text) self.text=text end
+        function methods:GetText() return self.text end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function methods:SetShown(shown) self.visible=shown end
+        function methods:SetChecked(value) self.checked=value end
+        function methods:GetChecked() return self.checked end
+        function methods:SetParent(parent) self.parent=parent end
+        function methods:SetScrollChild(child) self.child=child end
+        for _,name in ipairs({"SetJustifyH","SetWordWrap","SetFontObject","SetAutoFocus",
+            "SetMultiLine","SetMaxLetters","SetTextColor","SetScale","SetMovable","RegisterForDrag"}) do
+            methods[name]=function() end
+        end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusSafe={now=function() return 100 end,stampExport=function() end}
+        WoWStatusPopups={peers=function() return {} end}
+        WoWStatusDB={characters={},account_groups={demo="Example"}}
+    ''')
+    lua.execute((ROOT / 'addon/shared/Groups.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusGroups.init(WoWStatusDB,function() return {group_ids={demo={}}} end,function() end)
+        WoWStatusGroups.show()
+        local row=WoWStatusGroupWindow.rows[1]
+        local controls=WoWStatusGamepad.controls(WoWStatusGroupWindow,{WoWStatusGroupWindow})
+        local found=false
+        for _,control in ipairs(controls) do if control==row.listed then found=true end end
+        assert(found)
+        row.listed:SetChecked(true);row.listed:GetScript("OnClick")(row.listed)
+        local dialog=WoWStatusGroupListingConfirm
+        local reached={}
+        for _,control in ipairs(WoWStatusGamepad.controls(dialog,{dialog})) do reached[control]=true end
+        assert(reached[dialog.cancel] and reached[dialog.accept])
+        WoWStatusGamepad.update()
+        assert(WoWStatusGamepad.top()==dialog)
+        press("PAD2")
+        assert(not dialog:IsShown() and not WoWStatusGroups.isListed("demo"))
+        WoWStatusGroups.requestListing("demo",true)
+        fire("PLAYER_REGEN_DISABLED");__combat=true;WoWStatusGamepad.update();assert(not anyBound())
+        __combat=false
+        WoWStatusGamepad.update()
+        press("PADDDOWN")
+        WoWStatusGamepad.setFocus(dialog.accept);press("PAD1")
+        assert(WoWStatusGroups.isListed("demo") and not dialog:IsShown())
+    ''')

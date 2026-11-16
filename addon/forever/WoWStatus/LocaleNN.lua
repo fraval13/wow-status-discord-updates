@@ -98,6 +98,22 @@ W.add({
     ["Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."] =
         "Direkteoppdateringane dine nådde ikkje denne figuren. Be dei skrive /reload, eller sjekk at de er på same type rike.",
     ["Listed"] = "Lista", ["Listed group"] = "Lista gruppe", ["Browse groups"] = "Bla i grupper", ["listed by"] = "lista av",
+    ["Share this group's name with my other groups"] = "Del namnet på denne gruppa med dei andre gruppene mine",
+    ["Sharing this group's name with my other groups"] = "Deler namnet på denne gruppa med dei andre gruppene mine",
+    ["Share this group's name?"] = "Dele namnet på denne gruppa?",
+    ["Share the name"] = "Del namnet", ["Cancel"] = "Avbryt",
+    ["Share this group's name with your other groups? Anyone with the name can join."] =
+        "Dele namnet på denne gruppa med dei andre gruppene dine? Alle som kjenner namnet, kan bli med.",
+    ["%d known friends are online in your other groups now. Others may receive it later."] =
+        "%d kjende vener er pålogga i dei andre gruppene dine no. Andre kan få namnet seinare.",
+    ["Turning this off later cannot take back a name already shared."] =
+        "Om du slår dette av seinare, kan du ikkje ta tilbake eit namn som alt er delt.",
+    ["Anyone with the name can join. Turning this off later cannot take back a name already shared."] =
+        "Alle som kjenner namnet, kan bli med. Om du slår dette av seinare, kan du ikkje ta tilbake eit namn som alt er delt.",
+    ["No shared group names yet. Friends can share a group's name from their Groups page."] =
+        "Ingen delte gruppenamn enno. Vener kan dele namnet på ei gruppe frå Gruppesida si.",
+    ["Pick a group ID and give the same ID to your friends. Everyone with the same ID shares updates. Groups are saved for your whole account. Keep the name private: sharing it with your other groups lets their members join too."] =
+        "Vel ein gruppe-ID og gje den same ID-en til venene dine. Alle med same ID deler oppdateringar. Gruppene er lagra for heile kontoen din. Hald namnet privat: om du deler det med andre grupper, kan medlemene der òg bli med.",
     ["Friends in your other groups can see this group under Browse groups and join it. Leave it off for a private group."] =
         "Vener i dei andre gruppene dine kan sjå denne gruppa under Bla i grupper og bli med. La det vere av for ei privat gruppe.",
     ["No listed groups yet. Friends list a group by ticking Listed on their Groups page."] =
