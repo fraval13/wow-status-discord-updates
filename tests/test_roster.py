@@ -1,4 +1,5 @@
 """Character list grouped by player, with portraits (#59)."""
+import pytest
 from test_journal import actor, clock
 
 EXTRA = '''
@@ -401,10 +402,14 @@ def test_sync_looks_up_one_member_with_who():
     thora.execute('__results = {{fullName="Mira", level=42}, {fullName="Stranger", level=5}}')
     thora.eval('fire')('WHO_LIST_UPDATE')
     assert level_of(thora, 'Mira-TestRealm')[0] == 42
-    # A /who the player types, answered as a chat line.
+    # Later chat and a /who the player types cannot refresh our saved answer.
+    saved_at = thora.eval('WoWStatusDB.roster.who["mira-testrealm"].at')
+    clock(thora, 5)
     thora.execute('__results = {{fullName="Mira", level=43}}')
     thora.eval('fire')('CHAT_MSG_SYSTEM', 'Mira: Level 43 Dwarf Warrior')
-    assert level_of(thora, 'Mira-TestRealm')[0] == 43
+    thora.eval('fire')('WHO_LIST_UPDATE')
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
+    assert thora.eval('WoWStatusDB.roster.who["mira-testrealm"].at') == saved_at
     # Only group members are remembered.
     assert thora.eval('(function() local n = 0; for _ in pairs(WoWStatusDB.roster.who) do n = n + 1 end; return n end)()') == 1
 
@@ -564,12 +569,99 @@ def test_honor_kills_dungeons_and_mounts_reach_friends():
     assert (row.honor_kills, row.dungeons, row.mounts) == (42, 2, 2)
 
 
-def test_old_who_results_are_not_counted_again():
+@pytest.mark.parametrize('legacy', [False, True])
+def test_who_results_are_only_read_for_a_pending_lookup(legacy):
     mira, thora = pair()
     pump(mira, thora)
     thora.execute('''
-        __results = {{fullName="Mira", level=42}}
-        C_FriendList = {GetNumWhoResults=function() return #__results end, GetWhoInfo=function(i) return __results[i] end}
+        __reads, __results = 0, {{fullName="Mira", level=42}}
+        function SendWho() end
+        function GetNumWhoResults() __reads = __reads + 1; return #__results end
+        function GetWhoInfo(i) return __results[i].fullName, "", __results[i].level end
     ''')
+    if not legacy:
+        thora.execute('''C_FriendList = {SendWho=SendWho, GetNumWhoResults=GetNumWhoResults,
+            GetWhoInfo=function(i) return __results[i] end}''')
+    for event in ('CHAT_MSG_SYSTEM', 'WHO_LIST_UPDATE'):
+        thora.eval('fire')(event)
+    assert thora.eval('WoWStatusRoster.readWho()') == 0
+    assert thora.eval('__reads') == 0
+    assert thora.eval('WoWStatusRoster.whoLookup()') == 'Mira-TestRealm'
+    # A short result can arrive through system chat on either API family.
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'Mira: Level 42 Dwarf Warrior')
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
+    assert thora.eval('__reads') == 1
+    clock(thora, 5)
+    thora.eval('fire')('WHO_LIST_UPDATE')
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'Someone has come online.')
+    assert thora.eval('__reads') == 1
+
+
+@pytest.mark.parametrize('monotonic', [False, True])
+def test_a_pending_who_lookup_expires(monotonic):
+    mira, thora = pair()
+    pump(mira, thora)
+    clock(thora, 0)
+    thora.execute('''
+        __reads = 0
+        C_FriendList = {SendWho=function() end,
+            GetNumWhoResults=function() __reads = __reads + 1; return 1 end,
+            GetWhoInfo=function() return {fullName="Mira", level=42} end}
+    ''')
+    if not monotonic:
+        thora.execute('GetTime = nil')
+    assert thora.eval('WoWStatusRoster.whoLookup()') == 'Mira-TestRealm'
+    clock(thora, 10)
+    thora.eval('fire')('WHO_LIST_UPDATE')
+    thora.eval('fire')('CHAT_MSG_SYSTEM')
+    assert thora.eval('__reads') == 0
+    assert level_of(thora, 'Mira-TestRealm')[0] == 1
+
+
+def test_unrelated_who_results_do_not_consume_a_pending_lookup():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        __results = {{fullName="Stranger", level=42}, {fullName="Thora", level=42}}
+        C_FriendList = {SendWho=function() end,
+            GetNumWhoResults=function() return #__results end,
+            GetWhoInfo=function(i) return __results[i] end}
+    ''')
+    thora.eval('WoWStatusRoster.whoLookup()')
+    assert thora.eval('WoWStatusRoster.readWho()') == 0
+    assert thora.eval('next(WoWStatusDB.roster.who)') is None
+    thora.execute('__results = {{fullName="Mira", level=42}}')
     assert thora.eval('WoWStatusRoster.readWho()') == 1
     assert thora.eval('WoWStatusRoster.readWho()') == 0
+
+
+def test_an_unchanged_who_level_consumes_the_answer_without_refreshing_it_again():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        WoWStatusDB.roster.who = {["mira-testrealm"]={level=42, at=time()-100}}
+        C_FriendList = {SendWho=function() end,
+            GetNumWhoResults=function() return 1 end,
+            GetWhoInfo=function() return {fullName="Mira", level=42} end}
+    ''')
+    thora.eval('WoWStatusRoster.whoLookup()')
+    assert thora.eval('WoWStatusRoster.readWho()') == 0  # same level, fresh answer
+    saved_at = thora.eval('WoWStatusDB.roster.who["mira-testrealm"].at')
+    assert saved_at == thora.eval('time()')
+    clock(thora, 5)
+    thora.eval('fire')('CHAT_MSG_SYSTEM')
+    assert thora.eval('WoWStatusDB.roster.who["mira-testrealm"].at') == saved_at
+
+
+@pytest.mark.parametrize('send', ['error("blocked")', 'return false'])
+def test_a_failed_who_send_leaves_no_pending_lookup_and_can_be_retried(send):
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        C_FriendList = {GetNumWhoResults=function() error("must not read") end}
+    ''')
+    thora.execute(f'C_FriendList.SendWho=function() {send} end')
+    assert thora.eval('WoWStatusRoster.whoLookup()') is None
+    assert thora.eval('WoWStatusRoster.readWho()') == 0
+    thora.execute('C_FriendList.SendWho=function() end')
+    assert thora.eval('WoWStatusRoster.whoLookup()') == 'Mira-TestRealm'

@@ -47,6 +47,7 @@ R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
 -- Members asked for their list this session (at first contact), and /who lookups.
 local requested, whoAsked = {}, {}
+local whoPending
 local XP_INTERVAL = 300
 -- Seconds between checks for friends logging in or out while the page is open.
 R.ONLINE_CHECK = 5
@@ -541,9 +542,10 @@ end
 -- /who: the game's own answer gives an online member's level now, also for
 -- members whose version never refreshes a list. The game allows a /who only from
 -- a click, so the Sync button looks up one member each time (those without a
--- recent list first); results of a /who the player types are read too.
+-- recent list first). Only consume the matching answer to our own lookup.
 -- Untested live on WoW Forever: if it blocks this, remove the lookup.
 local MAX_WHO = 200
+local WHO_TIMEOUT = 10
 local function whoLevels()
     local roster = state()
     roster.who = type(roster.who) == "table" and roster.who or {}
@@ -558,11 +560,13 @@ local function isMember(k)
     return false
 end
 function R.readWho()
-    if not db then return 0 end
+    if not db or not whoPending then return 0 end
+    local now = GetTime and GetTime() or time()
+    if now >= whoPending.expires then whoPending = nil; return 0 end
     local F = C_FriendList
     local count = S.number(F and F.GetNumWhoResults and S.call(F.GetNumWhoResults) or S.call(GetNumWhoResults))
     if not count then return 0 end
-    local levels, learnt, maximum = whoLevels(), 0, WoWStatusAdapter.max_level or 60
+    local levels, learnt, matched, maximum = whoLevels(), 0, false, WoWStatusAdapter.max_level or 60
     for i = 1, math.min(count, 50) do
         local name, level
         if F and F.GetWhoInfo then
@@ -573,17 +577,18 @@ function R.readWho()
             if ok then name, level = S.string(n), S.number(l) end
         end
         local k = name and key(name)
-        if k and level and level == math.floor(level) and level >= 1 and level <= maximum and isMember(k) then
+        if k == whoPending.key and level and level == math.floor(level) and level >= 1 and level <= maximum and isMember(k) then
+            matched = true
             if not levels[k] then
                 local n, oldest, oldestAt = 0, nil, math.huge
                 for id, item in pairs(levels) do n = n + 1; if (item.at or 0) < oldestAt then oldest, oldestAt = id, item.at or 0 end end
                 if n >= MAX_WHO and oldest then levels[oldest] = nil end
             end
-            -- The same old results are read again on later system messages: count changes only.
             if not levels[k] or levels[k].level ~= level then learnt = learnt + 1 end
             levels[k] = {level=level, at=time()}
         end
     end
+    if matched then whoPending = nil end
     if learnt > 0 then S.debug("/who: levels learnt for " .. learnt .. " group member(s)") end
     if learnt > 0 then R.render() end
     return learnt
@@ -616,9 +621,11 @@ function R.whoLookup()
     local send = F and F.SendWho or SendWho
     S.debug("/who lookup: " .. tostring(target) .. (send and "" or " (no SendWho)"))
     if not target or not send then return nil end
-    whoAsked[key(target)] = true
     local short = target:match("^([^%-]+)")
-    pcall(send, 'n-"' .. short .. '"')
+    whoPending = {key=key(target), expires=(GetTime and GetTime() or time()) + WHO_TIMEOUT}
+    local ok, result = pcall(send, 'n-"' .. short .. '"')
+    if not ok or result == false then whoPending = nil; return nil end
+    whoAsked[key(target)] = true
     return target
 end
 
@@ -2322,6 +2329,7 @@ function R.init(database, character, reporter)
     -- The list sent at login already carries this XP.
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
     requested, whoAsked = {}, {}
+    whoPending = nil
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
     equipmentSendState = {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
