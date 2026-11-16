@@ -1,0 +1,1 @@
+- Behind the scenes: release notes are collected in a new way, so changes reach you with fewer delays

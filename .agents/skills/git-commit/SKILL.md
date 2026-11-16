@@ -66,8 +66,8 @@ to a real GitHub account, so no stranger gets credited for the commit.
   replaces them.
 - Release commits made by `scripts/prepare_release.py` keep their automatic
   format; do not reword them.
-- Player-facing release notes still go under `## Unreleased` in
-  `CHANGELOG.md` as `AGENTS.md` describes. If a pull request has no such note,
+- Player-facing release notes still go in a `changelog.d/` note file
+  as `AGENTS.md` describes. If a pull request has no such note,
   the release uses the public commit title, so keep titles of pull requests
   that reach `main` clear to players too.
 - All other commit rules in `AGENTS.md` still apply: commit only when asked,

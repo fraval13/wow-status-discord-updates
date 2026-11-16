@@ -89,8 +89,8 @@ The **Checks and addon packages** workflow prepares one minor release on each
 main push before validation. It commits the version in `pyproject.toml`, all four
 TOCs and generated release notes, then passes that exact commit to both test
 platforms, the deployment gate, packaging and public verification. Retries reuse
-that release rather than incrementing again. Feature PRs add notes under
-`## Unreleased` and leave versions alone. A stale run never overwrites newer main.
+that release rather than incrementing again. Feature PRs add a note file
+in `changelog.d/` and leave versions alone. A stale run never overwrites newer main.
 The release job alone has repository write access; PRs skip it. Its GITHUB_TOKEN
 push does not recursively trigger a second run, so the original run explicitly
 validates and deploys the returned release revision.

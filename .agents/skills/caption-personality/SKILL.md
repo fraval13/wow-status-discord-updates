@@ -32,7 +32,8 @@ untouched here.
    and in `tests/test_reaction_voices.py` (`#voices` and the clicks back to Random).
 5. **Document it.** Add a row to the table in `docs/caption-personalities/README.md`,
    name it in the README "Caption personalities" section, and add a player-facing
-   note under `## Unreleased` in `CHANGELOG.md` (one line, at most 120 characters).
+   note as a new `changelog.d/<issue>-<short-name>.md` file (one `- ` line, at most
+   120 characters; see `changelog.d/README.md`).
 6. **Verify.** Run the checks in `AGENTS.md` ("Editing and validation"), including
    `pytest -q --lua=5.1`. Done when `tests/test_personalities.py`, `test_reaction_voices.py`,
    `test_reactions.py`, `test_flavour.py`,
