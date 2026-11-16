@@ -1,6 +1,8 @@
 """Public addon ZIPs ship only what the game loads, and only at the project version."""
+import html
 import importlib.util
 import io
+import re
 import subprocess
 import tarfile
 import zipfile
@@ -167,3 +169,88 @@ def test_key_bindings_ship_without_a_toc_line():
     # The game loads Bindings.xml by its name; other XML still needs a TOC line.
     tracked = {'WoWStatus.toc', 'Core.lua', 'Bindings.xml', 'Other.xml', 'Libs/Bindings.xml'}
     assert builder.package_files('Core.lua\n', tracked) == ['Bindings.xml', 'Core.lua', 'WoWStatus.toc']
+
+
+def test_changelog_page_lists_every_release_in_order_with_stable_anchors(addon_repo, tmp_path):
+    # #194: every ## <version> section, newest first, generated so it cannot drift.
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    sections = builder.parse_changelog(git(addon_repo, 'show', 'HEAD:CHANGELOG.md').decode('utf-8'))
+    page = (tmp_path / 'site/changelog/index.html').read_text(encoding='utf-8')
+    assert re.findall(r'<section class="release-entry" id="v([\d.]+)"', page) == [v for v, _ in sections]
+    for version, notes in sections:
+        entry = page.split(f'id="v{version}"', 1)[1].split('</section>', 1)[0]
+        assert f'<a href="#v{version}">' in entry
+        assert re.findall('<li>(.*?)</li>', entry) == [html.escape(note) for note in notes]
+    assert f'{len(sections)} releases so far' in page
+    assert f'href="#v{sections[0][0]}"' in page.split('<main', 1)[0]  # the utility bar's latest link
+    assert page.count('<small>LATEST</small>') == 1
+    assert f'id="v{sections[0][0]}"' in page.split('<small>LATEST</small>', 1)[0].rsplit('<section', 1)[1]
+    homepage = (tmp_path / 'site/index.html').read_text(encoding='utf-8')
+    assert 'href="/changelog/"' in homepage
+    assert f'href="/changelog/#v{sections[0][0]}"' in homepage
+    assert not re.search(r'__[A-Z_]+__', page + homepage)
+
+
+def test_a_changelog_that_does_not_parse_fails_the_build(addon_repo, tmp_path):
+    changelog = git(addon_repo, 'show', 'HEAD:CHANGELOG.md')
+    commit(addon_repo, {'CHANGELOG.md': changelog + b'\n## Someday\n\n- A note\n'})
+    output = tmp_path / 'site'
+    with pytest.raises(ValueError, match='heading must be a version'):
+        builder.build(addon_repo, output, 'HEAD')
+    assert not output.exists()
+
+
+def test_a_missing_changelog_template_fails_the_build(addon_repo, tmp_path):
+    (addon_repo / 'website/changelog/index.html').unlink()
+    output = tmp_path / 'site'
+    with pytest.raises(ValueError, match='changelog/index.html is missing'):
+        builder.build(addon_repo, output, 'HEAD')
+    assert not output.exists()
+
+
+def test_changelog_entries_escape_notes_and_mark_the_built_version():
+    entries = builder.render_changelog([('2.0.0', ['Fish & <chips>']), ('1.0.0', ['First'])])
+    assert '<li>Fish &amp; &lt;chips&gt;</li>' in entries
+    assert entries.index('id="v2.0.0"') < entries.index('id="v1.0.0"')
+    assert entries.count('LATEST') == 1 and entries.index('LATEST') < entries.index('id="v1.0.0"')
+
+
+def test_notes_newer_than_the_built_version_stay_off_the_site(addon_repo, tmp_path):
+    # Notes committed before the version bump (or an older --addon-ref) are not released yet.
+    changelog = git(addon_repo, 'show', 'HEAD:CHANGELOG.md').decode('utf-8')
+    version = builder.project_version(addon_repo, 'HEAD')
+    commit(addon_repo, {'CHANGELOG.md': changelog.replace(
+        f'## {version}\n', f'## 99.0.0\n\n- Not released yet\n\n## {version}\n', 1).encode()})
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    page = (tmp_path / 'site/changelog/index.html').read_text(encoding='utf-8')
+    assert 'v99.0.0' not in page and 'Not released yet' not in page
+    assert re.findall(r'id="v([\d.]+)"', page)[0] == version
+    assert 'Not released yet' not in (tmp_path / 'site/index.html').read_text(encoding='utf-8')
+
+
+def test_fill_replaces_placeholders_in_one_pass(tmp_path):
+    page = tmp_path / 'page.html'
+    page.write_text('__A__ __B__', encoding='utf-8')
+    builder.fill(page, {'A': 'x', 'B': 'y', 'UNUSED': 'z'})
+    assert page.read_text(encoding='utf-8') == 'x y'
+    page.write_text('__A__ __MISSING__', encoding='utf-8')
+    with pytest.raises(ValueError, match='Unresolved placeholder in page.html: MISSING'):
+        builder.fill(page, {'A': 'x'})
+    # An inserted value is never filled again, and one that looks like a placeholder fails clearly.
+    page.write_text('__A__ __B__', encoding='utf-8')
+    with pytest.raises(ValueError, match='may not contain placeholder text like __B__'):
+        builder.fill(page, {'A': '__B__', 'B': 'y'})
+
+
+def test_a_single_release_reads_in_the_singular(addon_repo, tmp_path):
+    version = builder.project_version(addon_repo, 'HEAD')
+    commit(addon_repo, {'CHANGELOG.md': f'# What\'s New\n\n## {version}\n\n- Only release\n'.encode()})
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    assert '1 release so far' in (tmp_path / 'site/changelog/index.html').read_text(encoding='utf-8')
+
+
+def test_website_notes_in_page_folders_never_ship(addon_repo, tmp_path):
+    (addon_repo / 'website/changelog/README.md').write_text('Template notes\n', encoding='utf-8')
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    assert (tmp_path / 'site/changelog/index.html').is_file()
+    assert not (tmp_path / 'site/changelog/README.md').exists()

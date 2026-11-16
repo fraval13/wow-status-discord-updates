@@ -2,13 +2,19 @@
 
 Player-facing release notes. The newest section is shown once in game after an
 update (`/wstatus news` opens it again) and fills the homepage release panel.
+Every released section is public on the homepage's `/changelog/` page, linked as
+`/changelog/#v<version>`, so rewording an old section changes that page too.
 `python scripts/whats_new.py` regenerates `addon/shared/WhatsNewData.lua` from this
 file; run `python scripts/sync_addons.py` afterwards.
 
 Rules: one `## <version>` heading per release, newest first, matching
 `pyproject.toml` (the pipeline prepares it on main). Each note is one `- ` line of
-plain text, at most 120 characters, without `|` or markup. An optional
+plain text, at most 120 characters, without `|`, markup or `__NAME__` text. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
+
+## Unreleased
+
+- Website: a new changelog page lists every release so far, each with its own link to share
 
 ## 1.57.0
 

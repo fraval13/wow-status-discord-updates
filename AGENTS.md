@@ -81,7 +81,8 @@ be checked against Git and the environment rather than assumed permanently true.
   live game API availability, rendering or cross-realm delivery.
 - `website/`: buildless static HTML/CSS/JS and locally served artwork/fonts.
 - `scripts/build_homepage.py`: packages committed addon source into four ZIPs;
-  fills website versions/sizes and publishes a checksummed release manifest.
+  fills website versions/sizes, generates `/changelog/` from `CHANGELOG.md` and
+  publishes a checksummed release manifest.
   Each ZIP holds only the TOC, the files it lists, `Bindings.xml` and `Textures/*.tga`; other
   committed files are skipped. The build fails unless all four TOC versions
   equal the `pyproject.toml` version. Each build replaces its output folder as a
@@ -165,7 +166,15 @@ the prepared release. Validation and deployment check out that exact returned
 revision. GITHUB_TOKEN pushes do not recursively trigger another run. Retries and
 manual dispatches reuse a prepared release; an intentional version bump is also
 retained. Never force-push a release or bypass the current-main deployment gate.
-Add player-facing notes under `## Unreleased` in feature PRs.
+Every pull request that changes anything a player or site visitor can notice
+(addon behaviour, options, text, the website, downloads) must add at least one
+`- ` note under `## Unreleased` in `CHANGELOG.md`, creating that heading at the top
+if it is missing. Each release becomes a public entry on the homepage's
+`/changelog/` page (`/changelog/#v<version>`), so every update needs a note there;
+a release without one falls back to the commit title. Write plain player wording
+(rules at the top of `CHANGELOG.md`), change an already released section only to
+fix a mistake (it is public), and leave internal-only changes (tests, CI, docs)
+without a note unless players would notice them.
 
 `requirements.txt` pins, by version and SHA-256, every package the server's
 receiver installs (runtime dependencies plus the build backend). After changing
@@ -174,9 +183,9 @@ dependencies in `pyproject.toml`, run `python scripts/lock_requirements.py` (nee
 
 Release notes live in `CHANGELOG.md` (newest `## <version>` first; it must match
 `pyproject.toml`). After editing it run `python scripts/whats_new.py` and
-`python scripts/sync_addons.py`: the addon's one-time What's New page and the
-homepage release panel both come from it, and the homepage build fails when the
-release version has no notes.
+`python scripts/sync_addons.py`: the addon's one-time What's New page, the
+homepage release panel and the `/changelog/` page all come from it, and the
+homepage build fails when the release version has no notes.
 
 Development setup and ordinary checks:
 
@@ -235,8 +244,8 @@ The default publisher expects `dist/homepage` (see its CLI for other options), b
 for the checkout's `HEAD` with everything it ships committed. Final
 ZIPs must contain top-level `WoWStatus/` and all TOC-listed files. All four versions
 must match. `downloads/release.json` records source revision and checksums; website
-version and size labels are generated, not maintained manually. Update meaningful
-release notes in `website/index.html` in the release pull request.
+version and size labels, the release panel's notes and `/changelog/` are generated
+from `CHANGELOG.md`, not maintained manually; put release notes there.
 
 To change the version, edit `project.version` in `pyproject.toml` only, then run
 `python scripts/sync_version.py` to write it into all four addon TOCs. Do not edit

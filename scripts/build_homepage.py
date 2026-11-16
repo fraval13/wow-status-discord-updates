@@ -119,6 +119,8 @@ def site_file(folder):
         file = folder / path.lstrip('/')
         return file.read_bytes() if file.is_file() else b''
     return read
+# __NAME__ markers the build fills in website pages; the public verifier rejects any left over.
+PLACEHOLDER = re.compile(r'__([A-Z_]+)__')
 
 
 def git(root, *args):
@@ -185,16 +187,66 @@ def project_version(root, revision):
         raise ValueError(f'No pyproject.toml project version in {revision}') from error
 
 
-def release_notes(root, revision, version):
-    """The CHANGELOG.md notes for this release; the addon's What's New page shows the same."""
+def changelog_sections(root, revision, version):
+    """CHANGELOG.md sections at revision from version down, newest first, as (version, notes).
+
+    The parser is the one behind the addon's What's New page, so a changelog it cannot
+    parse fails the build, and the release being built must have notes.
+    """
     try:
         text = git(root, 'show', f'{revision}:CHANGELOG.md').decode('utf-8')
     except subprocess.CalledProcessError as error:
         raise ValueError(f'No CHANGELOG.md in {revision}') from error
-    for section, notes in parse_changelog(text):
-        if section == version:
-            return notes
-    raise ValueError(f'CHANGELOG.md has no notes for {version}; the release pull request adds them')
+    sections = parse_changelog(text)
+    built = [section for section, _ in sections]
+    if version not in built:
+        raise ValueError(f'CHANGELOG.md has no notes for {version}; the release pull request adds them')
+    # Sections above the built version are not released yet (notes committed before the
+    # version bump, or an older --addon-ref), so they stay off the public site.
+    return sections[built.index(version):]
+
+
+def changelog_anchor(version):
+    """The stable fragment for one release on /changelog/, e.g. v1.52.0."""
+    return f'v{version}'
+
+
+def note_items(notes):
+    """Release notes as <li> items, for the homepage release panel and /changelog/ alike."""
+    return ''.join(f'<li>{html_text.escape(note)}</li>' for note in notes)
+
+
+def render_changelog(sections):
+    """The /changelog/ entries: one section per release with a linkable anchor.
+
+    The first section, the version being built, is marked as the latest release.
+    """
+    entries = []
+    for index, (version, notes) in enumerate(sections):
+        anchor = changelog_anchor(version)
+        latest = ' <small>LATEST</small>' if index == 0 else ''
+        items = note_items(notes)
+        entries.append(f'<section class="release-entry" id="{anchor}" aria-labelledby="{anchor}-title">'
+                       f'<h2 id="{anchor}-title"><a href="#{anchor}">Patch {version}</a>{latest}</h2>'
+                       f'<ul>{items}</ul></section>')
+    return '\n'.join(entries)
+
+
+def fill(path, values):
+    """Replace every __NAME__ placeholder in the file at path in one pass.
+
+    One pass, so an inserted value is never searched for later placeholders. A template
+    placeholder without a value fails, and so does inserted text that would look like
+    one: scripts/verify_homepage.py rejects any such text on the live site.
+    """
+    text = path.read_text(encoding='utf-8')
+    unknown = sorted(set(PLACEHOLDER.findall(text)) - set(values))
+    if unknown:
+        raise ValueError(f"Unresolved placeholder in {path.name}: {', '.join(unknown)}")
+    text = PLACEHOLDER.sub(lambda match: values[match.group(1)], text)
+    if (leftover := PLACEHOLDER.search(text)) is not None:
+        raise ValueError(f'{path.name}: a release note may not contain placeholder text like {leftover.group(0)}')
+    path.write_text(text, encoding='utf-8')
 
 
 def earlier_build(folder):
@@ -256,14 +308,17 @@ def write_package(root, revision, folder, files, archive):
             raise ValueError(f'Broken archive: {archive}')
 
 
-def write_site(root, output, revision, editions, version, notes):
-    """Write the website and the four ZIPs into the new, empty folder output."""
+def write_site(root, output, revision, editions, version, sections):
+    """Write the website, its changelog page and the four ZIPs into the new, empty folder output.
+
+    sections is the parsed CHANGELOG.md from version, the release being built, down.
+    """
     for source in (root / 'website').iterdir():
         if source.name in NOT_SHIPPED or source.name in DESKTOP_FILES:
             continue
         destination = output / source.name
         if source.is_dir():
-            shutil.copytree(source, destination, ignore=shutil.ignore_patterns(*DESKTOP_FILES))
+            shutil.copytree(source, destination, ignore=shutil.ignore_patterns(*NOT_SHIPPED, *DESKTOP_FILES))
         else:
             shutil.copy2(source, destination)
     downloads = output / 'downloads'
@@ -275,14 +330,15 @@ def write_site(root, output, revision, editions, version, notes):
         releases[edition] = {'version': edition_version, 'file': archive.name,
                              'bytes': archive.stat().st_size,
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
-    html = (output / 'index.html').read_text(encoding='utf-8')
-    html = html.replace('__VERSION__', version)
-    html = html.replace('__WHATS_NEW__', ''.join(f'<li>{html_text.escape(note)}</li>' for note in notes))
-    for edition, release in releases.items():
-        html = html.replace(f'__{edition.upper()}_SIZE__', f"{release['bytes'] / 1024:.0f} KB")
-    if re.search(r'__[A-Z_]+__', html):
-        raise ValueError('Unresolved homepage placeholder')
-    (output / 'index.html').write_text(html, encoding='utf-8')
+    shared = {'VERSION': version, 'LATEST_ANCHOR': changelog_anchor(version)}
+    sizes = {f'{edition.upper()}_SIZE': f"{release['bytes'] / 1024:.0f} KB" for edition, release in releases.items()}
+    fill(output / 'index.html', {**shared, **sizes, 'WHATS_NEW': note_items(sections[0][1])})
+    changelog = output / 'changelog/index.html'
+    if not changelog.is_file():
+        raise ValueError('website/changelog/index.html is missing; the homepage links to it')
+    count = len(sections)
+    fill(changelog, {**shared, 'RELEASES': f"{count} release{'' if count == 1 else 's'}",
+                     'CHANGELOG': render_changelog(sections)})
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
 
 
@@ -322,7 +378,7 @@ def build(root, output, addon_ref):
     if any(version != expected for _, version in editions.values()):
         found = ', '.join(f'{edition} {version}' for edition, (_, version) in editions.items())
         raise ValueError(f'Addon TOC versions ({found}) must all equal pyproject.toml version {expected}')
-    notes = release_notes(root, revision, expected)
+    sections = changelog_sections(root, revision, expected)
     # Build in a new folder beside the output and swap it in only when complete, so a
     # failed build leaves the earlier one untouched and no stale asset or old ZIP of an
     # earlier build survives a rebuild (issue #19).
@@ -330,7 +386,7 @@ def build(root, output, addon_ref):
     staging = Path(tempfile.mkdtemp(prefix=f'.{output.name}-', dir=output.parent))
     try:
         staging.chmod(0o755)  # mkdtemp's private mode would otherwise become the site folder's
-        write_site(root, staging, revision, editions, expected, notes)
+        write_site(root, staging, revision, editions, expected, sections)
         replace_output(staging, output)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)

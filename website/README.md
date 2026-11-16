@@ -26,6 +26,15 @@ are complete and `assets/link-preview.jpg` is a complete 1200×630 JPEG (see `AR
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 
+`/changelog/` (`changelog/index.html`) is generated at build time: its
+`__CHANGELOG__` placeholder becomes one entry per released `## <version>` section
+of `CHANGELOG.md` at the built revision, newest first, each with a stable `#v<version>`
+anchor (`/changelog/#v<version>`) to link from CurseForge, Discord or an
+issue. It uses the What's New parser (`scripts/whats_new.py`), so a changelog that
+does not parse fails the build, as does a missing template. The homepage links to it
+from the download panel, the release panel and the footer, and
+`scripts/verify_homepage.py` checks the live page equals the local build's.
+
 ## Deployment
 
 The homepage is independent from the dormant companion services. Caddy serves
@@ -67,10 +76,12 @@ group routes (never the Discord settings) and refuses to change the live routes.
 `--dry-run` prints the Caddy change without uploading anything; that output holds
 the group route keys, so keep it private.
 
-After publication check `/`, all four ZIP downloads and their contents, the release
+After publication check `/`, `/changelog/`, all four ZIP downloads and their contents, the release
 manifest, both existing group `/health` endpoints, and an unknown group URL.
-When publishing a future release, update the displayed release notes in
-`index.html`, rebuild with its addon revision, then republish.
+When publishing a future release, add its notes to `CHANGELOG.md` (the release
+panel's notes and `/changelog/` are generated from it), rebuild with its addon
+revision, then republish. The release panel's headline in `index.html` is still
+hand-written; update it there when a release deserves a new one.
 
 ## Automatic releases
 
@@ -108,8 +119,9 @@ After deployment, the workflow fetches the live homepage, release manifest and
 all four ZIP downloads using `scripts/verify_homepage.py`, and compares them with
 the `release.json` the deploy job built itself (`--manifest`), not only with the
 manifest the site serves. It checks the exact commit revision, that the served
-manifest equals the local one, the visible download links, that every ZIP's size
-and SHA-256 match the local build, and the version labels. Each ZIP must hold
+manifest equals the local one, that `/changelog/` equals the locally built page,
+the visible download links, that every ZIP's size and SHA-256 match the local
+build, and the version labels. Each ZIP must hold
 exactly its TOC, the files the TOC lists, `Bindings.xml` and `Textures/*.tga` under `WoWStatus/`;
 path traversal, duplicate, directory, symlink or other unexpected entries fail. A stale,
 tampered or missing public download fails the release verification step.
