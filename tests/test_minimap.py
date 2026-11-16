@@ -106,14 +106,15 @@ def test_tooltip_shows_who_is_online_and_the_latest_friend_entry():
         button.OnEnter(button)
         local all = table.concat(__tip, "\\n")
         assert(all:find("Online now: Mira", 1, true), all)
-        assert(all:find("Latest: Mira — Reached level 30! · 5 min", 1, true), all)
+        assert(all:find("Latest:", 1, true), all)
+        assert(all:find("LevelUp:0|t Mira — Reached level 30! · 5 min", 1, true), all)
         assert(all:find("Left-click: Activity log", 1, true))
         assert(all:find("Drag to move", 1, true))
         -- The Retail AddOn Compartment entry shows the same tooltip, minus dragging (#161).
         local owner = CreateFrame("Button")
         WoWStatus_OnAddonCompartmentEnter("WoWStatus", owner)
         local entry = table.concat(__tip, "\\n")
-        assert(entry:find("Latest: Mira — Reached level 30! · 5 min", 1, true), entry)
+        assert(entry:find("Mira — Reached level 30! · 5 min", 1, true), entry)
         assert(entry:find("Right-click: Options", 1, true), entry)
         assert(not entry:find("Drag to move", 1, true), entry)
         WoWStatus_OnAddonCompartmentLeave("WoWStatus", owner)
@@ -207,3 +208,96 @@ def test_toc_names_compartment_handlers_that_ship_in_that_edition(edition):
     lua = minimap_runtime(edition, folder / 'Minimap.lua')
     for key in ('AddonCompartmentFunc', 'AddonCompartmentFuncOnEnter', 'AddonCompartmentFuncOnLeave'):
         assert lua.eval(f'type({fields[key]})') == 'function', key
+
+
+def tooltip_client():
+    """Thora, with Mira online, a minimap button and a GameTooltip that records lines."""
+    from test_roster import pair, pump
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:RegisterForClicks() end
+        function methods:HookScript(event, fn) self[event] = fn end
+        Minimap=CreateFrame("Frame","Minimap",UIParent)
+        function Minimap:GetCenter() return 0,0 end
+        function Minimap:GetEffectiveScale() return 1 end
+        WoWStatusMinimap.init(WoWStatusDB)
+        __tip = {}
+        GameTooltip = {SetOwner=function() __tip = {} end, SetText=function() end,
+            AddLine=function(_, t) table.insert(__tip, t) end, Show=function() end, Hide=function() end}
+        function __receive(level, ago, sender)
+            local group = next(character().group_ids)
+            WoWStatusJournal.received({sender=sender or "Mira-TestRealm",nonce=level.."-1-a",kind="level",
+                level=level,at=time()-ago,group_id=group})
+        end
+        function __hover()
+            local button = WoWStatusMinimapButton
+            button.OnEnter(button);button.OnLeave(button)
+            return table.concat(__tip, "\\n")
+        end
+    ''')
+    return thora
+
+
+def test_tooltip_lists_the_four_newest_friend_entries_newest_first():
+    thora = tooltip_client()
+    thora.execute('''
+        for i, level in ipairs({30, 31, 32, 33, 34}) do __receive(level, (6 - i) * 600) end
+        -- The player's own entries and private recaps are not friends' news.
+        WoWStatusJournal.recordRecap(character(), time(), "A quiet evening of fishing.")
+    ''')
+    tip = thora.eval('__hover()')
+    lines = tip.split('\n')
+    news = [line for line in lines if '— Reached level' in line]
+    assert [line.split('Reached level ')[1] for line in news] == ['34! · 10 min', '33! · 20 min', '32! · 30 min', '31! · 40 min']
+    assert all(line.startswith('|T') for line in news)
+    assert 'level 30' not in tip and 'fishing' not in tip
+    assert lines.index('Latest:') < lines.index(news[0])
+    # The click hints stay at the bottom.
+    assert lines[-4:] == [' ', 'Left-click: Activity log', 'Right-click: Options', 'Drag to move']
+
+
+def test_tooltip_counts_entries_new_since_the_log_was_last_opened():
+    thora = tooltip_client()
+    assert 'New since' not in thora.eval('__hover()')
+    thora.execute('__receive(30, 300);__receive(31, 200)')
+    assert 'New since you last opened the log: 2' in thora.eval('__hover()')
+    # Opening the Activity page sees them; entries arriving while it is open are seen too.
+    thora.execute('WoWStatusJournal.show();__receive(32, 100)')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 0
+    thora.execute('WoWStatusMainFrame:Hide();__receive(33, 50)')
+    assert 'New since you last opened the log: 1' in thora.eval('__hover()')
+    # Another page of the window does not count as looking at the log.
+    thora.execute('WoWStatusMainWindow.show("overview");__receive(34, 40)')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    # Hiding Mira completely (#169) leaves her out of both the count and the list.
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'hide')
+    tip = thora.eval('__hover()')
+    assert 'New since' not in tip and 'Mira' not in tip.split('Online now:')[1].split('\n', 1)[1]
+    thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    # The count is saved with the log and survives a reload; IDs no longer in the log go.
+    thora.execute('''
+        WoWStatusDB.journal.unseen["gone:1"] = true
+        WoWStatusDB.journal.unseen[1] = "corrupt"
+        WoWStatusJournal.init(WoWStatusDB, character())
+    ''')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    assert thora.eval('WoWStatusDB.journal.unseen["gone:1"]') is None
+    assert thora.eval('WoWStatusDB.journal.unseen[1]') is None
+    thora.execute('WoWStatusDB.journal.unseen = "corrupt";WoWStatusJournal.init(WoWStatusDB, character())')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 0
+
+
+def test_tooltip_cuts_long_entries_without_splitting_a_letter():
+    thora = tooltip_client()
+    thora.execute('''
+        local group = next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="9-1-a",kind="zone",at=time()-60,group_id=group,
+            text="Discovered "..string.rep("å", 40)})
+    ''')
+    line = next(line for line in thora.eval('__hover()').split('\n') if 'Discovered' in line)
+    text = line.split(' — ')[1].split(' · ')[0]
+    assert text.endswith('...') and len(text.encode('utf-8')) <= 60
+    text.encode('utf-8').decode('utf-8')

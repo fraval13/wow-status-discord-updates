@@ -179,10 +179,22 @@ end
 -- so "Where we are" redraws for them and for nothing else.
 J.zoneRevision=0
 -- removed: an entry this one replaces, already taken out of the log.
+-- Entries a friend added since the Activity page was last shown, by ID, for
+-- the minimap tooltip's "new" count (#179). Kept only on this account; IDs
+-- that leave the log are dropped at login and whenever the page is shown.
+-- The tour (#64) fills the Activity page with samples, so the real log is not
+-- in view while it runs.
+local function touring() return WoWStatusGuide~=nil and WoWStatusGuide.touring() end
+local function markUnseen(entry,removed)
+    if removed or entry.owner or entry.sample or entry.legacy or entry.kind=="recap" then return end
+    if not touring() and WoWStatusMainWindow.active()=="activity" then return end
+    db.journal.unseen[entry.id]=true
+end
 local function insert(entry,removed)
     if entry.kind=="zone" or entry.kind=="death" then J.zoneRevision=J.zoneRevision+1 end
     WoWStatusFlavour.text(entry)
     table.insert(db.journal.entries,entry)
+    markUnseen(entry,removed)
     local dropped=rebuild()
     if refresh then refresh() end
     if WoWStatusStatusLine then WoWStatusStatusLine.update() end
@@ -920,6 +932,7 @@ end
 function J.init(database,character)
     db,current=database,character
     db.journal=db.journal or {version=1,entries={}}
+    if type(db.journal.unseen)~="table" then db.journal.unseen={} end
     index,digests={},{};requests,sessions,sendQueue,cursors,rates={},{},{},{},{}
     serial=db.journal.request_serial or 0
     equipment,lastQuery={},{}
@@ -932,6 +945,9 @@ function J.init(database,character)
             and (e.owner or P.fullName(e.sender)) then e.groups=e.groups or {};kept[#kept+1]=e end
     end
     db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=S.uptime()+60
+    local unseen={}
+    for id,flag in pairs(db.journal.unseen) do if flag==true and index[id] then unseen[id]=true end end
+    db.journal.unseen=unseen
     -- Once: remove the skill-point cards earlier versions logged.
     if not db.journal.profession_points_removed then
         local cleaned={}
@@ -1252,7 +1268,7 @@ local function build(parent)
     return panel
 end
 -- The log is the Activity page of the main window (#57).
-WoWStatusMainWindow.register("activity","Activity",build,function() render() end)
+WoWStatusMainWindow.register("activity","Activity",build,function() J.markSeen();render() end)
 function J.show()
     if not db then return end
     WoWStatusMainWindow.show("activity")
@@ -1289,13 +1305,31 @@ local function hiddenSender(entry)
     return not entry.owner and WoWStatusMutes~=nil and WoWStatusMutes.hidden(entry.sender)
 end
 function J.visible(entry) return db~=nil and (entry.sample==true or (permitted(entry) and not hiddenSender(entry))) end
--- A friend's newest entry (not recaps), for the minimap tooltip.
-function J.latestFriend()
-    local latest
+-- Friends' newest entries (not recaps or previews), newest first, at most
+-- limit of them, for the minimap tooltip (#179). The log is kept newest first.
+function J.latestFriends(limit)
+    local list={}
     for _,e in ipairs(J.entries()) do
-        if not e.owner and e.kind~="recap" and J.visible(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
+        if #list>=limit then break end
+        if not e.owner and not e.sample and e.kind~="recap" and J.visible(e) then list[#list+1]=e end
     end
-    return latest
+    return list
+end
+function J.latestFriend() return J.latestFriends(1)[1] end
+-- How many friends' entries arrived since the Activity page was last shown,
+-- leaving out anything muted, hidden or no longer shared.
+function J.unseenCount()
+    if not db then return 0 end
+    local count=0
+    for id in pairs(db.journal.unseen) do
+        local e=index[id]
+        if e and J.visible(e) then count=count+1 end
+    end
+    return count
+end
+function J.markSeen()
+    if not db or touring() then return end
+    db.journal.unseen={}
 end
 -- A private recap has no group scopes and is never sent or offered to peers.
 function J.recordRecap(character,at,text,flavour)
