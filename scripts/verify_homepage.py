@@ -138,10 +138,11 @@ def check_inputs(base, revision, expected):
     check_local(expected, revision)
 
 
-def verify(base, revision, fetch=read, *, expected, changelog):
+def verify(base, revision, fetch=read, *, expected, changelog, crawler):
     """Check the live site at base against the local build of revision.
 
-    expected is that build's release.json and changelog its changelog/index.html bytes.
+    expected is that build's release.json, changelog its changelog/index.html bytes
+    and crawler its generated robots.txt and sitemap.xml, by file name.
     """
     check_inputs(base, revision, expected)
     base = base.rstrip('/')
@@ -157,6 +158,7 @@ def verify(base, revision, fetch=read, *, expected, changelog):
     text = ' '.join(parser.text)
     # A small page: checked before the large downloads, so a stale one fails fast.
     check_changelog(base, fetch, parser.links, changelog)
+    check_crawler_files(base, fetch, crawler)
     versions = set()
     for edition in EDITIONS:
         release = expected['editions'][edition]
@@ -184,6 +186,18 @@ def verify(base, revision, fetch=read, *, expected, changelog):
     # The link preview Discord shows for a pasted link (issue #190), fetched from this site.
     builder().check_link_preview(html, lambda path: fetch(base + path))
     return manifest
+
+
+def check_crawler_files(base, fetch, local):
+    """robots.txt and sitemap.xml must be this build's generated ones (#192).
+
+    They carry the release's lastmod, so a stale pair means a stale deploy.
+    """
+    for name in builder().CRAWLER_FILES:
+        if name not in local:
+            raise ValueError(f'The local build has no {name} to compare with')
+        if fetch(f'{base}/{name}') != local[name]:
+            raise ValueError(f'The live /{name} differs from the locally built one')
 
 
 def check_changelog(base, fetch, links, local):
@@ -217,6 +231,13 @@ if __name__ == '__main__':
         changelog = changelog_path.read_bytes()
     except OSError as error:
         parser.error(f'Cannot read the local changelog page {changelog_path}: {error}')
+    # The generated robots.txt and sitemap.xml of the same build (#192).
+    crawler = {}
+    for name in builder().CRAWLER_FILES:
+        try:
+            crawler[name] = (args.manifest.parent.parent / name).read_bytes()
+        except OSError as error:
+            parser.error(f'Cannot read the local {name}: {error}')
     # Fail now rather than after every retry: a wrong argument or local build never becomes right.
     try:
         check_inputs(args.url, args.revision, expected)
@@ -224,7 +245,7 @@ if __name__ == '__main__':
         parser.error(str(error))
     for attempt in range(args.attempts):
         try:
-            result = verify(args.url, args.revision, expected=expected, changelog=changelog)
+            result = verify(args.url, args.revision, expected=expected, changelog=changelog, crawler=crawler)
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break

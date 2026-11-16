@@ -6,6 +6,7 @@ import http.server
 import importlib.util
 import io
 import json
+import re
 import shutil
 import socket
 import subprocess
@@ -32,7 +33,9 @@ def verifier_module():
 def public_verifier(site):
     """The verifier, checking against site, the local build, as the deploy job does."""
     return functools.partial(verifier_module().verify,
-                             changelog=(site/'changelog/index.html').read_bytes())
+                             changelog=(site/'changelog/index.html').read_bytes(),
+                             crawler={name: (site/name).read_bytes()
+                                      for name in ('robots.txt', 'sitemap.xml')})
 
 
 def receiver():
@@ -128,7 +131,8 @@ def test_published_site_verification_checks_every_download(built_site):
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
                                    'webp_link_preview','no_twitter_card',
-                                   'no_changelog_link','stale_changelog','truncated_changelog'])
+                                   'no_changelog_link','stale_changelog','truncated_changelog',
+                                   'stale_sitemap','missing_sitemap_page','robots_without_downloads_rule'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -152,6 +156,13 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data.replace(b'id="v'+version+b'"',b'id="v0.0.0"')
         if path=='changelog/index.html' and fault=='truncated_changelog':
             return data[:len(data)//2]
+        # Issue #192: the generated crawler files carry this release's date and pages.
+        if path=='sitemap.xml' and fault=='stale_sitemap':
+            return re.sub(rb'<lastmod>[\d-]+</lastmod>',b'<lastmod>2020-01-01</lastmod>',data)
+        if path=='sitemap.xml' and fault=='missing_sitemap_page':
+            return data.replace(b'<loc>https://wow.frankvalde.com/changelog/</loc>',b'')
+        if path=='robots.txt' and fault=='robots_without_downloads_rule':
+            return data.replace(b'Disallow: /downloads/',b'')
         return data
     with pytest.raises(ValueError):
         public_verifier(built_site)('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),

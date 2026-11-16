@@ -26,6 +26,18 @@ are complete and `assets/link-preview.jpg` is a complete 1200×630 JPEG (see `AR
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 
+`robots.txt` and `sitemap.xml` are generated on every build and must never be
+committed under `website/` — a committed copy fails the build, because it would be
+the stale one. Both take the site's address from the homepage's `rel="canonical"`
+link, so there is one place to change it. `robots.txt` allows the pages and their
+assets, disallows `/downloads/` (several megabytes per edition, with nothing in
+them to index; people reach the ZIPs through the links on the page or the
+CurseForge app) and points to the sitemap. `sitemap.xml` lists every `index.html`
+the build produced, found in the output folder rather than listed by hand, with the
+committer date of the built addon revision as each `lastmod`. Caddy's `file_server`
+types them `text/plain` and `text/xml` without configuration, so the production
+Caddyfile needs no change.
+
 `/changelog/` (`changelog/index.html`) is generated at build time: its
 `__CHANGELOG__` placeholder becomes one entry per released `## <version>` section
 of `CHANGELOG.md` at the built revision, newest first, each with a stable `#v<version>`
@@ -119,7 +131,8 @@ After deployment, the workflow fetches the live homepage, release manifest and
 all four ZIP downloads using `scripts/verify_homepage.py`, and compares them with
 the `release.json` the deploy job built itself (`--manifest`), not only with the
 manifest the site serves. It checks the exact commit revision, that the served
-manifest equals the local one, that `/changelog/` equals the locally built page,
+manifest equals the local one, that `/changelog/`, `robots.txt` and `sitemap.xml`
+equal the locally built ones,
 the visible download links, that every ZIP's size and SHA-256 match the local
 build, and the version labels. Each ZIP must hold
 exactly its TOC, the files the TOC lists, `Bindings.xml` and `Textures/*.tga` under `WoWStatus/`;
