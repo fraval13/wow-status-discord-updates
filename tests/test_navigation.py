@@ -101,3 +101,20 @@ def test_moving_between_pages_still_offers_back():
     assert back_button(thora).IsShown(back_button(thora)) is True
     assert thora.eval('WoWStatusMainWindow.back()') is True
     assert thora.eval('WoWStatusMainWindow.active()') == 'characters'
+
+
+def test_page_key_binding_in_the_real_window_returns_from_a_profile_then_closes():
+    # #178 with the real MainWindow, Roster and Profile, not stubs.
+    mira, thora = pair()
+    pump(mira, thora)
+    view = open_profile(thora, 'Mira')
+    assert view.IsShown(view)
+    assert thora.eval('WoWStatusGamepad.togglePage("characters")') is True
+    assert not view.IsShown(view) and crumbs(thora) == ['Home', 'Characters']
+    assert thora.eval('WoWStatusMainFrame:IsShown()') is True
+    # The Characters list is what is on screen now: the same binding closes it.
+    thora.eval('WoWStatusGamepad.togglePage')('characters')
+    assert thora.eval('WoWStatusMainFrame:IsShown()') is False
+    # And opens straight on another page.
+    assert thora.eval('WoWStatusGamepad.togglePage("records")') is True
+    assert thora.eval('WoWStatusMainWindow.active()') == 'records'
