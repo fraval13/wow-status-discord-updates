@@ -6,7 +6,8 @@ from test_week import plain, with_entries
 DAY = 86400
 
 # Mira: level 10, a death 15 days ago, then 12 levels, a death in Stranglethorn a
-# little earlier today and one level since. Bob: no death in the log, 7 levels in 10 days.
+# little earlier today and one level since. Bob: no death in the log, 7 levels
+# from 10 to 4 days ago (his streak counts to his newest entry, so 6 days).
 LOG = [
     ('Mira-TestRealm', '1-1-a', 'level', 20 * DAY, '{level=10}'),
     ('Mira-TestRealm', '1-2-b', 'death', 15 * DAY, None),
@@ -63,7 +64,7 @@ def test_streaks_are_counted_from_the_log_and_bounded_by_it():
         assert(data.current[mira].levels == 1 and data.current[mira].exact)
         -- Bob never died in the log: his streak is at least what the log holds.
         assert(data.current[bob].levels == 7 and not data.current[bob].exact)
-        assert(WoWStatusStreaks.describe(data.current[bob]) == "at least 7 levels · 10 days")
+        assert(WoWStatusStreaks.describe(data.current[bob]) == "at least 7 levels · 6 days")
         assert(WoWStatusStreaks.describe(best) == "12 levels · 14 days")
     ''')
 
@@ -71,11 +72,11 @@ def test_streaks_are_counted_from_the_log_and_bounded_by_it():
 def test_records_show_the_longest_current_and_longest_ever_streak():
     lua, group = crafted()
     text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{group}")'))
-    assert 'Longest deathless streak now: Bob — at least 7 levels · 10 days' in text, text
+    assert 'Longest deathless streak now: Bob — at least 7 levels · 6 days' in text, text
     assert 'Longest deathless streak ever: Mira — 12 levels · 14 days' in text, text
     lua.execute('WoWStatusLocale.set("nn")')
     text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{group}")'))
-    assert 'Lengst utan å døy no: Bob — minst 7 nivå · 10 dagar' in text, text
+    assert 'Lengst utan å døy no: Bob — minst 7 nivå · 6 dagar' in text, text
     assert 'Lengst utan å døy nokon gong: Mira — 12 nivå · 14 dagar' in text, text
 
 
@@ -133,7 +134,7 @@ def test_profile_shows_the_current_streak():
         local facts = WoWStatusProfile.data({name="Bob-TestRealm", deaths=0}).facts
         local found
         for _, f in ipairs(facts) do if f[1] == "Deathless streak" then found = f[2] end end
-        assert(found == "at least 7 levels · 10 days", tostring(found))
+        assert(found == "at least 7 levels · 6 days", tostring(found))
         facts = WoWStatusProfile.data({name="Bob-TestRealm"}).facts
         for _, f in ipairs(facts) do assert(f[1] ~= "Deathless streak") end
     ''')
@@ -236,4 +237,84 @@ def test_the_milestone_option_is_a_checkbox_with_the_settings():
         assert(box:GetChecked() == false)
         box:SetChecked(true); box.OnClick(box)
         assert(WoWStatusStreaks.milestones() == true)
+    ''')
+
+
+def test_streaks_follow_the_roster_key_on_forever_names():
+    """WoW Forever's roster drops the internal realm from names; streaks match it."""
+    lua, group = crafted({'Mira': 2, 'Bob': 0})
+    lua.execute('WoWStatusAdapter.full_names = true; WoWStatusStreaks.reset()')
+    text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{group}")'))
+    assert 'Longest deathless streak now: Bob' in text and 'ever: Mira' in text, text
+    assert ended(lua) == '12 levels without a death ends in Stranglethorn Vale.'
+
+
+def test_levels_count_the_rise_in_level_not_the_entries():
+    lua = actor('Thora')
+    clock(lua, 10)
+    # Level 10 known, a death, then level-ups to 16 with 12 and 14 missing and 13 twice.
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'level', 9 * DAY, '{level=10}'),
+                       ('Mira-TestRealm', '1-2-b', 'death', 8 * DAY, None),
+                       *[('Mira-TestRealm', f'1-3-{i}', 'level', (7 - i) * DAY, f'{{level={level}}}')
+                         for i, level in enumerate([11, 13, 13, 15, 16])]])
+    board(lua, {'Mira-TestRealm': 1})
+    group = lua.eval('__group')
+    assert lua.eval(f'WoWStatusStreaks.compute("{group}").current[WoWStatusRoster.key("Mira-TestRealm")].levels') == 6
+
+
+def test_a_new_character_under_a_fallen_hardcore_name_starts_a_streak():
+    lua = actor('Thora')
+    clock(lua, 10)
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'death', 9 * DAY, '{text="Died in Hardcore"}'),
+                       *[('Mira-TestRealm', f'1-2-{level}', 'level', (8 - level) * DAY, f'{{level={level}}}')
+                         for level in range(2, 8)]])
+    board(lua, {'Mira-TestRealm': 0})
+    group = lua.eval('__group')
+    lua.execute(f'''
+        local s = WoWStatusStreaks.compute("{group}").current[WoWStatusRoster.key("Mira-TestRealm")]
+        assert(s and s.levels == 6 and not s.exact)
+    ''')
+
+
+def test_the_same_run_is_not_listed_twice():
+    lua = actor('Thora')
+    clock(lua, 10)
+    with_entries(lua, [('Mira-TestRealm', f'1-1-{level}', 'level', (20 - level) * DAY, f'{{level={level}}}')
+                       for level in range(2, 10)])
+    board(lua, {'Mira-TestRealm': 0})
+    text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{lua.eval("__group")}")'))
+    assert 'now: Mira' in text and 'ever:' not in text, text
+
+
+def test_milestones_wait_for_a_logged_death():
+    """A streak that starts where the log does would move as the log is trimmed."""
+    lua = actor('Thora')
+    clock(lua, 10)
+    notices(lua)
+    lua.execute('WoWStatusStreaks.setMilestones(true)')
+    board(lua, {'Mira-TestRealm': 0})
+    with_entries(lua, [('Mira-TestRealm', f'1-1-{level}', 'level', 100 - level, f'{{level={level}}}') for level in range(2, 12)])
+    assert lua.eval('#__notices') == 0
+
+
+def test_gamepad_reaches_the_milestone_checkbox():
+    lua = make_lua(STUBS + '''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:GetObjectType() return self.kind end
+        function methods:GetScript(name) return self[name] end
+        function methods:IsVisible() return true end
+        function methods:GetRect() return 0, 0, 32, 32 end
+        function methods:GetChildren()
+            local list = {}
+            for _, f in ipairs(__frames) do if f.parent == self then list[#list + 1] = f end end
+            return (unpack or table.unpack)(list)
+        end
+    ''')
+    lua.eval('SlashCmdList.WOWSTATUS')('previews')
+    lua.execute('''
+        local panel, found = WoWStatusNotificationPreviews, false
+        for _, control in ipairs(WoWStatusGamepad.controls(panel, {panel})) do
+            if control == panel.streaks then found = true end
+        end
+        assert(found)
     ''')

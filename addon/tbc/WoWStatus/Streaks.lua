@@ -13,9 +13,12 @@ local T = WoWStatusLocale.T
 St.LONG_LEVELS, St.LONG_DAYS = 5, 7
 local DAY, WEEK = 86400, 7 * 86400
 local ANNOUNCE_WITHIN = 600
-local MEMO_SECONDS = 2
+-- Results are kept until the log changes, or this long (current streaks grow
+-- with time and the roster's death totals can change).
+local MEMO_SECONDS = 30
 
-local function key(sender) return WoWStatusPopups.senderKey(sender) end
+-- The roster's key: on WoW Forever it drops the internal realm, as the roster does.
+local function key(sender) return WoWStatusRoster.key(sender) end
 local function shortName(sender) return (tostring(sender):match("^[^-]+") or tostring(sender)) end
 local function clock() return GetTime and S.number(GetTime()) or S.now() end
 
@@ -28,8 +31,16 @@ St.longer = longer
 
 -- {current={key=streak}, best={key=streak}, ended={entry id=streak}, total={key=n}, sender={key=name}}
 -- for one group (nil: the whole visible log). A streak is {levels, seconds,
--- exact, start}; a current streak's seconds run to now. A Hardcore death ends
--- its character's run for good, so it has no current streak afterwards.
+-- exact, start}; a current streak's seconds run to the character's newest log
+-- entry, so a friend who stopped playing does not keep gaining days. Levels are
+-- the rise in level since the death when the level then is known, else the
+-- distinct levels reached, so a missing or repeated level-up entry cannot skew
+-- it much. A Hardcore death ends its character's run: no current streak, until a
+-- level-up shows a new character under the same name.
+local function levels(r)
+    if r.base and r.top then return math.max(0, r.top - r.base) end
+    return r.count
+end
 local function compute(group)
     local list = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
@@ -48,24 +59,29 @@ local function compute(group)
     for _, e in ipairs(list) do
         local k = key(e.sender)
         local r = run[k]
-        if not r then r = {start=e.at, exact=false, levels=0}; run[k] = r end
+        if not r or (result.finished[k] and e.kind == "level") then
+            result.finished[k] = nil
+            r = {start=e.at, exact=false, reached={}, count=0}; run[k] = r
+        end
         result.sender[k] = e.sender
-        if e.kind == "level" and S.number(e.level) then
-            r.levels = r.levels + 1
+        r.last = e.at
+        local level = e.kind == "level" and S.number(e.level)
+        if level then
+            if not r.reached[level] then r.reached[level], r.count = true, r.count + 1 end
+            if not r.top or level > r.top then r.top = level end
         elseif e.kind == "death" then
-            local streak = {levels=r.levels, seconds=math.max(0, e.at - r.start), exact=r.exact, start=r.start, death=e}
+            local streak = {levels=levels(r), seconds=math.max(0, e.at - r.start), exact=r.exact, start=r.start, death=e}
             result.ended[e.id] = streak
             keep(k, streak)
-            run[k] = {start=e.at, exact=true, levels=0}
+            run[k] = {start=e.at, exact=true, reached={}, count=0, base=r.top, top=r.top, last=e.at}
             local total = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$"))
             if total then result.total[k] = total end
             result.finished[k] = WoWStatusProgress.hardcoreDeath(e) or nil
         end
     end
-    local now = S.now()
     for k, r in pairs(run) do
         if not result.finished[k] then
-            local streak = {levels=r.levels, seconds=math.max(0, now - r.start), exact=r.exact, start=r.start, current=true}
+            local streak = {levels=levels(r), seconds=math.max(0, r.last - r.start), exact=r.exact, start=r.start, current=true}
             result.current[k] = streak
             keep(k, streak)
         end
@@ -191,7 +207,8 @@ function St.endedText(e)
 end
 
 -- Milestones (#164): off by default. When on, a live or own log entry whose
--- character's streak just reached a milestone shows a local notice. Levels
+-- character's streak since a logged death just reached a milestone shows a
+-- local notice. Levels
 -- count every LONG_LEVELS levels; time every week, remembered per streak so a
 -- week is announced once. Nothing is sent or logged.
 local function state()
@@ -233,10 +250,11 @@ function St.noted(e)
     if e.kind == "death" or not S.number(e.at) or S.outside(e.at, ANNOUNCE_WITHIN, math.huge) then return end
     local k = key(e.sender)
     if not k then return end
-    St.reset()
     local logged = St.compute(nil)
     local streak = logged.current[k]
-    if not streak or not shown(logged, k, sharedTotal(k, e.groups)) then return end
+    -- Only a streak that starts at a logged death: one that starts where the log
+    -- does moves forward as old entries are dropped, and would repeat milestones.
+    if not streak or not streak.exact or not shown(logged, k, sharedTotal(k, e.groups)) then return end
     local text = milestone(e, streak, data, k)
     if text and WoWStatusPopups.notice then
         WoWStatusPopups.notice({sender=e.sender, kind="first", text=text, flavour=T("Deathless streak")})

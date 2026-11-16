@@ -242,7 +242,10 @@ function F.funRecords(group)
     -- Deathless streaks (#164): levels and days since the last death.
     local now, ever = WoWStatusStreaks.records(group)
     if now then add("Longest deathless streak now:", now.name, WoWStatusStreaks.describe(now.streak)) end
-    if ever then add("Longest deathless streak ever:", ever.name, WoWStatusStreaks.describe(ever.streak)) end
+    -- The same run twice says nothing new: "ever" only when it differs from "now".
+    if ever and not (now and now.streak == ever.streak) then
+        add("Longest deathless streak ever:", ever.name, WoWStatusStreaks.describe(ever.streak))
+    end
     local best, levels = nil, 0
     for k, n in pairs(evenings) do if n > levels then best, levels = k, n end end
     if best and levels >= F.FUN.evening_levels then
