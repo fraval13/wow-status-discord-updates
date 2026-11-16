@@ -31,8 +31,9 @@ def verifier_module():
 
 def public_verifier(site):
     """The verifier, checking against site, the local build, as the deploy job does."""
-    return functools.partial(verifier_module().verify,
-                             changelog=(site/'changelog/index.html').read_bytes())
+    return functools.partial(verifier_module().verify, pages={
+        path: (site/(path.lstrip('/')+('index.html' if path.endswith('/') else ''))).read_bytes()
+        for path in verifier_module().GENERATED_PAGES})
 
 
 def receiver():
@@ -128,7 +129,8 @@ def test_published_site_verification_checks_every_download(built_site):
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
                                    'webp_link_preview','no_twitter_card',
-                                   'no_changelog_link','stale_changelog','truncated_changelog'])
+                                   'no_changelog_link','stale_changelog','truncated_changelog',
+                                   'stale_sitemap','hand_written_robots'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -152,6 +154,11 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data.replace(b'id="v'+version+b'"',b'id="v0.0.0"')
         if path=='changelog/index.html' and fault=='truncated_changelog':
             return data[:len(data)//2]
+        # Issue #192: lastmod must be this release's, and robots.txt the generated one.
+        if path=='sitemap.xml' and fault=='stale_sitemap':
+            return data.replace(b'<lastmod>2',b'<lastmod>1')
+        if path=='robots.txt' and fault=='hand_written_robots':
+            return b'User-agent: *\nDisallow: /\n'
         return data
     with pytest.raises(ValueError):
         public_verifier(built_site)('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),
@@ -390,6 +397,18 @@ def test_a_response_cut_short_is_retried_and_never_rolls_back(built_site, framin
     assert result.returncode == verifier_module().UNREACHABLE
     assert 'IncompleteRead' in result.stderr
     assert requests == ['/downloads/release.json'] * 2
+
+
+def test_verifier_checks_every_page_the_build_generates(built_site):
+    # A page the build adds but the verifier skips could go stale on the live site unnoticed.
+    generated = {path for path in verifier_module().GENERATED_PAGES}
+    assert {'/changelog/', '/robots.txt', '/sitemap.xml'} <= generated
+    for path in generated:
+        assert (built_site/(path.lstrip('/')+('index.html' if path.endswith('/') else ''))).is_file()
+    manifest = local_manifest(built_site)
+    with pytest.raises(ValueError, match='missing a generated page'):
+        verifier_module().verify('https://example.com', manifest['addon_revision'], site_fetch(built_site),
+                                 expected=manifest, pages={'/changelog/': b''})
 
 
 def test_command_line_requires_a_manifest_of_the_same_revision(built_site):
