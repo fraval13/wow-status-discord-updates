@@ -1,1 +1,0 @@
-- Key bindings can open the Overview, Characters, Leaderboard or Records page directly; press again to close
