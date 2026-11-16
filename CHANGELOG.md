@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- New Diagnostics page (/wstatus errors) keeps WoW Status's own Lua errors as a report to copy into bug reports
+
 ## 1.54.0
 
 - A homepage link pasted in Discord now shows a large picture card instead of a small thumbnail

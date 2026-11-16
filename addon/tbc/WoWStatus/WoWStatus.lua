@@ -236,6 +236,7 @@ local function showPanel(host)
         panel.visibility=WoWStatusRoster.buildVisibilitySettings(panel,bottom-84)
         bottom=bottom-260
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
+        button(panel,"Diagnostics",214,bottom,170,function() WoWStatusDiagnostics.show() end)
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
     end
     for i = #UISpecialFrames, 1, -1 do
@@ -695,7 +696,14 @@ end)
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match(S.SPLIT_WORD)
-    if not current then say(A.display_name .. " character is not ready or identity is currently restricted."); return end
+    if not current then
+        -- The main window's pages need a ready character; say how many errors wait.
+        if command == "errors" or command == "diagnostics" then
+            say(WoWStatusLocale.F("WoW Status errors recorded: %d. They can be read here once the character is ready.",
+                #WoWStatusDiagnostics.errors()))
+        end
+        say(A.display_name .. " character is not ready or identity is currently restricted."); return
+    end
     if command == "groups" then
         if rest == "legacy" then
             current.group_ids = {}
@@ -726,6 +734,7 @@ SlashCmdList.WOWSTATUS = function(message)
         if choice == "on" or choice == "off" then WoWStatusGamepad.setAllowed(choice == "on")
         elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
         say(WoWStatusGamepad.report())
+    elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

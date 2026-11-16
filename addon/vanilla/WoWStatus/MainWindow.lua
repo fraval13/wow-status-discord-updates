@@ -2,13 +2,15 @@
 -- WoWStatusMainWindow.register(key, title, build, refresh); this file never
 -- needs to change for a new page. build(parent) creates the page once inside
 -- the content area and returns its frame; refresh(frame) runs whenever the page
--- is shown. The last page and the window position are saved account-wide in
+-- is shown. register's optional fifth argument {tab=false} adds a page without a
+-- tab (opened by a command or a button, left out of LB/RB) and is never
+-- remembered as the last page. The last page and the window position are saved account-wide in
 -- WoWStatusDB.main_window. Plain buttons are used as tabs because tab templates
 -- differ between the four clients.
 WoWStatusMainWindow = {}
 local M = WoWStatusMainWindow
 local T = WoWStatusLocale.T
-local pages, order, window, active = {}, {}, nil, nil
+local pages, order, all, window, active = {}, {}, {}, nil, nil
 M.WIDTH, M.HEIGHT, M.CONTENT_HEIGHT = 780, 680, 540
 local TAB_WIDTH, TAB_GAP = 130, 8
 
@@ -30,12 +32,16 @@ local function addTab(page, index)
     page.tab = tab
 end
 
-function M.register(key, title, build, refresh)
+function M.register(key, title, build, refresh, options)
     if type(key) ~= "string" or pages[key] then return false end
-    local page = {key=key, title=title, build=build, refresh=refresh}
+    local tabbed = not (type(options) == "table" and options.tab == false)
+    local page = {key=key, title=title, build=build, refresh=refresh, tabbed=tabbed}
     pages[key] = page
-    table.insert(order, key)
-    if window then addTab(page, #order) end
+    table.insert(all, key)
+    if tabbed then
+        table.insert(order, key)
+        if window then addTab(page, #order) end
+    end
     return true
 end
 
@@ -171,7 +177,7 @@ function M.show(key, quiet)
     if not key or not pages[key] then key = pages.activity and "activity" or order[1] end
     if not key then return nil end
     if not window then create() end
-    for _, other in ipairs(order) do
+    for _, other in ipairs(all) do
         local page = pages[other]
         if page.frame and other ~= key then page.frame:Hide() end
         if page.tab and page.tab.SetEnabled then page.tab:SetEnabled(other ~= key) end
@@ -179,7 +185,7 @@ function M.show(key, quiet)
     local page = pages[key]
     if not page.frame and page.build then page.frame = page.build(window.content) end
     active = key
-    saved().page = key
+    if page.tabbed then saved().page = key end
     if page.frame then page.frame:Show() end
     if page.refresh then page.refresh(page.frame) end
     window:Show()

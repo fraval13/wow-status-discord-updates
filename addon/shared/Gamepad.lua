@@ -467,7 +467,8 @@ function G.page(step)
     if not (M and root and root == rawget(_G, "WoWStatusMainFrame") and M.pages) then return false end
     local order, current = M.pages(), M.active and M.active()
     if #order == 0 then return false end
-    local index = 1
+    -- From a page without a tab (Diagnostics), RB goes to the first tab and LB to the last.
+    local index = step > 0 and 0 or 1
     for i, key in ipairs(order) do if key == current then index = i end end
     index = (index - 1 + step) % #order + 1
     M.show(order[index])

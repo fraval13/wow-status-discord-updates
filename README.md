@@ -109,6 +109,19 @@ log, records and all 1,300 captions change; what players send each other stays
 English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
 and the release notes stay English.
 
+## Diagnostics and bug reports
+
+When WoW Status itself raises a Lua error, it keeps a copy: the last 10 errors from
+its own files, each with its stack, the addon version, edition, client build, the
+page that was open and the UTC time, saved so they survive a `/reload` and logging
+out (a client crash loses errors since the last `/reload`; the game saves only then).
+Errors from other addons are ignored, and the game's error frame, BugSack and other
+error displays still get every error as before. `/wstatus errors` (or **Options →
+Diagnostics**) opens the Diagnostics page: one report to copy into a bug report, with
+the memory use, log size and how many groups are joined (a count, never a name).
+Group names and character names are replaced by `<group>` and `<name>`. Nothing is
+sent anywhere; **Clear errors** empties the list. The report stays English.
+
 ## Controller
 
 With gamepad support switched on in the game's own options, WoW Status windows

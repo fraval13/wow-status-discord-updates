@@ -61,6 +61,10 @@ def test_safe_lua_loads_before_every_consumer():
     for toc in sorted(ADDON.glob('*/WoWStatus/*.toc')):
         files = [line.strip() for line in toc.read_text(encoding='utf-8').splitlines()
                  if line.strip().endswith('.lua')]
+        # Diagnostics.lua may come first: it catches errors in every later file
+        # and uses no Safe.lua helper.
+        if files[0] == 'Diagnostics.lua':
+            files = files[1:]
         assert files[0] == 'Safe.lua', toc
 
 

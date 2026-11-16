@@ -503,3 +503,53 @@ def test_settings_character_visibility_checkboxes_are_reachable(lua):
         WoWStatusGamepad.setFocus(scroll.rows[1]);press("PAD1")
         assert(not bank.hide_from_list)
     ''')
+
+
+def test_diagnostics_controls_are_reachable(lua):
+    main_window(lua)
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetText(text) self.text=text end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        for _, name in ipairs({"SetJustifyH","SetSize","SetMultiLine","SetAutoFocus","SetFontObject",
+            "SetScrollChild","SetCursorPosition","HighlightText"}) do methods[name]=function() end end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusMainWindow.register=function(key,title,build,refresh,options)
+            assert(key=="diagnostics" and options.tab==false)
+            __diagBuild,__diagRefresh=build,refresh
+            return true
+        end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Diagnostics.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusDB={diagnostics={errors={{message="Interface/AddOns/WoWStatus/X.lua:1: boom",count=1}}}}
+        local show=WoWStatusMainWindow.show
+        WoWStatusMainWindow.show=function(key)
+            show(key)
+            __page=__page or __diagBuild(main)
+            __page:Show();__diagRefresh()
+            __page.box.rect={124,200,690,200}
+            __page.select.rect={124,150,160,26}
+            __page.clear.rect={300,150,160,26}
+            return __page
+        end
+        WoWStatusDiagnostics.show()
+        WoWStatusGamepad.update()
+        local controls=WoWStatusGamepad.controls(main,{main})
+        local box,select,clear=false,false,false
+        for _,control in ipairs(controls) do
+            if control==__page.box then box=true end
+            if control==__page.select then select=true end
+            if control==__page.clear then clear=true end
+        end
+        assert(box and select and clear)
+        press("PADDDOWN") -- the first press shows the highlight
+        WoWStatusGamepad.setFocus(__page.clear);press("PAD1")
+        assert(#WoWStatusDB.diagnostics.errors==0)
+        assert(__page.clear.enabled==false)
+        -- From the tabless page RB goes to the first tab, LB to the last.
+        press("PADRSHOULDER")
+        assert(__active=="overview")
+        WoWStatusDiagnostics.show();press("PADLSHOULDER")
+        assert(__active=="characters")
+    ''')
