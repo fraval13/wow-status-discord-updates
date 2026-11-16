@@ -56,7 +56,7 @@ function P.show(host)
         -- Spoken reactions (Forever only) add their own rows below the sounds.
         local V = WoWStatusVoices
         local voiceRows = V and V.available() and 370 or 0
-        local previews = options + 802 + voiceRows
+        local previews = options + 922 + voiceRows
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -164,11 +164,47 @@ function P.show(host)
         -- Quiet mode: notifications wait in the instances ticked (off by default).
         panel.quiet=check("Quiet mode: hold notifications in",-options-516,function() return WoWStatusPopups.quietSettings().enabled end,
             function(value) WoWStatusPopups.setQuiet("enabled",value) end)
+        -- Quiet hours (#180): a daily window on the local clock, off by default.
+        -- Earlier/Later move each end by half an hour, wrapping round midnight.
+        panel.quietHours=check("Quiet hours: hide friends' notifications by the clock",-options-598,
+            function() return WoWStatusPopups.quietHours().enabled end,
+            function(value) WoWStatusPopups.setQuietHours("enabled",value);panel.refreshQuietHours() end)
+        panel.quietClock={}
+        for i,entry in ipairs({{"start","From"},{"stop","To"}}) do
+            local key,y=entry[1],-options-634-(i-1)*38
+            text(panel,entry[2],54,y-6,60)
+            panel.quietClock[key]=text(panel,"",120,y-6,70)
+            panel.quietClock[key.."Earlier"]=button(panel,"Earlier",200,y,90,function()
+                WoWStatusPopups.shiftQuietHours(key,-1);panel.refreshQuietHours() end)
+            panel.quietClock[key.."Later"]=button(panel,"Later",296,y,90,function()
+                WoWStatusPopups.shiftQuietHours(key,1);panel.refreshQuietHours() end)
+        end
+        panel.quietState=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        panel.quietState:SetPoint("TOPLEFT",400,-options-640);panel.quietState:SetWidth(170);panel.quietState:SetJustifyH("LEFT")
+        -- The window can begin or end while the page is open: check once a second.
+        local sinceQuietCheck=0
+        panel:SetScript("OnUpdate",function(_,elapsed)
+            sinceQuietCheck=sinceQuietCheck+(tonumber(elapsed) or 0)
+            if sinceQuietCheck>=1 then sinceQuietCheck=0;panel.refreshQuietState() end
+        end)
+        function panel.refreshQuietState()
+            local hours=WoWStatusPopups.quietHours()
+            panel.quietState:SetText(WoWStatusPopups.quietHoursText()
+                or (hours.enabled and hours.start==hours.stop and WoWStatusLocale.T("Same start and end: never quiet")) or "")
+        end
+        function panel.refreshQuietHours()
+            local hours=WoWStatusPopups.quietHours()
+            panel.quietHours:SetChecked(hours.enabled)
+            panel.quietClock.start:SetText(WoWStatusPopups.clockText(hours.start))
+            panel.quietClock.stop:SetText(WoWStatusPopups.clockText(hours.stop))
+            panel.refreshQuietState()
+            if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
+        end
         -- Sounds, one per kind of notification; picking one plays it.
-        text(panel,"Sounds",24,-options-598,300)
+        text(panel,"Sounds",24,-options-718,300)
         panel.sounds={}
         for i,entry in ipairs(WoWStatusPopups.SOUND_KINDS) do
-            local kind,y=entry[1],-options-632-(i-1)*34
+            local kind,y=entry[1],-options-752-(i-1)*34
             text(panel,entry[2],44,y-4,200)
             local widget=button(panel,"",250,y,200,function(self)
                 local items={}
@@ -186,7 +222,7 @@ function P.show(host)
         -- always use a voiced line. WoW cannot download files, so the pack link is
         -- shown to copy.
         if voiceRows > 0 then
-            local y=-options-800
+            local y=-options-920
             text(panel,"Spoken reactions",24,y,300)
             panel.voices=check("Read friends' reactions aloud",y-36,function() return V.enabled() end,V.setEnabled)
             -- The addon's own lines when it carries some, else one from the pack.
@@ -291,6 +327,7 @@ function P.show(host)
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.quiet:SetChecked(panel.quiet.get() == true)
+    panel.refreshQuietHours()
     for kind,widget in pairs(panel.sounds) do widget:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.sound(kind)))) end
     for _,widget in pairs(panel.quietKinds) do widget:SetChecked(widget.get() == true) end
     panel.popupSize:SetText(tostring(WoWStatusTheme.popupSize()))

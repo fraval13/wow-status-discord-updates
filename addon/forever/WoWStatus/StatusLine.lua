@@ -51,7 +51,8 @@ end
 
 function L.text()
     local parts = {"WoW Status", WoWStatusPopups.onlineCount() .. " " .. T("online")}
-    local latest = L.latest()
+    -- Quiet hours take the place of the latest news, so the line stays one line.
+    local latest = WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText() or L.latest()
     if latest then table.insert(parts, latest) end
     return table.concat(parts, " · ")
 end
