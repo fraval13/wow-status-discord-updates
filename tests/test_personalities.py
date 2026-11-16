@@ -5,7 +5,8 @@ import sys
 from pathlib import Path
 
 import pytest
-from test_addon import PERSONALITY_FILES, make_lua
+from lua_loader import edition_files
+from test_addon import make_lua
 
 ROOT = Path(__file__).parents[1]
 KINDS = ('level', 'introduction', 'loot', 'death', 'zone', 'quest', 'profession_learned',
@@ -22,7 +23,7 @@ def builder():
 
 def test_generated_files_match_their_json_and_every_edition():
     build = builder()
-    assert tuple(p.file for p in build.PERSONALITIES) == PERSONALITY_FILES[1:]
+    personality_files = ('Personalities.lua', *(p.file for p in build.PERSONALITIES))
     assert build.CATEGORIES == KINDS
     for personality in build.PERSONALITIES:
         shared = ROOT / 'addon/shared' / personality.file
@@ -30,9 +31,9 @@ def test_generated_files_match_their_json_and_every_edition():
         for edition in ('vanilla', 'forever', 'tbc', 'retail'):
             assert (ROOT / 'addon' / edition / 'WoWStatus' / personality.file).read_bytes() == shared.read_bytes()
     for edition in ('vanilla', 'forever', 'tbc', 'retail'):
-        toc = (ROOT / 'addon' / edition / 'WoWStatus/WoWStatus.toc').read_text(encoding='utf-8').split()
+        toc = [path.name for path in edition_files(edition)]
         start = toc.index('FlavourNN.lua')
-        assert tuple(toc[start + 1:start + 1 + len(PERSONALITY_FILES)]) == PERSONALITY_FILES
+        assert tuple(toc[start + 1:start + 1 + len(personality_files)]) == personality_files
 
 
 def test_the_builder_rejects_broken_sources(tmp_path):

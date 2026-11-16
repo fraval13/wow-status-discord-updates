@@ -25,8 +25,8 @@ untouched here.
    JSON and Lua and run `python scripts/sync_addons.py` (it copies only tracked
    files into the four editions).
 4. **Load it.** Add `Flavour<Name>.lua` to each edition's `WoWStatus.toc` after
-   the other `Flavour*.lua` personality files, in `PERSONALITIES` order, and to
-   `PERSONALITY_FILES` in `tests/test_addon.py` in the same order. Raise the
+   the other `Flavour*.lua` personality files, in `PERSONALITIES` order.
+   Test clients read the TOCs automatically through `tests/lua_loader.py`. Raise the
    personality count in `tests/test_personalities.py` (`#P.order`, `#P.voices()`, the
    number of clicks that cycles back to Random, and the voice count in the Random test)
    and in `tests/test_reaction_voices.py` (`#voices` and the clicks back to Random).

@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from test_addon import FRIEND_STUBS, STUBS, lupa, run_addon_file
+from lua_loader import load_edition
+from test_addon import FRIEND_STUBS, STUBS, lupa
 
 from wow_status.schema import ValidationError, validate
 
@@ -23,10 +24,7 @@ def tbc_runtime(name='Thora', extra='', *, join_announcements=False):
         GetItemInfo=nil
     ''' + extra)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(at,timezone.utc).strftime(fmt.lstrip('!'))
-    folder = ROOT/'addon/tbc/WoWStatus'
-    for line in (folder/'WoWStatus.toc').read_text(encoding='utf-8').splitlines():
-        if line.strip() and not line.startswith('#'):
-            run_addon_file(runtime, folder/line.strip())
+    load_edition(runtime, 'tbc')
     runtime.eval('fire')('PLAYER_LOGIN')
     if not join_announcements:
         runtime.execute('WoWStatusGroups.announce=nil')

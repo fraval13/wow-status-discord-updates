@@ -1,8 +1,9 @@
 """Lua harness for home/CI only. Does not start WoW or contact any service."""
 from datetime import datetime, timezone
-from pathlib import Path
 
 import pytest
+from lua_loader import load_edition
+from lua_loader import run_addon_file as run_addon_file
 
 lupa = pytest.importorskip('lupa')
 
@@ -188,91 +189,17 @@ FRIEND_STUBS = STUBS.replace('return "Thora" end', 'return "Eldrin" end').replac
     '__peers = {"Eldrin-TestRealm"}', '__peers = {"Thora-TestRealm"}')
 
 
-# Caption personalities, in TOC order after FlavourNN.lua.
-PERSONALITY_FILES = ('Personalities.lua', 'FlavourWholesome.lua', 'FlavourBard.lua', 'FlavourVeteran.lua',
-                     'FlavourGoblin.lua', 'FlavourChristian.lua', 'FlavourSmug.lua',
-                     'FlavourDwarf.lua', 'FlavourJealous.lua',
-                     'FlavourDrama.lua', 'FlavourAgent.lua', 'FlavourLegend.lua')
-
-
-_COMPILED = {}
-
-
-def run_addon_file(runtime, path):
-    """Run an addon file in runtime, as runtime.execute(its text) would.
-
-    Each file is compiled once per run and Lua runtime type, then loaded as bytecode:
-    the same chunk under the same name, without parsing megabytes of caption tables
-    again for each of the hundreds of runtimes the tests start.
-    """
-    source = path.read_text(encoding='utf-8')  # read each time: a test may swap a file's text
-    key = (type(runtime), source)
-    if key not in _COMPILED:
-        compiler = type(runtime)(encoding=None)  # returns the bytecode as bytes
-        _COMPILED[key] = compiler.eval(
-            'function(source) return string.dump(assert((loadstring or load)(source, "<python>"))) end'
-        )(source.encode('utf-8'))
-    return runtime.eval('loadstring or load')(_COMPILED[key])()
-
-
 def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, guide=False,
              reaction_default='classic'):
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(stubs)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
-    root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
-    run_addon_file(runtime, root / 'Diagnostics.lua')
-    run_addon_file(runtime, root / 'Safe.lua')
-    run_addon_file(runtime, root / 'Locale.lua')
-    run_addon_file(runtime, root / 'LocaleNN.lua')
-    run_addon_file(runtime, root / 'Features.lua')
-    if discord_feature is not None:
-        runtime.globals().WoWStatusFeatures['discord'] = discord_feature
-    run_addon_file(runtime, root / 'Settings.lua')
-    run_addon_file(runtime, root / 'Migrations.lua')
-    run_addon_file(runtime, root / 'CaseFold.lua')
-    run_addon_file(runtime, root / 'Vanilla.lua')
-    run_addon_file(runtime, root / 'Loot.lua')
-    run_addon_file(runtime, root / 'Progress.lua')
-    run_addon_file(runtime, root / 'History.lua')
-    run_addon_file(runtime, root / 'HistoryUI.lua')
-    run_addon_file(runtime, root / 'Groups.lua')
-    run_addon_file(runtime, root / 'Share.lua')
-    run_addon_file(runtime, root / 'Flavour.lua')
-    run_addon_file(runtime, root / 'FlavourNN.lua')
-    for name in PERSONALITY_FILES:
-        run_addon_file(runtime, root / name)
-    run_addon_file(runtime, root / 'Voices.lua')
-    run_addon_file(runtime, root / 'Theme.lua')
-    run_addon_file(runtime, root / 'MainWindow.lua')
-    run_addon_file(runtime, root / 'Overview.lua')
-    run_addon_file(runtime, root / 'Guide.lua')
-    run_addon_file(runtime, root / 'Privacy.lua')
-    run_addon_file(runtime, root / 'Presentation.lua')
-    run_addon_file(runtime, root / 'Popups.lua')
-    run_addon_file(runtime, root / 'Journal.lua')
-    run_addon_file(runtime, root / 'WhatsNewData.lua')
-    run_addon_file(runtime, root / 'WhatsNew.lua')
-    run_addon_file(runtime, root / 'Firsts.lua')
-    run_addon_file(runtime, root / 'Leaderboard.lua')
-    run_addon_file(runtime, root / 'Reactions.lua')
-    run_addon_file(runtime, root / 'Recaps.lua')
-    run_addon_file(runtime, root / 'Equipment.lua')
-    run_addon_file(runtime, root / 'EquipmentSync.lua')
-    run_addon_file(runtime, root / 'Roster.lua')
-    run_addon_file(runtime, root / 'Goals.lua')
-    run_addon_file(runtime, root / 'Profile.lua')
-    run_addon_file(runtime, root / 'UnitTooltip.lua')
-    run_addon_file(runtime, root / 'Mutes.lua')
-    run_addon_file(runtime, root / 'Minimap.lua')
-    run_addon_file(runtime, root / 'StatusLine.lua')
-    run_addon_file(runtime, root / 'Previews.lua')
-    run_addon_file(runtime, root / 'Screenshots.lua')
-    run_addon_file(runtime, root / 'Milestones.lua')
-    run_addon_file(runtime, root / 'Achievements.lua')
-    run_addon_file(runtime, root / 'Gamepad.lua')
-    run_addon_file(runtime, root / 'WoWStatus.lua')
+    def override_features(name):
+        if name == 'Features.lua' and discord_feature is not None:
+            runtime.globals().WoWStatusFeatures['discord'] = discord_feature
+
+    load_edition(runtime, 'vanilla', after_file=override_features)
     runtime.eval('fire')('PLAYER_LOGIN')
     # Most tests start like an existing account: no setup guide, Options opened
     # on the character's first login as before the guide existed.

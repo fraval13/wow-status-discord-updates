@@ -76,8 +76,8 @@ the log card; older versions show them as an ordinary whisper.
 3. `python scripts/sync_addons.py` copies them into the four editions.
 
 To add a personality, add it to `PERSONALITIES` in the script, add its file to
-each edition's TOC after `FlavourNN.lua` and to `PERSONALITY_FILES` in
-`tests/test_addon.py`.
+each edition's TOC after the existing personality files, in `PERSONALITIES`
+order. Test clients load the TOCs automatically through `tests/lua_loader.py`.
 
 ## How captions are chosen
 
