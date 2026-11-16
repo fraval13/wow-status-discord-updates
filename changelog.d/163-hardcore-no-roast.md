@@ -1,0 +1,1 @@
+- Hardcore realms: a death there gets no joke caption, no teasing reaction and never counts toward death records
