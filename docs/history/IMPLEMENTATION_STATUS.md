@@ -1,5 +1,11 @@
 # Implementation and validation status
 
+> **Historical, moved to `docs/history/` in November 2026.** Status notes from the
+> 0.10 to 0.14 releases (October and November 2026). Superseded by
+> [`CHANGELOG.md`](../../CHANGELOG.md) for what each release did and by the hosted
+> "Checks and addon packages" workflow for validation. Versions, test counts and
+> pending checks below are from those dates.
+
 Current addon release: **0.14.3**. The current UI is in-game only, with armor-only
 loot, native options, a minimap log button and one-shot two-way login sync.
 The retained Discord integration is disabled behind `Features.lua`; older
@@ -17,15 +23,15 @@ an independent per-character opt-in and produces complete-export summaries.
 The full local suite passes 158 tests; the 56 addon tests also pass under Lua 5.1.
 Menu rendering has had user testing, while the new two-player whisper transport
 and animated toasts still need live client acceptance. Mocked clients do not
-establish delivery on an actual realm. See [the current setup](../README.md) and
-[in-game test checklist](LIVE_POPUPS.md).
+establish delivery on an actual realm. See [the current setup](../../README.md) and
+[in-game test checklist](../LIVE_POPUPS.md).
 
 Current cumulative deaths, completed quest counts, XP percentages and profession
 ranks are implemented with unavailable/historical values explicitly labelled.
 
 The implementation table below describes the earlier companion/server baseline.
 Its original outstanding-validation labels are historical; the current
-[README](../README.md) and [AGENTS.md](../AGENTS.md) take precedence.
+[README](../../README.md) and [AGENTS.md](../../AGENTS.md) take precedence.
 
 | Area | Implemented in source | Still required |
 | --- | --- | --- |

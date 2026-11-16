@@ -19,11 +19,12 @@ Every merge to `main` prepares one minor-version increment, runs the tests, and
 deploys matching homepage, addon downloads and group services. Re-running a release
 keeps its existing version. The [public release manifest](https://wow.frankvalde.com/downloads/release.json)
 records the published version and exact source revision
-(see [deploy/SERVER.md](deploy/SERVER.md)). Live in-game checking of the
-caption layout is pending. The homepage uses its original still artwork.
+(see [deploy/SERVER.md](deploy/SERVER.md)). The current version is
+`project.version` in `pyproject.toml`; release notes are in `CHANGELOG.md`.
+The homepage uses its original still artwork.
 
-Some older status documents describe
-historical releases; the current source and newest handoff notes take precedence.
+Superseded plans and dated audits are kept in [docs/history](docs/history/README.md);
+the current source and this README take precedence over them.
 
 ## Start sharing
 
@@ -32,11 +33,9 @@ class portraits, adds window themes and a size setting, a first-time setup guide
 and Show me around tour, session recaps, Firsts medals, and catches group history
 up from friends. It also keeps live updates working when players' clocks disagree,
 delivers every update to every member, and stops one player filling the activity
-log. 0.14.13 sent updates and log sync during combat (WoW Forever could report
-combat all the time, which stopped both). 0.14.12 added corrected Retail/Forever minimap
-button placement, the dungeon API fix, clearer group-join wording, group warnings
-for invalid log data, leaving removed group channels after `/reload`, and counting
-a death once when the player releases their spirit.
+log. Updates and log sync also run during combat, because WoW Forever could
+report combat all the time and that stopped both. See `CHANGELOG.md` for what
+each release changed.
 
 1. Copy the appropriate `addon/vanilla/WoWStatus`, `addon/tbc/WoWStatus` (TBC Anniversary),
    `addon/retail/WoWStatus` (Retail), or `addon/forever/WoWStatus`
@@ -195,7 +194,8 @@ and [in-game testing and coverage](docs/LIVE_POPUPS.md).
 
 Malformed log data is rejected silently and never enters the activity log. The
 group warning popup that earlier versions showed for it was removed after false
-alarms in live play. See [invalid log data](docs/LOG_GUARD.md).
+alarms in live play. See [invalid log data](docs/history/LOG_GUARD.md) for the
+removed warning.
 
 ## Activity log and login sync
 
@@ -236,6 +236,5 @@ in-game rendering and API availability still require checking.
 
 - [Activity log, history and timings](docs/IN_GAME_HISTORY.md)
 - [In-game acceptance tests](docs/LIVE_POPUPS.md)
-- [Forever and Retail compatibility check](docs/CLIENT_COMPATIBILITY.md)
 - [CurseForge listing and automatic uploads](docs/CURSEFORGE.md)
-- [Implementation status](docs/IMPLEMENTATION_STATUS.md)
+- [Historical plans and audits](docs/history/README.md)

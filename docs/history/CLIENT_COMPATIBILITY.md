@@ -1,5 +1,11 @@
 # Forever and Retail compatibility check — 4 November 2026
 
+> **Historical, moved to `docs/history/` in November 2026.** A point-in-time API
+> check from 4 November 2026 (release 0.14.10). Superseded by the edition adapters
+> and their tests (`tests/test_client_compatibility.py`, `tests/test_forever.py`,
+> `tests/test_retail.py`). Versions, test counts and working-tree notes below are
+> from that date.
+
 Both use the modern/Mainline API family, with edition-specific differences.
 They should keep separate adapters and packages. This check covers source/API
 contracts and simulated clients; live-game acceptance remains pending.
@@ -69,5 +75,5 @@ and missing entries recover without replaying popups. Verify permitted messaging
 in world/instance/combat contexts; the addon cannot override client restrictions.
 
 Rendering, gameplay spell IDs and actual realm/faction delivery remain live-client
-checks. See [the in-game checklist](LIVE_POPUPS.md) and the earlier
+checks. See [the in-game checklist](../LIVE_POPUPS.md) and the earlier
 [Forever audit](FOREVER_COMPATIBILITY.md).

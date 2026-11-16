@@ -1,5 +1,9 @@
 # Open-issue audit — 5 November 2026
 
+> **Historical, moved to `docs/history/` in November 2026.** An open-issue audit
+> from 5 November 2026. Superseded by the [GitHub issue
+> tracker](https://github.com/fraval13/wow-status-discord-updates/issues).
+
 Checked after pulling main at `6b41750`. No game client, private group
 configuration, player SavedVariables, or production service was changed.
 
