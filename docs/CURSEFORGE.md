@@ -114,7 +114,18 @@ Keep your group ID private: anyone who knows it can join your group.
 
 ## Works on
 Retail, Classic Era, TBC Anniversary and WoW Forever. Pick the file for your game.
+
+## Links
+- Homepage, with manual ZIP downloads and an install guide: https://wow.frankvalde.com/
+- Source code and issues: https://github.com/fraval13/wow-status-discord-updates
+- Changelog: https://github.com/fraval13/wow-status-discord-updates/blob/main/CHANGELOG.md
 ```
+
+The homepage links back to this listing (<https://www.curseforge.com/wow/addons/wow-status>)
+from its download panel, install steps and footer. `tests/test_website.py` fails
+while the download panel lacks that link, while a homepage link or a link in
+`README.md` or this file points at another CurseForge project, or while a homepage
+link to it does not open in a new tab with `rel="noopener noreferrer"`.
 
 Keep this description in step with `README.md` when features change. Do not put
 a real group name in the listing.

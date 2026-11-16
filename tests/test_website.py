@@ -9,6 +9,7 @@ import json
 import re
 import shutil
 import subprocess
+from html.parser import HTMLParser
 from pathlib import Path
 
 import pytest
@@ -56,3 +57,48 @@ def test_every_icon_the_preview_asks_for_exists():
     assert icons, 'no preview icons found in app.js'
     missing = [name for name in sorted(icons) if not (WEBSITE / f'assets/icons/{name}.jpg').is_file()]
     assert missing == []
+
+
+# The listing the homepage offers next to the ZIPs (#189). Every link to a CurseForge
+# project in the page, README.md and docs/CURSEFORGE.md must point at this one.
+CURSEFORGE_URL = 'https://www.curseforge.com/wow/addons/wow-status'
+CURSEFORGE_PROJECT = re.compile(r'curseforge\.com/wow/addons/([a-z0-9-]+)', re.I)
+
+
+class Anchors(HTMLParser):
+    """The attributes of every <a> tag, in document order (any quoting or case)."""
+
+    def __init__(self, html):
+        super().__init__()
+        self.links = []
+        self.feed(html)
+
+    def handle_starttag(self, tag, attrs):
+        if tag == 'a':
+            self.links.append(dict(attrs))
+
+
+def test_download_panel_offers_the_curseforge_app_next_to_the_zips():
+    """#189: both install routes in the download panel, with the update difference stated."""
+    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
+    panel = re.search(r'<section[^>]*id="downloads".*?</section>', page, re.S)
+    assert panel, 'no download panel'
+    hrefs = [link.get('href') for link in Anchors(panel.group()).links]
+    assert CURSEFORGE_URL in hrefs, hrefs
+    assert {f'/downloads/WoWStatus-{edition}.zip'
+            for edition in ('vanilla', 'tbc', 'retail', 'forever')} <= set(hrefs)
+    assert 'by hand' in panel.group(), 'the panel no longer says a ZIP is updated by hand'
+
+
+def test_every_curseforge_link_is_the_listing_and_opens_safely():
+    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
+    links = [link for link in Anchors(page).links if 'curseforge.com' in (link.get('href') or '').lower()]
+    assert len(links) >= 3, links  # download panel, install step 1, footer
+    for link in links:
+        assert link['href'] == CURSEFORGE_URL, link
+        assert link.get('target') == '_blank', link
+        assert {'noopener', 'noreferrer'} <= set((link.get('rel') or '').split()), link
+    for name in ('website/index.html', 'README.md', 'docs/CURSEFORGE.md'):
+        text = (WEBSITE.parent / name).read_text(encoding='utf-8')
+        projects = {slug.lower() for slug in CURSEFORGE_PROJECT.findall(text)}
+        assert projects == {'wow-status'}, (name, projects)
