@@ -250,8 +250,8 @@ def test_off_switch_list_editing_and_malformed_saved_values():
     thora.execute('WoWStatusUnitTooltip.setEnabled(true)')
     assert shown(thora) != []
 
-    def picked():
-        listed = thora.eval('WoWStatusUnitTooltip.settings().shown')
+    def picked(known=False):
+        listed = thora.eval('WoWStatusUnitTooltip.picked()' if known else 'WoWStatusUnitTooltip.settings().shown')
         return [listed[i] for i in range(1, len(listed) + 1)]
     thora.execute('WoWStatusDB.unit_tooltip = nil')
     assert picked() == ['item_level', 'deaths', 'professions']
@@ -266,9 +266,12 @@ def test_off_switch_list_editing_and_malformed_saved_values():
                             ('{shown="deaths", size=3}', ['item_level', 'deaths', 'professions']),
                             ('"broken"', ['item_level', 'deaths', 'professions'])):
         thora.execute(f'WoWStatusDB.unit_tooltip = {saved}')
-        assert picked() == expected
+        assert picked(known=True) == expected
         assert thora.eval('WoWStatusUnitTooltip.settings().enabled') is True
         assert thora.eval('WoWStatusUnitTooltip.settings().size') is None
+    # A pick this version does not know survives, so a newer version keeps it.
+    thora.execute('WoWStatusDB.unit_tooltip = {shown={"deaths", "nope"}}')
+    assert picked() == ['deaths', 'nope'] and picked(known=True) == ['deaths']
 
 
 def test_options_list_adds_removes_reorders_and_translates():

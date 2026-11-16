@@ -23,16 +23,21 @@ local function count(value) return value and value > 0 and tostring(value) or ni
 U.VALUES = {
     {key="item_level", label="Average item level", show=function(f) return f.item_level and tostring(math.floor(f.item_level)) end},
     {key="deaths", label="Total deaths", show=function(f) return f.deaths and tostring(f.deaths) end},
+    -- Two to a line, best skill first, so five professions do not stretch the tooltip.
     {key="professions", label="Professions", show=function(f)
-        local parts = {}
-        for _, item in ipairs(f.professions or {}) do parts[#parts + 1] = item.name .. " " .. item.skill end
-        return #parts > 0 and table.concat(parts, ", ") or nil
+        local lines, line = {}, {}
+        for _, item in ipairs(f.professions or {}) do
+            line[#line + 1] = item.name .. " " .. item.skill
+            if #line == 2 then lines[#lines + 1], line = table.concat(line, ", "), {} end
+        end
+        if #line > 0 then lines[#lines + 1] = table.concat(line, ", ") end
+        return #lines > 0 and lines or nil
     end},
     {key="level", label="Level progress", show=function(f) return f.xp and (math.floor(f.xp / 10) .. "%") end},
     {key="quests", label="Quests", show=function(f) return f.quests and tostring(f.quests) end},
     {key="played", label="Played", show=function(f) return f.played and WoWStatusUI and WoWStatusUI.duration(f.played) end},
-    {key="gold", label="Gold", show=function(f) return f.gold and WoWStatusUI and WoWStatusUI.money(f.gold) end},
-    {key="kills", label="Monsters killed", show=function(f) return f.kills and tostring(f.kills) end},
+    {key="gold", label="Gold", show=function(f) return f.gold and WoWStatusUI and WoWStatusUI.money(f.gold, true) end},
+    {key="kills", label="Monsters killed", show=function(f) return count(f.kills) end},
     {key="dungeons", label="Dungeons cleared", show=function(f) return count(f.dungeons) end},
     {key="mounts", label="Mounts", show=function(f) return count(f.mounts) end},
     {key="honor_kills", label="Honorable kills", show=function(f) return count(f.honor_kills) end},
@@ -41,19 +46,29 @@ local BY_KEY = {}
 for _, value in ipairs(U.VALUES) do BY_KEY[value.key] = value end
 U.DEFAULT = {"item_level", "deaths", "professions"}
 
--- The saved setting, repaired: shown is a list of known keys, each once.
+-- The saved setting, repaired once per table: shown is a list of keys, each
+-- once. A key this version does not know is kept (a newer version wrote it)
+-- but neither shown nor listed.
 function U.settings()
     if type(WoWStatusDB) ~= "table" then return {enabled=false, shown={}} end
-    local value = type(WoWStatusDB.unit_tooltip) == "table" and WoWStatusDB.unit_tooltip or {}
+    local value = WoWStatusDB.unit_tooltip
+    if value == U.repaired and type(value) == "table" then return value end
+    value = type(value) == "table" and value or {}
     WoWStatusDB.unit_tooltip = value
     value.enabled = value.enabled ~= false
     value.size = nil -- An earlier draft of this setting.
     local list, seen = {}, {}
     for _, key in ipairs(type(value.shown) == "table" and value.shown or U.DEFAULT) do
-        if type(key) == "string" and BY_KEY[key] and not seen[key] then list[#list + 1], seen[key] = key, true end
+        if type(key) == "string" and #key <= 40 and not seen[key] and #list < 40 then list[#list + 1], seen[key] = key, true end
     end
-    value.shown = list
+    value.shown, U.repaired = list, value
     return value
+end
+-- The picked values this version knows, top first.
+function U.picked()
+    local list = {}
+    for _, key in ipairs(U.settings().shown) do if BY_KEY[key] then list[#list + 1] = key end end
+    return list
 end
 function U.setEnabled(enabled) U.settings().enabled = enabled == true end
 local function position(list, key)
@@ -69,25 +84,33 @@ function U.removeValue(key)
     local i = position(list, key)
     if i then table.remove(list, i) end
 end
+-- Above the known value before it, past any unknown ones in between.
 function U.moveUp(key)
     local list = U.settings().shown
     local i = position(list, key)
-    if i and i > 1 then list[i - 1], list[i] = list[i], list[i - 1] end
+    if not i then return end
+    for j = i - 1, 1, -1 do
+        if BY_KEY[list[j]] then list[j], list[i] = list[i], list[j]; return end
+    end
 end
 
 -- The block for a character name as {header, {label, value}, ...}, or nil.
 function U.lines(name, liveLevel, guid)
     local value = U.settings()
-    if not value.enabled or #value.shown == 0 or not WoWStatusRoster or not WoWStatusRoster.tooltipFacts then return nil end
-    local facts = WoWStatusRoster.tooltipFacts(name, liveLevel, guid)
+    if not value.enabled or not WoWStatusRoster or not WoWStatusRoster.tooltipFacts then return nil end
+    local picked, want = U.picked(), {}
+    if #picked == 0 then return nil end
+    for _, key in ipairs(picked) do want[key] = true end
+    local facts = WoWStatusRoster.tooltipFacts(name, liveLevel, guid, want)
     if not facts then return nil end
     local rows = {}
-    for _, key in ipairs(value.shown) do
+    for _, key in ipairs(picked) do
         local item = BY_KEY[key]
         local shown = item.show(facts)
-        if shown then
-            local label = key == "quests" and facts.quests_source == "tracked_since" and "Quests (tracked)" or item.label
-            rows[#rows + 1] = {T(label), shown}
+        local label = key == "quests" and facts.quests_source == "tracked_since" and "Quests (tracked)" or item.label
+        -- A list value continues on lines without a label.
+        for i, text in ipairs(type(shown) == "table" and shown or {shown}) do
+            rows[#rows + 1] = {i == 1 and T(label) or " ", text}
         end
     end
     if #rows == 0 then return nil end
@@ -173,7 +196,7 @@ function U.buildSettings(parent, y)
         self.check:SetChecked(value.enabled)
         self.hint:SetText(T("Values shown, top first:"))
         local order, picked = {}, {}
-        for _, key in ipairs(value.shown) do order[#order + 1], picked[key] = key, true end
+        for _, key in ipairs(U.picked()) do order[#order + 1], picked[key] = key, true end
         for _, item in ipairs(U.VALUES) do if not picked[item.key] then order[#order + 1] = item.key end end
         for i, row in ipairs(self.rows) do
             row.key, row.picked = order[i], picked[order[i]] == true

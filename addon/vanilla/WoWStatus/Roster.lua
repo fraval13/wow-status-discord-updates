@@ -435,7 +435,8 @@ end
 -- stale list under an old player ID can hold them). A value the character does
 -- not share is nil, never zero. liveLevel is the level the game shows now: saved
 -- XP progress belongs to the saved level only. guid, when known, is the unit's.
-function R.tooltipFacts(name, liveLevel, guid)
+-- want, when given, names the costlier values to look up (item_level, professions).
+function R.tooltipFacts(name, liveLevel, guid, want)
     if not db or not current then return nil end
     local k = key(name)
     if not k then return nil end
@@ -471,10 +472,16 @@ function R.tooltipFacts(name, liveLevel, guid)
         xp = nil
     end
     local quests = S.number(found.quests)
-    -- Item level only from equipment already stored here: a mouseover requests nothing.
+    -- Item level only from equipment already stored here (a mouseover requests
+    -- nothing), and never from equipment its owner has hidden.
+    local itemLevel
+    if not want or want.item_level then
+        local snapshot, hiddenGear = R.equipment(found.name)
+        itemLevel = not hiddenGear and type(snapshot) == "table" and S.number(snapshot.average_item_level) or nil
+    end
     return {name=found.name, player=S.string(owner.name), alts=alts, level=level, xp=xp, deaths=deaths[k] or nil,
         quests=quests, quests_source=quests and found.quests_source or nil, played=S.number(found.played),
-        item_level=R.itemLevel(found.name), professions=R.professionsOf(found), gold=S.number(found.gold),
+        item_level=itemLevel, professions=(not want or want.professions) and R.professionsOf(found) or nil, gold=S.number(found.gold),
         kills=S.number(found.kills), dungeons=S.number(found.dungeons), mounts=S.number(found.mounts),
         honor_kills=S.number(found.honor_kills)}
 end
