@@ -70,14 +70,14 @@ def parse(text: str) -> list[tuple[str, list[str]]]:
     return sections
 
 
-def fragment_order(path: Path) -> tuple[int, str]:
-    """Leading issue numbers sort numerically (20-b.md before 100-a.md), the rest by name."""
+def fragment_order(path: Path) -> tuple[int, int, str]:
+    """Issue-number order: 20-b.md before 100-a.md; names without a number come last."""
     number = re.match(r'\d+', path.name)
-    return (int(number[0]) if number else -1, path.name)
+    return (0, int(number[0]), path.name) if number else (1, 0, path.name)
 
 
 def fragment_paths(root: Path) -> list[Path]:
-    """Pending note files in issue-number order.
+    """Pending note files in issue-number order (see fragment_order).
 
     Hidden files (.DS_Store, editor swap files) are ignored; anything else that is
     not a note file is an error, so a misnamed note is never silently dropped.
@@ -110,9 +110,15 @@ def parse_fragment(text: str, name: str) -> list[str]:
 
 
 def pending_notes(root: Path) -> list[tuple[Path, list[str]]]:
-    """Every pending note file with its notes, validated, in filename order."""
-    return [(path, parse_fragment(path.read_text(encoding='utf-8'), path.name))
-            for path in fragment_paths(root)]
+    """Every pending note file with its notes, validated, in issue-number order."""
+    pending = []
+    for path in fragment_paths(root):
+        try:
+            text = path.read_text(encoding='utf-8-sig')  # Tolerate a BOM from Windows editors.
+        except UnicodeDecodeError as error:
+            raise ValueError(f'{FRAGMENTS}/{path.name}: save the note file as UTF-8') from error
+        pending.append((path, parse_fragment(text, path.name)))
+    return pending
 
 
 def lua_string(text: str) -> str:

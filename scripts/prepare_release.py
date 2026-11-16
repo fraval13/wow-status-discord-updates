@@ -75,7 +75,7 @@ def validate_release(root: Path) -> str:
     return version
 
 
-def promoted_notes(text: str, version: str, subject: str, pending: list[str] | None = None) -> str:
+def promoted_notes(text: str, version: str, subject: str, pending: list[str]) -> str:
     """CHANGELOG.md with a new ``## <version>`` section on top of the released ones.
 
     Its notes are any leftover ``## Unreleased`` notes, then the pending notes from
@@ -89,7 +89,7 @@ def promoted_notes(text: str, version: str, subject: str, pending: list[str] | N
     subject = subject.translate(str.maketrans('', '', '*`<>'))[:whats_new.MAX_NOTE].strip()
     newline = '\r\n' if '\r\n' in text else '\n'
     fallback = '- ' + (subject or 'Latest addon and website improvements') + newline
-    added = ''.join(f'- {note}{newline}' for note in pending or [])
+    added = ''.join(f'- {note}{newline}' for note in pending)
     if unreleased:
         heading = unreleased[0]
         end = re.search(r'^## ', text[heading.end():], re.MULTILINE)
@@ -172,10 +172,6 @@ def prepare(root: Path, source: str, remote: str = 'origin', branch: str = 'main
         raise ValueError('Checkout must be exactly the requested full source revision')
     if git(root, 'status', '--porcelain', '--untracked-files=no'):
         raise ValueError('Release preparation requires a clean tracked checkout')
-    untracked = git(root, 'ls-files', '--others', '--', whats_new.FRAGMENTS).splitlines()
-    if any(not Path(name).name.startswith('.') for name in untracked):
-        # bump() reads and deletes every note file, so it must only see committed ones.
-        raise ValueError(f'Release preparation requires no untracked files in {whats_new.FRAGMENTS}/')
     git(root, 'fetch', '--no-tags', remote, f'refs/heads/{branch}', authenticated=True)
     tip = git(root, 'rev-parse', 'FETCH_HEAD')
     if tip != source:
@@ -198,6 +194,10 @@ def prepare(root: Path, source: str, remote: str = 'origin', branch: str = 'main
         if version != before:
             return source  # An intentional release PR already chose its version.
     version = next_version(version)
+    # bump() reads and deletes every note file, so it must only see committed ones.
+    tracked = set(git(root, 'ls-files', '--', whats_new.FRAGMENTS).splitlines())
+    if any(path.relative_to(root).as_posix() not in tracked for path in whats_new.fragment_paths(root)):
+        raise ValueError(f'Release preparation requires no untracked note files in {whats_new.FRAGMENTS}/')
     consumed = bump(root, version, git(root, 'show', '-s', '--format=%s', source))
     # Staging a deleted note file records its removal in the release commit.
     git(root, 'add', '--', *(str(path.relative_to(root)) for path in [*files(root), *consumed]))

@@ -10,8 +10,9 @@ pull requests never conflict over release notes.
   without `|` or markup such as backticks or `**`, and written for players.
   Blank lines are allowed; nothing else is.
 - Do not touch `CHANGELOG.md` or any `WhatsNewData.lua`, and do not run
-  `scripts/whats_new.py` for a note. A pull request without a note file gets its
-  public title as the release note.
+  `scripts/whats_new.py` for a note. Only a release with no note files at all
+  falls back to the public commit title, so every player-facing change needs a
+  note file of its own.
 
 On each main push, `scripts/prepare_release.py` moves every note file here into a
 new `## <version>` section of `CHANGELOG.md` (in issue-number order), regenerates

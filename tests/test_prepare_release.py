@@ -173,7 +173,7 @@ def write_fragment(root, name, text):
     return path
 
 
-def test_release_promotes_pending_note_files_in_filename_order_and_deletes_them(repository):
+def test_release_promotes_pending_note_files_in_issue_number_order_and_deletes_them(repository):
     root, remote, _ = repository
     # The leftover Unreleased note from the fixture comes first during the transition.
     write_fragment(root, 'README.md', 'How to add a note\n')
@@ -216,6 +216,14 @@ def test_untracked_note_file_stops_the_release_before_anything_is_written(reposi
     assert {path: path.read_bytes() for path in release.files(root)} == before
     assert note.is_file()
     assert git(remote, 'rev-parse', 'refs/heads/main') == source
+
+
+def test_untracked_hidden_file_in_the_notes_folder_does_not_block_the_release(repository):
+    root, _, source = repository
+    write_fragment(root, '.DS_Store', 'finder junk')
+    release.prepare(root, source)
+    assert release.validate_release(root) == '0.15.0'
+    assert (root / 'changelog.d/.DS_Store').is_file()
 
 
 @pytest.mark.parametrize('newline', ['\n', '\r\n'])
