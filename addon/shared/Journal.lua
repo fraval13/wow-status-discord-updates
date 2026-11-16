@@ -972,21 +972,65 @@ local function pickedDay()
     if panel.day=="today" then return today() end
     return panel.day
 end
+-- Accents a player is unlikely to type: folded to plain letters so "aerie" finds
+-- "Ærie Peak" and "doden" finds "Døden". CaseFold.lua is not the place for this —
+-- it is generated, and it also canonicalises group names, which must not change.
+-- Applied after WoWStatusCaseFold, so only the lowercase forms are listed.
+local PLAIN={
+    ["\195\160"]="a",["\195\161"]="a",["\195\162"]="a",["\195\163"]="a",["\195\164"]="a",["\195\165"]="a",
+    ["\195\166"]="ae",["\195\167"]="c",["\195\168"]="e",["\195\169"]="e",["\195\170"]="e",["\195\171"]="e",
+    ["\195\172"]="i",["\195\173"]="i",["\195\174"]="i",["\195\175"]="i",["\195\176"]="d",["\195\177"]="n",
+    ["\195\178"]="o",["\195\179"]="o",["\195\180"]="o",["\195\181"]="o",["\195\182"]="o",["\195\184"]="o",
+    ["\195\185"]="u",["\195\186"]="u",["\195\187"]="u",["\195\188"]="u",["\195\189"]="y",["\195\191"]="y",
+    ["\195\190"]="th",["\195\159"]="ss",["\197\147"]="oe",["\197\141"]="o",["\196\129"]="a",["\196\147"]="e",
+    ["\196\171"]="i",["\197\171"]="u",["\197\161"]="s",["\197\190"]="z",["\197\130"]="l",["\196\135"]="c",
+}
+local function plain(text)
+    return (text:gsub("[%z\1-\127\194-\244][\128-\191]*",function(char) return PLAIN[char] or char end))
+end
+-- Case and accents folded together; both sides of a comparison go through this.
+local function fold(text) return plain(WoWStatusCaseFold(text)) end
+-- Free-text search over the log (#175). The text is folded for case and accents,
+-- so "aerie" finds "Aerie Peak" and "dod" finds "Døden". Cached per entry and
+-- rebuilt when the entry's own text or its death details change.
+local searchCache=setmetatable({},{__mode="k"})
+local function searchText(e)
+    local d=J.details(e)
+    local key=table.concat({tostring(e.text),tostring(e.sender),tostring(d and d.zone),tostring(d and d.killer)},"\1")
+    local cached=searchCache[e]
+    if cached and cached.key==key then return cached.text end
+    -- The card's own message (zone and killer included), the character's name and
+    -- the player behind it, which is what the Person filter calls them.
+    local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
+        and WoWStatusRoster.displayName(e.sender) or nil
+    local text=fold(table.concat({J.deathText(e),tostring(e.sender),who or ""}," "))
+    searchCache[e]={key=key,text=text}
+    return text
+end
+-- What the player typed, folded the same way; nil when the box is empty.
+local function searchQuery()
+    local query=panel and S.string(panel.search)
+    return query and query~="" and fold(query) or nil
+end
 local function visibleEntries(allDays)
     local list={}
     local samples=WoWStatusGuide and WoWStatusGuide.sampleEntries()
     local kinds=panel.typeFilter and J.TYPES[panel.typeFilter] and J.TYPES[panel.typeFilter][2]
+    local query=searchQuery()
     for _,e in ipairs(J.displayEntries()) do
         local wanted=(panel.filter=="all" or panel.filter=="character" or (panel.filter=="mine")==not not e.owner)
             and (not panel.character or P.senderKey(e.sender)==panel.character)
             and (not kinds or kinds[e.kind])
+            and (not query or searchText(e):find(query,1,true)~=nil)
         if J.visible(e) and wanted then list[#list+1]=e end
     end
-    if not samples and not panel.character and not kinds and (panel.filter=="all" or panel.filter=="mine") then
+    if not samples and not query and not panel.character and not kinds and (panel.filter=="all" or panel.filter=="mine") then
         for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
         table.sort(list,function(a,b) if a.at==b.at then return a.id>b.id end return a.at>b.at end)
     end
-    local day=not allDays and not samples and pickedDay()
+    -- A search looks through the whole log: a day picker left on Today would hide
+    -- the very entry the player is looking for.
+    local day=not allDays and not samples and not query and pickedDay()
     if day then
         local kept={}
         for _,e in ipairs(list) do if dayOf(e)==day then kept[#kept+1]=e end end
@@ -1036,13 +1080,19 @@ local function render()
     local list=visibleEntries();panel.entriesList=list
     panel.reactUntil=nil
     panel.empty:SetShown(#list==0)
+    local query=searchQuery()
     local day=pickedDay()
-    panel.empty:SetText(T(not day and "No activity yet" or day==today() and "Nothing yet today." or "No activity on this day."))
+    panel.empty:SetText(query and T("Nothing in the log matches that.")
+        or T(not day and "No activity yet" or day==today() and "Nothing yet today." or "No activity on this day."))
+    -- A search reaches past the day picker, so the count says how wide it looked.
+    panel.searchCount:SetText(query and WoWStatusLocale.F("%d matches in the whole log",#list) or "")
+    WoWStatusUI.call(panel.searchClear,"SetEnabled",query~=nil)
     panel.dayButton:SetText(WoWStatusUI.dayLabel(day,today(),yesterday()))
     -- What the type and person filters show, with Show all to clear them.
     local parts={}
     if panel.typeFilter and J.TYPES[panel.typeFilter] then parts[#parts+1]=T(J.TYPES[panel.typeFilter][1]) end
     if panel.character then parts[#parts+1]=(panel.characterName or "?"):gsub("|","||") end
+    if panel.search then parts[#parts+1]=T("Search:").." "..panel.search:gsub("|","||") end
     panel.showing:SetText(#parts>0 and (T("Showing:").." |cffffd100"..table.concat(parts," · ").."|r") or "")
     panel.showAll:SetShown(#parts>0)
     panel.typeButton:SetText(T("Type:").." "..(panel.typeFilter and T(J.TYPES[panel.typeFilter][1]) or T("All")))
@@ -1108,7 +1158,7 @@ end
 local function build(parent)
     panel=CreateFrame("Frame","WoWStatusActivityLog",parent);panel:SetAllPoints(parent)
     panel.scroll=CreateFrame("ScrollFrame",nil,panel,"UIPanelScrollFrameTemplate")
-    panel.scroll:SetPoint("TOPLEFT",24,-4);panel.scroll:SetSize(710,470)
+    panel.scroll:SetPoint("TOPLEFT",24,-38);panel.scroll:SetSize(710,436)
     panel.child=CreateFrame("Frame",nil,panel.scroll);panel.child:SetSize(686,420);panel.scroll:SetScrollChild(panel.child)
     panel.empty=label(panel.child,"GameFontHighlightLarge",24,-180,620)
     panel.empty:SetJustifyH("CENTER");panel.empty:SetText(T("No activity yet"))
@@ -1144,8 +1194,42 @@ local function build(parent)
         row.detail=oneLine(label(row,"GameFontHighlightSmall",88,-98,570))
         panel.rows[i]=row
     end
+    -- Search box (#175). Nothing is stored, so it is empty at every /reload.
+    label(panel,"GameFontNormal",24,-12,70):SetText(T("Search:"))
+    panel.search=nil
+    panel.searchBox=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+    panel.searchBox:SetPoint("TOPLEFT",96,-10);panel.searchBox:SetSize(300,24)
+    panel.searchBox:SetAutoFocus(false);panel.searchBox:SetMaxLetters(48)
+    panel.searchBox:SetScript("OnTextChanged",function(self)
+        local text=S.string(self:GetText()) or ""
+        if text==(panel.search or "") then return end
+        panel.search=text~="" and text or nil
+        -- Filtered after a short pause, not on every keystroke.
+        panel.searchWait=.25
+    end)
+    panel.searchBox:SetScript("OnEnterPressed",function(self) self:ClearFocus() end)
+    -- Escape, and B on a controller, leave the field without clearing the search.
+    panel.searchBox:SetScript("OnEscapePressed",function(self) self:ClearFocus() end)
+    panel.searchCount=label(panel,"GameFontHighlight",514,-12,220)
+    panel.searchClear=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate")
+    panel.searchClear:SetPoint("TOPLEFT",404,-10);panel.searchClear:SetSize(100,24)
+    panel.searchClear:SetText(T("Clear"))
+    local function clearSearch()
+        panel.searchBox:SetText("");panel.searchBox:ClearFocus()
+        panel.search,panel.searchWait=nil,nil
+        panel.scroll:SetVerticalScroll(0);render()
+    end
+    panel.clearSearch=clearSearch
+    panel.searchClear:SetScript("OnClick",clearSearch)
     local waited=0
     panel:SetScript("OnUpdate",function(_,delta)
+        if panel.searchWait then
+            panel.searchWait=panel.searchWait-(delta or 0)
+            if panel.searchWait<=0 then
+                panel.searchWait=nil
+                panel.scroll:SetVerticalScroll(0);render()
+            end
+        end
         waited=waited+(delta or 0)
         if waited<1 then return end
         waited=0
@@ -1191,7 +1275,7 @@ local function build(parent)
     panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
     panel.showAll:SetScript("OnClick",function()
         panel.filter,panel.typeFilter,panel.character,panel.characterName="all",nil,nil,nil
-        panel.scroll:SetVerticalScroll(0);render()
+        clearSearch()
     end)
     return panel
 end
@@ -1206,6 +1290,7 @@ function J.showCharacter(name)
     if not db or not P.senderKey(name) then return false end
     WoWStatusMainWindow.show("activity",true)
     panel.filter,panel.character,panel.characterName="all",P.senderKey(name),name:match("^[^-]+") or name
+    panel.searchBox:SetText("");panel.search,panel.searchWait=nil,nil
     panel.day=nil -- A character's activity on every day.
     panel.scroll:SetVerticalScroll(0);render()
     if WoWStatusMainWindow.go then WoWStatusMainWindow.go({page="activity",character=name}) end
@@ -1219,6 +1304,7 @@ function J.focus(id)
     -- earlier in the session would hide the very entry we came to show, and
     -- the jump would quietly do nothing (#119).
     panel.filter,panel.typeFilter,panel.character,panel.characterName="all",nil,nil,nil
+    panel.searchBox:SetText("");panel.search,panel.searchWait=nil,nil
     local day=dayOf(index[id])
     panel.day=day==today() and "today" or day
     for i,e in ipairs(visibleEntries()) do

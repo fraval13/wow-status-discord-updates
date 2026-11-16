@@ -209,6 +209,9 @@ W.add({
     ["Screenshots are not available in this client."] = "Skjermbilete er ikkje tilgjengeleg i denne klienten.",
     ["A screenshot is already being taken."] = "Det blir alt teke eit skjermbilete.",
     ["Minimap button distance reset."] = "Avstanden til minikartknappen er tilbakestilt.",
+    ["Search:"] = "Søk:", ["Clear"] = "Tøm",
+    ["%d matches in the whole log"] = "%d treff i heile loggen",
+    ["Nothing in the log matches that."] = "Ingenting i loggen passar med det.",
     -- Controller navigation and key bindings
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",

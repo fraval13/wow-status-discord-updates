@@ -227,7 +227,11 @@ removed warning.
 ## Activity log and login sync
 
 The scrollable log uses the same icons and colours as popups, with **All**, **Mine**
-and **Friends** filters. Individual quest turn-ins are omitted; only hundred-quest
+and **Friends** filters and a **Search** box. Searching looks through the card text,
+the character name, the player name and a death's zone and killer, ignoring case and
+accents (so `aerie` finds `Ærie Peak`), and it reaches past the day picker into the
+whole log. It combines with the type and person filters; **Clear** and **Show all**
+end it, and nothing about a search is remembered after a `/reload`. Individual quest turn-ins are omitted; only hundred-quest
 achievements appear. Detailed profession and equipment-change activity stays
 private. Eligible announcements and requested equipment snapshots are exchanged
 with group members according to the character's sharing settings.
