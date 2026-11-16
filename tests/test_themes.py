@@ -432,13 +432,16 @@ def test_high_contrast_text_meets_wcag_aaa_for_body_and_aa_for_muted_lines():
     # Muted lines (|cff9d9d9d, |cff808080, GameFontDisable at .5 grey): at least AA, 4.5:1.
     for grey in (0x9d / 255, 0x80 / 255, .5):
         assert contrast((grey, grey, grey), window) >= 5.2
-    # Every one beats the same text on each of the four mood themes.
+    # Every one beats the same text on each of the four mood themes, both on the
+    # window and inside a box (45 % black over the window there).
     for name in ('achievement', 'night', 'journal', 'faction'):
         other = make_lua(THEMES + f'WoWStatusDB = {{version=1, characters={{}}, theme={{name="{name}"}}}}\n')
         mood = other.eval('{WoWStatusTheme.colour()}')
         mood = (mood[1], mood[2], mood[3])
+        boxed = tuple(c * .55 for c in mood)
         for text in ((1, 1, 1), (1, .82, 0), (.5, .5, .5)):
             assert contrast(text, window) > contrast(text, mood)
+            assert contrast(text, window) > contrast(text, boxed)
 
 
 def test_high_contrast_is_offered_after_faction_and_named_in_both_languages():
@@ -498,4 +501,33 @@ def test_boxes_and_section_lines_turn_strong_on_high_contrast_and_back():
         WoWStatusTheme.next()                           -- back to Achievement
         assert(box.fill[4] == .45 and box.edge[1] == .55 and title.line.colour[4] == .35 and title.line.height == 1)
         assert(later.edge[1] == 1 and later.edge[4] == .9) -- still highlighted, in the mood colours
+        -- A truthy non-boolean highlight is kept as highlighted when restyled.
+        UI.tint(box, {}); assert(box.edge[2] == .82)
+        WoWStatusTheme.next(); WoWStatusTheme.next(); WoWStatusTheme.next(); WoWStatusTheme.next()
+        assert(WoWStatusTheme.highContrast() and box.edge[2] == .82 and box.edge[4] == 1)
+    ''')
+
+
+def test_boxes_without_the_backdrop_api_turn_opaque_on_high_contrast():
+    lua = make_lua(THEMES)
+    lua.execute('''
+        local box = WoWStatusUI.box(CreateFrame("Frame"), 100, 50)
+        assert(box.fallback and box.fallback.colour[4] == .35)
+        for _ = 1, 4 do WoWStatusTheme.next() end
+        assert(box.fallback.colour[1] == 0 and box.fallback.colour[4] == 1)
+        WoWStatusTheme.next()
+        assert(box.fallback.colour[4] == .35)
+    ''')
+
+
+def test_a_size_step_does_not_restyle_the_boxes():
+    lua = make_lua(CONTRAST)
+    lua.execute('''
+        local box = WoWStatusUI.box(CreateFrame("Frame"), 100, 50)
+        local calls, tint = 0, WoWStatusUI.tint
+        WoWStatusUI.tint = function(...) calls = calls + 1; return tint(...) end
+        WoWStatusTheme.resize(WoWStatusTheme.STEP); WoWStatusTheme.setPopupSize(120)
+        assert(calls == 0)
+        WoWStatusTheme.next()
+        assert(calls > 0)
     ''')

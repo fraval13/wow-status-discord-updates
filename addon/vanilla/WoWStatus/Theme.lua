@@ -183,7 +183,7 @@ local function closePopovers()
     end
 end
 
-local shownScale
+local shownScale, styledName
 function T.apply()
     local value = settings()
     for _, window in ipairs(windows) do
@@ -202,7 +202,11 @@ function T.apply()
     local scale = main and T.applied(main)
     if shownScale and scale ~= shownScale then closePopovers() end
     shownScale = scale
-    if WoWStatusUI and WoWStatusUI.restyle then WoWStatusUI.restyle() end
+    -- Boxes and section lines change only with the theme, not with a size step.
+    if value.name ~= styledName and WoWStatusUI and WoWStatusUI.restyle then
+        styledName = value.name
+        WoWStatusUI.restyle()
+    end
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
     for _, fn in ipairs(watchers) do
         local ok, err = pcall(fn)
@@ -299,28 +303,31 @@ function UI.box(parent, width, height, kind)
     UI.tint(frame)
     return frame
 end
--- Boxes and section lines drawn so far, styled again when the theme changes
--- (weak keys, so a box that is thrown away is not kept alive).
-local boxes, lines = setmetatable({}, {__mode="k"}), setmetatable({}, {__mode="k"})
--- Box colours: dark fill, grey border; gold border to highlight. High contrast:
--- opaque black fill, near-white border, solid gold to highlight.
+-- Box and section-line looks: the mood themes share one, High contrast has an
+-- opaque black fill, a near-white border and solid lines twice as thick.
+local STYLES = {
+    mood = {fill=.45, edge={.55, .55, .6, .8}, mark={1, .82, 0, .9}, line=.35, lineHeight=1},
+    contrast = {fill=1, edge={.9, .9, .9, 1}, mark={1, .82, 0, 1}, line=1, lineHeight=2},
+}
+local function style() return T.highContrast() and STYLES.contrast or STYLES.mood end
+-- Every box and section line drawn, so a theme change can style them again.
+-- Pages reuse their boxes and headers, so these stay small.
+local boxes, lines = {}, {}
+-- Box colours: dark fill, light border; gold border to highlight. Without the
+-- backdrop API, the plain fallback fill takes the same strength.
 function UI.tint(frame, highlighted)
-    boxes[frame] = highlighted == true
-    if T.highContrast() then
-        call(frame, "SetBackdropColor", 0, 0, 0, 1)
-        if highlighted then call(frame, "SetBackdropBorderColor", 1, .82, 0, 1)
-        else call(frame, "SetBackdropBorderColor", .9, .9, .9, 1) end
-        return
-    end
-    call(frame, "SetBackdropColor", 0, 0, 0, .45)
-    if highlighted then call(frame, "SetBackdropBorderColor", 1, .82, 0, .9)
-    else call(frame, "SetBackdropBorderColor", .55, .55, .6, .8) end
+    highlighted = highlighted and true or false
+    boxes[frame] = highlighted
+    local look = style()
+    call(frame, "SetBackdropColor", 0, 0, 0, look.fill)
+    local edge = highlighted and look.mark or look.edge
+    call(frame, "SetBackdropBorderColor", edge[1], edge[2], edge[3], edge[4])
+    if frame.fallback then call(frame.fallback, "SetColorTexture", 0, 0, 0, look.fill == 1 and 1 or .35) end
 end
--- A section line: faint gold, or solid and twice as thick on High contrast.
 local function styleLine(line)
-    local strong = T.highContrast()
-    line:SetColorTexture(1, .82, 0, strong and 1 or .35)
-    call(line, "SetHeight", strong and 2 or 1)
+    local look = style()
+    line:SetColorTexture(1, .82, 0, look.line)
+    call(line, "SetHeight", look.lineHeight)
 end
 -- Styles every box and section line again for the current theme (T.apply).
 function UI.restyle()
