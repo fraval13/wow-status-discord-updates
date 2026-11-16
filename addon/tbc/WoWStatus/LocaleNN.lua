@@ -213,6 +213,7 @@ W.add({
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",
     ["Dismiss the notification"] = "Lukk varselet",
+    ["Hold the notification (while pressed)"] = "Hald varselet framme (medan tasten er nede)",
     ["Controller navigation is off. Type /wstatus controller on to turn it on."] = "Kontrollnavigering er av. Skriv /wstatus controller on for å slå ho på.",
     ["Controller navigation steps aside for ConsolePort."] = "Kontrollnavigeringa viker for ConsolePort.",
     ["Controller navigation is on; it starts when gamepad support is enabled in the game's options."] = "Kontrollnavigering er på; ho startar når handkontroll er slått på i innstillingane til spelet.",
@@ -256,6 +257,13 @@ W.add({
     ["Always send a voiced reaction when one is available"] = "Send alltid ein reaksjon med røyst når det finst ein",
     ["Play a sample"] = "Spel av ei prøve", ["Minutes between spoken reactions:"] = "Minutt mellom opplesne reaksjonar:",
     ["Every reaction"] = "Kvar reaksjon", ["%d min"] = "%d min",
+    ["Notification duration:"] = "Kor lenge varsla står:", ["Until dismissed"] = "Til du lukkar dei",
+    ["%d seconds"] = "%d sekund", ["%d%%"] = "%d %%", ["Notifications now stay until dismissed."] = "Varsla står no til du lukkar dei.",
+    ["Notifications now stay for %d seconds."] = "Varsla står no i %d sekund.",
+    ["Notifications stay until dismissed."] = "Varsla står til du lukkar dei.",
+    ["Notifications stay for %d seconds."] = "Varsla står i %d sekund.",
+    ["Use /wstatus popuptime %d-%d, or 0 to keep notifications until dismissed (%d is the default)."] =
+        "Bruk /wstatus popuptime %d-%d, eller 0 for å halde varsla til du lukkar dei (%d er standard).",
     ["Volume slider for voices:"] = "Volumkontroll for røystene:", ["Dialog"] = "Dialog",
     ["Sound effects"] = "Lydeffektar", ["Master (loudest)"] = "Hovudvolum (høgast)",
     ["Only Nynorsk reactions are read aloud. Voices are AI-generated (Google Gemini)."] =

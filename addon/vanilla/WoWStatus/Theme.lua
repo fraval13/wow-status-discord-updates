@@ -17,6 +17,8 @@ T.MIN, T.MAX, T.STEP = .7, 2, .1
 T.POPUP_FOLLOW_MIN, T.POPUP_FOLLOW_MAX = .8, 1.2
 -- Notification size in percent, separate from the window size.
 T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
+-- The sizes offered in the options dropdown; /wstatus popupsize takes any in range.
+T.POPUP_SIZES = {50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 175, 200}
 local windows = {}
 local main -- the first window attached (the main window), for its shown scale
 
@@ -152,6 +154,7 @@ function T.scale(popup)
     return (value.popups and follow or 1) * value.popup_size / 100
 end
 function T.popupSize() return settings().popup_size end
+function T.popupSizeLabel(percent) return WoWStatusLocale.F("%d%%", percent or T.popupSize()) end
 -- Sets the notification size from a percentage; false for a value out of range.
 function T.setPopupSize(percent)
     percent = tonumber(percent)

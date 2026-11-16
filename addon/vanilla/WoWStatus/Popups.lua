@@ -5,7 +5,10 @@ local A, S = WoWStatusAdapter, WoWStatusSafe
 local T = WoWStatusLocale.T
 local prefs, getCharacter, notify, toast, active
 local incoming, outgoing = {}, {}
-local lastDisplay, nextSend = 0, 0
+local nextSend = 0
+-- When the next notification may show: a second after the last one goes, but
+-- never later than a second after its full duration (the old fixed cadence).
+local nextDisplay, displayed, displayedAt = 0, false, 0
 local pacing = {} -- Throttles in a row on this prefix: see P.retryWait.
 local joinedByAddon, syncPending = {}, false
 -- Chat channel numbers. The game gives a joined channel the lowest free number
@@ -1113,6 +1116,38 @@ function P.restyle()
     end
 end
 function P.setBigBanners(value) if prefs then prefs.big_banners = value ~= false end end
+-- How long a notification stays (#159): 3 to 20 seconds, or 0 to stay until it is
+-- dismissed. Account-wide; 6 (the old fixed length) is the default.
+P.DURATIONS = {3, 4, 5, 6, 8, 10, 12, 15, 20, 0}
+P.DURATION_MIN, P.DURATION_MAX, P.DURATION_DEFAULT = 3, 20, 6
+local function validDuration(value)
+    value = S.number(tonumber(value))
+    if not value then return nil end
+    if value == 0 then return 0 end
+    value = math.floor(value + .5)
+    if value < P.DURATION_MIN or value > P.DURATION_MAX then return nil end
+    return value
+end
+function P.duration() return prefs and validDuration(prefs.popup_duration) or P.DURATION_DEFAULT end
+-- False for a value out of range; the old duration stays.
+function P.setDuration(value)
+    value = validDuration(value)
+    if not prefs or not value then return false end
+    prefs.popup_duration = value ~= P.DURATION_DEFAULT and value or nil
+    return true
+end
+function P.durationLabel(value)
+    value = value or P.duration()
+    if value == 0 then return T("Until dismissed") end
+    return WoWStatusLocale.F("%d seconds", value)
+end
+-- Seconds a notification stays and its fade-out at the end (a twelfth of it, so
+-- half a second at the default 6). Until dismissed: forever, without a fade.
+function P.lifetime(seconds)
+    seconds = seconds or P.duration()
+    if seconds == 0 then return math.huge, 0 end
+    return seconds, seconds / 12
+end
 function P.options()
     return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or prefs.big_banners ~= false}
 end
@@ -1280,8 +1315,7 @@ reactionButtons = function()
                 if shown and P.react(shown, self.reaction) then
                     -- Reacted: the notification closes (the log card notes the whisper).
                     if GameTooltip and GameTooltip.GetOwner and GameTooltip:GetOwner() == toast then GameTooltip:Hide() end
-                    toast:Hide(); active = nil
-                    lastDisplay = time() - 7 -- The next one follows on the next tick.
+                    P.dismiss() -- The next one follows on the next tick.
                     return
                 end
                 reactionButtons()
@@ -1323,12 +1357,29 @@ end
 function P.hovered()
     return toast ~= nil and toast:IsShown() and MouseIsOver ~= nil and MouseIsOver(toast) == true
 end
+-- The Hold key binding (#159): hover-to-pause for a controller or the keyboard.
+-- It holds while the key is down; a new notification needs a new press. A press
+-- holds for at most HOLD_LIMIT seconds, so a lost key-up (alt-tab, the game
+-- menu) cannot keep a notification and the queue behind it forever.
+P.HOLD_LIMIT = 60
+local holding, heldSince = false, 0
+function P.hold(down)
+    holding = down == true and toast ~= nil and toast:IsShown()
+    heldSince = clock()
+end
+function P.holding()
+    if holding and clock() - heldSince > P.HOLD_LIMIT then holding = false end
+    return holding
+end
+function P.held()
+    return P.hovered() or (P.holding() and toast ~= nil and toast:IsShown())
+end
 -- Hide the shown notification; the next queued one follows on the next tick.
 -- A click and the Dismiss key binding (a controller button) both land here.
 function P.dismiss()
     if not (toast and toast:IsShown()) then return false end
-    toast:Hide(); active = nil
-    lastDisplay = time() - 7 -- Advance on the next tick, without dropping queued entries.
+    toast:Hide(); active = nil; holding = false
+    displayed, nextDisplay = false, 0 -- Advance on the next tick, without dropping queued entries.
     return true
 end
 local function show(item, now)
@@ -1397,18 +1448,20 @@ local function show(item, now)
         toast:SetScript("OnUpdate", function(self, elapsed)
             guardButtons()
             if self.dragging then return end -- Hold still and stay visible while being moved.
-            -- While the mouse is over it (or its buttons), it stays and does not count down.
-            if P.hovered() and (self.age or 0) > .22 then
+            -- While the mouse is over it (or its buttons), or the Hold binding is down, it
+            -- stays and does not count down.
+            if P.held() and (self.age or 0) > .22 then
                 self.age = math.min(self.age, 1); self:SetAlpha(1); anchor(self, 0)
                 return
             end
             self.age = (self.age or 0) + elapsed
             local entrance = math.min(1, self.age / .22)
-            local fade = math.max(0, math.min(1, (6 - self.age) / .5))
+            local life, tail = self.life or 6, self.tail or .5
+            local fade = tail > 0 and math.max(0, math.min(1, (life - self.age) / tail)) or 1
             self:SetAlpha(entrance * fade)
             anchor(self, (1 - entrance) * 12)
             self.glow:SetAlpha(.5 + .3 * math.sin(self.age * 7))
-            if self.age >= 6 then self:Hide(); active = nil end
+            if self.age >= life then self:Hide(); active = nil end
         end)
     end
     local alias = not item.preview and prefs.trusted[item.key]
@@ -1442,13 +1495,16 @@ local function show(item, now)
     toast.shownAt = clock()
     reactionButtons()
     toast.age = 0
+    toast.life, toast.tail = P.lifetime()
+    holding = false
     -- The log card offers the same reactions for a minute after this.
     local entry = not item.preview and entryOf(item)
     if entry and not entry.owner then entry.shown_at = time() end
     toast:SetAlpha(0)
     toast:Show()
-    item.hide_at = now + 6
-    active, lastDisplay = item, now
+    -- The toast's OnUpdate hides it on time; tick() is the fallback (see there).
+    item.hide_at = now + toast.life
+    active, displayed, displayedAt = item, true, now
     if not item.preview then prefs.last_receive={state="displayed",sender=item.sender,kind=item.kind or "level",at=now} end
     P.playSound(P.soundFor(item))
 end
@@ -1466,7 +1522,7 @@ function P.notice(item)
     return true
 end
 
-function P.preview(kind)
+function P.preview(kind, sample)
     if not prefs then return end
     local samples = {
         introduction="Joined the WoW Status group", loot="Equipped Robe of the Archmage",
@@ -1485,8 +1541,19 @@ function P.preview(kind)
     if kind ~= "level" and not samples[kind] then return end
     if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
     table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind=="profession_learned" and "profession" or kind,text=samples[kind],
-        level=kind=="level" and 33 or nil,quality=kind=="loot" and 4 or nil,received_at=time(),preview=true})
+        level=kind=="level" and 33 or nil,quality=kind=="loot" and 4 or nil,received_at=time(),preview=true,sample=sample})
     P.tick()
+end
+
+-- A sample for a changed setting (#159): earlier samples, waiting or shown, make
+-- way, so trying several values does not queue a sample for each.
+function P.sample(kind)
+    if not prefs then return end
+    for i = #incoming, 1, -1 do
+        if incoming[i].sample then table.remove(incoming, i) end
+    end
+    if active and active.sample then P.dismiss() end
+    P.preview(kind, true)
 end
 
 local function tick()
@@ -1522,9 +1589,20 @@ local function tick()
             if toast then toast:Hide() end
         end
     else
-        if active and P.hovered() then active.hide_at = math.max(active.hide_at, now + 1) end
-        if active and now >= active.hide_at then active = nil; if toast then toast:Hide() end end
-        if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now - lastDisplay >= 7 then
+        -- Held (and on screen): OnUpdate restarts the countdown from a second, so
+        -- the fallback moves too.
+        if active and toast:IsVisible() and P.held() then active.hide_at = math.max(active.hide_at, now + toast.life) end
+        -- time() counts whole seconds, so while the toast's own countdown runs (it is
+        -- visible and counting), that decides, for up to two seconds more. Else (UI
+        -- hidden, or a countdown that stopped) this hides it.
+        local counting = toast and (toast.age or 0) > 0 and toast:IsVisible() and toast.age < toast.life
+        if active and now >= active.hide_at and (not counting or now >= active.hide_at + 2) then
+            active = nil; if toast then toast:Hide() end
+        end
+        if displayed and not active then
+            displayed, nextDisplay = false, math.min(now + 1, displayedAt + toast.life + 1)
+        end
+        if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now >= nextDisplay then
             local item = table.remove(incoming, 1)
             if (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
                 or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end

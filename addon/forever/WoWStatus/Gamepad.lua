@@ -557,12 +557,22 @@ end
 function G.dismiss()
     return WoWStatusPopups and WoWStatusPopups.dismiss and WoWStatusPopups.dismiss() or false
 end
+-- Held down, the shown notification stays and does not count down (#159).
+-- Bindings.xml runs it on press ("down") and release ("up"). Called without a
+-- key state (a macro), it switches the hold on or off instead.
+function G.hold(keystate)
+    local P = WoWStatusPopups
+    if not (P and P.hold) then return end
+    if keystate == "down" or keystate == "up" then P.hold(keystate == "down")
+    else P.hold(not (P.holding and P.holding())) end
+end
 
 function G.bindingNames()
     _G.BINDING_HEADER_WOWSTATUS = "WoW Status"
     _G.BINDING_NAME_WOWSTATUS_TOGGLE = T("Open or close WoW Status")
     _G.BINDING_NAME_WOWSTATUS_ACTIVITY = T("Open the activity log")
     _G.BINDING_NAME_WOWSTATUS_DISMISS = T("Dismiss the notification")
+    _G.BINDING_NAME_WOWSTATUS_HOLD = T("Hold the notification (while pressed)")
 end
 
 function G.report()

@@ -447,6 +447,12 @@ def test_key_bindings_have_names_and_call_their_actions(lua):
         WoWStatusGamepad.toggle()
     ''')
     assert lua.eval('__dismissed') == 1 and lua.eval('__activity') == 1
+    lua.execute('''
+        __holds = {}
+        WoWStatusPopups.hold = function(down) table.insert(__holds, down) end
+        WoWStatusGamepad.hold("down"); WoWStatusGamepad.hold("up")
+    ''')
+    assert lua.eval('__holds[1]') is True and lua.eval('__holds[2]') is False
     assert lua.eval('main.visible') is False
     lua.execute('WoWStatusGamepad.toggle()')
     assert lua.eval('main.visible') is True
@@ -458,7 +464,10 @@ def test_bindings_xml_calls_existing_functions():
     for name in ('toggle', 'activity', 'dismiss'):
         assert f'WoWStatusGamepad.{name}()' in text
         assert f'function G.{name}()' in lua_source
-    for binding in ('WOWSTATUS_TOGGLE', 'WOWSTATUS_ACTIVITY', 'WOWSTATUS_DISMISS'):
+    # Hold runs on press and release, and is told which.
+    assert '<Binding name="WOWSTATUS_HOLD" runOnUp="true">WoWStatusGamepad.hold(keystate)</Binding>' in text
+    assert 'function G.hold(keystate)' in lua_source
+    for binding in ('WOWSTATUS_TOGGLE', 'WOWSTATUS_ACTIVITY', 'WOWSTATUS_DISMISS', 'WOWSTATUS_HOLD'):
         assert f'name="{binding}"' in text
         assert f'BINDING_NAME_{binding}' in lua_source
 

@@ -133,11 +133,21 @@ def test_notification_size_from_the_options_box_and_the_command():
     lua.execute('''
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
-        assert(panel.popupSize:GetText() == "100")
-        panel.popupSize:SetText("125"); panel.popupSize.OnEnterPressed(panel.popupSize)
-        assert(WoWStatusTheme.popupSize() == 125 and panel.popupSize:GetText() == "125")
-        panel.popupSize:SetText("500"); panel.popupSizeApply.OnClick(panel.popupSizeApply)
-        assert(WoWStatusTheme.popupSize() == 125 and panel.popupSize:GetText() == "125")
+        local pick = panel.popupSize
+        assert(pick.kind == "Button" and pick.text == "100%")
+        -- A dropdown (controller support): every listed size is in range.
+        pick.OnClick(pick)
+        local menu = WoWStatusUI.menuFrame
+        assert(menu.owner == pick and #menu.items == #WoWStatusTheme.POPUP_SIZES)
+        for _, item in ipairs(menu.items) do
+            assert(item.value >= WoWStatusTheme.POPUP_MIN and item.value <= WoWStatusTheme.POPUP_MAX)
+        end
+        menu.onPick(125)
+        assert(WoWStatusTheme.popupSize() == 125 and pick.text == "125%")
+        -- Picking shows a sample at the new size.
+        WoWStatusPopups.tick()
+        assert(WoWStatusLevelPopup:IsShown() and math.abs(WoWStatusLevelPopup.scale - 1.25) < 1e-9)
+        WoWStatusLocale.set("nn"); assert(WoWStatusTheme.popupSizeLabel(90) == "90 %"); WoWStatusLocale.set("en")
         SlashCmdList.WOWSTATUS("popupsize 90")
         assert(WoWStatusTheme.popupSize() == 90)
         SlashCmdList.WOWSTATUS("popupsize")
