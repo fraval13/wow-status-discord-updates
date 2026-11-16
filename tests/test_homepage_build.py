@@ -302,20 +302,31 @@ def test_render_sitemap_escapes_urls_and_robots_names_the_sitemap():
         '\nSitemap: https://example.com/sitemap.xml\n')
 
 
-@pytest.mark.parametrize('canonical, message', [
-    ('', 'exactly one <link rel="canonical">'),
-    ('<link rel="canonical" href="https://example.com/changelog/">', 'is not a page of'),
-    ('<link rel="canonical" href="https://wow.frankvalde.com/">', 'share one canonical link'),
+@pytest.mark.parametrize('canonical', [
+    '',  # none
+    '<link rel="canonical" href="https://example.com/changelog/">',  # another site
+    '<link rel="canonical" href="https://wow.frankvalde.com/changes/">',  # not this page
+    '<link rel="canonical" href="https://wow.frankvalde.com/">',  # another page of this site
+    '<link rel="canonical" href="https://wow.frankvalde.com/changelog/?">',  # not exactly the URL
+    '<link rel="canonical" href="https://wow.frankvalde.com/changelog/">'
+    '<link rel="canonical" href="https://wow.frankvalde.com/changelog/">',  # repeated
 ])
-def test_sitemap_pages_need_one_canonical_link_on_this_site(addon_repo, tmp_path, canonical, message):
+def test_sitemap_pages_need_their_own_canonical_link(addon_repo, tmp_path, canonical):
     page = addon_repo / 'website/changelog/index.html'
     text = page.read_text(encoding='utf-8')
     text = text.replace(re.search(r'<link rel="canonical"[^>]*>', text).group(0), canonical, 1)
     page.write_text(text, encoding='utf-8')
     output = tmp_path / 'site'
-    with pytest.raises(ValueError, match=re.escape(message)):
+    with pytest.raises(ValueError, match=re.escape(
+            'changelog/index.html: a sitemap page needs exactly one '
+            '<link rel="canonical" href="https://wow.frankvalde.com/changelog/">')):
         builder.build(addon_repo, output, 'HEAD')
     assert not output.exists()
+
+
+def test_site_paths_and_build_files_map_both_ways():
+    for file, path in [('index.html', '/'), ('changelog/index.html', '/changelog/'), ('robots.txt', '/robots.txt')]:
+        assert builder.site_path(file) == path and builder.build_file(path) == file
 
 
 @pytest.mark.parametrize('name', ['robots.txt', 'sitemap.xml'])

@@ -57,6 +57,8 @@ SITEMAP_PAGES = ('index.html', 'changelog/index.html')
 ROBOTS_DISALLOW = ('/groups/',)
 # Generated into the site root by every build, never kept in website/.
 CRAWLER_FILES = ('robots.txt', 'sitemap.xml')
+# Generated files scripts/verify_homepage.py requires the live site to serve byte for byte.
+VERIFIED_FILES = ('changelog/index.html', *CRAWLER_FILES)
 
 
 class MetaTags(HTMLParser):
@@ -134,6 +136,16 @@ def check_link_preview(html, read):
     if jpeg_size(read(LINK_PREVIEW)) != LINK_PREVIEW_SIZE:
         raise ValueError(f'{LINK_PREVIEW} must be a complete {LINK_PREVIEW_SIZE[0]}×{LINK_PREVIEW_SIZE[1]} '
                          'JPEG; run python scripts/make_link_preview.py')
+
+
+def site_path(file):
+    """The site path a file of the build is served at: changelog/index.html is /changelog/."""
+    return '/' + file.removesuffix('index.html')
+
+
+def build_file(path):
+    """The file of the build served at a site path, as Caddy's file_server maps a folder."""
+    return path.lstrip('/') + ('index.html' if path.endswith('/') else '')
 
 
 def site_file(folder):
@@ -261,21 +273,24 @@ def commit_time(root, revision):
     On main the deploy builds the release commit, so this is when that release was made,
     and every rebuild of the same revision writes the same sitemap.
     """
-    seconds = int(git(root, 'show', '-s', '--format=%ct', revision).decode().strip())
+    # log.showSignature would print a signed commit's check before the time.
+    seconds = int(git(root, '-c', 'log.showSignature=false', 'show', '-s', '--format=%ct',
+                      revision).decode().strip())
     return datetime.fromtimestamp(seconds, timezone.utc).strftime('%Y-%m-%dT%H:%M:%S+00:00')
 
 
-def canonical_url(page, site):
-    """The one canonical URL of the built page, which must be on the same origin as site."""
+def canonical_url(output, file, site):
+    """The URL of a built page, which must declare it as its one canonical link.
+
+    The URL is the page's own site path on the site's origin, so the sitemap never lists
+    an address that is not this page.
+    """
+    expected = f'{site.scheme}://{site.netloc}{site_path(file)}'
     parser = CanonicalLinks()
-    parser.feed(page.read_text(encoding='utf-8'))
-    if len(parser.links) != 1:
-        raise ValueError(f'{page.name}: a sitemap page needs exactly one <link rel="canonical">')
-    url = urlparse(parser.links[0])
-    if (url.scheme, url.netloc) != (site.scheme, site.netloc) or not url.path.startswith('/') \
-            or url.params or url.query or url.fragment:
-        raise ValueError(f'{page.name}: the canonical link {parser.links[0]} is not a page of {site.geturl()}')
-    return url.geturl()
+    parser.feed((output / file).read_text(encoding='utf-8'))
+    if parser.links != [expected]:
+        raise ValueError(f'{file}: a sitemap page needs exactly one <link rel="canonical" href="{expected}">')
+    return expected
 
 
 def render_sitemap(urls, lastmod):
@@ -299,15 +314,10 @@ def render_robots(sitemap):
 
 def write_crawler_files(output, lastmod):
     """Write robots.txt and sitemap.xml for the finished pages in output."""
-    for name in CRAWLER_FILES:
-        if (output / name).exists():
-            raise ValueError(f'website/{name} must not exist: the build generates {name}')
     tags = MetaTags()
     tags.feed((output / 'index.html').read_text(encoding='utf-8'))
     site = urlparse(dict(tags.tags).get('og:url', ''))  # check_link_preview requires an https URL
-    urls = [canonical_url(output / page, site) for page in SITEMAP_PAGES]
-    if len(set(urls)) != len(urls):
-        raise ValueError('Two sitemap pages share one canonical link')
+    urls = [canonical_url(output, page, site) for page in SITEMAP_PAGES]
     sitemap = f'{site.scheme}://{site.netloc}/sitemap.xml'
     (output / 'sitemap.xml').write_text(render_sitemap(urls, lastmod), encoding='utf-8', newline='\n')
     (output / 'robots.txt').write_text(render_robots(sitemap), encoding='utf-8', newline='\n')
@@ -431,6 +441,9 @@ def build(root, output, addon_ref):
     replaceable(output)
     website = root / 'website'
     check_link_preview((website / 'index.html').read_text(encoding='utf-8'), site_file(website))
+    for name in CRAWLER_FILES:
+        if (website / name).exists():
+            raise ValueError(f'website/{name} must not exist: the build generates {name}')
     # Check every edition before writing anything.
     editions = {}
     for edition in EDITIONS:

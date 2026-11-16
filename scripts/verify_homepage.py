@@ -36,10 +36,6 @@ FOLDER = 'WoWStatus/'
 
 
 RELEASE_FIELDS = ('version', 'file', 'bytes', 'sha256')
-# Pages the build writes for each release, by site path, with the name an error uses.
-# The live copies must equal the local build's byte for byte.
-GENERATED_PAGES = {'/changelog/': 'changelog page', '/robots.txt': 'robots.txt',
-                   '/sitemap.xml': 'sitemap.xml'}
 
 
 @functools.cache
@@ -130,8 +126,18 @@ def check_entries(edition, package):
     return toc
 
 
-def check_inputs(base, revision, expected):
-    """Reject arguments that no retry can fix: a bad URL, revision or local manifest."""
+def generated_pages():
+    """Site paths of the generated pages the live site must serve exactly as built."""
+    return [builder().site_path(file) for file in builder().VERIFIED_FILES]
+
+
+def local_pages(site):
+    """{site path: bytes} of every generated page in the local build at site."""
+    return {path: (site / builder().build_file(path)).read_bytes() for path in generated_pages()}
+
+
+def check_inputs(base, revision, expected, pages):
+    """Reject arguments that no retry can fix: a bad URL, revision, local manifest or pages."""
     address = urlparse(base)
     if (address.username or address.password or address.query or address.fragment
             or (address.scheme != 'https' and not
@@ -140,15 +146,16 @@ def check_inputs(base, revision, expected):
     if not re.fullmatch('[a-f0-9]{40}', revision):
         raise ValueError('Expected a complete Git commit revision')
     check_local(expected, revision)
+    if set(pages) != set(generated_pages()):
+        raise ValueError('The local generated pages are not those the build writes')
 
 
 def verify(base, revision, fetch=read, *, expected, pages):
     """Check the live site at base against the local build of revision.
 
-    expected is that build's release.json and pages its generated pages, as
-    {site path: bytes} for every path in GENERATED_PAGES.
+    expected is that build's release.json and pages its generated pages (local_pages).
     """
-    check_inputs(base, revision, expected)
+    check_inputs(base, revision, expected, pages)
     base = base.rstrip('/')
     manifest = json.loads(fetch(base + '/downloads/release.json'))
     # Checked on its own first: a stale deploy is the common failure, and this says so.
@@ -192,15 +199,13 @@ def verify(base, revision, fetch=read, *, expected, pages):
 
 
 def check_generated_pages(base, fetch, links, local):
-    """Require the homepage's link to /changelog/ (#194) and each page the build generates
-    (/changelog/, /robots.txt and /sitemap.xml, #192) to equal the local build's copy."""
+    """Require the homepage's link to /changelog/ (#194) and each generated page, such as
+    /changelog/, /robots.txt and /sitemap.xml (#192), to equal the local build's copy."""
     if '/changelog/' not in links:
         raise ValueError('The homepage does not link to /changelog/')
-    if set(local) != set(GENERATED_PAGES):
-        raise ValueError('The local build is missing a generated page')
-    for path, name in GENERATED_PAGES.items():
-        if fetch(base + path) != local[path]:
-            raise ValueError(f'The live {name} differs from the locally built one')
+    for path, data in local.items():
+        if fetch(base + path) != data:
+            raise ValueError(f'The live {path} differs from the locally built one')
 
 
 if __name__ == '__main__':
@@ -219,17 +224,13 @@ if __name__ == '__main__':
     except (OSError, ValueError) as error:
         parser.error(f'Cannot read the local manifest {args.manifest}: {error}')
     # The pages the same build wrote beside downloads/.
-    site = args.manifest.parent.parent
-    pages = {}
-    for path in GENERATED_PAGES:
-        file = site / (path.lstrip('/') + ('index.html' if path.endswith('/') else ''))
-        try:
-            pages[path] = file.read_bytes()
-        except OSError as error:
-            parser.error(f'Cannot read the locally built {file}: {error}')
+    try:
+        pages = local_pages(args.manifest.parent.parent)
+    except OSError as error:
+        parser.error(f'Cannot read a locally built page: {error}')
     # Fail now rather than after every retry: a wrong argument or local build never becomes right.
     try:
-        check_inputs(args.url, args.revision, expected)
+        check_inputs(args.url, args.revision, expected, pages)
     except ValueError as error:
         parser.error(str(error))
     for attempt in range(args.attempts):

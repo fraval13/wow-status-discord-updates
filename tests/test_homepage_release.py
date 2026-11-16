@@ -31,9 +31,7 @@ def verifier_module():
 
 def public_verifier(site):
     """The verifier, checking against site, the local build, as the deploy job does."""
-    return functools.partial(verifier_module().verify, pages={
-        path: (site/(path.lstrip('/')+('index.html' if path.endswith('/') else ''))).read_bytes()
-        for path in verifier_module().GENERATED_PAGES})
+    return functools.partial(verifier_module().verify, pages=verifier_module().local_pages(site))
 
 
 def receiver():
@@ -400,15 +398,26 @@ def test_a_response_cut_short_is_retried_and_never_rolls_back(built_site, framin
 
 
 def test_verifier_checks_every_page_the_build_generates(built_site):
-    # A page the build adds but the verifier skips could go stale on the live site unnoticed.
-    generated = {path for path in verifier_module().GENERATED_PAGES}
-    assert {'/changelog/', '/robots.txt', '/sitemap.xml'} <= generated
-    for path in generated:
-        assert (built_site/(path.lstrip('/')+('index.html' if path.endswith('/') else ''))).is_file()
+    # Derived from the builder, so a generated file it adds is checked on the live site too.
+    module = verifier_module()
+    assert set(module.generated_pages()) >= {'/changelog/', '/robots.txt', '/sitemap.xml'}
+    assert all((built_site/module.builder().build_file(path)).is_file() for path in module.generated_pages())
+    # A local build without one is an input error, never a reason to roll the live site back.
     manifest = local_manifest(built_site)
-    with pytest.raises(ValueError, match='missing a generated page'):
-        verifier_module().verify('https://example.com', manifest['addon_revision'], site_fetch(built_site),
-                                 expected=manifest, pages={'/changelog/': b''})
+    def no_fetch(url):
+        raise AssertionError(f'fetched {url}')
+    pages = module.local_pages(built_site)
+    del pages['/sitemap.xml']
+    with pytest.raises(ValueError, match='not those the build writes'):
+        module.verify('https://example.com', manifest['addon_revision'], no_fetch, expected=manifest, pages=pages)
+
+
+def test_a_missing_local_page_stops_the_verifier_before_any_retry(built_site, tmp_path):
+    site = tmp_path / 'site'
+    shutil.copytree(built_site, site)
+    (site / 'robots.txt').unlink()
+    result = run_verifier(site, 'https://example.com', attempts=3)
+    assert result.returncode == 2 and 'Cannot read a locally built page' in result.stderr
 
 
 def test_command_line_requires_a_manifest_of_the_same_revision(built_site):
