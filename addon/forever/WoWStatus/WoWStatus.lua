@@ -128,6 +128,8 @@ local function scrub()
         if event.kind == "level" and not current.settings.fields.level then allowed = false end
         if event.kind == "zone" and not current.settings.fields.zone then allowed = false end
         if event.kind == "equipment" and not current.settings.fields.gear then allowed = false end
+        if event.kind == "quest" and not current.settings.fields.quests then allowed = false end
+        if event.kind == "profession" and not current.settings.fields.professions then allowed = false end
         if event.kind == "loot" and not WoWStatusLoot.allowed(current.settings,WoWStatusLoot.eventInfo(event.data)) then allowed=false end
         if allowed then
             H.scrubEvent(current, event)
