@@ -400,7 +400,7 @@ def test_a_response_cut_short_is_retried_and_never_rolls_back(built_site, framin
 
 
 def test_verifier_checks_every_page_the_build_generates(built_site):
-    # Derived from the builder, so a generated file it adds is checked on the live site too.
+    # Derived from the builder's VERIFIED_FILES, so a file added there is checked on the live site too.
     module = verifier_module()
     assert set(module.generated_pages()) >= {'/changelog/', '/robots.txt', '/sitemap.xml'}
     assert all((built_site/file).is_file() for file in module.builder().VERIFIED_FILES)

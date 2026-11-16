@@ -26,13 +26,14 @@ def load_builder():
 builder = load_builder()
 
 
-def git(root, *args, data=None):
+def git(root, *args, data=None, env=None):
     # core.autocrlf=false: commit exactly the bytes a test writes, on Windows too.
     # core.hooksPath: a developer's global hooks must not run in the test repositories.
     return subprocess.run(['git', '-C', str(root), '-c', 'user.name=Test', '-c', 'user.email=test@example.com',
                            '-c', 'commit.gpgsign=false', '-c', 'core.autocrlf=false',
                            '-c', 'core.hooksPath=no-hooks', *args],
-                          input=data, check=True, capture_output=True).stdout
+                          input=data, check=True, capture_output=True,
+                          env=None if env is None else {**os.environ, **env}).stdout
 
 
 def zip_names(output, edition):
@@ -283,10 +284,8 @@ def test_robots_and_sitemap_list_the_pages_with_the_release_date(addon_repo, tmp
 
 def test_lastmod_is_the_built_commits_time_in_utc(addon_repo, tmp_path):
     # A later release commit, made in another time zone: lastmod is its committer time in UTC.
-    subprocess.run(['git', '-C', str(addon_repo), '-c', 'user.name=Test', '-c', 'user.email=test@example.com',
-                    '-c', 'commit.gpgsign=false', '-c', 'core.hooksPath=no-hooks',
-                    'commit', '-q', '--allow-empty', '-m', 'release'], check=True, capture_output=True,
-                   env={**os.environ, 'GIT_COMMITTER_DATE': '2030-01-02T05:04:05+02:00'})
+    git(addon_repo, 'commit', '-q', '--allow-empty', '-m', 'release',
+        env={'GIT_COMMITTER_DATE': '2030-01-02T05:04:05+02:00'})
     builder.build(addon_repo, tmp_path / 'later', 'HEAD')
     builder.build(addon_repo, tmp_path / 'earlier', 'HEAD~1')
     later = (tmp_path / 'later/sitemap.xml').read_text(encoding='utf-8')
@@ -341,8 +340,20 @@ def test_a_new_page_joins_the_sitemap(addon_repo, tmp_path):
         builder.build(addon_repo, tmp_path / 'other', 'HEAD')
 
 
+def test_html_files_that_are_not_pages_stay_out_of_the_sitemap(addon_repo, tmp_path):
+    # A search engine's verification file or an error page has no canonical link and is no page.
+    (addon_repo / 'website/google1234abcd.html').write_text('google-site-verification: x\n', encoding='utf-8')
+    (addon_repo / 'website/404.html').write_text('<!doctype html><p>Not found</p>', encoding='utf-8')
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    assert (tmp_path / 'site/404.html').is_file()
+    root = ElementTree.fromstring((tmp_path / 'site/sitemap.xml').read_bytes())
+    assert [url.findtext(f'{SITEMAP}loc') for url in root] == [
+        'https://wow.frankvalde.com/', 'https://wow.frankvalde.com/changelog/']
+
+
 def test_site_paths_of_built_files():
-    for file, path in [('index.html', '/'), ('changelog/index.html', '/changelog/'), ('robots.txt', '/robots.txt')]:
+    for file, path in [('index.html', '/'), ('changelog/index.html', '/changelog/'), ('robots.txt', '/robots.txt'),
+                       ('reindex.html', '/reindex.html'), ('faq/reindex.html', '/faq/reindex.html')]:
         assert builder.site_path(file) == path
 
 
