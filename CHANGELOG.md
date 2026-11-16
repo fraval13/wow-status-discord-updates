@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- Behind the scenes: the release pipeline is updated so new versions keep reaching you
+
 ## 1.52.0
 
 - Forever: "Enjoy <zone>!" reactions are read aloud too, with the zone name, for 131 Forever zones and dungeons
