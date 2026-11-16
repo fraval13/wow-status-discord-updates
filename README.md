@@ -41,6 +41,10 @@ each release changed.
    `addon/retail/WoWStatus` (Retail), or `addon/forever/WoWStatus`
    folder into that client's `Interface/AddOns` directory. Complete ZIPs are in
    `dist/` after packaging. Restart WoW after updating.
+   Players can instead install it with the CurseForge app
+   (<https://www.curseforge.com/wow/addons/wow-status>), which keeps it updated
+   for the games it manages;
+   the homepage offers both routes.
 2. Open **Options → AddOns → WoW Status → Groups** and add the same group ID as
    your friends. Groups are saved account-wide; character preferences are separate.
 3. Click the minimap book to open the **WoW Status** window on its last page (the
