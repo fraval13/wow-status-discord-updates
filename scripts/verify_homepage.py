@@ -133,7 +133,7 @@ def generated_pages():
 
 def local_pages(site):
     """{site path: bytes} of every generated page in the local build at site."""
-    return {path: (site / builder().build_file(path)).read_bytes() for path in generated_pages()}
+    return {builder().site_path(file): (site / file).read_bytes() for file in builder().VERIFIED_FILES}
 
 
 def check_inputs(base, revision, expected, pages):

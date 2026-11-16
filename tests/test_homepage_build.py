@@ -302,31 +302,48 @@ def test_render_sitemap_escapes_urls_and_robots_names_the_sitemap():
         '\nSitemap: https://example.com/sitemap.xml\n')
 
 
+@pytest.mark.parametrize('file, other', [('index.html', '/changelog/'), ('changelog/index.html', '/')])
 @pytest.mark.parametrize('canonical', [
     '',  # none
-    '<link rel="canonical" href="https://example.com/changelog/">',  # another site
+    '<link rel="canonical" href="https://example.com{own}">',  # another site
     '<link rel="canonical" href="https://wow.frankvalde.com/changes/">',  # not this page
-    '<link rel="canonical" href="https://wow.frankvalde.com/">',  # another page of this site
-    '<link rel="canonical" href="https://wow.frankvalde.com/changelog/?">',  # not exactly the URL
-    '<link rel="canonical" href="https://wow.frankvalde.com/changelog/">'
-    '<link rel="canonical" href="https://wow.frankvalde.com/changelog/">',  # repeated
+    '<link rel="canonical" href="https://wow.frankvalde.com{other}">',  # another page of this site
+    '<link rel="canonical" href="https://wow.frankvalde.com{own}?">',  # not exactly the URL
+    '<link rel="canonical" href="https://wow.frankvalde.com{own}">'
+    '<link rel="canonical" href="https://wow.frankvalde.com{own}">',  # repeated
 ])
-def test_sitemap_pages_need_their_own_canonical_link(addon_repo, tmp_path, canonical):
-    page = addon_repo / 'website/changelog/index.html'
+def test_sitemap_pages_need_their_own_canonical_link(addon_repo, tmp_path, file, other, canonical):
+    own = builder.site_path(file)
+    page = addon_repo / 'website' / file
     text = page.read_text(encoding='utf-8')
-    text = text.replace(re.search(r'<link rel="canonical"[^>]*>', text).group(0), canonical, 1)
+    text = text.replace(re.search(r'<link rel="canonical"[^>]*>', text).group(0),
+                        canonical.format(own=own, other=other), 1)
     page.write_text(text, encoding='utf-8')
     output = tmp_path / 'site'
     with pytest.raises(ValueError, match=re.escape(
-            'changelog/index.html: a sitemap page needs exactly one '
-            '<link rel="canonical" href="https://wow.frankvalde.com/changelog/">')):
+            f'{file}: a sitemap page needs exactly one <link rel="canonical" href="https://wow.frankvalde.com{own}">')):
         builder.build(addon_repo, output, 'HEAD')
     assert not output.exists()
 
 
-def test_site_paths_and_build_files_map_both_ways():
+def test_a_new_page_joins_the_sitemap(addon_repo, tmp_path):
+    # Every shipped HTML page is listed, so a page added later cannot be left out.
+    page = addon_repo / 'website/faq/index.html'
+    page.parent.mkdir()
+    page.write_text('<!doctype html><link rel="canonical" href="https://wow.frankvalde.com/faq/">',
+                    encoding='utf-8')
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    root = ElementTree.fromstring((tmp_path / 'site/sitemap.xml').read_bytes())
+    assert [url.findtext(f'{SITEMAP}loc') for url in root] == [
+        'https://wow.frankvalde.com/', 'https://wow.frankvalde.com/changelog/', 'https://wow.frankvalde.com/faq/']
+    page.write_text('<!doctype html>', encoding='utf-8')
+    with pytest.raises(ValueError, match='faq/index.html: a sitemap page needs exactly one'):
+        builder.build(addon_repo, tmp_path / 'other', 'HEAD')
+
+
+def test_site_paths_of_built_files():
     for file, path in [('index.html', '/'), ('changelog/index.html', '/changelog/'), ('robots.txt', '/robots.txt')]:
-        assert builder.site_path(file) == path and builder.build_file(path) == file
+        assert builder.site_path(file) == path
 
 
 @pytest.mark.parametrize('name', ['robots.txt', 'sitemap.xml'])

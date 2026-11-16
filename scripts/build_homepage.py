@@ -50,8 +50,6 @@ PREVIEW_TEXT = ('og:site_name', 'og:title', 'og:description', 'og:url', 'og:imag
                 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:image:alt')
 
 
-# Pages listed in sitemap.xml (issue #192), each at the URL its <link rel="canonical"> names.
-SITEMAP_PAGES = ('index.html', 'changelog/index.html')
 # Group routes (/groups/<route key>/) are the addon's service API, never pages. Naming
 # the public prefix reveals no group: the route keys stay in the server's groups.json.
 ROBOTS_DISALLOW = ('/groups/',)
@@ -109,7 +107,7 @@ def check_link_preview(html, read):
 
     read(path) returns the bytes served at that site path. Discord and other chat
     clients show a large card only with twitter:card and the image's size, so an
-    incomplete set fails the build and the live verification.
+    incomplete set fails the build and the live verification. Returns og:url, parsed.
     """
     parser = MetaTags()
     parser.feed(html)
@@ -136,16 +134,12 @@ def check_link_preview(html, read):
     if jpeg_size(read(LINK_PREVIEW)) != LINK_PREVIEW_SIZE:
         raise ValueError(f'{LINK_PREVIEW} must be a complete {LINK_PREVIEW_SIZE[0]}×{LINK_PREVIEW_SIZE[1]} '
                          'JPEG; run python scripts/make_link_preview.py')
+    return site
 
 
 def site_path(file):
     """The site path a file of the build is served at: changelog/index.html is /changelog/."""
     return '/' + file.removesuffix('index.html')
-
-
-def build_file(path):
-    """The file of the build served at a site path, as Caddy's file_server maps a folder."""
-    return path.lstrip('/') + ('index.html' if path.endswith('/') else '')
 
 
 def site_file(folder):
@@ -270,8 +264,8 @@ def render_changelog(sections):
 def commit_time(root, revision):
     """The committer time of revision in UTC, as a W3C datetime for sitemap lastmod.
 
-    On main the deploy builds the release commit, so this is when that release was made,
-    and every rebuild of the same revision writes the same sitemap.
+    On main the deploy builds the release commit with its website committed (the
+    publisher refuses uncommitted website files), so this is when that release was made.
     """
     # log.showSignature would print a signed commit's check before the time.
     seconds = int(git(root, '-c', 'log.showSignature=false', 'show', '-s', '--format=%ct',
@@ -312,12 +306,18 @@ def render_robots(sitemap):
     return '\n'.join(lines) + '\n'
 
 
-def write_crawler_files(output, lastmod):
-    """Write robots.txt and sitemap.xml for the finished pages in output."""
-    tags = MetaTags()
-    tags.feed((output / 'index.html').read_text(encoding='utf-8'))
-    site = urlparse(dict(tags.tags).get('og:url', ''))  # check_link_preview requires an https URL
-    urls = [canonical_url(output, page, site) for page in SITEMAP_PAGES]
+def sitemap_pages(output):
+    """Every HTML page in output, as files relative to it, in site path order."""
+    return sorted((page.relative_to(output).as_posix() for page in output.rglob('*.html')), key=site_path)
+
+
+def write_crawler_files(output, site, lastmod):
+    """Write robots.txt and sitemap.xml for the finished pages in output.
+
+    site is the homepage's og:url as check_link_preview returned it. Every page ships in
+    the sitemap (issue #192), so each must name its own URL as its canonical link.
+    """
+    urls = [canonical_url(output, page, site) for page in sitemap_pages(output)]
     sitemap = f'{site.scheme}://{site.netloc}/sitemap.xml'
     (output / 'sitemap.xml').write_text(render_sitemap(urls, lastmod), encoding='utf-8', newline='\n')
     (output / 'robots.txt').write_text(render_robots(sitemap), encoding='utf-8', newline='\n')
@@ -399,11 +399,12 @@ def write_package(root, revision, folder, files, archive):
             raise ValueError(f'Broken archive: {archive}')
 
 
-def write_site(root, output, revision, editions, version, sections):
+def write_site(root, output, revision, editions, version, sections, site):
     """Write the website, its changelog page, robots.txt, sitemap.xml and the four ZIPs
     into the new, empty folder output.
 
-    sections is the parsed CHANGELOG.md from version, the release being built, down.
+    sections is the parsed CHANGELOG.md from version, the release being built, down, and
+    site the homepage's checked og:url.
     """
     for source in (root / 'website').iterdir():
         if source.name in NOT_SHIPPED or source.name in DESKTOP_FILES:
@@ -431,7 +432,7 @@ def write_site(root, output, revision, editions, version, sections):
     count = len(sections)
     fill(changelog, {**shared, 'RELEASES': f"{count} release{'' if count == 1 else 's'}",
                      'CHANGELOG': render_changelog(sections)})
-    write_crawler_files(output, commit_time(root, revision))
+    write_crawler_files(output, site, commit_time(root, revision))
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
 
 
@@ -440,7 +441,7 @@ def build(root, output, addon_ref):
     output = Path(output)
     replaceable(output)
     website = root / 'website'
-    check_link_preview((website / 'index.html').read_text(encoding='utf-8'), site_file(website))
+    site = check_link_preview((website / 'index.html').read_text(encoding='utf-8'), site_file(website))
     for name in CRAWLER_FILES:
         if (website / name).exists():
             raise ValueError(f'website/{name} must not exist: the build generates {name}')
@@ -482,7 +483,7 @@ def build(root, output, addon_ref):
     staging = Path(tempfile.mkdtemp(prefix=f'.{output.name}-', dir=output.parent))
     try:
         staging.chmod(0o755)  # mkdtemp's private mode would otherwise become the site folder's
-        write_site(root, staging, revision, editions, expected, sections)
+        write_site(root, staging, revision, editions, expected, sections, site)
         replace_output(staging, output)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)

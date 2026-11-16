@@ -158,7 +158,9 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
         if path=='robots.txt' and fault=='hand_written_robots':
             return b'User-agent: *\nDisallow: /\n'
         return data
-    with pytest.raises(ValueError):
+    message={'stale_sitemap':'The live /sitemap.xml differs','hand_written_robots':'The live /robots.txt differs',
+             'stale_changelog':'The live /changelog/ differs','truncated_changelog':'The live /changelog/ differs'}
+    with pytest.raises(ValueError, match=message.get(fault)):
         public_verifier(built_site)('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),
                           expected=manifest)
 
@@ -401,7 +403,7 @@ def test_verifier_checks_every_page_the_build_generates(built_site):
     # Derived from the builder, so a generated file it adds is checked on the live site too.
     module = verifier_module()
     assert set(module.generated_pages()) >= {'/changelog/', '/robots.txt', '/sitemap.xml'}
-    assert all((built_site/module.builder().build_file(path)).is_file() for path in module.generated_pages())
+    assert all((built_site/file).is_file() for file in module.builder().VERIFIED_FILES)
     # A local build without one is an input error, never a reason to roll the live site back.
     manifest = local_manifest(built_site)
     def no_fetch(url):

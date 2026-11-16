@@ -36,8 +36,8 @@ from the download panel, the release panel and the footer, and
 `scripts/verify_homepage.py` checks the live page equals the local build's.
 
 `robots.txt` and `sitemap.xml` are generated at build time too (issue #192), so never
-add them to `website/` (the build fails if you do). The sitemap lists each page in
-`SITEMAP_PAGES` (`scripts/build_homepage.py`) at its `<link rel="canonical">` URL, with
+add them to `website/` (the build fails if you do). The sitemap lists every HTML page
+the build ships, so each page needs one `<link rel="canonical">` naming its own URL, with
 `lastmod` set to the built commit's time, so a new release tells search engines the
 pages changed. `robots.txt` lets crawlers fetch every page and the current ZIPs (old
 releases are kept on the server outside the web root, so no archive path is public),
