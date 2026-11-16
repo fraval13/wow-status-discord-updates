@@ -209,6 +209,12 @@ W.add({
     ["Screenshots are not available in this client."] = "Skjermbilete er ikkje tilgjengeleg i denne klienten.",
     ["A screenshot is already being taken."] = "Det blir alt teke eit skjermbilete.",
     ["Minimap button distance reset."] = "Avstanden til minikartknappen er tilbakestilt.",
+    -- Labs: experimental features (#222)
+    ["Labs"] = "Laben", ["Labs: experimental features"] = "Laben: eksperiment",
+    ["Experiments in progress. Each one only changes things for you, and every one starts switched off."]
+        = "Eksperiment under arbeid. Kvart av dei endrar berre ting for deg, og alle startar avslåtte.",
+    ["No experiments in this version yet."] = "Ingen eksperiment i denne utgåva enno.",
+    ["Turn all experiments off"] = "Slå av alle eksperiment",
     -- Controller navigation and key bindings
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",

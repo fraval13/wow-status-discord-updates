@@ -126,6 +126,23 @@ the memory use, log size and how many groups are joined (a count, never a name).
 Group names and character names are replaced by `<group>` and `<name>`. Nothing is
 sent anywhere; **Clear errors** empties the list. The report stays English.
 
+## Labs: experimental features
+
+Anything experimental lives on its own page, switched off: `/wstatus labs`, or
+**Options → Labs: experimental features**. Each row is one experiment with a name,
+a one-line description and a tick, and the page says plainly that an experiment only
+changes things for the player who turns it on. **Turn all experiments off** clears
+them in one click.
+
+A feature module registers itself with `WoWStatusFeatures.register(id, label,
+description)` and asks `WoWStatusFeatures.enabled(id)` before it builds a frame,
+registers an event or sends anything, so an experiment that is off leaves no trace.
+The toggles are saved account-wide in `WoWStatusDB.labs`, and only a saved `true`
+counts: a missing, renamed or malformed value reads as off, and an id that no module
+registered can never be switched on. Nothing about an experiment is shared with
+other players. The `discord` flag in `Features.lua` stays code-only and is not
+listed on the page. A version that ships no experiments says so.
+
 ## Controller
 
 With gamepad support switched on in the game's own options, WoW Status windows

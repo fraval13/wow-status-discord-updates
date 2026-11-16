@@ -174,7 +174,8 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, (WoWStatusScreenshots.available() and 1566 or 1426) + WoWStatusUnitTooltip.HEIGHT)
+        -- 40 more than before for the Labs button row (#222).
+        panel:SetSize(600, (WoWStatusScreenshots.available() and 1606 or 1466) + WoWStatusUnitTooltip.HEIGHT)
         panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
         panel.background=panel:CreateTexture(nil,"BACKGROUND")
         panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
@@ -242,6 +243,8 @@ local function showPanel(host)
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
         button(panel,"Diagnostics",214,bottom,170,function() WoWStatusDiagnostics.show() end)
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
+        -- Experiments, every one off until the player switches it on (#222).
+        button(panel,"Labs: experimental features",24,bottom-40,360,function() WoWStatusLabs.show() end)
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
@@ -514,6 +517,7 @@ local function initialize()
     WoWStatusJournal.prepare(WoWStatusDB)
     H.scrub(current)
     WoWStatusMinimap.init(WoWStatusDB)
+    WoWStatusFeatures.init(WoWStatusDB)
     WoWStatusJournal.init(WoWStatusDB,current)
     WoWStatusGroups.announce = function()
         current.introduced_groups=current.introduced_groups or {}
@@ -744,6 +748,7 @@ SlashCmdList.WOWSTATUS = function(message)
         elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
         say(WoWStatusGamepad.report())
     elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
+    elseif command == "labs" then WoWStatusLabs.show()
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

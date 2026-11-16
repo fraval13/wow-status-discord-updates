@@ -724,3 +724,72 @@ def test_diagnostics_controls_are_reachable(lua):
         WoWStatusDiagnostics.show();press("PADLSHOULDER")
         assert(__active=="characters")
     ''')
+
+
+def test_labs_rows_and_the_all_off_button_are_reachable(lua):
+    # #222: every toggle on the Labs page must be reachable with a controller.
+    main_window(lua)
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetText(text) self.text=text end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function methods:SetChecked(value) self.checked=value and true or false end
+        function methods:GetChecked() return self.checked end
+        function methods:SetEnabled(value) self.enabled=value and true or false end
+        local click=methods.Click
+        function methods:Click(button,down)
+            -- A real CheckButton flips before OnClick runs; A on a pad goes through Click.
+            if self.kind=="CheckButton" and self.enabled~=false then self.checked=not self.checked end
+            click(self,button,down)
+        end
+        for _, name in ipairs({"SetJustifyH","SetSize","SetScrollChild","SetHeight","SetShown"}) do methods[name]=function() end end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusUI={call=function(frame,name,...) if frame[name] then frame[name](frame,...) end end}
+        WoWStatusMainWindow.register=function(key,title,build,refresh,options)
+            assert(key=="labs" and options.tab==false)
+            __labsBuild,__labsRefresh=build,refresh
+            return true
+        end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Features.lua').read_text(encoding='utf-8'))
+    lua.execute((ROOT / 'addon/shared/Labs.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusDB={}
+        WoWStatusFeatures.init(WoWStatusDB)
+        WoWStatusFeatures.register("combo","Hype combo banner","A banner for milestones together")
+        WoWStatusFeatures.register("bingo","Weekly group bingo card")
+        local show=WoWStatusMainWindow.show
+        WoWStatusMainWindow.show=function(key)
+            show(key)
+            __page=__page or __labsBuild(main)
+            __page:Show();__labsRefresh()
+            __page.rows[1].rect={124,400,32,32}
+            __page.rows[2].rect={124,330,32,32}
+            __page.allOff.rect={124,150,260,26}
+            return __page
+        end
+        WoWStatusLabs.show()
+        WoWStatusGamepad.update()
+        local controls=WoWStatusGamepad.controls(main,{main})
+        local first,second,off=false,false,false
+        for _,control in ipairs(controls) do
+            if control==__page.rows[1] then first=true end
+            if control==__page.rows[2] then second=true end
+            if control==__page.allOff then off=true end
+        end
+        assert(first and second)
+        -- Nothing is on yet, so Turn all off does nothing and is disabled.
+        assert(not off and __page.allOff.enabled==false)
+        press("PADDDOWN") -- the first press shows the highlight
+        WoWStatusGamepad.setFocus(__page.rows[1]);press("PAD1")
+        assert(WoWStatusFeatures.enabled("combo"))
+        assert(__page.allOff.enabled==true)
+        -- Now it does something, so the pad can reach it.
+        local reached=false
+        for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do
+            if control==__page.allOff then reached=true end
+        end
+        assert(reached)
+        WoWStatusGamepad.setFocus(__page.allOff);press("PAD1")
+        assert(not WoWStatusFeatures.enabled("combo"))
+    ''')
