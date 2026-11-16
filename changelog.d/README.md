@@ -7,8 +7,8 @@ pull requests never conflict over release notes.
 - Name it after the issue or branch: `247-changelog-note-files.md` (lowercase
   letters, digits, `.`, `_` and `-`, ending in `.md`).
 - Write one or more `- ` lines. Each is plain text, at most 120 characters,
-  without `|` or markup such as backticks or `**`, and written for players.
-  Blank lines are allowed; nothing else is.
+  without `|`, `__NAME__` text or markup such as backticks or `**`, and written
+  for players. Blank lines are allowed; nothing else is.
 - Do not touch `CHANGELOG.md` or any `WhatsNewData.lua`, and do not run
   `scripts/whats_new.py` for a note. Only a release with no note files at all
   falls back to the public commit title, so every player-facing change needs a

@@ -164,8 +164,8 @@ Versions: feature pull requests must NOT change the version. On each main push,
 `changelog.d/` note files into a new `CHANGELOG.md` section and deletes them (with
 no note files at all, it uses the public commit title), synchronizes four TOCs and
 all What's New data, and commits/pushes the prepared release. Validation and
-deployment check out that exact returned revision. GITHUB_TOKEN pushes do not recursively trigger another run. Retries and
-manual dispatches reuse a prepared release; an intentional version bump is also
+deployment check out that exact returned revision. GITHUB_TOKEN pushes do not
+recursively trigger another run. Retries and manual dispatches reuse a prepared release; an intentional version bump is also
 retained. Never force-push a release or bypass the current-main deployment gate.
 Every pull request that changes anything a player or site visitor can notice
 (addon behaviour, options, text, the website, downloads) must add at least one

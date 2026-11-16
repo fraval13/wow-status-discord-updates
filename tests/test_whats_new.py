@@ -81,6 +81,7 @@ def test_pending_note_files_are_read_in_issue_number_order(tmp_path):
     ('1-a.md', '- ' + 'x' * 121 + '\n', 'printable'),
     ('1-a.md', '- Type `/wstatus news`\n', 'markup'),
     ('1-a.md', '- A **bold** change\n', 'markup'),
+    ('1-a.md', '- Shows __VERSION__ now\n', 'placeholder'),
     ('1-a.md', '## 1.0.0\n- a\n', 'only "- " notes'),
     ('1-a.md', 'text\n', 'only "- " notes'),
     ('1-a.md', '\n', 'has no notes'),
