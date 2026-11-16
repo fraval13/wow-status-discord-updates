@@ -47,6 +47,10 @@ R.SYNC_COOLDOWN = 60
 local syncedAt, answered = nil, {}
 -- Members asked for their list this session (at first contact), and /who lookups.
 local requested, whoAsked = {}, {}
+-- When our own /who lookup went out, and how long its answer may arrive as a
+-- chat line before we stop reading system messages again (#227).
+local whoPending
+local WHO_WAIT = 10
 local XP_INTERVAL = 300
 -- Seconds between checks for friends logging in or out while the page is open.
 R.ONLINE_CHECK = 5
@@ -557,11 +561,12 @@ local function isMember(k)
     end
     return false
 end
+-- Returns how many levels were learnt and how many rows the client's list held.
 function R.readWho()
-    if not db then return 0 end
+    if not db then return 0, 0 end
     local F = C_FriendList
     local count = S.number(F and F.GetNumWhoResults and S.call(F.GetNumWhoResults) or S.call(GetNumWhoResults))
-    if not count then return 0 end
+    if not count then return 0, 0 end
     local levels, learnt, maximum = whoLevels(), 0, WoWStatusAdapter.max_level or 60
     for i = 1, math.min(count, 50) do
         local name, level
@@ -579,14 +584,14 @@ function R.readWho()
                 for id, item in pairs(levels) do n = n + 1; if (item.at or 0) < oldestAt then oldest, oldestAt = id, item.at or 0 end end
                 if n >= MAX_WHO and oldest then levels[oldest] = nil end
             end
-            -- The same old results are read again on later system messages: count changes only.
+            -- A list can be read twice (the event and a chat line): count changes only.
             if not levels[k] or levels[k].level ~= level then learnt = learnt + 1 end
             levels[k] = {level=level, at=time()}
         end
     end
     if learnt > 0 then S.debug("/who: levels learnt for " .. learnt .. " group member(s)") end
     if learnt > 0 then R.render() end
-    return learnt
+    return learnt, count
 end
 -- The online member to look up: one never looked up this session, members whose
 -- version sends no list requests (or no list) first, then the oldest list.
@@ -619,6 +624,9 @@ function R.whoLookup()
     whoAsked[key(target)] = true
     local short = target:match("^([^%-]+)")
     pcall(send, 'n-"' .. short .. '"')
+    -- From here a chat line may be the whole answer, so system messages are worth
+    -- reading. Outside this window they are not (#227).
+    whoPending = time()
     return target
 end
 
@@ -2321,7 +2329,7 @@ function R.init(database, character, reporter)
     R.observe(character)
     -- The list sent at login already carries this XP.
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
-    requested, whoAsked = {}, {}
+    requested, whoAsked, whoPending = {}, {}, nil
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
     equipmentSendState = {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
@@ -2348,9 +2356,21 @@ frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sen
         partyChanged = true
         return
     end
-    -- A short /who answer arrives as a chat line; its results are readable then.
-    if event == "WHO_LIST_UPDATE" or event == "CHAT_MSG_SYSTEM" then
-        R.readWho()
+    -- WHO_LIST_UPDATE means the client's list is new, so it is always worth reading.
+    if event == "WHO_LIST_UPDATE" then
+        local _, count = R.readWho()
+        if count > 0 then whoPending = nil end
+        return
+    end
+    -- A short /who answer can arrive as a chat line instead. Only our own lookup
+    -- makes that likely, so outside its window system messages are left alone:
+    -- re-reading the same old list on every login, loot roll and AFK notice cost
+    -- work all session and stamped old levels with a fresh time (#227).
+    if event == "CHAT_MSG_SYSTEM" then
+        if not whoPending then return end
+        if time() - whoPending > WHO_WAIT then whoPending = nil; return end
+        local _, count = R.readWho()
+        if count > 0 then whoPending = nil end
         return
     end
     if event == "PLAYER_LEVEL_UP" or event == "PLAYER_XP_UPDATE" then
