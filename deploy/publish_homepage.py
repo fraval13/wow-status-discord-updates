@@ -78,8 +78,8 @@ def check_build(directory, revision, fresh):
                          f'checkout is at {revision}. {REBUILD}')
     builder = load_builder()
     # Website files the builder never copies can't change what ships.
-    pathspec = [*PUBLISH_INPUTS, *(f':(exclude)website/{name}' for name in builder.NOT_SHIPPED),
-                *(f':(exclude,glob)website/**/{name}' for name in builder.DESKTOP_FILES)]
+    pathspec = [*PUBLISH_INPUTS, *(f':(exclude,glob)website/**/{name}'
+                                   for name in (*builder.NOT_SHIPPED, *builder.DESKTOP_FILES))]
     status = git('status', '--porcelain', '-z', '--no-renames', '--untracked-files=all', '--ignored',
                  '--', *pathspec).decode('utf-8')
     uncommitted = [entry[3:] for entry in status.split('\0') if entry]

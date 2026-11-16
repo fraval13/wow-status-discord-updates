@@ -302,6 +302,7 @@ def test_publish_refuses_inputs_git_status_cannot_see(repo, tmp_path, publisher,
 def test_publish_ignores_website_notes_the_build_never_copies(repo, tmp_path, publisher, host):
     for name in ('website/README.md', 'website/ARTWORK.md'):
         write(repo / name, (repo / name).read_bytes() + b'\nDraft note.\n')
+    write(repo / 'website/changelog/README.md', b'Untracked notes beside a page template.\n')
     publish(publisher, build(repo, tmp_path / 'dist/homepage'), tmp_path)
     assert 'script' in host
 

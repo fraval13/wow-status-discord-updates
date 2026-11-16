@@ -18,6 +18,7 @@ KEEP = 3  # Sections shipped in the addon; older notes stay in the repository.
 HEADING = re.compile(r'^## (.+?)\s*$')
 VERSION = re.compile(r'^\d+\.\d+\.\d+$')
 MAX_NOTE = 120
+PLACEHOLDER = re.compile(r'__[A-Z_]+__')
 
 
 def parse(text: str) -> list[tuple[str, list[str]]]:
@@ -41,6 +42,9 @@ def parse(text: str) -> list[tuple[str, list[str]]]:
             note = line[2:].strip()
             if not note or len(note) > MAX_NOTE or '|' in note or not note.isprintable():
                 raise ValueError(f'CHANGELOG.md:{number}: notes must be 1-{MAX_NOTE} printable characters without |')
+            if PLACEHOLDER.search(note):
+                # The homepage build fills __NAME__ markers and refuses any left over.
+                raise ValueError(f'CHANGELOG.md:{number}: notes may not contain __NAME__ placeholder text')
             current.append(note)
         elif current is not None and line.strip():
             raise ValueError(f'CHANGELOG.md:{number}: only "- " notes belong in a release section')

@@ -49,6 +49,9 @@ def repository(tmp_path, request):
     (root / 'website').mkdir()
     (root / 'website/index.html').write_text(
         '<h1>__VERSION__</h1><ul>__WHATS_NEW__</ul>', encoding='utf-8', newline='\n')
+    (root / 'website/changelog').mkdir()
+    (root / 'website/changelog/index.html').write_text(
+        '<p>__RELEASES__</p>__CHANGELOG__', encoding='utf-8', newline='\n')
     initial = commit(root, 'New raid milestones and recap sharing')
     git(root, 'init', '--bare', str(remote))
     git(root, 'remote', 'add', 'origin', str(remote))
@@ -176,6 +179,8 @@ def test_release_builder_packages_the_prepared_revision_and_version_in_every_zip
     manifest = json.loads((output / 'downloads/release.json').read_text(encoding='utf-8'))
     assert manifest['addon_revision'] == prepared
     assert '0.15.0' in (output / 'index.html').read_text(encoding='utf-8')
+    changelog = (output / 'changelog/index.html').read_text(encoding='utf-8')
+    assert changelog.index('id="v0.15.0"') < changelog.index('id="v0.14.14"')
     for edition, package in manifest['editions'].items():
         assert package['version'] == '0.15.0'
         with zipfile.ZipFile(output / 'downloads' / package['file']) as archive:

@@ -29,8 +29,10 @@ def verifier_module():
     return module
 
 
-def public_verifier():
-    return verifier_module().verify
+def public_verifier(site):
+    """The verifier, checking against site, the local build, as the deploy job does."""
+    return functools.partial(verifier_module().verify,
+                             changelog=(site/'changelog/index.html').read_bytes())
 
 
 def receiver():
@@ -110,7 +112,9 @@ def test_valid_release_switches_all_public_downloads_together(staged,monkeypatch
 def site_fetch(site, change=lambda path, data: data):
     """A fetcher serving the built site, with change(path, data) applied to each response."""
     def fetch(url):
-        path=urlparse(url).path.lstrip('/') or 'index.html'
+        path=urlparse(url).path.lstrip('/')
+        if path=='' or path.endswith('/'):
+            path+='index.html'  # as Caddy's file_server serves a folder
         return change(path, (site/path).read_bytes())
     return fetch
 
@@ -118,12 +122,13 @@ def site_fetch(site, change=lambda path, data: data):
 def test_published_site_verification_checks_every_download(built_site):
     manifest=local_manifest(built_site)
     fetch=site_fetch(built_site)
-    assert public_verifier()('https://example.com',manifest['addon_revision'],fetch,
+    assert public_verifier(built_site)('https://example.com',manifest['addon_revision'],fetch,
                              expected=manifest)==manifest
 
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
-                                   'webp_link_preview','no_twitter_card'])
+                                   'webp_link_preview','no_twitter_card',
+                                   'no_changelog_link','stale_changelog','truncated_changelog'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -140,9 +145,16 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return (built_site/'assets/adventure.webp').read_bytes()
         if path=='index.html' and fault=='no_twitter_card':
             return data.replace(b'summary_large_image',b'summary')
+        version=manifest['editions']['tbc']['version'].encode()
+        if path=='index.html' and fault=='no_changelog_link':
+            return data.replace(b'href="/changelog/"',b'href="/elsewhere/"')
+        if path=='changelog/index.html' and fault=='stale_changelog':
+            return data.replace(b'id="v'+version+b'"',b'id="v0.0.0"')
+        if path=='changelog/index.html' and fault=='truncated_changelog':
+            return data[:len(data)//2]
         return data
     with pytest.raises(ValueError):
-        public_verifier()('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),
+        public_verifier(built_site)('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),
                           expected=manifest)
 
 
@@ -189,11 +201,11 @@ def test_tampered_zip_with_regenerated_manifest_fails(built_site):
     served, fetch = tampered_site(built_site, rewrite_zip(original, **ISSUE_TAMPERING))
     expected = local_manifest(built_site)
     with pytest.raises(ValueError, match='differs from the locally built'):
-        public_verifier()('https://example.com', expected['addon_revision'], fetch,
+        public_verifier(built_site)('https://example.com', expected['addon_revision'], fetch,
                           expected=expected)
     # Even a local manifest that somehow matched it can't make that ZIP pass.
     with pytest.raises(ValueError, match='vanilla ZIP'):
-        public_verifier()('https://example.com', expected['addon_revision'], fetch,
+        public_verifier(built_site)('https://example.com', expected['addon_revision'], fetch,
                           expected=served)
 
 
@@ -206,7 +218,7 @@ def test_zip_that_differs_from_the_local_build_fails(built_site):
         return data
     fetch = site_fetch(built_site, change)
     with pytest.raises(ValueError, match='retail ZIP does not match the locally built'):
-        public_verifier()('https://example.com', expected['addon_revision'], fetch,
+        public_verifier(built_site)('https://example.com', expected['addon_revision'], fetch,
                           expected=expected)
 
 
@@ -227,7 +239,7 @@ def test_local_manifest_must_be_this_revisions_complete_build(built_site):
                                                         file='WoWStatus-other.zip'))),
                   ['not', 'a', 'manifest']):
         with pytest.raises(ValueError, match='local release.json'):
-            public_verifier()('https://example.com', revision, fetch, expected=local)
+            public_verifier(built_site)('https://example.com', revision, fetch, expected=local)
 
 
 @pytest.mark.parametrize('tamper', [

@@ -42,7 +42,8 @@ def test_parser_skips_unreleased_and_rejects_bad_notes():
     text = '# What\'s New\n\nintro\n\n## Unreleased\n\n- soon\n\n## 1.1.0\n\n- b\n\n## 1.0.0\n\n- a\n'
     assert whats_new.parse(text) == [('1.1.0', ['b']), ('1.0.0', ['a'])]
     for bad in ('## 1.0.0\n\n- a|cff\n', '## 1.0.0\n\n- ' + 'x' * 121 + '\n', '## v1\n\n- a\n',
-                '## 1.0.0\n\n- a\n\n## 1.1.0\n\n- b\n', '## 1.0.0\n\n', '## 1.0.0\n\ntext\n'):
+                '## 1.0.0\n\n- a\n\n## 1.1.0\n\n- b\n', '## 1.0.0\n\n', '## 1.0.0\n\ntext\n',
+                '## 1.0.0\n\n- Fixed __AFK__ status\n'):
         with pytest.raises(ValueError):
             whats_new.parse(bad)
 

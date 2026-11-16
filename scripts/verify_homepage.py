@@ -40,7 +40,7 @@ RELEASE_FIELDS = ('version', 'file', 'bytes', 'sha256')
 
 @functools.cache
 def builder():
-    """The builder's own rules, so the builder and the verifier never disagree."""
+    """The builder's own rules (what ships, placeholders), so the two never disagree."""
     path = Path(__file__).with_name('build_homepage.py')
     spec = importlib.util.spec_from_file_location('build_homepage', path)
     if spec is None or not path.is_file():
@@ -138,8 +138,11 @@ def check_inputs(base, revision, expected):
     check_local(expected, revision)
 
 
-def verify(base, revision, fetch=read, *, expected):
-    """Check the live site at base against expected, the release.json built locally for revision."""
+def verify(base, revision, fetch=read, *, expected, changelog):
+    """Check the live site at base against the local build of revision.
+
+    expected is that build's release.json and changelog its changelog/index.html bytes.
+    """
     check_inputs(base, revision, expected)
     base = base.rstrip('/')
     manifest = json.loads(fetch(base + '/downloads/release.json'))
@@ -152,6 +155,8 @@ def verify(base, revision, fetch=read, *, expected):
     parser = DownloadLinks()
     parser.feed(html)
     text = ' '.join(parser.text)
+    # A small page: checked before the large downloads, so a stale one fails fast.
+    check_changelog(base, fetch, parser.links, changelog)
     versions = set()
     for edition in EDITIONS:
         release = expected['editions'][edition]
@@ -174,11 +179,19 @@ def verify(base, revision, fetch=read, *, expected):
         versions.add(release['version'])
     if len(versions) != 1 or f'VERSION {next(iter(versions))}' not in text:
         raise ValueError('The homepage and addon versions do not agree')
-    if re.search(r'__[A-Z_]+__', html):
+    if builder().PLACEHOLDER.search(html):
         raise ValueError('The homepage contains unexpanded release placeholders')
     # The link preview Discord shows for a pasted link (issue #190), fetched from this site.
     builder().check_link_preview(html, lambda path: fetch(base + path))
     return manifest
+
+
+def check_changelog(base, fetch, links, local):
+    """Require the homepage's link to /changelog/ and the locally built page there (#194)."""
+    if '/changelog/' not in links:
+        raise ValueError('The homepage does not link to /changelog/')
+    if fetch(base + '/changelog/') != local:
+        raise ValueError('The live changelog page differs from the locally built one')
 
 
 if __name__ == '__main__':
@@ -187,6 +200,8 @@ if __name__ == '__main__':
     parser.add_argument('--revision', required=True)
     parser.add_argument('--manifest', type=Path, required=True,
                         help='downloads/release.json from the local build of --revision')
+    parser.add_argument('--changelog', type=Path,
+                        help='changelog/index.html from the same local build (default: beside --manifest)')
     parser.add_argument('--attempts', type=int, default=1)
     parser.add_argument('--delay', type=float, default=5)
     args = parser.parse_args()
@@ -196,6 +211,12 @@ if __name__ == '__main__':
         expected = json.loads(args.manifest.read_text(encoding='utf-8'))
     except (OSError, ValueError) as error:
         parser.error(f'Cannot read the local manifest {args.manifest}: {error}')
+    # By default the page the same build wrote beside downloads/.
+    changelog_path = args.changelog or args.manifest.parent.parent / 'changelog/index.html'
+    try:
+        changelog = changelog_path.read_bytes()
+    except OSError as error:
+        parser.error(f'Cannot read the local changelog page {changelog_path}: {error}')
     # Fail now rather than after every retry: a wrong argument or local build never becomes right.
     try:
         check_inputs(args.url, args.revision, expected)
@@ -203,7 +224,7 @@ if __name__ == '__main__':
         parser.error(str(error))
     for attempt in range(args.attempts):
         try:
-            result = verify(args.url, args.revision, expected=expected)
+            result = verify(args.url, args.revision, expected=expected, changelog=changelog)
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break
