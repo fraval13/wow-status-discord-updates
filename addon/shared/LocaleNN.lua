@@ -551,6 +551,11 @@ W.add({
     ["Character visibility"] = "Synlege figurar",
     ["Characters shown to friends"] = "Figurar som venene ser",
     ["Untick bank alts to hide them from everyone's character list and leaderboard."] = "Fjern haken for å gøyme bankfigurar frå figurlista og topplista til alle.",
+    -- Unit tooltip block (#183).
+    ["Friends' tooltips"] = "Info når musa er over vener",
+    ["Show WoW Status in group members' tooltips"] = "Vis WoW Status-info når musa er over gruppemedlemer",
+    ["Values shown, top first:"] = "Verdiar som blir viste, den øvste først:", ["Move up"] = "Flytt opp",
+    ["Level progress"] = "Nivåframgang",
 })
 -- Diagnostics page (#153). The report itself stays English.
 W.add({
