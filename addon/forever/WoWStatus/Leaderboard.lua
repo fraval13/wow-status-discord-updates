@@ -49,9 +49,8 @@ local function renderBoard(chosen)
     for i, entry in ipairs(list) do
         local row = page.board[i] or boardRow(i)
         row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * 28)
-        -- Your own row and the zebra stripes: stronger on High contrast (#186).
-        local strong = WoWStatusTheme and WoWStatusTheme.highContrast and WoWStatusTheme.highContrast()
-        row.bg:SetColorTexture(1, .82, 0, entry.own and (strong and .25 or .12) or (i % 2 == 0 and (strong and .08 or .04) or 0))
+        -- Your own row and the zebra stripes, stronger on High contrast (#186).
+        UI.stripe(row.bg, entry.own and "own" or (i % 2 == 0 and "stripe" or nil))
         row.rank:SetText(i .. ".")
         local name = (entry.name:match("^[^-]+") or entry.name):gsub("|", "||")
         local colour = UI.classColour(entry.class)

@@ -183,7 +183,7 @@ local function closePopovers()
     end
 end
 
-local shownScale, styledContrast
+local shownScale
 function T.apply()
     local value = settings()
     for _, window in ipairs(windows) do
@@ -205,11 +205,9 @@ function T.apply()
     -- Boxes and section lines change only between the mood look and High
     -- contrast, not with a size step or between mood themes. An error is
     -- reported and tried again on the next apply, and never stops the rest.
-    local contrast = value.name == "contrast"
-    if contrast ~= styledContrast and WoWStatusUI and WoWStatusUI.restyle then
-        local ok, err = pcall(WoWStatusUI.restyle)
-        if ok then styledContrast = contrast
-        elseif type(geterrorhandler) == "function" then geterrorhandler()(err) end
+    if WoWStatusUI and WoWStatusUI.restyle then
+        local ok, err = pcall(WoWStatusUI.restyle, value.name == "contrast")
+        if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
     end
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
     for _, fn in ipairs(watchers) do
@@ -310,13 +308,18 @@ end
 -- Box and section-line looks: the mood themes share one, High contrast has an
 -- opaque black fill, a near-white border and solid lines twice as thick.
 local STYLES = {
-    mood = {fill=.45, fallback=.35, edge={.55, .55, .6, .8}, mark={1, .82, 0, .9}, line=.35, lineHeight=1},
-    contrast = {fill=1, fallback=1, edge={.9, .9, .9, 1}, mark={1, .82, 0, 1}, line=1, lineHeight=2},
+    mood = {fill=.45, fallback=.35, edge={.55, .55, .6, .8}, mark={1, .82, 0, .9}, line=.35, lineHeight=1,
+        own=.12, stripe=.04},
+    contrast = {fill=1, fallback=1, edge={.9, .9, .9, 1}, mark={1, .82, 0, 1}, line=1, lineHeight=2,
+        own=.25, stripe=.08},
 }
-local function style() return T.highContrast() and STYLES.contrast or STYLES.mood end
--- Every box and section line drawn, so a theme change can style them again.
--- Pages reuse their boxes and headers, so these stay small.
-local boxes, lines = {}, {}
+-- The look everything was last styled with (UI.restyle); until the first
+-- restyle, the one the saved theme asks for.
+local current
+local function style() return current or (T.highContrast() and STYLES.contrast or STYLES.mood) end
+-- Every box, section line and row stripe drawn, so a theme change can style
+-- them again. Pages reuse their boxes, headers and rows, so these stay small.
+local boxes, lines, stripes = {}, {}, {}
 -- Box colours: dark fill, light border; gold border to highlight. Without the
 -- backdrop API, the plain fallback fill takes the same strength.
 function UI.tint(frame, highlighted, look)
@@ -333,11 +336,23 @@ local function styleLine(line, look)
     call(line, "SetColorTexture", 1, .82, 0, look.line)
     call(line, "SetHeight", look.lineHeight)
 end
--- Styles every box and section line again for the current theme (T.apply).
-function UI.restyle()
-    local look = style()
+-- A list row's gold wash: "own" marks your own row, "stripe" every other row,
+-- anything else none. Stronger on High contrast.
+function UI.stripe(texture, kind, look)
+    stripes[texture] = kind or false
+    look = look or style()
+    call(texture, "SetColorTexture", 1, .82, 0, kind == "own" and look.own or kind == "stripe" and look.stripe or 0)
+end
+-- Styles every box, section line and stripe for the mood look or High contrast
+-- (T.apply); nothing to do when that look is already shown. The look counts
+-- as shown only once everything took it, so a failure is tried again.
+function UI.restyle(contrast)
+    local look = contrast and STYLES.contrast or STYLES.mood
+    if look == current then return end
     for frame, highlighted in pairs(boxes) do UI.tint(frame, highlighted, look) end
     for line in pairs(lines) do styleLine(line, look) end
+    for texture, kind in pairs(stripes) do UI.stripe(texture, kind, look) end
+    current = look
 end
 
 function UI.text(parent, font, x, y, width, justify)

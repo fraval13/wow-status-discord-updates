@@ -540,10 +540,13 @@ def test_a_failed_restyle_is_reported_and_tried_again():
         local box = WoWStatusUI.box(CreateFrame("Frame"), 100, 50)
         local reported, restyle = 0, WoWStatusUI.restyle
         geterrorhandler = function() return function() reported = reported + 1 end end
+        for _ = 1, 3 do WoWStatusTheme.next() end      -- Faction
         WoWStatusUI.restyle = function() error("boom") end
-        for _ = 1, 4 do WoWStatusTheme.next() end      -- High contrast; restyle fails
+        WoWStatusTheme.next()                           -- High contrast; restyle fails
         assert(reported == 1 and box.fill[4] == .45)
         WoWStatusUI.restyle = restyle
+        -- Until a restyle succeeds, a box tinted again keeps the look its neighbours show.
+        WoWStatusUI.tint(box, false); assert(box.fill[4] == .45)
         WoWStatusTheme.resize(WoWStatusTheme.STEP)      -- any later apply tries again
         assert(box.fill[4] == 1)
     ''')
@@ -571,7 +574,8 @@ def test_leaderboard_rows_are_marked_more_strongly_on_high_contrast():
         end
         SlashCmdList.WOWSTATUS("leaderboard")
         assert(shade("Own") == .12 and striped() == .04)
-        WoWStatusDB.theme.name = "contrast"; WoWStatusTheme.apply()
-        WoWStatusLeaderboard.render()
+        WoWStatusDB.theme.name = "contrast"; WoWStatusTheme.apply() -- the open page follows at once
         assert(shade("Own") == .25 and striped() == .08)
+        WoWStatusTheme.next()
+        assert(shade("Own") == .12 and striped() == .04)
     ''')
