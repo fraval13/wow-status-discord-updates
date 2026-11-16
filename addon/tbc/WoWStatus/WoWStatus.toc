@@ -47,6 +47,7 @@ Journal.lua
 WhatsNewData.lua
 WhatsNew.lua
 Firsts.lua
+Streaks.lua
 Leaderboard.lua
 Reactions.lua
 Recaps.lua

@@ -189,6 +189,7 @@ local function insert(entry,removed)
     if WoWStatusFirsts and recordsChange(entry,removed,dropped) then WoWStatusFirsts.update() end
     -- A death or level-up can move a group goal (#157): checked at a coming tick.
     if WoWStatusGoals then WoWStatusGoals.touch() end
+    if WoWStatusStreaks then WoWStatusStreaks.noted(entry) end
 end
 -- Returns true when the entry is new to the log: a new ID, or one that replaces a
 -- relay's claim with other content. False when it repeats a logged event or is refused.
@@ -1111,7 +1112,10 @@ local function render()
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
                 or e.origin=="legacy" and T("Saved group update") or T("Live group update"))
-            row.flavour:SetText(WoWStatusFlavour.text(e))
+            -- A death that ends a long deathless streak says so before its caption (#164).
+            local ended=WoWStatusStreaks and WoWStatusStreaks.endedText(e)
+            local caption=WoWStatusFlavour.text(e)
+            row.flavour:SetText(ended and ("|cffffd100"..ended:gsub("|","||").."|r"..(caption~="" and (" "..caption) or "")) or caption)
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
@@ -1184,6 +1188,8 @@ local function build(parent)
                     and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
                 GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText((who:gsub("|","||")))
                 GameTooltip:AddLine(WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")),1,1,1,true)
+                local ended=WoWStatusStreaks and WoWStatusStreaks.endedText(e)
+                if ended then GameTooltip:AddLine(ended:gsub("|","||"),1,.82,0,true) end
                 local caption=WoWStatusFlavour.text(e)
                 if caption and caption~="" then GameTooltip:AddLine(caption,.8,.8,.8,true) end
                 local detail=self.detail and self.detail:GetText()

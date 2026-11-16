@@ -154,7 +154,7 @@ def test_fun_records_leave_out_hardcore_deaths():
     with_entries(lua, [(f'Mira{i}-TestRealm', f'1-{i}-a', 'death', 100 + i, '{text="Died in Hardcore"}')
                        for i in range(6)])
     lines = plain(lua.eval(f'WoWStatusFirsts.funRecords("{group}")'))
-    assert 'Most dangerous zone' not in lines and 'Longest without dying' not in lines, lines
+    assert 'Most dangerous zone' not in lines and 'deathless' not in lines, lines
 
 
 def test_a_session_recap_does_not_tally_a_hardcore_death():

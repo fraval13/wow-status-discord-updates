@@ -103,6 +103,15 @@ highest-level shown character is used and is marked as a default, not a choice.
 A hidden character is never a main. **Records** holds Firsts,
 This week and Fun records.
 
+**Deathless streaks** count the levels and days since a character last died, worked
+out from the activity log on each client; nothing extra is sent. Fun records show
+the longest current streak and the longest ever, a character's profile shows its
+current one, and the log marks a death that ends a streak of 5 levels or a week.
+A streak older than the kept log reads "at least". A character's streak is shown
+only while **Character details → Total deaths** is shared. **Notifications →
+Deathless streak milestones** (off by default) adds a quiet notice every 5 levels
+or week without a death.
+
 In **Settings → WoW Status → Characters shown to friends**, untick any of your
 saved characters to hide bank alts from everyone's character list, Overview and
 leaderboard. Tick them again to restore them. Offline alts can be managed without
