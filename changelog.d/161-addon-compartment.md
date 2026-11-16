@@ -1,1 +1,0 @@
-- Retail and Forever: WoW Status is in the minimap's AddOns menu; left-click opens the log, right-click the options
