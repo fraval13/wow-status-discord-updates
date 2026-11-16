@@ -254,3 +254,104 @@ def test_website_notes_in_page_folders_never_ship(addon_repo, tmp_path):
     builder.build(addon_repo, tmp_path / 'site', 'HEAD')
     assert (tmp_path / 'site/changelog/index.html').is_file()
     assert not (tmp_path / 'site/changelog/README.md').exists()
+
+
+def nynorsk_build(repo, output):
+    builder.build(repo, output, 'HEAD')
+    return ((output / 'index.html').read_text(encoding='utf-8'),
+            (output / 'nn/index.html').read_text(encoding='utf-8'))
+
+
+def test_the_nynorsk_page_is_the_same_page_in_the_other_language(addon_repo, tmp_path):
+    # #193: one template, one copy deck, so the two pages cannot drift apart.
+    english, nynorsk = nynorsk_build(addon_repo, tmp_path / 'site')
+    assert '<html lang="nn">' in nynorsk and '<html lang="en">' in english
+    assert '<link rel="canonical" href="https://wow.frankvalde.com/nn/">' in nynorsk
+    assert '<meta property="og:url" content="https://wow.frankvalde.com/nn/">' in nynorsk
+    assert '<meta property="og:locale" content="nn_NO">' in nynorsk
+    # The same hreflang set on both pages, pointing at each other.
+    for page in (english, nynorsk):
+        assert '<link rel="alternate" hreflang="en" href="https://wow.frankvalde.com/">' in page
+        assert '<link rel="alternate" hreflang="nn" href="https://wow.frankvalde.com/nn/">' in page
+        assert '<link rel="alternate" hreflang="x-default" href="https://wow.frankvalde.com/">' in page
+    # Each page offers the other one, in the other one's language.
+    assert 'href="/nn/" hreflang="nn" lang="nn">Les denne sida på nynorsk' in english
+    assert 'href="/" hreflang="en" lang="en">Read this page in English' in nynorsk
+    # Translated, not copied: the English copy is gone from the Nynorsk page.
+    for sentence in ('Keep your friends in the story.', 'Your adventure awaits',
+                     'A few things worth knowing.', 'Three steps to set out together.'):
+        assert sentence in english
+        assert sentence not in nynorsk
+    assert 'Hald vener med i soga.' in nynorsk
+    assert 'Eventyret ventar' in nynorsk
+    assert not re.search(r'__[A-Z_]+__', nynorsk)
+    # The structure is the same page, not a second one written by hand.
+    assert nynorsk.count('<section') == english.count('<section')
+    assert nynorsk.count('class="feature"') == english.count('class="feature"')
+
+
+def test_both_pages_show_the_same_generated_version_and_sizes(addon_repo, tmp_path):
+    english, nynorsk = nynorsk_build(addon_repo, tmp_path / 'site')
+    version = builder.project_version(addon_repo, 'HEAD')
+    assert f'VERSION {version}' in english
+    assert f'VERSJON {version}' in nynorsk
+    sizes = re.findall(r'ZIP · (\d+ KB)', english)
+    assert len(sizes) == 4
+    assert re.findall(r'ZIP · (\d+ KB)', nynorsk) == sizes
+    # The release notes are the same notes, generated once.
+    notes = re.findall(r'<li>(.*?)</li>', english.split('release-panel', 1)[1])
+    assert notes and re.findall(r'<li>(.*?)</li>', nynorsk.split('release-panel', 1)[1]) == notes
+
+
+def test_the_nynorsk_page_gets_nynorsk_captions_and_samples(addon_repo, tmp_path):
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    page = (tmp_path / 'site/nn/index.html').read_text(encoding='utf-8')
+    assert 'src="/nn/flavour.js"' in page and 'src="/nn/app.js"' in page
+    flavour = (tmp_path / 'site/nn/flavour.js').read_text(encoding='utf-8')
+    english = (tmp_path / 'site/flavour.js').read_text(encoding='utf-8')
+    # Line for line the same bank, so it is the same joke in either language.
+    assert 'Same spelar. Større tal.' in flavour
+    assert 'Same player. Larger numbers.' in english
+    assert flavour.count('": [') == english.count('": [')
+    samples = (tmp_path / 'site/nn/app.js').read_text(encoding='utf-8')
+    assert "heading: 'NYTT NIVÅ!'" in samples
+    assert "heading: 'LEVEL UP!'" not in samples
+
+
+def test_the_copy_deck_itself_never_ships(addon_repo, tmp_path):
+    builder.build(addon_repo, tmp_path / 'site', 'HEAD')
+    assert not (tmp_path / 'site/nn.json').exists()
+    assert not (tmp_path / 'site/nn/nn.json').exists()
+
+
+def test_a_string_without_a_translation_fails_the_build(addon_repo, tmp_path):
+    page = addon_repo / 'website/index.html'
+    page.write_text(page.read_text(encoding='utf-8').replace(
+        '<h3>A shared chronicle.</h3>', '<h3>A brand new heading.</h3>'), encoding='utf-8')
+    output = tmp_path / 'site'
+    with pytest.raises(ValueError, match='no Nynorsk for'):
+        builder.build(addon_repo, output, 'HEAD')
+    assert not output.exists()
+
+
+def test_a_translation_the_page_no_longer_has_fails_the_build(addon_repo, tmp_path):
+    deck = addon_repo / 'website/nn.json'
+    deck.write_text(deck.read_text(encoding='utf-8').replace(
+        '  "Footer": "Botntekst"', '  "Footer": "Botntekst",\n  "Gone from the page": "Borte"', 1),
+        encoding='utf-8')
+    output = tmp_path / 'site'
+    with pytest.raises(ValueError, match='no longer has'):
+        builder.build(addon_repo, output, 'HEAD')
+    assert not output.exists()
+
+
+def test_preview_captions_that_drifted_from_the_addon_fail_the_build(addon_repo, tmp_path):
+    # Pairing by position would otherwise put the wrong Nynorsk line under the picture.
+    flavour = addon_repo / 'website/flavour.js'
+    flavour.write_text(flavour.read_text(encoding='utf-8').replace(
+        '"Same player. Larger numbers.",', '"Something nobody wrote in the addon.",', 1),
+        encoding='utf-8')
+    output = tmp_path / 'site'
+    with pytest.raises(ValueError, match='cannot be paired'):
+        builder.build(addon_repo, output, 'HEAD')
+    assert not output.exists()

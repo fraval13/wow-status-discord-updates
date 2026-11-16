@@ -32,7 +32,8 @@ def verifier_module():
 def public_verifier(site):
     """The verifier, checking against site, the local build, as the deploy job does."""
     return functools.partial(verifier_module().verify,
-                             changelog=(site/'changelog/index.html').read_bytes())
+                             changelog=(site/'changelog/index.html').read_bytes(),
+                             nynorsk=(site/'nn/index.html').read_bytes())
 
 
 def receiver():
@@ -128,7 +129,8 @@ def test_published_site_verification_checks_every_download(built_site):
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
                                    'webp_link_preview','no_twitter_card',
-                                   'no_changelog_link','stale_changelog','truncated_changelog'])
+                                   'no_changelog_link','stale_changelog','truncated_changelog',
+                                   'no_nynorsk_link','stale_nynorsk'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -152,6 +154,11 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data.replace(b'id="v'+version+b'"',b'id="v0.0.0"')
         if path=='changelog/index.html' and fault=='truncated_changelog':
             return data[:len(data)//2]
+        # Issue #193: the Nynorsk page is deployed with the English one or not at all.
+        if path=='index.html' and fault=='no_nynorsk_link':
+            return data.replace(b'href="/nn/"',b'href="/elsewhere/"')
+        if path=='nn/index.html' and fault=='stale_nynorsk':
+            return data.replace(b'VERSJON '+version,b'VERSJON 0.0.0')
         return data
     with pytest.raises(ValueError):
         public_verifier(built_site)('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),

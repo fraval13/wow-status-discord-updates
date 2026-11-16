@@ -138,10 +138,11 @@ def check_inputs(base, revision, expected):
     check_local(expected, revision)
 
 
-def verify(base, revision, fetch=read, *, expected, changelog):
+def verify(base, revision, fetch=read, *, expected, changelog, nynorsk):
     """Check the live site at base against the local build of revision.
 
-    expected is that build's release.json and changelog its changelog/index.html bytes.
+    expected is that build's release.json, changelog its changelog/index.html bytes
+    and nynorsk its nn/index.html bytes.
     """
     check_inputs(base, revision, expected)
     base = base.rstrip('/')
@@ -157,6 +158,7 @@ def verify(base, revision, fetch=read, *, expected, changelog):
     text = ' '.join(parser.text)
     # A small page: checked before the large downloads, so a stale one fails fast.
     check_changelog(base, fetch, parser.links, changelog)
+    check_nynorsk(base, fetch, parser.links, nynorsk)
     versions = set()
     for edition in EDITIONS:
         release = expected['editions'][edition]
@@ -184,6 +186,14 @@ def verify(base, revision, fetch=read, *, expected, changelog):
     # The link preview Discord shows for a pasted link (issue #190), fetched from this site.
     builder().check_link_preview(html, lambda path: fetch(base + path))
     return manifest
+
+
+def check_nynorsk(base, fetch, links, local):
+    """Require the homepage's link to /nn/ and the locally built page there (#193)."""
+    if '/nn/' not in links:
+        raise ValueError('The homepage does not link to /nn/')
+    if fetch(base + '/nn/') != local:
+        raise ValueError('The live Nynorsk page differs from the locally built one')
 
 
 def check_changelog(base, fetch, links, local):
@@ -217,6 +227,11 @@ if __name__ == '__main__':
         changelog = changelog_path.read_bytes()
     except OSError as error:
         parser.error(f'Cannot read the local changelog page {changelog_path}: {error}')
+    nynorsk_path = args.manifest.parent.parent / 'nn/index.html'
+    try:
+        nynorsk = nynorsk_path.read_bytes()
+    except OSError as error:
+        parser.error(f'Cannot read the local Nynorsk page {nynorsk_path}: {error}')
     # Fail now rather than after every retry: a wrong argument or local build never becomes right.
     try:
         check_inputs(args.url, args.revision, expected)
@@ -224,7 +239,7 @@ if __name__ == '__main__':
         parser.error(str(error))
     for attempt in range(args.attempts):
         try:
-            result = verify(args.url, args.revision, expected=expected, changelog=changelog)
+            result = verify(args.url, args.revision, expected=expected, changelog=changelog, nynorsk=nynorsk)
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break

@@ -26,6 +26,24 @@ are complete and `assets/link-preview.jpg` is a complete 1200×630 JPEG (see `AR
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 
+`/nn/` is the whole page in Nynorsk, generated at build time from the English
+`index.html` and one copy deck, `website/nn.json` (issue #193). There is no second
+copy of the markup: the structure, the layout, the version, the file sizes and the
+release notes are the same page by construction. The deck is keyed by the exact
+English strings; the build fails if the page has a string the deck does not cover,
+**or** if the deck covers a string the site no longer has — the same discipline
+`LocaleNN.lua` follows. The build also sets `lang`, the canonical link and `og:url`
+for the Nynorsk page, and both pages carry the same `hreflang` set and a link to the
+other language. `nn.json` itself never ships.
+
+The notification preview on `/nn/` loads `/nn/flavour.js` and `/nn/app.js`, generated
+the same way: the captions come from the addon's own `FlavourNN.lua` at the packaged
+revision, line for line with `Flavour.lua`, so the preview tells the same joke in
+either language. If `website/flavour.js` has drifted from `Flavour.lua`, pairing the
+two by position would put the wrong line under the picture, so the build stops
+instead. A revision that ships no `FlavourNN.lua` keeps the English captions and says
+so on stderr.
+
 `/changelog/` (`changelog/index.html`) is generated at build time: its
 `__CHANGELOG__` placeholder becomes one entry per released `## <version>` section
 of `CHANGELOG.md` at the built revision, newest first, each with a stable `#v<version>`
@@ -119,7 +137,8 @@ After deployment, the workflow fetches the live homepage, release manifest and
 all four ZIP downloads using `scripts/verify_homepage.py`, and compares them with
 the `release.json` the deploy job built itself (`--manifest`), not only with the
 manifest the site serves. It checks the exact commit revision, that the served
-manifest equals the local one, that `/changelog/` equals the locally built page,
+manifest equals the local one, that `/changelog/` and `/nn/` equal the locally built
+pages,
 the visible download links, that every ZIP's size and SHA-256 match the local
 build, and the version labels. Each ZIP must hold
 exactly its TOC, the files the TOC lists, `Bindings.xml` and `Textures/*.tga` under `WoWStatus/`;

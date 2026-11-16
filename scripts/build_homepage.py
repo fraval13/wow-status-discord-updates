@@ -33,8 +33,23 @@ EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
 # (scripts/voices.py sample), named by their 12-character clip id.
 ASSETS = (re.compile(r'Textures/[^/.][^/]*\.tga', re.IGNORECASE), re.compile(r'Bindings\.xml'),
           re.compile(r'Sounds/Voices/[0-9a-f]{12}\.ogg'))
+# The Nynorsk page at /nn/ (issue #193). It is built from the English page and one
+# copy deck, never kept as a second copy of the markup: the structure, the layout
+# and the generated values are then the same page by construction, and a string the
+# deck does not cover fails the build the way a missing LocaleNN entry would show.
+TRANSLATIONS = 'nn.json'
+# Attributes a reader sees or a screen reader speaks.
+TRANSLATED_ATTRS = ('alt', 'title', 'aria-label', 'placeholder')
+# Social-card copy. Everything else in a meta tag (sizes, types, the image URL) is
+# the same in both languages.
+TRANSLATED_META = ('description', 'og:title', 'og:description', 'og:image:alt',
+                   'twitter:title', 'twitter:description', 'twitter:image:alt')
+# Text with at least two letters in it has words to translate; a bare placeholder
+# or a glyph such as ◆ has not.
+WORDS = re.compile(r'[A-Za-z]{2}')
+PLACEHOLDER_TEXT = re.compile(r'^(?:__[A-Z_]+__\s*)+$')
 # Website notes that never ship, and file-manager files (Finder, Explorer) anywhere in website/.
-NOT_SHIPPED = ('README.md', 'ARTWORK.md')
+NOT_SHIPPED = ('README.md', 'ARTWORK.md', TRANSLATIONS)
 DESKTOP_FILES = ('.DS_Store', 'Thumbs.db', 'desktop.ini')
 # The link preview chat clients show for a pasted homepage link (issue #190).
 # scripts/make_link_preview.py draws it from the page's artwork; the build only checks it.
@@ -232,6 +247,79 @@ def render_changelog(sections):
     return '\n'.join(entries)
 
 
+def translate_page(html, deck, base=None, used=None):
+    """The Nynorsk page, or (with deck None) the strings a deck has to provide.
+
+    The page is split into tags and the text between them, so only real text and
+    chosen attribute values are replaced: a short word like "Open" can never be
+    swapped inside a class name or a URL. Raises if the deck is missing a string
+    or carries one the page does not use any more.
+    """
+    wanted, used, out, skip = [], used if used is not None else set(), [], 0
+    def swap(value):
+        wanted.append(value)
+        if deck is None:
+            return value
+        if value not in deck:
+            raise ValueError(f'{TRANSLATIONS} has no Nynorsk for: {value!r}')
+        used.add(value)
+        return deck[value]
+    for part in re.split(r'(<[^>]*>)', html):
+        if not part.startswith('<'):
+            stripped = part.strip()
+            if skip == 0 and stripped and WORDS.search(stripped) and not PLACEHOLDER_TEXT.match(stripped):
+                part = part.replace(stripped, swap(stripped), 1)
+            out.append(part)
+            continue
+        name = (re.match(r'</?\s*([A-Za-z0-9]+)', part) or re.match('()', part)).group(1).lower()
+        if name in ('script', 'style'):
+            skip = max(skip + (-1 if part.startswith('</') else 1), 0)
+        attrs = {key.lower(): value for key, value in re.findall(r'([\w:-]+)="([^"]*)"', part)}
+        meta = attrs.get('property') or attrs.get('name')
+        def replace(match):
+            key, value = match.group(1).lower(), match.group(2)
+            if key in TRANSLATED_ATTRS and value.strip() and WORDS.search(value):
+                return f'{match.group(1)}="{swap(value)}"'
+            if name == 'meta' and key == 'content':
+                if meta in TRANSLATED_META:
+                    return f'{match.group(1)}="{swap(value)}"'
+                # The page's own address and the language it is written in.
+                if meta == 'og:url' and base:
+                    return f'{match.group(1)}="{base}/nn/"'
+                if meta == 'og:locale' and deck is not None:
+                    return f'{match.group(1)}="nn_NO"'
+            if name == 'html' and key == 'lang' and deck is not None:
+                return f'{match.group(1)}="nn"'
+            # The Nynorsk captions for the notification preview live beside the page.
+            if name == 'script' and key == 'src' and deck is not None and value in ('/flavour.js', '/app.js'):
+                return f'{match.group(1)}="/nn{value}"'
+            if name == 'link' and key == 'href' and attrs.get('rel') == 'canonical' and base:
+                # hreflang links keep their own absolute addresses: the set is the
+                # same on both pages, so only the canonical one moves.
+                return f'{match.group(1)}="{base}/nn/"'
+            return match.group(0)
+        out.append(re.sub(r'([\w:-]+)="([^"]*)"', replace, part))
+    return ''.join(out) if deck is not None else wanted
+
+
+def translate_samples(js, deck, used):
+    """website/app.js with the preview's own sample notifications translated.
+
+    The four samples are the headings and messages the preview shows after a
+    click; the captions under them come from flavour.js.
+    """
+    def swap(match):
+        value = match.group(2)
+        if value not in deck:
+            raise ValueError(f'{TRANSLATIONS} has no Nynorsk for: {value!r}')
+        used.add(value)
+        return f'{match.group(1)}{deck[value]}{match.group(3)}'
+    translated, count = re.subn(r"((?:heading|message): ')([^']+)(')", swap, js)
+    if count == 0:
+        raise ValueError('website/app.js has no sample notifications to translate')
+    return translated
+
+
 def fill(path, values):
     """Replace every __NAME__ placeholder in the file at path in one pass.
 
@@ -308,6 +396,99 @@ def write_package(root, revision, folder, files, archive):
             raise ValueError(f'Broken archive: {archive}')
 
 
+# The switch to the other language, generated so each page offers the other one
+# in its own words and nothing has to be translated twice.
+# The notification preview's captions. flavour.js holds the first lines of
+# Flavour.lua's banks; FlavourNN.lua is the same bank line for line in Nynorsk.
+JS_BANK = re.compile(r'"([\w-]+)": \[(.*?)\n  \]', re.S)
+LUA_BANK = re.compile(r'\n    (\w+) = \{(.*?)\n    \},?', re.S)
+QUOTED = re.compile(r'"((?:[^"\\]|\\.)*)"')
+
+
+def lua_banks(text):
+    """Each `name = { "line", ... }` table in a Flavour file, unescaped."""
+    return {match.group(1): [line.replace('\\"', '"').replace('\\\\', '\\')
+                             for line in QUOTED.findall(match.group(2))]
+            for match in LUA_BANK.finditer(text)}
+
+
+def nynorsk_flavour(root, revision, english):
+    """website/flavour.js with every caption replaced by its Nynorsk line (#193).
+
+    The English captions are checked against Flavour.lua first. If flavour.js has
+    drifted from the addon, pairing the two by position would put the wrong line
+    under the picture, so the build stops rather than guess.
+    """
+    # Read from Git at the revision being packaged, like every other addon file: the
+    # captions on the page are then the captions in the download. Taken from an
+    # edition rather than addon/shared/, because the editions are what is packaged
+    # and sync_addons.py keeps their copies identical.
+    folder = f'addon/{EDITIONS[0]}/WoWStatus/'
+    files = git_files(root, revision, [folder + 'Flavour.lua', folder + 'FlavourNN.lua'])
+    source = lua_banks(files[folder + 'Flavour.lua'].decode('utf-8'))
+    nynorsk = lua_banks(files[folder + 'FlavourNN.lua'].decode('utf-8'))
+    def bank(match):
+        name = match.group(1).replace('-', '_')
+        lines = [line.replace('\\"', '"') for line in QUOTED.findall(match.group(2))]
+        if source.get(name, [])[:len(lines)] != lines:
+            raise ValueError(f'website/flavour.js {match.group(1)} captions differ from '
+                             f'Flavour.lua {name}; the Nynorsk ones cannot be paired with them')
+        if len(nynorsk.get(name, [])) < len(lines):
+            raise ValueError(f'FlavourNN.lua has no Nynorsk {name} caption for every one in flavour.js')
+        body = ',\n'.join(f'    {json.dumps(line, ensure_ascii=False)}'
+                           for line in nynorsk[name][:len(lines)])
+        return f'"{match.group(1)}": [\n{body}\n  ]'
+    translated, count = JS_BANK.subn(bank, english)
+    if count == 0:
+        raise ValueError('website/flavour.js has no caption banks to translate')
+    return translated
+
+
+def language_link(other):
+    if other == 'nn':
+        return ('<a class="install-link language-link" href="/nn/" hreflang="nn" lang="nn">'
+                'Les denne sida på nynorsk <span aria-hidden="true">»</span></a>')
+    return ('<a class="install-link language-link" href="/" hreflang="en" lang="en">'
+            'Read this page in English <span aria-hidden="true">»</span></a>')
+
+
+def write_nynorsk(root, revision, output, template, values, captions):
+    """Write output/nn/index.html from the English template and website/nn.json.
+
+    captions says whether the addon being packaged ships FlavourNN.lua. It always
+    does; a revision without it (an addon cut down to its TOC, as the release
+    fixture is) keeps the English captions under the preview rather than failing.
+    """
+    deck = json.loads((root / 'website' / TRANSLATIONS).read_text(encoding='utf-8'))
+    deck.pop('_comment', None)
+    english = template.read_text(encoding='utf-8')
+    # The site's own address, from the page's canonical link: the Nynorsk page's
+    # canonical and og:url are built from it, so there is one place to change it.
+    match = re.search(r'<link rel="canonical" href="(https://[^"\s/]+)/">', english)
+    if match is None:
+        raise ValueError('The homepage needs a canonical link; /nn/ is built from it')
+    page = output / 'nn/index.html'
+    page.parent.mkdir(parents=True, exist_ok=True)
+    used = set()
+    page.write_text(translate_page(english, deck, match.group(1), used), encoding='utf-8')
+    (output / 'nn/app.js').write_text(
+        translate_samples((root / 'website/app.js').read_text(encoding='utf-8'), deck, used), encoding='utf-8')
+    if captions:
+        flavour = (root / 'website/flavour.js').read_text(encoding='utf-8')
+        (output / 'nn/flavour.js').write_text(nynorsk_flavour(root, revision, flavour), encoding='utf-8')
+    else:
+        print('No FlavourNN.lua in this revision: /nn/ keeps the English preview captions',
+              file=sys.stderr)
+        page.write_text(page.read_text(encoding='utf-8').replace('"/nn/flavour.js"', '"/flavour.js"'),
+                        encoding='utf-8')
+    # A key nothing uses is a key somebody will trust and nobody will see.
+    stale = sorted(set(deck) - used)
+    if stale:
+        raise ValueError(f'{TRANSLATIONS} translates strings the site no longer has: '
+                         + ', '.join(repr(value) for value in stale[:5]))
+    fill(page, {**values, 'LANGUAGE_LINK': language_link('en')})
+
+
 def write_site(root, output, revision, editions, version, sections):
     """Write the website, its changelog page and the four ZIPs into the new, empty folder output.
 
@@ -332,7 +513,13 @@ def write_site(root, output, revision, editions, version, sections):
                              'sha256': hashlib.sha256(archive.read_bytes()).hexdigest()}
     shared = {'VERSION': version, 'LATEST_ANCHOR': changelog_anchor(version)}
     sizes = {f'{edition.upper()}_SIZE': f"{release['bytes'] / 1024:.0f} KB" for edition, release in releases.items()}
-    fill(output / 'index.html', {**shared, **sizes, 'WHATS_NEW': note_items(sections[0][1])})
+    values = {**shared, **sizes, 'WHATS_NEW': note_items(sections[0][1])}
+    # The Nynorsk page before the English one is filled in: both are made from the
+    # same template, so the version, the sizes and the release notes are identical
+    # by construction, not by being written twice (#193).
+    write_nynorsk(root, revision, output, output / 'index.html', values,
+                  'FlavourNN.lua' in editions[EDITIONS[0]][0])
+    fill(output / 'index.html', {**values, 'LANGUAGE_LINK': language_link('nn')})
     changelog = output / 'changelog/index.html'
     if not changelog.is_file():
         raise ValueError('website/changelog/index.html is missing; the homepage links to it')

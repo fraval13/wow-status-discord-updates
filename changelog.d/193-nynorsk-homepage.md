@@ -1,0 +1,1 @@
+- The homepage now speaks Nynorsk at wow.frankvalde.com/nn/, with the same downloads and release notes
