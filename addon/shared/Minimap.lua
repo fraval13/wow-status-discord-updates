@@ -101,6 +101,9 @@ function M.init(database)
                 local who=(latest.sender:match("^[^-]+") or latest.sender):gsub("|","||")
                 GameTooltip:AddLine(T("Latest:").." "..who.." — "..WoWStatusJournal.deathText(latest):gsub("|","||").." · "..when,1,.82,0,true)
             end
+            -- Quiet hours (#180): say so, so silence does not look like a fault.
+            local quiet=WoWStatusPopups and WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText()
+            if quiet then GameTooltip:AddLine(quiet,.6,.8,1,true) end
             GameTooltip:AddLine(" ")
             GameTooltip:AddLine(T("Left-click: Activity log"),1,1,1)
             GameTooltip:AddLine(T("Right-click: Options"),1,1,1)

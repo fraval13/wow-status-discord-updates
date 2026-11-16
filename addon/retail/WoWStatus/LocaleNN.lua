@@ -86,6 +86,11 @@ W.add({
     ["Ready check"] = "Klar-sjekk", ["Raid warning"] = "Raid-åtvaring", ["Alarm"] = "Alarm",
     ["Quiet mode: hold notifications in"] = "Stille modus: hald att varsel i", ["Battlegrounds"] = "Slagmarker", ["Raids"] = "Raid",
     ["Dungeons"] = "Fangehol",
+    ["Quiet hours: hide friends' notifications by the clock"] = "Stille timar: gøym varsel frå vener etter klokka",
+    ["From"] = "Frå", ["To"] = "Til", ["Earlier"] = "Tidlegare", ["Later"] = "Seinare",
+    ["Quiet hours until"] = "Stille timar til", ["Same start and end: never quiet"] = "Lik start og slutt: aldri stille",
+    ["Quiet hours on (local time):"] = "Stille timar på (lokal tid):", ["Quiet hours off:"] = "Stille timar av:",
+    ["Usage: /wstatus quiethours [on | off | 22:00-07:00]"] = "Bruk: /wstatus quiethours [on | off | 22:00-07:00]",
     ["not reached"] = "ikkje nådd",
     ["Your live updates did not reach this character. Ask them to /reload, or check that you are on the same realm type."] =
         "Direkteoppdateringane dine nådde ikkje denne figuren. Be dei skrive /reload, eller sjekk at de er på same type rike.",

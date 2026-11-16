@@ -242,6 +242,89 @@ function P.quiet()
     local group = ok and S.value(inside) and INSTANCE[S.string(kind) or ""]
     return group ~= nil and group ~= false and quiet[group] == true
 end
+-- Quiet hours (#180, off by default): a daily window on the local clock,
+-- account-wide, with settings of its own beside quiet mode. Friends' updates
+-- that arrive in it go to the activity log only and are never queued, and
+-- popups still waiting when it begins are dropped (they are logged), so nothing
+-- pops up afterwards. Times
+-- are minutes after midnight; a window may cross midnight, and equal start and
+-- end means no quiet hours at all.
+P.QUIET_STEP = 30
+local DAY = 24 * 60
+local function minuteOfDay(value, default)
+    value = tonumber(value)
+    if value and value == math.floor(value) and value >= 0 and value < DAY then return value end
+    return default
+end
+-- Checked on every read (a few comparisons), so a bad value written into the
+-- saved table by hand can never reach the tick.
+function P.quietHours()
+    if not prefs then return {start = 22 * 60, stop = 7 * 60} end
+    local value = type(prefs.quiet_hours) == "table" and prefs.quiet_hours or {}
+    value.enabled = value.enabled == true
+    value.start, value.stop = minuteOfDay(value.start, 22 * 60), minuteOfDay(value.stop, 7 * 60)
+    prefs.quiet_hours = value
+    return value
+end
+-- key: "enabled" (true/false), or "start"/"stop" (minutes after midnight).
+function P.setQuietHours(key, value)
+    if not prefs then return false end
+    local hours = P.quietHours()
+    if key == "enabled" then hours.enabled = value == true; return true end
+    if key ~= "start" and key ~= "stop" then return false end
+    local minute = minuteOfDay(value)
+    if not minute then return false end
+    hours[key] = minute
+    return true
+end
+-- Move start or end by steps of QUIET_STEP minutes, wrapping round midnight.
+function P.shiftQuietHours(key, steps)
+    local hours = P.quietHours()
+    if key ~= "start" and key ~= "stop" or not tonumber(steps) then return false end
+    return P.setQuietHours(key, (hours[key] + math.floor(tonumber(steps)) * P.QUIET_STEP) % DAY)
+end
+-- "22:00" for 1320.
+function P.clockText(minute)
+    minute = minuteOfDay(minute, 0)
+    return string.format("%02d:%02d", math.floor(minute / 60), minute % 60)
+end
+-- "22:30" or "7:05" to minutes after midnight, or nil.
+function P.parseClock(text)
+    local hour, minute = S.trim(tostring(text or "")):match("^(%d%d?):(%d%d)$")
+    hour, minute = tonumber(hour), tonumber(minute)
+    if not hour or hour > 23 or minute > 59 then return nil end
+    return hour * 60 + minute
+end
+-- Whether a minute of the day falls inside the window [start, stop).
+function P.inQuietHours(minute, start, stop)
+    if start == stop then return false end
+    if start < stop then return minute >= start and minute < stop end
+    return minute >= start or minute < stop
+end
+-- The local clock's minute of the day, or nil where the client cannot tell.
+-- Read at most once a second: the popup tick runs several times a second.
+local clockAt, clockMinute
+local function localMinute()
+    if not date or not time then return nil end
+    local now = time()
+    if now == clockAt then return clockMinute end
+    local ok, hour, minute = pcall(function() return tonumber(date("%H", now)), tonumber(date("%M", now)) end)
+    clockAt, clockMinute = now, ok and hour and minute and minuteOfDay(hour * 60 + minute) or nil
+    return clockMinute
+end
+P.localMinute = localMinute
+-- "Quiet hours until 07:00" while they are on, else nil: an indicator, so a
+-- silent evening does not look like a broken addon.
+function P.quietHoursText()
+    if not P.quietHoursActive() then return nil end
+    return WoWStatusLocale.T("Quiet hours until") .. " " .. P.clockText(prefs.quiet_hours.stop)
+end
+function P.quietHoursActive()
+    local hours = P.quietHours()
+    if not hours.enabled then return false end
+    local minute = localMinute()
+    return minute ~= nil and P.inQuietHours(minute, hours.start, hours.stop)
+end
 -- A sound per kind of notification, from the game's own sounds (sound kit IDs).
 -- Nothing plays unless chosen; "/wstatus popup sound on" makes the chime the default.
 P.SOUNDS = {{"None", 0}, {"Soft chime", 850}, {"Level-up fanfare", 888}, {"Quest complete", 878},
@@ -543,6 +626,19 @@ local function savedChannels(saved)
     end
     return result
 end
+-- Keep only the queued popups for which keep(item) is true, and hide the one on
+-- screen when it fails.
+local function dropQueued(keep)
+    if #incoming > 0 then
+        local kept = {}
+        for _, item in ipairs(incoming) do if keep(item) then table.insert(kept, item) end end
+        incoming = kept
+    end
+    if active and not keep(active) then
+        active = nil
+        if toast then toast:Hide() end
+    end
+end
 function P.groupsChanged()
     if not prefs then return end
     prefs.legacy_channel = false
@@ -555,22 +651,14 @@ function P.groupsChanged()
             joinedByAddon[name] = nil
         end
     end
+    dropQueued(function(item)
+        return item.preview or (item.group_id ~= nil and WoWStatusGroups.contains(getCharacter(), item.group_id))
+    end)
     local kept = {}
-    for _, item in ipairs(incoming) do
-        if item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id)) then
-            table.insert(kept, item)
-        end
-    end
-    incoming = kept
-    kept = {}
     for _, item in ipairs(unverified) do
         if WoWStatusGroups.contains(getCharacter(), item.group) then table.insert(kept, item) end
     end
     unverified = kept
-    if active and not active.preview and not WoWStatusGroups.contains(getCharacter(), active.group_id) then
-        active = nil
-        if toast then toast:Hide() end
-    end
     kept = {}
     for _, item in ipairs(outgoing) do
         if item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id) then table.insert(kept, item) end
@@ -796,6 +884,9 @@ local function commit(c, now)
         claims.levels[c.level], claims.at = true, now
     end
     remember(item, logged)
+    -- Quiet hours: logged, never queued, so it can never pop up later. c.quiet
+    -- marks an update that arrived in them and waited for the roster past their end.
+    if c.quiet or P.quietHoursActive() then noteReceive("quiet_hours", c, now); return false, "logged only (quiet hours)" end
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
@@ -888,13 +979,13 @@ local function admit(c, now)
     if member then acknowledge(c) end
     if not members or member then
         verifyPending(now, members and {[c.group] = members}) -- Earlier updates that waited go first.
-        local queued = commit(c, now)
+        local queued, why = commit(c, now)
         P.tick()
-        return queued
+        return queued, why
     end
     if queuedFrom(c.key, c.level or c.nonce) >= MAX_QUEUED_PER_SENDER then noteReceive("sender_queue_full", c, now); return false end
     if #unverified >= MAX_UNVERIFIED then noteReceive("rejected_unknown_sender", c, now); return false end
-    c.expires = now + VERIFY_SECONDS
+    c.expires, c.quiet = now + VERIFY_SECONDS, P.quietHoursActive() or nil
     table.insert(unverified, c)
     noteReceive("verifying_sender", c, now)
     return false, "sender not in member list yet (" .. tostring(c.key) .. ")"
@@ -1362,7 +1453,9 @@ end
 -- Notices wait for the next tick, so they follow the update that caused them.
 local notices = {}
 function P.notice(item)
+    -- Quiet hours: a notice about a friend is skipped; the Records page has it.
     if not prefs or #incoming + #notices >= 128 then return false end
+    if P.quietHoursActive() and not P.isSelf(item.sender) then return false end
     item.preview, item.key, item.received_at = true, "local-notice", time()
     table.insert(notices, item)
     return true
@@ -1398,15 +1491,16 @@ local function tick()
     local now = time()
     syncGroups()
     if not receiving() then
-        local previews = {}
-        for _, item in ipairs(incoming) do if item.preview then table.insert(previews,item) end end
-        incoming, unverified = previews, {}
-        if active and not active.preview then
-            active = nil
-            if toast then toast:Hide() end
-        end
+        unverified = {}
+        dropQueued(function(item) return item.preview end)
     end
     if now ~= lastVerify then verifyPending(now) end -- At most once a second.
+    -- Quiet hours: commit queues nothing in them; what was queued or on screen
+    -- when they began leaves too (it is in the log), so nothing pops up hours
+    -- later. Settings previews and the player's own notices stay.
+    if P.quietHoursActive() then
+        dropQueued(function(item) return item.preview and (item.key ~= "local-notice" or P.isSelf(item.sender)) end)
+    end
     if active and not active.preview and not (active.group_id
         and WoWStatusGroups.contains(getCharacter(), active.group_id)) and not prefs.trusted[active.key] then
         active = nil

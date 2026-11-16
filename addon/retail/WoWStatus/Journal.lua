@@ -1299,7 +1299,8 @@ function J.reaction(text,sender)
                 e.reactions[key]={name=sender:match("^[^-]+") or sender,text=text,at=now}
                 if refresh then refresh() end
                 -- A voiced Nynorsk line is read aloud (Forever), within the listener's limits.
-                if WoWStatusVoices then WoWStatusVoices.heard(text) end
+                -- Never in quiet hours (#180): someone may be asleep nearby.
+                if WoWStatusVoices and not WoWStatusPopups.quietHoursActive() then WoWStatusVoices.heard(text) end
                 return true
             end
             return false

@@ -811,6 +811,20 @@ SlashCmdList.WOWSTATUS = function(message)
             say("Notification size is now " .. WoWStatusTheme.popupSize() .. "%. Use /wstatus popupsize "
                 .. WoWStatusTheme.POPUP_MIN .. "-" .. WoWStatusTheme.POPUP_MAX .. " (100 is the default).")
         end
+    elseif command == "quiethours" then
+        -- Quiet hours (#180): /wstatus quiethours [on | off | 22:00-07:00].
+        local P, choice = WoWStatusPopups, S.trim(rest):lower()
+        local from, to = S.trim(rest):match("^([^%-]+)%-([^%-]+)$")
+        local start, stop = P.parseClock(from), P.parseClock(to)
+        if choice == "on" or choice == "off" then P.setQuietHours("enabled", choice == "on")
+        elseif start and stop then
+            P.setQuietHours("start", start); P.setQuietHours("stop", stop); P.setQuietHours("enabled", true)
+        elseif choice ~= "" then say("Usage: /wstatus quiethours [on | off | 22:00-07:00]"); return end
+        local hours = P.quietHours()
+        say(T(hours.enabled and "Quiet hours on (local time):" or "Quiet hours off:") .. " "
+            .. P.clockText(hours.start) .. "-" .. P.clockText(hours.stop))
+        if hours.enabled and hours.start == hours.stop then say("Same start and end: never quiet") end
+        if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
     elseif command == "interval" or command == "quality" then
         local number = tonumber(rest)
         local upper = command == "interval" and 100 or 5
