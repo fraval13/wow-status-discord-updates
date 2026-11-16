@@ -361,7 +361,17 @@ def other_character(exported_at, events=()):
 
 
 def archived(store, cid):
-    return json.loads((store.archive_directory / f'{cid}.json').read_text(encoding='utf-8'))
+    path = store.archive_directory / f'{cid}.json'
+    deadline = time.monotonic() + 2
+    while True:
+        try:
+            return json.loads(path.read_text(encoding='utf-8'))
+        except PermissionError:
+            # Windows refuses to open a file while the archive thread's os.replace swaps
+            # it in. The rename is atomic, so reading again shortly after is safe.
+            if time.monotonic() > deadline:
+                raise
+            time.sleep(0.01)
 
 
 def block_first_rebuild(monkeypatch):
