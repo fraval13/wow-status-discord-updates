@@ -1,1 +1,0 @@
-- Quiet hours: hide friends' notifications during a daily time window; they still reach the activity log
