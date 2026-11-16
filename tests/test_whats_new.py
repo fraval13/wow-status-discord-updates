@@ -1,5 +1,6 @@
 """One-time What's New page (#63), generated from CHANGELOG.md."""
 import importlib.util
+import re
 import sys
 import tomllib
 from pathlib import Path
@@ -55,7 +56,7 @@ def test_pending_note_files_in_the_repository_are_valid():
 
 def test_changelog_has_no_unreleased_section():
     text = (ROOT / 'CHANGELOG.md').read_text(encoding='utf-8')
-    assert '## Unreleased' not in text.splitlines(), (
+    assert not re.search(r'^## Unreleased\s*$', text, re.MULTILINE), (
         'Put pending notes in a new changelog.d/<issue>-<short-name>.md file, not under '
         '## Unreleased in CHANGELOG.md; see changelog.d/README.md')
 
@@ -65,21 +66,27 @@ def test_pending_note_files_are_read_in_filename_order(tmp_path):
     folder = tmp_path / 'changelog.d'
     folder.mkdir()
     (folder / 'README.md').write_text('Not a note\n', encoding='utf-8')
+    (folder / '.DS_Store').write_text('finder junk', encoding='utf-8')
     (folder / '20-b.md').write_text('- b1\n\n- b2\n', encoding='utf-8')
     (folder / '100-a.md').write_text('- a\r\n', encoding='utf-8')
-    assert whats_new.pending_notes(tmp_path) == [(folder / '100-a.md', ['a']),
-                                                 (folder / '20-b.md', ['b1', 'b2'])]
+    (folder / 'tidy-up.md').write_text('- c\n', encoding='utf-8')
+    # Issue numbers sort numerically; names without one go first, alphabetically.
+    assert whats_new.pending_notes(tmp_path) == [(folder / 'tidy-up.md', ['c']),
+                                                 (folder / '20-b.md', ['b1', 'b2']),
+                                                 (folder / '100-a.md', ['a'])]
 
 
 @pytest.mark.parametrize('name, text, message', [
     ('1-a.md', '- a|cff\n', 'printable'),
     ('1-a.md', '- ' + 'x' * 121 + '\n', 'printable'),
+    ('1-a.md', '- Type `/wstatus news`\n', 'markup'),
+    ('1-a.md', '- A **bold** change\n', 'markup'),
     ('1-a.md', '## 1.0.0\n- a\n', 'only "- " notes'),
     ('1-a.md', 'text\n', 'only "- " notes'),
     ('1-a.md', '\n', 'has no notes'),
     ('1-A.md', '- a\n', 'named like'),
     ('1-a.txt', '- a\n', 'named like'),
-    ('.1-a.md', '- a\n', 'named like'),
+    ('1 a.md', '- a\n', 'named like'),
 ])
 def test_invalid_pending_note_files_are_rejected(tmp_path, name, text, message):
     folder = tmp_path / 'changelog.d'

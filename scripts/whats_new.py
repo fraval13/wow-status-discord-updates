@@ -27,12 +27,14 @@ PLACEHOLDER = re.compile(r'__[A-Z_]+__')
 
 
 def check_note(note: str, where: str) -> str:
-    """One player-facing note: 1-MAX_NOTE printable characters without |."""
+    """One player-facing note: 1-MAX_NOTE printable characters without | or markup."""
     if not note or len(note) > MAX_NOTE or '|' in note or not note.isprintable():
         raise ValueError(f'{where}: notes must be 1-{MAX_NOTE} printable characters without |')
     if PLACEHOLDER.search(note):
         # The homepage build fills __NAME__ markers and refuses any left over.
         raise ValueError(f'{where}: notes may not contain __NAME__ placeholder text')
+    if '`' in note or '**' in note:
+        raise ValueError(f'{where}: notes are plain text; remove the ` or ** markup')
     return note
 
 
@@ -68,14 +70,24 @@ def parse(text: str) -> list[tuple[str, list[str]]]:
     return sections
 
 
+def fragment_order(path: Path) -> tuple[int, str]:
+    """Leading issue numbers sort numerically (20-b.md before 100-a.md), the rest by name."""
+    number = re.match(r'\d+', path.name)
+    return (int(number[0]) if number else -1, path.name)
+
+
 def fragment_paths(root: Path) -> list[Path]:
-    """Pending note files in filename order. Anything else in the folder is an error."""
+    """Pending note files in issue-number order.
+
+    Hidden files (.DS_Store, editor swap files) are ignored; anything else that is
+    not a note file is an error, so a misnamed note is never silently dropped.
+    """
     folder = root / FRAGMENTS
     if not folder.is_dir():
         return []
     paths = []
-    for path in sorted(folder.iterdir(), key=lambda item: item.name):
-        if path.name == FRAGMENT_README:
+    for path in sorted(folder.iterdir(), key=fragment_order):
+        if path.name == FRAGMENT_README or path.name.startswith('.'):
             continue
         if not path.is_file() or not FRAGMENT_NAME.match(path.name):
             raise ValueError(f'{FRAGMENTS}/{path.name}: pending notes must be files named '

@@ -87,24 +87,27 @@ def promoted_notes(text: str, version: str, subject: str, pending: list[str] | N
     # The public commit subject is a useful fallback for a change without notes.
     subject = ''.join(char for char in subject if char.isprintable()).replace('|', '-')
     subject = subject.translate(str.maketrans('', '', '*`<>'))[:whats_new.MAX_NOTE].strip()
-    fallback = '- ' + (subject or 'Latest addon and website improvements')
-    added = ''.join(f'- {note}\n' for note in pending or [])
+    newline = '\r\n' if '\r\n' in text else '\n'
+    fallback = '- ' + (subject or 'Latest addon and website improvements') + newline
+    added = ''.join(f'- {note}{newline}' for note in pending or [])
     if unreleased:
         heading = unreleased[0]
         end = re.search(r'^## ', text[heading.end():], re.MULTILINE)
         stop = heading.end() + end.start() if end else len(text)
         body = text[heading.end():stop]
-        if added:
-            body = body.rstrip() + ('\n' if body.strip() else '\n\n') + added + '\n'
-        elif not body.strip():
-            body = '\n\n' + fallback + '\n\n'
+        notes = body.strip()
+        if notes:
+            notes += newline
+        notes += added or ('' if notes else fallback)
+        body = newline * 2 + notes + newline
         result = text[:heading.start()] + f'## {version}' + body + text[stop:]
     else:
         heading = re.search(r'^## \d+\.\d+\.\d+\s*$', text, re.MULTILINE)
         if not heading:
             raise ValueError('No released section to extend')
-        notes = added or fallback + '\n'
-        result = text[:heading.start()] + f'## {version}\n\n' + notes + '\n' + text[heading.start():]
+        notes = added or fallback
+        result = (text[:heading.start()] + f'## {version}' + newline * 2 + notes + newline
+                  + text[heading.start():])
     sections = whats_new.parse(result)
     if sections[0][0] != version:
         raise ValueError('Unreleased notes must precede all released sections')
@@ -169,6 +172,10 @@ def prepare(root: Path, source: str, remote: str = 'origin', branch: str = 'main
         raise ValueError('Checkout must be exactly the requested full source revision')
     if git(root, 'status', '--porcelain', '--untracked-files=no'):
         raise ValueError('Release preparation requires a clean tracked checkout')
+    untracked = git(root, 'ls-files', '--others', '--', whats_new.FRAGMENTS).splitlines()
+    if any(not Path(name).name.startswith('.') for name in untracked):
+        # bump() reads and deletes every note file, so it must only see committed ones.
+        raise ValueError(f'Release preparation requires no untracked files in {whats_new.FRAGMENTS}/')
     git(root, 'fetch', '--no-tags', remote, f'refs/heads/{branch}', authenticated=True)
     tip = git(root, 'rev-parse', 'FETCH_HEAD')
     if tip != source:
