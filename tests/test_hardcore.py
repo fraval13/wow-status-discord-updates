@@ -122,7 +122,7 @@ def test_older_texts_and_hardcore_text_are_valid_and_nothing_else():
         assert(J.validText("death", "Died in Hardcore"))
         assert(J.validText("death", "Died") and J.validText("death", "Total deaths: 3"))
         assert(not J.validText("death", "Died in Hardcore!"))
-        assert(WoWStatusLocale.NN["Died in Hardcore"] == "Døydde i Hardcore")
+        assert(WoWStatusLocale.NN["Died in Hardcore"] == "Døydde i hardkjernemodus")
     ''')
 
 
@@ -190,7 +190,7 @@ def test_overview_says_died_in_hardcore_instead_of_a_tally():
         assert(text:find("Mira died in Hardcore", 1, true) and text:find("Bob died once", 1, true), text)
         assert(text:find("Cid died once", 1, true), text)
         WoWStatusLocale.set("nn")
-        assert(WoWStatusLocale.T("died in Hardcore") == "døydde i Hardcore")
+        assert(WoWStatusLocale.T("died in Hardcore") == "døydde i hardkjernemodus")
     ''')
 
 
