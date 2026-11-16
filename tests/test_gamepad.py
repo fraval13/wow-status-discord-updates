@@ -378,6 +378,7 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
             text=function(parent) return CreateFrame("FontString",nil,parent) end,
             call=function(frame,method,...) if frame[method] then return frame[method](frame,...) end end,
             classColour=function() end,
+            stripe=function() end,
         }
         WoWStatusFirsts={groups=function() return {{id="one",label="One"},{id="two",label="Two"}} end}
         WoWStatusRoster={leaderboard=function() return {{name="Mira-Realm",level=20,deaths=1,quests=247}} end}

@@ -1,13 +1,17 @@
 -- Window themes and size (#60), saved account-wide in WoWStatusDB.theme and
 -- applied immediately, without /reload. Themes only change background tint
 -- (plain colour textures, no extra files), so the white and gold game fonts
--- stay readable on every theme. Night is the original look.
+-- stay readable on every theme; High contrast also strengthens box borders and
+-- section lines. Night is the original look.
 WoWStatusTheme = {}
 local T, S = WoWStatusTheme, WoWStatusSafe
 -- Achievement, the default since 1.15, is a solid dark brown like Retail's
 -- achievement window, drawn with plain colour so every client shows it.
-T.ORDER = {"achievement", "night", "journal", "faction"}
-T.NAMES = {achievement="Achievement", night="Night", journal="Journal", faction="Faction"}
+-- High contrast (#186) keeps every layout and changes only surfaces and lines:
+-- an opaque black window, opaque black boxes with light borders and solid
+-- section lines, so the game's white and gold text stands at its strongest.
+T.ORDER = {"achievement", "night", "journal", "faction", "contrast"}
+T.NAMES = {achievement="Achievement", night="Night", journal="Journal", faction="Faction", contrast="High contrast"}
 -- Window size (#182): 70 to 200 % in whole percent, 100 % by default. A size
 -- the screen cannot hold is shown smaller (see T.applied), never cut off.
 T.MIN, T.MAX, T.STEP = .7, 2, .1
@@ -53,6 +57,7 @@ T.settings = settings
 -- Background colour {r, g, b, a} for the chosen theme.
 function T.colour(alpha)
     local name = settings().name
+    if name == "contrast" then return 0, 0, 0, 1 end -- opaque: nothing shows through behind text
     if name == "achievement" then return .16, .1, .045, alpha and math.max(alpha, .98) or 1 end -- solid dark brown
     if name == "journal" then return .2, .14, .07, alpha or .97 end   -- warm parchment brown
     if name == "faction" then
@@ -197,12 +202,22 @@ function T.apply()
     local scale = main and T.applied(main)
     if shownScale and scale ~= shownScale then closePopovers() end
     shownScale = scale
+    -- Boxes and section lines change only between the mood look and High
+    -- contrast, not with a size step or between mood themes. An error is
+    -- reported and tried again on the next apply, and never stops the rest.
+    if WoWStatusUI and WoWStatusUI.restyle then
+        local ok, err = pcall(WoWStatusUI.restyle, value.name == "contrast")
+        if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
+    end
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
     for _, fn in ipairs(watchers) do
         local ok, err = pcall(fn)
         if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
     end
 end
+
+-- True while the High contrast theme is chosen.
+function T.highContrast() return settings().name == "contrast" end
 
 function T.next()
     local value, index = settings(), 1
@@ -290,11 +305,54 @@ function UI.box(parent, width, height, kind)
     UI.tint(frame)
     return frame
 end
--- Box colours: dark fill, grey border; gold border to highlight.
-function UI.tint(frame, highlighted)
-    call(frame, "SetBackdropColor", 0, 0, 0, .45)
-    if highlighted then call(frame, "SetBackdropBorderColor", 1, .82, 0, .9)
-    else call(frame, "SetBackdropBorderColor", .55, .55, .6, .8) end
+-- Box and section-line looks: the mood themes share one, High contrast has an
+-- opaque black fill, a near-white border and solid lines twice as thick.
+local STYLES = {
+    mood = {fill=.45, fallback=.35, edge={.55, .55, .6, .8}, mark={1, .82, 0, .9}, line=.35, lineHeight=1,
+        own=.12, stripe=.04},
+    contrast = {fill=1, fallback=1, edge={.9, .9, .9, 1}, mark={1, .82, 0, 1}, line=1, lineHeight=2,
+        own=.25, stripe=.08},
+}
+-- The look everything was last styled with (UI.restyle); until the first
+-- restyle, the one the saved theme asks for.
+local current
+local function style() return current or (T.highContrast() and STYLES.contrast or STYLES.mood) end
+-- Every box, section line and row stripe drawn, so a theme change can style
+-- them again. Pages reuse their boxes, headers and rows, so these stay small.
+local boxes, lines, stripes = {}, {}, {}
+-- Box colours: dark fill, light border; gold border to highlight. Without the
+-- backdrop API, the plain fallback fill takes the same strength.
+function UI.tint(frame, highlighted, look)
+    highlighted = highlighted and true or false
+    boxes[frame] = highlighted
+    look = look or style()
+    call(frame, "SetBackdropColor", 0, 0, 0, look.fill)
+    local edge = highlighted and look.mark or look.edge
+    call(frame, "SetBackdropBorderColor", edge[1], edge[2], edge[3], edge[4])
+    if frame.fallback then call(frame.fallback, "SetColorTexture", 0, 0, 0, look.fallback) end
+end
+local function styleLine(line, look)
+    look = look or style()
+    call(line, "SetColorTexture", 1, .82, 0, look.line)
+    call(line, "SetHeight", look.lineHeight)
+end
+-- A list row's gold wash: "own" marks your own row, "stripe" every other row,
+-- anything else none. Stronger on High contrast.
+function UI.stripe(texture, kind, look)
+    stripes[texture] = kind or false
+    look = look or style()
+    call(texture, "SetColorTexture", 1, .82, 0, kind == "own" and look.own or kind == "stripe" and look.stripe or 0)
+end
+-- Styles every box, section line and stripe for the mood look or High contrast
+-- (T.apply); nothing to do when that look is already shown. The look counts
+-- as shown only once everything took it, so a failure is tried again.
+function UI.restyle(contrast)
+    local look = contrast and STYLES.contrast or STYLES.mood
+    if look == current then return end
+    for frame, highlighted in pairs(boxes) do UI.tint(frame, highlighted, look) end
+    for line in pairs(lines) do styleLine(line, look) end
+    for texture, kind in pairs(stripes) do UI.stripe(texture, kind, look) end
+    current = look
 end
 
 function UI.text(parent, font, x, y, width, justify)
@@ -310,7 +368,8 @@ function UI.header(parent, label, x, y, width)
     local title = UI.text(parent, "GameFontNormal", x, y, width)
     title:SetText(label)
     local line = parent:CreateTexture(nil, "ARTWORK")
-    line:SetPoint("TOPLEFT", x, y - 16); line:SetSize(width or 300, 1); line:SetColorTexture(1, .82, 0, .35)
+    line:SetPoint("TOPLEFT", x, y - 16); line:SetSize(width or 300, 1)
+    lines[line] = true; styleLine(line)
     title.line = line
     return title
 end

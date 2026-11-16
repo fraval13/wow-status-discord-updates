@@ -1,0 +1,1 @@
+- A High contrast window theme: plain black behind all text, brighter borders and solid section lines
