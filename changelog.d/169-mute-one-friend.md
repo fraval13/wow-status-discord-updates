@@ -1,0 +1,1 @@
+- Mute one friend from their profile: Log only skips their popups, Hide completely hides them too. Nobody is told

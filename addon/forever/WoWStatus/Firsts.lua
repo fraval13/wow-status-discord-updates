@@ -390,7 +390,8 @@ function F.groups()
     return list
 end
 
-function F.update()
+-- quietly: recount without announcing (a mute change, #169).
+function F.update(quietly)
     local data = state()
     if not data or not WoWStatusJournal.entries then return end
     data.group_holders = type(data.group_holders) == "table" and data.group_holders or {}
@@ -398,7 +399,7 @@ function F.update()
     for _, group in ipairs(F.groups()) do
         local result, medals = F.compute(entries, group.id)
         -- The very first count stays quiet; later only live, recent entries are announced.
-        local quiet = not data.initialized
+        local quiet = quietly or not data.initialized
         for _, medal in ipairs(medals) do
             local e = result[medal.key]
             local holderKey = group.id .. ":" .. medal.key

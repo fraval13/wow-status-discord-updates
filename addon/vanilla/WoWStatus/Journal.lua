@@ -980,7 +980,7 @@ local function visibleEntries(allDays)
         local wanted=(panel.filter=="all" or panel.filter=="character" or (panel.filter=="mine")==not not e.owner)
             and (not panel.character or P.senderKey(e.sender)==panel.character)
             and (not kinds or kinds[e.kind])
-        if (e.sample or permitted(e)) and wanted then list[#list+1]=e end
+        if J.visible(e) and wanted then list[#list+1]=e end
     end
     if not samples and not panel.character and not kinds and (panel.filter=="all" or panel.filter=="mine") then
         for _, marker in ipairs(trackingMarkers()) do list[#list+1]=marker end
@@ -1095,7 +1095,7 @@ local function people()
     local list,seen={},{}
     for _,e in ipairs(J.displayEntries()) do
         local key=P.senderKey(e.sender)
-        if key and not seen[key] and (e.sample or permitted(e)) then
+        if key and not seen[key] and J.visible(e) then
             seen[key]=true
             local shown=(not e.owner and WoWStatusRoster and WoWStatusRoster.displayName) and WoWStatusRoster.displayName(e.sender)
                 or (e.sender:match("^[^-]+") or e.sender)
@@ -1227,12 +1227,17 @@ function J.focus(id)
     panel.scroll:SetVerticalScroll(0);render()
     return false
 end
-function J.visible(entry) return db~=nil and (entry.sample==true or permitted(entry)) end
+-- A friend muted with "Hide completely" (#169): their entries stay in the log
+-- (and are relayed as before), but no page shows or counts them.
+local function hiddenSender(entry)
+    return not entry.owner and WoWStatusMutes~=nil and WoWStatusMutes.hidden(entry.sender)
+end
+function J.visible(entry) return db~=nil and (entry.sample==true or (permitted(entry) and not hiddenSender(entry))) end
 -- A friend's newest entry (not recaps), for the minimap tooltip.
 function J.latestFriend()
     local latest
     for _,e in ipairs(J.entries()) do
-        if not e.owner and e.kind~="recap" and permitted(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
+        if not e.owner and e.kind~="recap" and J.visible(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
     end
     return latest
 end
@@ -1289,6 +1294,9 @@ function J.reaction(text,sender)
     local member=false
     for group in pairs(WoWStatusGroups.selected(current)) do if peer(group,sender) then member=true end end
     if not member then return false end
+    -- Muted friends (#169) are never read aloud; a hidden one's reactions are
+    -- kept but not shown (J.reactionsText), so unmuting brings them back.
+    local mode=WoWStatusMutes and WoWStatusMutes.mode(sender) or "show"
     local now=S.now()
     for _,e in ipairs(db.journal.entries) do
         if e.owner==current.identity.guid and e.client==current.identity.client and kinds[e.kind]
@@ -1302,7 +1310,7 @@ function J.reaction(text,sender)
                 if refresh then refresh() end
                 -- A voiced Nynorsk line is read aloud (Forever), within the listener's limits.
                 -- Never in quiet hours (#180): someone may be asleep nearby.
-                if WoWStatusVoices and not WoWStatusPopups.quietHoursActive() then WoWStatusVoices.heard(text) end
+                if WoWStatusVoices and mode=="show" and not WoWStatusPopups.quietHoursActive() then WoWStatusVoices.heard(text) end
                 return true
             end
             return false
@@ -1314,7 +1322,9 @@ end
 function J.reactionsText(e)
     if type(e)~="table" or type(e.reactions)~="table" then return nil end
     local list={}
-    for _,r in pairs(e.reactions) do list[#list+1]=r end
+    for key,r in pairs(e.reactions) do
+        if not (WoWStatusMutes and WoWStatusMutes.hidden(key)) then list[#list+1]=r end
+    end
     if #list==0 then return nil end
     table.sort(list,function(a,b) return (a.at or 0)<(b.at or 0) end)
     local byText,order={},{}

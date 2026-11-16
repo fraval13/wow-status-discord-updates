@@ -515,7 +515,8 @@ function UI.ownerScale(owner)
     return own and screen and own > 0 and screen > 0 and own / screen or 1
 end
 
-function UI.menu(owner, items, onPick)
+-- minWidth widens the list beyond its button for longer labels.
+function UI.menu(owner, items, onPick, minWidth)
     local menu = UI.menuFrame
     if not menu then
         menu = UI.box(UIParent, 200, 40)
@@ -530,7 +531,7 @@ function UI.menu(owner, items, onPick)
         if UISpecialFrames then table.insert(UISpecialFrames, "WoWStatusMenu") end
     end
     if menu:IsShown() and menu.owner == owner then menu:Hide(); return menu end
-    local width, rowHeight, visible = math.max(180, owner.GetWidth and owner:GetWidth() or 180), 22, math.min(#items, 14)
+    local width, rowHeight, visible = math.max(minWidth or 180, owner.GetWidth and owner:GetWidth() or 180), 22, math.min(#items, 14)
     menu:SetSize(width + (#items > 14 and 24 or 12), visible * rowHeight + 12)
     menu.scroll:SetSize(width, visible * rowHeight)
     menu.list:SetSize(width, #items * rowHeight)
@@ -547,6 +548,8 @@ function UI.menu(owner, items, onPick)
             row:SetScript("OnClick", function(self) menu:Hide(); if menu.onPick then menu.onPick(self.value) end end)
             menu.rows[i] = row
         end
+        -- The list is shared: rows made for a narrower menu take this one's width.
+        row:SetSize(width, rowHeight); row.text:SetWidth(width - 12)
         row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * rowHeight)
         row.text:SetText(item.label); row.value = item.value; row:Show()
     end
