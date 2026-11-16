@@ -17,8 +17,9 @@
 -- combat. Controls are found by walking the window's visible frames, so pages need
 -- no changes to be reachable. With the
 -- ConsolePort addon loaded this steps aside, as ConsolePort has its own cursor.
--- Bindings.xml adds key bindings (open, activity log, dismiss notification) that
--- players can put on controller buttons in the game's key binding menu.
+-- Bindings.xml adds key bindings (open, activity log, dismiss notification, one
+-- per page) that players can put on controller buttons in the game's key
+-- binding menu.
 WoWStatusGamepad = {}
 local G = WoWStatusGamepad
 local T = WoWStatusLocale and WoWStatusLocale.T or function(text) return text end
@@ -461,6 +462,17 @@ function G.cancel()
     return true
 end
 
+-- After the main window changed page or closed: the controls the highlight was
+-- on are gone, so start afresh. Only when the main window was the one in use; a
+-- WoW Status window above it keeps its place.
+local function mainChanged()
+    if root and root == rawget(_G, "WoWStatusMainFrame") then
+        leave(focus)
+        focus = nil
+    end
+    G.update()
+end
+
 -- LB/RB: the previous or next page of the main window.
 function G.page(step)
     local M = WoWStatusMainWindow
@@ -472,8 +484,7 @@ function G.page(step)
     for i, key in ipairs(order) do if key == current then index = i end end
     index = (index - 1 + step) % #order + 1
     M.show(order[index])
-    focus = nil
-    G.update()
+    mainChanged()
     return true
 end
 
@@ -567,12 +578,52 @@ function G.hold(keystate)
     else P.hold(not (P.holding and P.holding())) end
 end
 
+-- One binding per page (#178), unbound by default. Pressing it opens the main
+-- window straight on that page; pressing it again while that page is on screen
+-- closes the window, so one key or button is a toggle. A profile opened from the
+-- Characters page counts as something else, so the press goes back to the list.
+-- As the issue asks, these bindings do nothing in combat (neither open nor close).
+-- Bindings.xml calls WoWStatusGamepad.togglePage("<key>") for each entry.
+G.PAGE_SHORTCUTS = {
+    {key="overview", binding="WOWSTATUS_OVERVIEW", label="Open or close the Overview page"},
+    {key="characters", binding="WOWSTATUS_CHARACTERS", label="Open or close the Characters page"},
+    {key="leaderboard", binding="WOWSTATUS_LEADERBOARD", label="Open or close the Leaderboard page"},
+    {key="records", binding="WOWSTATUS_RECORDS", label="Open or close the Records page"},
+}
+-- Theme's drop-down menu and calendar float above the main window and belong to
+-- the page that opened them, so they go when the page changes or the window closes.
+local PAGE_POPUPS = {"WoWStatusMenu", "WoWStatusCalendar"}
+function G.togglePage(key)
+    if combat() then return false end
+    local M = WoWStatusMainWindow
+    if not (M and M.show and M.hide and M.active and M.has) or type(key) ~= "string" then return false end
+    if not M.has(key) then return false end
+    for _, name in ipairs(PAGE_POPUPS) do
+        local popup = rawget(_G, name)
+        if popup and call(popup, "IsShown") then call(popup, "Hide") end
+    end
+    G.update() -- The main window is the one in use again if a popup was on top.
+    local current = M.state and M.state()
+    local onProfile = type(current) == "table" and current.profile ~= nil
+    if M.active() == key and not onProfile then
+        M.hide()
+        mainChanged()
+        return true
+    end
+    M.show(key)
+    mainChanged()
+    return M.active() == key
+end
+
 function G.bindingNames()
     _G.BINDING_HEADER_WOWSTATUS = "WoW Status"
     _G.BINDING_NAME_WOWSTATUS_TOGGLE = T("Open or close WoW Status")
     _G.BINDING_NAME_WOWSTATUS_ACTIVITY = T("Open the activity log")
     _G.BINDING_NAME_WOWSTATUS_DISMISS = T("Dismiss the notification")
     _G.BINDING_NAME_WOWSTATUS_HOLD = T("Hold the notification (while pressed)")
+    for _, page in ipairs(G.PAGE_SHORTCUTS) do
+        _G["BINDING_NAME_" .. page.binding] = T(page.label)
+    end
 end
 
 function G.report()

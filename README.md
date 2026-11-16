@@ -140,10 +140,16 @@ of a handheld such as the Steam Deck.
 
 Under **Key Bindings → AddOns → WoW Status** you can put *Open or close WoW Status*,
 *Open the activity log*, *Dismiss the notification* and *Hold the notification* on
-controller or keyboard buttons. While *Hold the notification* is pressed, the shown
+controller or keyboard buttons, and one binding each for the Overview, Characters,
+Leaderboard and Records pages: it opens the window on that page and closes it when
+that page is already showing. None is bound until you choose, and the page bindings
+do nothing in combat. While *Hold the notification* is pressed, the shown
 notification stays and does not count down, as it does when the mouse rests on it
-(a hold lasts at most a minute). With the ConsolePort addon loaded, WoW Status leaves navigation to
-ConsolePort. `/wstatus controller off` turns navigation off (`on` turns it back on);
+(a hold lasts at most a minute). While the window is open, navigation uses the
+D-pad, A, B, X, LB and RB, so a page binding on one of those opens its page but
+cannot close it; B goes back, then closes the window. With the ConsolePort addon
+loaded, WoW Status leaves navigation to ConsolePort. `/wstatus controller off`
+turns navigation off (`on` turns it back on);
 `/wstatus controller` shows its state.
 
 ## Caption personalities

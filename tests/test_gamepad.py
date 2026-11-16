@@ -472,6 +472,168 @@ def test_bindings_xml_calls_existing_functions():
         assert f'BINDING_NAME_{binding}' in lua_source
 
 
+PAGE_BINDINGS = {'overview': 'WOWSTATUS_OVERVIEW', 'characters': 'WOWSTATUS_CHARACTERS',
+                 'leaderboard': 'WOWSTATUS_LEADERBOARD', 'records': 'WOWSTATUS_RECORDS'}
+
+
+def page_window(lua):
+    """main_window with the page API the page bindings use: has, state, show(key)."""
+    main_window(lua)
+    lua.execute('''
+        __pages = {"overview", "activity", "characters", "leaderboard", "records"}
+        __state = nil
+        __shown = {}
+        local M = WoWStatusMainWindow
+        M.has = function(key) for _, k in ipairs(__pages) do if k == key then return true end end return false end
+        M.state = function() return __state end
+        M.show = function(key) __active = key; __state = {page=key}; table.insert(__shown, key); main:Show() end
+        main:Hide()
+    ''')
+
+
+def test_page_bindings_are_in_bindings_xml_with_labels_and_no_default_key():
+    text = (ROOT / 'addon/shared/Bindings.xml').read_text(encoding='utf-8')
+    for key, binding in PAGE_BINDINGS.items():
+        line = next(row for row in text.splitlines() if f'name="{binding}"' in row)
+        assert f'>WoWStatusGamepad.togglePage("{key}")</Binding>' in line
+        # Unbound by default: no default key attribute.
+        assert 'default=' not in line
+
+
+def test_page_shortcuts_table_matches_bindings_xml(lua):
+    text = (ROOT / 'addon/shared/Bindings.xml').read_text(encoding='utf-8')
+    shortcuts = lua.eval('WoWStatusGamepad.PAGE_SHORTCUTS')
+    pairs = {row['key']: row['binding'] for row in shortcuts.values()}
+    assert pairs == PAGE_BINDINGS
+    for key, binding in pairs.items():
+        assert f'<Binding name="{binding}">WoWStatusGamepad.togglePage("{key}")</Binding>' in text
+
+
+def test_page_binding_closes_a_menu_left_open_by_the_old_page(lua):
+    page_window(lua)
+    lua.execute('''
+        WoWStatusGamepad.togglePage("leaderboard")
+        menu = window("WoWStatusMenu", 150, 150, 180, 200, "TOOLTIP")
+        m1 = button(menu, "m1", 160, 300)
+        WoWStatusGamepad.update()
+        WoWStatusGamepad.togglePage("records")
+    ''')
+    assert lua.eval('menu.visible') is False and lua.eval('__active') == 'records'
+    # And when the binding closes the window, the menu goes with it.
+    lua.execute('menu:Show(); WoWStatusGamepad.update(); WoWStatusGamepad.togglePage("records")')
+    assert lua.eval('menu.visible') is False and lua.eval('main.visible') is False
+    lua.execute('WoWStatusGamepad.update()')
+    assert not lua.eval('anyBound()')
+
+
+def test_page_binding_keeps_the_place_in_another_window_on_top(lua):
+    page_window(lua)
+    lua.execute('''
+        WoWStatusGamepad.togglePage("overview")
+        news = window("WoWStatusWhatsNewFrame", 150, 150, 300, 300, "DIALOG")
+        news:SetFrameStrata("FULLSCREEN_DIALOG")
+        n1 = button(news, "n1", 160, 400); n2 = button(news, "n2", 160, 300)
+        WoWStatusGamepad.update(); press("PADDDOWN"); press("PADDDOWN")
+        __left = 0
+        n1:SetScript("OnLeave", function() __left = __left + 1 end)
+        n2:SetScript("OnLeave", function() __left = __left + 1 end)
+        WoWStatusGamepad.togglePage("records")
+        __clicks = {}
+        press("PAD1")
+    ''')
+    assert lua.eval('__left') == 0
+    assert lua.eval('__clicks[1]') == 'n2:LeftButton'
+
+
+def test_closing_with_a_page_binding_lets_go_of_the_highlighted_control(lua):
+    page_window(lua)
+    lua.execute('''
+        WoWStatusGamepad.togglePage("overview"); WoWStatusGamepad.update(); press("PADDDOWN")
+        __left = 0
+        for _, f in ipairs({a, b, c, d}) do f:SetScript("OnLeave", function() __left = __left + 1 end) end
+        WoWStatusGamepad.togglePage("overview")
+    ''')
+    assert lua.eval('main.visible') is False
+    assert lua.eval('__left') == 1 and not lua.eval('anyBound()')
+
+
+def test_page_binding_labels_in_english_and_nynorsk(lua):
+    labels = {key: lua.eval(f'BINDING_NAME_{binding}') for key, binding in PAGE_BINDINGS.items()}
+    assert labels == {key: f'Open or close the {key.capitalize()} page' for key in PAGE_BINDINGS}
+    nynorsk = (ROOT / 'addon/shared/LocaleNN.lua').read_text(encoding='utf-8')
+    titles = {'overview': 'Oversikt', 'characters': 'Figurar', 'leaderboard': 'Toppliste', 'records': 'Rekordar'}
+    for key, label in labels.items():
+        assert f'["{label}"] = "Opne eller lukk sida {titles[key]}"' in nynorsk
+        # The same Nynorsk name as the page's own tab.
+        assert f'["{key.capitalize()}"] = "{titles[key]}"' in nynorsk
+
+
+@pytest.mark.parametrize('key', sorted(PAGE_BINDINGS))
+def test_page_binding_opens_its_page_and_closes_it_on_a_second_press(lua, key):
+    page_window(lua)
+    assert lua.eval(f'WoWStatusGamepad.togglePage("{key}")') is True
+    assert lua.eval('main.visible') is True and lua.eval('__active') == key
+    # Same page on screen: the second press closes the window.
+    lua.execute(f'WoWStatusGamepad.togglePage("{key}")')
+    assert lua.eval('main.visible') is False
+
+
+def test_page_binding_switches_page_when_another_page_is_open(lua):
+    page_window(lua)
+    lua.execute('WoWStatusGamepad.togglePage("overview"); WoWStatusGamepad.togglePage("records")')
+    assert lua.eval('main.visible') is True and lua.eval('__active') == 'records'
+
+
+def test_page_binding_moves_the_highlight_off_the_page_it_left(lua):
+    page_window(lua)
+    lua.execute('''
+        WoWStatusGamepad.togglePage("overview"); WoWStatusGamepad.update(); press("PADDDOWN")
+        __left = {}
+        for _, f in ipairs({a, b, c, d}) do
+            f:SetScript("OnLeave", function(self) table.insert(__left, self) end)
+        end
+        -- The Overview's controls go away with the page; Records shows its own.
+        local show = WoWStatusMainWindow.show
+        WoWStatusMainWindow.show = function(key)
+            a.visible, b.visible, c.visible, d.visible = false, false, false, false
+            e = e or button(main, "e", 200, 300)
+            show(key)
+        end
+        WoWStatusGamepad.togglePage("records")
+        __clicks = {}
+        press("PAD1")
+    ''')
+    assert lua.eval('__clicks[1]') == 'e:LeftButton'
+    # The control it left hears OnLeave (tooltips and tints go away).
+    assert lua.eval('#__left') == 1
+
+
+def test_page_binding_returns_to_the_page_from_a_profile_instead_of_closing(lua):
+    page_window(lua)
+    lua.execute('WoWStatusGamepad.togglePage("characters"); __state = {page="characters", profile="Someone"}')
+    lua.execute('WoWStatusGamepad.togglePage("characters")')
+    assert lua.eval('main.visible') is True
+    assert lua.eval('__state.profile') is None and lua.eval('#__shown') == 2
+
+
+def test_page_bindings_do_nothing_in_combat(lua):
+    page_window(lua)
+    lua.execute('__combat = true')
+    for key in PAGE_BINDINGS:
+        assert lua.eval(f'WoWStatusGamepad.togglePage("{key}")') is False
+    assert lua.eval('main.visible') is False and lua.eval('#__shown') == 0
+    # Open before combat: a press in combat does not close it either.
+    lua.execute('__combat = false; WoWStatusGamepad.togglePage("overview"); __combat = true; WoWStatusGamepad.togglePage("overview")')
+    assert lua.eval('main.visible') is True
+
+
+def test_page_binding_ignores_a_page_that_is_not_registered(lua):
+    page_window(lua)
+    lua.execute('__pages = {"overview", "activity"}')
+    assert lua.eval('WoWStatusGamepad.togglePage("records")') is False
+    assert lua.eval('main.visible') is False
+
+
 def test_settings_character_visibility_checkboxes_are_reachable(lua):
     main_window(lua)
     lua.execute('''

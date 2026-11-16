@@ -3,4 +3,8 @@
 	<Binding name="WOWSTATUS_ACTIVITY">WoWStatusGamepad.activity()</Binding>
 	<Binding name="WOWSTATUS_DISMISS">WoWStatusGamepad.dismiss()</Binding>
 	<Binding name="WOWSTATUS_HOLD" runOnUp="true">WoWStatusGamepad.hold(keystate)</Binding>
+	<Binding name="WOWSTATUS_OVERVIEW">WoWStatusGamepad.togglePage("overview")</Binding>
+	<Binding name="WOWSTATUS_CHARACTERS">WoWStatusGamepad.togglePage("characters")</Binding>
+	<Binding name="WOWSTATUS_LEADERBOARD">WoWStatusGamepad.togglePage("leaderboard")</Binding>
+	<Binding name="WOWSTATUS_RECORDS">WoWStatusGamepad.togglePage("records")</Binding>
 </Bindings>
