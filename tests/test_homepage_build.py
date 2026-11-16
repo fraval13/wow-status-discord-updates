@@ -2,6 +2,7 @@
 import html
 import importlib.util
 import io
+import json
 import os
 import re
 import subprocess
@@ -85,6 +86,87 @@ def test_current_release_ships_every_committed_addon_file(tmp_path, reuse_homepa
         tracked = git(ROOT, 'ls-tree', '-r', '-z', '--name-only', 'HEAD', '--', folder).decode().split('\0')
         assert zip_names(tmp_path, edition) == sorted('WoWStatus/' + name.removeprefix(folder)
                                                       for name in tracked if name)
+
+
+SOFTWARE_BLOCK = re.compile(r'  <script id="wow-status-software" type="application/ld\+json">\n(.*?)\n  </script>\n', re.S)
+
+
+def software_graph(page):
+    blocks = SOFTWARE_BLOCK.findall(page)
+    assert len(blocks) == 1
+    data = json.loads(blocks[0])
+    assert data['@context'] == 'https://schema.org'
+    return data['@graph']
+
+
+def test_software_metadata_matches_the_actual_manifest_and_release_commit(addon_repo, tmp_path, monkeypatch):
+    # A rebuild today must still describe the built release, not today's date.
+    monkeypatch.setenv('GIT_COMMITTER_DATE', '2001-02-03T04:05:06+00:00')
+    git(addon_repo, 'commit', '--amend', '--no-edit', '--date=1999-01-01T00:00:00+00:00')
+    output = tmp_path / 'metadata'
+    builder.build(addon_repo, output, 'HEAD')
+    manifest = json.loads((output / 'downloads/release.json').read_text(encoding='utf-8'))
+    page = (output / 'index.html').read_text(encoding='utf-8')
+    graph = software_graph(page)
+    assert len(graph) == len(manifest['editions']) == 4
+    at = int(git(addon_repo, 'show', '-s', '--format=%ct', manifest['addon_revision']))
+    expected = datetime.fromtimestamp(at, timezone.utc).isoformat().replace('+00:00', 'Z')
+    assert expected == '2001-02-03T04:05:06Z'
+    for application, (edition, release) in zip(graph, manifest['editions'].items()):
+        assert application['@type'] == 'SoftwareApplication'
+        assert application['softwareVersion'] == release['version']
+        assert application['downloadUrl'] == 'https://wow.frankvalde.com/downloads/' + release['file']
+        assert application['fileSize'] == f"{release['bytes']} B"
+        assert (output / 'downloads' / release['file']).stat().st_size == release['bytes']
+        assert application['datePublished'] == expected
+        assert application['name'] == 'WoW Status — ' + builder.EDITION_NAMES[edition]
+        assert application['applicationCategory'] == 'GameApplication'
+        assert application['isAccessibleForFree'] is True and application['offers']['price'] == 0
+        assert application['offers']['url'] == application['downloadUrl']
+        assert application['publisher']['name'] == 'fraval13'
+        assert 'review' not in application and 'aggregateRating' not in application
+    assert 'FAQPage' not in page
+    # Removing the generated, non-rendered data leaves the original built page byte for byte.
+    monkeypatch.setattr(builder, 'write_software_metadata', lambda *args: None)
+    baseline = tmp_path / 'baseline'
+    builder.build(addon_repo, baseline, 'HEAD')
+    assert SOFTWARE_BLOCK.sub('', page) == (baseline / 'index.html').read_text(encoding='utf-8')
+
+
+def test_software_metadata_uses_changed_release_values_and_the_pages_own_url():
+    page = '''<head><meta property="og:url" content="https://example.com/">
+        <meta property="og:site_name" content="Example addon">
+        <meta property="og:description" content="What the page says">
+        <meta property="og:image" content="https://example.com/art.jpg"></head>'''
+    release = {'version': '7.8.9', 'file': 'Changed.zip', 'bytes': 123456}
+    graph = json.loads(builder.software_metadata(page, {'editions': {'retail': release}}, '2000-01-02'))['@graph']
+    assert graph[0]['softwareVersion'] == '7.8.9'
+    assert graph[0]['fileSize'] == '123456 B'
+    assert graph[0]['downloadUrl'] == 'https://example.com/downloads/Changed.zip'
+    assert graph[0]['description'] == 'What the page says'
+    assert graph[0]['image'] == 'https://example.com/art.jpg'
+
+
+def test_page_metadata_cannot_close_the_json_script(tmp_path):
+    path = tmp_path / 'index.html'
+    path.write_text('''<head><meta property="og:url" content="https://example.com/">
+        <meta property="og:site_name" content="&lt;/script&gt;&lt;b&gt;Test&lt;/b&gt;">
+        <meta property="og:description" content="Quote: &quot; and ampersand &amp;">
+        <meta property="og:image" content="https://example.com/art.jpg"></head><body>Unchanged</body>''', encoding='utf-8')
+    manifest = {'editions': {'vanilla': {'version': '1.0.0', 'file': 'Addon.zip', 'bytes': 1}}}
+    builder.write_software_metadata(path, manifest, '2000-01-02')
+    page = path.read_text(encoding='utf-8')
+    assert page.count('</script>') == 1
+    assert software_graph(page)[0]['name'].startswith('</script><b>Test</b>')
+    assert page.endswith('<body>Unchanged</body>')
+
+
+@pytest.mark.parametrize('page', ['<head></head></head>', '<head></head><script id="wow-status-software"></script>'])
+def test_missing_or_duplicate_metadata_insertion_points_are_rejected(tmp_path, page):
+    path = tmp_path / 'index.html'
+    path.write_text(page, encoding='utf-8')
+    with pytest.raises(ValueError, match='one </head> and no hand-written'):
+        builder.write_software_metadata(path, {}, '')
 
 
 def test_unlisted_committed_files_stay_out_of_every_zip(addon_repo, tmp_path):

@@ -1,0 +1,1 @@
+- Website: search engines can read each edition's current version and download details directly from release metadata
