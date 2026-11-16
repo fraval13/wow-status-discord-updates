@@ -12,7 +12,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|`, markup or `__NAME__` text. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.59.0
 
 - Characters: "Play together now" lists friends online near your level, with Whisper and Invite buttons
 
