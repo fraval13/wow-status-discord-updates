@@ -19,6 +19,9 @@ Z.schema = {
     {key = "popup_duration", scope = "account", path = {"popups", "popup_duration"},
      type = "integer", default = 6, min = 3, max = 20, also = {0}, round = true, sparse = true},
     {key = "big_banners", scope = "account", path = {"popups", "big_banners"}, type = "boolean", default = true},
+    -- Reduce motion (#184): notifications appear and go without sliding, fading or pulsing.
+    {key = "reduce_motion", scope = "account", path = {"popups", "reduce_motion"},
+     type = "boolean", default = false, sparse = true},
     -- Quiet hours (#180): minutes after midnight on the local clock.
     {key = "quiet_hours_enabled", scope = "account", path = {"popups", "quiet_hours", "enabled"},
      type = "boolean", default = false},

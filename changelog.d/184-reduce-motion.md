@@ -1,0 +1,1 @@
+- New Reduce motion option for notifications: no sliding in, fading out or pulsing glow, big banners included

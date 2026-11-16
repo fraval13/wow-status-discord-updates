@@ -87,6 +87,10 @@ function P.show(host)
         panel.unlock=check("Unlock popup position",-options,function(o) return o.unlocked end,WoWStatusPopups.setUnlocked)
         panel.reset=button(panel,"Reset popup position",310,-options,250,function() WoWStatusPopups.resetPosition() end)
         panel.big=check("Big banners for big moments",-options-42,function(o) return o.big_banners end,WoWStatusPopups.setBigBanners)
+        -- Reduce motion (#184), beside it: no slide, fade or pulse; a sample shows it.
+        panel.reduceMotion=check("Reduce motion",-options-42,function(o) return o.reduce_motion end,function(value)
+            WoWStatusPopups.setReduceMotion(value);WoWStatusPopups.sample("level") end)
+        panel.reduceMotion:ClearAllPoints();panel.reduceMotion:SetPoint("TOPLEFT",360,-options-42)
         -- Group status line (#62). Account-wide.
         panel.line={}
         for i,entry in ipairs({{"enabled","Show the group status line"},{"attach","Attach it under the quest tracker"},
@@ -339,7 +343,7 @@ function P.show(host)
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
-    for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
+    for _,widget in ipairs({panel.unlock,panel.big,panel.reduceMotion}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.quiet:SetChecked(panel.quiet.get() == true)

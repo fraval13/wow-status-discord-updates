@@ -1205,8 +1205,23 @@ function P.lifetime(seconds)
     if seconds == 0 then return math.huge, 0 end
     return seconds, seconds / 12
 end
+-- Reduce motion (#184): no slide-in, no fade and a steady glow, for players who
+-- find moving or pulsing elements hard to bear. Account-wide, off by default.
+P.STEADY_GLOW = .5
+function P.reduceMotion() return prefs ~= nil and Z.get("reduce_motion", root) end
+-- Settles a toast at once: fully visible, in place, with a glow that does not pulse.
+local function steady(frame)
+    frame:SetAlpha(1); anchor(frame, 0); frame.glow:SetAlpha(P.STEADY_GLOW)
+end
+function P.setReduceMotion(value)
+    if not prefs then return end
+    Z.set("reduce_motion", value == true, root)
+    -- A toast on screen (or mid-slide) stops moving now, not from the next one.
+    if P.reduceMotion() and toast and toast:IsShown() and not toast.dragging then steady(toast) end
+end
 function P.options()
-    return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or Z.get("big_banners", root)}
+    return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or Z.get("big_banners", root),
+        reduce_motion = P.reduceMotion()}
 end
 
 -- Reaction whispers offered on a friend's notification: a real chat whisper,
@@ -1513,12 +1528,16 @@ local function show(item, now)
                 return
             end
             self.age = (self.age or 0) + elapsed
-            local entrance = math.min(1, self.age / .22)
             local life, tail = self.life or 6, self.tail or .5
-            local fade = tail > 0 and math.max(0, math.min(1, (life - self.age) / tail)) or 1
-            self:SetAlpha(entrance * fade)
-            anchor(self, (1 - entrance) * 12)
-            self.glow:SetAlpha(.5 + .3 * math.sin(self.age * 7))
+            -- Reduce motion: shown and hidden at once, without sliding or pulsing.
+            -- show() and setReduceMotion() have settled it already.
+            if not P.reduceMotion() then
+                local entrance = math.min(1, self.age / .22)
+                local fade = tail > 0 and math.max(0, math.min(1, (life - self.age) / tail)) or 1
+                self:SetAlpha(entrance * fade)
+                anchor(self, (1 - entrance) * 12)
+                self.glow:SetAlpha(.5 + .3 * math.sin(self.age * 7))
+            end
             if self.age >= life then self:Hide(); active = nil end
         end)
     end
@@ -1558,7 +1577,7 @@ local function show(item, now)
     -- The log card offers the same reactions for a minute after this.
     local entry = not item.preview and entryOf(item)
     if entry and not entry.owner then entry.shown_at = S.now() end
-    toast:SetAlpha(0)
+    if P.reduceMotion() then steady(toast) else toast:SetAlpha(0) end
     toast:Show()
     -- The toast's OnUpdate hides it on time; tick() is the fallback (see there).
     item.hide_at = now + toast.life
