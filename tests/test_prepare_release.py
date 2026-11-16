@@ -166,6 +166,92 @@ def test_invalid_pending_notes_fail_before_any_release_file_is_written(repositor
     assert git(remote, 'rev-parse', 'refs/heads/main') == source
 
 
+def write_fragment(root, name, text):
+    path = root / 'changelog.d' / name
+    path.parent.mkdir(exist_ok=True)
+    path.write_text(text, encoding='utf-8', newline='\n')
+    return path
+
+
+def test_release_promotes_pending_note_files_in_issue_number_order_and_deletes_them(repository):
+    root, remote, _ = repository
+    # The leftover Unreleased note from the fixture comes first during the transition.
+    write_fragment(root, 'README.md', 'How to add a note\n')
+    write_fragment(root, '251-second.md', '- Second change\n')
+    write_fragment(root, '250-first.md', '\n- First change\n- First change, part two\n')
+    source = commit(root, 'Two changes with notes')
+    git(root, 'push', 'origin', 'HEAD:refs/heads/main')
+    prepared = release.prepare(root, source)
+    sections = release.whats_new.parse(release.read(root / 'CHANGELOG.md'))
+    assert sections[0] == ('0.15.0', ['Raid milestones and recap sharing', 'First change',
+                                      'First change, part two', 'Second change'])
+    assert '## Unreleased' not in release.read(root / 'CHANGELOG.md')
+    assert release.whats_new.pending_notes(root) == []
+    assert (root / 'changelog.d/README.md').is_file()
+    changed = git(root, 'diff-tree', '--no-commit-id', '--name-status', '-r', prepared).splitlines()
+    assert {'D\tchangelog.d/250-first.md', 'D\tchangelog.d/251-second.md'} <= set(changed)
+    assert git(remote, 'rev-parse', 'refs/heads/main') == prepared
+    assert not git(root, 'status', '--porcelain')
+
+
+def test_note_files_alone_make_the_release_section(repository):
+    root, _, source = repository
+    release.prepare(root, source)
+    write_fragment(root, '300-only.md', '- Only change\n')
+    source = commit(root, 'Change with a note file')
+    git(root, 'push', 'origin', 'HEAD:refs/heads/main')
+    release.prepare(root, source)
+    sections = release.whats_new.parse(release.read(root / 'CHANGELOG.md'))
+    assert sections[0] == ('0.16.0', ['Only change'])
+    assert sections[1][0] == '0.15.0'
+    assert '- Change with a note file' not in release.read(root / 'CHANGELOG.md')
+
+
+def test_untracked_note_file_stops_the_release_before_anything_is_written(repository):
+    root, remote, source = repository
+    note = write_fragment(root, '500-wip.md', '- Not committed yet\n')
+    before = {path: path.read_bytes() for path in release.files(root)}
+    with pytest.raises(ValueError, match='untracked'):
+        release.prepare(root, source)
+    assert {path: path.read_bytes() for path in release.files(root)} == before
+    assert note.is_file()
+    assert git(remote, 'rev-parse', 'refs/heads/main') == source
+
+
+def test_untracked_hidden_file_in_the_notes_folder_does_not_block_the_release(repository):
+    root, _, source = repository
+    write_fragment(root, '.DS_Store', 'finder junk')
+    release.prepare(root, source)
+    assert release.validate_release(root) == '0.15.0'
+    assert (root / 'changelog.d/.DS_Store').is_file()
+
+
+@pytest.mark.parametrize('newline', ['\n', '\r\n'])
+@pytest.mark.parametrize('unreleased', [True, False])
+def test_promoted_notes_keep_the_changelog_line_endings(newline, unreleased):
+    pending = '## Unreleased\n\n- Old note\n\n' if unreleased else ''
+    text = f"# What's New\n\n{pending}## 1.0.0\n\n- a\n".replace('\n', newline)
+    result = release.promoted_notes(text, '1.1.0', 'Subject', ['New note'])
+    if newline == '\r\n':
+        assert '\n' not in result.replace('\r\n', '')
+    expected = ['Old note', 'New note'] if unreleased else ['New note']
+    assert release.whats_new.parse(result)[0] == ('1.1.0', expected)
+    assert result.endswith(f'## 1.0.0{newline}{newline}- a{newline}')
+
+
+def test_invalid_note_file_fails_before_any_release_file_is_written(repository):
+    root, remote, _ = repository
+    write_fragment(root, '400-bad.md', '- ' + 'x' * 121 + '\n')
+    source = commit(root, 'Invalid note file')
+    git(root, 'push', 'origin', 'HEAD:refs/heads/main')
+    before = {path: path.read_bytes() for path in release.files(root)}
+    with pytest.raises(ValueError, match='printable characters'):
+        release.prepare(root, source)
+    assert {path: path.read_bytes() for path in release.files(root)} == before
+    assert (root / 'changelog.d/400-bad.md').is_file()
+    assert git(remote, 'rev-parse', 'refs/heads/main') == source
+
+
 def test_release_builder_packages_the_prepared_revision_and_version_in_every_zip(repository, tmp_path):
     root, _, source = repository
     prepared = release.prepare(root, source)

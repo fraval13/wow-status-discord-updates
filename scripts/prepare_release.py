@@ -75,35 +75,51 @@ def validate_release(root: Path) -> str:
     return version
 
 
-def promoted_notes(text: str, version: str, subject: str) -> str:
+def promoted_notes(text: str, version: str, subject: str, pending: list[str]) -> str:
+    """CHANGELOG.md with a new ``## <version>`` section on top of the released ones.
+
+    Its notes are any leftover ``## Unreleased`` notes, then the pending notes from
+    ``changelog.d/``; with neither, the public commit subject.
+    """
     unreleased = list(re.finditer(r'^## Unreleased[ \t]*\r?$', text, re.MULTILINE))
     if len(unreleased) > 1:
         raise ValueError('Only one Unreleased section is allowed')
     # The public commit subject is a useful fallback for a change without notes.
     subject = ''.join(char for char in subject if char.isprintable()).replace('|', '-')
     subject = subject.translate(str.maketrans('', '', '*`<>'))[:whats_new.MAX_NOTE].strip()
-    fallback = '- ' + (subject or 'Latest addon and website improvements') + '\n\n'
+    newline = '\r\n' if '\r\n' in text else '\n'
+    fallback = '- ' + (subject or 'Latest addon and website improvements') + newline
+    added = ''.join(f'- {note}{newline}' for note in pending)
     if unreleased:
         heading = unreleased[0]
         end = re.search(r'^## ', text[heading.end():], re.MULTILINE)
         stop = heading.end() + end.start() if end else len(text)
         body = text[heading.end():stop]
-        if not body.strip():
-            body = '\n\n' + fallback
+        notes = body.strip()
+        if notes:
+            notes += newline
+        notes += added or ('' if notes else fallback)
+        body = newline * 2 + notes + newline
         result = text[:heading.start()] + f'## {version}' + body + text[stop:]
     else:
         heading = re.search(r'^## \d+\.\d+\.\d+\s*$', text, re.MULTILINE)
         if not heading:
             raise ValueError('No released section to extend')
-        result = text[:heading.start()] + f'## {version}\n\n' + fallback + text[heading.start():]
+        notes = added or fallback
+        result = (text[:heading.start()] + f'## {version}' + newline * 2 + notes + newline
+                  + text[heading.start():])
     sections = whats_new.parse(result)
     if sections[0][0] != version:
         raise ValueError('Unreleased notes must precede all released sections')
     return result
 
 
-def bump(root: Path, version: str, subject: str) -> None:
-    """Plan every generated file before writing any of them."""
+def bump(root: Path, version: str, subject: str) -> list[Path]:
+    """Plan every generated file before writing any of them.
+
+    Returns the consumed ``changelog.d/`` note files, which are deleted last.
+    """
+    pending = whats_new.pending_notes(root)
     project = root / 'pyproject.toml'
     text = read(project)
     section = re.search(r'^\[project\]\s*\r?\n(.*?)(?=^\[|\Z)', text, re.MULTILINE | re.DOTALL)
@@ -116,7 +132,8 @@ def bump(root: Path, version: str, subject: str) -> None:
         raise ValueError('Expected one project.version')
     planned = {project: text[:section.start(1)] + body + text[section.end(1):]}
     changelog = root / 'CHANGELOG.md'
-    planned[changelog] = promoted_notes(read(changelog), version, subject)
+    planned[changelog] = promoted_notes(read(changelog), version, subject,
+                                        [note for _, notes in pending for note in notes])
     for path in sync_version.toc_paths(root):
         planned[path] = sync_version.retarget(read(path), version)
     notes = whats_new.render(whats_new.parse(planned[changelog]))
@@ -125,7 +142,10 @@ def bump(root: Path, version: str, subject: str) -> None:
     for path, content in planned.items():
         with path.open('w', encoding='utf-8', newline='') as handle:
             handle.write(content)
+    for path, _ in pending:
+        path.unlink()
     validate_release(root)
+    return [path for path, _ in pending]
 
 
 def parent(root: Path, revision: str) -> str | None:
@@ -174,8 +194,13 @@ def prepare(root: Path, source: str, remote: str = 'origin', branch: str = 'main
         if version != before:
             return source  # An intentional release PR already chose its version.
     version = next_version(version)
-    bump(root, version, git(root, 'show', '-s', '--format=%s', source))
-    git(root, 'add', '--', *(str(path.relative_to(root)) for path in files(root)))
+    # bump() reads and deletes every note file, so it must only see committed ones.
+    tracked = set(git(root, 'ls-files', '--', whats_new.FRAGMENTS).splitlines())
+    if any(path.relative_to(root).as_posix() not in tracked for path in whats_new.fragment_paths(root)):
+        raise ValueError(f'Release preparation requires no untracked note files in {whats_new.FRAGMENTS}/')
+    consumed = bump(root, version, git(root, 'show', '-s', '--format=%s', source))
+    # Staging a deleted note file records its removal in the release commit.
+    git(root, 'add', '--', *(str(path.relative_to(root)) for path in [*files(root), *consumed]))
     git(root, '-c', 'user.name=github-actions[bot]',
         '-c', 'user.email=41898282+github-actions[bot]@users.noreply.github.com',
         'commit', '-m', f'Release {version}', '-m', f'WoW-Status-Release-Source: {source}')

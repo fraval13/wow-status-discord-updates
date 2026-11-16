@@ -160,30 +160,37 @@ explicit test-harness load lists (`test_addon.py`, `test_forever.py`).
 
 Versions: feature pull requests must NOT change the version. On each main push,
 `checks.yml` first runs `scripts/prepare_release.py` in a trusted job. It increments
-`project.version` by one minor version (resetting the patch to zero), promotes `## Unreleased` notes (or uses the public
-commit title), synchronizes four TOCs and all What's New data, and commits/pushes
-the prepared release. Validation and deployment check out that exact returned
-revision. GITHUB_TOKEN pushes do not recursively trigger another run. Retries and
-manual dispatches reuse a prepared release; an intentional version bump is also
+`project.version` by one minor version (resetting the patch to zero), moves the
+`changelog.d/` note files into a new `CHANGELOG.md` section and deletes them (with
+no note files at all, it uses the public commit title), synchronizes four TOCs and
+all What's New data, and commits/pushes the prepared release. Validation and
+deployment check out that exact returned revision. GITHUB_TOKEN pushes do not
+recursively trigger another run. Retries and manual dispatches reuse a prepared release; an intentional version bump is also
 retained. Never force-push a release or bypass the current-main deployment gate.
 Every pull request that changes anything a player or site visitor can notice
 (addon behaviour, options, text, the website, downloads) must add at least one
-`- ` note under `## Unreleased` in `CHANGELOG.md`, creating that heading at the top
-if it is missing. Each release becomes a public entry on the homepage's
-`/changelog/` page (`/changelog/#v<version>`), so every update needs a note there;
-a release without one falls back to the commit title. Write plain player wording
-(rules at the top of `CHANGELOG.md`), change an already released section only to
-fix a mistake (it is public), and leave internal-only changes (tests, CI, docs)
-without a note unless players would notice them.
+note as one new file in `changelog.d/` (for example `changelog.d/247-short-name.md`
+with `- ` lines; see `changelog.d/README.md`). Do not edit `CHANGELOG.md` or
+`WhatsNewData.lua`, so parallel PRs never conflict over notes; `## Unreleased` in
+`CHANGELOG.md` is no longer used and fails a test. Each release becomes a public
+entry on the homepage's `/changelog/` page (`/changelog/#v<version>`), so every
+update needs a note; a release with no note files at all falls back to the commit
+title. Write plain player wording (rules at the top of `CHANGELOG.md`), change an
+already released section only to fix a mistake (it is public), and leave
+internal-only changes (tests, CI, docs) without a note unless players would notice
+them.
 
 `requirements.txt` pins, by version and SHA-256, every package the server's
 receiver installs (runtime dependencies plus the build backend). After changing
 dependencies in `pyproject.toml`, run `python scripts/lock_requirements.py` (needs
 `uv`); `tests/test_requirements_lock.py` fails while the two disagree.
 
-Release notes live in `CHANGELOG.md` (newest `## <version>` first; it must match
-`pyproject.toml`). After editing it run `python scripts/whats_new.py` and
-`python scripts/sync_addons.py`: the addon's one-time What's New page, the
+Released notes live in `CHANGELOG.md` (newest `## <version>` first; it must match
+`pyproject.toml`). Only the release pipeline edits it. If you ever edit it by hand
+(for example in an intentional release PR, which must also move any pending
+`changelog.d/` notes into its hand-written section and delete those files, because
+the pipeline keeps a hand-chosen version as it is), run `python scripts/whats_new.py`
+and `python scripts/sync_addons.py`: the addon's one-time What's New page, the
 homepage release panel and the `/changelog/` page all come from it, and the
 homepage build fails when the release version has no notes.
 
