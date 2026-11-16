@@ -7,7 +7,7 @@ from test_addon import STUBS, lupa
 ROOT = Path(__file__).parents[1]
 
 
-def minimap_runtime(client):
+def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua'):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS + '''
         function methods:RegisterForClicks() end
@@ -23,7 +23,7 @@ def minimap_runtime(client):
     ''')
     lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
     lua.globals().WoWStatusAdapter = lua.table_from({'client_id': client})
-    lua.execute((ROOT / 'addon/shared/Minimap.lua').read_text(encoding='utf-8'))
+    lua.execute(source.read_text(encoding='utf-8'))
     lua.execute('WoWStatusMinimap.init(WoWStatusDB)')
     return lua
 
@@ -108,4 +108,102 @@ def test_tooltip_shows_who_is_online_and_the_latest_friend_entry():
         assert(all:find("Online now: Mira", 1, true), all)
         assert(all:find("Latest: Mira — Reached level 30! · 5 min", 1, true), all)
         assert(all:find("Left-click: Activity log", 1, true))
+        assert(all:find("Drag to move", 1, true))
+        -- The Retail AddOn Compartment entry shows the same tooltip, minus dragging (#161).
+        local owner = CreateFrame("Button")
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", owner)
+        local entry = table.concat(__tip, "\\n")
+        assert(entry:find("Latest: Mira — Reached level 30! · 5 min", 1, true), entry)
+        assert(entry:find("Right-click: Options", 1, true), entry)
+        assert(not entry:find("Drag to move", 1, true), entry)
+        WoWStatus_OnAddonCompartmentLeave("WoWStatus", owner)
     ''')
+
+
+def test_retail_compartment_entry_opens_log_and_options():
+    lua = minimap_runtime('retail')
+    lua.execute('''
+        __opened = {}
+        WoWStatusJournal = {show=function() table.insert(__opened, "log") end}
+        SlashCmdList = {WOWSTATUS=function(msg) table.insert(__opened, "options:"..msg) end}
+        -- Before 11.0 the menu passes the mouse button; since 11.0 a table with buttonName.
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", "LeftButton")
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", "RightButton")
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", {buttonName="LeftButton"})
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", {buttonName="RightButton"})
+        -- Other mouse buttons do nothing, as on the minimap button.
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", "MiddleButton")
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", {buttonName="Button4"})
+        -- The minimap button keeps doing the same two things.
+        local button = WoWStatusMinimapButton
+        button.OnClick(button, "LeftButton")
+        button.OnClick(button, "RightButton")
+    ''')
+    assert list(lua.eval('__opened').values()) == ['log', 'options:'] * 3
+
+
+def test_compartment_click_before_setup_reports_instead_of_doing_nothing():
+    lua = lupa.LuaRuntime(unpack_returned_tuples=True)
+    lua.execute(STUBS)
+    lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
+    lua.execute((ROOT / 'addon/shared/Minimap.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        __opened = {}
+        WoWStatusJournal = {show=function() table.insert(__opened, "log") end}
+        SlashCmdList = {WOWSTATUS=function(msg) table.insert(__opened, "options:"..msg) end}
+        WoWStatus_OnAddonCompartmentClick("WoWStatus", {buttonName="LeftButton"})
+    ''')
+    assert list(lua.eval('__opened').values()) == ['options:']
+
+
+def test_compartment_tooltip_hides_only_its_own_and_tolerates_missing_frames():
+    lua = minimap_runtime('retail')
+    lua.execute('''
+        WoWStatusLocale = {T=function(text) return text end}
+        __owner, __shown = nil, false
+        GameTooltip = {SetOwner=function(_, owner) __owner = owner end, SetText=function() end,
+            AddLine=function() end, Show=function() __shown = true end, Hide=function() __shown = false end,
+            GetOwner=function() return __owner end}
+        local ours, theirs = CreateFrame("Button"), CreateFrame("Button")
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", nil)
+        assert(__owner == nil and not __shown)
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", ours)
+        assert(__owner == ours and __shown)
+        -- The next entry took the tooltip first: leaving ours must not hide it.
+        __owner = theirs
+        WoWStatus_OnAddonCompartmentLeave("WoWStatus", ours)
+        assert(__shown)
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", ours)
+        WoWStatus_OnAddonCompartmentLeave("WoWStatus", ours)
+        assert(not __shown)
+        -- A leave that passes no frame still hides our tooltip, and only ours.
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", ours)
+        WoWStatus_OnAddonCompartmentLeave("WoWStatus", nil)
+        assert(not __shown)
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", ours)
+        __owner = theirs
+        WoWStatus_OnAddonCompartmentLeave("WoWStatus", nil)
+        assert(__shown)
+        -- The minimap button uses the same ownership check.
+        local button = WoWStatusMinimapButton
+        button.OnEnter(button)
+        assert(__owner == button and __shown)
+        button.OnLeave(button)
+        assert(not __shown)
+        GameTooltip = nil
+        WoWStatus_OnAddonCompartmentEnter("WoWStatus", ours)
+        WoWStatus_OnAddonCompartmentLeave("WoWStatus", ours)
+    ''')
+
+
+@pytest.mark.parametrize('edition', ['retail', 'forever'])
+def test_toc_names_compartment_handlers_that_ship_in_that_edition(edition):
+    folder = ROOT / 'addon' / edition / 'WoWStatus'
+    toc = (folder / 'WoWStatus.toc').read_text(encoding='utf-8').splitlines()
+    fields = dict(line[3:].split(': ', 1) for line in toc if line.startswith('## '))
+    assert fields['IconTexture'] == 'Interface\\AddOns\\WoWStatus\\Textures\\Logo'
+    assert (folder / 'Textures/Logo.tga').is_file()
+    assert 'Minimap.lua' in toc
+    lua = minimap_runtime(edition, folder / 'Minimap.lua')
+    for key in ('AddonCompartmentFunc', 'AddonCompartmentFuncOnEnter', 'AddonCompartmentFuncOnLeave'):
+        assert lua.eval(f'type({fields[key]})') == 'function', key
