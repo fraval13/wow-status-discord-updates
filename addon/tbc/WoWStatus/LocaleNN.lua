@@ -41,7 +41,7 @@ W.add({
     ["Cannot open now: WoW's addon settings are not ready. Try again shortly."] = "Kan ikkje opne no: tilleggsinnstillingane i WoW er ikkje klare. Prøv att om litt.",
     ["Cannot open now: WoW could not open settings. Try Options > AddOns > WoW Status."] = "Kan ikkje opne no: WoW kunne ikkje opne innstillingane. Prøv Options > AddOns > WoW Status.",
     -- Fixed facts
-    ["Died"] = "Døydde",
+    ["Died"] = "Døydde", ["Died in Hardcore"] = "Døydde i hardkjernemodus",
     ["Joined the WoW Status group"] = "Vart med i WoW Status-gruppa",
     ["Joined the group"] = "Vart med i gruppa",
     ["First mount ride recorded!"] = "Første ridetur er registrert!",
@@ -403,6 +403,7 @@ W.add({
     {"^gained (%d+) levels$", "gjekk opp %1 nivå"},
     {"^cleared a dungeon$", "rydda eit fangehol"},
     {"^cleared (.+)$", "rydda %1"},
+    {"^died in Hardcore$", "døydde i hardkjernemodus"},
     {"^died once$", "døydde éin gong"},
     {"^died (%d+) times$", "døydde %1 gonger"},
     {"^discovered a new zone$", "fann eit nytt område"},

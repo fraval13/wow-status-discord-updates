@@ -29,7 +29,8 @@ function F.medals()
     end
     -- A group record, not the character's first death: the death popup next to it
     -- shows the lifetime total ("Total deaths: 33"), so the title must say "group".
-    kind("death", "First in the group to die", "death")
+    -- A Hardcore death is permanent and never a record (#163).
+    kind("death", "First in the group to die", "death", function(e) return not WoWStatusProgress.hardcoreDeath(e) end)
     kind("dungeon", "First dungeon clear", "dungeon")
     kind("mount", "First mount", "mount")
     kind("raid", "First raid boss", "raid")
@@ -168,7 +169,9 @@ function F.week(group, offset)
     local people, order = {}, {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local day = S.number(e.at) and dayOf(e.at)
-        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e) then
+        -- A Hardcore death never counts toward "Most deaths" or a person's line (#163).
+        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e)
+            and not WoWStatusProgress.hardcoreDeath(e) then
             local name = shortName(e.sender)
             local p = people[name]
             if not p then p = {name=name, level=0, death=0, zone=0, loot=0, quest=0}; people[name] = p; order[#order + 1] = p end
@@ -216,7 +219,8 @@ function F.funRecords(group)
     for _, e in ipairs(entries) do
         local name = shortName(e.sender)
         firstSeen[name] = firstSeen[name] or e.at
-        if e.kind == "death" then
+        -- A Hardcore death (#163) adds nothing: no "dangerous zone", no streak.
+        if e.kind == "death" and not WoWStatusProgress.hardcoreDeath(e) then
             local d = WoWStatusJournal.details(e)
             if d and d.zone then deathsIn[d.zone] = (deathsIn[d.zone] or 0) + 1 end
             local since = lastDeath[name] or firstSeen[name]

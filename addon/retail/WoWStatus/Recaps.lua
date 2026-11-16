@@ -117,6 +117,8 @@ end
 function R.note(event)
     if not character or type(event) ~= "table" or (event.data and event.data.synthetic) then return end
     if event.kind == "introduction" or event.kind=="recap" then return end
+    -- A Hardcore death is not tallied: "died once" and a death caption don't fit (#163).
+    if WoWStatusProgress.hardcoreDeath(event) then return end
     local data = event.data or {}
     local session = character.session or start(event.kind == "level" and S.number(data.level) and data.level - 1 or nil)
     session.last = S.now()

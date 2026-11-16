@@ -41,7 +41,14 @@ function O.summary(entries, since)
     end
     local result = {}
     local labels = {
-        death=function(k) return k.count == 1 and "died once" or ("died " .. k.count .. " times") end,
+        death=function(k)
+            -- A Hardcore death is permanent and never tallied (#163). Two characters
+            -- with the same short name share a line: their ordinary deaths count.
+            local n = 0
+            for _, e in ipairs(k.entries) do if not WoWStatusProgress.hardcoreDeath(e) then n = n + 1 end end
+            if n == 0 then return "died in Hardcore" end
+            return n == 1 and "died once" or ("died " .. n .. " times")
+        end,
         zone=function(k) return "discovered " .. plural(k.count, "a new zone", "new zones") end,
         quest=function(k) return k.entries[1].text end,
         profession=function(k) return plural(k.count, "a profession milestone", "profession milestones") end,

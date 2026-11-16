@@ -1417,6 +1417,8 @@ end
 local previous={}
 function F.text(item)
     if type(item)~="table" then return "" end
+    -- No caption at all for a Hardcore death: every death line is a roast (#163).
+    if WoWStatusProgress.hardcoreDeath(item) then return "" end
     if item.flavour_kind and item.flavour_pos then return line(item.flavour_kind,item.flavour_pos,item.flavour_personality) end
     if item.flavour then
         -- A caption saved as English text: find its line, so it follows the chosen language.
