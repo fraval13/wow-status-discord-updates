@@ -33,10 +33,6 @@ README), and the release pipeline moves those notes here.
 
 - Behind the scenes: release notes are collected in a new way, so changes reach you with fewer delays
 
-## Unreleased
-
-- Mute one friend from their profile: Log only skips their popups, Hide completely hides them too. Nobody is told
-
 ## 1.59.0
 
 - Characters: "Play together now" lists friends online near your level, with Whisper and Invite buttons
