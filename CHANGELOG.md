@@ -25,10 +25,6 @@ README), and the release pipeline moves those notes here.
 
 - Behind the scenes: release notes are collected in a new way, so changes reach you with fewer delays
 
-## Unreleased
-
-- Mouse over a friend from your groups to see their item level, deaths, professions or other picked values
-
 ## 1.59.0
 
 - Characters: "Play together now" lists friends online near your level, with Whisper and Invite buttons
