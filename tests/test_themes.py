@@ -43,6 +43,7 @@ def test_theme_and_size_apply_at_once_and_are_saved_account_wide():
         assert(WoWStatusMainFrame.background.colour[3] == .24)    -- Alliance blue
         __faction = "Horde"; WoWStatusTheme.apply()
         assert(WoWStatusMainFrame.background.colour[1] == .24)    -- Horde red
+        assert(WoWStatusTheme.next() == "contrast")
         assert(WoWStatusTheme.next() == "achievement")
         assert(WoWStatusTheme.next() == "night")
         for _ = 1, 15 do WoWStatusTheme.resize(WoWStatusTheme.STEP) end
@@ -391,4 +392,110 @@ def test_stepping_down_from_a_size_the_screen_caps_changes_the_window_at_once():
         WoWStatusTheme.setWindowSize(200)
         assert(WoWStatusMainFrame.scale == 1.04)
         assert(WoWStatusTheme.resize(-WoWStatusTheme.STEP) == .94 and WoWStatusMainFrame.scale == .94)
+    ''')
+
+
+# High contrast (#186): spies for the box and line styling the stubs skip.
+CONTRAST = THEMES + '''
+function methods:SetBackdrop() return true end
+function methods:SetBackdropColor(r, g, b, a) self.fill = {r, g, b, a} end
+function methods:SetBackdropBorderColor(r, g, b, a) self.edge = {r, g, b, a} end
+function methods:SetHeight(h) self.height = h end
+'''
+
+
+def relative_luminance(r, g, b):
+    def channel(c):
+        return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b)
+
+
+def contrast(foreground, background):
+    light, dark = sorted((relative_luminance(*foreground), relative_luminance(*background)), reverse=True)
+    return (light + 0.05) / (dark + 0.05)
+
+
+def test_wcag_contrast_formula():
+    assert round(contrast((1, 1, 1), (0, 0, 0)), 2) == 21
+    assert contrast((.5, .5, .5), (.5, .5, .5)) == 1
+
+
+def test_high_contrast_text_meets_wcag_aaa_for_body_and_aa_for_muted_lines():
+    lua = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="contrast"}}\n')
+    background = lua.eval('{WoWStatusTheme.colour()}')
+    r, g, b, a = (background[i] for i in range(1, 5))
+    assert a == 1 and lua.eval('select(4, WoWStatusTheme.colour(.96))') == 1  # opaque, popups too
+    window = (r, g, b)
+    # Body text (GameFontHighlight white) and headings (GameFontNormal gold): AAA, 7:1.
+    assert contrast((1, 1, 1), window) == 21
+    assert contrast((1, .82, 0), window) >= 14
+    # Muted lines (|cff9d9d9d, |cff808080, GameFontDisable at .5 grey): at least AA, 4.5:1.
+    for grey in (0x9d / 255, 0x80 / 255, .5):
+        assert contrast((grey, grey, grey), window) >= 5.2
+    # Every one beats the same text on each of the four mood themes.
+    for name in ('achievement', 'night', 'journal', 'faction'):
+        other = make_lua(THEMES + f'WoWStatusDB = {{version=1, characters={{}}, theme={{name="{name}"}}}}\n')
+        mood = other.eval('{WoWStatusTheme.colour()}')
+        mood = (mood[1], mood[2], mood[3])
+        for text in ((1, 1, 1), (1, .82, 0), (.5, .5, .5)):
+            assert contrast(text, window) > contrast(text, mood)
+
+
+def test_high_contrast_is_offered_after_faction_and_named_in_both_languages():
+    lua = make_lua(THEMES)
+    lua.execute('''
+        WoWStatusJournal.show()
+        for _ = 1, 4 do WoWStatusTheme.next() end
+        assert(WoWStatusTheme.settings().name == "contrast" and WoWStatusTheme.highContrast())
+        local c = WoWStatusMainFrame.background.colour
+        assert(c[1] == 0 and c[2] == 0 and c[3] == 0 and c[4] == 1)
+        assert(WoWStatusTheme.label() == "Theme: High contrast · size 100%")
+        assert(WoWStatusLocale.T(WoWStatusTheme.label()) == "Theme: High contrast · size 100%")
+        WoWStatusDB.language = "nn"
+        assert(WoWStatusLocale.lang() == "nn")
+        assert(WoWStatusLocale.T(WoWStatusTheme.label()) == "Tema: Høg kontrast · storleik 100 %")
+        assert(WoWStatusLocale.T("Theme: Journal · size 120%") == "Tema: Dagbok · storleik 120 %")
+        WoWStatusTheme.next()
+        assert(WoWStatusTheme.settings().name == "achievement" and not WoWStatusTheme.highContrast())
+    ''')
+    # A saved High contrast choice loads as chosen.
+    saved = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="contrast"}}\n')
+    assert saved.eval('WoWStatusTheme.settings().name') == 'contrast'
+
+
+def test_high_contrast_popups_are_opaque_black_when_they_follow_the_theme():
+    lua = make_lua(THEMES + 'WoWStatusDB = {version=1, characters={}, theme={name="contrast"}}\n')
+    lua.execute('''
+        WoWStatusPopups.preview("zone"); WoWStatusPopups.tick()
+        local c = WoWStatusLevelPopup.bg.colour
+        assert(c[1] == 0 and c[2] == 0 and c[3] == 0 and c[4] == 1)
+        WoWStatusTheme.setPopups(false)                 -- opted out: the usual dark blue
+        assert(WoWStatusLevelPopup.bg.colour[1] == .025)
+    ''')
+
+
+def test_boxes_and_section_lines_turn_strong_on_high_contrast_and_back():
+    lua = make_lua(CONTRAST)
+    lua.execute('''
+        local UI = WoWStatusUI
+        local parent = CreateFrame("Frame")
+        local box = UI.box(parent, 100, 50)
+        local marked = UI.box(parent, 100, 50); UI.tint(marked, true)
+        local title = UI.header(parent, "Records", 0, 0, 200)
+        -- The four mood themes keep the look they had.
+        assert(box.fill[4] == .45 and box.edge[1] == .55 and box.edge[4] == .8)
+        assert(marked.edge[1] == 1 and marked.edge[2] == .82 and marked.edge[4] == .9)
+        assert(title.line.colour[4] == .35 and title.line.height == 1)
+        for _ = 1, 4 do WoWStatusTheme.next() end      -- High contrast, applied at once
+        assert(WoWStatusTheme.highContrast())
+        assert(box.fill[4] == 1 and box.edge[1] == .9 and box.edge[4] == 1)
+        assert(marked.edge[1] == 1 and marked.edge[2] == .82 and marked.edge[4] == 1)
+        assert(title.line.colour[1] == 1 and title.line.colour[4] == 1 and title.line.height == 2)
+        -- A box made while High contrast is on starts strong; hover still highlights.
+        local later = UI.box(parent, 10, 10)
+        assert(later.fill[4] == 1 and later.edge[1] == .9)
+        UI.tint(later, true); assert(later.edge[2] == .82 and later.edge[4] == 1)
+        WoWStatusTheme.next()                           -- back to Achievement
+        assert(box.fill[4] == .45 and box.edge[1] == .55 and title.line.colour[4] == .35 and title.line.height == 1)
+        assert(later.edge[1] == 1 and later.edge[4] == .9) -- still highlighted, in the mood colours
     ''')

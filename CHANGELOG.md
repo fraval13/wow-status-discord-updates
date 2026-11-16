@@ -43,6 +43,10 @@ README), and the release pipeline moves those notes here.
 
 - Behind the scenes: release notes are collected in a new way, so changes reach you with fewer delays
 
+## Unreleased
+
+- A High contrast window theme: plain black behind all text, brighter borders and solid section lines
+
 ## 1.59.0
 
 - Characters: "Play together now" lists friends online near your level, with Whisper and Invite buttons

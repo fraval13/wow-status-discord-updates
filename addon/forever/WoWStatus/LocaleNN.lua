@@ -394,8 +394,9 @@ W.add({
     {"^Language: (%a+)%. Type /reload to change every window%.$", function(name)
         return "Språk: " .. (name == "English" and "engelsk" or "nynorsk") .. ". Skriv /reload for å endre alle vindauga."
     end},
-    {"^Theme: (%a+) · size (%d+)%%$", function(name, size)
-        local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
+    {"^Theme: (.-) · size (%d+)%%$", function(name, size)
+        local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon",
+            ["High contrast"]="Høg kontrast"}
         return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " %"
     end},
     {"^Shown at (%d+)%% to fit the screen$", "Vist med %1 %% så det får plass på skjermen"},
