@@ -1,1 +1,0 @@
-- Mouse over a friend from your groups to see their item level, deaths, professions or other picked values
