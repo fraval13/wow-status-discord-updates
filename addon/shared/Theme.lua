@@ -183,7 +183,7 @@ local function closePopovers()
     end
 end
 
-local shownScale, styledName
+local shownScale, styledContrast
 function T.apply()
     local value = settings()
     for _, window in ipairs(windows) do
@@ -202,10 +202,14 @@ function T.apply()
     local scale = main and T.applied(main)
     if shownScale and scale ~= shownScale then closePopovers() end
     shownScale = scale
-    -- Boxes and section lines change only with the theme, not with a size step.
-    if value.name ~= styledName and WoWStatusUI and WoWStatusUI.restyle then
-        styledName = value.name
-        WoWStatusUI.restyle()
+    -- Boxes and section lines change only between the mood look and High
+    -- contrast, not with a size step or between mood themes. An error is
+    -- reported and tried again on the next apply, and never stops the rest.
+    local contrast = value.name == "contrast"
+    if contrast ~= styledContrast and WoWStatusUI and WoWStatusUI.restyle then
+        local ok, err = pcall(WoWStatusUI.restyle)
+        if ok then styledContrast = contrast
+        elseif type(geterrorhandler) == "function" then geterrorhandler()(err) end
     end
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
     for _, fn in ipairs(watchers) do
@@ -306,8 +310,8 @@ end
 -- Box and section-line looks: the mood themes share one, High contrast has an
 -- opaque black fill, a near-white border and solid lines twice as thick.
 local STYLES = {
-    mood = {fill=.45, edge={.55, .55, .6, .8}, mark={1, .82, 0, .9}, line=.35, lineHeight=1},
-    contrast = {fill=1, edge={.9, .9, .9, 1}, mark={1, .82, 0, 1}, line=1, lineHeight=2},
+    mood = {fill=.45, fallback=.35, edge={.55, .55, .6, .8}, mark={1, .82, 0, .9}, line=.35, lineHeight=1},
+    contrast = {fill=1, fallback=1, edge={.9, .9, .9, 1}, mark={1, .82, 0, 1}, line=1, lineHeight=2},
 }
 local function style() return T.highContrast() and STYLES.contrast or STYLES.mood end
 -- Every box and section line drawn, so a theme change can style them again.
@@ -315,24 +319,25 @@ local function style() return T.highContrast() and STYLES.contrast or STYLES.moo
 local boxes, lines = {}, {}
 -- Box colours: dark fill, light border; gold border to highlight. Without the
 -- backdrop API, the plain fallback fill takes the same strength.
-function UI.tint(frame, highlighted)
+function UI.tint(frame, highlighted, look)
     highlighted = highlighted and true or false
     boxes[frame] = highlighted
-    local look = style()
+    look = look or style()
     call(frame, "SetBackdropColor", 0, 0, 0, look.fill)
     local edge = highlighted and look.mark or look.edge
     call(frame, "SetBackdropBorderColor", edge[1], edge[2], edge[3], edge[4])
-    if frame.fallback then call(frame.fallback, "SetColorTexture", 0, 0, 0, look.fill == 1 and 1 or .35) end
+    if frame.fallback then call(frame.fallback, "SetColorTexture", 0, 0, 0, look.fallback) end
 end
-local function styleLine(line)
-    local look = style()
-    line:SetColorTexture(1, .82, 0, look.line)
+local function styleLine(line, look)
+    look = look or style()
+    call(line, "SetColorTexture", 1, .82, 0, look.line)
     call(line, "SetHeight", look.lineHeight)
 end
 -- Styles every box and section line again for the current theme (T.apply).
 function UI.restyle()
-    for frame, highlighted in pairs(boxes) do UI.tint(frame, highlighted) end
-    for line in pairs(lines) do styleLine(line) end
+    local look = style()
+    for frame, highlighted in pairs(boxes) do UI.tint(frame, highlighted, look) end
+    for line in pairs(lines) do styleLine(line, look) end
 end
 
 function UI.text(parent, font, x, y, width, justify)

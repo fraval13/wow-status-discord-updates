@@ -435,8 +435,8 @@ def test_high_contrast_text_meets_wcag_aaa_for_body_and_aa_for_muted_lines():
     # Every one beats the same text on each of the four mood themes, both on the
     # window and inside a box (45 % black over the window there).
     for name in ('achievement', 'night', 'journal', 'faction'):
-        other = make_lua(THEMES + f'WoWStatusDB = {{version=1, characters={{}}, theme={{name="{name}"}}}}\n')
-        mood = other.eval('{WoWStatusTheme.colour()}')
+        lua.execute(f'WoWStatusDB.theme.name = "{name}"')
+        mood = lua.eval('{WoWStatusTheme.colour()}')
         mood = (mood[1], mood[2], mood[3])
         boxed = tuple(c * .55 for c in mood)
         for text in ((1, 1, 1), (1, .82, 0), (.5, .5, .5)):
@@ -527,7 +527,51 @@ def test_a_size_step_does_not_restyle_the_boxes():
         local calls, tint = 0, WoWStatusUI.tint
         WoWStatusUI.tint = function(...) calls = calls + 1; return tint(...) end
         WoWStatusTheme.resize(WoWStatusTheme.STEP); WoWStatusTheme.setPopupSize(120)
+        WoWStatusTheme.next()                           -- Night: the same mood look
         assert(calls == 0)
-        WoWStatusTheme.next()
+        WoWStatusTheme.next(); WoWStatusTheme.next(); WoWStatusTheme.next() -- High contrast
         assert(calls > 0)
+    ''')
+
+
+def test_a_failed_restyle_is_reported_and_tried_again():
+    lua = make_lua(CONTRAST)
+    lua.execute('''
+        local box = WoWStatusUI.box(CreateFrame("Frame"), 100, 50)
+        local reported, restyle = 0, WoWStatusUI.restyle
+        geterrorhandler = function() return function() reported = reported + 1 end end
+        WoWStatusUI.restyle = function() error("boom") end
+        for _ = 1, 4 do WoWStatusTheme.next() end      -- High contrast; restyle fails
+        assert(reported == 1 and box.fill[4] == .45)
+        WoWStatusUI.restyle = restyle
+        WoWStatusTheme.resize(WoWStatusTheme.STEP)      -- any later apply tries again
+        assert(box.fill[4] == 1)
+    ''')
+
+
+def test_leaderboard_rows_are_marked_more_strongly_on_high_contrast():
+    from test_main_window import WINDOW
+    lua = make_lua(WINDOW)
+    lua.execute('''
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:SetColorTexture(r, g, b, a) self.colour = {r, g, b, a} end
+        WoWStatusGroups.update("Example Crew", "")
+        WoWStatusRoster.leaderboard = function()
+            return {{name="Own-Realm", own=true}, {name="Bob-Realm"}, {name="Mira-Realm"}}
+        end
+        local function shade(name)
+            for i, row in ipairs(WoWStatusLeaderboardPage.board) do
+                if row.name.text:find(name, 1, true) then return row.bg.colour[4], i end
+            end
+        end
+        local function striped()
+            for i, row in ipairs(WoWStatusLeaderboardPage.board) do
+                if i % 2 == 0 and not row.name.text:find("Own", 1, true) then return row.bg.colour[4] end
+            end
+        end
+        SlashCmdList.WOWSTATUS("leaderboard")
+        assert(shade("Own") == .12 and striped() == .04)
+        WoWStatusDB.theme.name = "contrast"; WoWStatusTheme.apply()
+        WoWStatusLeaderboard.render()
+        assert(shade("Own") == .25 and striped() == .08)
     ''')
