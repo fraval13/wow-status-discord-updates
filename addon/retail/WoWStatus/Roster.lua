@@ -52,7 +52,7 @@ local XP_INTERVAL = 300
 R.ONLINE_CHECK = 5
 local onlineCheckedAt, onlineSeen, partyChanged = 0, nil, false
 local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
-local equipmentSendState = {}
+local rosterSendState = {}
 
 -- One key per character for the list. WoW Forever spreads characters over many
 -- internal realms ("CAMWOWEU4Realm3PvE") while chat and rosters name them without
@@ -1321,11 +1321,9 @@ function R.tick()
         lastSend = now
         S.debug("send " .. redacted(item.text) .. " to " .. tostring(item.target))
         WoWStatusPopups.whispered(item.target)
-        if item.equipmentGroup then
-            local result = WoWStatusPopups.sendResult(pcall(send, PREFIX, item.text, "WHISPER", item.target))
-            local wait = WoWStatusPopups.retryWait(result, item, equipmentSendState, now)
-            if wait then item.notBefore = now + wait; table.insert(outgoing, 1, item) end
-        else pcall(send, PREFIX, item.text, "WHISPER", item.target) end
+        local result = WoWStatusPopups.sendResult(pcall(send, PREFIX, item.text, "WHISPER", item.target))
+        local wait = WoWStatusPopups.retryWait(result, item, rosterSendState, now)
+        if wait then item.notBefore = now + wait; table.insert(outgoing, 1, item) end
     end
 end
 
@@ -2323,7 +2321,7 @@ function R.init(database, character, reporter)
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
     requested, whoAsked = {}, {}
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
-    equipmentSendState = {}
+    rosterSendState = {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
     lastQuest, questsSent = 0, character and R.questLine(character)
     questPending, questQueued = nil, {}

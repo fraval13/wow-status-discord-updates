@@ -1,0 +1,1 @@
+- Character lists, XP and quest totals now retry when the game asks addon messages to wait
