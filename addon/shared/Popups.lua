@@ -1213,11 +1213,10 @@ function P.reduceMotion() return prefs ~= nil and Z.get("reduce_motion", root) e
 local function steady(frame)
     frame:SetAlpha(1); anchor(frame, 0); frame.glow:SetAlpha(P.STEADY_GLOW)
 end
+-- A toast on screen settles on its next frame (its OnUpdate applies the still values).
 function P.setReduceMotion(value)
     if not prefs then return end
     Z.set("reduce_motion", value == true, root)
-    -- A toast on screen (or mid-slide) stops moving now, not from the next one.
-    if P.reduceMotion() and toast and toast:IsShown() and not toast.dragging then steady(toast) end
 end
 function P.options()
     return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or Z.get("big_banners", root),
@@ -1523,15 +1522,19 @@ local function show(item, now)
             if self.dragging then return end -- Hold still and stay visible while being moved.
             -- While the mouse is over it (or its buttons), or the Hold binding is down, it
             -- stays and does not count down.
-            if P.held() and (self.age or 0) > .22 then
-                self.age = math.min(self.age, 1); self:SetAlpha(1); anchor(self, 0)
+            -- Reduce motion has no entrance to wait for.
+            local still = P.reduceMotion()
+            if P.held() and (still or (self.age or 0) > .22) then
+                self.age = math.min(self.age or 0, 1); self:SetAlpha(1); anchor(self, 0)
+                if still then self.glow:SetAlpha(P.STEADY_GLOW) end
                 return
             end
             self.age = (self.age or 0) + elapsed
             local life, tail = self.life or 6, self.tail or .5
             -- Reduce motion: shown and hidden at once, without sliding or pulsing.
-            -- show() and setReduceMotion() have settled it already.
-            if not P.reduceMotion() then
+            if still then
+                steady(self)
+            else
                 local entrance = math.min(1, self.age / .22)
                 local fade = tail > 0 and math.max(0, math.min(1, (life - self.age) / tail)) or 1
                 self:SetAlpha(entrance * fade)

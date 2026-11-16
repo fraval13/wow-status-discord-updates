@@ -95,9 +95,8 @@ def test_turning_it_on_settles_a_toast_already_on_screen():
         toast.OnUpdate(toast, .05) -- Mid-slide, half transparent.
         assert(toast.alpha < 1)
         WoWStatusPopups.setReduceMotion(true)
+        toast.OnUpdate(toast, .05) -- Settled on the next frame.
         assert(toast.alpha == 1 and toast.glow.alpha == WoWStatusPopups.STEADY_GLOW)
-        toast.OnUpdate(toast, .05)
-        assert(toast.alpha == 1)
     ''')
     assert offset(lua) == -170
 
@@ -156,7 +155,9 @@ def test_the_tick_is_a_controller_control_beside_big_banners():
         assert(tick.parent == panel and WoWStatusGamepad.interactive(tick))
         -- Same row as Big banners, to its right, clear of the panel's edge.
         assert(tick.__point[3] == panel.big.__point[3])
-        assert(tick.__point[2] == 360 and panel.big.__point[2] == 24)
+        assert(tick.__point[2] == 400 and panel.big.__point[2] == 24)
+        -- The Big banners label (from x 62) ends before the tick begins.
+        assert(24 + 38 + panel.big.label.width <= 400 and 400 + 38 + tick.label.width <= 600)
     ''')
 
 
@@ -165,4 +166,36 @@ def test_reduce_motion_label_is_in_nynorsk():
     lua.execute('''
         WoWStatusLocale.set("nn")
         assert(WoWStatusLocale.T("Reduce motion") == "Mindre rørsle")
+    ''')
+
+
+def test_a_toast_dragged_while_it_is_switched_on_settles_after_the_drag():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        WoWStatusPopups.preview("level"); WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        toast.OnUpdate(toast, .05)
+        toast.dragging = true
+        WoWStatusPopups.setReduceMotion(true)
+        toast.OnUpdate(toast, .05)
+        assert(toast.alpha < 1) -- Left alone while it is moved.
+        toast.dragging = false
+        toast.OnUpdate(toast, .05)
+        assert(toast.alpha == 1 and toast.glow.alpha == WoWStatusPopups.STEADY_GLOW)
+    ''')
+
+
+def test_hover_pauses_the_countdown_at_once_without_an_entrance():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        WoWStatusPopups.setReduceMotion(true)
+        WoWStatusPopups.preview("level"); WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        WoWStatusGamepad.hold("down")
+        toast.OnUpdate(toast, .1)
+        assert(toast.age == 0 and toast.alpha == 1 and toast.glow.alpha == WoWStatusPopups.STEADY_GLOW)
+        toast.OnUpdate(toast, 30)
+        assert(toast:IsShown() and toast.age == 0)
     ''')
