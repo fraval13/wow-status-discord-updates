@@ -32,7 +32,7 @@ README), and the release pipeline moves those notes here.
 ## 1.58.0
 
 - Website: a new changelog page lists every release so far, each with its own link to share
-- Mouse over a friend from your groups to see their level progress, deaths, quests or played time in the tooltip
+- Mouse over a friend from your groups to see their item level, deaths, professions or other picked values
 
 ## 1.57.0
 

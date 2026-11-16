@@ -471,8 +471,12 @@ function R.tooltipFacts(name, liveLevel, guid)
         xp = nil
     end
     local quests = S.number(found.quests)
+    -- Item level only from equipment already stored here: a mouseover requests nothing.
     return {name=found.name, player=S.string(owner.name), alts=alts, level=level, xp=xp, deaths=deaths[k] or nil,
-        quests=quests, quests_source=quests and found.quests_source or nil, played=S.number(found.played)}
+        quests=quests, quests_source=quests and found.quests_source or nil, played=S.number(found.played),
+        item_level=R.itemLevel(found.name), professions=R.professionsOf(found), gold=S.number(found.gold),
+        kills=S.number(found.kills), dungeons=S.number(found.dungeons), mounts=S.number(found.mounts),
+        honor_kills=S.number(found.honor_kills)}
 end
 
 local function ownLines(group)

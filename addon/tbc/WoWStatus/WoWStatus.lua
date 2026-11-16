@@ -174,7 +174,7 @@ local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, WoWStatusScreenshots.available() and 1650 or 1510)
+        panel:SetSize(600, (WoWStatusScreenshots.available() and 1650 or 1510) + (WoWStatusUnitTooltip and WoWStatusUnitTooltip.HEIGHT or 84) - 84)
         panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
         panel.background=panel:CreateTexture(nil,"BACKGROUND")
         panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
@@ -238,7 +238,7 @@ local function showPanel(host)
         -- A short block in group members' unit tooltips (#183). Account-wide.
         section("Friends' tooltips",bottom)
         panel.unitTooltip=WoWStatusUnitTooltip.buildSettings(panel,bottom-36)
-        bottom=bottom-120
+        bottom=bottom-36-(WoWStatusUnitTooltip and WoWStatusUnitTooltip.HEIGHT or 84)
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
         button(panel,"Diagnostics",214,bottom,170,function() WoWStatusDiagnostics.show() end)
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)

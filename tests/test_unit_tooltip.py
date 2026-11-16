@@ -38,10 +38,14 @@ function hover() __tip = {}; WoWStatusUnitTooltip.add(GameTooltip); return __tip
 
 
 def friends():
-    """Mira (Frank's account) has listed her character to Thora, both in one group."""
+    """Mira (Frank's account) has listed her character to Thora, both in one group.
+
+    The block shows level progress, quests and played time unless a test picks others.
+    """
     mira, thora = pair()
     pump(mira, thora)
     thora.execute(TOOLTIP)
+    thora.execute('WoWStatusDB.unit_tooltip = {shown={"level", "quests", "played"}}')
     return mira, thora
 
 
@@ -58,14 +62,47 @@ def test_a_group_member_gets_a_short_block_from_stored_values():
             for _, ch in pairs(player.characters) do ch.xp, ch.quests, ch.played = 375, 236, 90000 end
         end
     ''')
+    thora.execute('WoWStatusDB.unit_tooltip = {shown={"level", "quests", "played"}}')
     before = thora.eval('#__sent')
-    assert shown(thora) == [('WoW Status',), ('Level progress', '37%'), ('Quests (tracked)', '236')]
+    assert shown(thora) == [('WoW Status',), ('Level progress', '37%'), ('Quests (tracked)', '236'), ('Played', '1d 1h')]
     assert thora.eval('#__sent') == before  # nothing requested or sent
     assert thora.eval('GameTooltip.shown') is True
-    # Larger: up to three values, so at most four lines.
-    thora.execute('WoWStatusDB.unit_tooltip.size = 3')
-    assert shown(thora)[-1] == ('Played', '1d 1h')
-    assert len(shown(thora)) == 4
+    # In the order picked.
+    thora.execute('WoWStatusUnitTooltip.moveUp("played")')
+    assert shown(thora)[2] == ('Played', '1d 1h')
+
+
+def test_the_default_shows_item_level_deaths_and_professions_from_stored_data():
+    _, thora = friends()
+    thora.execute('''
+        for _, player in pairs(WoWStatusDB.roster.players) do
+            for _, ch in pairs(player.characters) do
+                ch.played, ch.equipment_profile = 3600, {average_item_level=61.7}
+                ch.professions = {{key="tailoring", skill=225, max_skill=300}, {key="mining", skill=150, max_skill=150}}
+            end
+        end
+        table.insert(WoWStatusJournal.entries(), 1, {kind="death", sender="Mira-TestRealm", text="Total deaths: 4", at=2})
+        WoWStatusDB.unit_tooltip = nil
+    ''')
+    before = thora.eval('#__sent')
+    rows = shown(thora)
+    assert rows[1] == ('Average item level', '61')
+    assert rows[2] == ('Total deaths', '4')
+    assert rows[3][0] == 'Professions' and rows[3][1].startswith('Tailoring 225, ') and 'Mining 150' in rows[3][1]
+    assert len(rows) == 4  # played is not picked by default
+    assert thora.eval('#__sent') == before  # no equipment request from a mouseover
+
+
+def test_other_shared_statistics_can_be_picked():
+    _, thora = friends()
+    thora.execute('''
+        for _, player in pairs(WoWStatusDB.roster.players) do
+            for _, ch in pairs(player.characters) do ch.kills, ch.mounts, ch.dungeons, ch.honor_kills = 812, 3, 0, nil end
+        end
+        WoWStatusDB.unit_tooltip = {shown={"kills", "mounts", "dungeons", "honor_kills"}}
+    ''')
+    # Zero dungeons and no honor kills add nothing, like on the character card.
+    assert shown(thora) == [('WoW Status',), ('Monsters killed', '812'), ('Mounts', '3')]
 
 
 def test_unshared_values_are_absent_and_none_shared_means_no_block():
@@ -74,6 +111,7 @@ def test_unshared_values_are_absent_and_none_shared_means_no_block():
         for _, player in pairs(WoWStatusDB.roster.players) do
             for _, ch in pairs(player.characters) do ch.xp, ch.quests, ch.quests_source, ch.played = nil, nil, "private", nil end
         end
+        WoWStatusDB.unit_tooltip = {shown={"level", "quests", "played"}}
     ''')
     assert shown(thora) == []
     thora.execute('''
@@ -87,6 +125,7 @@ def test_unshared_values_are_absent_and_none_shared_means_no_block():
 def test_deaths_come_from_the_newest_death_announcement():
     _, thora = friends()
     thora.execute('''
+        WoWStatusDB.unit_tooltip = {shown={"deaths"}}
         local entries = WoWStatusJournal.entries()
         table.insert(entries, 1, {kind="death", sender="Mira-TestRealm", text="Total deaths: 7", at=2})
         table.insert(entries, 2, {kind="death", sender="Mira-TestRealm", text="Total deaths: 6", at=1})
@@ -100,6 +139,7 @@ def test_saved_xp_is_dropped_once_the_live_level_moved_on():
         for _, player in pairs(WoWStatusDB.roster.players) do
             for _, ch in pairs(player.characters) do ch.xp = 500 end
         end
+        WoWStatusDB.unit_tooltip = {shown={"level"}}
     ''')
     assert ('Level progress', '50%') in shown(thora)
     thora.execute('__units.mouseover.level = 2')
@@ -182,6 +222,7 @@ def test_a_level_up_in_the_log_makes_saved_progress_stale():
         for _, player in pairs(WoWStatusDB.roster.players) do
             for _, ch in pairs(player.characters) do ch.xp = 850 end
         end
+        WoWStatusDB.unit_tooltip = {shown={"level"}}
         __units.mouseover.level = nil
     ''')
     assert ('Level progress', '85%') in shown(thora)
@@ -202,36 +243,64 @@ def test_the_player_name_shows_when_you_also_know_their_alts():
     assert shown(thora)[0] == ('WoW Status · Frank',)
 
 
-def test_off_switch_size_setting_and_malformed_saved_values():
+def test_off_switch_list_editing_and_malformed_saved_values():
     _, thora = friends()
     thora.execute('WoWStatusUnitTooltip.setEnabled(false)')
     assert shown(thora) == []
     thora.execute('WoWStatusUnitTooltip.setEnabled(true)')
     assert shown(thora) != []
-    for saved, size in (('"big"', 2), ('0', 1), ('9', 3), ('2.6', 3), ('0/0', 2)):
-        thora.execute(f'WoWStatusDB.unit_tooltip = {{size={saved}, enabled="yes"}}')
-        assert thora.eval('WoWStatusUnitTooltip.settings().size') == size
+
+    def picked():
+        listed = thora.eval('WoWStatusUnitTooltip.settings().shown')
+        return [listed[i] for i in range(1, len(listed) + 1)]
+    thora.execute('WoWStatusDB.unit_tooltip = nil')
+    assert picked() == ['item_level', 'deaths', 'professions']
+    thora.execute('WoWStatusUnitTooltip.addValue("played"); WoWStatusUnitTooltip.addValue("played")')
+    thora.execute('WoWStatusUnitTooltip.addValue("nonsense"); WoWStatusUnitTooltip.removeValue("deaths")')
+    thora.execute('WoWStatusUnitTooltip.moveUp("played"); WoWStatusUnitTooltip.moveUp("item_level")')
+    assert picked() == ['item_level', 'played', 'professions']
+    # Removing everything leaves no block, and stays removed.
+    thora.execute('for _, k in ipairs({"item_level", "played", "professions"}) do WoWStatusUnitTooltip.removeValue(k) end')
+    assert picked() == [] and shown(thora) == []
+    for saved, expected in (('{shown={"deaths", "deaths", 7, "nope", "gold"}}', ['deaths', 'gold']),
+                            ('{shown="deaths", size=3}', ['item_level', 'deaths', 'professions']),
+                            ('"broken"', ['item_level', 'deaths', 'professions'])):
+        thora.execute(f'WoWStatusDB.unit_tooltip = {saved}')
+        assert picked() == expected
         assert thora.eval('WoWStatusUnitTooltip.settings().enabled') is True
-    thora.execute('WoWStatusDB.unit_tooltip = "broken"')
-    assert thora.eval('WoWStatusUnitTooltip.settings().size') == 2
-    assert [thora.eval('WoWStatusUnitTooltip.nextSize()') for _ in range(3)] == [3, 1, 2]
+        assert thora.eval('WoWStatusUnitTooltip.settings().size') is None
 
 
-def test_options_switch_and_size_button_work_and_translate():
+def test_options_list_adds_removes_reorders_and_translates():
     _, thora = friends()
     thora.eval('SlashCmdList.WOWSTATUS')('')
     box = thora.eval('WoWStatusSetup.unitTooltip')
-    assert box.check.checked is True and box.size.text == 'Values shown: 2'
-    box.size.OnClick(box.size)
-    assert box.size.text == 'Values shown: 3'
+    rows = box.rows
+
+    def listed():
+        return [(rows[i].label.text, rows[i].toggle.text) for i in range(1, len(rows) + 1)]
+    assert box.check.checked is True and box.hint.text == 'Values shown, top first:'
+    assert listed()[:4] == [('Level progress', 'Remove'), ('Quests', 'Remove'), ('Played', 'Remove'),
+                            ('Average item level', 'Add')]
+    assert len(rows) == thora.eval('#WoWStatusUnitTooltip.VALUES')
+    # Add item level: it goes to the bottom of the picked values.
+    rows[4].toggle.OnClick(rows[4].toggle)
+    assert listed()[3] == ('Average item level', 'Remove')
+    rows[4].up.OnClick(rows[4].up)
+    assert [row[0] for row in listed()[:4]] == ['Level progress', 'Quests', 'Average item level', 'Played']
+    rows[1].toggle.OnClick(rows[1].toggle)
+    assert [row[0] for row in listed()[:3]] == ['Quests', 'Average item level', 'Played']
+    assert ('Level progress', 'Add') in listed()
+    assert shown(thora)[1] == ('Quests (tracked)', '0')
     box.check.checked = False
     box.check.OnClick(box.check)
     assert thora.eval('WoWStatusUnitTooltip.settings().enabled') is False
     assert shown(thora) == []
     thora.execute('WoWStatusLocale.set("nn")')
     box.refresh(box)
-    assert box.size.text == 'Verdiar som blir viste: 3'
-    assert thora.eval('WoWStatusLocale.T("Level progress")') == 'Nivåframgang'
+    assert box.hint.text == 'Verdiar som blir viste, den øvste først:'
+    assert rows[1].up.text == 'Flytt opp' and rows[1].toggle.text == 'Fjern'
+    assert rows[1].label.text == 'Oppdrag'
 
 
 HOOKS = r'''
@@ -316,6 +385,8 @@ def test_the_settings_controls_are_reachable_with_a_controller(gamepad_lua):  # 
         function methods:GetChecked() return self.checked end
         function methods:SetWidth() end
         function methods:SetJustifyH() end
+        function methods:SetShown(value) if value then self:Show() else self:Hide() end end
+        function methods:SetTextColor() end
         local click=methods.Click
         function methods:Click(button,down)
             if self.kind=="CheckButton" then self.checked=not self.checked end
@@ -328,17 +399,25 @@ def test_the_settings_controls_are_reachable_with_a_controller(gamepad_lua):  # 
     lua.execute((ROOT / 'addon/shared/UnitTooltip.lua').read_text(encoding='utf-8'))
     lua.execute('''
         local box=WoWStatusUnitTooltip.buildSettings(main,-40)
-        local reached={}
-        for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do reached[control]=true end
-        assert(reached[box.check] and reached[box.size])
+        local function reachable()
+            local reached={}
+            for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do reached[control]=true end
+            return reached
+        end
+        local first,last=box.rows[1],box.rows[#box.rows]
+        local reached=reachable()
+        assert(reached[box.check] and reached[first.toggle] and reached[last.toggle])
+        -- The top value cannot move up, and values not picked have no Move up.
+        assert(not reached[first.up],"first up") assert(reached[box.rows[2].up],"second up") assert(not reached[last.up],"last up")
         box.check.rect={120,400,32,32}
         WoWStatusGamepad.update()
         press("PADDDOWN")
+        WoWStatusGamepad.setFocus(last.toggle);press("PAD1")
+        assert(WoWStatusDB.unit_tooltip.shown[4]==WoWStatusUnitTooltip.VALUES[#WoWStatusUnitTooltip.VALUES].key)
         WoWStatusGamepad.setFocus(box.check);press("PAD1")
         assert(WoWStatusDB.unit_tooltip.enabled==false)
-        -- Off: the size button does nothing, so it is disabled and skipped.
-        assert(box.size:IsEnabled()==false)
-        reached={}
-        for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do reached[control]=true end
-        assert(not reached[box.size])
+        -- Off: the list buttons do nothing, so they are disabled and skipped.
+        assert(first.toggle:IsEnabled()==false)
+        reached=reachable()
+        assert(not reached[first.toggle] and not reached[box.rows[2].up])
     ''')

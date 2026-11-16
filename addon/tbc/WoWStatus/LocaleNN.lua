@@ -549,7 +549,7 @@ W.add({
     -- Unit tooltip block (#183).
     ["Friends' tooltips"] = "Info når musa er over vener",
     ["Show WoW Status in group members' tooltips"] = "Vis WoW Status-info når musa er over gruppemedlemer",
-    ["Values shown: %d"] = "Verdiar som blir viste: %d",
+    ["Values shown, top first:"] = "Verdiar som blir viste, den øvste først:", ["Move up"] = "Flytt opp",
     ["Level progress"] = "Nivåframgang",
 })
 -- Diagnostics page (#153). The report itself stays English.
