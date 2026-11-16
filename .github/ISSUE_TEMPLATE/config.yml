@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question about using WoW Status
+    url: https://www.curseforge.com/wow/addons/wow-status
+    about: How do I install it, how do groups work, why do I not see a friend — ask in the comments on CurseForge.
+  - name: Security problem
+    url: https://github.com/fraval13/wow-status-discord-updates/security/policy
+    about: Do not open an issue. Report it privately; see the security policy.

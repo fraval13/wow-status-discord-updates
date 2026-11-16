@@ -62,7 +62,7 @@ def changelog_releases() -> set[Version]:
 
 def scanned_documents() -> list[Path]:
     history = ROOT / 'docs' / 'history'
-    documents = [ROOT / 'AGENTS.md', ROOT / 'README.md']
+    documents = [ROOT / 'AGENTS.md', ROOT / 'README.md', ROOT / 'CONTRIBUTING.md', ROOT / 'SECURITY.md']
     for folder in ('docs', 'deploy', 'website'):
         documents += sorted(
             path for path in (ROOT / folder).rglob('*.md') if history not in path.parents

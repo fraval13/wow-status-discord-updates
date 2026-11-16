@@ -1,0 +1,49 @@
+name: Feature request
+description: An idea for something WoW Status could do
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ideas are welcome. Describe what you want to happen while you are playing;
+        how to build it is the easy part to work out afterwards.
+  - type: textarea
+    id: idea
+    attributes:
+      label: The idea
+      description: What should the addon do?
+      placeholder: |
+        Show who in the group has not died for the longest, so the careful
+        players get something to be proud of too.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What happens today instead, and why that is worse.
+    validations:
+      required: true
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Which games should it cover?
+      multiple: true
+      options:
+        - Classic Era / Season of Discovery (Vanilla)
+        - WoW Forever
+        - Burning Crusade Classic (TBC)
+        - Retail (current expansion)
+        - All of them
+    validations:
+      required: false
+  - type: checkboxes
+    id: quiet
+    attributes:
+      label: Noise
+      description: |
+        WoW Status is deliberately quiet: no notification for every quest turned
+        in, every skill point or every item equipped.
+      options:
+        - label: My idea does not add a notification for an everyday event.
+          required: false
