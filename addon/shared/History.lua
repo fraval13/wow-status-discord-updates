@@ -29,6 +29,17 @@ function H.oslo(at)
     local offset = summer and 7200 or 3600
     return date("!%Y-%m-%d %H:%M:%S", at + offset) .. (summer and " +02:00" or " +01:00")
 end
+-- Player-facing times follow the computer's local clock. Stored timestamps
+-- and the companion's Oslo export metadata keep their existing meaning.
+function H.localTime(at) return date("%Y-%m-%d %H:%M", at) end
+function H.day(at, offset)
+    if not offset or offset == 0 then return date("%Y-%m-%d", at) end
+    -- Shift calendar dates, not 24-hour spans: DST days can have 23 or 25 hours.
+    -- UTC is used only to format the resulting date, never to choose its day.
+    local year = tonumber(date("%Y", at))
+    local ordinal = daysBeforeYear(year) - daysBeforeYear(1970) + tonumber(date("%j", at)) - 1
+    return date("!%Y-%m-%d", (ordinal + offset) * 86400 + 43200)
+end
 function H.duration(seconds)
     seconds = math.max(0, math.floor(seconds))
     local days = math.floor(seconds / 86400)

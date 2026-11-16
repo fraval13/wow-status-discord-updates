@@ -154,18 +154,15 @@ local function tabs(groups, chosen)
     return math.ceil(#groups / 5) * 28
 end
 
--- This week (Monday to Sunday, the log's Oslo time) in one group, or an earlier
+-- This week (Monday to Sunday, the player's local time) in one group, or an earlier
 -- week (offset 1, 2, ...): highlights and one line per person.
-local function dayOf(at) return WoWStatusHistory.oslo(at):sub(1, 10) end
+local function dayOf(at) return WoWStatusHistory.day(at) end
 local function shortName(sender) return (tostring(sender):match("^[^-]+") or tostring(sender)) end
 function F.weekRange(offset)
-    local UI = WoWStatusUI
-    local t = S.now() - (offset or 0) * 7 * 86400
-    local hour = tonumber(WoWStatusHistory.oslo(t):sub(12, 13)) or 12
-    t = t - (hour - 12) * 3600 -- Noon, so a daylight-saving hour cannot change the date.
-    local y, m, d = dayOf(t):match("^(%d+)-(%d+)-(%d+)$")
-    local weekday = UI.weekday(tonumber(y), tonumber(m), tonumber(d))
-    return dayOf(t - (weekday - 1) * 86400), dayOf(t + (7 - weekday) * 86400)
+    local now = S.now()
+    local weekday = (tonumber(date("%w", now)) + 6) % 7 -- Monday = 0.
+    local shift = -(offset or 0) * 7
+    return WoWStatusHistory.day(now, shift - weekday), WoWStatusHistory.day(now, shift + 6 - weekday)
 end
 local function inGroup(e, group) return type(e.groups) == "table" and e.groups[group] == true end
 function F.week(group, offset)
@@ -342,7 +339,7 @@ local function render()
         local e = result[medal.key]
         c.icon:SetIcon(medalIcon(medal), e == nil)
         c.title:SetText(T(medal.title))
-        local when = e and WoWStatusHistory.oslo(e.at):sub(1, 16)
+        local when = e and WoWStatusHistory.localTime(e.at)
         -- Reached before WoW Status tracked it: the date is "by then".
         if e and e.milestone and not e.exact then when = T("before WoW Status, by") .. " " .. when:sub(1, 10) end
         local empty = medal.key == "dungeon" and T("No dungeon clear recorded yet.") or T("nobody yet")
@@ -359,7 +356,7 @@ local function render()
     local lines = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if e.kind == "recap" and #lines < 10 and WoWStatusJournal.visible(e) then
-            table.insert(lines, "|cffffd100" .. WoWStatusHistory.oslo(e.at):sub(1, 16) .. "|r  " .. T(e.text):gsub("|", "||"))
+            table.insert(lines, "|cffffd100" .. WoWStatusHistory.localTime(e.at) .. "|r  " .. T(e.text):gsub("|", "||"))
         end
     end
     if #lines == 0 then table.insert(lines, T("No recaps yet. One is written after each play session.")) end

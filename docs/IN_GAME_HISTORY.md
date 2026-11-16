@@ -156,9 +156,11 @@ is no automatic history truncation; as a defensive parsing limit the companion
 accepts files up to 32 MiB and two million tokens. If you reach that limit, keep a
 backup and request an archive/rotation update rather than deleting unuploaded data.
 
-All displayed timestamps use Europe/Oslo independently of the computer's timezone,
-including Norwegian summer/winter offsets. The Lua formatter uses modern European
-DST rules for the game's era. Elapsed durations use absolute timestamps, so changing
+In-game timestamps, the Activity calendar and Monday-to-Sunday records follow the
+computer's local timezone. Yesterday and earlier weeks use calendar dates, so
+summer/winter clock changes do not skip or repeat a day. Stored and shared event
+timestamps keep their existing meaning; companion JSON and Discord reports retain
+their Europe/Oslo timezone. Elapsed durations use absolute timestamps, so changing
 between summer and winter time does not add or remove an hour of actual elapsed time.
 
 The per-character JSON now includes `progression.level_timeline`:

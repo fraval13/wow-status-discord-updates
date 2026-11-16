@@ -156,7 +156,7 @@ def test_activity_log_opens_on_today_and_remembers_the_picked_day():
         -- The calendar marks both days in gold and picks the older one.
         log.dayButton.OnClick(log.dayButton)
         local cal = WoWStatusCalendar
-        local older = WoWStatusHistory.oslo(now-2*86400):sub(1,10)
+        local older = date("%Y-%m-%d",now-2*86400)
         local cell
         for _, c in ipairs(cal.cells) do if c.key == older then cell = c end end
         assert(cell.text.text:find("|cffffd100", 1, true))

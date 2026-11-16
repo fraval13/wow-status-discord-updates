@@ -349,7 +349,7 @@ local function renderRecords()
             local who = item.entry.holder or ((item.entry.sender or "?"):match("^[^-]+") or "?")
             row.text:SetText("|cffffd100" .. T(item.medal.title) .. "|r — "
                 .. who:gsub("|", "||")
-                .. "  " .. WoWStatusUI.MUTED_CODE .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
+                .. "  " .. WoWStatusUI.MUTED_CODE .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.localTime(item.entry.at) .. "|r")
             row:Show()
         else row:Hide() end
     end
@@ -396,7 +396,7 @@ local function render()
     local since = data.since
     if WoWStatusGuide and WoWStatusGuide.touring() then since = S.now() - 86400 end
     local summary = O.summary(WoWStatusJournal.displayEntries(), since)
-    page.heading:SetText(since and (T("Since you were last here") .. " (" .. WoWStatusHistory.oslo(since) .. ")")
+    page.heading:SetText(since and (T("Since you were last here") .. " (" .. WoWStatusHistory.localTime(since) .. ")")
         or T("Since you were last here"))
     local rows = {}
     for _, player in ipairs(summary) do

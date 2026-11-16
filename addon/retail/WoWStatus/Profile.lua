@@ -20,7 +20,7 @@ local function entriesOf(name)
 end
 
 local function when(at)
-    local text = S.number(at) and WoWStatusHistory.oslo(at) or ""
+    local text = S.number(at) and WoWStatusHistory.localTime(at) or ""
     return text:sub(1, 16)
 end
 
