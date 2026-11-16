@@ -559,3 +559,16 @@ W.add({
     ["WoW Status errors recorded: %d. They can be read here once the character is ready."] =
         "Feil registrerte i WoW Status: %d. Dei kan lesast her når figuren er klar.",
 })
+-- "Play together now" on the Characters page (#156).
+W.add({
+    ["Play together now"] = "Spel saman no", ["%d within %d levels"] = "%d innanfor %d nivå", ["%d within 1 level"] = "%d innanfor 1 nivå",
+    ["Level range: ±%d"] = "Nivåspenn: ±%d", ["Your level is not known yet."] = "Nivået ditt er ikkje kjent enno.",
+    ["No friends who share their list are online right now."] = "Ingen vener som deler lista si, er pålogga no.",
+    ["Nobody that close. Nearest online:"] = "Ingen så nære. Nærast av dei pålogga:",
+    ["Closest level first."] = "Nærast nivå først.",
+    ["Whisper"] = "Kviskre", ["Invite"] = "Inviter", ["Invite to your group"] = "Inviter til gruppa di",
+    ["Already in your group"] = "Alt i gruppa di", ["Different faction"] = "Anna fraksjon",
+    ["Invite sent"] = "Invitasjon sendt",
+    ["Only the group leader can invite"] = "Berre gruppeleiaren kan invitere",
+    ["Your group is full"] = "Gruppa di er full",
+})
