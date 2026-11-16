@@ -87,6 +87,7 @@ def test_pending_note_files_are_read_in_issue_number_order(tmp_path):
     ('1-A.md', '- a\n', 'named like'),
     ('1-a.txt', '- a\n', 'named like'),
     ('1 a.md', '- a\n', 'named like'),
+    ('.1-a.md', '- a\n', 'named like'),
 ])
 def test_invalid_pending_note_files_are_rejected(tmp_path, name, text, message):
     folder = tmp_path / 'changelog.d'

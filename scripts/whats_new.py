@@ -79,15 +79,16 @@ def fragment_order(path: Path) -> tuple[int, int, str]:
 def fragment_paths(root: Path) -> list[Path]:
     """Pending note files in issue-number order (see fragment_order).
 
-    Hidden files (.DS_Store, editor swap files) are ignored; anything else that is
-    not a note file is an error, so a misnamed note is never silently dropped.
+    Hidden files (.DS_Store, editor swap files) are ignored unless they end in .md;
+    anything else that is not a note file is an error, so a misnamed note is never
+    silently dropped.
     """
     folder = root / FRAGMENTS
     if not folder.is_dir():
         return []
     paths = []
     for path in sorted(folder.iterdir(), key=fragment_order):
-        if path.name == FRAGMENT_README or path.name.startswith('.'):
+        if path.name == FRAGMENT_README or (path.name.startswith('.') and not path.name.endswith('.md')):
             continue
         if not path.is_file() or not FRAGMENT_NAME.match(path.name):
             raise ValueError(f'{FRAGMENTS}/{path.name}: pending notes must be files named '
