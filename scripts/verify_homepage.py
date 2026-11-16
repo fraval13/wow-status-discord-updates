@@ -39,15 +39,15 @@ RELEASE_FIELDS = ('version', 'file', 'bytes', 'sha256')
 
 
 @functools.cache
-def package_files():
-    """The builder's own rule for what ships, so the builder and the verifier never disagree."""
-    builder = Path(__file__).with_name('build_homepage.py')
-    spec = importlib.util.spec_from_file_location('build_homepage', builder)
-    if spec is None or not builder.is_file():
-        raise RuntimeError(f'The verifier needs {builder} beside it')
+def builder():
+    """The builder's own rules, so the builder and the verifier never disagree."""
+    path = Path(__file__).with_name('build_homepage.py')
+    spec = importlib.util.spec_from_file_location('build_homepage', path)
+    if spec is None or not path.is_file():
+        raise RuntimeError(f'The verifier needs {path} beside it')
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
-    return module.package_files
+    return module
 
 
 def valid_release(edition, release):
@@ -117,7 +117,7 @@ def check_entries(edition, package):
         raise ValueError(f'The public {edition} ZIP has no TOC')
     toc = package.read(FOLDER + 'WoWStatus.toc').decode('utf-8')
     try:
-        expected = package_files()(toc, present)
+        expected = builder().package_files(toc, present)
     except ValueError as error:
         raise ValueError(f'The public {edition} ZIP does not match its TOC: {error}') from error
     unexpected = sorted(present.difference(expected))
@@ -176,6 +176,8 @@ def verify(base, revision, fetch=read, *, expected):
         raise ValueError('The homepage and addon versions do not agree')
     if re.search(r'__[A-Z_]+__', html):
         raise ValueError('The homepage contains unexpanded release placeholders')
+    # The link preview Discord shows for a pasted link (issue #190), fetched from this site.
+    builder().check_link_preview(html, lambda path: fetch(base + path))
     return manifest
 
 

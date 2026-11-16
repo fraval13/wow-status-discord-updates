@@ -1,6 +1,7 @@
 """Exercise release commits against local bare remotes, including retries and races."""
 import importlib.util
 import json
+import shutil
 import subprocess
 import sys
 import zipfile
@@ -165,6 +166,8 @@ def test_invalid_pending_notes_fail_before_any_release_file_is_written(repositor
 def test_release_builder_packages_the_prepared_revision_and_version_in_every_zip(repository, tmp_path):
     root, _, source = repository
     prepared = release.prepare(root, source)
+    # The real page and assets: the build refuses a page without its link preview (#190).
+    shutil.copytree(ROOT / 'website', root / 'website', dirs_exist_ok=True)
     spec = importlib.util.spec_from_file_location('prepared_homepage', ROOT / 'scripts/build_homepage.py')
     builder = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(builder)
