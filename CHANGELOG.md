@@ -10,6 +10,10 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
+## Unreleased
+
+- The WoW Status window can now be sized from 70 to 200 %, typed in Options, and always stays on screen
+
 ## 1.56.0
 
 - WoW Status is on CurseForge: the CurseForge app can install and update it for the games it manages

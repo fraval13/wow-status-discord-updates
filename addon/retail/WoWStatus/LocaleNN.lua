@@ -164,7 +164,7 @@ W.add({
     ["Notifications"] = "Varsel", ["Previews"] = "Førehandsvising", ["Choose a notification to preview it."] = "Vel eit varsel for å sjå korleis det ser ut.",
     ["Setup guide"] = "Oppsettsrettleiing", ["Unlock popup position"] = "Lås opp plasseringa av varsla",
     ["Reset popup position"] = "Tilbakestill plasseringa", ["Big banners for big moments"] = "Store banner for store augneblinkar",
-    ["Next theme"] = "Neste tema", ["Smaller"] = "Mindre", ["Larger"] = "Større",
+    ["Next theme"] = "Neste tema",
     ["Use the theme and size for popups too"] = "Bruk temaet og storleiken på varsla òg", ["Apply"] = "Bruk",
     ["Show the group status line"] = "Vis statuslinja for gruppa", ["Attach it under the quest tracker"] = "Fest henne under oppdragslista",
     ["Hide the status line in combat"] = "Gøym statuslinja i kamp", ["Hide the status line in dungeons and raids"] = "Gøym statuslinja i fangehol og raid",
@@ -385,6 +385,7 @@ W.add({
         local themes = {Achievement="Bragd", Night="Natt", Journal="Dagbok", Faction="Fraksjon"}
         return "Tema: " .. (themes[name] or name) .. " · storleik " .. size .. " %"
     end},
+    {"^Shown at (%d+)%% to fit the screen$", "Vist med %1 %% så det får plass på skjermen"},
     {"^Notification size %((%d+)–(%d+)%%%)$", "Varselstorleik (%1–%2 %%)"},
     {"^Notification size: (%d+)%%%.$", "Varselstorleik: %1 %%."},
     {"^You already shared WoW Status with (.+) in the last hour%.$", "Du har alt delt WoW Status med %1 den siste timen."},

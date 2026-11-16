@@ -8,10 +8,24 @@ local T, S = WoWStatusTheme, WoWStatusSafe
 -- achievement window, drawn with plain colour so every client shows it.
 T.ORDER = {"achievement", "night", "journal", "faction"}
 T.NAMES = {achievement="Achievement", night="Night", journal="Journal", faction="Faction"}
-T.MIN, T.MAX, T.STEP = .8, 1.2, .1
+-- Window size (#182): 70 to 200 % in whole percent, 100 % by default. A size
+-- the screen cannot hold is shown smaller (see T.applied), never cut off.
+T.MIN, T.MAX, T.STEP = .7, 2, .1
+-- Notifications that follow the window size take it only within the old window
+-- range, so a 200 % window does not also double every toast; their own size
+-- (below) still goes from 50 to 200 %.
+T.POPUP_FOLLOW_MIN, T.POPUP_FOLLOW_MAX = .8, 1.2
 -- Notification size in percent, separate from the window size.
 T.POPUP_MIN, T.POPUP_MAX, T.POPUP_DEFAULT = 50, 200, 100
 local windows = {}
+local main -- the first window attached (the main window), for its shown scale
+
+-- A scale in whole percent, and a window size kept in range and rounded to
+-- whole percent. Older saves held tenths (.8 to 1.2), which stay as they were.
+local function percent(scale) return math.floor(scale * 100 + .5) end
+local function clampScale(scale)
+    return math.max(T.MIN, math.min(T.MAX, percent(scale) / 100))
+end
 
 local function settings()
     if type(WoWStatusDB) ~= "table" then return {name="night", scale=1, popups=false} end
@@ -24,7 +38,7 @@ local function settings()
     end
     if not T.NAMES[value.name] then value.name = "achievement" end
     local scale = S.number(value.scale)
-    value.scale = scale and math.max(T.MIN, math.min(T.MAX, math.floor(scale * 10 + .5) / 10)) or 1
+    value.scale = scale and clampScale(scale) or 1
     -- Notifications follow the theme by default since 1.15 (moved once; unticking stays).
     if not value.popups_default then value.popups = true; value.popups_default = true end
     value.popups = value.popups == true
@@ -47,9 +61,77 @@ function T.colour(alpha)
     return .025, .035, .065, alpha or .98
 end
 
+-- The gold border drawn 6 units outside the main window, kept on screen too.
+local BORDER = 6
+
+-- UIParent's width and height (the screen in UI units), or nil when the client
+-- cannot say.
+local function screenSize()
+    local width = UIParent and S.number(S.call(UIParent.GetWidth, UIParent))
+    local height = UIParent and S.number(S.call(UIParent.GetHeight, UIParent))
+    if not width or not height or width <= 0 or height <= 0 then return nil end
+    return width, height
+end
+
+-- The largest scale at which a frame, with its border, fits inside UIParent;
+-- nil when the client cannot say (then nothing is limited).
+local function fitting(frame)
+    local width, height = S.number(S.call(frame.GetWidth, frame)), S.number(S.call(frame.GetHeight, frame))
+    local screenWidth, screenHeight = screenSize()
+    if not width or not height or not screenWidth or width <= 0 or height <= 0 then return nil end
+    return math.min(screenWidth / (width + 2 * BORDER), screenHeight / (height + 2 * BORDER))
+end
+
+-- The scale a window is shown at: the chosen size, or less when the screen
+-- (resolution and UI scale) cannot hold the window at that size. Never below
+-- half size, in case a client reports a nonsense screen while loading.
+function T.applied(frame)
+    local scale = settings().scale
+    local fit = frame and fitting(frame)
+    if fit then scale = math.min(scale, math.max(.5, math.floor(fit * 100) / 100)) end
+    return scale
+end
+
+-- Moves a window, border included, back inside the screen when a size or
+-- resolution change left part of it outside. The engine's own clamp
+-- (SetClampedToScreen) is documented for dragging only, so this does the same
+-- after a scale change, on every client. The top and left edges win, so the
+-- title bar (where the window is dragged) and the close button stay reachable.
+local function keepOnScreen(frame)
+    local left, right = S.number(S.call(frame.GetLeft, frame)), S.number(S.call(frame.GetRight, frame))
+    local top, bottom = S.number(S.call(frame.GetTop, frame)), S.number(S.call(frame.GetBottom, frame))
+    local own = S.number(S.call(frame.GetEffectiveScale, frame))
+    local parent = UIParent and S.number(S.call(UIParent.GetEffectiveScale, UIParent))
+    local screenWidth, screenHeight = screenSize()
+    if not left or not right or not top or not bottom or not own or not parent or not screenWidth
+        or own <= 0 or parent <= 0 then return false end
+    local ratio = own / parent -- frame units to UIParent units
+    left, right = (left - BORDER) * ratio, (right + BORDER) * ratio
+    top, bottom = (top + BORDER) * ratio, (bottom - BORDER) * ratio
+    local dx, dy = 0, 0
+    if right > screenWidth then dx = screenWidth - right end
+    if left + dx < 0 then dx = -left end
+    if bottom < 0 then dy = -bottom end
+    if top + dy > screenHeight then dy = screenHeight - top end
+    if dx == 0 and dy == 0 then return false end
+    frame:ClearAllPoints()
+    frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", (left + dx) / ratio + BORDER, (bottom + dy) / ratio + BORDER)
+    return true
+end
+
 -- Register a window background; it is themed now and whenever settings change.
+-- A window (not a popup) also stays on screen: clamped while dragged, and moved
+-- back inside whenever it opens.
 function T.attach(frame, background, popup)
     table.insert(windows, {frame=frame, background=background, popup=popup == true})
+    if not popup then
+        main = main or frame
+        S.call(frame.SetClampedToScreen, frame, true)
+        S.call(frame.SetClampRectInsets, frame, -BORDER, BORDER, BORDER, -BORDER)
+        if type(frame.HookScript) == "function" then
+            pcall(frame.HookScript, frame, "OnShow", function(self) keepOnScreen(self) end)
+        end
+    end
     T.apply()
 end
 -- The theme colour only, for the settings pages' own windows (opened in combat,
@@ -60,12 +142,14 @@ function T.attachBackground(background)
     T.apply()
 end
 
--- Window scale; for notifications, their own size times the window size when
--- "Use the theme and size for popups too" is on.
+-- Window scale as shown (the chosen size, or less where the screen cannot hold
+-- it); for notifications, their own size times the window size when "Use the
+-- theme and size for popups too" is on.
 function T.scale(popup)
     local value = settings()
-    if not popup then return value.scale end
-    return (value.popups and value.scale or 1) * value.popup_size / 100
+    if not popup then return T.applied(main) end
+    local follow = math.max(T.POPUP_FOLLOW_MIN, math.min(T.POPUP_FOLLOW_MAX, value.scale))
+    return (value.popups and follow or 1) * value.popup_size / 100
 end
 function T.popupSize() return settings().popup_size end
 -- Sets the notification size from a percentage; false for a value out of range.
@@ -77,6 +161,21 @@ function T.setPopupSize(percent)
     return true
 end
 
+-- Functions called after every change of theme, size or screen, such as the
+-- Options label that shows the size.
+local watchers = {}
+function T.watch(fn) if type(fn) == "function" then table.insert(watchers, fn) end end
+
+-- The date calendar and dropdown take the window's scale when they open; close
+-- them when it changes rather than leave them at the old scale, away from
+-- their button.
+local function closePopovers()
+    for _, frame in ipairs({WoWStatusUI and WoWStatusUI.calendarFrame, WoWStatusUI and WoWStatusUI.menuFrame}) do
+        if frame and frame.IsShown and frame:IsShown() then frame:Hide() end
+    end
+end
+
+local shownScale
 function T.apply()
     local value = settings()
     for _, window in ipairs(windows) do
@@ -84,14 +183,22 @@ function T.apply()
             window.background:SetColorTexture(T.colour())
         elseif not window.popup then
             window.background:SetColorTexture(T.colour())
-            window.frame:SetScale(value.scale)
+            window.frame:SetScale(T.applied(window.frame))
+            keepOnScreen(window.frame)
         elseif value.popups then
             window.background:SetColorTexture(T.colour(.96))
         else
             window.background:SetColorTexture(.025, .035, .065, .96)
         end
     end
+    local scale = main and T.applied(main)
+    if shownScale and scale ~= shownScale then closePopovers() end
+    shownScale = scale
     if WoWStatusPopups and WoWStatusPopups.restyle then WoWStatusPopups.restyle() end
+    for _, fn in ipairs(watchers) do
+        local ok, err = pcall(fn)
+        if not ok and type(geterrorhandler) == "function" then geterrorhandler()(err) end
+    end
 end
 
 function T.next()
@@ -102,11 +209,25 @@ function T.next()
     return value.name
 end
 
+-- Steps from the size shown, so stepping down from a size the screen cannot
+-- hold changes the window at once instead of only the number.
 function T.resize(delta)
     local value = settings()
-    value.scale = math.max(T.MIN, math.min(T.MAX, math.floor((value.scale + delta) * 10 + .5) / 10))
+    local base = main and math.min(value.scale, T.applied(main)) or value.scale
+    value.scale = clampScale(base + (tonumber(delta) or 0))
     T.apply()
     return value.scale
+end
+
+-- The window size in whole percent, and setting it from a percentage (the
+-- Options box); false for a value out of range, which keeps the old size.
+function T.windowSize() return percent(settings().scale) end
+function T.setWindowSize(percent)
+    percent = tonumber(percent)
+    if not percent or percent ~= percent or percent < T.MIN * 100 or percent > T.MAX * 100 then return false end
+    settings().scale = clampScale(percent / 100)
+    T.apply()
+    return true
 end
 
 function T.setPopups(enabled)
@@ -116,7 +237,24 @@ end
 
 function T.label()
     local value = settings()
-    return "Theme: " .. T.NAMES[value.name] .. " · size " .. math.floor(value.scale * 100 + .5) .. "%"
+    return "Theme: " .. T.NAMES[value.name] .. " · size " .. T.windowSize() .. "%"
+end
+-- A note for when the screen holds the main window only at a smaller size
+-- than chosen; nil when it is shown at the chosen size.
+function T.shownNote()
+    local shown = main and percent(T.applied(main))
+    if shown and shown < T.windowSize() then return "Shown at " .. shown .. "% to fit the screen" end
+    return nil
+end
+
+-- A resolution or UI scale change can make the screen smaller or larger:
+-- size and place the windows again for it.
+if type(CreateFrame) == "function" then
+    local events = CreateFrame("Frame")
+    for _, event in ipairs({"DISPLAY_SIZE_CHANGED", "UI_SCALE_CHANGED"}) do
+        pcall(events.RegisterEvent, events, event)
+    end
+    events:SetScript("OnEvent", function() T.apply() end)
 end
 
 -- Shared building blocks for the main window's pages: bordered boxes, round
@@ -344,9 +482,7 @@ function UI.calendar(owner, selected, today, counts, onPick)
     cal.render()
     cal:ClearAllPoints(); cal:SetPoint("BOTTOMRIGHT", owner, "TOPRIGHT", 0, 4) -- Inside the window: the button is at its right edge.
     -- The window's size setting applies to the calendar too, so it lines up with the button.
-    local own, screen = owner.GetEffectiveScale and S.number(owner:GetEffectiveScale()),
-        UIParent and UIParent.GetEffectiveScale and S.number(UIParent:GetEffectiveScale())
-    cal:SetScale(own and screen and screen > 0 and own / screen or 1)
+    cal:SetScale(UI.ownerScale(owner))
     cal:Show()
     if cal.Raise then cal:Raise() end
     return cal
@@ -368,6 +504,14 @@ end
 -- A small drop-down list under a button: items {label=, value=}; onPick(value).
 -- One shared list, closed by picking, by clicking its button again or by Escape.
 -- Built from plain buttons, since the game's dropdown menus differ by client.
+-- The scale of owner relative to UIParent: a frame parented to UIParent takes
+-- it to line up with, and match the size of, a control in the main window.
+function UI.ownerScale(owner)
+    local own, screen = owner.GetEffectiveScale and S.number(S.call(owner.GetEffectiveScale, owner)),
+        UIParent and UIParent.GetEffectiveScale and S.number(S.call(UIParent.GetEffectiveScale, UIParent))
+    return own and screen and own > 0 and screen > 0 and own / screen or 1
+end
+
 function UI.menu(owner, items, onPick)
     local menu = UI.menuFrame
     if not menu then
@@ -405,6 +549,7 @@ function UI.menu(owner, items, onPick)
     end
     for i = #items + 1, #menu.rows do menu.rows[i]:Hide() end
     menu.owner, menu.onPick, menu.items = owner, onPick, items
+    menu:SetScale(UI.ownerScale(owner)) -- the window's size, like its button
     menu:ClearAllPoints(); menu:SetPoint("TOPLEFT", owner, "BOTTOMLEFT", 0, -2)
     call(menu.scroll, "SetVerticalScroll", 0)
     menu:Show()
