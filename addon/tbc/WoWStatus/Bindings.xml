@@ -2,4 +2,5 @@
 	<Binding name="WOWSTATUS_TOGGLE" header="WOWSTATUS">WoWStatusGamepad.toggle()</Binding>
 	<Binding name="WOWSTATUS_ACTIVITY">WoWStatusGamepad.activity()</Binding>
 	<Binding name="WOWSTATUS_DISMISS">WoWStatusGamepad.dismiss()</Binding>
+	<Binding name="WOWSTATUS_HOLD" runOnUp="true">WoWStatusGamepad.hold(keystate)</Binding>
 </Bindings>

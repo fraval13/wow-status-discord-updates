@@ -139,8 +139,10 @@ completely. Typing (a group ID) still needs a keyboard or the on-screen keyboard
 of a handheld such as the Steam Deck.
 
 Under **Key Bindings → AddOns → WoW Status** you can put *Open or close WoW Status*,
-*Open the activity log* and *Dismiss the notification* on controller or keyboard
-buttons. With the ConsolePort addon loaded, WoW Status leaves navigation to
+*Open the activity log*, *Dismiss the notification* and *Hold the notification* on
+controller or keyboard buttons. While *Hold the notification* is pressed, the shown
+notification stays and does not count down, as it does when the mouse rests on it
+(a hold lasts at most a minute). With the ConsolePort addon loaded, WoW Status leaves navigation to
 ConsolePort. `/wstatus controller off` turns navigation off (`on` turns it back on);
 `/wstatus controller` shows its state.
 
@@ -172,7 +174,9 @@ still comes from the selected reaction voice.
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed
 quests, new professions and profession title promotions, first dungeon clears, first raid boss kills, first mount,
 reputation ranks, major class unlocks and PvP ranks. **Notifications** holds the popup
-settings, with local samples below them. Notifications queue one at a time for six seconds each.
+settings, with local samples below them. Notifications queue one at a time, six seconds
+each by default; **Notification duration** (or `/wstatus popuptime <seconds>`) sets 3 to 20
+seconds, or keeps each one until it is dismissed (`0`).
 
 **Screenshots** (per character, all off by default) can take a picture about one
 second after your own level-up or first dungeon clear, optionally with the interface

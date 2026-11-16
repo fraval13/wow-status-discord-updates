@@ -117,6 +117,7 @@ function methods:Insert(value) self.text=(self.text or "")..value end
 function methods:Show() self.visible=true end
 function methods:Hide() self.visible=false end
 function methods:IsShown() return self.visible end
+function methods:IsVisible() return self.visible ~= false and (self.parent == nil or self.parent.IsVisible == nil or self.parent:IsVisible()) end
 function methods:GetStringHeight() return #(self.text or "") / 2 end
 function methods:SetScrollChild(child) self.child=child end
 function methods:SetVerticalScroll(value) self.scroll=value end

@@ -814,7 +814,7 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "popupsize" then
         if WoWStatusTheme.setPopupSize(rest) then
             say("Notification size: " .. WoWStatusTheme.popupSize() .. "%.")
-            WoWStatusPopups.preview("level")
+            WoWStatusPopups.sample("level")
         else
             say("Notification size is now " .. WoWStatusTheme.popupSize() .. "%. Use /wstatus popupsize "
                 .. WoWStatusTheme.POPUP_MIN .. "-" .. WoWStatusTheme.POPUP_MAX .. " (100 is the default).")
@@ -833,6 +833,18 @@ SlashCmdList.WOWSTATUS = function(message)
             .. P.clockText(hours.start) .. "-" .. P.clockText(hours.stop))
         if hours.enabled and hours.start == hours.stop then say("Same start and end: never quiet") end
         if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
+    elseif command == "popuptime" then
+        local P = WoWStatusPopups
+        if rest ~= "" and P.setDuration(rest) then
+            say(P.duration() == 0 and "Notifications now stay until dismissed."
+                or WoWStatusLocale.F("Notifications now stay for %d seconds.", P.duration()))
+            P.sample("level")
+        else
+            say(P.duration() == 0 and "Notifications stay until dismissed."
+                or WoWStatusLocale.F("Notifications stay for %d seconds.", P.duration()))
+            say(WoWStatusLocale.F("Use /wstatus popuptime %d-%d, or 0 to keep notifications until dismissed (%d is the default).",
+                P.DURATION_MIN, P.DURATION_MAX, P.DURATION_DEFAULT))
+        end
     elseif command == "interval" or command == "quality" then
         local number = tonumber(rest)
         local upper = command == "interval" and 100 or 5
