@@ -40,6 +40,66 @@ function M.setOffset(value)
     if place then place() end
     return true
 end
+-- Tooltip shared by the minimap button and the AddOn Compartment entry.
+local function fillTooltip(tooltip,draggable)
+    local T=WoWStatusLocale.T
+    tooltip:SetText("WoW Status")
+    -- Who is online, and the newest thing a friend did.
+    local names=WoWStatusRoster and WoWStatusRoster.onlineNames and WoWStatusRoster.onlineNames() or {}
+    local shown={}
+    for i=1,math.min(#names,8) do shown[i]=names[i]:gsub("|","||") end
+    local list=#names==0 and T("nobody") or (table.concat(shown,", ")..(#names>8 and (" +"..(#names-8)) or ""))
+    tooltip:AddLine(T("Online now:").." "..list,.4,1,.4,true)
+    local latest=WoWStatusJournal and WoWStatusJournal.latestFriend and WoWStatusJournal.latestFriend()
+    if latest then
+        local minutes=math.max(0,math.floor((time()-(latest.at or time()))/60))
+        local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
+        local who=(latest.sender:match("^[^-]+") or latest.sender):gsub("|","||")
+        tooltip:AddLine(T("Latest:").." "..who.." — "..WoWStatusJournal.deathText(latest):gsub("|","||").." · "..when,1,.82,0,true)
+    end
+    -- Quiet hours (#180): say so, so silence does not look like a fault.
+    local quiet=WoWStatusPopups and WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText()
+    if quiet then tooltip:AddLine(quiet,.6,.8,1,true) end
+    tooltip:AddLine(" ")
+    tooltip:AddLine(T("Left-click: Activity log"),1,1,1)
+    tooltip:AddLine(T("Right-click: Options"),1,1,1)
+    if draggable then tooltip:AddLine(T("Drag to move"),.7,.7,.7) end
+end
+-- Same actions as the minimap button: left opens the log, right the options.
+-- Other mouse buttons do nothing, as on the button.
+local function click(which)
+    if which=="RightButton" then SlashCmdList.WOWSTATUS("")
+    elseif which=="LeftButton" then WoWStatusJournal.show() end
+end
+-- The frame our tooltip was last shown on. Leaving hides the tooltip only while
+-- that frame still owns it: moving to the next menu entry can hand GameTooltip
+-- to that entry before our leave handler runs. Remembering the frame also
+-- covers a leave call that passes no frame or a different one.
+local tipOwner
+local function showTooltip(owner,draggable)
+    if not GameTooltip or not owner then return end
+    GameTooltip:SetOwner(owner,"ANCHOR_LEFT");fillTooltip(GameTooltip,draggable);GameTooltip:Show()
+    tipOwner=owner
+end
+local function hideTooltip()
+    local owner=tipOwner;tipOwner=nil
+    if not GameTooltip or not owner then return end
+    if GameTooltip.GetOwner and GameTooltip:GetOwner()~=owner then return end
+    GameTooltip:Hide()
+end
+-- The AddOn Compartment (the minimap's addon list on Retail and Forever) calls
+-- these globals, named by the AddonCompartmentFunc* lines in the TOC (#161). Clients without a
+-- compartment ignore those lines, so the globals are simply never called there.
+-- Clients before 11.0 pass the mouse button as a string; the 11.0 menu passes a
+-- table with buttonName.
+function WoWStatus_OnAddonCompartmentClick(_,input)
+    -- The entry exists from load, before the character is set up; the options
+    -- command then says why nothing opens instead of failing silently.
+    if not db then SlashCmdList.WOWSTATUS("") return end
+    click(type(input)=="table" and input.buttonName or input)
+end
+function WoWStatus_OnAddonCompartmentEnter(_,owner) showTooltip(owner,false) end
+function WoWStatus_OnAddonCompartmentLeave() hideTooltip() end
 function M.init(database)
     db=database
     if button or not Minimap then return end
@@ -69,9 +129,7 @@ function M.init(database)
         pcall(Minimap.HookScript,Minimap,"OnShow",place)
     end
     button:RegisterForClicks("LeftButtonUp","RightButtonUp")
-    button:SetScript("OnClick",function(_,which)
-        if which=="RightButton" then SlashCmdList.WOWSTATUS("") else WoWStatusJournal.show() end
-    end)
+    button:SetScript("OnClick",function(_,which) click(which) end)
     button:RegisterForDrag("LeftButton")
     button:SetScript("OnDragStart",function(self)
         self:SetScript("OnUpdate",function()
@@ -84,32 +142,7 @@ function M.init(database)
         end)
     end)
     button:SetScript("OnDragStop",function(self) self:SetScript("OnUpdate",nil) end)
-    button:SetScript("OnEnter",function(self)
-        if GameTooltip then
-            GameTooltip:SetOwner(self,"ANCHOR_LEFT");GameTooltip:SetText("WoW Status")
-            local T=WoWStatusLocale.T
-            -- Who is online, and the newest thing a friend did.
-            local names=WoWStatusRoster and WoWStatusRoster.onlineNames and WoWStatusRoster.onlineNames() or {}
-            local shown={}
-            for i=1,math.min(#names,8) do shown[i]=names[i]:gsub("|","||") end
-            local list=#names==0 and T("nobody") or (table.concat(shown,", ")..(#names>8 and (" +"..(#names-8)) or ""))
-            GameTooltip:AddLine(T("Online now:").." "..list,.4,1,.4,true)
-            local latest=WoWStatusJournal and WoWStatusJournal.latestFriend and WoWStatusJournal.latestFriend()
-            if latest then
-                local minutes=math.max(0,math.floor((time()-(latest.at or time()))/60))
-                local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
-                local who=(latest.sender:match("^[^-]+") or latest.sender):gsub("|","||")
-                GameTooltip:AddLine(T("Latest:").." "..who.." — "..WoWStatusJournal.deathText(latest):gsub("|","||").." · "..when,1,.82,0,true)
-            end
-            -- Quiet hours (#180): say so, so silence does not look like a fault.
-            local quiet=WoWStatusPopups and WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText()
-            if quiet then GameTooltip:AddLine(quiet,.6,.8,1,true) end
-            GameTooltip:AddLine(" ")
-            GameTooltip:AddLine(T("Left-click: Activity log"),1,1,1)
-            GameTooltip:AddLine(T("Right-click: Options"),1,1,1)
-            GameTooltip:AddLine(T("Drag to move"),.7,.7,.7);GameTooltip:Show()
-        end
-    end)
-    button:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
+    button:SetScript("OnEnter",function(self) showTooltip(self,true) end)
+    button:SetScript("OnLeave",function() hideTooltip() end)
     place();button:Show()
 end

@@ -6,6 +6,10 @@
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber
 ## X-Client-Support: Retail/Mainline only; verify installed build metadata
+## IconTexture: Interface\AddOns\WoWStatus\Textures\Logo
+## AddonCompartmentFunc: WoWStatus_OnAddonCompartmentClick
+## AddonCompartmentFuncOnEnter: WoWStatus_OnAddonCompartmentEnter
+## AddonCompartmentFuncOnLeave: WoWStatus_OnAddonCompartmentLeave
 Diagnostics.lua
 Safe.lua
 Locale.lua
