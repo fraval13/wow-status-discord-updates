@@ -10,7 +10,7 @@ Rules: one `## <version>` heading per release, newest first, matching
 plain text, at most 120 characters, without `|` or markup. An optional
 `## Unreleased` section collects notes for the next release and is not shipped.
 
-## Unreleased
+## 1.57.0
 
 - The WoW Status window can now be sized from 70 to 200 %, typed in Options, and always stays on screen
 
