@@ -29,7 +29,10 @@ DRIVER = r'''
 
 
 def stubs_for(name, at, mono):
-    return (STUBS.replace('return "Thora" end', f'return "{name}" end')
+    # Newer Lua seeds math.random afresh in each runtime; a fixed seed per client
+    # and login keeps the figures the same on every run.
+    seed = sum(name.encode()) * 7919 + int(mono)
+    return (f'math.randomseed({seed})\n' + STUBS.replace('return "Thora" end', f'return "{name}" end')
             .replace('return "Player-123-0001" end', f'return "Player-123-{name}" end')
             + EXTRA + GEAR + f'\n__now={BASE + at}; __mono={mono}\n' + DRIVER)
 
@@ -182,6 +185,7 @@ def test_a_login_sends_at_most_two_messages_a_second_per_prefix_and_loses_nothin
         net.advance(.25)
         if caught_up is None and missing <= ids(me) and gear(me, 'Mira').startswith('item:42:'):
             caught_up = net.now - login
+        if caught_up is not None and net.now - login >= 10:
             break
     after = net.log[mark:]
     first_ten = sent(after, login, 10, sender=ME)
@@ -198,7 +202,8 @@ def test_a_login_sends_at_most_two_messages_a_second_per_prefix_and_loses_nothin
     assert me.eval('WoWStatusLevelPopup') is None  # caught-up entries stay quiet
 
 
-def test_eight_friends_logging_in_together_each_keep_the_same_pace():
+def everyone_logs_in_together():
+    """Eight friends log out, then all log in again at the same moment."""
     names = (ME,) + FRIENDS
     net = Network(names)
     for name in names:
@@ -210,7 +215,11 @@ def test_eight_friends_logging_in_together_each_keep_the_same_pace():
     for i, name in enumerate(names):
         net.relog(name, saved[name], uptime=5000 + i * 37)
     net.advance(30)
-    after = net.log[mark:]
+    return names, login, net.log[mark:]
+
+
+def test_eight_friends_logging_in_together_each_keep_the_same_pace():
+    names, login, after = everyone_logs_in_together()
     for name in names:
         assert busiest_second(after, name) <= 2
         assert len(sent(after, login, 10, sender=name)) <= 42
@@ -225,7 +234,7 @@ def test_the_debug_log_marks_the_login_and_each_log_send_without_the_group():
     net.advance(30)
     me = net.relog(ME, saved)
     net.advance(15)
-    log = list(me.eval('WoWStatusDB.debug_log').values())
+    log = me.eval('table.concat(WoWStatusDB.debug_log, "\\n")').split('\n')
     group = me.eval('(next(character().group_ids))')
     login = [i for i, line in enumerate(log) if line.endswith(' login')]
     assert len(login) == 1
@@ -284,6 +293,13 @@ def figures():
               f'| {by_prefix(sent(after, login, 10, target=ME))} '
               f'| {len(sent(after, login, 10))} '
               f'| {first} s | {done} s | {changed} s | {instance} |')
+
+
+    names, login, after = everyone_logs_in_together()
+    each = [len(sent(after, login, 10, sender=name)) for name in names]
+    received = max(len(sent(after, login, 10, target=name)) for name in names)
+    print(f'\nEight friends logging in together, 0-10 s: {len(sent(after, login, 10))} messages in all, '
+          f'{min(each)} to {max(each)} sent by each, at most {received} received by one.')
 
 
 if __name__ == '__main__':

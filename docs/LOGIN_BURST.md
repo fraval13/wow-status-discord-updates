@@ -21,6 +21,8 @@ To print the table below:
 .venv/bin/python tests/test_login_burst.py
 ```
 
+Each client's random numbers are seeded, so the figures are the same on every
+run with the same Lua (the default test runtime; `--lua=5.1` draws differently).
 The figures are from the mocked clients. They show what the addon asks the game
 to send, not what a live client, its chat throttle or a real realm does with it.
 
@@ -78,13 +80,19 @@ This is fraval13's check; the harness above is not a live client.
 2. After about 20 seconds, log out to the character screen again: the game
    writes SavedVariables then. (A `/reload` also counts as a login and adds a
    `login` line of its own.)
-3. In `WTF/Account/<account>/SavedVariables/WoWStatus.lua`, find the last
-   `debug_log` line ending in `login`. Each line starts with the computer's
-   clock in whole seconds. In the ten seconds after it, count the lines that
-   start with `send ` (character list) and the `log send ` lines that end in
-   `: sent` (log). A `log send` line ending in `throttled` is a try the game
-   asked to wait for; the same packet is logged again when it goes out, so do
-   not count it. `live send` lines are live updates.
+3. Open `WTF/Account/<account>/SavedVariables/WoWStatus.lua` and find the
+   `debug_log` list. The game writes each entry as a quoted string with a
+   comment after it, such as `"1793000000 login", -- [12]`; the number is the
+   computer's clock in whole seconds. Find the last entry whose text is
+   `login`, and in the ten seconds after it count:
+   - entries starting `send ` (character list). They are written just before
+     the send and do not show its result; an equipment snapshot the game
+     throttles is sent, and written, again later.
+   - entries starting `log send ` (log sync), leaving out those ending in
+     `throttled`: that try was refused and the packet is written again when
+     it goes out.
+
+   `live send` entries are live updates, which a login does not send.
 4. `/wstatus debug off`.
 
 The debug log keeps the newest 500 lines and never names a group. With seven
