@@ -386,6 +386,16 @@ function UI.mute(text)
     return text
 end
 local DISABLED = {GameFontDisable=true, GameFontDisableSmall=true, GameFontDisableLarge=true}
+-- Adds a handler after any the frame already has. SetScript would drop the
+-- others (and, in the game, every HookScript hook too).
+function UI.hook(frame, event, fn)
+    if frame.HookScript then return frame:HookScript(event, fn) end
+    local previous = frame.GetScript and frame:GetScript(event)
+    frame:SetScript(event, function(...)
+        if previous then previous(...) end
+        fn(...)
+    end)
+end
 
 function UI.text(parent, font, x, y, width, justify)
     local text = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")

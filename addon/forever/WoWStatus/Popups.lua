@@ -1259,16 +1259,18 @@ function P.react(item, text)
     local send = A.chatSender and A.chatSender()
     if not send or A.chatRestricted() then return false end
     item.reacted = text
-    if entry then entry.reacted = text end
+    -- Realm time, like received reactions, so the Reactions page orders both alike.
+    if entry then entry.reacted, entry.reacted_at = text, WoWStatusSafe.now() end
     -- Reacted from the log while the notification is still up: its buttons go too.
     if entry and active and active ~= item and entryOf(active) == entry then
         active.reacted = text
         if toast and toast:IsShown() then reactionButtons() end
     end
-    if WoWStatusJournal and WoWStatusJournal.redraw then WoWStatusJournal.redraw() end
-    -- Send the chosen whisper; the button describes its intent.
+    -- Send the chosen whisper; the button describes its intent. Chosen before the
+    -- redraw, so the log and the Reactions page show the words actually sent.
     item.whispered = P.reactionText(item, text)
     if entry then entry.whispered = item.whispered end
+    if WoWStatusJournal and WoWStatusJournal.redraw then WoWStatusJournal.redraw() end
     return pcall(send, item.whispered, "WHISPER", nil, item.sender) == true
 end
 -- Reaction buttons sit top right beside the heading. Long ones (such as

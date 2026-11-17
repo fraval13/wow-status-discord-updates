@@ -124,7 +124,8 @@ function G.tour()
     if WoWStatusMainFrame then
         if not WoWStatusMainFrame.tourHooked then
             WoWStatusMainFrame.tourHooked = true
-            WoWStatusMainFrame:SetScript("OnHide", function() G.endTour() end)
+            -- Hooked, not set: other modules (the Reactions page) listen too.
+            WoWStatusUI.hook(WoWStatusMainFrame, "OnHide", function() G.endTour() end)
         end
     end
     return page

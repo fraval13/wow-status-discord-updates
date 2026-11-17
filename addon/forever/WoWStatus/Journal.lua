@@ -1050,6 +1050,7 @@ local function render()
     if panel.character then parts[#parts+1]=(panel.characterName or "?"):gsub("|","||") end
     panel.showing:SetText(#parts>0 and (T("Showing:").." |cffffd100"..table.concat(parts," · ").."|r") or "")
     panel.showAll:SetShown(#parts>0)
+    if WoWStatusReactions then panel.reactionsButton:SetText(WoWStatusReactions.buttonLabel()) end
     panel.typeButton:SetText(T("Type:").." "..(panel.typeFilter and T(J.TYPES[panel.typeFilter][1]) or T("All")))
     panel.personButton:SetText(T("Person:").." "..(panel.character and (panel.characterName or "?"):gsub("|","||") or T("All")))
     panel.child:SetHeight(math.max(360,#list*132))
@@ -1071,7 +1072,7 @@ local function render()
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
-            local said=S.string(e.whispered) or (S.string(e.reacted) and T(e.reacted))
+            local said=J.sentReaction(e)
             local mine=not e.owner and said and ("  |cffffd100"..T("You whispered").." “"..said:gsub("|","||").."”|r") or ""
             row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or "")..mine)
             -- Reaction buttons for a minute after the notification; the log redraws when they expire.
@@ -1085,6 +1086,9 @@ local function render()
 
 end
 refresh=function()
+    -- Every change to the log (reactions, mutes, new or aged-out entries) also
+    -- reaches the Reactions page (#171), even before the Activity page is built.
+    if WoWStatusReactions then WoWStatusReactions.changed() end
     if not panel then return end
     local offset=panel.scroll:GetVerticalScroll()
     local anchor=panel.entriesList and panel.entriesList[math.floor(offset/132)+1]
@@ -1191,7 +1195,11 @@ local function build(parent)
             panel.day=key==today() and "today" or key;panel.scroll:SetVerticalScroll(0);render()
         end)
     end)
-    panel.showing=label(panel,"GameFontHighlight",24,-528,420)
+    -- Recent reactions (#171), with how many arrived since you last looked.
+    panel.reactionsButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.reactionsButton:SetPoint("TOPLEFT",24,-522);panel.reactionsButton:SetSize(130,24)
+    panel.reactionsButton:SetText(T("Reactions"))
+    panel.reactionsButton:SetScript("OnClick",function() if WoWStatusReactions then WoWStatusReactions.show() end end)
+    panel.showing=oneLine(label(panel,"GameFontHighlight",162,-528,282))
     panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
     panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
     panel.showAll:SetScript("OnClick",function()
@@ -1322,6 +1330,11 @@ function J.reaction(text,sender)
         end
     end
     return false
+end
+-- The words you whispered about a friend's entry, or nil.
+function J.sentReaction(e)
+    if type(e)~="table" then return nil end
+    return S.string(e.whispered) or (S.string(e.reacted) and T(e.reacted)) or nil
 end
 -- "GZ! from Mira, Bob · F from Eve", in the order they arrived.
 function J.reactionsText(e)
