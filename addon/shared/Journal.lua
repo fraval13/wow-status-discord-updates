@@ -867,6 +867,10 @@ function J.tick()
     lastSend,allowance=clock,math.max(0,allowance-1)
     P.whispered(item.target)
     local result=P.sendResult(pcall(send,PREFIX,item.text,"WHISPER",item.target))
+    -- The packet's kind only: its second word names the group (#188).
+    if db.debug==true then
+        S.debug("log send "..(item.text:match("^"..S.NONSPACE.."+ "..S.NONSPACE.."+ ("..S.NONSPACE.."+)") or "?").." to "..tostring(item.target)..": "..tostring(result))
+    end
     local wait=P.retryWait(result,item,pacing,clock)
     if wait then allowance,holdUntil=0,clock+wait;return end
     table.remove(sendQueue,1)

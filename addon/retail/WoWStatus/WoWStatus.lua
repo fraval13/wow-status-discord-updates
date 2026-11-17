@@ -583,6 +583,8 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if current then registerSettings();WoWStatusMinimap.init(WoWStatusDB) end
         return
     end
+    -- Marks where a login's traffic starts in the debug log (#188).
+    if event == "PLAYER_LOGIN" then S.debug("login") end
     if event == "PLAYER_LOGIN" or event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_REGEN_ENABLED" then
         if not current then initialize()
         elseif event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_ENTERING_WORLD" then
