@@ -51,28 +51,29 @@ DRIVER = r'''
 '''
 
 
-def stubs_for(name, at, mono):
+def stubs_for(name, at, mono, extra=''):
     # Newer Lua seeds math.random afresh in each runtime; a fixed seed per client
     # and login keeps the figures the same on every run.
     seed = sum(name.encode()) * 7919 + int(mono)
     return (f'math.randomseed({seed})\n' + STUBS.replace('return "Thora" end', f'return "{name}" end')
             .replace('return "Player-123-0001" end', f'return "Player-123-{name}" end')
-            + EXTRA + GEAR + f'\n__now={BASE + at}; __mono={mono}\n' + DRIVER)
+            + EXTRA + GEAR + f'\n__now={BASE + at}; __mono={mono}\n' + DRIVER + extra)
 
 
 class Network:
     """Clients whispering over an in-memory network, with one clock."""
 
-    def __init__(self, names):
+    def __init__(self, names, extra=''):
         self.now = 0.0
         self.clients = {}
         self.offsets = {}
+        self.extra = extra  # client stubs added after the driver, e.g. INSTANCE
         self.log = []  # (time, sender, target, prefix, text)
         for name in names:
             self.join(name, self.fresh(name))
 
     def fresh(self, name):
-        lua = make_lua(stubs_for(name, self.now, 1000 + self.now))
+        lua = make_lua(stubs_for(name, self.now, 1000 + self.now, self.extra))
         lua.eval('WoWStatusGroups.update')('dawnwatch', '')
         # make_lua held back the join announcement; a later login must not send it.
         lua.execute('character().introduced_groups = {}; '
@@ -94,7 +95,7 @@ class Network:
         return saved_variables(lua)
 
     def relog(self, name, saved, uptime=5000):
-        lua = make_lua(stubs_for(name, self.now, uptime) + saved
+        lua = make_lua(stubs_for(name, self.now, uptime, self.extra) + saved
                        + '\nfunction character() for _,c in pairs(WoWStatusDB.characters) do '
                        'if c.identity.guid==UnitGUID("player") then return c end end end\n')
         lua.eval('fire')('PLAYER_ENTERING_WORLD', True, False)
@@ -128,6 +129,30 @@ class Network:
                 self.clients[target].eval('fire')('CHAT_MSG_ADDON', prefix, text, 'WHISPER', sender + '-TestRealm')
 
 
+# Inside an instance the game gives each addon-message prefix 10 messages,
+# regained at one a second, and refuses the rest with a throttle result
+# (docs/LIVE_POPUPS.md). This models that bucket: a refused send never reaches
+# __sent, so the network never delivers it, and it is recorded in __refused.
+INSTANCE = r'''
+    Enum = Enum or {}
+    Enum.SendAddonMessageResult = {Success=0, AddonMessageThrottle=3, ChannelThrottle=8,
+        AddOnMessageLockdown=11, TargetOffline=12}
+    function IsInInstance() return true, "party" end
+    __refused, __buckets = {}, {}
+    C_ChatInfo.SendAddonMessage = function(prefix, text, kind, target)
+        local now, bucket = GetTime(), __buckets[prefix]
+        if not bucket then bucket = {allowance=10, at=now}; __buckets[prefix] = bucket end
+        bucket.allowance = math.min(10, bucket.allowance + (now - bucket.at)); bucket.at = now
+        if bucket.allowance < 1 then
+            table.insert(__refused, {prefix=prefix, text=text, target=target, at=now})
+            return Enum.SendAddonMessageResult.AddonMessageThrottle
+        end
+        bucket.allowance = bucket.allowance - 1
+        table.insert(__sent, {prefix=prefix, text=text, kind=kind, target=target})
+        return Enum.SendAddonMessageResult.Success
+    end
+'''
+
 FRIENDS = ('Eldrin', 'Mira', 'Kael', 'Brann', 'Lys', 'Odo', 'Vex')
 ME = 'Thora'
 PREFIXES = ('WoWStatus', 'WoWStatusLog', 'WoWStatusChr')
@@ -145,7 +170,7 @@ def gear(lua, name):
     return (snapshot and snapshot['items'][1]) or ''
 
 
-def relog_after_absence(friends, missed):
+def relog_after_absence(friends, missed, extra=''):
     """Thora logs out; the friends log `missed` level-ups and Mira changes gear; Thora logs in again.
 
     Returns the network, Thora's new client, the time of her PLAYER_LOGIN, the
@@ -153,7 +178,7 @@ def relog_after_absence(friends, missed):
     a friend wrote that she lacks, whether or not it reached the other friends.
     """
     assert 'Mira' in friends
-    net = Network((ME,) + friends)
+    net = Network((ME,) + friends, extra=extra)
     net.advance(240)  # every list, log and gear snapshot exchanged
     saved = net.leave(ME)
     for i in range(missed):
@@ -264,24 +289,55 @@ def test_the_debug_log_marks_the_login_and_each_log_send_without_the_group():
     assert len(login) == 1
     log = log[login[0]:]
     assert any(' log send H to Mira-TestRealm: sent' in line for line in log)
-    assert any(line.split(' ', 1)[1].startswith('send ') for line in log)  # the character list's own lines
+    # The character list's own lines, each ending in the game's answer (#286).
+    chr_lines = [line for line in log if line.split(' ', 1)[1].startswith('send ')]
+    assert chr_lines and all(line.endswith(': sent') for line in chr_lines)
     assert not any(group in line for line in log)
 
 
-def over_allowance(times):
-    """Sends past the game's per-prefix allowance (10, regained at 1 a second).
+def refusals(lua, prefix):
+    """Texts the modelled instance bucket refused on one prefix (INSTANCE only)."""
+    total = lua.eval('__refused and #__refused or 0')
+    return [lua.eval(f'__refused[{i}].text') for i in range(1, total + 1)
+            if lua.eval(f'__refused[{i}].prefix') == prefix]
 
-    The game applies it to whispers inside instances only (docs/LIVE_POPUPS.md),
-    so this is what a login inside a dungeon would meet.
+
+def facts(lua, name):
+    """What one client knows about another character, as the tooltip reads it."""
+    return lua.eval(f'(WoWStatusRoster.tooltipFacts("{name}-TestRealm"))')
+
+
+def test_a_login_inside_an_instance_keeps_every_character_list_message():
+    """#286: in an instance the character list must wait for the prefix allowance.
+
+    Before the fix it sent two a second regardless and threw the game's answer
+    away, so tens of list, quest, profession, statistics and XP lines were
+    refused and never sent again.
     """
-    allowance, at, over = 10.0, 0.0, 0
-    for when in sorted(times):
-        allowance, at = min(10.0, allowance + when - at), when
-        if allowance >= 1:
-            allowance -= 1
-        else:
-            over += 1
-    return over
+    net, me, _, _, missing = relog_after_absence(FRIENDS, 21, extra=INSTANCE)
+    net.advance(120)
+    dropped = [t for lua in net.clients.values() for t in refusals(lua, 'WoWStatusChr')]
+    assert dropped == [], f'{len(dropped)} character-list messages refused inside an instance'
+    # And the friends really do end up with her lines, not only an empty queue.
+    for name in FRIENDS:
+        seen = facts(net.clients[name], ME)
+        assert seen is not None, f'{name} has no character list row for {ME}'
+        assert seen['quests'] is not None and seen['professions'] is not None, f'{name} lacks lines for {ME}'
+        assert seen['kills'] is not None, f'{name} lacks statistics for {ME}'
+
+
+def instance_losses(friends, missed):
+    """Character-list messages the instance bucket refuses in the 120 s after a login.
+
+    The real send path, not a model: the client runs with INSTANCE, so every
+    send meets the game's allowance and its answer goes back into the addon.
+    """
+    net, _, _, _, _ = relog_after_absence(friends, missed, extra=INSTANCE)
+    net.advance(120)
+    me = net.clients[ME]  # a fresh runtime since the login, so these are its own
+    return len(refusals(me, 'WoWStatusChr')), me.eval(
+        "#(function() local t={} for _,p in ipairs(__sent) do "
+        "if p.prefix=='WoWStatusChr' then t[#t+1]=p end end return t end)()")
 
 
 def figures():
@@ -294,8 +350,8 @@ def figures():
         first, done, changed = catch_up(net, me, login, missing, limit=600, at_least=120)
         after = net.log[mark:]
         # The character list only: the log already waits for the allowance in an instance.
-        roster = [p[0] - login for p in sent(after, login, 120, sender=ME) if p[3] == 'WoWStatusChr']
-        instance = f'{over_allowance(roster)} of {len(roster)}'
+        lost, kept = instance_losses(friends, missed)
+        instance = f'{lost} of {kept + lost}'
 
         def by_prefix(packets):
             counts = collections.Counter(p[3] for p in packets)
