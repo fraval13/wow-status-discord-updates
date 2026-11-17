@@ -260,14 +260,14 @@ def test_tooltip_lists_the_four_newest_friend_entries_newest_first():
 
 def test_tooltip_counts_friend_entries_the_activity_log_has_not_listed_yet():
     thora = tooltip_client()
-    assert 'New in the activity log' not in thora.eval('__hover()')
+    assert 'New since you last opened the log' not in thora.eval('__hover()')
     thora.execute('__receive(30, 300);__receive(31, 200)')
-    assert 'New in the activity log: 2' in thora.eval('__hover()')
+    assert 'New since you last opened the log: 2' in thora.eval('__hover()')
     # Opening the Activity page lists them; entries arriving while it lists them are seen too.
     thora.execute('WoWStatusJournal.show();__receive(32, 100)')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 0
     thora.execute('WoWStatusMainFrame:Hide();__receive(33, 50)')
-    assert 'New in the activity log: 1' in thora.eval('__hover()')
+    assert 'New since you last opened the log: 1' in thora.eval('__hover()')
     # Another page of the window does not list the log.
     thora.execute('WoWStatusMainWindow.show("overview");__receive(34, 40)')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
@@ -275,7 +275,7 @@ def test_tooltip_counts_friend_entries_the_activity_log_has_not_listed_yet():
     # Hiding Mira completely (#169) leaves her out of both the count and the list.
     thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'hide')
     tip = thora.eval('__hover()')
-    assert 'New in the activity log' not in tip and 'Latest:' not in tip
+    assert 'New since you last opened the log' not in tip and 'Latest:' not in tip
     thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
     # The set is saved with the log and survives a reload; IDs no longer in the log go.
@@ -295,23 +295,26 @@ def test_tooltip_counts_friend_entries_the_activity_log_has_not_listed_yet():
     assert thora.eval('WoWStatusJournal.unseenCount()') == 0
 
 
-def test_only_entries_the_open_page_lists_count_as_seen():
+def test_opening_the_log_from_a_closed_window_sees_every_new_entry():
     thora = tooltip_client()
-    # Yesterday's entry (login catch-up) is not on the page's default day.
+    thora.execute('WoWStatusJournal.show();WoWStatusMainFrame:Hide()')
+    # Yesterday's entry (login catch-up) and today's, while the window is closed.
     thora.execute('__receive(30, 86400 * 2);__receive(31, 60)')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    # Opening the log sees both, whichever day or person it shows first.
     thora.execute('WoWStatusJournal.show()')
-    assert thora.eval('WoWStatusJournal.unseenCount()') == 1
-    # A filter that hides it keeps it new while it arrives, too.
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 0
+    thora.execute('WoWStatusMainFrame:Hide();__receive(32, 30)')
+    thora.execute('WoWStatusJournal.showCharacter("Thora-TestRealm")')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 0
+    # The tour shows samples, not the log: it neither sees nor hides news.
     thora.execute('''
-        WoWStatusJournal.showCharacter("Thora-TestRealm")
-        __receive(32, 30)
+        WoWStatusMainFrame:Hide();__receive(33, 20)
+        WoWStatusGuide.touring = function() return true end
+        WoWStatusJournal.show();__receive(34, 10)
+        WoWStatusGuide.touring = function() return false end
     ''')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
-    # Opening it for Mira lists every day, so all of hers are seen.
-    thora.execute('WoWStatusJournal.showCharacter("Mira-TestRealm")')
-    assert thora.eval('WoWStatusJournal.unseenCount()') == 0
-    thora.execute('WoWStatusMainFrame:Hide();__receive(33, 20)')
-    assert thora.eval('WoWStatusJournal.unseenCount()') == 1
 
 
 def test_an_update_replacing_a_relay_claim_counts_as_new():

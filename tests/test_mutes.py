@@ -103,10 +103,10 @@ def test_hide_completely_leaves_them_out_of_every_page_until_unmuted():
         for _, e in pairs(result) do if e.sender == "Mira-TestRealm" then return false end end
         return true
     end)()''')
-    assert thora.eval('WoWStatusJournal.latestFriend()') is None
+    assert thora.eval('#WoWStatusJournal.latestFriends(1)') == 0
     thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
     assert visible(thora) is True
-    assert thora.eval('WoWStatusJournal.latestFriend().sender') == 'Mira-TestRealm'
+    assert thora.eval('WoWStatusJournal.latestFriends(1)[1].sender') == 'Mira-TestRealm'
 
 
 def test_hide_applies_to_recovered_catch_up_entries():

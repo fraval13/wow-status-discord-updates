@@ -57,11 +57,11 @@ local function fillTooltip(tooltip,draggable)
     -- stays readable at the smallest UI scale.
     local J=WoWStatusJournal
     local unseen=J and J.unseenCount and J.unseenCount() or 0
-    if unseen>0 then tooltip:AddLine(T("New in the activity log:").." "..unseen,1,1,1) end
+    if unseen>0 then tooltip:AddLine(T("New since you last opened the log:").." "..unseen,1,1,1) end
     local latest=J and J.latestFriends and J.latestFriends(M.LATEST) or {}
     if #latest>0 then tooltip:AddLine(T("Latest:"),1,.82,0) end
+    local now=S.now()
     for _,e in ipairs(latest) do
-        local now=S.now()
         local minutes=math.max(0,math.floor((now-(e.at or now))/60))
         local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
         -- The name the Activity log shows for them.

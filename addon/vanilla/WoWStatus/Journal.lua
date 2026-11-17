@@ -177,11 +177,14 @@ end
 -- Counts changes to where friends were (a first visit or a death's zone came),
 -- so "Where we are" redraws for them and for nothing else.
 J.zoneRevision=0
--- Friends' entries new to the log and not yet listed on the Activity page, by
+-- Friends' entries new to the log since the Activity page was last opened, by
 -- ID, for the minimap tooltip's count (#179). Kept only on this account. IDs
 -- that leave the log are dropped at login and whenever they are counted.
+-- The tour (#64) fills the page with samples, so the log is not in view then.
+local function touring() return WoWStatusGuide~=nil and WoWStatusGuide.touring() end
 local function markUnseen(entry)
     if entry.owner or entry.sample or entry.legacy or entry.kind=="recap" then return end
+    if not touring() and WoWStatusMainWindow.active()=="activity" then return end
     db.journal.unseen[entry.id]=true
 end
 -- removed: an entry this one replaces, already taken out of the log.
@@ -1096,9 +1099,6 @@ end
 local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
-    -- What the open page lists counts as seen (#179), whatever its filters;
-    -- during the tour the list holds only samples.
-    if panel:IsVisible() then for _,e in ipairs(list) do db.journal.unseen[e.id]=nil end end
     panel.reactUntil=nil
     panel.empty:SetShown(#list==0)
     local day=pickedDay()
@@ -1269,7 +1269,7 @@ local function build(parent)
     return panel
 end
 -- The log is the Activity page of the main window (#57).
-WoWStatusMainWindow.register("activity","Activity",build,function() render() end)
+WoWStatusMainWindow.register("activity","Activity",build,function() J.markSeen();render() end)
 function J.show()
     if not db then return end
     WoWStatusMainWindow.show("activity")
@@ -1316,8 +1316,7 @@ function J.latestFriends(limit)
     end
     return list
 end
-function J.latestFriend() return J.latestFriends(1)[1] end
--- How many friends' entries are new and not yet listed on the Activity page,
+-- How many friends' entries arrived since the Activity page was last opened,
 -- leaving out anything muted, hidden or no longer shared.
 function J.unseenCount()
     if not db then return 0 end
@@ -1328,6 +1327,10 @@ function J.unseenCount()
         elseif J.visible(e) then count=count+1 end
     end
     return count
+end
+-- Opening the Activity page sees everything new, as the tooltip line says.
+function J.markSeen()
+    if db and not touring() then db.journal.unseen={} end
 end
 -- A private recap has no group scopes and is never sent or offered to peers.
 function J.recordRecap(character,at,text,flavour)
