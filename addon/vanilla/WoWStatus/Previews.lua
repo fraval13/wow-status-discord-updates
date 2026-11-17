@@ -167,8 +167,18 @@ function P.show(host)
         end)
         -- Language (optional Nynorsk). Built windows change after a reload.
         panel.language=text(panel,"",24,-options-432,250)
-        panel.languageSwitch=button(panel,"",290,-options-426,150,function()
-            WoWStatusLocale.set(WoWStatusLocale.lang()=="nn" and "en" or "nn")
+        panel.languageSwitch=button(panel,"",290,-options-426,150,function(self)
+            -- Two languages keep the one-click switch; more open a menu (#154).
+            local list=WoWStatusLocale.languages()
+            if #list>2 and WoWStatusUI and WoWStatusUI.menu then
+                local items={}
+                for _,item in ipairs(list) do items[#items+1]={label=item.name,value=item.code} end
+                WoWStatusUI.menu(self,items,function(code)
+                    if WoWStatusLocale.set(code) then panel.refreshLanguage();panel.reload:Show() end
+                end)
+                return
+            end
+            WoWStatusLocale.set(WoWStatusLocale.nextLanguage())
             panel.refreshLanguage()
             panel.reload:Show()
         end)
@@ -301,11 +311,13 @@ function P.show(host)
             widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-594)
             panel.quietKinds[key]=widget
         end
-        -- The switch names its target in that language, so each reader finds it.
         function panel.refreshLanguage()
-            local nn=WoWStatusLocale.lang()=="nn"
-            panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
-            panel.languageSwitch:SetText(nn and "Switch to English" or "Bytt til nynorsk")
+            local lang,list=WoWStatusLocale.lang(),WoWStatusLocale.languages()
+            panel.language:SetText(WoWStatusLocale.T("Language:").." "..(WoWStatusLocale.LANGUAGES[lang] or lang))
+            -- The switch names its target in that language, so each reader finds it.
+            local target=WoWStatusLocale.nextLanguage()
+            panel.languageSwitch:SetText(#list>2 and WoWStatusLocale.T("Change language")
+                or (WoWStatusLocale.SWITCH[target] or ("Switch to "..(WoWStatusLocale.LANGUAGES[target] or target))))
             panel.reload:SetText(WoWStatusLocale.T("Reload to apply"))
         end
         -- Caption personality: the voice of the line under each notification.

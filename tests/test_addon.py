@@ -74,6 +74,8 @@ C_ChatInfo = {
         table.insert(__sent,{text=text,kind=kind,target=target})
     end,
 }
+__locale = nil
+function GetLocale() return __locale or "enUS" end
 function UnitLevel() return __level end
 function UnitClass() return "Warrior", "WARRIOR" end
 function UnitRace() return "Dwarf" end

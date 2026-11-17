@@ -122,6 +122,12 @@ log, records and all 1,300 captions change; what players send each other stays
 English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
 and the release notes stay English.
 
+The language layer is a registry: each language is one file of texts, so adding
+one needs no change to `Locale.lua`. A bank named after a WoW client locale
+(`deDE`, `frFR`, …) is chosen by itself on that client until the player picks
+another, and a text a bank lacks falls back to English on its own. See
+[Adding a display language](docs/TRANSLATIONS.md).
+
 ## Diagnostics and bug reports
 
 When WoW Status itself raises a Lua error, it keeps a copy: the last 10 errors from
@@ -284,5 +290,6 @@ in-game rendering and API availability still require checking.
 - [Activity log, history and timings](docs/IN_GAME_HISTORY.md)
 - [In-game acceptance tests](docs/LIVE_POPUPS.md)
 - [What a login sends](docs/LOGIN_BURST.md)
+- [Adding a display language](docs/TRANSLATIONS.md)
 - [CurseForge listing and automatic uploads](docs/CURSEFORGE.md)
 - [Historical plans and audits](docs/history/README.md)

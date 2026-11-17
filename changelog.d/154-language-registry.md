@@ -1,0 +1,1 @@
+- The addon follows your WoW client language where one exists, and an unfinished translation falls back to English.

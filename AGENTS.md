@@ -76,6 +76,11 @@ be checked against Git and the environment rather than assumed permanently true.
   100 for each of 13 preview categories. Match this with every `Flavour.lua` and
   the seven banks in `website/flavour.js` (preview and main-window demo) when
   editing copy.
+- `Locale.lua`, `Locale<CODE>.lua`: the display language. `Locale.lua` is a
+  registry; each language is one file calling `W.language(code, name, switch)`
+  and adding texts, so a new one needs no change there. A bank named after a WoW
+  client locale is chosen by itself on that client, a saved choice wins, and a
+  missing text falls back to English per string. See `docs/TRANSLATIONS.md`.
 - `Personalities.lua`, `Flavour<Name>.lua`: optional caption personalities (300
   lines per category, English and Nynorsk pairs). The Lua is generated from
   `docs/caption-personalities/<id>/*.json` by `scripts/build_personalities.py`;

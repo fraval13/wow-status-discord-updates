@@ -69,11 +69,9 @@ def test_pages_and_notifications_show_nynorsk():
     ''')
 
 
-def test_every_translated_text_has_a_nynorsk_entry():
-    lua = make_lua()
-    lua.execute('WoWStatusLocale.set("nn")')
-    t = lua.eval('WoWStatusLocale.T')
-    missing = []
+def shown_texts():
+    """Every English text the addon shows, as the source spells it."""
+    texts = []
     for path in sorted((ROOT / 'addon/shared').glob('*.lua')):
         if path.name.startswith(('Locale', 'Flavour')):
             continue
@@ -90,10 +88,23 @@ def test_every_translated_text_has_a_nynorsk_entry():
         found = [t for t in found if t and not t.endswith(" ") and not t.startswith(("GameFont", "Interface", "Minimap"))
                  and "Discord" not in t and "Previewlock" not in t]
         for text in found:
-            text = text.replace('\\n', '\n')
-            if text not in SAME and t(text) == text:
-                missing.append(f'{path.name}: {text}')
-    assert missing == []
+            texts.append((path.name, text.replace('\\n', '\n')))
+    return texts
+
+
+def test_every_language_bank_covers_the_texts_the_windows_show():
+    """Each registered bank, not Nynorsk by name: a new one is held to the same bar (#154)."""
+    lua = make_lua()
+    banks = lua.eval('WoWStatusLocale.BANKS')
+    codes = sorted(banks.keys())
+    assert codes == ['nn'], f'a new bank needs no code change, but this test should list it: {codes}'
+    for code in codes:
+        lua.eval('WoWStatusLocale.set')(code)
+        t = lua.eval('WoWStatusLocale.T')
+        missing = [f'{name}: {text}' for name, text in shown_texts()
+                   if text not in SAME and t(text) == text]
+        assert missing == [], f'{code} is missing:\n' + '\n'.join(missing)
+
 
 
 def test_the_language_switch_is_labelled_when_the_settings_open():
@@ -108,3 +119,58 @@ def test_the_language_switch_is_labelled_when_the_settings_open():
         assert(WoWStatusLocale.lang() == "nn" and panel.languageSwitch.text == "Switch to English")
         assert(panel.language.text == "Språk: Nynorsk" and panel.reload.visible and panel.reload.text == "Last på nytt")
     ''')
+
+
+GERMAN = '''
+    local add = WoWStatusLocale.language("deDE", "Deutsch", "Auf Deutsch umstellen")
+    add({["Close"] = "Schlie\\195\\159en", ["Reactions"] = "Reaktionen"})
+'''
+
+
+def test_a_new_language_is_one_file_and_no_change_to_locale_lua():
+    """What a LocaleDE.lua would do: register a bank, add texts, and be picked up (#154)."""
+    lua = make_lua()
+    lua.execute(GERMAN)
+    assert lua.eval('WoWStatusLocale.set')('deDE') is True
+    assert lua.eval('WoWStatusLocale.lang()') == 'deDE'
+    assert lua.eval('WoWStatusLocale.T("Reactions")') == 'Reaktionen'
+    # Per string, not per language: an untranslated text stays English.
+    assert lua.eval('WoWStatusLocale.T("Records")') == 'Records'
+    names = lua.eval('WoWStatusLocale.languages()')
+    assert [names[i]['code'] for i in range(1, len(names) + 1)] == ['en', 'deDE', 'nn']
+
+
+def test_the_client_locale_picks_the_language_until_the_player_chooses():
+    lua = make_lua()
+    lua.execute(GERMAN)
+    lua.execute('WoWStatusDB.language = nil; __locale = "deDE"')
+    assert lua.eval('WoWStatusLocale.lang()') == 'deDE'
+    # A client with no bank, and an unreadable one, both stay English.
+    lua.execute('__locale = "frFR"')
+    assert lua.eval('WoWStatusLocale.lang()') == 'en'
+    lua.execute('__locale = nil; local saved = GetLocale; GetLocale = nil')
+    assert lua.eval('WoWStatusLocale.lang()') == 'en'
+
+
+def test_a_saved_choice_wins_over_the_client_including_english():
+    lua = make_lua()
+    lua.execute(GERMAN)
+    lua.execute('__locale = "deDE"')
+    assert lua.eval('WoWStatusLocale.set')('en') is True
+    assert lua.eval('WoWStatusDB.language') == 'en'
+    assert lua.eval('WoWStatusLocale.lang()') == 'en'
+    assert lua.eval('WoWStatusLocale.T("Reactions")') == 'Reactions'
+    assert lua.eval('WoWStatusLocale.set')('nn') is True
+    assert lua.eval('WoWStatusLocale.lang()') == 'nn'
+    # An unknown code changes nothing.
+    assert lua.eval('WoWStatusLocale.set')('xxXX') is False
+    assert lua.eval('WoWStatusLocale.lang()') == 'nn'
+
+
+def test_nynorsk_still_switches_both_ways_from_the_options_panel():
+    lua = make_lua()
+    assert lua.eval('WoWStatusLocale.nextLanguage()') == 'nn'
+    lua.eval('WoWStatusLocale.set')('nn')
+    assert lua.eval('WoWStatusLocale.nextLanguage()') == 'en'
+    assert lua.eval('WoWStatusLocale.SWITCH.nn') == 'Bytt til nynorsk'
+    assert lua.eval('WoWStatusLocale.SWITCH.en') == 'Switch to English'

@@ -1,6 +1,11 @@
 -- Nynorsk texts for WoWStatusLocale (English text -> Nynorsk). Display only:
 -- what players send each other stays English, and is translated when shown.
+-- One file, one TOC line: Locale.lua knows nothing about Nynorsk (#154). WoW
+-- has no Norwegian client, so this bank is only ever chosen by hand.
 local W = WoWStatusLocale
+local add = W.language("nn", "Nynorsk", "Bytt til nynorsk")
+-- Journal.lua reads the Nynorsk reaction texts by name, and so do the tests.
+W.NN, W.PATTERNS = W.BANKS.nn.exact, W.BANKS.nn.patterns
 
 -- Profession titles and reputation ranks inside facts.
 local TITLES = {Apprentice="Lærling", Journeyman="Svein", Expert="Ekspert", Artisan="Kunstnar",
@@ -37,7 +42,7 @@ local function recap(text)
     return text
 end
 
-W.add({
+add({
     ["Cannot open now: settings cannot be opened during combat. Try again after combat."] = "Kan ikkje opne no: innstillingane kan ikkje opnast i kamp. Prøv att etter kampen.",
     ["Cannot open now: WoW's addon settings are not ready. Try again shortly."] = "Kan ikkje opne no: tilleggsinnstillingane i WoW er ikkje klare. Prøv att om litt.",
     ["Cannot open now: WoW could not open settings. Try Options > AddOns > WoW Status."] = "Kan ikkje opne no: WoW kunne ikkje opne innstillingane. Prøv Options > AddOns > WoW Status.",
@@ -292,7 +297,7 @@ W.add({
     ["Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW."] =
         "Hent heile røystepakken: kopier lenkja inn i nettlesaren, pakk ho ut i Interface/AddOns og start WoW på nytt.",
     ["Next voice"] = "Neste røyst", ["Use /wstatus voice <name>."] = "Skriv /wstatus voice <namn>.", ["Use /wstatus personality <name>."] = "Skriv /wstatus personality <namn>.",
-    ["Language:"] = "Språk:", ["Reload"] = "Last på nytt", ["Reload to apply"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
+    ["Language:"] = "Språk:", ["Change language"] = "Byt språk", ["Reload"] = "Last på nytt", ["Reload to apply"] = "Last på nytt", ["What's new in WoW Status"] = "Nytt i WoW Status",
     ["Use /wstatus debug on or /wstatus debug off."] = "Bruk /wstatus debug on eller /wstatus debug off.",
     ["Debug log on. Type /reload to save it for reading."] = "Feilsøkingslogg på. Skriv /reload for å lagra han.",
     ["Debug log off."] = "Feilsøkingslogg av.",
@@ -480,7 +485,7 @@ do
         LEGGINGS={"BUKSER", 3}, BOOTS={"STØVLAR", 3}, BRACERS={"ARMVERN", 3}, GLOVES={"HANSKAR", 3},
         RING={"RING", 1}, TRINKET={"TALISMAN", 1}, CLOAK={"KAPPE", 1}, SHIELD={"SKJOLD", 2},
         ["OFF-HAND"]={"HANDGJENSTAND", 1}, TABARD={"VÅPENKJOLE", 1}, RELIC={"RELIKVIE", 1}, ARMOR={"RUSTNING", 1}}
-    WoWStatusLocale.add({}, {{"^(%u+) ([%u%-]+) EQUIPPED!$", function(quality, piece)
+    add({}, {{"^(%u+) ([%u%-]+) EQUIPPED!$", function(quality, piece)
         local adjective, noun = ADJECTIVES[quality], PIECES[piece]
         if adjective and noun then return adjective[noun[2]] .. " " .. noun[1] .. " PÅ!" end
     end}})
@@ -559,7 +564,7 @@ WoWStatusLocale.POOLS = {
 }
 
 -- Character equipment snapshots and combat attributes.
-W.add({
+add({
     ["Equipped gear"] = "Utstyr i bruk", ["Refresh gear"] = "Oppdater utstyr",
     ["Requesting equipment…"] = "Hentar utstyr…",
     ["Average item level"] = "Snittnivå på utstyr", ["Average item level:"] = "Snittnivå på utstyr:",
@@ -606,7 +611,7 @@ W.add({
         "Ingen er dempa. Demp ein ven frå profilen deira på Figurar-sida.",
 })
 -- Diagnostics page (#153). The report itself stays English.
-W.add({
+add({
     ["Diagnostics"] = "Diagnostikk",
     ["1 error recorded since you last looked."] = "1 feil registrert sidan du sist såg.",
     ["%d errors recorded since you last looked."] = "%d feil registrerte sidan du sist såg.",
@@ -621,7 +626,7 @@ W.add({
         "Feil registrerte i WoW Status: %d. Dei kan lesast her når figuren er klar.",
 })
 -- "Play together now" on the Characters page (#156).
-W.add({
+add({
     ["Play together now"] = "Spel saman no", ["%d within %d levels"] = "%d innanfor %d nivå", ["%d within 1 level"] = "%d innanfor 1 nivå",
     ["Level range: ±%d"] = "Nivåspenn: ±%d", ["Your level is not known yet."] = "Nivået ditt er ikkje kjent enno.",
     ["No friends who share their list are online right now."] = "Ingen vener som deler lista si, er pålogga no.",
@@ -634,7 +639,7 @@ W.add({
     ["Your group is full"] = "Gruppa di er full",
 })
 -- What is shared (#152): the guide step and the /wstatus privacy page.
-W.add({
+add({
     ["What friends can see"] = "Kva venene ser",
     ["Apart from whispers you click to send, WoW Status shares only with the members of your groups, through the game's own whispers. Nothing goes to a website or to the author. Read exactly what is shared, what stays on your computer and how to stop."] =
         "Utanom kviskringar du klikkar for å sende, deler WoW Status berre med medlemene i gruppene dine, gjennom kviskringane i sjølve spelet. Ingenting går til ei nettside eller til den som laga tillegget. Les nøyaktig kva som blir delt, kva som blir verande på maskina di, og korleis du stoppar det.",
@@ -694,14 +699,14 @@ W.add({
         "Venene dine beheld oppdateringane dei alt har fått, i sin eigen logg.",
 })
 -- Players ranking and mains on the Leaderboard (#200).
-W.add({
+add({
     ["View:"] = "Vis:", ["Players"] = "Spelarar", ["Player"] = "Spelar", ["Main:"] = "Hovudfigur:",
     ["Automatic"] = "Automatisk", ["main"] = "hovudfigur", ["highest level, no main chosen"] = "høgast nivå, ingen hovudfigur vald",
     ["Alts:"] = "Andre figurar:", ["%d more"] = "%d til", ["You"] = "Du",
 })
 
 -- Shared group goals (#157).
-W.add({
+add({
     ["Group goal"] = "Gruppemål", ["Group goal reached"] = "Gruppemålet nådd", ["GOAL REACHED!"] = "MÅLET ER NÅDD!",
     ["Goal…"] = "Mål …", ["Goal:"] = "Mål:", ["Goal reached!"] = "Målet er nådd!", ["Goal reached:"] = "Målet er nådd:",
     ["No group goal yet."] = "Ikkje noko gruppemål enno.",
@@ -734,7 +739,7 @@ W.add({
     ["Next group"] = "Neste gruppe", ["Set goal"] = "Set mål", ["Clear goal"] = "Fjern målet",
 })
 -- "Where we are" on the Characters page (#168).
-W.add({
+add({
     ["Where we are"] = "Kvar vi er", ["1 friend"] = "1 ven", ["%d friends"] = "%d vener",
     ["1 zone"] = "1 område", ["%d zones"] = "%d område", ["your zone"] = "området ditt",
     ["just now"] = "akkurat no", ["%d min ago"] = "for %d min sidan", ["+%d more"] = "+%d til",
