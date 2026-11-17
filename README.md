@@ -101,7 +101,14 @@ ranks one row per player by their main character, with their alts listed under i
 chosen group (one per group, shared with its members); until you choose, your
 highest-level shown character is used and is marked as a default, not a choice.
 A hidden character is never a main. **Records** holds Firsts,
-This week and Fun records.
+This week and Fun records. **Export** copies the selected Records view as CSV.
+The Activity page also has **Export**, using its current day, person, type and
+All/Mine/Friends filters, including entries below the visible cards. The copy
+window warns that character and player names are included; known group names and
+routing IDs are removed. Nothing is sent automatically. Select all and copy with
+the game's normal copy shortcut; use **Next page** for longer exports. Each page
+has its own header. Event timestamps use ISO 8601 UTC; weekly period dates follow
+the Records view. Export is unavailable in the sample tour.
 
 In **Settings → WoW Status → Characters shown to friends**, untick any of your
 saved characters to hide bank alts from everyone's character list, Overview and

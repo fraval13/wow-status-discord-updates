@@ -113,6 +113,9 @@ function methods:GetScript(name) return self[name] end
 function methods:GetChecked() return self.checked end
 function methods:SetChecked(value) self.checked=value end
 function methods:SetText(value) self.text=value end
+function methods:SetEnabled(value) self.enabled=value end
+function methods:SetMultiLine(value) self.multiline=value end
+function methods:SetFontObject(value) self.font=value end
 function methods:GetText() return self.text or "" end
 function methods:Insert(value) self.text=(self.text or "")..value end
 function methods:Show() self.visible=true end
@@ -252,6 +255,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Presentation.lua')
     run_addon_file(runtime, root / 'Popups.lua')
     run_addon_file(runtime, root / 'Journal.lua')
+    run_addon_file(runtime, root / 'Export.lua')
     run_addon_file(runtime, root / 'WhatsNewData.lua')
     run_addon_file(runtime, root / 'WhatsNew.lua')
     run_addon_file(runtime, root / 'Firsts.lua')
