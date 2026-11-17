@@ -1263,7 +1263,7 @@ function R.reportAge(at)
     if not at or S.outside(at, R.WHERE_MAX_AGE, 300) then return nil end
     local realm = S.now() - at
     if realm >= -300 and realm <= R.WHERE_MAX_AGE then return math.max(0, realm) end
-    return math.max(0, time() - at)
+    return math.max(0, (S.localNow() or S.now()) - at)
 end
 function R.whereWeAre(groups)
     local result = {zones={}, people=0}
