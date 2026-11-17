@@ -333,6 +333,12 @@ W.add({
     ["Fire"] = "eld", ["Lava"] = "lava", ["Slime"] = "slim",
     -- Reactions
     ["from"] = "frå", ["Git Good"] = "Øv deg litt meir, så døyr du kanskje sjeldnare!", ["GZ!"] = "Eg ynskjer deg hjarteleg til lukke med det nye nivået!", ["F"] = "Eg tek av meg hjelmen og bøyer hovudet i sorg.",
+    -- Recent reactions (#171)
+    ["Reactions"] = "Reaksjonar", ["New"] = "Ny", ["You to"] = "Du til",
+    ["Reactions from friends to your updates, and the ones you sent. Choose one to see its update."] =
+        "Reaksjonar frå vener på oppdateringane dine, og dei du sende. Vel éin for å sjå oppdateringa.",
+    ["No reactions yet. When friends react to your updates, or you to theirs, they appear here."] =
+        "Ingen reaksjonar enno. Når vener reagerer på oppdateringane dine, eller du på deira, dukkar dei opp her.",
     -- New version notice
     ["is available"] = "er tilgjengeleg", ["you have"] = "du har",
     ["Get it at wow.frankvalde.com; the CurseForge app can take a few hours."] =

@@ -49,6 +49,7 @@ WhatsNewData.lua
 WhatsNew.lua
 Firsts.lua
 Leaderboard.lua
+Reactions.lua
 Recaps.lua
 Equipment.lua
 EquipmentSync.lua

@@ -1259,7 +1259,7 @@ function P.react(item, text)
     local send = A.chatSender and A.chatSender()
     if not send or A.chatRestricted() then return false end
     item.reacted = text
-    if entry then entry.reacted = text end
+    if entry then entry.reacted, entry.reacted_at = text, time() end
     -- Reacted from the log while the notification is still up: its buttons go too.
     if entry and active and active ~= item and entryOf(active) == entry then
         active.reacted = text
@@ -1269,6 +1269,7 @@ function P.react(item, text)
     -- Send the chosen whisper; the button describes its intent.
     item.whispered = P.reactionText(item, text)
     if entry then entry.whispered = item.whispered end
+    if WoWStatusReactions then WoWStatusReactions.redraw() end
     return pcall(send, item.whispered, "WHISPER", nil, item.sender) == true
 end
 -- Reaction buttons sit top right beside the heading. Long ones (such as
