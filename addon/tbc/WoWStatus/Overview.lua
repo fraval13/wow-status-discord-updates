@@ -15,8 +15,120 @@ local function state()
     return WoWStatusDB.overview
 end
 
-local function plural(count, one, many) return count == 1 and one or (count .. " " .. many) end
+-- "Not seen for a while" (#172): friends whose shared character list shows no
+-- activity for this many days. Account-wide in WoWStatusDB.overview.not_seen_days;
+-- 0 is off and the default (14) is stored as nothing. Purely local: it reads the
+-- log and the character lists already here and never sends or whispers anything.
+O.NOT_SEEN_CHOICES = {0, 7, 14, 30}
+O.NOT_SEEN_DEFAULT = 14
+local NOT_SEEN_SHOWN = 3
 local function name(sender) return (tostring(sender or "?"):match("^[^-]+") or "?") end
+local function notSeenChoice(days)
+    for i, choice in ipairs(O.NOT_SEEN_CHOICES) do if choice == days then return i end end
+end
+function O.notSeenDays()
+    local data = state()
+    local value = data and S.number(data.not_seen_days)
+    return notSeenChoice(value) and value or O.NOT_SEEN_DEFAULT
+end
+function O.setNotSeenDays(days)
+    local data = state()
+    if not data or not notSeenChoice(days) then return false end
+    data.not_seen_days = days ~= O.NOT_SEEN_DEFAULT and days or nil
+    return true
+end
+-- The next choice after the current one, wrapping round (the Options button).
+function O.cycleNotSeenDays()
+    local choices = O.NOT_SEEN_CHOICES
+    O.setNotSeenDays(choices[notSeenChoice(O.notSeenDays()) % #choices + 1])
+    return O.notSeenDays()
+end
+function O.notSeenLabel(days)
+    days = days or O.notSeenDays()
+    if days == 0 then return T("Off") end
+    return TF("%d days", days)
+end
+
+-- Players quiet for at least `days`, longest first: {player, days, more}.
+-- groups: R.groups(); now and the stamps are realm time (S.now). Only players
+-- whose shared character list is here count (not "Not announced" senders), and
+-- only while they share a group you are still in. One online character means
+-- they are around. Hidden bank alts are already left out of R.groups.
+-- When their newest activity is older than the oldest friend entry the log still
+-- holds (`oldest`), later entries of theirs may have been dropped from the log,
+-- so it reads "more than N days", N being how far back the log reaches.
+local UNNAMED = "Unnamed player"
+function O.notSeen(groups, now, days, oldest)
+    local result = {}
+    if not days or days <= 0 or type(now) ~= "number" then return result end
+    local function consider(player, rows)
+        local listed, online, seen = false, false, 0
+        for _, row in ipairs(rows) do
+            -- A friend muted with "Hide completely" (#169) stays out of it.
+            if row.listed and type(row.groupIds) == "table" and next(row.groupIds)
+                and not (WoWStatusMutes and WoWStatusMutes.hidden(row.name)) then
+                listed = true
+                if row.status == "online" then online = true end
+                seen = math.max(seen, S.number(row.seen) or 0)
+            end
+        end
+        if not listed or online or seen <= 0 then return end
+        local quiet = math.floor(math.max(0, now - seen) / 86400)
+        if quiet < days then return end
+        local item = {player=player, days=quiet}
+        if type(oldest) == "number" and seen < oldest then
+            local span = math.floor(math.max(0, now - oldest) / 86400)
+            if span >= days then item.days, item.more = span, true end
+        end
+        table.insert(result, item)
+    end
+    for _, entry in ipairs(groups or {}) do
+        if not entry.self then
+            local title = tostring(entry.name or entry.title or "?")
+            if title == UNNAMED then
+                -- Lists without a player name are merged under one header; each
+                -- character there may be a different person, so each stands alone.
+                for _, row in ipairs(entry.rows or {}) do
+                    consider(name(row.name), {row})
+                end
+            else
+                consider(title, entry.rows or {})
+            end
+        end
+    end
+    table.sort(result, function(a, b)
+        if a.days ~= b.days then return a.days > b.days end
+        return a.player < b.player
+    end)
+    return result
+end
+
+-- The oldest friend entry still in the log, or nil with none.
+function O.logStart(entries)
+    local oldest
+    for _, e in ipairs(entries or {}) do
+        local at = type(e) == "table" and not e.owner and S.number(e.at)
+        if at and (not oldest or at < oldest) then oldest = at end
+    end
+    return oldest
+end
+
+-- "Not seen for a while: Thora (12 days), Bran (more than 31 days)", or nil.
+function O.notSeenLine(list)
+    if not list or #list == 0 then return nil end
+    local parts = {}
+    for i, item in ipairs(list) do
+        if i > NOT_SEEN_SHOWN then
+            table.insert(parts, TF("%d more", #list - NOT_SEEN_SHOWN)); break
+        end
+        local name = item.player:gsub("|", "||")
+        local span = TF(item.more and "more than %d days" or "%d days", item.days)
+        table.insert(parts, name .. " (" .. span .. ")")
+    end
+    return T("Not seen for a while:") .. " " .. table.concat(parts, ", ")
+end
+
+local function plural(count, one, many) return count == 1 and one or (count .. " " .. many) end
 
 -- Facts per player, newest player first. Each fact links to its newest entry.
 -- entries: newest first, as WoWStatusJournal.entries() returns them.
@@ -207,6 +319,13 @@ local function renderGroup()
     -- Everyone online, scrolling when the box is full.
     group.names:SetText(#names > 0 and table.concat(names, "\n") or (groups > 0 and T("Nobody else is online right now.") or ""))
     group.list:SetHeight(math.max(1, (S.number(group.names:GetStringHeight()) or 0) + 4))
+    -- Friends not seen for a while (#172), under the names. Only shown, never sent.
+    local days = O.notSeenDays()
+    local text
+    if groups > 0 and days > 0 and WoWStatusRoster.groups then
+        text = O.notSeenLine(O.notSeen(WoWStatusRoster.groups(), S.now(), days, O.logStart(WoWStatusJournal.entries())))
+    end
+    group.notSeen:SetText(text or "")
 end
 
 -- The "Latest records" box: the three newest Firsts medals.
@@ -329,10 +448,14 @@ local function build(parent)
     UI.header(group, T("Your group"), 12, -10, 312)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
     group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
-    group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 70)
-    group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 70)
+    group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 64)
+    group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 64)
     group.scroll:SetScrollChild(group.list)
     group.names = UI.text(group.list, "GameFontHighlightSmall", 0, 0, 280)
+    -- At most three lines, so a long list never runs out of the box.
+    group.notSeen = UI.text(group, "GameFontDisableSmall", 12, -124, 312)
+    group.notSeen:SetHeight(38)
+    if group.notSeen.SetMaxLines then pcall(group.notSeen.SetMaxLines, group.notSeen, 3) end
     -- Group goal (#157)
     local goal = UI.box(page, 698, 40); goal:SetPoint("TOPLEFT", 24, -178); page.goal = goal
     goal.title = UI.text(goal, "GameFontHighlight", 12, -6, 360)

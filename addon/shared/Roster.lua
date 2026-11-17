@@ -2062,8 +2062,9 @@ function R.groups()
         local k = key(character.name)
         if not k or known[k] then return end
         known[k] = true
+        local seen = math.max(lastSeen[k] or 0, S.number(character.at) or 0)
         local status = self and (k == key(WoWStatusPopups.characterName(current)) and "online" or "offline")
-            or (online[k] and "online") or ("last seen " .. ago(math.max(lastSeen[k] or 0, character.at or 0)))
+            or (online[k] and "online") or ("last seen " .. ago(seen))
         -- Shared groups, by this account's own labels for them.
         local labels, ids = {}, {}
         for group in pairs(shared[k] or character.groups or {}) do
@@ -2078,7 +2079,9 @@ function R.groups()
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
             honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts),
             professions=character.professions, listed=character.listed == true, zone=zones[k] or nil,
-            pid=character.pid, player_name=character.player_name})
+            pid=character.pid, player_name=character.player_name,
+            -- Newest activity known (log entry or shared list), for "Not seen for a while" (#172).
+            seen=not self and seen > 0 and seen or nil})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info

@@ -169,12 +169,13 @@ local function label(parent, text, x, y, width)
 end
 
 local openSettings, registerSettings
+local NOT_SEEN_HEIGHT = 84 -- The "Friends not seen for a while" section.
 
 local function showPanel(host)
     if not current then say("Character is not ready."); return end
     if not panel then
         panel = CreateFrame("Frame", "WoWStatusSetup", UIParent)
-        panel:SetSize(600, (WoWStatusScreenshots.available() and 1566 or 1426) + WoWStatusUnitTooltip.HEIGHT)
+        panel:SetSize(600, (WoWStatusScreenshots.available() and 1566 or 1426) + WoWStatusUnitTooltip.HEIGHT + NOT_SEEN_HEIGHT)
         panel:SetPoint("CENTER");panel:SetFrameStrata("DIALOG");panel:EnableMouse(true)
         panel.background=panel:CreateTexture(nil,"BACKGROUND")
         panel.background:SetAllPoints();panel.background:SetColorTexture(.025,.035,.055,.96)
@@ -239,6 +240,14 @@ local function showPanel(host)
         section("Friends' tooltips",bottom)
         panel.unitTooltip=WoWStatusUnitTooltip.buildSettings(panel,bottom-36)
         bottom=bottom-36-WoWStatusUnitTooltip.HEIGHT
+        -- "Not seen for a while" on the Overview (#172). Account-wide, local only.
+        section("Friends not seen for a while",bottom)
+        label(panel,"List friends on the Overview after this many quiet days:",24,bottom-40,320)
+        panel.notSeen=button(panel,"",360,bottom-38,180,function(self)
+            WoWStatusOverview.cycleNotSeenDays(); self:SetText(WoWStatusOverview.notSeenLabel())
+            if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
+        end)
+        bottom=bottom-NOT_SEEN_HEIGHT
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
         button(panel,"Diagnostics",214,bottom,170,function() WoWStatusDiagnostics.show() end)
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
@@ -419,6 +428,7 @@ refresh = function()
     if not panel then return end
     if panel.visibility then panel.visibility:refresh() end
     if panel.unitTooltip then panel.unitTooltip:refresh() end
+    if panel.notSeen then panel.notSeen:SetText(WoWStatusOverview.notSeenLabel()) end
     for _, entry in ipairs(panel.checks) do
         local target = entry.group and current.settings[entry.group] or current.settings
         entry.widget:SetChecked(target[entry.key])
