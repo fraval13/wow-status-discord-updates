@@ -82,7 +82,7 @@ W.add({
     ["Dungeons, mounts and honor kills"] = "Fangehol, ridedyr og æresdrap", ["Honorable kills"] = "Æresdrap",
     ["Dungeons cleared"] = "Fangehol klarte", ["Mounts"] = "Ridedyr",
     ["Online now:"] = "Pålogga no:", ["nobody"] = "ingen", ["Latest:"] = "Sist:",
-    ["New since you last opened the log:"] = "Nytt sidan du sist opna loggen:",
+    ["New in the activity log:"] = "Nytt i aktivitetsloggen:",
     ["Sounds"] = "Lydar", ["New zones"] = "Nye område", ["Everything else"] = "Alt anna", ["None"] = "Ingen",
     ["Group joins"] = "Nye i gruppa", ["Big moments"] = "Store augneblinkar", ["Same as usual"] = "Som vanleg",
     ["Same as Everything else"] = "Som «Alt anna»",

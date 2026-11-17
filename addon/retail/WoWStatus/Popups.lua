@@ -1868,7 +1868,7 @@ function P.broadcast(character, event)
         if not WoWStatusLoot.allowed(character.settings,info) then return end
         local name=info.name or (info.item or ""):match("%[([^%]]+)%]") or "Armor"
         name=name:gsub(S.CONTROL_OR_PIPE," ")
-        if #name>72 then name=name:sub(1,69):gsub("[\194-\244][\128-\191]*$","").."..." end
+        name=S.cut(name,72)
         text="WSTATUS7 "..A.client_id.." loot "..event.at.." "..nonce.." "..info.quality.." "..info.class_id.." "..info.equip_loc.." "..info.item_id.." "..name
     elseif event.kind == "dungeon" then
         local id,name=event.data.instance_id,event.data.name
@@ -1892,9 +1892,7 @@ function P.broadcast(character, event)
         local modern = extended or event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
             or event.kind == "unlock" or event.kind == "pvp"
         local limit = modern and 120 or 48
-        if #detail > limit then
-            detail = detail:sub(1, limit-3):gsub("[\194-\244][\128-\191]*$", "") .. "..."
-        end
+        detail = S.cut(detail, limit)
         -- Never send a text that updated receivers would reject and report as invalid.
         if WoWStatusJournal and not WoWStatusJournal.validText(event.kind, detail) then
             status("invalid_text", event); return

@@ -107,14 +107,14 @@ def test_tooltip_shows_who_is_online_and_the_latest_friend_entry():
         local all = table.concat(__tip, "\\n")
         assert(all:find("Online now: Mira", 1, true), all)
         assert(all:find("Latest:", 1, true), all)
-        assert(all:find("LevelUp:0|t Mira — Reached level 30! · 5 min", 1, true), all)
+        assert(all:find("LevelUp:0|t Mira (Frank) — Reached level 30! · 5 min", 1, true), all)
         assert(all:find("Left-click: Activity log", 1, true))
         assert(all:find("Drag to move", 1, true))
         -- The Retail AddOn Compartment entry shows the same tooltip, minus dragging (#161).
         local owner = CreateFrame("Button")
         WoWStatus_OnAddonCompartmentEnter("WoWStatus", owner)
         local entry = table.concat(__tip, "\\n")
-        assert(entry:find("Mira — Reached level 30! · 5 min", 1, true), entry)
+        assert(entry:find("Mira (Frank) — Reached level 30! · 5 min", 1, true), entry)
         assert(entry:find("Right-click: Options", 1, true), entry)
         assert(not entry:find("Drag to move", 1, true), entry)
         WoWStatus_OnAddonCompartmentLeave("WoWStatus", owner)
@@ -258,26 +258,27 @@ def test_tooltip_lists_the_four_newest_friend_entries_newest_first():
     assert lines[-4:] == [' ', 'Left-click: Activity log', 'Right-click: Options', 'Drag to move']
 
 
-def test_tooltip_counts_entries_new_since_the_log_was_last_opened():
+def test_tooltip_counts_friend_entries_the_activity_log_has_not_listed_yet():
     thora = tooltip_client()
-    assert 'New since' not in thora.eval('__hover()')
+    assert 'New in the activity log' not in thora.eval('__hover()')
     thora.execute('__receive(30, 300);__receive(31, 200)')
-    assert 'New since you last opened the log: 2' in thora.eval('__hover()')
-    # Opening the Activity page sees them; entries arriving while it is open are seen too.
+    assert 'New in the activity log: 2' in thora.eval('__hover()')
+    # Opening the Activity page lists them; entries arriving while it lists them are seen too.
     thora.execute('WoWStatusJournal.show();__receive(32, 100)')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 0
     thora.execute('WoWStatusMainFrame:Hide();__receive(33, 50)')
-    assert 'New since you last opened the log: 1' in thora.eval('__hover()')
-    # Another page of the window does not count as looking at the log.
+    assert 'New in the activity log: 1' in thora.eval('__hover()')
+    # Another page of the window does not list the log.
     thora.execute('WoWStatusMainWindow.show("overview");__receive(34, 40)')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    thora.execute('WoWStatusMainFrame:Hide()')
     # Hiding Mira completely (#169) leaves her out of both the count and the list.
     thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'hide')
     tip = thora.eval('__hover()')
-    assert 'New since' not in tip and 'Mira' not in tip.split('Online now:')[1].split('\n', 1)[1]
+    assert 'New in the activity log' not in tip and 'Latest:' not in tip
     thora.eval('WoWStatusMutes.setCharacter')('Mira-TestRealm', 'show')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
-    # The count is saved with the log and survives a reload; IDs no longer in the log go.
+    # The set is saved with the log and survives a reload; IDs no longer in the log go.
     thora.execute('''
         WoWStatusDB.journal.unseen["gone:1"] = true
         WoWStatusDB.journal.unseen[1] = "corrupt"
@@ -286,8 +287,50 @@ def test_tooltip_counts_entries_new_since_the_log_was_last_opened():
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
     assert thora.eval('WoWStatusDB.journal.unseen["gone:1"]') is None
     assert thora.eval('WoWStatusDB.journal.unseen[1]') is None
+    # An ID that leaves the log later (here by hand) is dropped when counted.
+    thora.execute('WoWStatusDB.journal.unseen["gone:2"] = true')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    assert thora.eval('WoWStatusDB.journal.unseen["gone:2"]') is None
     thora.execute('WoWStatusDB.journal.unseen = "corrupt";WoWStatusJournal.init(WoWStatusDB, character())')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 0
+
+
+def test_only_entries_the_open_page_lists_count_as_seen():
+    thora = tooltip_client()
+    # Yesterday's entry (login catch-up) is not on the page's default day.
+    thora.execute('__receive(30, 86400 * 2);__receive(31, 60)')
+    thora.execute('WoWStatusJournal.show()')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 1
+    # A filter that hides it keeps it new while it arrives, too.
+    thora.execute('''
+        WoWStatusJournal.showCharacter("Thora-TestRealm")
+        __receive(32, 30)
+    ''')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 2
+    # Opening it for Mira lists every day, so all of hers are seen.
+    thora.execute('WoWStatusJournal.showCharacter("Mira-TestRealm")')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 0
+    thora.execute('WoWStatusMainFrame:Hide();__receive(33, 20)')
+    assert thora.eval('WoWStatusJournal.unseenCount()') == 1
+
+
+def test_an_update_replacing_a_relay_claim_counts_as_new():
+    thora = tooltip_client()
+    thora.execute('''
+        -- A relay's claim on Mira's event, already seen in the log.
+        local group = next(character().group_ids)
+        local id = WoWStatusJournal.eventID("Mira-TestRealm", "1-1-a")
+        table.insert(WoWStatusDB.journal.entries, {id=id, client=character().identity.client, sender="Mira-TestRealm",
+            kind="level", level=29, at=time()-60, text="Reached level 29!", groups={[group]=true},
+            origin="catchup", relay="Eldrin-TestRealm"})
+        WoWStatusJournal.init(WoWStatusDB, character())
+        assert(WoWStatusJournal.contains(id))
+        assert(WoWStatusJournal.unseenCount() == 0)
+        -- Mira's own copy says something else: that is news.
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="level",level=30,at=time()-60,group_id=group})
+        assert(WoWStatusJournal.entry(id).level == 30)
+        assert(WoWStatusJournal.unseenCount() == 1)
+    ''')
 
 
 def test_tooltip_cuts_long_entries_without_splitting_a_letter():

@@ -57,15 +57,18 @@ local function fillTooltip(tooltip,draggable)
     -- stays readable at the smallest UI scale.
     local J=WoWStatusJournal
     local unseen=J and J.unseenCount and J.unseenCount() or 0
-    if unseen>0 then tooltip:AddLine(T("New since you last opened the log:").." "..unseen,1,1,1) end
+    if unseen>0 then tooltip:AddLine(T("New in the activity log:").." "..unseen,1,1,1) end
     local latest=J and J.latestFriends and J.latestFriends(M.LATEST) or {}
     if #latest>0 then tooltip:AddLine(T("Latest:"),1,.82,0) end
     for _,e in ipairs(latest) do
-        local minutes=math.max(0,math.floor((S.now()-(e.at or S.now()))/60))
+        local now=S.now()
+        local minutes=math.max(0,math.floor((now-(e.at or now))/60))
         local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
-        local who=(e.sender:match("^[^-]+") or e.sender):gsub("|","||")
-        local text=J.deathText(e)
-        if #text>M.TEXT_LENGTH then text=text:sub(1,M.TEXT_LENGTH-3):gsub("[\194-\244][\128-\191]*$","").."..." end
+        -- The name the Activity log shows for them.
+        local who=WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender)
+            or e.sender:match("^[^-]+") or e.sender
+        who=who:gsub("|","||")
+        local text=S.cut(J.deathText(e),M.TEXT_LENGTH)
         local icon=WoWStatusPresentation and WoWStatusPresentation.theme(e)
         icon=icon and ("|T"..icon..":0|t ") or ""
         tooltip:AddLine(icon..who.." — "..text:gsub("|","||").." · "..when,1,.82,0,true)
