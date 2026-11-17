@@ -2176,7 +2176,7 @@ local function star(parent)
         -- The list reorders at once, so this star may now belong to someone
         -- else: a quick second click (a double-click) is ignored, and the
         -- tooltip, which described the one just pinned, closes.
-        local now = GetTime and GetTime() or time()
+        local now = S.uptime()
         if starClicked and now - starClicked < R.STAR_REPEAT then return end
         starClicked = now
         R.togglePin(self.pinKind, self.pinName)
