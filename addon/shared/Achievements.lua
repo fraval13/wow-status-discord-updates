@@ -96,6 +96,10 @@ end
 function AC.earned(rawID, alreadyEarned)
     if not character or not emit or not AC.available() then return nil end
     if S.value(alreadyEarned) == true then return nil end
+    -- Unticked means off: nothing new is recorded, as before the first tick.
+    -- What was recorded while it was on stays in the log.
+    local settings = character.settings
+    if not (settings.in_game and settings.in_game.achievement) then return nil end
     local id = AC.id(rawID)
     if not id or not AC.info(id) then return nil end
     return emit("achievement", {achievement_id=id})

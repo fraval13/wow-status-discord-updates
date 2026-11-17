@@ -218,3 +218,21 @@ def test_discord_text_names_the_achievement_id(payload, clone):
     text = announcement({'identity': {'name': 'Thora', 'realm': 'Test'}, 'kind': 'achievement',
                          'data': {'achievement_id': 43}, 'at': 1793000000})
     assert text.startswith('**Thora** · earned achievement 43\n')
+
+
+def test_unticking_stops_recording_and_legacy_sends_use_the_cap():
+    lua = retail_runtime(extra=ACHIEVEMENTS)
+    lua.eval('WoWStatusGroups.update')('dawnwatch', '')
+    enable(lua)
+    lua.execute('''
+        fire("ACHIEVEMENT_EARNED",42,false)
+        assert(#character().events==1)
+        character().settings.in_game.achievement=false   -- collection stays true after a tick
+        fire("ACHIEVEMENT_EARNED",43,false)
+        assert(#character().events==1)
+        -- The legacy channel (no group) counts toward the session cap too.
+        character().settings.in_game.achievement=true
+        character().group_ids={};WoWStatusDB.popups.legacy_channel=true
+        for _,id in ipairs({43,46,522,523,2141,2142}) do fire("ACHIEVEMENT_EARNED",id,false) end
+        assert(WoWStatusDB.popups.last_send.state=="session_cap")
+    ''')

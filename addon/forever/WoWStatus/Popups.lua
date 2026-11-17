@@ -1860,20 +1860,19 @@ function P.broadcast(character, event)
     if #text > 220 then return end
     -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
     local groups, full = WoWStatusGroups.selected(character), false
+    local items = {}
+    for id in pairs(groups) do
+        if event.group_ids and event.group_ids[id] then items[#items + 1] = {message = text, at = event.at, event = event, group_id = id} end
+    end
+    if not next(groups) and prefs.legacy_channel then items[#items + 1] = {message = text, at = event.at, event = event} end
     -- Achievements (#165): only a send that will be queued uses the session cap.
     -- Past it the event stays in the log, which friends catch up quietly.
-    if event.kind == "achievement" and #outgoing < 32 then
-        local target = false
-        for id in pairs(groups) do if event.group_ids and event.group_ids[id] then target = true end end
-        if target and not WoWStatusAchievements.spend() then status("session_cap", event); return end
+    if event.kind == "achievement" and #items > 0 and #outgoing < 32 and not WoWStatusAchievements.spend() then
+        status("session_cap", event); return
     end
-    local function enqueue(item)
+    for _, item in ipairs(items) do
         if #outgoing < 32 then table.insert(outgoing, item) else full = true end
     end
-    for id in pairs(groups) do
-        if event.group_ids and event.group_ids[id] then enqueue({message = text, at = event.at, event = event, group_id = id}) end
-    end
-    if not next(groups) and prefs.legacy_channel then enqueue({message = text, at = event.at, event = event}) end
     status(full and "send_queue_full" or #outgoing > 0 and "queued" or "no_group_selected", event)
     P.tick()
 end
