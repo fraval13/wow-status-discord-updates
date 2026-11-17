@@ -1,7 +1,7 @@
 -- Recent reactions (#171): the reactions friends whispered about your updates
 -- and the ones you sent them, newest first, so coming back from a raid shows
 -- what you missed. A main-window page without a tab, opened from the Activity
--- page (or /wowstatus reactions). It only reads what the log already keeps
+-- page (or /wstatus reactions). It only reads what the log already keeps
 -- (e.reactions on your entries, e.reacted/e.whispered on friends'), so it is
 -- bounded like the log: reactions go when their entry ages out. Choosing a row
 -- opens that entry in the Activity log.
@@ -20,6 +20,9 @@ local function state()
     if type(WoWStatusDB.reactions) ~= "table" then WoWStatusDB.reactions = {} end
     local data = WoWStatusDB.reactions
     if type(data.seen_keys) ~= "table" then data.seen_keys = {} end
+    -- First use: reactions from before the page existed were already seen on
+    -- their log cards, so they are not new.
+    if not S.number(data.seen) then data.seen = S.now() end
     return data
 end
 
@@ -42,7 +45,7 @@ end
 -- that second; and how many received are new against (seen, keys). Reactions
 -- from a friend hidden with "Hide completely" (#169) are left out, as on the
 -- log card. Received text is kept as it arrived; callers escape it.
-local function collect(seen, keys)
+local function collect(seen, keys, countOnly)
     local list, newest, newestKeys, unseen, J = {}, 0, {}, 0, WoWStatusJournal
     if not J then return list, newest, newestKeys, unseen end
     for _, e in ipairs(J.entries()) do
@@ -51,13 +54,15 @@ local function collect(seen, keys)
                 for key, r in pairs(e.reactions) do
                     if type(r) == "table" and S.string(r.text) and not (WoWStatusMutes and WoWStatusMutes.hidden(key)) then
                         local id, at = tostring(e.id) .. "|" .. tostring(key), S.number(r.at) or S.number(e.at) or 0
-                        list[#list + 1] = {entry=e, received=true, id=id, name=S.string(r.name) or "?", text=r.text, at=at}
+                        if not countOnly then
+                            list[#list + 1] = {entry=e, received=true, id=id, name=S.string(r.name) or "?", text=r.text, at=at}
+                        end
                         if at > newest then newest, newestKeys = at, {} end
                         if at == newest then newestKeys[id] = true end
                         if isNew(at, id, seen, keys) then unseen = unseen + 1 end
                     end
                 end
-            elseif not e.owner then
+            elseif not e.owner and not countOnly then
                 local said = J.sentReaction(e)
                 if said and J.visible(e) then
                     -- reacted_at is new; older reactions were sent while the notification was up.
@@ -88,13 +93,15 @@ end
 
 -- Received reactions not yet looked at, however many were sent since. Cached:
 -- the Activity page asks on every redraw, including while scrolling. Log
--- changes clear it (R.changed); a few seconds' expiry covers hidden friends
--- changing with the roster.
+-- changes clear it (R.changed); a few seconds' expiry covers a player-level
+-- "Hide completely" reaching a character newly seen in the roster, which does
+-- not redraw the log.
 local unseenCache, unseenAt
 function R.unseen()
     local now = S.now()
     if unseenCache and unseenAt and now - unseenAt < 5 then return unseenCache end
-    local _, _, _, count = collect(seenState())
+    local seen, keys = seenState()
+    local _, _, _, count = collect(seen, keys, true)
     unseenCache, unseenAt = count, now
     return count
 end
@@ -185,6 +192,12 @@ local function build(parent)
     page.empty = UI.text(page.list, "GameFontDisable", 0, -6, 660)
     page.empty:SetText(T("No reactions yet. When friends react to your updates, or you to theirs, they appear here."))
     page.rows = {}
+    -- Closing the window ends the visit: the next one marks from what was seen.
+    local window = WoWStatusMainFrame
+    if window then
+        local ended = function() page.before = nil end
+        WoWStatusUI.hook(window, "OnHide", ended)
+    end
     return page
 end
 
@@ -193,8 +206,7 @@ local function show()
     -- The "new" marks stay for this visit, measured from the visit before. A
     -- visit lasts while the window stays open (Back from an opened update keeps
     -- the marks), unless something new came in meanwhile.
-    local window = WoWStatusMainFrame
-    if not page.before or not (window and window:IsShown()) or R.unseen() > 0 then
+    if not page.before or R.unseen() > 0 then
         local seen, keys = seenState()
         local copy = {}
         for id in pairs(keys) do copy[id] = true end

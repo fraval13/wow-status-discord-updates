@@ -109,6 +109,7 @@ function methods:SetMultiLine(value) self.multiline=value end
 function methods:GetVerticalScroll() return self.scroll or 0 end
 function methods:SetShown(value) self.visible=value end
 function methods:SetScript(name, fn) self[name]=fn end
+function methods:GetScript(name) return self[name] end
 function methods:GetChecked() return self.checked end
 function methods:SetChecked(value) self.checked=value end
 function methods:SetText(value) self.text=value end

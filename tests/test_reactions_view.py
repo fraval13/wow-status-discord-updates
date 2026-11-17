@@ -57,9 +57,10 @@ def test_a_reaction_received_while_away_waits_on_the_page_and_is_counted_until_s
         assert(WoWStatusMainWindow.back())
         assert(WoWStatusMainWindow.active() == "reactions")
         assert(WoWStatusReactionsPage.rows[1].new.text == "New")
-        -- Next visit: no longer new.
-        WoWStatusMainWindow.hide()
-        WoWStatusReactions.show()
+        -- Next visit, even through the Activity page: no longer new.
+        WoWStatusMainWindow.hide(); WoWStatusMainFrame.OnHide(WoWStatusMainFrame)
+        WoWStatusJournal.show()
+        WoWStatusActivityLog.reactionsButton.OnClick(WoWStatusActivityLog.reactionsButton)
         assert(WoWStatusReactionsPage.rows[1].new.text == "")
     ''')
 
@@ -183,7 +184,7 @@ def test_rows_are_reachable_with_a_controller():
         WoWStatusSafe={string=function(v) return type(v)=="string" and v or nil end,
             number=function(v) return type(v)=="number" and v or nil end, now=function() return 100 end}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
-            box=function(parent,w,h,kind) return CreateFrame(kind or "Frame",nil,parent) end}
+            box=function(parent,w,h,kind) return CreateFrame(kind or "Frame",nil,parent) end, hook=function() end}
         WoWStatusPresentation={theme=function() return nil,1,1,1,"Level up" end}
         WoWStatusHistory={oslo=function() return "2026-11-17 09:00" end}
         local entry={id="one",owner="me",kind="level",text="Reached level 2",at=10,
@@ -213,7 +214,7 @@ def test_a_reaction_after_closing_the_window_on_the_page_still_counts_as_new():
     clock(lua, 10)
     lua.execute('''
         WoWStatusReactions.show()
-        WoWStatusMainWindow.hide()
+        WoWStatusMainWindow.hide(); WoWStatusMainFrame.OnHide(WoWStatusMainFrame)
     ''')
     lua.execute(RECEIVE)
     lua.execute('''
@@ -283,4 +284,25 @@ def test_sent_words_are_shown_as_whispered_in_nynorsk():
         local received = WoWStatusReactionsPage.rows[2].line.text
         assert(received:find(WoWStatusLocale.T("GZ!"), 1, true) and received:find("frå Mira", 1, true), received)
         assert(WoWStatusJournal.reactionsText(__own):find(WoWStatusLocale.T("GZ!"), 1, true))
+    ''')
+
+
+def test_reactions_from_before_the_first_visit_are_not_new_and_the_tour_still_ends_on_close():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute(RECEIVE)
+    clock(lua, 20)
+    lua.execute('''
+        WoWStatusDB.reactions = nil
+        -- First use after updating: what the log cards already showed is not new.
+        assert(WoWStatusReactions.unseen() == 0)
+    ''')
+    lua.execute('''
+        WoWStatusReactions.show()
+        WoWStatusGuide.tour()
+        assert(WoWStatusGuide.touring())
+        WoWStatusMainWindow.hide(); WoWStatusMainFrame.OnHide(WoWStatusMainFrame)
+        -- Both listeners ran: the tour ended and the Reactions visit too.
+        assert(not WoWStatusGuide.touring())
+        assert(WoWStatusReactionsPage.before == nil)
     ''')
