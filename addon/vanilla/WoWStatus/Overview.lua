@@ -60,20 +60,11 @@ function O.summary(entries, since)
         introduction=function() return "joined the group" end,
     }
     -- Pinned friends (#170) first, in the order they were pinned; the rest stay newest first.
-    local ranks = WoWStatusRoster and WoWStatusRoster.pinRanks and WoWStatusRoster.pinRanks() or {}
-    local function rank(p) local k = WoWStatusRoster and WoWStatusRoster.key and WoWStatusRoster.key(p.sender); return k and ranks[k] end
-    local pinned, rest = {}, {}
-    for i, p in ipairs(order) do
-        p.position = i
-        if rank(p) then table.insert(pinned, p) else table.insert(rest, p) end
+    local R = WoWStatusRoster
+    if R and R.pinFirst and R.pinRanks then
+        local ranks = R.pinRanks()
+        order = R.pinFirst(order, function(p) local k = R.key(p.sender); return k and ranks[k] end)
     end
-    table.sort(pinned, function(a, b)
-        local x, y = rank(a), rank(b)
-        if x ~= y then return x < y end
-        return a.position < b.position
-    end)
-    order = pinned
-    for _, p in ipairs(rest) do table.insert(order, p) end
     local sequence = {"level", "dungeon", "death", "profession", "mount", "loot", "zone", "quest", "reputation", "unlock", "pvp", "introduction"}
     for _, p in ipairs(order) do
         local facts = {}
@@ -207,11 +198,8 @@ local function renderGroup()
         end
     end
     -- Pinned friends (#170) first, in the order they were pinned; then by name.
-    table.sort(names, function(a, b)
-        if (a.pin ~= nil) ~= (b.pin ~= nil) then return a.pin ~= nil end
-        if a.pin and a.pin ~= b.pin then return a.pin < b.pin end
-        return a.text < b.text
-    end)
+    table.sort(names, function(a, b) return a.text < b.text end)
+    if WoWStatusRoster.pinFirst then names = WoWStatusRoster.pinFirst(names, function(item) return item.pin end) end
     for i, item in ipairs(names) do names[i] = item.text end
     local count = #names
     group.count:SetText(groups == 0 and T("Join a group in Options to share with friends.")

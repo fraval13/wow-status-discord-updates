@@ -101,12 +101,14 @@ function L.render()
     local top = math.ceil(#groups/5)*28
     page.group = chosen and chosen.id
     page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -12-top)
+    -- The heading makes room for "Pinned first" only while there is a board.
+    UI.call(page.heading, "SetWidth", chosen and 390 or 660)
+    page.pinnedFirst:SetShown(chosen ~= nil)
     page.heading:SetText(chosen and (T("Leaderboard") .. " · " .. chosen.label:gsub("|", "||"))
         or T("Join a group to compare your characters with friends."))
     page.sort:ClearAllPoints(); page.sort:SetPoint("TOPRIGHT", -24, -8-top)
     UI.call(page.sort, "SetEnabled", chosen ~= nil)
     page.pinnedFirst:ClearAllPoints(); page.pinnedFirst:SetPoint("TOPRIGHT", -290, -4-top)
-    UI.call(page.pinnedFirst, "SetEnabled", chosen ~= nil)
     page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -44-top)
     page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -66-top)
     page.scroll:SetHeight(464-top)

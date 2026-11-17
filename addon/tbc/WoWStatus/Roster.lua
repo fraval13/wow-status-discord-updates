@@ -964,7 +964,10 @@ end
 -- about it is sent.
 R.PIN_MAX = 100
 local function pins()
-    local roster = state()
+    -- Read on every card of every render: skip state()'s checks once the table exists.
+    local roster = type(db.roster) == "table" and type(db.roster.pins) == "table" and db.roster
+    if roster then return roster.pins end
+    roster = state()
     roster.pins = type(roster.pins) == "table" and roster.pins or {}
     return roster.pins
 end
@@ -987,49 +990,57 @@ function R.setPinned(kind, name, on)
     if not k then return false end
     local list = pins()
     if on and not S.number(list[k]) then
-        local top, count = 0, 0
-        for _, at in pairs(list) do
-            if S.number(at) then count = count + 1; top = math.max(top, at) end
+        local top, count, oldest = 0, 0, nil
+        for id, at in pairs(list) do
+            if S.number(at) then
+                count = count + 1; top = math.max(top, at)
+                if not oldest or at < list[oldest] then oldest = id end
+            else list[id] = nil end
         end
-        if count >= R.PIN_MAX then return false end
+        -- A full list lets go of its oldest pin, which may belong to someone no
+        -- longer listed (renamed, left the group) and so has no star to unpin.
+        if count >= R.PIN_MAX and oldest then list[oldest] = nil end
         list[k] = top + 1
     elseif not on then
         list[k] = nil
     end
     R.render()
-    if WoWStatusMainWindow and WoWStatusMainWindow.active() == "overview" and WoWStatusOverview then WoWStatusOverview.render() end
     return true
 end
 function R.togglePin(kind, name) return R.setPinned(kind, name, not R.pinned(kind, name)) end
 -- A player heading's place among the pinned: its own pin or its first-pinned card's.
 local function entryPin(entry)
-    if entry.self then return nil end
-    local best = entry.pinnable and R.pinned("player", entry.name)
+    -- "Not announced" gathers unrelated people: a pinned card there leads only
+    -- inside that heading and does not lift the heading.
+    if entry.self or not entry.pinnable then return nil end
+    local best = R.pinned("player", entry.name)
     for _, row in ipairs(entry.rows) do
         local at = R.pinned("character", row.name)
         if at and (not best or at < best) then best = at end
     end
     return best or nil
 end
-R.entryPin = entryPin
--- Pinned first, online before offline, then in the order they were pinned; the
--- rest keep the order they came in.
+-- Pinned first, online before offline (when onlineOf is given), then in the
+-- order they were pinned; the rest keep the order they came in. Shared by the
+-- Characters page and the Overview.
 local function pinFirst(items, pinOf, onlineOf)
     local pinned, rest = {}, {}
-    for _, item in ipairs(items) do
+    for i, item in ipairs(items) do
         local at = pinOf(item)
-        if at then pinned[#pinned + 1] = {item=item, at=at, online=onlineOf(item) == true}
+        if at then pinned[#pinned + 1] = {item=item, at=at, i=i, online=onlineOf and onlineOf(item) == true or false}
         else rest[#rest + 1] = item end
     end
     table.sort(pinned, function(a, b)
         if a.online ~= b.online then return a.online end
-        return a.at < b.at
+        if a.at ~= b.at then return a.at < b.at end
+        return a.i < b.i
     end)
     local out = {}
     for _, p in ipairs(pinned) do out[#out + 1] = p.item end
     for _, item in ipairs(rest) do out[#out + 1] = item end
     return out
 end
+R.pinFirst = pinFirst
 -- Player entries (as R.sections holds them) with pinned players and, under
 -- each, pinned characters first.
 function R.pinOrder(entries)
@@ -2050,8 +2061,10 @@ function R.groups()
     end
     for _, entry in ipairs(order) do
         entry.name = entry.title
-        -- "Not announced" gathers several people, so it has no star of its own.
-        entry.pinnable = not entry.self and entry.title ~= "Not announced"
+        -- "Not announced" and "Unnamed player" gather several people, so they
+        -- have no star of their own (titles merge without regard to case).
+        local merged = S.lowerASCII(entry.title)
+        entry.pinnable = not entry.self and merged ~= "not announced" and merged ~= "unnamed player"
         entry.title = entry.title .. " (" .. #entry.rows .. (#entry.rows == 1 and " character)" or " characters)")
         table.sort(entry.rows, function(a, b) return (a.level or 0) > (b.level or 0) end)
     end
@@ -2066,6 +2079,8 @@ local CARD, HEADER, GAP = 114, 26, 6
 local PROFESSION_ICON, PROFESSION_PITCH, PROFESSION_TOP = 18, 26, -62
 -- The pin star (#170): a Button, so mouse and controller both press it.
 local STAR = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_1"
+R.STAR_REPEAT = 0.5
+local starClicked
 local function starTooltip(self)
     if not GameTooltip or not self.pinKind then return end
     local on = R.pinned(self.pinKind, self.pinName) ~= nil
@@ -2080,9 +2095,14 @@ local function star(parent)
     b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexture(STAR)
     b:SetScript("OnClick", function(self)
         if not self.pinKind then return end
+        -- The list reorders at once, so this star may now belong to someone
+        -- else: a quick second click (a double-click) is ignored, and the
+        -- tooltip, which described the one just pinned, closes.
+        local now = GetTime and GetTime() or time()
+        if starClicked and now - starClicked < R.STAR_REPEAT then return end
+        starClicked = now
         R.togglePin(self.pinKind, self.pinName)
-        -- The tooltip says "Unpin" now, or the other way round.
-        if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(self) then starTooltip(self) end
+        if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(self) then GameTooltip:Hide() end
     end)
     b:SetScript("OnEnter", starTooltip)
     b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
@@ -2091,7 +2111,6 @@ end
 local function showStar(b, kind, name)
     b.pinKind, b.pinName = kind, name
     local on = R.pinned(kind, name) ~= nil
-    b.pinnedNow = on
     b.icon:SetAlpha(on and 1 or .3)
     b.icon:SetVertexColor(on and 1 or .6, on and 1 or .6, on and 1 or .6)
     b:Show()

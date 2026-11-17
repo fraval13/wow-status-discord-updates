@@ -121,7 +121,8 @@ def test_the_star_is_a_button_with_a_click_and_a_tooltip():
     assert thora.eval('WoWStatusRoster.pinned')('player', 'Bob') is not None
     assert players(thora)[0] == 'Bob'
     star = star_of(thora, 'Bob')
-    assert star.pinnedNow is True
+    assert star.icon.alpha == 1
+    thora.execute('WoWStatusRoster.STAR_REPEAT = 0')
     star.OnClick(star)
     assert thora.eval('WoWStatusRoster.pinned')('player', 'Bob') is None
     # Every friend card has its own star; your own cards and the "Not announced" heading do not.
@@ -133,12 +134,41 @@ def test_the_star_is_a_button_with_a_click_and_a_tooltip():
             assert card.star.IsShown(card.star) is not own
 
 
-def test_a_full_pin_list_refuses_more():
+def test_a_full_pin_list_lets_go_of_its_oldest_pin():
     _, thora, _ = crew()
     thora.execute('WoWStatusRoster.PIN_MAX = 2')
-    assert pin(thora, 'player', 'Bob') and pin(thora, 'player', 'Cid')
-    assert pin(thora, 'player', 'Frank') is False
-    assert thora.eval('WoWStatusRoster.pinned')('player', 'Frank') is None
+    assert pin(thora, 'player', 'Gone')   # someone no longer listed: no star to unpin them
+    assert pin(thora, 'player', 'Bob')
+    assert pin(thora, 'player', 'Cid')
+    pinned = thora.eval('WoWStatusRoster.pinned')
+    assert pinned('player', 'Gone') is None
+    assert pinned('player', 'Bob') is not None and pinned('player', 'Cid') is not None
+
+
+def test_a_quick_second_click_does_not_pin_whoever_moved_under_the_star():
+    _, thora, _ = crew()
+    page(thora)
+    thora.execute('__mono = 500')
+    star = star_of(thora, 'Bob')
+    star.OnClick(star)
+    star.OnClick(star)   # the same button, a moment later
+    pinned = thora.eval('WoWStatusRoster.pinned')
+    assert pinned('player', 'Bob') is not None
+    assert pinned('player', 'Cid') is None and pinned('player', 'Frank') is None
+
+
+def test_merged_headings_have_no_star_and_are_not_lifted():
+    _, thora, _ = crew()
+    thora.execute('''
+        local group=next(character().group_ids)
+        WoWStatusJournal.received({sender="Zed-TestRealm",nonce="1-1-zzzz",kind="level",level=5,at=time(),group_id=group})
+    ''')
+    page(thora)
+    assert star_of(thora, 'Not announced') is None or not star_of(thora, 'Not announced').IsShown(star_of(thora, 'Not announced'))
+    pin(thora, 'character', 'Zed-TestRealm')
+    sections = thora.eval('WoWStatusRoster.sections()')
+    names = [e.name for sec in sections.values() if sec.key != 'you' for e in sec.entries.values()]
+    assert names.index('Not announced') > names.index('Bob')
 
 
 def test_leaderboard_puts_pinned_players_first_only_when_chosen():
