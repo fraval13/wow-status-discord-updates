@@ -66,6 +66,7 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
                and path[:3] != character + ('session',)}
     assert changed == set(), changed
     # Progress is kept beside version, which older releases require to stay 1.
+    assert lua.eval('WoWStatusDB.version') == 1
     assert after['version'] == 1 and after['schema_version'] == 2
     assert after['characters'][KEY]['schema_version'] == 2
     assert after['characters'][KEY]['events'] == before['characters'][KEY]['events']
@@ -175,6 +176,12 @@ def test_text_or_broken_versions_are_saved_as_numbers():
     ''')
 
 
+@pytest.mark.parametrize('saved', ['nil', '2', '"1"'])
+def test_account_version_is_always_saved_as_one(saved):
+    lua = login(V1.replace('\n    version = 1,\n', f'\n    version = {saved},\n'))
+    assert lua.eval('WoWStatusDB.version') == 1 and lua.eval('character() ~= nil')
+
+
 def test_failed_step_keeps_its_version_and_runs_again_next_time():
     lua = make_lua()
     lua.execute(RUNNER + '''
@@ -199,7 +206,7 @@ def test_failed_step_is_reported_and_login_continues():
         end})
     ''')
     said = '\n'.join(lua.eval('__said').values())
-    assert 'Could not upgrade saved data (step 2). It will be tried again at the next login.' in said
+    assert 'Could not upgrade saved data (step 2). It will be tried again later.' in said
     assert 'unreadable' in said
     assert lua.eval('WoWStatusDB.schema_version') == 1
     assert lua.eval('character() ~= nil')  # Everything else still started.
@@ -282,6 +289,7 @@ def test_character_step_2_stores_out_of_range_filters_clamped():
     step(lua, 'character', 2)(lua.eval('__c'))
     step(lua, 'character', 2)(lua.eval('__d'))
     assert lua.eval('__c.settings.loot_quality') == 5
+    assert dict(lua.eval('__c.settings.loot_rarities')) == {'rare': False, 'epic': False, 'legendary': True}
     assert lua.eval('__c.settings.level_interval') == 10
     assert lua.eval('__d.settings.loot_quality') is None  # Nothing added where nothing was saved.
 

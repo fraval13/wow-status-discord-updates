@@ -59,7 +59,12 @@ M.character = {
         -- Filters out of range (a hand edit) are stored clamped, so the companion,
         -- which checks the saved value, reads this character again once it logs in.
         for _, key in ipairs({"level_interval", "loot_quality"}) do
-            if settings[key] ~= nil then WoWStatusSettings.set(key, WoWStatusSettings.get(key, character), character) end
+            if settings[key] ~= nil and not WoWStatusSettings.valid(key, settings[key]) then
+                WoWStatusSettings.set(key, WoWStatusSettings.get(key, character), character)
+                -- As /wstatus quality does, so sharing and receiving filter alike.
+                local quality = settings.loot_quality
+                if key == "loot_quality" then settings.loot_rarities = {rare = quality <= 3, epic = quality <= 4, legendary = quality <= 5} end
+            end
         end
     end},
 }
