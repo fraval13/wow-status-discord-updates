@@ -1,0 +1,1 @@
+- The homepage now has a small demo of the main window, with invented friends on three of its pages.

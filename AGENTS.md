@@ -61,7 +61,8 @@ be checked against Git and the environment rather than assumed permanently true.
   local-only preview controls. Previewing must not send or record real progress.
 - `docs/notification-flavour-text.md`: complete 1,300-line caption catalogue,
   100 for each of 13 preview categories. Match this with every `Flavour.lua` and
-  the four banks in `website/flavour.js` when editing copy.
+  the seven banks in `website/flavour.js` (preview and main-window demo) when
+  editing copy.
 - `Personalities.lua`, `Flavour<Name>.lua`: optional caption personalities (300
   lines per category, English and Nynorsk pairs). The Lua is generated from
   `docs/caption-personalities/<id>/*.json` by `scripts/build_personalities.py`;
