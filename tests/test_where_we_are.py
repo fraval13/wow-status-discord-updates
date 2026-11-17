@@ -189,7 +189,7 @@ def test_the_heading_is_reachable_with_a_controller():
         WoWStatusJournal={entries=function() return {} end, details=function() end, zoneRevision=0}
         WoWStatusPopups={}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
-            call=function() return false end, classColour=function() end}
+            call=function() return false end, classColour=function() end, MUTED_CODE="|cff9d9d9d"}
         WoWStatusMainWindow.register=function(key,title,build) __build=build end
     ''')
     runtime.execute((ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))
