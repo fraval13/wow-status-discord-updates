@@ -53,6 +53,8 @@ local XP_INTERVAL = 300
 -- Seconds between checks for friends logging in or out while the page is open.
 R.ONLINE_CHECK = 5
 local onlineCheckedAt, onlineSeen, partyChanged = 0, nil, false
+-- The minute "Where we are" was drawn: ages move on and reports expire.
+local whereDrawn
 local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
 local equipmentSendState = {}
 
@@ -1233,6 +1235,51 @@ function R.together(groups)
     if #result.rows > 0 then result.above, result.below = nil, nil end
     return result
 end
+-- "Where we are" (#168): online friends by the zone they last reported, from
+-- the log only (a first visit, or where they died). Both reach the log only from
+-- friends who share their zone, so nothing new is sent or asked for. A report
+-- is a guess that ages, so each shows its age and one older than
+-- R.WHERE_MAX_AGE is left out. {here, zones={{zone, at, here, members}}, people}:
+-- your own zone first, then the newest report; at most R.WHERE_ROWS zones.
+R.WHERE_MAX_AGE, R.WHERE_ROWS = 15 * 60, 8
+function R.whereWeAre(groups)
+    local result = {zones={}, people=0}
+    if not db or not current then return result end
+    local here = WoWStatusAdapter.zone and S.string(WoWStatusAdapter.zone()) or nil
+    result.here = here
+    local now, byZone = S.now(), {}
+    for _, entry in ipairs(groups or R.groups()) do
+        if not entry.self then
+            for _, row in ipairs(entry.rows) do
+                local at = S.number(row.zone_at)
+                if row.listed and row.status == "online" and row.zone and at and now - at <= R.WHERE_MAX_AGE then
+                    local item = byZone[row.zone]
+                    if not item then
+                        item = {zone=row.zone, at=at, here=row.zone == here, members={}}
+                        byZone[row.zone] = item
+                        result.zones[#result.zones + 1] = item
+                    end
+                    item.at = math.max(item.at, at)
+                    item.members[#item.members + 1] = {name=row.name, class=row.class, at=at,
+                        age=math.max(0, now - at)}
+                    result.people = result.people + 1
+                end
+            end
+        end
+    end
+    local function newest(a, b)
+        if a.at ~= b.at then return a.at > b.at end
+        return S.lowerASCII(a.name or a.zone) < S.lowerASCII(b.name or b.zone)
+    end
+    for _, item in ipairs(result.zones) do table.sort(item.members, newest) end
+    table.sort(result.zones, function(a, b)
+        if a.here ~= b.here then return a.here end
+        return newest(a, b)
+    end)
+    result.count = #result.zones
+    for i = #result.zones, R.WHERE_ROWS + 1, -1 do result.zones[i] = nil end
+    return result
+end
 -- Opens the chat box with a whisper to them; nothing is sent until the player does.
 function R.whisper(name)
     local target = S.string(name) and chatTarget(name)
@@ -1490,7 +1537,8 @@ function R.tick()
     if visible and now - onlineCheckedAt >= R.ONLINE_CHECK then
         onlineCheckedAt = now
         local expired = inviteExpired()
-        if partyChanged or expired or onlineSignature() ~= onlineSeen then R.render() end
+        local stale = not R.collapsed("where") and math.floor(S.now() / 60) ~= whereDrawn
+        if partyChanged or expired or stale or onlineSignature() ~= onlineSeen then R.render() end
     end
     if now - lastScan >= 30 then
         lastScan = now; R.scan()
@@ -1971,8 +2019,9 @@ function R.groups()
     local hidden = R.hiddenNames()
     local online, latest, lastSeen, shared, zones = {}, {}, {}, {}, {}
     local deaths = deathTotals(true)
-    -- A friend's newest first-visit zone, if under an hour old ("Play together now").
-    -- Log stamps are realm time (S.now).
+    -- A friend's newest reported zone, if under an hour old ("Play together now",
+    -- "Where we are"): a first visit, or where they died. Only friends who share
+    -- their zone send either. Log stamps are realm time (S.now).
     local zoneSince = S.now() - 3600
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
@@ -1995,8 +2044,12 @@ function R.groups()
         if level and (not fresher[k] or level > fresher[k]) then fresher[k] = level end
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
-        if k and zones[k] == nil and e.kind == "zone" then
-            zones[k] = (S.number(e.at) or 0) > zoneSince and S.string(e.text) and e.text:match("^Entered (.+)$") or false
+        if k and zones[k] == nil then
+            local zone = e.kind == "zone" and S.string(e.text) and e.text:match("^Entered (.+)$")
+                or e.kind == "death" and S.string((WoWStatusJournal.details(e) or {}).zone)
+            local at = S.number(e.at) or 0
+            -- The newest report decides: an older one is no longer where they are.
+            if zone then zones[k] = at > zoneSince and {zone=zone, at=at} or false end
         end
     end
     -- First-name-only entries (older WoW Forever clients announced "Unshaved")
@@ -2078,7 +2131,8 @@ function R.groups()
             quests_source=character.quests_source, gold=S.number(character.gold),
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
             honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts),
-            professions=character.professions, listed=character.listed == true, zone=zones[k] or nil,
+            professions=character.professions, listed=character.listed == true,
+            zone=zones[k] and zones[k].zone or nil, zone_at=zones[k] and zones[k].at or nil,
             pid=character.pid, player_name=character.player_name,
             -- Newest activity known (log entry or shared list), for "Not seen for a while" (#172).
             seen=not self and seen > 0 and seen or nil})
@@ -2621,6 +2675,70 @@ local function renderTogether(y, groups)
     return y + 4
 end
 
+-- "Where we are": a section heading, then one row per zone with who is there
+-- and how old each report is. The rows only show text; the heading folds it.
+local WHERE_ROW, WHERE_NAMES = 22, 6
+local function reportAge(seconds)
+    if seconds < 60 then return T("just now") end
+    return TF("%d min ago", math.floor(seconds / 60))
+end
+local function whereRow(index)
+    local row = CreateFrame("Frame", nil, page.list)
+    row:SetSize(680, WHERE_ROW)
+    row.zone = UI.text(row, "GameFontNormal", 24, -4, 200)
+    row.members = UI.text(row, "GameFontHighlightSmall", 230, -6, 450)
+    page.where[index] = row
+    return row
+end
+-- Draws the section from y down and returns the y below it.
+local function renderWhere(y, groups)
+    page.whereHead = page.whereHead or sectionButton()
+    local b = page.whereHead
+    local closed = R.collapsed("where")
+    local data = R.whereWeAre(groups)
+    b.key = "where"
+    b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
+    b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+    b.text:SetText(T("Where we are") .. "   |cff9d9d9d" .. (data.people == 1 and T("1 friend") or TF("%d friends", data.people))
+        .. ", " .. ((data.count or 0) == 1 and T("1 zone") or TF("%d zones", data.count or 0)) .. "|r")
+    b:Show()
+    y = y + SECTION
+    page.whereNote = page.whereNote or UI.text(page.list, "GameFontDisableSmall", 24, 0, 650)
+    local note, shown = page.whereNote, 0
+    if not closed then
+        note:ClearAllPoints(); note:SetPoint("TOPLEFT", 24, -(y + 4))
+        note:SetText(#data.zones == 0 and TF("No online friend has reported a zone in the last %d minutes.", R.WHERE_MAX_AGE / 60)
+            or T("Your zone first, then the newest report."))
+        note:Show()
+        y = y + WHERE_ROW
+        for _, item in ipairs(data.zones) do
+            shown = shown + 1
+            local row = page.where[shown] or whereRow(shown)
+            row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y)
+            local zone = item.zone:gsub("|", "||")
+            row.zone:SetText(item.here and (zone .. " |cff40ff40(" .. T("your zone") .. ")|r") or zone)
+            local names = {}
+            for i, member in ipairs(item.members) do
+                if i > WHERE_NAMES then
+                    names[#names + 1] = TF("+%d more", #item.members - WHERE_NAMES)
+                    break
+                end
+                local name = (member.name:match("^[^-]+") or member.name):gsub("|", "||")
+                local colour = UI.classColour(member.class)
+                names[#names + 1] = (colour and (colour .. name .. "|r") or name) .. " |cff9d9d9d(" .. reportAge(member.age) .. ")|r"
+            end
+            row.members:SetText(table.concat(names, ", "))
+            row:Show()
+            y = y + WHERE_ROW
+        end
+    else
+        note:Hide()
+    end
+    for i = shown + 1, #page.where do page.where[i]:Hide() end
+    whereDrawn = math.floor(S.now() / 60)
+    return y + 4
+end
+
 function R.render()
     if WoWStatusMainWindow then WoWStatusMainWindow.refresh("leaderboard") end
     if WoWStatusProfile and WoWStatusProfile.refreshQuests then WoWStatusProfile.refreshQuests() end
@@ -2629,6 +2747,7 @@ function R.render()
     onlineSeen, partyChanged = onlineSignature(), false
     local groups = R.groups()
     y = renderTogether(y, groups)
+    y = renderWhere(y, groups)
     local band = y
     for _, part in ipairs(R.sections(groups)) do
         sections = sections + 1
@@ -2760,7 +2879,7 @@ local function build(parent)
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 24, -4); page.scroll:SetSize(710, 470)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines, page.headers, page.sections = {}, {}, {}
-    page.together = {}
+    page.together, page.where = {}, {}
     page.scroll:SetScrollChild(page.list)
     page.empty = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     page.empty:SetPoint("TOPLEFT", 24, -12); page.empty:SetText(T("No characters yet."))

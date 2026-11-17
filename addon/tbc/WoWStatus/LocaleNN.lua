@@ -733,3 +733,12 @@ W.add({
         "Berre medlemen som set eit mål, kan endre eller fjerne det. Venene ser det så lenge figurlista di er delt.",
     ["Next group"] = "Neste gruppe", ["Set goal"] = "Set mål", ["Clear goal"] = "Fjern målet",
 })
+-- "Where we are" on the Characters page (#168).
+W.add({
+    ["Where we are"] = "Kvar vi er", ["1 friend"] = "1 ven", ["%d friends"] = "%d vener",
+    ["1 zone"] = "1 område", ["%d zones"] = "%d område", ["your zone"] = "området ditt",
+    ["just now"] = "akkurat no", ["%d min ago"] = "for %d min sidan", ["+%d more"] = "+%d til",
+    ["Your zone first, then the newest report."] = "Området ditt først, så den nyaste meldinga.",
+    ["No online friend has reported a zone in the last %d minutes."] =
+        "Ingen pålogga ven har meldt eit område dei siste %d minutta.",
+})
