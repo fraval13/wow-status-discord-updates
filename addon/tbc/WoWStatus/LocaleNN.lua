@@ -738,6 +738,7 @@ W.add({
     ["Where we are"] = "Kvar vi er", ["1 friend"] = "1 ven", ["%d friends"] = "%d vener",
     ["1 zone"] = "1 område", ["%d zones"] = "%d område", ["your zone"] = "området ditt",
     ["just now"] = "akkurat no", ["%d min ago"] = "for %d min sidan", ["+%d more"] = "+%d til",
+    ["+1 more zone"] = "+1 område til", ["+%d more zones"] = "+%d område til",
     ["Your zone first, then the newest report."] = "Området ditt først, så den nyaste meldinga.",
     ["No online friend has reported a zone in the last %d minutes."] =
         "Ingen pålogga ven har meldt eit område dei siste %d minutta.",

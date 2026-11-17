@@ -121,14 +121,14 @@ def test_an_empty_view_says_why():
     assert not page.where or not any(page.where[i].IsShown(page.where[i]) for i in range(1, len(page.where) + 1))
 
 
-def test_a_crowded_zone_names_six_and_counts_the_rest():
+def test_a_crowded_zone_names_four_and_counts_the_rest():
     names = [f'F{chr(97 + i)}-TestRealm' for i in range(8)]
     thora = friends(*names)
     for i, name in enumerate(names):
         report(thora, name, 'Ironforge', ago=i)
     thora.eval('WoWStatusMainWindow.show')('characters')
     text = thora.eval('WoWStatusCharactersPage.where[1].members.text')
-    assert text.count('(') == 6 and text.endswith('+2 more')
+    assert text.count('(') == 4 and text.endswith('+4 more')
 
 
 def test_ages_move_on_and_old_reports_drop_while_the_page_is_open():
@@ -186,6 +186,7 @@ def test_the_heading_is_reachable_with_a_controller():
         function methods:SetColorTexture() end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
         WoWStatusSafe={now=function() return 0 end}
+        WoWStatusJournal={entries=function() return {} end, details=function() end}
         WoWStatusPopups={}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
             call=function() return false end, classColour=function() end}
@@ -210,3 +211,61 @@ def test_the_heading_is_reachable_with_a_controller():
         assert(reached[head], "heading not reachable")
         assert(head.kind=="Button" and head.scripts.OnClick)
     ''')
+
+
+def test_more_zones_than_rows_say_how_many_are_left_out():
+    names = [f'F{chr(97 + i)}-TestRealm' for i in range(10)]
+    thora = friends(*names)
+    for i, name in enumerate(names):
+        report(thora, name, f'Zone {i}', ago=i)
+    data, rows = where(thora)
+    assert data.count == 10 and data.more == 2 and len(rows) == 8
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    page = thora.eval('WoWStatusCharactersPage')
+    assert page.where[9].zone.text == '|cff9d9d9d+2 more zones|r' and page.where[9].IsShown(page.where[9])
+
+
+def test_an_unread_zone_is_no_place_and_still_the_newest_report():
+    thora = friends('Mira-TestRealm', 'Bo-TestRealm')
+    report(thora, 'Mira-TestRealm', 'a new zone', ago=10)
+    report(thora, 'Mira-TestRealm', 'Duskwood', ago=300, nonce='older')
+    # A death whose details have not come: where they are is not known.
+    report(thora, 'Bo-TestRealm', 'Westfall', ago=300, nonce='b1')
+    thora.execute('''WoWStatusJournal.received({sender="Bo-TestRealm", nonce="b2", kind="death", text="Died",
+        at=WoWStatusSafe.now() - 5, group_id=next(character().group_ids)})''')
+    assert where(thora)[1] == []
+
+
+def test_a_stamp_far_in_the_future_is_left_out():
+    thora = friends('Mira-TestRealm', 'Bo-TestRealm')
+    report(thora, 'Mira-TestRealm', 'Duskwood', ago=-1800)
+    report(thora, 'Bo-TestRealm', 'Westfall', ago=-120)
+    assert where(thora)[1] == [('Westfall', ['Bo-TestRealm'])]
+
+
+def test_redraws_only_when_an_age_changes_or_a_report_arrives():
+    thora = friends('Mira-TestRealm', 'Bo-TestRealm')
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    thora.execute('''
+        __renders = 0
+        local render = WoWStatusRoster.render
+        WoWStatusRoster.render = function(...) __renders = __renders + 1; return render(...) end
+    ''')
+
+    def ticks(start, seconds=0):
+        if seconds:
+            thora.execute(f'function time() return __now + {seconds} end')
+        for step in range(0, 30, 5):
+            thora.execute(f'__mono = {start} + {step}')
+            thora.eval('WoWStatusRoster.tick')()
+    ticks(4000, 600)
+    assert thora.eval('__renders') == 0          # nothing to show: no minute redraws
+    report(thora, 'Mira-TestRealm', 'Duskwood', ago=30)
+    ticks(4100, 600)
+    assert thora.eval('__renders') == 1
+    assert thora.eval('WoWStatusCharactersPage.where[1].members.text').endswith('(just now)|r')
+    ticks(4200, 625)                             # still under a minute old
+    assert thora.eval('__renders') == 1
+    ticks(4300, 631)
+    assert thora.eval('__renders') == 2
+    assert thora.eval('WoWStatusCharactersPage.where[1].members.text').endswith('(1 min ago)|r')

@@ -53,8 +53,9 @@ local XP_INTERVAL = 300
 -- Seconds between checks for friends logging in or out while the page is open.
 R.ONLINE_CHECK = 5
 local onlineCheckedAt, onlineSeen, partyChanged = 0, nil, false
--- The minute "Where we are" was drawn: ages move on and reports expire.
-local whereDrawn
+-- "Where we are" as drawn: when a shown age or report next changes, and the
+-- newest log entry then, so a new report redraws it too.
+local whereDue, whereNewest, newestReport
 local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
 local equipmentSendState = {}
 
@@ -1239,8 +1240,9 @@ end
 -- the log only (a first visit, or where they died). Both reach the log only from
 -- friends who share their zone, so nothing new is sent or asked for. A report
 -- is a guess that ages, so each shows its age and one older than
--- R.WHERE_MAX_AGE is left out. {here, zones={{zone, at, here, members}}, people}:
--- your own zone first, then the newest report; at most R.WHERE_ROWS zones.
+-- R.WHERE_MAX_AGE is left out. {here, zones={{zone, at, here, members}}, people,
+-- count, more, due}: your own zone first, then the newest report; at most
+-- R.WHERE_ROWS zones (more: how many were cut); due: when a shown age next changes.
 R.WHERE_MAX_AGE, R.WHERE_ROWS = 15 * 60, 8
 function R.whereWeAre(groups)
     local result = {zones={}, people=0}
@@ -1248,11 +1250,19 @@ function R.whereWeAre(groups)
     local here = WoWStatusAdapter.zone and S.string(WoWStatusAdapter.zone()) or nil
     result.here = here
     local now, byZone = S.now(), {}
+    -- When a shown age or report next changes: the page redraws then.
+    local function due(at)
+        local age = math.max(0, now - at)
+        local change = at + math.min(R.WHERE_MAX_AGE + 1, (math.floor(age / 60) + 1) * 60)
+        if not result.due or change < result.due then result.due = change end
+    end
     for _, entry in ipairs(groups or R.groups()) do
         if not entry.self then
             for _, row in ipairs(entry.rows) do
                 local at = S.number(row.zone_at)
-                if row.listed and row.status == "online" and row.zone and at and now - at <= R.WHERE_MAX_AGE then
+                -- A stamp far ahead (a skewed clock) would read as "just now" for too long.
+                if row.listed and row.status == "online" and row.zone and at and now - at <= R.WHERE_MAX_AGE
+                    and at <= now + 300 then
                     local item = byZone[row.zone]
                     if not item then
                         item = {zone=row.zone, at=at, here=row.zone == here, members={}}
@@ -1263,6 +1273,7 @@ function R.whereWeAre(groups)
                     item.members[#item.members + 1] = {name=row.name, class=row.class, at=at,
                         age=math.max(0, now - at)}
                     result.people = result.people + 1
+                    due(at)
                 end
             end
         end
@@ -1277,6 +1288,7 @@ function R.whereWeAre(groups)
         return newest(a, b)
     end)
     result.count = #result.zones
+    result.more = math.max(0, result.count - R.WHERE_ROWS)
     for i = #result.zones, R.WHERE_ROWS + 1, -1 do result.zones[i] = nil end
     return result
 end
@@ -1305,6 +1317,12 @@ local function onlineSignature()
     return tostring(WoWStatusPopups.onlineCount and WoWStatusPopups.onlineCount() or 0)
 end
 R.onlineSignature = onlineSignature
+-- The newest log entry and whether its death details came: a new first visit or
+-- death zone changes it. Cheap: the log is kept newest first.
+newestReport = function()
+    local e = WoWStatusJournal.entries()[1]
+    return e and (tostring(e.id) .. (WoWStatusJournal.details(e) and "+" or "")) or ""
+end
 
 function R.setHidden(character, hidden)
     local owned = false
@@ -1537,7 +1555,7 @@ function R.tick()
     if visible and now - onlineCheckedAt >= R.ONLINE_CHECK then
         onlineCheckedAt = now
         local expired = inviteExpired()
-        local stale = not R.collapsed("where") and math.floor(S.now() / 60) ~= whereDrawn
+        local stale = (whereDue and S.now() >= whereDue) or (not R.collapsed("where") and newestReport() ~= whereNewest)
         if partyChanged or expired or stale or onlineSignature() ~= onlineSeen then R.render() end
     end
     if now - lastScan >= 30 then
@@ -2044,12 +2062,20 @@ function R.groups()
         if level and (not fresher[k] or level > fresher[k]) then fresher[k] = level end
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
-        if k and zones[k] == nil then
-            local zone = e.kind == "zone" and S.string(e.text) and e.text:match("^Entered (.+)$")
-                or e.kind == "death" and S.string((WoWStatusJournal.details(e) or {}).zone)
+        if k and zones[k] == nil and (e.kind == "zone" or e.kind == "death") then
+            -- The newest first visit or death decides, even without a usable zone
+            -- (a death whose details never came, a client that could not read
+            -- its zone): an older report is no longer where they are.
+            local zone
+            if e.kind == "zone" then
+                zone = S.string(e.text) and e.text:match("^Entered (.+)$")
+                if zone == "a new zone" then zone = nil end
+            else
+                local details = WoWStatusJournal.details(e)
+                zone = details and S.string(details.zone)
+            end
             local at = S.number(e.at) or 0
-            -- The newest report decides: an older one is no longer where they are.
-            if zone then zones[k] = at > zoneSince and {zone=zone, at=at} or false end
+            zones[k] = zone and at > zoneSince and {zone=zone, at=at} or false
         end
     end
     -- First-name-only entries (older WoW Forever clients announced "Unshaved")
@@ -2560,6 +2586,16 @@ local function sectionButton()
     b:SetScript("OnClick", function(self) if self.key then R.toggle(self.key) end end)
     return b
 end
+-- Places a section heading at y with its fold icon and text; returns the y below it.
+local function placeHeading(b, key, y, text)
+    local closed = R.collapsed(key)
+    b.key = key
+    b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
+    b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
+    b.text:SetText(text)
+    b:Show()
+    return y + SECTION, closed
+end
 local function section(index)
     local b = sectionButton()
     page.sections[index] = b
@@ -2622,14 +2658,10 @@ end
 local function renderTogether(y, groups)
     page.togetherHead = page.togetherHead or sectionButton()
     local b = page.togetherHead
-    local closed = R.collapsed("together")
     local data = R.together(groups)
-    b.key = "together"
-    b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
-    b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-    b.text:SetText(T("Play together now") .. "   " .. WoWStatusUI.MUTED_CODE .. (data.range == 1 and TF("%d within 1 level", data.inRange) or TF("%d within %d levels", data.inRange, data.range)) .. "|r")
-    b:Show()
-    y = y + SECTION
+    local closed
+    y, closed = placeHeading(b, "together", y, T("Play together now") .. "   " .. WoWStatusUI.MUTED_CODE
+        .. (data.range == 1 and TF("%d within 1 level", data.inRange) or TF("%d within %d levels", data.inRange, data.range)) .. "|r")
     local bar = page.togetherBar or togetherBar()
     local shown = 0
     if not closed then
@@ -2677,7 +2709,7 @@ end
 
 -- "Where we are": a section heading, then one row per zone with who is there
 -- and how old each report is. The rows only show text; the heading folds it.
-local WHERE_ROW, WHERE_NAMES = 22, 6
+local WHERE_ROW, WHERE_NAMES = 22, 4
 local function reportAge(seconds)
     if seconds < 60 then return T("just now") end
     return TF("%d min ago", math.floor(seconds / 60))
@@ -2685,8 +2717,10 @@ end
 local function whereRow(index)
     local row = CreateFrame("Frame", nil, page.list)
     row:SetSize(680, WHERE_ROW)
-    row.zone = UI.text(row, "GameFontNormal", 24, -4, 200)
-    row.members = UI.text(row, "GameFontHighlightSmall", 230, -6, 450)
+    -- One line each: a long zone or a crowded one is cut short, never wrapped into the next row.
+    row.zone = UI.text(row, "GameFontNormal", 24, -4, 250)
+    row.members = UI.text(row, "GameFontHighlightSmall", 280, -6, 400)
+    UI.call(row.zone, "SetWordWrap", false); UI.call(row.members, "SetWordWrap", false)
     page.where[index] = row
     return row
 end
@@ -2694,15 +2728,11 @@ end
 local function renderWhere(y, groups)
     page.whereHead = page.whereHead or sectionButton()
     local b = page.whereHead
-    local closed = R.collapsed("where")
     local data = R.whereWeAre(groups)
-    b.key = "where"
-    b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
-    b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-    b.text:SetText(T("Where we are") .. "   |cff9d9d9d" .. (data.people == 1 and T("1 friend") or TF("%d friends", data.people))
+    local closed
+    y, closed = placeHeading(b, "where", y, T("Where we are") .. "   " .. WoWStatusUI.MUTED_CODE
+        .. (data.people == 1 and T("1 friend") or TF("%d friends", data.people))
         .. ", " .. ((data.count or 0) == 1 and T("1 zone") or TF("%d zones", data.count or 0)) .. "|r")
-    b:Show()
-    y = y + SECTION
     page.whereNote = page.whereNote or UI.text(page.list, "GameFontDisableSmall", 24, 0, 650)
     local note, shown = page.whereNote, 0
     if not closed then
@@ -2725,9 +2755,18 @@ local function renderWhere(y, groups)
                 end
                 local name = (member.name:match("^[^-]+") or member.name):gsub("|", "||")
                 local colour = UI.classColour(member.class)
-                names[#names + 1] = (colour and (colour .. name .. "|r") or name) .. " |cff9d9d9d(" .. reportAge(member.age) .. ")|r"
+                names[#names + 1] = (colour and (colour .. name .. "|r") or name) .. " " .. WoWStatusUI.MUTED_CODE .. "(" .. reportAge(member.age) .. ")|r"
             end
             row.members:SetText(table.concat(names, ", "))
+            row:Show()
+            y = y + WHERE_ROW
+        end
+        if (data.more or 0) > 0 then
+            shown = shown + 1
+            local row = page.where[shown] or whereRow(shown)
+            row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y)
+            row.zone:SetText(WoWStatusUI.MUTED_CODE .. (data.more == 1 and T("+1 more zone") or TF("+%d more zones", data.more)) .. "|r")
+            row.members:SetText("")
             row:Show()
             y = y + WHERE_ROW
         end
@@ -2735,7 +2774,8 @@ local function renderWhere(y, groups)
         note:Hide()
     end
     for i = shown + 1, #page.where do page.where[i]:Hide() end
-    whereDrawn = math.floor(S.now() / 60)
+    whereDue = not closed and data.due or nil
+    whereNewest = newestReport()
     return y + 4
 end
 
@@ -2752,15 +2792,10 @@ function R.render()
     for _, part in ipairs(R.sections(groups)) do
         sections = sections + 1
         local b = page.sections[sections] or section(sections)
-        local closed = R.collapsed(part.key)
-        b.key = part.key
-        b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
-        b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
         local summary = part.characters and ("   " .. WoWStatusUI.MUTED_CODE .. part.characters .. " " .. T(part.characters == 1 and "character" or "characters")
             .. ", " .. part.online .. " " .. T("online") .. "|r") or ""
-        b.text:SetText(T(part.title):gsub("|", "||") .. summary)
-        b:Show()
-        y = y + SECTION
+        local closed
+        y, closed = placeHeading(b, part.key, y, T(part.title):gsub("|", "||") .. summary)
         if not closed then
             -- The rows a player's heading covers right now: all of them, or only
             -- the ones online while the filter is on.

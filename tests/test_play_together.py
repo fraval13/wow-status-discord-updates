@@ -259,6 +259,7 @@ def test_whisper_invite_and_range_buttons_are_reachable_with_a_controller():
         R.sections=function() return {} end
         R.whereWeAre=function() return {zones={}, people=0, count=0} end
         WoWStatusSafe.now=function() return 0 end
+        WoWStatusJournal={entries=function() return {} end, details=function() end}
         R.together=function() return {level=20, range=3, online=1, inRange=1,
             rows={{name="Mira-Realm", class="WARRIOR", level=21, diff=1}}} end
         local page=__build(main); page.visible=true; page.list.visible=true
