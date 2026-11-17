@@ -62,7 +62,8 @@ def test_dungeons_and_joins_have_their_own_sounds_and_follow_everything_else_unt
 def test_big_moments_keep_their_usual_sound_until_one_is_chosen():
     lua = actor('Thora')
     lua.execute('WoWStatusPopups.setSound("level", 888); WoWStatusPopups.setSound("dungeon", 8960)')
-    assert lua.eval('WoWStatusPopups.sound("big")') == lua.eval('WoWStatusPopups.SOUND_USUAL')
+    assert lua.eval('WoWStatusPopups.soundChoice("big")') == lua.eval('WoWStatusPopups.SOUND_USUAL')
+    assert lua.eval('WoWStatusPopups.sound("big")') == 0
     assert sound_for(lua, '{level=40}') == 888
     assert sound_for(lua, '{kind="raid"}') == 8960
     lua.execute('WoWStatusPopups.setSound("big", 12889)')
@@ -97,7 +98,7 @@ def test_a_missing_or_invalid_sound_plays_nothing():
     ''')
 
 
-def test_the_big_moment_picker_offers_the_usual_sound():
+def test_kinds_that_follow_another_sound_can_go_back_to_it():
     lua = actor('Thora')
     lua.execute('''
         __played = {}; function PlaySound(id) table.insert(__played, id) end
@@ -116,5 +117,36 @@ def test_the_big_moment_picker_offers_the_usual_sound():
         pick("Alarm")
         assert(WoWStatusPopups.sound("big") == 12889 and button.text == "Alarm" and __played[1] == 12889)
         pick("Same as usual")
-        assert(WoWStatusPopups.sound("big") == WoWStatusPopups.SOUND_USUAL and button.text == "Same as usual" and #__played == 1)
+        -- Dungeons follow "Everything else" until picked, and can follow it again.
+        WoWStatusPopups.setSound("other", 878)
+        local dungeon = panel.sounds.dungeon
+        assert(dungeon.text == "Same as usual" and WoWStatusPopups.soundFor({kind="raid"}) == 878)
+        button = dungeon
+        pick("Ready check")
+        assert(dungeon.text == "Ready check" and WoWStatusPopups.soundFor({kind="raid"}) == 8960)
+        pick("Same as usual")
+        assert(dungeon.text == "Same as usual" and WoWStatusPopups.soundFor({kind="raid"}) == 878)
+        button = panel.sounds.big
+        assert(WoWStatusPopups.soundChoice("big") == WoWStatusPopups.SOUND_USUAL and button.text == "Same as usual" and #__played == 2 and __played[2] == 8960)
+    ''')
+
+
+def test_every_sound_picker_is_reachable_with_a_controller():
+    lua = actor('Thora')
+    lua.execute('''
+        WoWStatusPreviews.show()
+        -- The shared frame mock has no layout: give every frame a kind, its children and a place.
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:GetObjectType() return self.kind end
+        function methods:GetChildren()
+            local list = {}
+            for _, f in ipairs(__frames) do if f.parent == self then list[#list + 1] = f end end
+            return (unpack or table.unpack)(list)
+        end
+        function methods:GetScript(name) return self[name] end
+        function methods:GetRect() return 0, 0, 10, 10 end
+        local panel = WoWStatusNotificationPreviews
+        local reached = {}
+        for _, control in ipairs(WoWStatusGamepad.controls(panel, {panel})) do reached[control] = true end
+        for _, entry in ipairs(WoWStatusPopups.SOUND_KINDS) do assert(reached[panel.sounds[entry[1]]], entry[1]) end
     ''')

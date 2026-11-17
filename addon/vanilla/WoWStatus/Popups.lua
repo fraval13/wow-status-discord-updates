@@ -332,11 +332,12 @@ P.SOUNDS = {{"None", 0}, {"Soft chime", 850}, {"Level-up fanfare", 888}, {"Quest
     {"Ready check", 8960}, {"Raid warning", 8959}, {"Alarm", 12889}}
 P.SOUND_KINDS = {{"level", "Level-ups"}, {"death", "Deaths"}, {"loot", "Armor"}, {"zone", "New zones"},
     {"dungeon", "Dungeons and raids"}, {"join", "Group joins"}, {"big", "Big moments"}, {"other", "Everything else"}}
--- Kinds added later follow "Everything else" until chosen, so an earlier choice keeps
--- covering them. Big moments (#181) have no sound of their own until one is chosen:
--- until then a raid first or a level cap plays its ordinary kind's sound.
+-- Some kinds follow another sound until the player picks one of their own (#181):
+-- dungeons and joins follow "Everything else", where they used to belong, so an
+-- earlier choice keeps covering them; big moments (raid firsts, level caps) play
+-- their ordinary kind's sound. The picker shows that as "Same as usual".
 P.SOUND_USUAL = -1
-local SOUND_FALLBACK = {dungeon = "other", join = "other"}
+P.SOUND_FOLLOWS = {dungeon = "other", join = "other", big = true}
 local function soundKind(item)
     if item.level then return "level" end
     local kind = item.kind
@@ -344,27 +345,36 @@ local function soundKind(item)
     if kind == "introduction" then return "join" end
     return (kind == "death" or kind == "loot" or kind == "zone") and kind or "other"
 end
+-- The player's own pick for a kind; nil while it is unpicked or "Same as usual".
 local function chosenSound(kind)
     local id = prefs and type(prefs.sounds) == "table" and S.number(prefs.sounds[kind])
     return id and id >= 0 and id or nil
 end
+-- The sound kit a kind plays (0 for none). Unpicked big moments have none of
+-- their own: P.soundFor plays the moment's ordinary kind instead.
 function P.sound(kind)
-    if kind == "big" then return chosenSound("big") or P.SOUND_USUAL end
-    local chosen = chosenSound(kind) or (SOUND_FALLBACK[kind] and chosenSound(SOUND_FALLBACK[kind]))
+    local chosen = chosenSound(kind)
     if chosen then return chosen end
+    local follows = P.SOUND_FOLLOWS[kind]
+    if type(follows) == "string" then return P.sound(follows) end
+    if follows then return 0 end
     return prefs and prefs.sound and 850 or 0
+end
+-- What the settings show for a kind: its pick, or "Same as usual" while it follows another.
+function P.soundChoice(kind)
+    return chosenSound(kind) or (P.SOUND_FOLLOWS[kind] and P.SOUND_USUAL) or P.sound(kind)
 end
 function P.setSound(kind, id)
     if not prefs then return false end
     prefs.sounds = type(prefs.sounds) == "table" and prefs.sounds or {}
-    id = tonumber(id) or 0
-    prefs.sounds[kind] = id >= 0 and id or nil
+    prefs.sounds[kind] = tonumber(id) or 0
     return true
 end
 function P.soundFor(item)
     if type(item) ~= "table" then return 0 end
-    local big = P.bigEvent(item) and chosenSound("big")
-    return big or P.sound(soundKind(item))
+    local big = chosenSound("big")
+    if big and P.bigEvent(item) then return big end
+    return P.sound(soundKind(item))
 end
 function P.soundName(id)
     if id == P.SOUND_USUAL then return "Same as usual" end
