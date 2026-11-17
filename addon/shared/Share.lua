@@ -13,7 +13,7 @@ local MENUS = {"MENU_UNIT_PLAYER", "MENU_UNIT_FRIEND", "MENU_UNIT_PARTY", "MENU_
 local function sent()
     db.share = type(db.share) == "table" and db.share or {}
     db.share.sent = type(db.share.sent) == "table" and db.share.sent or {}
-    local now = time()
+    local now = S.now()
     for key, at in pairs(db.share.sent) do
         if type(at) ~= "number" or at > now or now - at >= SH.INTERVAL then db.share.sent[key] = nil end
     end
@@ -50,7 +50,7 @@ function SH.send(rawName)
     if not send then say("Whispers are not available in this client."); return false end
     local ok, result = pcall(send, SH.MESSAGE, "WHISPER", nil, name)
     if not ok or S.value(result) == false then say("The whisper to " .. name .. " could not be sent."); return false end
-    list[key] = time()
+    list[key] = S.now()
     say("Shared the WoW Status link with " .. name .. ".")
     return true
 end

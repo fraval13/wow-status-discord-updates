@@ -52,7 +52,7 @@ local function fillTooltip(tooltip,draggable)
     tooltip:AddLine(T("Online now:").." "..list,.4,1,.4,true)
     local latest=WoWStatusJournal and WoWStatusJournal.latestFriend and WoWStatusJournal.latestFriend()
     if latest then
-        local minutes=math.max(0,math.floor((time()-(latest.at or time()))/60))
+        local minutes=math.max(0,math.floor((S.now()-(latest.at or S.now()))/60))
         local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
         local who=(latest.sender:match("^[^-]+") or latest.sender):gsub("|","||")
         tooltip:AddLine(T("Latest:").." "..who.." — "..WoWStatusJournal.deathText(latest):gsub("|","||").." · "..when,1,.82,0,true)

@@ -261,10 +261,10 @@ def test_the_muted_list_is_reachable_with_a_controller():
         function methods:SetScrollChild(child) self.child=child end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
         WoWStatusSafe={string=function(v) return type(v)=="string" and v~="" and v or nil end,
-            number=function(v) return type(v)=="number" and v or nil end, lowerASCII=string.lower}
+            number=function(v) return type(v)=="number" and v or nil end, lowerASCII=string.lower,
+            now=function() return 1793000000 end}
         WoWStatusRoster={key=function(name) return name:lower() end}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end}
-        function time() return 1793000000 end
     ''')
     lua.execute((ROOT / 'addon/shared/Mutes.lua').read_text(encoding='utf-8'))
     lua.execute('''

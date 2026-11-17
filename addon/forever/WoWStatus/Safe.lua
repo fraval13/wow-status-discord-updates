@@ -55,12 +55,16 @@ end
 function S.stringCall(fn, ...)
     return S.string(S.call(fn, ...))
 end
--- Realm time (issue #7). time() reads this PC's clock, which can be minutes
--- off; GetServerTime() is the realm's clock, the same on every member's PC.
--- Stamp everything stored or shared with it, and compare those stamps with it.
--- time() stays for short local intervals. Falls back to time() until the API
--- has answered once; after that, a moment without an answer keeps the last
--- known offset, so one stamp never silently switches clocks.
+-- One clock (issues #7 and #229). Only this file reads time(), this PC's clock,
+-- which can be minutes off; tests/test_clock_guard.py fails on any other use.
+--   S.now()      realm time (GetServerTime), the same on every member's PC: for
+--                everything stored or shared, and anything compared with it.
+--   S.uptime()   game uptime (GetTime): short in-memory timers. It cannot jump
+--                when the PC clock is changed. Never store or send it.
+--   S.localNow() this PC's clock: only to ask date() what time it is here.
+-- S.now() falls back to time() until the API has answered once; after that, a
+-- moment without an answer keeps the last known offset, so one stamp never
+-- silently switches clocks.
 local pcMinusRealm
 function S.realmTime()
     local realm = S.number(S.call(GetServerTime))
@@ -69,6 +73,12 @@ function S.realmTime()
 end
 function S.now()
     return S.realmTime() or time()
+end
+function S.uptime()
+    return S.number(S.call(GetTime)) or time()
+end
+function S.localNow()
+    return type(time) == "function" and time() or nil
 end
 -- This PC's clock minus realm time, in seconds; nil without realm time.
 function S.clockOffset()
@@ -98,6 +108,6 @@ function S.debug(text)
     local db = WoWStatusDB
     if type(db) ~= "table" or db.debug ~= true then return end
     db.debug_log = type(db.debug_log) == "table" and db.debug_log or {}
-    table.insert(db.debug_log, tostring(time()) .. " " .. tostring(text))
+    table.insert(db.debug_log, tostring(S.now()) .. " " .. tostring(text))
     while #db.debug_log > 500 do table.remove(db.debug_log, 1) end
 end

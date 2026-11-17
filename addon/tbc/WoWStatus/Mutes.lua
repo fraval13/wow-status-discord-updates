@@ -83,7 +83,7 @@ local CACHE_SECONDS = 5
 local function modes()
     local mutes = state()
     if not mutes then return nil end
-    local now = time()
+    local now = S.now()
     if cache and cache.revision == revision and now - cache.at < CACHE_SECONDS then return cache end
     local result = {}
     for k, item in pairs(mutes.characters) do result[k] = stronger(result[k], item.mode) end
@@ -163,7 +163,7 @@ function M.set(kind, id, mode, name)
         end
         name = S.string(name)
         local old = map[id]
-        map[id] = {mode=mode, name=name and name:sub(1, 120) or (old and old.name), at=time(),
+        map[id] = {mode=mode, name=name and name:sub(1, 120) or (old and old.name), at=S.now(),
             characters=kind == "player" and (old and old.characters or {}) or nil}
     end
     if next(mutes.players) == nil and next(mutes.characters) == nil then db.mutes = nil end

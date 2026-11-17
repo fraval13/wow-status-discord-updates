@@ -203,7 +203,7 @@ local function identify(name)
                 end
                 if count >= MAX_IDENTIFIED and oldest then roster.identified[oldest] = nil end
             end
-            roster.identified[k] = {class=class, race=race, sex=sex, at=time()}
+            roster.identified[k] = {class=class, race=race, sex=sex, at=S.now()}
         end
     end
     local item = roster.identified[k]
@@ -236,7 +236,7 @@ function R.observe(character)
     local extras = fields.collection and P.extras and P.extras(character) or {}
     character.roster_info = {race=S.string(race), sex=S.number(S.call(UnitSex, "player")), class=S.string(class),
         level=level, xp=permille, deaths=deaths, gold=gold, earned=earned, kills=kills, played=played,
-        honor_kills=extras.honor_kills, dungeons=extras.dungeons, mounts=extras.mounts, at=time()}
+        honor_kills=extras.honor_kills, dungeons=extras.dungeons, mounts=extras.mounts, at=S.now()}
 end
 
 local function playerName()
@@ -271,7 +271,7 @@ end
 -- log is reused within the same second.
 local milestoneCache, milestoneAt = setmetatable({}, {__mode="k"}), nil
 function R.milestones(c)
-    local now = time()
+    local now = S.now()
     if milestoneAt ~= now then milestoneCache, milestoneAt = setmetatable({}, {__mode="k"}), now end
     if milestoneCache[c] then return milestoneCache[c] end
     local result = R.scanMilestones(c)
@@ -422,7 +422,7 @@ local function journalFacts(fresh)
     local entries = WoWStatusJournal.entries()
     local first = entries[1]
     if fresh or deathsCache.entries ~= entries or deathsCache.count ~= #entries or deathsCache.first ~= (first and first.id)
-        or time() - (deathsCache.at or 0) >= DEATHS_CACHE_SECONDS then
+        or S.now() - (deathsCache.at or 0) >= DEATHS_CACHE_SECONDS then
         local map, levels = {}, {}
         for _, e in ipairs(entries) do
             local k = (e.kind == "death" or e.kind == "level") and key(e.sender)
@@ -430,7 +430,7 @@ local function journalFacts(fresh)
             local level = k and e.kind == "level" and S.number(e.level)
             if level and level > (levels[k] or 0) then levels[k] = level end
         end
-        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map, levels=levels, at=time()}
+        deathsCache = {entries=entries, count=#entries, first=first and first.id, map=map, levels=levels, at=S.now()}
     end
     return deathsCache.map, deathsCache.levels
 end
@@ -623,7 +623,7 @@ local function noteSeen(group, name)
         item = {groups={}}
         roster.seen[k] = item
     end
-    item.name, item.at = name, time()
+    item.name, item.at = name, S.now()
     item.groups = type(item.groups) == "table" and item.groups or {}
     item.groups[group] = true
 end
@@ -739,7 +739,7 @@ function R.readWho()
             end
             -- The same old results are read again on later system messages: count changes only.
             if not levels[k] or levels[k].level ~= level then learnt = learnt + 1 end
-            levels[k] = {level=level, at=time()}
+            levels[k] = {level=level, at=S.now()}
         end
     end
     if learnt > 0 then S.debug("/who: levels learnt for " .. learnt .. " group member(s)") end
@@ -790,7 +790,7 @@ end
 -- Listed groups to browse: not yet joined, heard of in the last 14 days, newest first.
 function R.listings()
     if not db or not current then return {} end
-    local list, now = {}, time()
+    local list, now = {}, S.now()
     for id, item in pairs(listings()) do
         if type(item) == "table" and S.string(item.name) and not WoWStatusGroups.contains(current, id) then
             local names, newest = {}, 0
@@ -875,7 +875,7 @@ end
 -- (at most 30), for sending when the game shows nobody in the group's channel.
 function R.recentMembers(group)
     if not db or not current then return {} end
-    local list, now = {}, time()
+    local list, now = {}, S.now()
     for _, player in pairs(state().players) do
         if type(player.groups) == "table" and player.groups[group] then
             for _, character in pairs(player.characters) do
@@ -910,7 +910,7 @@ local function unreachable()
 end
 function R.unreached(name)
     local k = db and key(name)
-    if k then unreachable()[k] = time(); R.render() end
+    if k then unreachable()[k] = S.now(); R.render() end
 end
 function R.reached(name)
     local k = db and key(name)
@@ -919,7 +919,7 @@ end
 function R.isUnreachable(name)
     local k = db and key(name)
     local at = k and unreachable()[k]
-    return at ~= nil and time() - at < 86400
+    return at ~= nil and S.now() - at < 86400
 end
 
 -- After a privacy change: tell everyone again (or tell them to forget us).
@@ -944,7 +944,7 @@ end
 
 -- Seconds until the Sync button can be used again (0 when ready).
 function R.syncWait()
-    local now = GetTime and GetTime() or time()
+    local now = S.uptime()
     return syncedAt and math.max(0, math.ceil(R.SYNC_COOLDOWN - (now - syncedAt))) or 0
 end
 local function updateSyncButton()
@@ -961,7 +961,7 @@ end
 -- log catch-up as at login. Once a minute.
 function R.syncNow()
     if not db or not current or R.syncWait() > 0 then return false end
-    syncedAt = GetTime and GetTime() or time()
+    syncedAt = S.uptime()
     R.changed()
     for group in pairs(WoWStatusGroups.selected(current)) do
         for _, peer in ipairs(WoWStatusPopups.peers(group)) do
@@ -1149,7 +1149,7 @@ local function grouped()
         members=S.number(S.call(GetNumGroupMembers)) or 0,
         notLeader=S.call(UnitIsGroupLeader, "player") == false,
         assistant=raid and S.call(UnitIsGroupAssistant, "player") and true or false,
-        now=GetTime and GetTime() or time()}
+        now=S.uptime()}
 end
 -- The name to whisper or invite: the plain name on this realm and on WoW Forever
 -- (its whispers bounce with a realm, see recentMembers), "Name-Realm" otherwise.
@@ -1183,7 +1183,7 @@ function R.inviteBlocked(row, group)
 end
 -- Whether an invite's wait ended since the page was drawn: clears it and says so.
 local function inviteExpired()
-    local now, expired = GetTime and GetTime() or time(), false
+    local now, expired = S.uptime(), false
     for k, at in pairs(invitedAt) do
         if now - at >= INVITE_WAIT then invitedAt[k], expired = nil, true end
     end
@@ -1248,7 +1248,7 @@ function R.partyInvite(row)
     local invite = (C_PartyInfo and C_PartyInfo.InviteUnit) or InviteUnit
     if not invite or not pcall(invite, chatTarget(row.name)) then return false end
     local k = key(row.name)
-    if k then invitedAt[k] = GetTime and GetTime() or time() end
+    if k then invitedAt[k] = S.uptime() end
     return true
 end
 -- The online friends as one value, to notice logins and logouts between renders.
@@ -1334,7 +1334,7 @@ local function expireEquipment(map, age)
     local count = 0
     for id, item in pairs(map) do
         local at = type(item) == "table" and item.at or item
-        if time() - at >= age then map[id] = nil else count = count + 1 end
+        if S.now() - at >= age then map[id] = nil else count = count + 1 end
     end
     return count
 end
@@ -1364,10 +1364,10 @@ function R.requestEquipment(name)
                             for old, request in pairs(equipmentPending) do
                                 if request.pid == pid and request.name == wanted then equipmentPending[old] = nil end
                             end
-                            equipmentPending[token] = {pid=pid, peer=key(peer), group=group, name=wanted, at=time(), parts={}, count=0}
-                            equipmentAsked[requestKey] = time()
+                            equipmentPending[token] = {pid=pid, peer=key(peer), group=group, name=wanted, at=S.now(), parts={}, count=0}
+                            equipmentAsked[requestKey] = S.now()
                             local target = WoWStatusAdapter.full_names and (peer:match("^[^-]+") or peer) or peer
-                            table.insert(outgoing, {target=target, equipmentGroup=group, equipmentAt=time(), text=table.concat({"D", group, state().id,
+                            table.insert(outgoing, {target=target, equipmentGroup=group, equipmentAt=S.now(), text=table.concat({"D", group, state().id,
                                 character.name:gsub(" ", "_"), token}, " ")})
                             return true
                         end
@@ -1393,7 +1393,7 @@ end
 local function queueEquipment(group, peer, text, owner)
     if #outgoing>=256 or #text>250 or not WoWStatusGroups.contains(current,group) then return false end
     local target=WoWStatusAdapter.full_names and (peer:match("^[^-]+") or peer) or peer
-    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=time(),equipmentOwner=owner,equipmentSync=true}
+    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),equipmentOwner=owner,equipmentSync=true}
     return true
 end
 -- A relay carries the original identity and capture time, not a claim that the
@@ -1444,10 +1444,10 @@ local function equipmentMessage(words, sender)
             local text = table.concat({"E", group, state().id, name:gsub(" ", "_"), token, part[1], part[2]}, " ")
             if #text > 250 then return false end
             local target = WoWStatusAdapter.full_names and (sender:match("^[^-]+") or sender) or sender
-            messages[#messages + 1] = {target=target, text=text, equipmentGroup=group, equipmentAt=time(),
+            messages[#messages + 1] = {target=target, text=text, equipmentGroup=group, equipmentAt=S.now(),
                 equipmentOwner=(part[1] ~= "x" and part[1] ~= "n") and character or nil}
         end
-        equipmentAnswered[answerKey] = time()
+        equipmentAnswered[answerKey] = S.now()
         for _, message in ipairs(messages) do table.insert(outgoing, message) end
         return true
     end
@@ -1481,7 +1481,7 @@ end
 function R.tick()
     if not db or not current then return end
     if page and page.sync and page:IsShown() then updateSyncButton() end
-    local now = GetTime and GetTime() or time()
+    local now = S.uptime()
     -- "Play together now" follows friends logging in or out while the page is open.
     -- R.render notes what it drew, so only a change since then redraws.
     -- At most once per R.ONLINE_CHECK, and only while the window shows the page.
@@ -1592,7 +1592,7 @@ function R.tick()
         end
         if not owner or owner.hide_from_list or not R.professionLine(owner) then return end
     end
-    if item.equipmentAt and time() - item.equipmentAt >= 180 then return end
+    if item.equipmentAt and S.now() - item.equipmentAt >= 180 then return end
     if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
     -- A privacy change can happen while a snapshot is queued for transmission.
     local owner = item.equipmentOwner
@@ -1685,7 +1685,7 @@ receive = function(message, sender, distribution)
         for _ in pairs(owner.characters) do count = count+1 end
         if not old and count >= 200 then return false end
         owner.characters[k] = {name=name, revision=revision, hidden=flag == "1"}
-        owner.at = time()
+        owner.at = S.now()
         R.render()
         if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
         if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
@@ -1700,7 +1700,7 @@ receive = function(message, sender, distribution)
     end
     -- "R": a member asks for this account's list again (their Sync button).
     if op == "R" and #words == 3 then
-        local k, now = key(sender), time()
+        local k, now = key(sender), S.now()
         if not k or (answered[k] and now - answered[k] < R.SYNC_COOLDOWN) then return false, "answered this minute" end
         answered[k] = now
         if sentTo[group] then sentTo[group][k] = nil end
@@ -1772,8 +1772,8 @@ receive = function(message, sender, distribution)
         if not id or cleaned:find(S.CONTROL_OR_PIPE) then return false, "bad group name" end
         if WoWStatusGroups.contains(current, id) then return true end -- Already a member.
         local k = key(sender)
-        if k and invitedFrom[k] and time() - invitedFrom[k] < 60 then return false, "invite repeated" end
-        if k then invitedFrom[k] = time() end
+        if k and invitedFrom[k] and S.now() - invitedFrom[k] < 60 then return false, "invite repeated" end
+        if k then invitedFrom[k] = S.now() end
         local player = players[pid]
         local from = R.displayName and R.displayName(sender) or sender
         if WoWStatusProfile and WoWStatusProfile.invited then WoWStatusProfile.invited(from, cleaned) end
@@ -1798,7 +1798,7 @@ receive = function(message, sender, distribution)
             all[id] = {name=cleaned, by={}}
         end
         local player = players[pid]
-        all[id].by[pid] = {name=(player and player.name) or (S.string(sender) and sender:match("^[^-]+")) or "?", at=time()}
+        all[id].by[pid] = {name=(player and player.name) or (S.string(sender) and sender:match("^[^-]+")) or "?", at=S.now()}
         return true
     end
     if op == "U" and #words == 4 then
@@ -1908,7 +1908,7 @@ receive = function(message, sender, distribution)
         player = {characters={}}
         players[pid] = player
     end
-    player.name, player.at = name ~= "-" and name or nil, time()
+    player.name, player.at = name ~= "-" and name or nil, S.now()
     -- Which of this account's groups the list arrived through (never other groups).
     player.groups = type(player.groups) == "table" and player.groups or {}
     player.groups[group] = true
@@ -1919,7 +1919,7 @@ receive = function(message, sender, distribution)
         for k, c in pairs(player.characters) do count = count + 1; if (c.at or 0) < oldestAt then oldest, oldestAt = k, c.at or 0 end end
         if count >= MAX_CHARACTERS and oldest then player.characters[oldest] = nil end
     end
-    character.at = time()
+    character.at = S.now()
     local previous = player.characters[characterKey]
     if previous then
         character.equipment_profile, character.equipment_hidden = previous.equipment_profile, previous.equipment_hidden
@@ -1959,7 +1959,7 @@ function R.portrait(texture, name, race, sex)
 end
 
 local function ago(at)
-    local seconds = math.max(0, time() - (at or time()))
+    local seconds = math.max(0, S.now() - (at or S.now()))
     if seconds < 3600 then return math.floor(seconds / 60) .. "m ago" end
     if seconds < 86400 then return math.floor(seconds / 3600) .. "h ago" end
     return math.floor(seconds / 86400) .. "d ago"

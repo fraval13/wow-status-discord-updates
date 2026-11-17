@@ -100,9 +100,9 @@ local function readProfessions()
     return result, complete
 end
 function P.professions(force)
-    if not force and professionAt and time() - professionAt < 5 then return professionCache, professionComplete end
+    if not force and professionAt and S.now() - professionAt < 5 then return professionCache, professionComplete end
     professionCache, professionComplete = readProfessions()
-    professionAt = time()
+    professionAt = S.now()
     return professionCache, professionComplete
 end
 function P.queryComplete() questReady, questAt = true, nil end
@@ -128,7 +128,7 @@ function P.observe(character, fields)
     end
     if fields.quests then
         local completed, modern
-        local sample = not questAt or time() - questAt >= 5
+        local sample = not questAt or S.now() - questAt >= 5
         if sample and C_QuestLog and C_QuestLog.GetAllCompletedQuestIDs then
             completed, modern = S.value(S.call(C_QuestLog.GetAllCompletedQuestIDs)), true
         elseif sample and questReady and GetQuestsCompleted then completed = S.value(S.call(GetQuestsCompleted)) end
@@ -139,7 +139,7 @@ function P.observe(character, fields)
                 if id and id > 0 and (modern or S.value(item)) then total = total + 1 end
             end
             value.game_quests = math.max(value.game_quests or 0, total)
-            questAt = time()
+            questAt = S.now()
         elseif not questRequested and QueryQuestsCompleted then
             questRequested = true; pcall(QueryQuestsCompleted)
         end
@@ -261,7 +261,7 @@ function P.extras(character)
         result.dungeons = count
     end
     -- Counted again after a minute; a client still loading its collection is asked again next time.
-    if not mountsAt or time() - mountsAt >= 60 then
+    if not mountsAt or S.now() - mountsAt >= 60 then
         if C_MountJournal and C_MountJournal.GetMountIDs and C_MountJournal.GetMountInfoByID then
             local ids = S.value(S.call(C_MountJournal.GetMountIDs))
             if type(ids) == "table" then
@@ -274,7 +274,7 @@ function P.extras(character)
                         if ok and S.value(collected) == true then count = count + 1 end
                     end
                 end
-                mountsAt, mountsCount = time(), count
+                mountsAt, mountsCount = S.now(), count
             end
         end
     end
