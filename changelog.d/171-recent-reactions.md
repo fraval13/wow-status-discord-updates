@@ -1,2 +1,0 @@
-- A new Reactions page, opened from the Activity log, lists the reactions friends sent you and the ones you sent them.
-- The Reactions button shows how many new reactions arrived since you last looked, so you can see what you missed.

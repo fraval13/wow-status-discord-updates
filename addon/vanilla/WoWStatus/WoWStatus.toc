@@ -3,7 +3,7 @@
 ## Notes: Friend progress, armor loot, activity log and automatic login sync.
 ## Author: fraval13
 ## IconTexture: Interface\AddOns\WoWStatus\Textures\Logo
-## Version: 1.80.0
+## Version: 1.81.0
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber
 ## X-Client-Support: Vanilla Classic / Classic Era only
