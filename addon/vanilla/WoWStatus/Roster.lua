@@ -2081,8 +2081,7 @@ function R.groups()
             professions=character.professions, listed=character.listed == true, zone=zones[k] or nil,
             pid=character.pid, player_name=character.player_name,
             -- Newest activity known (log entry or shared list), for "Not seen for a while" (#172).
-            -- A list's own time is this PC's clock; the log's is realm time.
-            seen=not self and seen > 0 and math.max(lastSeen[k] or 0, (S.number(character.at) or 0) - (S.clockOffset() or 0)) or nil})
+            seen=not self and seen > 0 and seen or nil})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
