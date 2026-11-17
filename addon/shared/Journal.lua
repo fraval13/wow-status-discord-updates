@@ -153,6 +153,7 @@ end
 local function relayed(e)
     return e.origin=="catchup" and P.senderKey(e.relay or e.via)~=P.senderKey(e.sender)
 end
+J.relayed=relayed
 -- Another member's entry naming one of this account's characters as its sender.
 local function ownCharacter(entry)
     if entry.owner then return false end
@@ -313,6 +314,13 @@ function J.setDetails(id,zone,killer)
     if refresh then refresh() end
     return true
 end
+-- The zone a first visit names ("Entered Duskwood"), or nil when the client
+-- could not read it ("Entered a new zone") or the text is not one.
+function J.zoneOf(e)
+    local zone=type(e)=="table" and e.kind=="zone" and S.string(e.text) and S.trim(e.text:match("^Entered (.+)$") or "")
+    if not zone or zone=="" or zone=="a new zone" or #zone>48 or zone:find(S.CONTROL_OR_PIPE) then return nil end
+    return zone
+end
 function J.details(e)
     local details=db and type(db.journal.details)=="table" and db.journal.details
     return details and type(e)=="table" and details[e.id] or nil
@@ -438,6 +446,7 @@ end
 -- copies match. Copies of this account's entries received from others are dropped.
 function J.selfRenamed()
     if not db or not current then return end
+    J.zoneRevision=J.zoneRevision+1
     local sender=ownName()
     local newKey=P.senderKey(sender)
     if not newKey then return end
@@ -464,6 +473,7 @@ function J.entry(id) return id and index[id] or nil end
 function J.redraw() if refresh then refresh() end end
 function J.groupsChanged()
     if not db then return end
+    J.zoneRevision=J.zoneRevision+1
     requests,sessions,sendQueue,cursors={},{},{},{}
     local kept={}
     for _, e in ipairs(db.journal.entries) do
@@ -476,6 +486,7 @@ function J.groupsChanged()
 end
 function J.privacyChanged()
     if not db then return end
+    J.zoneRevision=J.zoneRevision+1
     local kept,now={},S.now()
     for _, e in ipairs(db.journal.entries) do
         if permitted(e) then

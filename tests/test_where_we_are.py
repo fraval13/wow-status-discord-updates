@@ -301,3 +301,40 @@ def test_play_together_uses_the_same_fifteen_minutes():
     assert thora.eval('WoWStatusRoster.together().rows[1].zone') is None
     report(thora, 'Mira-TestRealm', 'Westfall', ago=60, nonce='new')
     assert thora.eval('WoWStatusRoster.together().rows[1].zone') == 'Westfall'
+
+
+def test_a_relays_catch_up_claim_places_nobody():
+    thora = friends('Mira-TestRealm')
+    report(thora, 'Mira-TestRealm', 'Duskwood', ago=300)
+    thora.execute('''table.insert(WoWStatusDB.journal.entries, 1, {id="relay-claim", sender="Mira-TestRealm",
+        kind="zone", text="Entered Stormwind City", at=WoWStatusSafe.now() - 5, groups={}, origin="catchup",
+        via="Bo-TestRealm"})''')
+    assert where(thora)[1] == [('Duskwood', ['Mira-TestRealm'])]
+
+
+def test_an_older_clients_pc_clock_stamp_still_counts():
+    thora = friends('Mira-TestRealm')
+    # Realm time runs 20 minutes ahead of this PC; the friend stamped by a PC clock.
+    thora.execute('function GetServerTime() return time() + 1200 end')
+    thora.execute('''WoWStatusJournal.received({sender="Mira-TestRealm", nonce="pc1", kind="zone",
+        text="Entered Duskwood", at=time() - 120, group_id=next(character().group_ids)})''')
+    data, rows = where(thora)
+    assert rows == [('Duskwood', ['Mira-TestRealm'])]
+    assert data.zones[1].members[1].age == 120
+
+
+def test_removing_log_entries_redraws_the_view():
+    thora = friends('Mira-TestRealm')
+    before = thora.eval('WoWStatusJournal.zoneRevision')
+    thora.eval('WoWStatusJournal.privacyChanged')()
+    thora.eval('WoWStatusJournal.groupsChanged')()
+    assert thora.eval('WoWStatusJournal.zoneRevision') == before + 2
+
+
+def test_zone_text_is_read_the_same_way_everywhere():
+    thora = friends('Mira-TestRealm')
+    zone_of = thora.eval('WoWStatusJournal.zoneOf')
+    entry = thora.eval('function(text) return {kind="zone", text=text} end')
+    assert zone_of(entry('Entered Duskwood ')) == 'Duskwood'
+    assert zone_of(entry('Entered a new zone')) is None
+    assert zone_of(entry('Reached level 5!')) is None

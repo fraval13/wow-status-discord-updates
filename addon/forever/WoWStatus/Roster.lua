@@ -1255,6 +1255,16 @@ end
 -- count, more, due}: your own zone first, then the newest report; at most
 -- R.WHERE_ROWS zones (more: how many were cut); due: when a shown age next changes.
 R.WHERE_MAX_AGE, R.WHERE_ROWS, R.WHERE_NAMES = 15 * 60, 8, 4
+-- A report's age in seconds, or nil when it is older than R.WHERE_MAX_AGE or
+-- stamped more than 5 minutes ahead. Like S.outside, a stamp from an older
+-- client's PC clock counts by this PC's clock when realm time rejects it.
+function R.reportAge(at)
+    at = S.number(at)
+    if not at or S.outside(at, R.WHERE_MAX_AGE, 300) then return nil end
+    local realm = S.now() - at
+    if realm >= -300 and realm <= R.WHERE_MAX_AGE then return math.max(0, realm) end
+    return math.max(0, time() - at)
+end
 function R.whereWeAre(groups)
     local result = {zones={}, people=0}
     if not db or not current then return result end
@@ -1263,16 +1273,16 @@ function R.whereWeAre(groups)
     local now, byZone = S.now(), {}
     -- When the view next changes: a report expires (the counts change) or a
     -- shown age reaches its next minute. The page redraws then.
-    local function due(at, shown)
-        local age = math.max(0, now - at)
-        local change = at + (shown and math.min(R.WHERE_MAX_AGE + 1, (math.floor(age / 60) + 1) * 60) or R.WHERE_MAX_AGE + 1)
+    local function due(member, shown)
+        local age = member.age
+        local change = now - age + (shown and math.min(R.WHERE_MAX_AGE + 1, (math.floor(age / 60) + 1) * 60) or R.WHERE_MAX_AGE + 1)
         if not result.due or change < result.due then result.due = change end
     end
     for _, item in ipairs(onlineFriends(groups)) do
         local row = item.row
         local at = S.number(row.zone_at)
-        -- A stamp far ahead (a skewed clock) would read as "just now" for too long.
-        if row.zone and at and now - at <= R.WHERE_MAX_AGE and at <= now + 300 then
+        local age = R.reportAge(at)
+        if row.zone and age then
             local place = byZone[row.zone]
             if not place then
                 place = {zone=row.zone, at=at, here=row.zone == here, members={}}
@@ -1280,7 +1290,7 @@ function R.whereWeAre(groups)
                 result.zones[#result.zones + 1] = place
             end
             place.at = math.max(place.at, at)
-            place.members[#place.members + 1] = {name=row.name, class=row.class, at=at, age=math.max(0, now - at)}
+            place.members[#place.members + 1] = {name=row.name, class=row.class, at=at, age=age}
             result.people = result.people + 1
         end
     end
@@ -1296,7 +1306,7 @@ function R.whereWeAre(groups)
     result.count = #result.zones
     result.more = math.max(0, result.count - R.WHERE_ROWS)
     for index, place in ipairs(result.zones) do
-        for i, member in ipairs(place.members) do due(member.at, index <= R.WHERE_ROWS and i <= R.WHERE_NAMES) end
+        for i, member in ipairs(place.members) do due(member, index <= R.WHERE_ROWS and i <= R.WHERE_NAMES) end
     end
     for i = #result.zones, R.WHERE_ROWS + 1, -1 do result.zones[i] = nil end
     return result
@@ -2044,7 +2054,6 @@ function R.groups()
     -- A friend's newest reported zone, if under R.WHERE_MAX_AGE old ("Play together
     -- now", "Where we are"): a first visit, or where they died. Only friends who
     -- share their zone send either. Log stamps are realm time (S.now).
-    local zoneSince = S.now() - R.WHERE_MAX_AGE
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
         if k and selected[group] then shared[k] = shared[k] or {}; shared[k][group] = true end
@@ -2066,23 +2075,23 @@ function R.groups()
         if level and (not fresher[k] or level > fresher[k]) then fresher[k] = level end
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
-        if k and zones[k] == nil then
+        -- A relay's catch-up copy is its claim, not the friend's own report.
+        if k and zones[k] == nil and not WoWStatusJournal.relayed(e) then
             -- The newest first visit decides, even one whose zone the client could
             -- not read: an older one is no longer where they are. A death counts
             -- only with its zone: one without (no details came, or they do not
             -- share their zone) says nothing about where they are.
             local zone, report
             if e.kind == "zone" then
-                report = true
-                zone = S.string(e.text) and e.text:match("^Entered (.+)$")
-                if zone == "a new zone" then zone = nil end
+                report, zone = true, WoWStatusJournal.zoneOf(e)
             elseif e.kind == "death" then
                 local details = WoWStatusJournal.details(e)
                 zone = details and S.string(details.zone)
                 report = zone ~= nil
             end
             local at = S.number(e.at) or 0
-            if report then zones[k] = zone and at >= zoneSince and {zone=zone, at=at} or false end
+            -- Too old, or stamped too far ahead (a skewed clock), it is no report.
+            if report then zones[k] = zone and R.reportAge(at) and {zone=zone, at=at} or false end
         end
     end
     -- First-name-only entries (older WoW Forever clients announced "Unshaved")
@@ -2716,7 +2725,7 @@ end
 
 -- "Where we are": a section heading, then one row per zone with who is there
 -- and how old each report is. The rows only show text; the heading folds it.
-local WHERE_ROW, WHERE_NAMES = 22, R.WHERE_NAMES
+local WHERE_ROW = 22
 local function reportAge(seconds)
     if seconds < 60 then return T("just now") end
     return TF("%d min ago", math.floor(seconds / 60))
@@ -2756,8 +2765,8 @@ local function renderWhere(y, groups)
             row.zone:SetText(item.here and (zone .. " |cff40ff40(" .. T("your zone") .. ")|r") or zone)
             local names = {}
             for i, member in ipairs(item.members) do
-                if i > WHERE_NAMES then
-                    names[#names + 1] = TF("+%d more", #item.members - WHERE_NAMES)
+                if i > R.WHERE_NAMES then
+                    names[#names + 1] = TF("+%d more", #item.members - R.WHERE_NAMES)
                     break
                 end
                 local name = (member.name:match("^[^-]+") or member.name):gsub("|", "||")
