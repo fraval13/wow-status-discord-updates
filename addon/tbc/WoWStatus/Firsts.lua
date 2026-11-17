@@ -315,7 +315,7 @@ local function render()
             local lines, first, last = F.week(chosen and chosen.id or "", page.weekOffset)
             if chosen then
                 page.heading:SetText((page.weekOffset == 0 and T("This week") or T("Week")) .. " · " .. label
-                    .. "  |cff9d9d9d" .. first .. " – " .. last .. "|r")
+                    .. "  " .. WoWStatusUI.MUTED_CODE .. first .. " – " .. last .. "|r")
             end
             page.weekBack:ClearAllPoints(); page.weekBack:SetPoint("TOPLEFT", 570, -32 - top)
             page.weekNext:ClearAllPoints(); page.weekNext:SetPoint("TOPLEFT", 640, -32 - top)

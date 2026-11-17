@@ -398,6 +398,7 @@ def test_the_settings_controls_are_reachable_with_a_controller(gamepad_lua):  # 
         WoWStatusLocale={T=function(text) return text end,F=function(text, ...) return string.format(text, ...) end}
         WoWStatusSafe={number=function(v) return type(v)=="number" and v==v and v or nil end}
         WoWStatusDB={}
+        WoWStatusUI={mute=function(text) text.muted=true end}
     ''')
     lua.execute((ROOT / 'addon/shared/UnitTooltip.lua').read_text(encoding='utf-8'))
     lua.execute('''

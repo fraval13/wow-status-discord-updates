@@ -369,8 +369,9 @@ UI.CUES = {
     {state="online", where="cards, leaderboard", cue="filled dot"},
     {state="offline", where="cards, leaderboard", cue="hollow ring"},
     {state="controller focus", where="every window", cue="gold outline with a dark inner outline"},
+    {state="history graph first observation", where="level history graph", cue="larger square than a level-up"},
     {state="calendar today", where="date picker", cue="[brackets]"},
-    {state="calendar day with entries", where="date picker", cue="dot after the day"},
+    {state="calendar day with entries", where="date picker", cue="square mark in the corner"},
 }
 -- An inline online/offline marker for a font string: filled when online,
 -- hollow when not, so the shape tells them apart without the green.
@@ -540,6 +541,11 @@ function UI.calendar(owner, selected, today, counts, onPick)
             local cell = UI.box(cal, 32, 24, "Button")
             cell:SetPoint("TOPLEFT", 8 + ((i - 1) % 7) * 34, -52 - math.floor((i - 1) / 7) * 26)
             cell.text = UI.text(cell, "GameFontHighlightSmall", 0, -6, 32, "CENTER")
+            -- A small square in the corner marks a day with entries (#185), outside
+            -- the label so a bracketed "[28]" still fits the cell.
+            cell.mark = cell:CreateTexture(nil, "OVERLAY")
+            cell.mark:SetSize(4, 4); cell.mark:SetPoint("TOPRIGHT", -3, -3)
+            cell.mark:SetColorTexture(1, .82, 0, 1)
             cell:SetScript("OnClick", function(self) cal:Hide(); if cal.onPick then cal.onPick(self.key) end end)
             cell:SetScript("OnEnter", function(self) UI.tint(self, true) end)
             cell:SetScript("OnLeave", function(self) UI.tint(self, self.key == cal.selected) end)
@@ -558,12 +564,12 @@ function UI.calendar(owner, selected, today, counts, onPick)
                 local day = i - first + 1
                 if day >= 1 and day <= days then
                     local key = UI.dayKey(cal.year, cal.month, day)
-                    local active, today = (cal.counts[key] or 0) > 0, key == cal.todayKey
-                    local colour = active and "|cffffd100" or today and "|cffffffff" or UI.MUTED_CODE
+                    local active, isToday = (cal.counts[key] or 0) > 0, key == cal.todayKey
+                    local colour = active and "|cffffd100" or isToday and "|cffffffff" or UI.MUTED_CODE
                     cell.key = key
-                    -- Not by colour alone (#185): today in brackets, a day with entries marked with a dot.
-                    local label = today and ("[" .. day .. "]") or tostring(day)
-                    cell.text:SetText(colour .. label .. (active and "•" or "") .. "|r")
+                    -- Not by colour alone (#185): today in brackets, a day with entries marked in the corner.
+                    cell.text:SetText(colour .. (isToday and ("[" .. day .. "]") or tostring(day)) .. "|r")
+                    cell.mark:SetShown(active)
                     UI.tint(cell, key == cal.selected)
                     cell:Show()
                 else cell.key = nil; cell:Hide() end

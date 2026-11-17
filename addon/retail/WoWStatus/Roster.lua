@@ -2362,7 +2362,7 @@ local function renderTogether(y, groups)
     b.key = "together"
     b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
     b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-    b.text:SetText(T("Play together now") .. "   |cff9d9d9d" .. (data.range == 1 and TF("%d within 1 level", data.inRange) or TF("%d within %d levels", data.inRange, data.range)) .. "|r")
+    b.text:SetText(T("Play together now") .. "   " .. WoWStatusUI.MUTED_CODE .. (data.range == 1 and TF("%d within 1 level", data.inRange) or TF("%d within %d levels", data.inRange, data.range)) .. "|r")
     b:Show()
     y = y + SECTION
     local bar = page.togetherBar or togetherBar()
@@ -2426,7 +2426,7 @@ function R.render()
         b.key = part.key
         b:ClearAllPoints(); b:SetPoint("TOPLEFT", 0, -y)
         b.icon:SetTexture(closed and "Interface\\Buttons\\UI-PlusButton-Up" or "Interface\\Buttons\\UI-MinusButton-Up")
-        local summary = part.characters and ("   |cff9d9d9d" .. part.characters .. " " .. T(part.characters == 1 and "character" or "characters")
+        local summary = part.characters and ("   " .. WoWStatusUI.MUTED_CODE .. part.characters .. " " .. T(part.characters == 1 and "character" or "characters")
             .. ", " .. part.online .. " " .. T("online") .. "|r") or ""
         b.text:SetText(T(part.title):gsub("|", "||") .. summary)
         b:Show()
@@ -2451,7 +2451,7 @@ function R.render()
                 -- Say which of the two it is: nobody met yet, or nobody online now.
                 local note = (#part.entries > 0 and R.onlineOnly()) and "Nobody from this group is online right now."
                     or "Nobody else seen in this group yet."
-                h.text:SetText("|cff9d9d9d" .. T(note) .. "|r"); h.star:Hide(); h:Show()
+                h.text:SetText(WoWStatusUI.MUTED_CODE .. T(note) .. "|r"); h.star:Hide(); h:Show()
                 y = y + HEADER
             end
             for _, group in ipairs(part.entries) do
@@ -2485,7 +2485,7 @@ function R.render()
                     local lost = not group.self and R.isUnreachable(character.name) and ("   |cffff5555" .. T("not reached") .. "|r") or ""
                     -- A muted friend says so on the card, so nobody wonders why they went quiet (#169).
                     local mode = not group.self and WoWStatusMutes and WoWStatusMutes.mode(character.name) or "show"
-                    local muted = mode ~= "show" and ("   |cff9d9d9d" .. T(mode == "hide" and "hidden" or "muted") .. "|r") or ""
+                    local muted = mode ~= "show" and ("   " .. WoWStatusUI.MUTED_CODE .. T(mode == "hide" and "hidden" or "muted") .. "|r") or ""
                     c.status:SetText(T(character.status) .. (gold and ("   " .. gold) or "") .. lost .. muted)
                     local xp = S.number(character.xp)
                     if character.level and character.level >= (WoWStatusAdapter.max_level or 999) then
@@ -2521,7 +2521,7 @@ function R.render()
                     if kills and kills > 0 then table.insert(facts, kills == 1 and T("1 kill") or TF("%d kills", kills)) end
                     c.latest:SetText(table.concat(facts, " · "))
                     local groups = character.groups and #character.groups > 0 and table.concat(character.groups, ", ") or ""
-                    c.groups:SetText(groups ~= "" and ("|cff9d9d9d" .. T("Groups:") .. "|r " .. groups:gsub("|", "||")) or "")
+                    c.groups:SetText(groups ~= "" and (WoWStatusUI.MUTED_CODE .. T("Groups:") .. "|r " .. groups:gsub("|", "||")) or "")
                     c.text = c.name -- Older callers read a row's text.
                     c.kind, c.character, c.player = "character", character, group
                     if group.self then c.star:Hide() else showStar(c.star, "character", character.name) end

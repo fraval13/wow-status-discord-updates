@@ -121,8 +121,11 @@ local function graph(character)
         end
         dot:ClearAllPoints()
         dot:Show()
-        dot:SetSize(5, 5)
-        dot:SetPoint("TOPLEFT", x(point.at) - 2, -y(point.level) + 2)
+        -- First observations are larger squares as well as orange, so size tells
+        -- them from level-ups without the colour (#185).
+        local size = point.kind == "baseline" and 9 or 5
+        dot:SetSize(size, size)
+        dot:SetPoint("TOPLEFT", x(point.at) - math.floor(size / 2), -y(point.level) + math.floor(size / 2))
         if point.kind == "baseline" then dot:SetColorTexture(1, .65, .2, 1)
         else dot:SetColorTexture(.2, .8, 1, 1) end
     end
@@ -137,7 +140,7 @@ function UI.refresh()
     H.init(character)
     hideGraph()
     panel.title:SetText(character.identity.name .. " — history and level progress")
-    if mode == "graph" then graph(character); panel.status:SetText("Blue = level-up; orange = first observation. Gaps stay disconnected."); return end
+    if mode == "graph" then graph(character); panel.status:SetText("Small blue dots = level-ups; large orange squares = first observation. Gaps stay disconnected."); return end
     local rows = {}
     if mode == "logs" then
         for _, event in ipairs(character.history.events) do

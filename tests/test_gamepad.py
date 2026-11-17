@@ -692,6 +692,7 @@ def test_diagnostics_controls_are_reachable(lua):
         for _, name in ipairs({"SetJustifyH","SetSize","SetMultiLine","SetAutoFocus","SetFontObject",
             "SetScrollChild","SetCursorPosition","HighlightText"}) do methods[name]=function() end end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end}
         WoWStatusMainWindow.register=function(key,title,build,refresh,options)
             assert(key=="diagnostics" and options.tab==false)
             __diagBuild,__diagRefresh=build,refresh

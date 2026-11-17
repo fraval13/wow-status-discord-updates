@@ -26,7 +26,7 @@ def test_every_colour_led_state_is_listed_with_a_cue_that_is_not_a_colour():
     lua = make_lua(THEMES)
     listed = cues(lua)
     assert set(listed) == {'online', 'offline', 'controller focus', 'calendar today',
-                           'calendar day with entries'}
+                           'calendar day with entries', 'history graph first observation'}
     colours = re.compile(r'\b(green|grey|gray|gold|red|blue|white|yellow)\b', re.IGNORECASE)
     for state, cue in listed.items():
         # Each cue names a shape or text; a colour word may only describe it alongside one.
@@ -92,6 +92,8 @@ def test_the_controller_highlight_has_a_dark_outline_inside_the_gold():
         methods.SetPoint = function(self, point, x, y)
             self.points = self.points or {}; table.insert(self.points, {point, x or 0, y or 0})
         end
+        methods.SetWidth = function(self, w) self.thickness = w end
+        methods.SetHeight = function(self, h) self.thickness = h end
     ''')
     lua.execute((ROOT / 'addon/shared/Gamepad.lua').read_text(encoding='utf-8'))
     main_window(lua)
@@ -104,6 +106,8 @@ def test_the_controller_highlight_has_a_dark_outline_inside_the_gold():
         dark = lua.eval(f'WoWStatusGamepadFocus.inner[{i}].colour')
         assert (gold[1], gold[2], gold[3]) == (1, .82, 0)
         assert (dark[1], dark[2], dark[3]) == (0, 0, 0) and dark[4] >= .8
+        # As thick as the gold, so neither line snaps away at small UI scales.
+        assert lua.eval(f'WoWStatusGamepadFocus.inner[{i}].thickness') == 2
         # Gold against black: a brightness step a colour-blind eye sees as well.
         assert contrast((1, .82, 0), (0, 0, 0)) >= 7
         # The dark line sits 2 units inside the 2-unit gold one.
@@ -119,12 +123,13 @@ def test_the_calendar_marks_today_and_busy_days_by_shape_as_well_as_colour():
         WoWStatusUI.calendar(owner, nil, "2026-11-17", {["2026-11-17"]=1, ["2026-11-05"]=2}, function() end)
         __cells = {}
         for _, cell in ipairs(WoWStatusCalendar.cells) do if cell.key then __cells[cell.key] = cell.text.text end end
+        __marks = {}
+        for _, cell in ipairs(WoWStatusCalendar.cells) do if cell.key then __marks[cell.key] = cell.mark:IsShown() end end
     ''')
-    cells = lua.eval('__cells')
-    assert '[17]' in cells['2026-11-17'] and '•' in cells['2026-11-17']
-    assert '5•' in cells['2026-11-05'] and '[' not in cells['2026-11-05']
-    plain = cells['2026-11-06']
-    assert plain == '|cff9d9d9d6|r'
+    cells, marks = lua.eval('__cells'), lua.eval('__marks')
+    assert '[17]' in cells['2026-11-17'] and marks['2026-11-17'] is True
+    assert cells['2026-11-05'] == '|cffffd1005|r' and marks['2026-11-05'] is True
+    assert cells['2026-11-06'] == '|cff9d9d9d6|r' and marks['2026-11-06'] is False
 
 
 def test_muted_grey_reads_at_least_aa_on_every_theme():
@@ -157,5 +162,13 @@ def test_no_dim_greys_remain_in_the_addon_source():
             continue
         code = path.read_text(encoding='utf-8')
         assert '|cff808080' not in code, path.name
+        if path.name != 'Theme.lua':  # UI.MUTED_CODE is the one place the grey is spelled out
+            assert '|cff9d9d9d' not in code, path.name
         assert not re.search(r'SetTextColor\(\s*\.5\s*,\s*\.5\s*,\s*\.5', code), path.name
         assert not re.search(r'AddLine\([^)]*,\s*\.6\s*,\s*\.6\s*,\s*\.6', code), path.name
+
+
+def test_history_graph_first_observations_are_larger_than_level_ups():
+    source = (ROOT / 'addon/shared/HistoryUI.lua').read_text(encoding='utf-8')
+    assert 'local size = point.kind == "baseline" and 9 or 5' in source
+    assert 'large orange squares = first observation' in source
