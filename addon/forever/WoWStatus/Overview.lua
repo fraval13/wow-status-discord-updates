@@ -15,6 +15,115 @@ local function state()
     return WoWStatusDB.overview
 end
 
+-- "Not seen for a while" (#172): friends whose shared character list shows no
+-- activity for this many days. Account-wide in WoWStatusDB.overview.not_seen_days;
+-- 0 is off and the default (14) is stored as nothing. Purely local: it reads the
+-- log and the character lists already here and never sends or whispers anything.
+O.NOT_SEEN_CHOICES = {0, 7, 14, 30}
+O.NOT_SEEN_DEFAULT = 14
+local NOT_SEEN_SHOWN = 4
+function O.notSeenDays()
+    local data = state()
+    local value = data and S.number(data.not_seen_days)
+    for _, choice in ipairs(O.NOT_SEEN_CHOICES) do if choice == value then return value end end
+    return O.NOT_SEEN_DEFAULT
+end
+function O.setNotSeenDays(days)
+    local data = state()
+    if not data then return false end
+    for _, choice in ipairs(O.NOT_SEEN_CHOICES) do
+        if choice == days then
+            data.not_seen_days = days ~= O.NOT_SEEN_DEFAULT and days or nil
+            return true
+        end
+    end
+    return false
+end
+-- The next choice after the current one, wrapping round (the Options button).
+function O.cycleNotSeenDays()
+    local current, choices = O.notSeenDays(), O.NOT_SEEN_CHOICES
+    for i, choice in ipairs(choices) do
+        if choice == current then O.setNotSeenDays(choices[i % #choices + 1]); return O.notSeenDays() end
+    end
+    O.setNotSeenDays(O.NOT_SEEN_DEFAULT)
+    return O.notSeenDays()
+end
+function O.notSeenLabel(days)
+    days = days or O.notSeenDays()
+    if days == 0 then return T("Off") end
+    return TF("%d days", days)
+end
+
+-- Players quiet for at least `days`, longest first: {player, days, more}.
+-- groups: R.groups(). Only players whose shared character list is here count
+-- (not "Not announced" senders); one online character means they are around.
+-- Hidden bank alts are already left out of R.groups.
+-- An absence older than the retained log reads "more than N days", N being the
+-- age of the oldest friend entry the log still holds (`oldest`), because the log
+-- cannot say what happened before it.
+function O.notSeen(groups, now, days, oldest)
+    local result = {}
+    if not days or days <= 0 or type(now) ~= "number" then return result end
+    for _, entry in ipairs(groups or {}) do
+        local listed, online, seen = false, false, 0
+        if not entry.self then
+            for _, row in ipairs(entry.rows or {}) do
+                -- A friend muted with "Hide completely" (#169) stays out of it.
+                if row.listed and not (WoWStatusMutes and WoWStatusMutes.hidden(row.name)) then
+                    listed = true
+                    if row.status == "online" then online = true end
+                    seen = math.max(seen, S.number(row.seen) or 0)
+                end
+            end
+        end
+        if listed and not online then
+            local item
+            if type(oldest) == "number" and seen < oldest then
+                local span = math.floor(math.max(0, now - oldest) / 86400)
+                if span >= days then item = {days=span, more=true} end
+            elseif seen > 0 then
+                local quiet = math.floor(math.max(0, now - seen) / 86400)
+                if quiet >= days then item = {days=quiet} end
+            end
+            if item then
+                item.player = tostring(entry.name or entry.title or "?")
+                table.insert(result, item)
+            end
+        end
+    end
+    table.sort(result, function(a, b)
+        if a.days ~= b.days then return a.days > b.days end
+        return a.player < b.player
+    end)
+    return result
+end
+
+-- The oldest friend entry still in the log, or nil with none.
+function O.logStart(entries)
+    local oldest
+    for _, e in ipairs(entries or {}) do
+        local at = type(e) == "table" and not e.owner and S.number(e.at)
+        if at and (not oldest or at < oldest) then oldest = at end
+    end
+    return oldest
+end
+
+-- "Not seen for a while: Thora (12 days), Bran (more than 31 days)", or nil.
+function O.notSeenLine(list)
+    if not list or #list == 0 then return nil end
+    local parts = {}
+    for i, item in ipairs(list) do
+        if i > NOT_SEEN_SHOWN then
+            table.insert(parts, TF("%d more", #list - NOT_SEEN_SHOWN)); break
+        end
+        local name = item.player:gsub("|", "||")
+        local span = item.more and TF("more than %d days", item.days)
+            or (item.days == 1 and T("1 day") or TF("%d days", item.days))
+        table.insert(parts, name .. " (" .. span .. ")")
+    end
+    return T("Not seen for a while:") .. " " .. table.concat(parts, ", ")
+end
+
 local function plural(count, one, many) return count == 1 and one or (count .. " " .. many) end
 local function name(sender) return (tostring(sender or "?"):match("^[^-]+") or "?") end
 
@@ -207,6 +316,14 @@ local function renderGroup()
     -- Everyone online, scrolling when the box is full.
     group.names:SetText(#names > 0 and table.concat(names, "\n") or (groups > 0 and T("Nobody else is online right now.") or ""))
     group.list:SetHeight(math.max(1, (S.number(group.names:GetStringHeight()) or 0) + 4))
+    -- Friends not seen for a while (#172), under the names. Only shown, never sent.
+    local days = O.notSeenDays()
+    local text
+    if groups > 0 and days > 0 and WoWStatusRoster.groups then
+        text = O.notSeenLine(O.notSeen(WoWStatusRoster.groups(), time(), days, O.logStart(WoWStatusJournal.entries())))
+    end
+    group.notSeen:SetText(text or "")
+    page.notSeen = text
 end
 
 -- The "Latest records" box: the three newest Firsts medals.
@@ -329,10 +446,11 @@ local function build(parent)
     UI.header(group, T("Your group"), 12, -10, 312)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
     group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
-    group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 70)
-    group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 70)
+    group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 64)
+    group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 64)
     group.scroll:SetScrollChild(group.list)
     group.names = UI.text(group.list, "GameFontHighlightSmall", 0, 0, 280)
+    group.notSeen = UI.text(group, "GameFontDisableSmall", 12, -126, 312)
     -- Group goal (#157)
     local goal = UI.box(page, 698, 40); goal:SetPoint("TOPLEFT", 24, -178); page.goal = goal
     goal.title = UI.text(goal, "GameFontHighlight", 12, -6, 360)

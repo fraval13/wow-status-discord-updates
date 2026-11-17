@@ -356,6 +356,11 @@ W.add({
     ["Nothing new from your group since you were last here."] = "Ikkje noko nytt frå gruppa di sidan du var her sist.",
     ["…and %d more lines in the Activity tab."] = "…og %d fleire linjer i Aktivitet-fana.",
     ["Your group"] = "Gruppa di", ["Latest records"] = "Nyaste rekordar",
+    -- Not seen for a while (#172)
+    ["Not seen for a while:"] = "Ikkje sett på ei stund:", ["more than %d days"] = "meir enn %d dagar",
+    ["%d days"] = "%d dagar", ["1 day"] = "1 dag", ["%d more"] = "%d til", ["Off"] = "Av",
+    ["Friends not seen for a while"] = "Vener som ikkje er sette på ei stund",
+    ["List friends on the Overview after this many quiet days:"] = "Vis vener på Oversikt etter så mange stille dagar:",
     ["No records yet. The first to reach a milestone in your group earns it."] = "Ingen rekordar enno. Den første i gruppa som når eit mål, får han.", ["All"] = "Alle", ["Mine"] = "Mine", ["Friends"] = "Vener", ["Show all"] = "Vis alle",
     -- Popup headings
     ["LEVEL UP!"] = "NYTT NIVÅ!", ["FIRST EQUIP!"] = "FØRSTE GONG PÅ!",
