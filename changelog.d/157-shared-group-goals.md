@@ -1,2 +1,0 @@
-- Shared group goals: set one goal per group, like everybody to level 40 or 1000 quests together, with a progress bar.
-- A group goal shows on the Overview and the Leaderboard, and reaching it brings a big banner and a Records medal.
