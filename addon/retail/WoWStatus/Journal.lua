@@ -1072,7 +1072,7 @@ local function render()
             local when=WoWStatusHistory.oslo(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
-            local said=S.string(e.whispered) or (S.string(e.reacted) and T(e.reacted))
+            local said=J.sentReaction(e)
             local mine=not e.owner and said and ("  |cffffd100"..T("You whispered").." “"..said:gsub("|","||").."”|r") or ""
             row.detail:SetText(when.." · "..scope..(reacted and ("  |cffffd100"..reacted.."|r") or "")..mine)
             -- Reaction buttons for a minute after the notification; the log redraws when they expire.
@@ -1086,6 +1086,9 @@ local function render()
 
 end
 refresh=function()
+    -- Every change to the log (reactions, mutes, new or aged-out entries) also
+    -- reaches the Reactions page (#171), even before the Activity page is built.
+    if WoWStatusReactions then WoWStatusReactions.changed() end
     if not panel then return end
     local offset=panel.scroll:GetVerticalScroll()
     local anchor=panel.entriesList and panel.entriesList[math.floor(offset/132)+1]
@@ -1318,7 +1321,6 @@ function J.reaction(text,sender)
             if key and (e.reactions[key] or count<20) then
                 e.reactions[key]={name=sender:match("^[^-]+") or sender,text=text,at=now}
                 if refresh then refresh() end
-                if WoWStatusReactions then WoWStatusReactions.redraw() end
                 -- A voiced Nynorsk line is read aloud (Forever), within the listener's limits.
                 -- Never in quiet hours (#180): someone may be asleep nearby.
                 if WoWStatusVoices and mode=="show" and not WoWStatusPopups.quietHoursActive() then WoWStatusVoices.heard(text) end
@@ -1328,6 +1330,11 @@ function J.reaction(text,sender)
         end
     end
     return false
+end
+-- The words you whispered about a friend's entry, or nil.
+function J.sentReaction(e)
+    if type(e)~="table" then return nil end
+    return S.string(e.whispered) or (S.string(e.reacted) and T(e.reacted)) or nil
 end
 -- "GZ! from Mira, Bob · F from Eve", in the order they arrived.
 function J.reactionsText(e)

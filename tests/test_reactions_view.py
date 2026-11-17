@@ -201,3 +201,81 @@ def test_rows_are_reachable_with_a_controller():
         WoWStatusGamepad.setFocus(row);press("PAD1")
         assert(__focused=="one")
     ''')
+
+
+def test_a_reaction_after_closing_the_window_on_the_page_still_counts_as_new():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        WoWStatusReactions.show()
+        WoWStatusMainWindow.hide()
+    ''')
+    lua.execute(RECEIVE)
+    lua.execute('''
+        assert(WoWStatusReactions.unseen() == 1)
+        -- A second friend in the very same second is new too.
+        fire("CHAT_MSG_WHISPER", "GZ!", "Bob-TestRealm")
+        assert(WoWStatusReactions.unseen() == 2)
+        WoWStatusReactions.show()
+        assert(WoWStatusReactions.unseen() == 0)
+        local new = 0
+        for _, row in ipairs(WoWStatusReactionsPage.rows) do if row.new.text == "New" then new = new + 1 end end
+        assert(new == 2)
+    ''')
+
+
+def test_same_second_reactions_are_told_apart_and_sent_ones_never_hide_received():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute(RECEIVE)
+    own_level(lua)
+    lua.execute('''
+        WoWStatusReactions.show()
+        WoWStatusMainWindow.hide()
+        -- Bob reacts in the same second as Mira, after the page was looked at.
+        __own.reactions["bob-testrealm"] = {name="Bob", text="GZ!", at=__own.reactions["mira-testrealm"].at}
+        WoWStatusJournal.redraw()
+        assert(WoWStatusReactions.unseen() == 1)
+        -- Sixty newer reactions you sent push it off the page, not out of the count.
+        for i = 1, 60 do
+            table.insert(WoWStatusDB.journal.entries, {id="friend:" .. i, sender="Mira-TestRealm", kind="level",
+                text="Reached level " .. i, at=time(), reacted="GZ!", reacted_at=time() + 100 + i,
+                groups=__own.groups, client=__own.client, origin="live"})
+        end
+        WoWStatusJournal.redraw()
+        assert(WoWStatusReactions.unseen() == 1)
+        for _, item in ipairs(WoWStatusReactions.list()) do assert(not item.received) end
+    ''')
+
+
+def test_hiding_a_friend_redraws_the_open_page():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute(RECEIVE)
+    lua.execute('''
+        WoWStatusReactions.show()
+        assert(WoWStatusReactionsPage.rows[1]:IsShown())
+        WoWStatusMutes.setCharacter("Mira-TestRealm", "hide")
+        assert(not WoWStatusReactionsPage.rows[1]:IsShown() and WoWStatusReactionsPage.empty:IsShown())
+    ''')
+
+
+def test_sent_words_are_shown_as_whispered_in_nynorsk():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute(RECEIVE)
+    own_level(lua)
+    lua.execute('''
+        WoWStatusLocale.set("nn")
+        -- Sent in English before switching: not translated into another line afterwards.
+        table.insert(WoWStatusDB.journal.entries, {id="friend:1", sender="Mira-TestRealm", kind="level",
+            text="Reached level 3", at=time(), reacted="GZ!", whispered="GZ!", reacted_at=time() + 5,
+            groups=__own.groups, client=__own.client, origin="live"})
+        WoWStatusReactions.show()
+        local line = WoWStatusReactionsPage.rows[1].line.text
+        assert(line:find("Du til Mira: ", 1, true) and line:find("GZ!|r", 1, true), line)
+        -- Received text is shown as the log card shows it.
+        local received = WoWStatusReactionsPage.rows[2].line.text
+        assert(received:find(WoWStatusLocale.T("GZ!"), 1, true) and received:find("frå Mira", 1, true), received)
+        assert(WoWStatusJournal.reactionsText(__own):find(WoWStatusLocale.T("GZ!"), 1, true))
+    ''')
