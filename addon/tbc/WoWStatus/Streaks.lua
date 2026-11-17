@@ -20,7 +20,7 @@ local MEMO_SECONDS = 5
 -- The roster's key: on WoW Forever it drops the internal realm, as the roster does.
 local function key(sender) return WoWStatusRoster.key(sender) end
 local function shortName(sender) return (tostring(sender):match("^[^-]+") or tostring(sender)) end
-local function clock() return GetTime and S.number(GetTime()) or S.now() end
+local function clock() return S.uptime() end
 
 -- Longer first by levels, then by time.
 local function longer(a, b)
