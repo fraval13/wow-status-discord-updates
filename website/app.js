@@ -11,12 +11,15 @@ const toast = document.querySelector('#demo-toast');
 const controls = [...document.querySelectorAll('[data-preview]')];
 let current = 0;
 const previousFlavour = {};
+// A random line from pool, never the one shown just before.
+function pickFlavour(pool, previous) {
+  let index = Math.floor(Math.random() * pool.length);
+  if (pool.length > 1 && pool[index] === previous) index = (index + 1) % pool.length;
+  return pool[index];
+}
 function randomFlavour(kind) {
-  const bank = window.WoWStatusFlavour[kind];
-  let index = Math.floor(Math.random() * bank.length);
-  if (bank.length > 1 && bank[index] === previousFlavour[kind]) index = (index + 1) % bank.length;
-  previousFlavour[kind] = bank[index];
-  return bank[index];
+  previousFlavour[kind] = pickFlavour(window.WoWStatusFlavour[kind], previousFlavour[kind]);
+  return previousFlavour[kind];
 }
 function showPreview(index) {
   current = index;
@@ -41,9 +44,13 @@ showPreview(0);
 // tab row, the filters, the leaderboard's sort and fresh captions.
 function setupWindowDemo() {
   const tablist = document.querySelector('.wow-tabs');
-  if (!tablist) return;
-  const tabs = [...tablist.querySelectorAll('[role="tab"]')];
+  const tabs = tablist ? [...tablist.querySelectorAll('[role="tab"]')] : [];
   const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
+  const sortButton = document.querySelector('#demo-sort');
+  const board = document.querySelector('.demo-board tbody');
+  const onlineOnly = document.querySelector('#demo-online-only');
+  // Markup that no longer matches leaves the still picture as it is.
+  if (tabs.length === 0 || panels.includes(null) || !sortButton || !board || !onlineOnly) return;
   function selectTab(index, focus) {
     tabs.forEach((tab, i) => {
       const chosen = i === index;
@@ -74,7 +81,7 @@ function setupWindowDemo() {
     const pool = bank.map(text => text.match(/^\[([A-Z]+)\] (.+)$/) || [null, null, text])
       .filter(match => match[1] === null || tags.includes(match[1]))
       .map(match => match[2]);
-    if (pool.length > 0) line.textContent = pool[Math.floor(Math.random() * pool.length)];
+    if (pool.length > 0) line.textContent = pickFlavour(pool, line.textContent);
   });
 
   // Activity: All, Mine and Friends, as at the bottom of the real page.
@@ -94,8 +101,6 @@ function setupWindowDemo() {
 
   // Leaderboard: the Sort button steps through the same four orders as the addon.
   const sorts = [['level', 'Level'], ['deaths', 'Deaths'], ['quests', 'Quests'], ['played', 'Played time']];
-  const sortButton = document.querySelector('#demo-sort');
-  const board = document.querySelector('.demo-board tbody');
   const headers = [...document.querySelectorAll('.demo-board th[data-sort]')];
   let sortIndex = 0;
   function sortBoard() {
@@ -130,9 +135,7 @@ function setupWindowDemo() {
       body.hidden = !open;
     });
   });
-  const onlineOnly = document.querySelector('#demo-online-only');
-  onlineOnly.disabled = false;
-  onlineOnly.addEventListener('change', () => {
+  function filterCharacters() {
     document.querySelectorAll('#demo-characters .demo-cards').forEach(list => {
       let visible = 0;
       list.querySelectorAll('.demo-card').forEach(card => {
@@ -145,9 +148,12 @@ function setupWindowDemo() {
       list.hidden = visible === 0;
       heading.textContent = `${heading.dataset.player} (${visible} ${visible === 1 ? 'character' : 'characters'})`;
     });
-  });
+  }
+  onlineOnly.disabled = false;
+  onlineOnly.addEventListener('change', filterCharacters);
+  // A browser may restore the box ticked on reload without a change event.
+  filterCharacters();
 }
-setupWindowDemo();
 
 // Keep navigation useful on long pages without a router or external scripts.
 const topLinks = [...document.querySelectorAll('.top-nav a')];
@@ -159,3 +165,4 @@ function updateNavigation() {
 }
 window.addEventListener('hashchange', updateNavigation);
 updateNavigation();
+setupWindowDemo();

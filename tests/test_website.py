@@ -181,6 +181,13 @@ def test_demo_controls_are_disabled_until_the_script_runs():
     source = (WEBSITE / 'app.js').read_text(encoding='utf-8')
     for hook in ('.wow-tabs', '#demo-activity [data-filter]', '#demo-sort', '.demo-section', '#demo-online-only'):
         assert hook in source, hook
+    # Every id and class the script looks up is still in the page.
+    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
+    ids = set(re.findall(r'id="([^"]+)"', page))
+    classes = {name for value in re.findall(r'class="([^"]+)"', page) for name in value.split()}
+    selectors = ' '.join(re.findall(r"querySelector(?:All)?\('([^']+)'\)", source))
+    assert {name for name in re.findall(r'#([a-z][\w-]*)', selectors)} <= ids
+    assert {name for name in re.findall(r'\.([a-z][\w-]*)', selectors)} <= classes
 
 
 def test_demo_captions_come_from_the_notification_banks():
