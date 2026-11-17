@@ -68,6 +68,7 @@ function WoWStatusPresentation.theme(item)
         reputation={"Achievement_Reputation_01",.3,.8,1,"REPUTATION MILESTONE!"},
         unlock={"INV_Misc_Book_07",.6,.4,1,"CLASS ABILITY UNLOCKED!"},
         pvp={"Achievement_PVP_A_01",1,.35,.2,"PVP PROMOTION!"},
+        achievement={"Achievement_General",1,.82,.2,"ACHIEVEMENT EARNED!"},
         first={"INV_Misc_Coin_01",1,.85,.3,"A NEW FIRST!"},
         goal={"INV_Misc_Coin_01",1,.85,.3,"GOAL REACHED!"},
         recap={"INV_Misc_Book_09",.8,.7,.5,"SESSION RECAP"},
@@ -97,6 +98,9 @@ function WoWStatusPresentation.theme(item)
         icon = professionIcons[profession] or "Trade_BlackSmithing"
     end
     local texture = item.level and "Interface\\AddOns\\WoWStatus\\Textures\\LevelUp"
-        or W.itemIcon(item) or ("Interface\\Icons\\" .. icon)
+        or W.itemIcon(item)
+        -- The achievement's own icon, from this client's data (#165).
+        or (item.kind == "achievement" and WoWStatusAchievements and WoWStatusAchievements.icon(item.achievement_id))
+        or ("Interface\\Icons\\" .. icon)
     return texture, theme[2], theme[3], theme[4], item.kind=="professionprogress" and "PROFESSION PROGRESS" or theme[5]
 end

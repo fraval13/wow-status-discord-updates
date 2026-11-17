@@ -67,6 +67,17 @@ M.character = {
             end
         end
     end},
+    -- Retail achievements (#165) start off for new and upgraded characters alike,
+    -- so nobody's group is suddenly flooded; ticking the option turns them on.
+    -- Other editions never get the setting.
+    {version = 3, name = "achievements start off on Retail", run = function(character)
+        if not WoWStatusAdapter.achievements then return end
+        local settings = character.settings
+        for _, part in ipairs({"collection", "announcements", "in_game"}) do
+            if type(settings[part]) ~= "table" then settings[part] = {} end
+            if settings[part].achievement == nil then settings[part].achievement = false end
+        end
+    end},
 }
 
 local function latest(steps) return steps[#steps] and steps[#steps].version or 1 end

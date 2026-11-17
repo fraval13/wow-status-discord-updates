@@ -5,7 +5,7 @@ import time
 
 FIELDS = {'level', 'class', 'race', 'faction', 'guild', 'gear', 'zone', 'playtime', 'professions', 'deaths', 'quests'}
 LEVEL_CAPS = {'classic-era': 60, 'forever': 60, 'tbc-anniversary': 70, 'retail': 90}
-KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status', 'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery', 'raid', 'epicmount', 'recap'}
+KINDS = {'introduction', 'level', 'loot', 'equipment', 'death', 'zone', 'session', 'lfg', 'quest', 'profession', 'status', 'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery', 'raid', 'epicmount', 'recap', 'achievement'}
 CLASS_IDS = frozenset({'WARRIOR', 'PALADIN', 'HUNTER', 'ROGUE', 'PRIEST', 'SHAMAN', 'MAGE', 'WARLOCK', 'DRUID'})
 PROFESSION_KEYS = frozenset({'alchemy', 'blacksmithing', 'enchanting', 'engineering', 'herbalism',
                              'leatherworking', 'mining', 'skinning', 'tailoring', 'jewelcrafting',
@@ -239,6 +239,9 @@ def validate(payload, now=None):
                         'skill': integer(data.get('skill'), 'profession skill', 0, maximum), 'max_skill': maximum}
             if data.get('title') in ('Apprentice', 'Journeyman', 'Expert', 'Artisan'):
                 filtered['title'] = data['title']
+        elif kind == 'achievement':
+            # Retail (#165): the whitelisted ID only; names come from the game client.
+            filtered = {'achievement_id': integer(data.get('achievement_id'), 'achievement', 1, 999_999)}
         elif kind in {'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery', 'raid', 'epicmount', 'recap'}:
             filtered = {'text': string(data.get('text'), 'milestone text', 160)}
             if data.get('source') in ('game_api', 'player_entered', 'collection', 'observed_ride'):

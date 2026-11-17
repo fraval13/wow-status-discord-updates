@@ -5,6 +5,8 @@ local waitingForIdentity, unsupportedWarned = false, false
 local current, panel, discordPanel
 local fields = {"level", "class", "race", "faction", "guild", "gear", "zone", "playtime", "professions", "deaths", "quests", "gold", "kills", "collection"}
 local kinds = {"level", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}
+-- Retail only (#165): editions without achievements never show the option.
+if A.achievements then kinds[#kinds + 1] = "achievement" end
 local playtime, playtimeRecordedAt, pendingPlayedLevel
 local frame = CreateFrame("Frame")
 local refresh
@@ -206,11 +208,12 @@ local function showPanel(host)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
             profession="Profession milestones",dungeon="Dungeon / raid milestones",mount="Mount milestones",
-            reputation="Reputation rank",unlock="Class ability unlock",pvp=A.pvpLabel or "PvP rank"}
+            reputation="Reputation rank",unlock="Class ability unlock",pvp=A.pvpLabel or "PvP rank",achievement="Achievements"}
         for i,key in ipairs(kinds) do
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end
-        checkbox("recap","Share my session recaps",24,-480,"in_game")
+        -- An odd number of kinds leaves the left of the last row taken.
+        checkbox("recap","Share my session recaps",#kinds%2==1 and 310 or 24,-480,"in_game")
         section("First-time equipment",-522)
         checkbox("loot","Announce first armor equips",24,-544,"in_game")
         checkbox("rare","Rare equipment",54,-586,"loot_rarities")
@@ -571,6 +574,7 @@ local function initialize()
     WoWStatusProgress.questMilestone(current, current.snapshot.quests_completed, current.snapshot.quests_source, true)
     if current.settings.fields.professions then WoWStatusProgress.professionChanges(current, true) end
     WoWStatusMilestones.init(current, queue)
+    WoWStatusAchievements.init(current, queue)
     WoWStatusRecaps.init(current,queue)
     WoWStatusRoster.init(WoWStatusDB, current, say)
     WoWStatusPopups.learnOwnName()

@@ -95,8 +95,11 @@ def announcement(item):
         details = ' '.join(safe(snap[k]) for k in ('level', 'race', 'class') if k in snap)
         return (f"A new adventurer joins the tracker: **{name}**"
                 f"{' — ' + details if details else ''} on {safe(item['identity']['realm'])}!")
-    if kind in {'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery', 'raid', 'epicmount', 'recap'}:
+    if kind in {'dungeon', 'mount', 'reputation', 'unlock', 'pvp', 'discovery', 'raid', 'epicmount', 'recap', 'achievement'}:
         text = safe(data.get('text', 'shared a milestone'))
+        if kind == 'achievement':
+            # Only the ID is uploaded (#165); the server has no achievement names.
+            text = f"earned achievement {safe(data.get('achievement_id', '?'))}"
         if kind == 'discovery':
             text = 'shared a discovery: ||' + text + '||'
         return f"**{name}** · {text}\nRecorded {norwegian(item['at'])} · uploaded character data"
