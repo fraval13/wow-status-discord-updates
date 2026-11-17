@@ -263,5 +263,6 @@ in-game rendering and API availability still require checking.
 
 - [Activity log, history and timings](docs/IN_GAME_HISTORY.md)
 - [In-game acceptance tests](docs/LIVE_POPUPS.md)
+- [What a login sends](docs/LOGIN_BURST.md)
 - [CurseForge listing and automatic uploads](docs/CURSEFORGE.md)
 - [Historical plans and audits](docs/history/README.md)
