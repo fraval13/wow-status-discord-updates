@@ -45,6 +45,19 @@ releases are kept on the server outside the web root, so no archive path is publ
 keeps them off the `/groups/` service routes and names the sitemap. Caddy's
 `file_server` serves both with the right content type, so the Caddyfile is unchanged.
 
+## Main-window demo
+
+The homepage's "Tour the main window" section (issue #195) is a demonstration of the
+addon's main window drawn in plain HTML: the Activity, Leaderboard and Characters
+pages with invented characters and the invented group `the-tavern-crew`. Never put a
+real player or group name in it. The markup in `index.html` is the whole demo, so
+without JavaScript it stays a still picture of the Activity page; `app.js` adds the
+tab row, the All/Mine/Friends filter, the Sort button, collapsible sections, Online
+only and a fresh caption from `flavour.js` on each visit (a death uses only the
+general `[ANY]` lines, as the game does for a friend who is not a visible unit). Keep it honest: when the real window
+changes, change the demo with it. `tests/test_website.py` checks the tabs, that each
+caption is in its bank and that the leaderboard rows match their data.
+
 ## Deployment
 
 The homepage is independent from the dormant companion services. Caddy serves
