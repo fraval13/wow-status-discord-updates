@@ -1,0 +1,1 @@
+- When we play on the Overview page charts when each friend is usually around, read only from the log you already have.

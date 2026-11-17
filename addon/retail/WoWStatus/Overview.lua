@@ -446,7 +446,14 @@ local function build(parent)
     you.update = UI.text(you, "GameFontNormalSmall", 12, -150, 326)
     -- Your group
     local group = UI.box(page, 336, 166); group:SetPoint("TOPLEFT", 386, -4); page.group = group
-    UI.header(group, T("Your group"), 12, -10, 312)
+    UI.header(group, T("Your group"), 12, -10, 200)
+    -- "When we play" (#158): the group's hours, read from the log already here.
+    group.when = CreateFrame("Button", nil, group, "UIPanelButtonTemplate")
+    group.when:SetSize(126, 22); group.when:SetPoint("TOPRIGHT", -10, -6)
+    group.when:SetText(T("When we play"))
+    group.when:SetScript("OnClick", function()
+        if WoWStatusWhenWePlay then WoWStatusWhenWePlay.show() end
+    end)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
     group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
     group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 64)

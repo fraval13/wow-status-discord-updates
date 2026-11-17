@@ -32,6 +32,9 @@ PV.SECTIONS = {
         .. "in each group's chat channel, and friends who are online pass them on to members who were offline.",
       "Your log is part of this: when a member logs in, the group's entries from the last 7 days that you "
         .. "sent or received are offered to them.",
+      "Those entries carry the time they happened, so any member can see a pattern in them. When we play "
+        .. "on the Overview page does exactly that, from the log on their own computer: it sends nothing "
+        .. "and asks nothing, and nobody is told you looked.",
       "Anyone who enters the same group name becomes a member, so give it only to people you trust.",
       "Whispers you click to send go to the player you click on, who may not be in a group with you.",
       "Nothing goes to a website, to the author or to any server except the game's own, which carries every "

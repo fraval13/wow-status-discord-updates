@@ -743,3 +743,27 @@ W.add({
     ["No online friend has reported a zone in the last %d minutes."] =
         "Ingen pålogga ven har meldt eit område dei siste %d minutta.",
 })
+-- "When we play": the group's weekly pattern from the log (#158).
+W.add({
+    ["Those entries carry the time they happened, so any member can see a pattern in them. When we play "
+        .. "on the Overview page does exactly that, from the log on their own computer: it sends nothing "
+        .. "and asks nothing, and nobody is told you looked."] =
+        "Desse oppføringane ber med seg tidspunktet dei hende, så kven som helst i gruppa kan sjå eit "
+        .. "mønster i dei. Når vi spelar på Oversikt-sida gjer nett det, ut frå loggen på deira eigen "
+        .. "maskin: det sender ingenting og spør om ingenting, og ingen får vita at du såg.",
+    ["When we play"] = "Når vi spelar", ["usually"] = "som regel", ["not enough yet"] = "ikkje nok enno", ["(you)"] = "(du)",
+    ["Mon"] = "mån", ["Tue"] = "tys", ["Wed"] = "ons", ["Thu"] = "tor", ["Fri"] = "fre",
+    ["Sat"] = "lau", ["Sun"] = "sun",
+    ["Mondays"] = "måndagane", ["Tuesdays"] = "tysdagane", ["Wednesdays"] = "onsdagane",
+    ["Thursdays"] = "torsdagane", ["Fridays"] = "fredagane", ["Saturdays"] = "laurdagane",
+    ["Sundays"] = "sundagane",
+    ["Hours of the day"] = "Timane i døgnet",
+    ["Click for the hours of the day."] = "Klikk for timane i døgnet.",
+    ["seen on %d of the last %d"] = "sedd %d av dei siste %d",
+    ["%d entries over %d days"] = "%d oppføringar over %d dagar",
+    ["As far back as the log goes: since"] = "Så langt loggen rekk: sidan",
+    ["Built only from the activity already in your log. Nothing is sent, and nobody is told you looked."] =
+        "Bygd berre på aktiviteten som alt ligg i loggen din. Ingenting vert sendt, og ingen får vita at du såg.",
+    ["No activity in the log yet. This fills in as you and your friends play."] =
+        "Ingen aktivitet i loggen enno. Dette fyller seg etter kvart som du og venene dine spelar.",
+})
