@@ -459,5 +459,5 @@ WoWStatusDB = {
         },
     },
     version = 1,
-    whats_new_seen = "1.70.0",
+    whats_new_seen = "1.0.0",
 }

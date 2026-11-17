@@ -59,7 +59,8 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
     character = ('characters', KEY)
     login_time = {character + ('exported_at',), character + ('equipment_profile', 'at'),
                   character + ('roster_info', 'at'), character + ('history', 'tracking', 'observed_until'),
-                  ('popups', 'last_send'), ('journal', 'request_serial')}
+                  ('popups', 'last_send'), ('journal', 'request_serial'),
+                  ('whats_new_seen',)}  # Moves on with every release.
     changed = {path for path in differences(before, after)
                if not any(path[:len(stamp)] == stamp for stamp in login_time)
                and path[:3] != character + ('session',)}
