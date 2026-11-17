@@ -435,9 +435,13 @@ refresh = function()
     end
 end
 
--- Reports a saved-data upgrade step that failed; it runs again at the next login.
+-- Reports a saved-data upgrade step that failed, once a session (initialize()
+-- runs again after loading screens and combat until it finds the character);
+-- the step runs again at the next login.
+local reportedSteps, unreadableWarned = {}, false
 local function upgraded(ok, step, problem)
-    if ok then return end
+    if ok or reportedSteps[step] then return end
+    reportedSteps[step] = true
     say(WoWStatusLocale.F("Could not upgrade saved data (step %d). It will be tried again at the next login.",
         step.version) .. " " .. tostring(problem))
 end
@@ -454,6 +458,11 @@ local function initialize()
         WoWStatusDB = {version = 1, characters = {}}
         WoWStatusWhatsNew.fresh(WoWStatusDB)
         WoWStatusDB.guide_pending = true
+    end
+    -- Not the addon's data at all (a broken file or a hand edit): leave it alone.
+    if type(WoWStatusDB) ~= "table" or type(WoWStatusDB.characters) ~= "table" then
+        if not unreadableWarned then say("Saved data is unreadable. WoW Status leaves it unchanged."); unreadableWarned = true end
+        return
     end
     -- Older saved data is upgraded once, step by step, never refused (#231).
     upgraded(WoWStatusMigrations.upgradeAccount(WoWStatusDB))

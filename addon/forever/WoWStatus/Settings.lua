@@ -52,7 +52,8 @@ local function normalize(entry, value)
     end
     if type(value) == "string" then value = tonumber(value) end
     -- NaN and the infinities are numbers too, but never valid.
-    if type(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then return nil end
+    value = WoWStatusSafe.number(value)
+    if not value then return nil end
     for _, allowed in ipairs(entry.also or {}) do
         if value == allowed then return value, true end
     end

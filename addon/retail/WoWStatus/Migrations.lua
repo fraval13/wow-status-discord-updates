@@ -54,6 +54,11 @@ M.character = {
         for _, kind in ipairs({"level", "death", "zone", "quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}) do
             if inGame[kind] == nil then inGame[kind] = true end
         end
+        -- Filters out of range (a hand edit) are stored clamped, so the companion,
+        -- which checks the saved value, reads them too.
+        for _, key in ipairs({"level_interval", "loot_quality"}) do
+            if settings[key] ~= nil then WoWStatusSettings.set(key, WoWStatusSettings.get(key, character), character) end
+        end
     end},
 }
 
@@ -61,7 +66,7 @@ local function latest(steps) return steps[#steps] and steps[#steps].version or 1
 M.ACCOUNT_LATEST, M.CHARACTER_LATEST = latest(M.account), latest(M.character)
 
 local function version(value)
-    value = tonumber(value)
+    value = WoWStatusSafe.number(tonumber(value))
     if not value or value ~= math.floor(value) or value < 1 then return 1 end
     return value
 end

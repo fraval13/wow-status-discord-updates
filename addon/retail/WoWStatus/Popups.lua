@@ -273,9 +273,9 @@ end
 -- key: "enabled" (true/false), or "start"/"stop" (minutes after midnight).
 function P.setQuietHours(key, value)
     if not prefs then return false end
-    local hours = P.quietHours()
-    if key == "enabled" then hours.enabled = value == true; return true end
-    if key ~= "start" and key ~= "stop" then return false end
+    P.quietHours() -- Repairs the saved table first.
+    if key == "enabled" then value = value == true
+    elseif key ~= "start" and key ~= "stop" then return false end
     return Z.set("quiet_hours_" .. key, value, root)
 end
 -- Move start or end by steps of QUIET_STEP minutes, wrapping round midnight.

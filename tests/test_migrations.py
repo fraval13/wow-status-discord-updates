@@ -113,10 +113,27 @@ def test_newer_saved_data_is_used_and_never_downgraded():
     assert lua.eval('character() ~= nil')
 
 
-@pytest.mark.parametrize('broken', ['nil', '"two"', '0', '1.5', '-3'])
+@pytest.mark.parametrize('broken', ['nil', '"two"', '0', '1.5', '-3', '1/0', '1e300 * 1e300', '0/0'])
 def test_missing_or_broken_version_counts_as_one(broken):
     lua = login(V1.replace('\n    version = 1,\n', f'\n    version = {broken},\n'))
     assert lua.eval('WoWStatusDB.version') == 2
+
+
+@pytest.mark.parametrize('saved', ['"x"', '{}', '{version = 1, characters = "x"}'])
+def test_data_that_is_not_the_addons_is_left_alone_with_one_message(saved):
+    lua = make_lua(STUBS + f'''
+        __said = {{}}
+        DEFAULT_CHAT_FRAME = {{AddMessage = function(_, text) table.insert(__said, text) end}}
+        WoWStatusDB = {saved}
+    ''')
+    lua.execute('__before = WoWStatusDB')
+    for event in ('PLAYER_ENTERING_WORLD', 'PLAYER_REGEN_ENABLED'):
+        lua.eval('fire')(event)
+    said = list(lua.eval('__said').values())
+    assert sum('Saved data is unreadable' in text for text in said) == 1
+    assert lua.eval('rawequal(WoWStatusDB, __before)') is True
+    # Nothing was upgraded or started on it.
+    assert lua.eval('type(WoWStatusDB) ~= "table" or (WoWStatusDB.version ~= 2 and WoWStatusDB.popups == nil)')
 
 
 # The runner ---------------------------------------------------------------------
@@ -174,6 +191,24 @@ def test_failed_step_is_reported_and_login_continues():
     assert lua.eval('character() ~= nil')  # Everything else still started.
 
 
+def test_failed_step_is_reported_once_while_login_waits():
+    lua = make_lua(STUBS + '''
+        __said, __broken, __hidden = {}, true, true
+        DEFAULT_CHAT_FRAME = {AddMessage = function(_, text) table.insert(__said, text) end}
+        function UnitGUID() if __hidden then return nil end return "Player-123-0001" end
+        WoWStatusDB = {version = 1, characters = {}, popups = setmetatable({}, {__index = function(_, key)
+            if key == "activity" and __broken then error("unreadable") end
+        end})}
+    ''')
+    for event in ('PLAYER_ENTERING_WORLD', 'PLAYER_REGEN_ENABLED', 'PLAYER_ENTERING_WORLD'):
+        lua.eval('fire')(event)
+    lua.execute('__broken, __hidden = false, false')
+    lua.eval('fire')('PLAYER_ENTERING_WORLD')
+    said = '\n'.join(lua.eval('__said').values())
+    assert said.count('Could not upgrade saved data (step 2)') == 1
+    assert lua.eval('WoWStatusDB.version') == 2 and lua.eval('character() ~= nil')
+
+
 # Each step on its own -----------------------------------------------------------
 
 def step(lua, kind, version):
@@ -225,6 +260,16 @@ def test_character_step_2_leaves_a_chosen_discord_setting_alone():
     assert lua.eval('__c.discord_enrolled') is False
     assert lua.eval('__c.settings.discord_enabled') is True
     assert lua.eval('__c.settings.in_game.recap') is False
+
+
+def test_character_step_2_stores_out_of_range_filters_clamped():
+    lua = make_lua()
+    lua.execute('__c = {settings = {loot_quality = 9, level_interval = "often"}}; __d = {settings = {}}')
+    step(lua, 'character', 2)(lua.eval('__c'))
+    step(lua, 'character', 2)(lua.eval('__d'))
+    assert lua.eval('__c.settings.loot_quality') == 5
+    assert lua.eval('__c.settings.level_interval') == 10
+    assert lua.eval('__d.settings.loot_quality') is None  # Nothing added where nothing was saved.
 
 
 def test_character_step_2_repairs_settings_parts_that_are_not_tables():
