@@ -11,9 +11,7 @@ function W.itemIcon(item)
     local get = (C_Item and C_Item.GetItemIconByID) or GetItemIcon
     if not id or not get then return nil end
     local ok, icon = pcall(get, id)
-    icon = ok and WoWStatusSafe.value(icon)
-    if (type(icon) == "number" and icon > 0) or (type(icon) == "string" and icon ~= "") then return icon end
-    return nil
+    return ok and WoWStatusSafe.texture(icon) or nil
 end
 local QUALITY = {[2]="ff1eff00", [3]="ff0070dd", [4]="ffa335ee", [5]="ffff8000"}
 -- The shown text with the item name in its quality colour ("Equipped |cffa335eeRobe|r").

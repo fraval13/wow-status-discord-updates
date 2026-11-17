@@ -7,7 +7,7 @@ WoWStatusRecaps = {}
 local R, S = WoWStatusRecaps, WoWStatusSafe
 R.IDLE, R.RELOAD = 1800, 60
 local character,emit
-local ORDER = {"dungeon", "raid", "death", "profession", "mount", "epicmount", "loot", "zone", "quest", "reputation", "unlock", "pvp"}
+local ORDER = {"dungeon", "raid", "death", "profession", "mount", "epicmount", "loot", "zone", "quest", "reputation", "unlock", "pvp", "achievement"}
 
 local function count(n, one, many) return n == 1 and one or (n == 2 and many == "times" and "twice") or (n .. " " .. many) end
 
@@ -44,6 +44,8 @@ function R.text(session, name, at)
         reputation=function(n) return count(n, "gained a reputation rank", "reputation ranks") end,
         unlock=function(n) return count(n, "unlocked a class ability", "class ability unlocks") end,
         pvp=function(n) return count(n, "earned a PvP promotion", "PvP promotions") end,
+        -- Own log only: shared recaps keep their fixed phrases, which older peers check.
+        achievement=function(n) return count(n, "earned an achievement", "achievements") end,
     }
     for _, kind in ipairs(ORDER) do
         if kind == "dungeon" and #session.dungeons > 0 then
@@ -107,7 +109,12 @@ function R.close(at)
         local shared=R.sharedText(session,character.settings)
         if shared then return emit("recap",{text=shared,source="session_recap"})~=nil end
     end
-    local main = session.top_level and "level" or (#session.dungeons > 0 and "dungeon") or next(session.counts)
+    -- The caption's kind: achievements have no captions, so any other kind first.
+    local main = session.top_level and "level" or (#session.dungeons > 0 and "dungeon")
+    for _, kind in ipairs(ORDER) do
+        if not main and kind ~= "achievement" and session.counts[kind] then main = kind end
+    end
+    main = main or next(session.counts)
     local flavour = WoWStatusFlavour.text({kind=main, level=session.top_level, sender=character.chat_name or character.identity.name,
         id="recap:" .. tostring(at)})
     return WoWStatusJournal.recordRecap(character, at, text, flavour)

@@ -12,8 +12,8 @@ from wow_status.schema import ValidationError, validate
 # Each client answers in its own language: the shown name must be the receiver's.
 ACHIEVEMENTS = '''
     __names=__names or {[42]="Explore Eastern Kingdoms",[43]="Explore Kalimdor",[46]="World Explorer",
-        [522]="Somebody Likes Me",[2141]="Stable Keeper",[116]="Professional Journeyman",[6]="Level 10",
-        [7]="Level 20",[8]="Level 30",[9]="Level 40",[10]="Level 50",[11]="Level 60",[999]="Not On The List"}
+        [522]="Somebody Likes Me",[523]="5 Exalted Reputations",[2141]="Stable Keeper",[2142]="Filling Up The Barn",
+        [116]="Professional Journeyman",[1283]="Classic Dungeonmaster",[7]="Level 20",[999]="Not On The List"}
     function GetAchievementInfo(id)
         local name=__names[id]
         if not name then return nil end
@@ -69,6 +69,7 @@ def test_only_whitelisted_first_earns_are_recorded_and_the_packet_has_no_name():
     enable(lua)
     lua.execute('''
         fire("ACHIEVEMENT_EARNED",999,false)      -- real, but not on the list
+        fire("ACHIEVEMENT_EARNED",7,false)        -- Level 20: the level-up already says it
         fire("ACHIEVEMENT_EARNED",44,false)       -- listed, unknown to this client
         fire("ACHIEVEMENT_EARNED",42,true)        -- earned before on this account
         assert(#character().events==0)
@@ -90,7 +91,7 @@ def test_whitelist_accepts_only_listed_well_formed_ids(raw):
     lua = retail_runtime(extra=ACHIEVEMENTS)
     ident = lua.eval('WoWStatusAchievements.id')
     assert ident(raw) == 43
-    for bad in ('043', '43a', '', ' 43', '-43', '4300000', '999', 999, 43.5, 0, None, '1e2'):
+    for bad in (7, '6', '043', '43a', '', ' 43', '-43', '4300000', '999', 999, 43.5, 0, None, '1e2'):
         assert ident(bad) is None, bad
     assert lua.eval('WoWStatusAchievements.LIST[43]') == 'exploration'
 
@@ -122,15 +123,24 @@ def test_sender_and_receiver_counts_are_bounded_per_session():
     joined(own, friend)
     enable(own)
     own.execute('''
-        for _,id in ipairs({6,7,8,9,10,11,42}) do fire("ACHIEVEMENT_EARNED",id,false) end
-        assert(#character().events==WoWStatusAchievements.SESSION_CAP)
+        local ids={42,43,46,522,523,2141,2142}
+        for i,id in ipairs(ids) do
+            fire("ACHIEVEMENT_EARNED",id,false)
+            assert((WoWStatusDB.popups.last_send.state=="session_cap")==(i>WoWStatusAchievements.SESSION_CAP))
+        end
+        -- Every one is recorded and logged; only the first five go out live.
+        assert(#character().events==#ids)
+        assert(WoWStatusDB.popups.last_send.state=="session_cap")
+        assert(not WoWStatusAchievements.spend())
     ''')
     receive, group = friend.eval('WoWStatusPopups.receive'), channel(friend)
     friend.execute('WoWStatusAchievements.RECEIVE_CAP=2')
     count = 'function() local n=0 for _,e in ipairs(WoWStatusJournal.entries()) do if e.kind=="achievement" then n=n+1 end end return n end'
-    for n in (6, 7, 8):
-        receive(f'WSTATUS4 retail achievement 1793000000 n{n} {n}', 'Thora-TestRealm', group)
+    # A copy of the same update (second group, resend) does not use up the cap.
+    for n, nonce in ((42, 'a'), (42, 'a'), (43, 'b'), (46, 'c')):
+        receive(f'WSTATUS4 retail achievement 1793000000 {nonce} {n}', 'Thora-TestRealm', group)
     assert friend.eval(count)() == 2
+    assert friend.eval('WoWStatusAchievements.admit')('Thora-TestRealm', 'a') is True
 
 
 def test_catch_up_carries_only_the_id_and_each_client_names_it():
@@ -180,3 +190,23 @@ def test_companion_schema_keeps_only_the_achievement_id(payload, clone):
     retail['events'][0]['data'] = {'achievement_id': 'x'}
     with pytest.raises(ValidationError):
         validate(retail)
+
+
+def test_overview_and_own_recap_name_achievements_and_keep_a_captioned_kind():
+    lua = retail_runtime(extra=ACHIEVEMENTS)
+    lua.execute('''
+        local text=WoWStatusRecaps.text({counts={achievement=2,death=1},dungeons={}},"Thora",1793000000)
+        assert(text:find("died once, 2 achievements",1,true),text)
+        WoWStatusLocale.set("nn")
+        assert(WoWStatusLocale.T("earned 2 achievements")=="fekk 2 bragder")
+        assert(WoWStatusLocale.T("earned an achievement")=="fekk ei bragd")
+    ''')
+    assert lua.eval('WoWStatusRecaps.sharedText')(
+        lua.eval('{counts={achievement=1}}'), None) is None
+
+
+def test_discord_text_names_the_achievement_id(payload, clone):
+    from wow_status.formatting import announcement
+    text = announcement({'identity': {'name': 'Thora', 'realm': 'Test'}, 'kind': 'achievement',
+                         'data': {'achievement_id': 43}, 'at': 1793000000})
+    assert text.startswith('**Thora** · earned achievement 43\n')

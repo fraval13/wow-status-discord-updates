@@ -1,2 +1,2 @@
-- Retail: a new Achievements option shares level, exploration, reputation, mount, profession and dungeon achievements.
+- Retail: a new Achievements option shares exploration, reputation, mount, profession and dungeon achievements.
 - Achievements are off until you tick the option, and friends see each name in their own game language.

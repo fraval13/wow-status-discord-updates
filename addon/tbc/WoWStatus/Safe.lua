@@ -52,6 +52,13 @@ function S.number(value)
     if type(value) ~= "number" or value ~= value or value == math.huge or value == -math.huge then return nil end
     return value
 end
+-- A texture value the game can draw (a file ID or a path), or nil.
+function S.texture(value)
+    value = S.value(value)
+    if type(value) == "number" and value > 0 then return value end
+    if type(value) == "string" and value ~= "" and not value:find(S.CONTROL_OR_PIPE) then return value end
+    return nil
+end
 function S.stringCall(fn, ...)
     return S.string(S.call(fn, ...))
 end

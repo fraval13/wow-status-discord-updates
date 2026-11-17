@@ -168,6 +168,7 @@ function O.summary(entries, since)
         reputation=function(k) return plural(k.count, "a new reputation rank", "new reputation ranks") end,
         unlock=function(k) return plural(k.count, "a class ability unlock", "class ability unlocks") end,
         pvp=function(k) return plural(k.count, "a PvP promotion", "PvP promotions") end,
+        achievement=function(k) return "earned " .. plural(k.count, "an achievement", "achievements") end,
         loot=function(k) return "equipped " .. plural(k.count, "a new item", "new items") end,
         introduction=function() return "joined the group" end,
     }
@@ -177,7 +178,7 @@ function O.summary(entries, since)
         local ranks = R.pinRanks()
         order = R.pinFirst(order, function(p) local k = R.key(p.sender); return k and ranks[k] end)
     end
-    local sequence = {"level", "dungeon", "death", "profession", "mount", "loot", "zone", "quest", "reputation", "unlock", "pvp", "introduction"}
+    local sequence = {"level", "dungeon", "death", "profession", "mount", "loot", "zone", "quest", "reputation", "unlock", "pvp", "achievement", "introduction"}
     for _, p in ipairs(order) do
         local facts = {}
         for _, kind in ipairs(sequence) do

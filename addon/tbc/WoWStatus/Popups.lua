@@ -1067,7 +1067,7 @@ receiveUpdate = function(text, sender, channel)
             achievement=AC.id(detail)
             local shown=achievement and AC.text(achievement)
             if not shown then return false, "unknown achievement" end
-            if not AC.admit(key) then return false, "achievement cap for this session" end
+            if not AC.admit(key, nonce) then return false, "achievement cap for this session" end
             detail=shown
         end
         if kind=="dungeon" then
@@ -1830,6 +1830,8 @@ function P.broadcast(character, event)
         -- The ID alone: receivers name it from their own client (#165).
         local id=WoWStatusAchievements.id(event.data.achievement_id)
         if not id then return end
+        -- Past the session cap it stays in the log, which friends catch up quietly.
+        if not WoWStatusAchievements.spend() then status("session_cap", event); return end
         text="WSTATUS4 " .. A.client_id .. " achievement " .. event.at .. " " .. nonce .. " " .. id
     elseif event.kind == "level" then
         if event.data.level < 2 or event.data.level > A.max_level then return end
