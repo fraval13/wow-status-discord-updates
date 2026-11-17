@@ -8,7 +8,8 @@ homepage is also uploaded to CurseForge by the `curseforge` job in
 ## Setup
 
 The project is <https://www.curseforge.com/wow/addons/wow-status> (project ID
-`1772945`, license All Rights Reserved). The GitHub repository variable
+`1772945`; its license must be switched from All Rights Reserved
+to MIT to match `LICENSE`, see **License** below). The GitHub repository variable
 `CURSEFORGE_PROJECT_ID` is set to that ID.
 
 Remaining one-time step for the owner:
@@ -60,7 +61,8 @@ See your friends' level-ups, deaths and big firsts pop up in game, cheer with on
 
 **Categories:** Chat & Communication (main), Guild, Quests & Leveling, Achievements
 
-**License:** chosen by the owner. The repository has no license file yet.
+**License:** MIT, matching `LICENSE`. Artwork and caption text are reserved
+separately; see the Licence section of `README.md`.
 
 **Source / issues:** <https://github.com/fraval13/wow-status-discord-updates>
 **Website:** <https://wow.frankvalde.com/>
