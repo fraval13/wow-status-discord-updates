@@ -140,7 +140,7 @@ function UI.refresh()
     H.init(character)
     hideGraph()
     panel.title:SetText(character.identity.name .. " — history and level progress")
-    if mode == "graph" then graph(character); panel.status:SetText("Small blue dots = level-ups; large orange squares = first observation. Gaps stay disconnected."); return end
+    if mode == "graph" then graph(character); panel.status:SetText(T("Small blue squares = level-ups; large orange squares = first observation. Gaps stay disconnected.")); return end
     local rows = {}
     if mode == "logs" then
         for _, event in ipairs(character.history.events) do

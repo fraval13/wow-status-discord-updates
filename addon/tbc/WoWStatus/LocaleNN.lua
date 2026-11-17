@@ -597,6 +597,8 @@ W.add({
     ["Copy this report into a bug report on GitHub or Discord. Nothing is sent automatically."] =
         "Kopier denne rapporten inn i ein feilrapport på GitHub eller Discord. Ingenting vert sendt av seg sjølv.",
     ["Select all"] = "Merk alt",
+    ["Small blue squares = level-ups; large orange squares = first observation. Gaps stay disconnected."] =
+        "Små blå ruter = nye nivå; store oransje ruter = første observasjon. Hol vert ikkje kopla saman.",
     ["Clear errors"] = "Tøm feillista",
     ["WoW Status errors recorded: %d. They can be read here once the character is ready."] =
         "Feil registrerte i WoW Status: %d. Dei kan lesast her når figuren er klar.",

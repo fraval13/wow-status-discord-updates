@@ -371,7 +371,8 @@ UI.CUES = {
     {state="controller focus", where="every window", cue="gold outline with a dark inner outline"},
     {state="history graph first observation", where="level history graph", cue="larger square than a level-up"},
     {state="calendar today", where="date picker", cue="[brackets]"},
-    {state="calendar day with entries", where="date picker", cue="square mark in the corner"},
+    {state="calendar day with entries", where="date picker", cue="bar under the day"},
+    {state="calendar selected day", where="date picker", cue="lighter fill behind the day"},
 }
 -- An inline online/offline marker for a font string: filled when online,
 -- hollow when not, so the shape tells them apart without the green.
@@ -541,11 +542,16 @@ function UI.calendar(owner, selected, today, counts, onPick)
             local cell = UI.box(cal, 32, 24, "Button")
             cell:SetPoint("TOPLEFT", 8 + ((i - 1) % 7) * 34, -52 - math.floor((i - 1) / 7) * 26)
             cell.text = UI.text(cell, "GameFontHighlightSmall", 0, -6, 32, "CENTER")
-            -- A small square in the corner marks a day with entries (#185), outside
-            -- the label so a bracketed "[28]" still fits the cell.
+            -- Not by colour alone (#185). A short bar under the number marks a day
+            -- with entries, away from the border so a gold hover edge cannot hide
+            -- it, and outside the label so a bracketed "[28]" still fits. The
+            -- selected day also gets a lighter fill: brightness, not only gold.
             cell.mark = cell:CreateTexture(nil, "OVERLAY")
-            cell.mark:SetSize(4, 4); cell.mark:SetPoint("TOPRIGHT", -3, -3)
+            cell.mark:SetSize(12, 2); cell.mark:SetPoint("BOTTOM", 0, 4)
             cell.mark:SetColorTexture(1, .82, 0, 1)
+            cell.selection = cell:CreateTexture(nil, "ARTWORK")
+            cell.selection:SetPoint("TOPLEFT", 2, -2); cell.selection:SetPoint("BOTTOMRIGHT", -2, 2)
+            cell.selection:SetColorTexture(1, 1, 1, .2)
             cell:SetScript("OnClick", function(self) cal:Hide(); if cal.onPick then cal.onPick(self.key) end end)
             cell:SetScript("OnEnter", function(self) UI.tint(self, true) end)
             cell:SetScript("OnLeave", function(self) UI.tint(self, self.key == cal.selected) end)
@@ -567,9 +573,11 @@ function UI.calendar(owner, selected, today, counts, onPick)
                     local active, isToday = (cal.counts[key] or 0) > 0, key == cal.todayKey
                     local colour = active and "|cffffd100" or isToday and "|cffffffff" or UI.MUTED_CODE
                     cell.key = key
-                    -- Not by colour alone (#185): today in brackets, a day with entries marked in the corner.
+                    -- Not by colour alone (#185): today in brackets, a bar under a day
+                    -- with entries, a lighter fill behind the selected day.
                     cell.text:SetText(colour .. (isToday and ("[" .. day .. "]") or tostring(day)) .. "|r")
                     cell.mark:SetShown(active)
+                    cell.selection:SetShown(key == cal.selected)
                     UI.tint(cell, key == cal.selected)
                     cell:Show()
                 else cell.key = nil; cell:Hide() end
