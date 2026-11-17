@@ -228,7 +228,7 @@ local function renderRecords()
             row.icon:SetIcon(WoWStatusFirsts.medalIcon(item.medal))
             row.text:SetText("|cffffd100" .. T(item.medal.title) .. "|r — "
                 .. ((item.entry.sender or "?"):match("^[^-]+") or "?"):gsub("|", "||")
-                .. "  |cff9d9d9d" .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
+                .. "  " .. WoWStatusUI.MUTED_CODE .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
             row:Show()
         else row:Hide() end
     end

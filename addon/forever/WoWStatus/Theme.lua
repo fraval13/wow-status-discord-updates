@@ -355,11 +355,45 @@ function UI.restyle(contrast)
     current = look
 end
 
+-- Never colour alone (#185). Secondary lines use one muted grey that keeps at
+-- least 5:1 against every theme's window (the game's disabled .5 grey fell to
+-- under 4:1 on Journal), and each state below carries a shape or text cue as
+-- well as its colour.
+UI.MUTED = 0x9d / 255
+UI.MUTED_CODE = "|cff9d9d9d"
+UI.ONLINE_ICON = "Interface\\FriendsFrame\\StatusIcon-Online" -- a filled dot
+UI.OFFLINE_ICON = "Interface\\AddOns\\WoWStatus\\Textures\\Offline" -- a hollow ring
+-- The states that once told themselves apart by colour alone, and the cue each
+-- now carries besides its colour (tests/test_colour_cues.py walks every one).
+UI.CUES = {
+    {state="online", where="cards, leaderboard", cue="filled dot"},
+    {state="offline", where="cards, leaderboard", cue="hollow ring"},
+    {state="controller focus", where="every window", cue="gold outline with a dark inner outline"},
+    {state="history graph first observation", where="level history graph", cue="larger square than a level-up"},
+    {state="calendar today", where="date picker", cue="[brackets]"},
+    {state="calendar day with entries", where="date picker", cue="bar under the day"},
+    {state="calendar selected day", where="date picker", cue="lighter fill behind the day"},
+}
+-- An inline online/offline marker for a font string: filled when online,
+-- hollow when not, so the shape tells them apart without the green.
+function UI.presence(online, size)
+    size = size or 12
+    return "|T" .. (online and UI.ONLINE_ICON or UI.OFFLINE_ICON) .. ":" .. size .. ":" .. size .. "|t"
+end
+-- Gives a font string the muted secondary grey.
+function UI.mute(text)
+    if text and text.SetTextColor then text:SetTextColor(UI.MUTED, UI.MUTED, UI.MUTED) end
+    return text
+end
+local DISABLED = {GameFontDisable=true, GameFontDisableSmall=true, GameFontDisableLarge=true}
+
 function UI.text(parent, font, x, y, width, justify)
     local text = parent:CreateFontString(nil, "OVERLAY", font or "GameFontHighlight")
     text:SetPoint("TOPLEFT", x or 0, y or 0)
     if width then text:SetWidth(width) end
     text:SetJustifyH(justify or "LEFT")
+    -- The game's disabled font is too dim for a secondary line; lift it.
+    if DISABLED[font] then UI.mute(text) end
     return text
 end
 
@@ -508,6 +542,16 @@ function UI.calendar(owner, selected, today, counts, onPick)
             local cell = UI.box(cal, 32, 24, "Button")
             cell:SetPoint("TOPLEFT", 8 + ((i - 1) % 7) * 34, -52 - math.floor((i - 1) / 7) * 26)
             cell.text = UI.text(cell, "GameFontHighlightSmall", 0, -6, 32, "CENTER")
+            -- Not by colour alone (#185). A short bar under the number marks a day
+            -- with entries, away from the border so a gold hover edge cannot hide
+            -- it, and outside the label so a bracketed "[28]" still fits. The
+            -- selected day also gets a lighter fill: brightness, not only gold.
+            cell.mark = cell:CreateTexture(nil, "OVERLAY")
+            cell.mark:SetSize(12, 2); cell.mark:SetPoint("BOTTOM", 0, 4)
+            cell.mark:SetColorTexture(1, .82, 0, 1)
+            cell.selection = cell:CreateTexture(nil, "ARTWORK")
+            cell.selection:SetPoint("TOPLEFT", 2, -2); cell.selection:SetPoint("BOTTOMRIGHT", -2, 2)
+            cell.selection:SetColorTexture(1, 1, 1, .2)
             cell:SetScript("OnClick", function(self) cal:Hide(); if cal.onPick then cal.onPick(self.key) end end)
             cell:SetScript("OnEnter", function(self) UI.tint(self, true) end)
             cell:SetScript("OnLeave", function(self) UI.tint(self, self.key == cal.selected) end)
@@ -526,9 +570,14 @@ function UI.calendar(owner, selected, today, counts, onPick)
                 local day = i - first + 1
                 if day >= 1 and day <= days then
                     local key = UI.dayKey(cal.year, cal.month, day)
-                    local colour = (cal.counts[key] or 0) > 0 and "|cffffd100" or key == cal.todayKey and "|cffffffff" or "|cff808080"
+                    local active, isToday = (cal.counts[key] or 0) > 0, key == cal.todayKey
+                    local colour = active and "|cffffd100" or isToday and "|cffffffff" or UI.MUTED_CODE
                     cell.key = key
-                    cell.text:SetText(colour .. day .. "|r")
+                    -- Not by colour alone (#185): today in brackets, a bar under a day
+                    -- with entries, a lighter fill behind the selected day.
+                    cell.text:SetText(colour .. (isToday and ("[" .. day .. "]") or tostring(day)) .. "|r")
+                    cell.mark:SetShown(active)
+                    cell.selection:SetShown(key == cal.selected)
                     UI.tint(cell, key == cal.selected)
                     cell:Show()
                 else cell.key = nil; cell:Hide() end

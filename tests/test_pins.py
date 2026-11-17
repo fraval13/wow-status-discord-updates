@@ -249,7 +249,7 @@ def test_the_stars_are_reachable_with_a_controller():
         WoWStatusSafe={number=function(v) return type(v)=="number" and v or nil end}
         WoWStatusPopups={}
         WoWStatusAdapter={}
-        WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
+        WoWStatusUI={MUTED_CODE="|cff9d9d9d", text=function(parent) return CreateFrame("FontString",nil,parent) end,
             header=function(parent) return CreateFrame("FontString",nil,parent) end,
             box=function(parent,w,h,kind) return CreateFrame(kind or "Frame",nil,parent) end,
             levelBadge=function(parent) local b=CreateFrame("Frame",nil,parent); b.SetLevel=function() end; return b end,

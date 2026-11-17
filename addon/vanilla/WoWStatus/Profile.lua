@@ -49,20 +49,20 @@ function F.data(row)
     local levels, recent, gear = {}, {}, {}
     for _, e in ipairs(entries) do
         if e.kind == "level" and S.number(e.level) and #levels < 8 then
-            levels[#levels + 1] = TF("Level %d", e.level) .. "  |cff9d9d9d" .. when(e.at) .. "|r"
+            levels[#levels + 1] = TF("Level %d", e.level) .. "  " .. WoWStatusUI.MUTED_CODE .. when(e.at) .. "|r"
         end
         if e.kind == "loot" and #gear < 6 then
-            gear[#gear + 1] = WoWStatusPresentation.colourItem(e, T(e.text):gsub("|", "||")) .. "  |cff9d9d9d" .. when(e.at):sub(1, 10) .. "|r"
+            gear[#gear + 1] = WoWStatusPresentation.colourItem(e, T(e.text):gsub("|", "||")) .. "  " .. WoWStatusUI.MUTED_CODE .. when(e.at):sub(1, 10) .. "|r"
         end
         if #recent < 8 then
-            recent[#recent + 1] = WoWStatusJournal.deathText(e):gsub("|", "||") .. "  |cff9d9d9d" .. when(e.at) .. "|r"
+            recent[#recent + 1] = WoWStatusJournal.deathText(e):gsub("|", "||") .. "  " .. WoWStatusUI.MUTED_CODE .. when(e.at) .. "|r"
         end
     end
     return {facts=facts, levels=levels, recent=recent, gear=gear}
 end
 
 local function list(box, lines, empty)
-    box.text:SetText(#lines > 0 and table.concat(lines, "\n") or ("|cff808080" .. T(empty) .. "|r"))
+    box.text:SetText(#lines > 0 and table.concat(lines, "\n") or (WoWStatusUI.MUTED_CODE .. T(empty) .. "|r"))
 end
 
 local function equipmentSlot(parent, spec, x, y, width)
@@ -329,7 +329,7 @@ function F.show(row, entry)
     local class = row.class and T(row.class:sub(1, 1) .. row.class:sub(2):lower()) or T("Never met")
     local player = entry and entry.name and (" · " .. tostring(entry.name):gsub("|", "||")) or ""
     head.info:SetText((row.race and (WoWStatusRoster.shownRace(row.race) .. " ") or "") .. class .. player)
-    local groups = row.groups and #row.groups > 0 and ("   |cff9d9d9d" .. T("Groups:") .. "|r " .. table.concat(row.groups, ", "):gsub("|", "||")) or ""
+    local groups = row.groups and #row.groups > 0 and ("   " .. WoWStatusUI.MUTED_CODE .. T("Groups:") .. "|r " .. table.concat(row.groups, ", "):gsub("|", "||")) or ""
     head.status:SetText(T(row.status or "") .. groups)
     local friend = not (entry and entry.self)
     view.invite:SetShown(friend)

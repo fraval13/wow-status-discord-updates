@@ -1139,7 +1139,7 @@ local function build(parent)
                 local caption=WoWStatusFlavour.text(e)
                 if caption and caption~="" then GameTooltip:AddLine(caption,.8,.8,.8,true) end
                 local detail=self.detail and self.detail:GetText()
-                if detail and detail~="" then GameTooltip:AddLine(detail,.6,.6,.6,true) end
+                if detail and detail~="" then GameTooltip:AddLine(detail,WoWStatusUI.MUTED,WoWStatusUI.MUTED,WoWStatusUI.MUTED,true) end
                 GameTooltip:Show()
             end
         end)

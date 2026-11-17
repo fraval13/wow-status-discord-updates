@@ -247,7 +247,7 @@ def test_whisper_invite_and_range_buttons_are_reachable_with_a_controller():
         WoWStatusSafe={}
         WoWStatusPopups={}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
-            call=function() return false end, classColour=function() end}
+            call=function() return false end, classColour=function() end, MUTED_CODE="|cff9d9d9d"}
         WoWStatusMainWindow.register=function(key,title,build) __build=build end
     ''')
     runtime.execute((ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))

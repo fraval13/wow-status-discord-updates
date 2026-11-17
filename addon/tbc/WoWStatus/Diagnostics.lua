@@ -529,8 +529,11 @@ local function build(parent)
     page.heading:SetPoint("TOPLEFT", 24, -12); page.heading:SetText(T("Diagnostics"))
     page.status = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     page.status:SetPoint("TOPLEFT", 24, -40); page.status:SetWidth(730); page.status:SetJustifyH("LEFT")
+    -- Built by hand: this page must open even when a later file such as Theme.lua
+    -- failed to load. The muted grey is taken when it is there.
     page.hint = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
     page.hint:SetPoint("TOPLEFT", 24, -62); page.hint:SetWidth(730); page.hint:SetJustifyH("LEFT")
+    if WoWStatusUI and WoWStatusUI.mute then WoWStatusUI.mute(page.hint) end
     page.hint:SetText(T("Copy this report into a bug report on GitHub or Discord. Nothing is sent automatically."))
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 24, -88); page.scroll:SetSize(706, 392)

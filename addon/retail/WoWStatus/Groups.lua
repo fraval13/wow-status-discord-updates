@@ -332,7 +332,7 @@ function G.show(host)
             if #list == 0 then refuse("No listed groups yet. Friends list a group by ticking Listed on their Groups page."); return end
             local items = {}
             for _, item in ipairs(list) do
-                items[#items + 1] = {label = item.name:gsub("|", "||") .. "  |cff9d9d9d" .. T("listed by") .. " " .. item.by:gsub("|", "||") .. "|r", value = item.name}
+                items[#items + 1] = {label = item.name:gsub("|", "||") .. "  " .. WoWStatusUI.MUTED_CODE .. T("listed by") .. " " .. item.by:gsub("|", "||") .. "|r", value = item.name}
             end
             WoWStatusUI.menu(self, items, function(name)
                 local ok, message = G.join(name)
