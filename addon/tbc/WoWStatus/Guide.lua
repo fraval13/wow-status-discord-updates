@@ -22,8 +22,9 @@ local STEPS = {
         .. "You can change this at any time.",
      action={"Open announcement options", function() SlashCmdList.WOWSTATUS("") end}},
     {title="What friends can see",
-     text="WoW Status sends only what you choose, and only to the members of your groups, through the game's own whispers. "
-        .. "Nothing goes to a website or to the author. Read exactly what is shared, what stays on your computer and how to stop.",
+     text="Apart from whispers you click to send, WoW Status shares only with the members of your groups, "
+        .. "through the game's own whispers. Nothing goes to a website or to the author. Read exactly what is "
+        .. "shared, what stays on your computer and how to stop.",
      action={"What is shared", function() WoWStatusPrivacy.show() end}},
     {title="You're all set",
      text="Click the minimap book to open the WoW Status window. Want to see what it looks like with friends? "

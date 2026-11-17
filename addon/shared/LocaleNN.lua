@@ -619,17 +619,17 @@ W.add({
 -- What is shared (#152): the guide step and the /wstatus privacy page.
 W.add({
     ["What friends can see"] = "Kva venene ser",
-    ["WoW Status sends only what you choose, and only to the members of your groups, through the game's own whispers. Nothing goes to a website or to the author. Read exactly what is shared, what stays on your computer and how to stop."] =
-        "WoW Status sender berre det du vel, og berre til medlemene i gruppene dine, gjennom kviskringane i sjølve spelet. Ingenting går til ei nettside eller til den som laga tillegget. Les nøyaktig kva som blir delt, kva som blir verande på maskina di, og korleis du stoppar det.",
+    ["Apart from whispers you click to send, WoW Status shares only with the members of your groups, through the game's own whispers. Nothing goes to a website or to the author. Read exactly what is shared, what stays on your computer and how to stop."] =
+        "Utanom kviskringar du klikkar for å sende, deler WoW Status berre med medlemene i gruppene dine, gjennom kviskringane i sjølve spelet. Ingenting går til ei nettside eller til den som laga tillegget. Les nøyaktig kva som blir delt, kva som blir verande på maskina di, og korleis du stoppar det.",
     ["What is shared"] = "Kva som blir delt",
     ["What WoW Status shares"] = "Kva WoW Status deler",
     ["What is sent"] = "Kva som blir sendt",
     ["The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, and session recaps if you tick them. A death also names what killed you, and where when Location is ticked."] =
         "Måla kunngjeringsvala dine tillèt: nye nivå, dødsfall, første besøk i eit område, kvart hundrede oppdrag, yrkes- og fangeholsmål, ridedyr, omdøme, klasseevner, PvP-rang, første rustning du tek på, og øktsamandrag om du har kryssa av for dei. Eit dødsfall seier òg kva som drap deg, og kvar, når Stad er kryssa av.",
-    ["Your character list: the name, race, sex, class and level of each character shown to friends, when it reached each tenth level, the player name you chose, a random player ID and your addon version."] =
-        "Figurlista di: namn, rase, kjønn, klasse og nivå for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, ein tilfeldig spelar-ID og versjonen av tillegget.",
-    ["The character details you tick: XP progress, played time, professions with skill levels, completed quests, gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you wear with its combat stats. Friends see them change as you play."] =
-        "Figurdetaljane du kryssar av for: XP-framgang, speletid, yrke med ferdigheitsnivå, fullførte oppdrag, gull og gull tent, monster drepne, fangehol, ridedyr og æresdrap, dødsfall totalt, og utstyret du har på deg med kamptala. Venene ser dei endre seg medan du spelar.",
+    ["Your character list: the name, race, sex, class, level and XP progress of each character shown to friends, when it reached each tenth level, the player name you chose, a random player ID and your addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it out, even after you stop sharing your list."] =
+        "Figurlista di: namn, rase, kjønn, klasse, nivå og XP-framgang for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, ein tilfeldig spelar-ID og versjonen av tillegget. Namnet på ein gøymd figur blir likevel sendt, merkt som gøymd, så lista til venene utelèt han, òg etter at du har slutta å dele lista di.",
+    ["The character details you tick: played time, professions with skill levels, completed quests, gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you wear with its combat stats. Friends see them change as you play."] =
+        "Figurdetaljane du kryssar av for: speletid, yrke med ferdigheitsnivå, fullførte oppdrag, gull og gull tent, monster drepne, fangehol, ridedyr og æresdrap, dødsfall totalt, og utstyret du har på deg med kamptala. Venene ser dei endre seg medan du spelar.",
     ["The name of a group you tick as Listed, to the members of your other groups."] =
         "Namnet på ei gruppe du kryssar av som Lista, til medlemene i dei andre gruppene dine.",
     ["Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an invitation to a group, with its name, to the friend you invite."] =
@@ -639,31 +639,34 @@ W.add({
         "Medlemene i gruppene dine. Oppdateringane går som spelet sine eigne tilleggskviskringar til medlemene det finn i chattekanalen til kvar gruppe, og vener som er pålogga, sender dei vidare til medlemer som var avlogga.",
     ["Anyone who enters the same group name becomes a member, so give it only to people you trust."] =
         "Alle som skriv inn same gruppenamn, blir medlem, så gje det berre til folk du stolar på.",
+    ["Whispers you click to send go to the player you click on, who may not be in a group with you."] =
+        "Kviskringar du klikkar for å sende, går til spelaren du klikkar på, som kanskje ikkje er i ei gruppe med deg.",
     ["Nothing goes to a website, to the author or to any server except the game's own, which carries every whisper."] =
         "Ingenting går til ei nettside, til den som laga tillegget eller til nokon tenar utanom spelet sin eigen, som ber alle kviskringar.",
     ["What stays on your computer"] = "Kva som blir verande på maskina di",
     ["Screenshots, your caption personality and reaction voice (a reaction you click is whispered in that voice), your notification and window settings, quiet hours, muted friends and your saved log."] =
         "Skjermbilete, personlegdomen i kommentarane og røysta i reaksjonane (ein reaksjon du klikkar på, blir kviskra med den røysta), innstillingane for varsel og vindauge, stille timar, dempa vener og den lagra loggen din.",
     ["What is never sent"] = "Kva som aldri blir sendt",
-    ["Chat you type or read, mail, bag contents, your guild, and which quests you hand in."] =
-        "Chat du skriv eller les, post, innhaldet i sekkene, lauget ditt og kva oppdrag du leverer.",
+    ["Chat you type or read, mail, bag contents, your guild (even with Guild ticked), and which quests you hand in."] =
+        "Chat du skriv eller les, post, innhaldet i sekkene, lauget ditt (sjølv med Laug kryssa av) og kva oppdrag du leverer.",
     ["The only text you type that travels is your player name and the name of a group you list or invite someone to."] =
         "Den einaste teksten du skriv som blir sendt, er spelarnamnet ditt og namnet på ei gruppe du listar eller inviterer nokon til.",
     ["How to stop"] = "Korleis du stoppar det",
-    ["Untick an announcement or a character detail in Options."] =
-        "Fjern krysset for ei kunngjering eller ein figurdetalj i Innstillingar.",
+    ["Untick an announcement, or one of the character details listed above, in Options. Class, race and level travel with your character list, so unticking them there does not stop them."] =
+        "Fjern krysset for ei kunngjering, eller for ein av figurdetaljane lista over, i Innstillingar. Klasse, rase og nivå følgjer figurlista di, så å fjerne kryssa for dei der stoppar dei ikkje.",
     ["Untick a character under Characters shown to friends: it leaves everyone's character list, leaderboard and gear view."] =
         "Fjern krysset for ein figur under Figurar som venene ser: han forsvinn frå figurlista, topplista og utstyrsvisinga til alle.",
-    ["Untick Share my character list on the Characters page: your friends are told to forget your list."] =
-        "Fjern krysset for Del figurlista mi på sida Figurar: venene dine får beskjed om å gløyme lista di.",
-    ["Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its place in your character list stays until you hide it as above."] =
-        "Skriv /wstatus pause, eller fjern krysset for Del framgangen min, for å stoppe kunngjeringane til denne figuren. Plassen hans i figurlista blir verande til du gøymer han som over.",
-    ["Remove a group in /wstatus groups to leave it."] = "Fjern ei gruppe i /wstatus groups for å gå ut av ho.",
+    ["Untick Share my character list on the Characters page: your list, details and gear stop, and your friends are told to forget your list."] =
+        "Fjern krysset for Del figurlista mi på sida Figurar: lista, detaljane og utstyret ditt stoppar, og venene dine får beskjed om å gløyme lista di.",
+    ["Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its character list entry and ticked details keep going until you hide it or untick them as above."] =
+        "Skriv /wstatus pause, eller fjern krysset for Del framgangen min, for å stoppe kunngjeringane til denne figuren. Plassen hans i figurlista og detaljane du har kryssa av for, held fram til du gøymer han eller fjernar kryssa som over.",
+    ["Remove a group in /wstatus groups to leave it."] =
+        "Fjern ei gruppe i /wstatus groups for å gå ut av ho.",
     ["What is kept"] = "Kva som blir teke vare på",
-    ["Your log keeps the newest 2,000 of your own entries and 2,000 received ones."] =
-        "Loggen din tek vare på dei 2000 nyaste av dine eigne oppføringar og 2000 mottekne.",
-    ["Everything WoW Status saves is in one file on your computer: WTF/Account/<account>/SavedVariables/WoWStatus.lua. Removing the addon folder does not delete it; delete that file while the game is closed."] =
-        "Alt WoW Status lagrar, ligg i éi fil på maskina di: WTF/Account/<konto>/SavedVariables/WoWStatus.lua. Å fjerne mappa til tillegget slettar henne ikkje; slett fila medan spelet er lukka.",
+    ["Your log keeps the newest 2,000 of your own entries (at most 1,000 of them sent to no group) and 2,000 received ones."] =
+        "Loggen din tek vare på dei 2000 nyaste av dine eigne oppføringar (høgst 1000 av dei som ikkje gjekk til noka gruppe) og 2000 mottekne.",
+    ["Apart from screenshots, which are pictures in the game's Screenshots folder, everything WoW Status saves is in WTF/Account/<account>/SavedVariables/WoWStatus.lua, with the game's backup copy WoWStatus.lua.bak beside it. Removing the addon folder deletes neither; delete both files while the game is closed."] =
+        "Utanom skjermbilete, som er bilete i Screenshots-mappa til spelet, ligg alt WoW Status lagrar, i WTF/Account/<konto>/SavedVariables/WoWStatus.lua, med reservekopien WoWStatus.lua.bak til spelet ved sida av. Å fjerne mappa til tillegget slettar ingen av dei; slett begge filene medan spelet er lukka.",
     ["Friends keep the updates they already received in their own log."] =
         "Venene dine beheld oppdateringane dei alt har fått, i sin eigen logg.",
 })

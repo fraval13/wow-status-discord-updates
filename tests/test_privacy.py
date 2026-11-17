@@ -73,10 +73,15 @@ def test_the_numbers_it_states_match_the_code():
     cap = int(re.search(r'local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",(\d+),', journal).group(1))
     lua = make_lua()
     body = lua.eval('WoWStatusPrivacy.text()')
-    assert f'newest {cap:,} of your own entries and {cap:,} received ones' in body
-    toc = (ROOT / 'addon/vanilla/WoWStatus/WoWStatus.toc').read_text(encoding='utf-8')
-    assert '## SavedVariables: WoWStatusDB' in toc and 'SavedVariablesPerCharacter' not in toc
-    assert 'SavedVariables/WoWStatus.lua' in body
+    unrouted = int(re.search(r'localOnly and private>(\d+)', journal).group(1))
+    assert (f'newest {cap:,} of your own entries (at most {unrouted:,} of them sent to no group) '
+            f'and {cap:,} received ones') in body
+    # One saved file in every edition (plus the game's .bak copy of it).
+    for edition in ('vanilla', 'tbc', 'retail', 'forever'):
+        toc = (ROOT / f'addon/{edition}/WoWStatus/WoWStatus.toc').read_text(encoding='utf-8')
+        saved = [line for line in toc.splitlines() if line.startswith('## SavedVariables')]
+        assert saved == ['## SavedVariables: WoWStatusDB'], edition
+    assert 'SavedVariables/WoWStatus.lua' in body and 'WoWStatus.lua.bak' in body
 
 
 def test_the_page_is_reachable_with_a_controller():
@@ -97,6 +102,8 @@ def test_the_page_is_reachable_with_a_controller():
         end
         function methods:SetScrollChild(child) self.child=child end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusSafe={number=function(v) return type(v)=="number" and v or nil end,
+            call=function(fn, ...) if type(fn)~="function" then return nil end local ok,v=pcall(fn, ...) return ok and v or nil end}
     ''')
     lua.execute((ROOT / 'addon/shared/Privacy.lua').read_text(encoding='utf-8'))
     lua.execute('''

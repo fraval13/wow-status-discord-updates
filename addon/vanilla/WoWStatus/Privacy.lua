@@ -11,43 +11,52 @@ local frame
 -- Each section: a heading and its bullet lines, each line translated on its own.
 PV.SECTIONS = {
     {"What is sent",
-     {"The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, "
-        .. "profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, "
-        .. "and session recaps if you tick them. A death also names what killed you, and where when Location is ticked.",
-      "Your character list: the name, race, sex, class and level of each character shown to friends, when it reached "
-        .. "each tenth level, the player name you chose, a random player ID and your addon version.",
-      "The character details you tick: XP progress, played time, professions with skill levels, completed quests, "
-        .. "gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you "
+     {"The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 "
+        .. "quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first "
+        .. "armor equips, and session recaps if you tick them. A death also names what killed you, and where "
+        .. "when Location is ticked.",
+      "Your character list: the name, race, sex, class, level and XP progress of each character shown to "
+        .. "friends, when it reached each tenth level, the player name you chose, a random player ID and your "
+        .. "addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it "
+        .. "out, even after you stop sharing your list.",
+      "The character details you tick: played time, professions with skill levels, completed quests, gold "
+        .. "and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you "
         .. "wear with its combat stats. Friends see them change as you play.",
       "The name of a group you tick as Listed, to the members of your other groups.",
-      "Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, "
-        .. "or an invitation to a group, with its name, to the friend you invite."}},
+      "Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an "
+        .. "invitation to a group, with its name, to the friend you invite."}},
     {"Who receives it",
      {"The members of your groups. Updates travel as the game's own addon whispers to the members it finds "
         .. "in each group's chat channel, and friends who are online pass them on to members who were offline.",
       "Anyone who enters the same group name becomes a member, so give it only to people you trust.",
-      "Nothing goes to a website, to the author or to any server except the game's own, which carries "
-        .. "every whisper."}},
+      "Whispers you click to send go to the player you click on, who may not be in a group with you.",
+      "Nothing goes to a website, to the author or to any server except the game's own, which carries every "
+        .. "whisper."}},
     {"What stays on your computer",
-     {"Screenshots, your caption personality and reaction voice (a reaction you click is whispered in that voice), "
-        .. "your notification and window settings, quiet hours, muted friends and your saved log."}},
+     {"Screenshots, your caption personality and reaction voice (a reaction you click is whispered in that "
+        .. "voice), your notification and window settings, quiet hours, muted friends and your saved log."}},
     {"What is never sent",
-     {"Chat you type or read, mail, bag contents, your guild, and which quests you hand in.",
-      "The only text you type that travels is your player name and the name of a group you list "
-        .. "or invite someone to."}},
+     {"Chat you type or read, mail, bag contents, your guild (even with Guild ticked), and which quests you "
+        .. "hand in.",
+      "The only text you type that travels is your player name and the name of a group you list or invite "
+        .. "someone to."}},
     {"How to stop",
-     {"Untick an announcement or a character detail in Options.",
+     {"Untick an announcement, or one of the character details listed above, in Options. Class, race and "
+        .. "level travel with your character list, so unticking them there does not stop them.",
       "Untick a character under Characters shown to friends: it leaves everyone's character list, "
         .. "leaderboard and gear view.",
-      "Untick Share my character list on the Characters page: your friends are told to forget your list.",
-      "Type /wstatus pause, or untick Share my progress, to stop this character's announcements. "
-        .. "Its place in your character list stays until you hide it as above.",
+      "Untick Share my character list on the Characters page: your list, details and gear stop, and your "
+        .. "friends are told to forget your list.",
+      "Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its "
+        .. "character list entry and ticked details keep going until you hide it or untick them as above.",
       "Remove a group in /wstatus groups to leave it."}},
     {"What is kept",
-     {"Your log keeps the newest 2,000 of your own entries and 2,000 received ones.",
-      "Everything WoW Status saves is in one file on your computer: "
-        .. "WTF/Account/<account>/SavedVariables/WoWStatus.lua. Removing the addon folder does not delete it; "
-        .. "delete that file while the game is closed.",
+     {"Your log keeps the newest 2,000 of your own entries (at most 1,000 of them sent to no group) and "
+        .. "2,000 received ones.",
+      "Apart from screenshots, which are pictures in the game's Screenshots folder, everything WoW Status "
+        .. "saves is in WTF/Account/<account>/SavedVariables/WoWStatus.lua, with the game's backup copy "
+        .. "WoWStatus.lua.bak beside it. Removing the addon folder deletes neither; delete both files while the "
+        .. "game is closed.",
       "Friends keep the updates they already received in their own log."}},
 }
 
@@ -90,8 +99,8 @@ function PV.show()
     frame.title:SetText(T("What WoW Status shares"))
     frame.close:SetText(T("Close"))
     frame.body:SetText(PV.text())
-    local ok, height = pcall(frame.body.GetStringHeight, frame.body)
-    frame.child:SetHeight(math.max(1, (ok and tonumber(height) or 0) + 8))
+    local S = WoWStatusSafe
+    frame.child:SetHeight(math.max(1, (S.number(S.call(frame.body.GetStringHeight, frame.body)) or 0) + 8))
     frame:Show()
     return frame
 end
