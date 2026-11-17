@@ -10,13 +10,17 @@ from pathlib import Path
 from test_clock_skew import REALM, pc
 
 ROOT = Path(__file__).resolve().parents[1]
-BARE_TIME = re.compile(r'(?<![\w.:])time\s*\(')
+# The global `time` as a call or a value (pcall(time), local t = time), but not
+# a field (x.time, x:time()), a key (time=) or a longer name (playtime).
+BARE_TIME = re.compile(r'(?<![\w.:])time\b(?!\s*=[^=])')
+LONG = re.compile(r'(?:--)?\[(=*)\[.*?\]\1\]', re.S)
 
 
 def code_lines(path):
-    """Lines of Lua with comments and string literals blanked out."""
+    """Lines of Lua with comments and string literals blanked out. Long
+    comments and long strings keep their newlines, so line numbers hold."""
     text = path.read_text(encoding='utf-8')
-    text = re.sub(r'--\[(=*)\[.*?\]\1\]', '', text, flags=re.S)
+    text = LONG.sub(lambda m: '\n' * m.group(0).count('\n'), text)
     for number, line in enumerate(text.splitlines(), 1):
         line = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', '""', line)
         yield number, line.split('--', 1)[0]
@@ -34,14 +38,16 @@ def test_only_safe_lua_reads_the_pc_clock():
     found = [f'{path.relative_to(ROOT)}:{number}: {line.strip()}'
              for path in addon_lua() if path.name != 'Safe.lua'
              for number, line in code_lines(path) if BARE_TIME.search(line)]
-    assert not found, 'use S.now(), S.uptime() or S.localNow() instead of time():\n' + '\n'.join(found)
+    assert not found, 'use S.now(), S.uptime(), S.localNow() or S.timeOf() instead of time:\n' + '\n'.join(found)
 
 
 def test_guard_sees_a_bare_call_but_not_lookalikes(tmp_path):
     sample = tmp_path / 'Sample.lua'
     sample.write_text('local a = S.now()\nlocal b = A.requestPlaytime()\n'
-                      '-- time() in a comment\nlocal c = "time()"\nlocal d = time()\n', encoding='utf-8')
-    assert [n for n, line in code_lines(sample) if BARE_TIME.search(line)] == [5]
+                      '-- time() in a comment\nlocal c = "time()"\nlocal d = time()\n'
+                      '--[[ time()\n time() ]]\nlocal e = [[\ntime()]]\nlocal f = {time = 1}\n'
+                      'local g = pcall(time)\nlocal h = x.time\n', encoding='utf-8')
+    assert [n for n, line in code_lines(sample) if BARE_TIME.search(line)] == [5, 11]
 
 
 def test_clocks_follow_realm_time_uptime_and_the_pc():
@@ -50,6 +56,9 @@ def test_clocks_follow_realm_time_uptime_and_the_pc():
     assert lua.eval('WoWStatusSafe.now()') == REALM
     assert lua.eval('WoWStatusSafe.uptime()') == 42.5
     assert lua.eval('WoWStatusSafe.localNow()') == REALM + 600
+    lua.execute('function time(t) assert(type(t) == "table"); return t.day * 86400 end')
+    assert lua.eval('WoWStatusSafe.timeOf({year=2026, month=11, day=17})') == 17 * 86400
+    assert lua.eval('WoWStatusSafe.timeOf("nonsense")') is None
 
 
 def test_minimap_latest_age_uses_realm_time_on_a_fast_pc():

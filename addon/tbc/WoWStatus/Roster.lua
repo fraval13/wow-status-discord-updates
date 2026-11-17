@@ -1331,10 +1331,10 @@ function R.equipment(name)
     end
 end
 local function expireEquipment(map, age)
-    local count = 0
+    local count, now = 0, S.now()
     for id, item in pairs(map) do
         local at = type(item) == "table" and item.at or item
-        if S.now() - at >= age then map[id] = nil else count = count + 1 end
+        if now - at >= age then map[id] = nil else count = count + 1 end
     end
     return count
 end
@@ -1364,10 +1364,11 @@ function R.requestEquipment(name)
                             for old, request in pairs(equipmentPending) do
                                 if request.pid == pid and request.name == wanted then equipmentPending[old] = nil end
                             end
-                            equipmentPending[token] = {pid=pid, peer=key(peer), group=group, name=wanted, at=S.now(), parts={}, count=0}
-                            equipmentAsked[requestKey] = S.now()
+                            local now = S.now()
+                            equipmentPending[token] = {pid=pid, peer=key(peer), group=group, name=wanted, at=now, parts={}, count=0}
+                            equipmentAsked[requestKey] = now
                             local target = WoWStatusAdapter.full_names and (peer:match("^[^-]+") or peer) or peer
-                            table.insert(outgoing, {target=target, equipmentGroup=group, equipmentAt=S.now(), text=table.concat({"D", group, state().id,
+                            table.insert(outgoing, {target=target, equipmentGroup=group, equipmentAt=now, text=table.concat({"D", group, state().id,
                                 character.name:gsub(" ", "_"), token}, " ")})
                             return true
                         end

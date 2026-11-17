@@ -191,7 +191,7 @@ function V.lookup(text)
 end
 
 local busyUntil, generation, queue = 0, 0, {}
-local function clock() return S.uptime() end
+local clock = S.uptime
 local function play(file)
     local willPlay = S.call(PlaySoundFile, file, V.channel())
     return willPlay and true or false

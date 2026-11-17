@@ -62,6 +62,7 @@ end
 --   S.uptime()   game uptime (GetTime): short in-memory timers. It cannot jump
 --                when the PC clock is changed. Never store or send it.
 --   S.localNow() this PC's clock: only to ask date() what time it is here.
+--   S.timeOf()   a local calendar date as a timestamp (time(table)).
 -- S.now() falls back to time() until the API has answered once; after that, a
 -- moment without an answer keeps the last known offset, so one stamp never
 -- silently switches clocks.
@@ -79,6 +80,11 @@ function S.uptime()
 end
 function S.localNow()
     return type(time) == "function" and time() or nil
+end
+-- A local date table ({year=, month=, day=, ...}) as a timestamp; nil if invalid.
+function S.timeOf(fields)
+    local ok, at = pcall(time, fields)
+    return ok and S.number(at) or nil
 end
 -- This PC's clock minus realm time, in seconds; nil without realm time.
 function S.clockOffset()

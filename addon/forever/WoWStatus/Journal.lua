@@ -346,8 +346,7 @@ local function achievementDate(month,day,year)
     if not (month and day and year) or month<1 or month>12 or day<1 or day>31 then return nil end
     if year<100 then year=2000+year end
     if year<2004 then return nil end
-    local ok,at=pcall(time,{year=year,month=month,day=day,hour=12})
-    at=ok and S.number(at)
+    local at=S.timeOf({year=year,month=month,day=day,hour=12})
     if not at or at>S.now()+86400 then return nil end
     return at
 end
@@ -841,7 +840,7 @@ function J.tick()
         end
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
-    local uptime=GetTime and GetTime() or now
+    local uptime=S.uptime()
     for _,h in pairs(seenHello) do
         if h.waiting and uptime-h.at>=HELLO_INTERVAL and not pulling(h.group,P.senderKey(h.waiting)) then
             enqueueJob(h.group,h.waiting);h.at,h.waiting=uptime,nil
@@ -852,7 +851,7 @@ function J.tick()
     -- and WoW Forever can report a UI lockdown outside combat, which stopped sync.
     -- Real messaging restrictions are still checked through chatRestricted().
     J.sync()
-    local clock=GetTime and GetTime() or now
+    local clock=S.uptime()
     allowance=math.min(ALLOWANCE,allowance+math.max(0,clock-allowanceAt));allowanceAt=clock
     if clock<holdUntil or clock-lastSend<.5 or #sendQueue==0 or WoWStatusAdapter.chatRestricted() then return end
     if allowance<1 and S.call(IsInInstance) then return end

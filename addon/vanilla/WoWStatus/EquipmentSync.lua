@@ -284,14 +284,15 @@ function G.receive(words,sender)
         if record.hidden or record.revision~=revision then metadata(record,group,sender); return true end
         local k="data:"..group..":"..(key(sender) or "")..":"..recordKey(owner,name)
         local rate=k..":"..revision
-        if answered[rate] and S.now()-answered[rate]<15 then return false end
+        local stamp=S.now()
+        if answered[rate] and stamp-answered[rate]<15 then return false end
         if not jobs[k] and count(jobs)>=MAX_JOBS then return false end
         if not record.snapshot then return false end
-        answered[rate]=S.now(); trim(answered,128)
+        answered[rate]=stamp; trim(answered,128)
         local parts=E.parts(record.snapshot)
         local average=S.number(record.snapshot.average_item_level)
         parts[#parts+1]={"l",average and tostring(math.floor(average*100)) or "-"}
-        jobs[k]={group=group,peer=sender,parts=parts,token=token,index=1,at=S.now(),own=record.own}
+        jobs[k]={group=group,peer=sender,parts=parts,token=token,index=1,at=stamp,own=record.own}
         return true
     end
     if op=="T" and #words==6 then

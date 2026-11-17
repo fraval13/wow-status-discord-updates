@@ -529,8 +529,9 @@ end
 local function withKnown(group,roster)
     local result,seen={},{}
     for _,name in ipairs(roster or {}) do local key=P.senderKey(name);if key then seen[key]=true;result[#result+1]=name end end
+    local now=S.now()
     for key,item in pairs(knownPeers[group] or {}) do
-        if S.now()-item.at>(item.vouched and VOUCHED_SECONDS or 300) then knownPeers[group][key]=nil
+        if now-item.at>(item.vouched and VOUCHED_SECONDS or 300) then knownPeers[group][key]=nil
         elseif not seen[key] and #result<64 then seen[key]=true;result[#result+1]=item.name end
     end
     return result
@@ -590,9 +591,10 @@ function P.peers(group)
                 if complete then rosterCache[group]={peers=peers,count=members,at=S.now()} end
                 rosterBusy=false;return withKnown(group,peers)
             end
-            if not pendingRoster and (not rosterRequested[group] or S.now()-rosterRequested[group]>=5) then
-                rosterRequested[group]=S.now()
-                pendingRoster={group=group,index=index,at=S.now(),previous=selectedChannel()}
+            local now=S.now()
+            if not pendingRoster and (not rosterRequested[group] or now-rosterRequested[group]>=5) then
+                rosterRequested[group]=now
+                pendingRoster={group=group,index=index,at=now,previous=selectedChannel()}
                 S.call(SetSelectedDisplayChannel,index);rosterSelection=index;advanceRoster()
             end
             cached=rosterCache[group];rosterBusy=false
@@ -1190,7 +1192,7 @@ end
 -- Clicks in the first 1.5 seconds are ignored: a click meant for something else
 -- must not dismiss a notification that just appeared, or whisper a reaction.
 P.CLICK_GUARD = 1.5
-local function clock() return S.uptime() end
+local clock = S.uptime
 local function guarded() return toast ~= nil and toast.shownAt ~= nil and clock() - toast.shownAt < P.CLICK_GUARD end
 -- The log entry for a notification (or the entry itself), where a reaction is
 -- remembered, so the notification and the log never whisper the same update twice.
