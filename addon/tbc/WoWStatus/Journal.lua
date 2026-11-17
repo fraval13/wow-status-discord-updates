@@ -177,6 +177,8 @@ local function insert(entry,removed)
     if refresh then refresh() end
     if WoWStatusStatusLine then WoWStatusStatusLine.update() end
     if WoWStatusFirsts and recordsChange(entry,removed,dropped) then WoWStatusFirsts.update() end
+    -- A death or level-up can move a group goal (#157): checked at a coming tick.
+    if WoWStatusGoals then WoWStatusGoals.touch() end
 end
 -- Returns true when the entry is new to the log: a new ID, or one that replaces a
 -- relay's claim with other content. False when it repeats a logged event or is refused.

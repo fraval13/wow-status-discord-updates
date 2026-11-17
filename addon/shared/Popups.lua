@@ -1088,7 +1088,7 @@ end
 -- Successful first raid encounters and proven Classic epic mounts also qualify.
 function P.bigMoment(item)
     if not prefs or prefs.big_banners == false then return false end
-    if item.kind=="raid" or item.kind=="epicmount" then return true end
+    if item.kind=="raid" or item.kind=="epicmount" or item.kind=="goal" then return true end
     local level = S.number(item.level)
     return level ~= nil and level > 0 and (level % 10 == 0 or level == A.max_level)
 end

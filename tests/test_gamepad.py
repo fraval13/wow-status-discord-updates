@@ -383,6 +383,7 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
             classColour=function() end,
             stripe=function() end,
             presence=function(online) return online and "(on) " or "(off) " end,
+            xpBar=function(parent) local bar=CreateFrame("Frame",nil,parent); bar.SetProgress=function() end; return bar end,
         }
         WoWStatusFirsts={groups=function() return {{id="one",label="One"},{id="two",label="Two"}} end}
         WoWStatusRoster={leaderboard=function() return {{name="Mira-Realm",level=20,deaths=1,quests=247}} end,
@@ -743,4 +744,62 @@ def test_diagnostics_controls_are_reachable(lua):
         assert(__active=="overview")
         WoWStatusDiagnostics.show();press("PADLSHOULDER")
         assert(__active=="characters")
+    ''')
+
+
+def test_group_goal_editor_controls_are_reachable(lua):
+    main_window(lua)
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetText(text) self.text=text end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        for _, name in ipairs({"SetJustifyH","SetSize","SetWordWrap"}) do methods[name]=function() end end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusSafe={now=function() return 1793000000 end, number=function(v) return type(v)=="number" and v or nil end}
+        WoWStatusAdapter={max_level=60}
+        WoWStatusUI={
+            text=function(parent) return CreateFrame("FontString",nil,parent) end,
+            call=function(frame,method,...) if frame[method] then return frame[method](frame,...) end end,
+        }
+        WoWStatusGroups={contains=function(_, id) return id=="one" or id=="two" end,
+            selected=function() return {one={label="One"},two={label="Two"}} end}
+        WoWStatusPopups={character=function() return {} end, peers=function() return {} end,
+            characterName=function() return "Ada-Realm" end}
+        WoWStatusFirsts={groups=function() return {{id="one",label="One"},{id="two",label="Two"}} end}
+        WoWStatusRoster={id=function() return "0123456789abcdef" end, ownName=function() return "Ada" end,
+            key=function(name) return name and name:lower() end,
+            sections=function() return {} end, queue=function() end}
+        WoWStatusMainWindow.register=function(key,title,build,refresh,options)
+            assert(key=="goal" and options.tab==false)
+            __goalBuild,__goalRefresh=build,refresh
+            return true
+        end
+        WoWStatusMainWindow.refresh=function() end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Goals.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        local show=WoWStatusMainWindow.show
+        WoWStatusMainWindow.show=function(key)
+            show(key)
+            __page=__page or __goalBuild(main)
+            __page:Show();__goalRefresh()
+            __page.measureNext.rect={500,500,40,24}
+            __page.together.rect={500,460,110,24}
+            __page.nextGroup.rect={650,540,120,24}
+            __page.save.rect={124,380,140,24}
+            return __page
+        end
+        WoWStatusGoals.show()
+        WoWStatusGamepad.update()
+        local reached={}
+        for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do reached[control]=true end
+        assert(reached[__page.measureNext] and reached[__page.nextGroup] and reached[__page.save])
+        assert(not reached[__page.together]) -- "Together" means nothing for a level goal
+        press("PADDDOWN") -- the first press shows the highlight
+        WoWStatusGamepad.setFocus(__page.measureNext);press("PAD1")
+        assert(WoWStatusDB.goal_editor.measure=="quests")
+        WoWStatusGamepad.setFocus(__page.save);press("PAD1")
+        assert(WoWStatusDB.goals.one.measure=="quests" and WoWStatusDB.goals.one.target==500)
+        WoWStatusGamepad.setFocus(__page.nextGroup);press("PAD1")
+        assert(WoWStatusDB.goal_editor.group=="two")
     ''')

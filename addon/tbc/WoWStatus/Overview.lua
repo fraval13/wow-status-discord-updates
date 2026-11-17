@@ -6,7 +6,7 @@ WoWStatusOverview = {}
 local O, S = WoWStatusOverview, WoWStatusSafe
 local T, TF = WoWStatusLocale.T, WoWStatusLocale.F
 local MAX_LINES = 40
-local SINCE_MIN, SINCE_MAX = 90, 202
+local SINCE_MIN, SINCE_MAX = 90, 154
 local page
 
 local function state()
@@ -226,8 +226,9 @@ local function renderRecords()
         local item = won[i]
         if item then
             row.icon:SetIcon(WoWStatusFirsts.medalIcon(item.medal))
+            local who = item.entry.holder or ((item.entry.sender or "?"):match("^[^-]+") or "?")
             row.text:SetText("|cffffd100" .. T(item.medal.title) .. "|r — "
-                .. ((item.entry.sender or "?"):match("^[^-]+") or "?"):gsub("|", "||")
+                .. who:gsub("|", "||")
                 .. "  " .. WoWStatusUI.MUTED_CODE .. item.group:gsub("|", "||") .. " · " .. WoWStatusHistory.oslo(item.entry.at):sub(1, 16) .. "|r")
             row:Show()
         else row:Hide() end
@@ -235,11 +236,40 @@ local function renderRecords()
     box.empty:SetShown(#won == 0)
 end
 
+-- The group goal band (#157): one group's goal and its progress, with "Goal…"
+-- to set or change it. With several groups, ">" shows the next group's.
+local function renderGoal()
+    local band, G = page.goal, WoWStatusGoals
+    local groups = G and G.groups() or {}
+    local data = state() or {}
+    local chosen
+    for _, group in ipairs(groups) do if group.id == data.goal_group then chosen = group end end
+    if not chosen then
+        -- The first group with a goal, else the first group.
+        for _, group in ipairs(groups) do if not chosen and G.get(group.id) then chosen = group end end
+        chosen = chosen or groups[1]
+    end
+    band.group = chosen and chosen.id
+    WoWStatusUI.call(band.next, "SetEnabled", #groups > 1)
+    WoWStatusUI.call(band.edit, "SetEnabled", chosen ~= nil)
+    local goal = chosen and G.get(chosen.id)
+    if not goal then
+        band.title:SetText(chosen and (T("No group goal yet.") .. "  " .. WoWStatusUI.MUTED_CODE .. chosen.label:gsub("|", "||") .. "|r")
+            or T("Join a group to share a goal with friends."))
+        band.bar:SetProgress(nil); band.status:SetText("")
+        return
+    end
+    local title, fraction, status = G.describe(chosen.id, goal)
+    band.title:SetText("|cffffd100" .. title .. "|r  " .. WoWStatusUI.MUTED_CODE .. chosen.label:gsub("|", "||") .. "|r")
+    band.bar:SetProgress(fraction, "")
+    band.status:SetText(status)
+end
+
 local function render()
     if not page then return end
     local data = state() or {}
     page.status:SetText(O.ownStatus())
-    for _, part in ipairs({renderYou, renderGroup, renderRecords}) do
+    for _, part in ipairs({renderYou, renderGroup, renderGoal, renderRecords}) do
         local ok, problem = pcall(part)
         if not ok then page.problem = problem end -- One box failing must not blank the page.
     end
@@ -303,8 +333,25 @@ local function build(parent)
     group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 70)
     group.scroll:SetScrollChild(group.list)
     group.names = UI.text(group.list, "GameFontHighlightSmall", 0, 0, 280)
+    -- Group goal (#157)
+    local goal = UI.box(page, 698, 40); goal:SetPoint("TOPLEFT", 24, -178); page.goal = goal
+    goal.title = UI.text(goal, "GameFontHighlight", 12, -6, 360)
+    goal.title:SetWordWrap(false)
+    goal.bar = UI.xpBar(goal, 200, 10); goal.bar:SetPoint("TOPLEFT", 12, -24)
+    goal.status = UI.text(goal, "GameFontHighlightSmall", 220, -22, 260)
+    goal.next = CreateFrame("Button", nil, goal, "UIPanelButtonTemplate")
+    goal.next:SetSize(32, 24); goal.next:SetPoint("TOPRIGHT", -112, -8); goal.next:SetText(">")
+    goal.next:SetScript("OnClick", function()
+        local data = state()
+        if not data or not goal.group then return end
+        data.goal_group = WoWStatusGoals.nextGroup(goal.group)
+        render()
+    end)
+    goal.edit = CreateFrame("Button", nil, goal, "UIPanelButtonTemplate")
+    goal.edit:SetSize(96, 24); goal.edit:SetPoint("TOPRIGHT", -10, -8); goal.edit:SetText(T("Goal…"))
+    goal.edit:SetScript("OnClick", function() if goal.group then WoWStatusGoals.show(goal.group) end end)
     -- Since you were last here
-    local since = UI.box(page, 698, 202); since:SetPoint("TOPLEFT", 24, -178); page.since = since
+    local since = UI.box(page, 698, 154); since:SetPoint("TOPLEFT", 24, -226); page.since = since
     page.heading = UI.text(since, "GameFontNormalLarge", 12, -10, 674)
     page.scroll = CreateFrame("ScrollFrame", nil, since, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 12, -38); page.scroll:SetSize(650, 184)

@@ -40,6 +40,8 @@ function F.medals()
         local maximum = tonumber(tostring(e.text or ""):match("%((%d+) max%)$"))
         return maximum ~= nil and maximum >= 300
     end)
+    -- The group's shared goal (#157): held by the goal itself, never by a log entry.
+    table.insert(list, {key="goal", title="Group goal reached", match=function() return false end})
     return list
 end
 
@@ -80,6 +82,7 @@ function F.compute(entries, group)
             end
         end
     end
+    if group and WoWStatusGoals and WoWStatusGoals.medal then result.goal = WoWStatusGoals.medal(group) end
     return result, medals
 end
 
@@ -102,7 +105,8 @@ end
 
 -- Icon for a medal, from the same vocabulary as popups and the activity log.
 local MEDAL_ITEMS = {death={kind="death"}, dungeon={kind="dungeon"}, mount={kind="mount"}, raid={kind="raid"},
-    epicmount={kind="epicmount"}, epic={kind="loot", quality=4}, artisan={kind="profession", text="Tailoring: Artisan"}}
+    epicmount={kind="epicmount"}, epic={kind="loot", quality=4}, artisan={kind="profession", text="Tailoring: Artisan"},
+    goal={kind="goal"}}
 local function medalIcon(medal)
     local item = medal.key:match("^level:") and {kind="level", level=10} or MEDAL_ITEMS[medal.key] or {kind="first"}
     return (WoWStatusPresentation.theme(item))
@@ -342,7 +346,8 @@ local function render()
         -- Reached before WoW Status tracked it: the date is "by then".
         if e and e.milestone and not e.exact then when = T("before WoW Status, by") .. " " .. when:sub(1, 10) end
         local empty = medal.key == "dungeon" and T("No dungeon clear recorded yet.") or T("nobody yet")
-        local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or empty
+        local who = e and (e.holder or name(e.sender)) or ""
+        local holder = e and (who:gsub("|", "||") .. " · " .. when) or empty
         c.holder:SetText(e and holder or (WoWStatusUI.MUTED_CODE .. holder .. "|r"))
         UI.tint(c, e ~= nil)
         c.text = medal.title .. " — " .. holder -- Plain summary of the card.
