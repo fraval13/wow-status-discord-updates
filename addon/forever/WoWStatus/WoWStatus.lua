@@ -752,6 +752,7 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()
     elseif command == "mutes" or command == "muted" then WoWStatusMutes.show()
+    elseif command == "goal" or command == "goals" then WoWStatusGoals.show()
     elseif command == "sync" then say("Activity syncs automatically when group members log in.")
     elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
     elseif command == "popup" then

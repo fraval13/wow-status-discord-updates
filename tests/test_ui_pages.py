@@ -94,7 +94,8 @@ def test_overview_lists_everyone_online_and_fits_the_summary():
             WoWStatusJournal.received({sender="Cid"..i.."-TestRealm",nonce="3-"..i.."-cccc",kind="death",text="Died",at=time(),group_id=group})
         end
         WoWStatusMainWindow.show("overview")
-        assert(page.since.height == 202)
+        -- The group goal band (#157) sits above it, so the box stops at 154.
+        assert(page.since.height == 154, page.since.height)
     ''')
 
 

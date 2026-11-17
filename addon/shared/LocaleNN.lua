@@ -682,3 +682,37 @@ W.add({
     ["Automatic"] = "Automatisk", ["main"] = "hovudfigur", ["highest level, no main chosen"] = "høgast nivå, ingen hovudfigur vald",
     ["Alts:"] = "Andre figurar:", ["%d more"] = "%d til", ["You"] = "Du",
 })
+
+-- Shared group goals (#157).
+W.add({
+    ["Group goal"] = "Gruppemål", ["Group goal reached"] = "Gruppemålet nådd", ["GOAL REACHED!"] = "MÅLET ER NÅDD!",
+    ["Goal…"] = "Mål …", ["Goal:"] = "Mål:", ["Goal reached!"] = "Målet er nådd!", ["Goal reached:"] = "Målet er nådd:",
+    ["No group goal yet."] = "Ikkje noko gruppemål enno.",
+    ["Join a group to share a goal with friends."] = "Bli med i ei gruppe for å dele eit mål med vener.",
+    ["Join a group to set a goal."] = "Bli med i ei gruppe for å setje eit mål.",
+    ["Everybody reaches level %d"] = "Alle når nivå %d",
+    ["Everybody completes %d quests"] = "Alle fullfører %d oppdrag",
+    ["%d completed quests together"] = "%d fullførte oppdrag saman",
+    ["Everybody clears %d dungeons"] = "Alle ryddar %d fangehol",
+    ["%d dungeon clears together"] = "%d fangehol rydda saman",
+    ["Everybody plays %d hours"] = "Alle spelar %d timar",
+    ["%d hours played together"] = "%d timar spelt saman",
+    ["Everybody stays under %d deaths"] = "Alle held seg under %d dødsfall",
+    ["Fewer than %d deaths together"] = "Færre enn %d dødsfall saman",
+    ["Over the limit this time."] = "Over grensa denne gongen.", ["Not reached in time."] = "Ikkje nådd i tide.",
+    ["%d of %d deaths"] = "%d av %d dødsfall", ["%d of %d"] = "%d av %d", ["%d of %d there"] = "%d av %d er i mål",
+    ["1 day left"] = "1 dag att", ["%d days left"] = "%d dagar att", ["%d days"] = "%d dagar",
+    ["Join a group first."] = "Bli med i ei gruppe først.",
+    ["Your character is not ready yet."] = "Figuren din er ikkje klar enno.",
+    ["Only the member who set this goal can change it."] = "Berre medlemen som sette dette målet, kan endre det.",
+    ["Turn on sharing your character list to set a goal."] = "Slå på deling av figurlista di for å setje eit mål.",
+    ["Change this goal from the character that set it."] = "Endre dette målet frå figuren som sette det.",
+    ["Your group's goal is done. Well played, all of you."] = "Gruppa har nådd målet sitt. Godt spelt, alle saman.",
+    ["Measure:"] = "Kva det gjeld:", ["Shape:"] = "Form:", ["Target:"] = "Måltal:", ["Deadline:"] = "Frist:", ["none"] = "ingen",
+    ["Everybody"] = "Alle", ["Together"] = "Saman", ["Dungeon clears"] = "Fangehol rydda",
+    ["Played time (hours)"] = "Speletid (timar)", ["Deaths (fewer than)"] = "Dødsfall (færre enn)",
+    ["Current goal:"] = "Mål no:", ["Set by"] = "Sett av", ["No goal in this group yet."] = "Ikkje noko mål i denne gruppa enno.",
+    ["Only the member who sets a goal can change or clear it. Friends see it while your character list is shared."] =
+        "Berre medlemen som set eit mål, kan endre eller fjerne det. Venene ser det så lenge figurlista di er delt.",
+    ["Next group"] = "Neste gruppe", ["Set goal"] = "Set mål", ["Clear goal"] = "Fjern målet",
+})
