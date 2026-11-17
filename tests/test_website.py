@@ -86,8 +86,7 @@ class Anchors(HTMLParser):
 
 def test_download_panel_offers_the_curseforge_app_next_to_the_zips():
     """#189: both install routes in the download panel, with the update difference stated."""
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    panel = re.search(r'<section[^>]*id="downloads".*?</section>', page, re.S)
+    panel = re.search(r'<section[^>]*id="downloads".*?</section>', page(), re.S)
     assert panel, 'no download panel'
     hrefs = [link.get('href') for link in Anchors(panel.group()).links]
     assert CURSEFORGE_URL in hrefs, hrefs
@@ -97,8 +96,7 @@ def test_download_panel_offers_the_curseforge_app_next_to_the_zips():
 
 
 def test_every_curseforge_link_is_the_listing_and_opens_safely():
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    links = [link for link in Anchors(page).links if 'curseforge.com' in (link.get('href') or '').lower()]
+    links = [link for link in Anchors(page()).links if 'curseforge.com' in (link.get('href') or '').lower()]
     assert len(links) >= 3, links  # download panel, install step 1, footer
     for link in links:
         assert link['href'] == CURSEFORGE_URL, link

@@ -72,6 +72,7 @@ function setupWindowDemo() {
   tabs.forEach((tab, index) => {
     tab.addEventListener('click', () => selectTab(index, false));
     tab.addEventListener('keydown', event => {
+      if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
       const last = tabs.length - 1;
       const next = { ArrowRight: index === last ? 0 : index + 1, ArrowLeft: index === 0 ? last : index - 1, Home: 0, End: last }[event.key];
       if (next === undefined) return;
@@ -120,7 +121,7 @@ function setupWindowDemo() {
   let sortIndex = 0;
   function sortBoard() {
     const by = sorts[sortIndex][0];
-    // As Leaderboard.lua: highest first, XP breaks a level tie, then the name.
+    // Highest first and XP breaks a level tie, as in Leaderboard.lua; then by name.
     const value = (row, key) => Number(row.dataset[key]);
     const rows = [...board.rows].sort((a, b) => value(b, by) - value(a, by)
       || (by === 'level' ? value(b, 'xp') - value(a, 'xp') : 0)
