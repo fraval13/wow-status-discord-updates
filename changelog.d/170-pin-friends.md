@@ -1,0 +1,2 @@
+- Pin your favourite friends with the star on their heading or card: they stay at the top of the Characters page.
+- The Leaderboard has a Pinned first option, and the Overview lists pinned friends first. Pins are yours alone.

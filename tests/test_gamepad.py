@@ -369,6 +369,9 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
         local methods=getmetatable(CreateFrame("Frame")).__index
         function methods:SetText(text) self.text=text end
         function methods:SetWordWrap() end
+        function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function methods:SetChecked(value) self.checked=value end
+        function methods:GetChecked() return self.checked end
         function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
         function methods:SetScrollChild(child) self.child=child end
         function methods:SetShown(value) self.visible=value end
@@ -397,6 +400,7 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
                 __board=__board or __boardBuild(main)
                 __board:Show();__boardRefresh()
                 __board.sort.rect={500,380,140,24}
+                __board.pinnedFirst.rect={300,380,32,32}
                 for i,tab in ipairs(__board.tabs) do tab.rect={120+(i-1)*140,440,128,24} end
             elseif __board then __board:Hide() end
         end
@@ -406,13 +410,14 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
         press("PADRSHOULDER")
         assert(__active=="leaderboard")
         local controls=WoWStatusGamepad.controls(main,{main})
-        local sort,group=false,false
+        local sort,group,pinned=false,false,false
         for _,control in ipairs(controls) do
             if control==__board.sort then sort=true end
+            if control==__board.pinnedFirst then pinned=true end
             if control==__board.tabs[2] then group=true end
             assert(control~=__board.tabs[1]) -- the selected group is disabled
         end
-        assert(sort and group)
+        assert(sort and group and pinned)
         press("PADDDOWN")
         WoWStatusGamepad.setFocus(__board.sort);press("PAD1")
         assert(WoWStatusDB.leaderboard.sort=="deaths")

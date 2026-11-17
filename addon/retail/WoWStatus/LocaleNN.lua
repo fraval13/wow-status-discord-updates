@@ -116,6 +116,12 @@ W.add({
     ["Shows only the characters online right now. Nothing is hidden from your friends and no progress is lost."] =
         "Viser berre figurane som er pålogga no. Ingenting vert gøymt for venene, og ingen framgang går tapt.",
     ["Hide this character from the list"] = "Gøym denne figuren frå lista",
+    ["Unpin"] = "Løys frå toppen", ["Pin this player to the top"] = "Fest denne spelaren øvst",
+    ["Pin this character to the top"] = "Fest denne figuren øvst", ["Pinned first"] = "Festa først",
+    ["Pinned friends come first on the Characters page, online before offline, in the order you pinned them. Only you see this; nothing is sent."] =
+        "Festa vener kjem først på Figurar-sida, pålogga før fråkopla, i den rekkjefølgja du festa dei. Berre du ser dette; ingenting vert sendt.",
+    ["Players you pinned on the Characters page lead the board. Nobody is left out."] =
+        "Spelarar du har festa på Figurar-sida, leier lista. Ingen vert utelatne.",
     ["Sync with everyone online"] = "Synk med alle som er pålogga",
     ["Sends your character list, asks for theirs, looks up one friend's level with /who and catches up the activity log. Once a minute."] =
         "Sender figurlista di, ber om deira, slår opp nivået til éin ven med /who og hentar inn aktivitetsloggen. Éin gong i minuttet.",
