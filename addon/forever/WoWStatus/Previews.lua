@@ -22,6 +22,10 @@ local function button(parent, value, x, y, width, fn)
     widget:SetPoint("TOPLEFT",x,y); widget:SetSize(width,30); widget:SetText(T(value)); widget:SetScript("OnClick",fn)
     return widget
 end
+-- The addon's chat prefix, as in WoWStatus.lua and Profile.lua.
+local function notice(message)
+    if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff66ccffWoW Status:|r "..message) end
+end
 local function background(frame)
     local texture=frame:CreateTexture(nil,"BACKGROUND")
     texture:SetAllPoints(); texture:SetColorTexture(.025,.035,.055,.96)
@@ -56,7 +60,7 @@ function P.show(host)
         -- Spoken reactions (Forever only) add their own rows below the sounds.
         local V = WoWStatusVoices
         local voiceRows = V and V.available() and 370 or 0
-        local previews = options + 964 + voiceRows
+        local previews = options + 1006 + voiceRows
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -85,21 +89,27 @@ function P.show(host)
         panel.unlock=check("Unlock popup position",-options,function(o) return o.unlocked end,WoWStatusPopups.setUnlocked)
         panel.reset=button(panel,"Reset popup position",310,-options,250,function() WoWStatusPopups.resetPosition() end)
         panel.big=check("Big banners for big moments",-options-42,function(o) return o.big_banners end,WoWStatusPopups.setBigBanners)
+        -- The minimap button can be switched off (#177); the confirmation names
+        -- the ways in that do not need it.
+        panel.minimap=check("Show the minimap button",-options-84,WoWStatusMinimap.visible,function(value)
+            WoWStatusMinimap.setVisible(value)
+            if not value then notice(T("Minimap button hidden.").." "..T(WoWStatusMinimap.WAYS)) end
+        end)
         -- Group status line (#62). Account-wide.
         panel.line={}
         for i,entry in ipairs({{"enabled","Show the group status line"},{"attach","Attach it under the quest tracker"},
             {"hide_combat","Hide the status line in combat"},{"hide_instance","Hide the status line in dungeons and raids"}}) do
             local key=entry[1]
-            panel.line[key]=check(entry[2],-options-84-(i-1)*42,function() return WoWStatusStatusLine.settings()[key] end,
+            panel.line[key]=check(entry[2],-options-126-(i-1)*42,function() return WoWStatusStatusLine.settings()[key] end,
                 function(value) WoWStatusStatusLine.set(key,value) end)
         end
         -- Window theme and size (#60). Account-wide, applied at once.
-        panel.theme=text(panel,WoWStatusTheme.label(),24,-options-262,300)
+        panel.theme=text(panel,WoWStatusTheme.label(),24,-options-304,300)
         -- The window size (#182) as a percentage to type, with - and + stepping 10 %.
         panel.windowSize=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
         -- A small line under the label when the screen shows the window smaller.
         panel.themeNote=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-        panel.themeNote:SetPoint("TOPLEFT",24,-options-282);panel.themeNote:SetWidth(300);panel.themeNote:SetJustifyH("LEFT")
+        panel.themeNote:SetPoint("TOPLEFT",24,-options-324);panel.themeNote:SetWidth(300);panel.themeNote:SetJustifyH("LEFT")
         local function refreshTheme()
             panel.theme:SetText(T(WoWStatusTheme.label()))
             local note=WoWStatusTheme.shownNote()
@@ -114,12 +124,12 @@ function P.show(host)
             panel.windowSize.typing=nil;panel.windowSize:ClearFocus()
             WoWStatusTheme.resize(delta);refreshTheme()
         end
-        panel.themeNext=button(panel,"Next theme",330,-options-256,120,function() WoWStatusTheme.next();refreshTheme() end)
-        panel.smaller=button(panel,"-",456,-options-256,26,function() step(-WoWStatusTheme.STEP) end)
-        panel.windowSize:SetPoint("TOPLEFT",490,-options-256);panel.windowSize:SetSize(36,30)
+        panel.themeNext=button(panel,"Next theme",330,-options-298,120,function() WoWStatusTheme.next();refreshTheme() end)
+        panel.smaller=button(panel,"-",456,-options-298,26,function() step(-WoWStatusTheme.STEP) end)
+        panel.windowSize:SetPoint("TOPLEFT",490,-options-298);panel.windowSize:SetSize(36,30)
         panel.windowSize:SetAutoFocus(false);panel.windowSize:SetMaxLetters(3)
         if panel.windowSize.SetNumeric then panel.windowSize:SetNumeric(true) end
-        text(panel,"%",528,-options-262,14)
+        text(panel,"%",528,-options-304,14)
         -- Applied on Enter and whenever the box loses focus (a click elsewhere, or
         -- B on a controller, which has no Enter); out of range shows the old size.
         local function applyWindowSize()
@@ -134,13 +144,13 @@ function P.show(host)
         -- Clearing focus applies it (OnEditFocusLost).
         panel.windowSize:SetScript("OnEnterPressed",function(self) self:ClearFocus() end)
         panel.windowSize:SetScript("OnEscapePressed",function(self) self:SetText(tostring(WoWStatusTheme.windowSize()));self:ClearFocus() end)
-        panel.larger=button(panel,"+",544,-options-256,26,function() step(WoWStatusTheme.STEP) end)
-        panel.themePopups=check("Use the theme and size for popups too",-options-298,function() return WoWStatusTheme.settings().popups end,
+        panel.larger=button(panel,"+",544,-options-298,26,function() step(WoWStatusTheme.STEP) end)
+        panel.themePopups=check("Use the theme and size for popups too",-options-340,function() return WoWStatusTheme.settings().popups end,
             WoWStatusTheme.setPopups)
         -- Notification size in percent (complaints that toasts were too big or small).
-        text(panel,("Notification size (%d–%d%%)"):format(WoWStatusTheme.POPUP_MIN,WoWStatusTheme.POPUP_MAX),24,-options-346,250)
+        text(panel,("Notification size (%d–%d%%)"):format(WoWStatusTheme.POPUP_MIN,WoWStatusTheme.POPUP_MAX),24,-options-388,250)
         -- A dropdown, so a controller can pick a size without typing.
-        panel.popupSize=button(panel,"",290,-options-340,180,function(self)
+        panel.popupSize=button(panel,"",290,-options-382,180,function(self)
             local items={}
             for _,percent in ipairs(WoWStatusTheme.POPUP_SIZES) do
                 items[#items+1]={label=WoWStatusTheme.popupSizeLabel(percent),value=percent}
@@ -152,8 +162,8 @@ function P.show(host)
             end)
         end)
         -- How long each notification stays (#159); a sample shows the new length.
-        text(panel,"Notification duration:",24,-options-390,250)
-        panel.popupDuration=button(panel,"",290,-options-384,180,function(self)
+        text(panel,"Notification duration:",24,-options-432,250)
+        panel.popupDuration=button(panel,"",290,-options-426,180,function(self)
             local items={}
             for _,seconds in ipairs(WoWStatusPopups.DURATIONS) do
                 items[#items+1]={label=WoWStatusPopups.durationLabel(seconds),value=seconds}
@@ -164,25 +174,25 @@ function P.show(host)
             end)
         end)
         -- Language (optional Nynorsk). Built windows change after a reload.
-        panel.language=text(panel,"",24,-options-432,250)
-        panel.languageSwitch=button(panel,"",290,-options-426,150,function()
+        panel.language=text(panel,"",24,-options-474,250)
+        panel.languageSwitch=button(panel,"",290,-options-468,150,function()
             WoWStatusLocale.set(WoWStatusLocale.lang()=="nn" and "en" or "nn")
             panel.refreshLanguage()
             panel.reload:Show()
         end)
-        panel.reload=button(panel,"",450,-options-426,130,function() if ReloadUI then ReloadUI() end end)
+        panel.reload=button(panel,"",450,-options-468,130,function() if ReloadUI then ReloadUI() end end)
         panel.reload:Hide()
         -- Quiet mode: notifications wait in the instances ticked (off by default).
-        panel.quiet=check("Quiet mode: hold notifications in",-options-558,function() return WoWStatusPopups.quietSettings().enabled end,
+        panel.quiet=check("Quiet mode: hold notifications in",-options-600,function() return WoWStatusPopups.quietSettings().enabled end,
             function(value) WoWStatusPopups.setQuiet("enabled",value) end)
         -- Quiet hours (#180): a daily window on the local clock, off by default.
         -- Earlier/Later move each end by half an hour, wrapping round midnight.
-        panel.quietHours=check("Quiet hours: hide friends' notifications by the clock",-options-640,
+        panel.quietHours=check("Quiet hours: hide friends' notifications by the clock",-options-682,
             function() return WoWStatusPopups.quietHours().enabled end,
             function(value) WoWStatusPopups.setQuietHours("enabled",value);panel.refreshQuietHours() end)
         panel.quietClock={}
         for i,entry in ipairs({{"start","From"},{"stop","To"}}) do
-            local key,y=entry[1],-options-676-(i-1)*38
+            local key,y=entry[1],-options-718-(i-1)*38
             text(panel,entry[2],54,y-6,60)
             panel.quietClock[key]=text(panel,"",120,y-6,70)
             panel.quietClock[key.."Earlier"]=button(panel,"Earlier",200,y,90,function()
@@ -191,7 +201,7 @@ function P.show(host)
                 WoWStatusPopups.shiftQuietHours(key,1);panel.refreshQuietHours() end)
         end
         panel.quietState=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
-        panel.quietState:SetPoint("TOPLEFT",400,-options-682);panel.quietState:SetWidth(170);panel.quietState:SetJustifyH("LEFT")
+        panel.quietState:SetPoint("TOPLEFT",400,-options-724);panel.quietState:SetWidth(170);panel.quietState:SetJustifyH("LEFT")
         -- The window can begin or end while the page is open: check once a second.
         local sinceQuietCheck=0
         panel:SetScript("OnUpdate",function(_,elapsed)
@@ -212,10 +222,10 @@ function P.show(host)
             if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
         end
         -- Sounds, one per kind of notification; picking one plays it.
-        text(panel,"Sounds",24,-options-760,300)
+        text(panel,"Sounds",24,-options-802,300)
         panel.sounds={}
         for i,entry in ipairs(WoWStatusPopups.SOUND_KINDS) do
-            local kind,y=entry[1],-options-794-(i-1)*34
+            local kind,y=entry[1],-options-836-(i-1)*34
             text(panel,entry[2],44,y-4,200)
             local widget=button(panel,"",250,y,200,function(self)
                 local items={}
@@ -233,7 +243,7 @@ function P.show(host)
         -- always use a voiced line. WoW cannot download files, so the pack link is
         -- shown to copy.
         if voiceRows > 0 then
-            local y=-options-962
+            local y=-options-1004
             text(panel,"Spoken reactions",24,y,300)
             panel.voices=check("Read friends' reactions aloud",y-36,function() return V.enabled() end,V.setEnabled)
             -- The addon's own lines when it carries some, else one from the pack.
@@ -291,9 +301,9 @@ function P.show(host)
         panel.quietKinds={}
         for i,entry in ipairs({{"pvp","Battlegrounds"},{"raid","Raids"},{"party","Dungeons"}}) do
             local key=entry[1]
-            local widget=check(entry[2],-options-594,function() return WoWStatusPopups.quietSettings()[key] end,
+            local widget=check(entry[2],-options-636,function() return WoWStatusPopups.quietSettings()[key] end,
                 function(value) WoWStatusPopups.setQuiet(key,value) end)
-            widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-594)
+            widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-636)
             panel.quietKinds[key]=widget
         end
         -- The switch names its target in that language, so each reader finds it.
@@ -312,8 +322,8 @@ function P.show(host)
             for _,id in ipairs(ids) do items[#items+1]={label=P.name(id),value=id} end
             return items
         end
-        text(panel,"Caption personality:",24,-options-474,300)
-        panel.personalityPick=button(panel,"",330,-options-468,230,function(self)
+        text(panel,"Caption personality:",24,-options-516,300)
+        panel.personalityPick=button(panel,"",330,-options-510,230,function(self)
             WoWStatusUI.menu(self,choices(P.order),function(id)
                 P.set(id);panel.refreshVoices()
                 WoWStatusPopups.sample("level")
@@ -321,8 +331,8 @@ function P.show(host)
         end)
         -- Reaction voice: how the GZ!/F/Congrats! whispers to friends sound. Its own
         -- setting (Wholesome by default), since these are sent in your name.
-        text(panel,"Reaction voice:",24,-options-516,300)
-        panel.reactionVoicePick=button(panel,"",330,-options-510,230,function(self)
+        text(panel,"Reaction voice:",24,-options-558,300)
+        panel.reactionVoicePick=button(panel,"",330,-options-552,230,function(self)
             WoWStatusUI.menu(self,choices(P.reactionVoices()),function(id)
                 P.setReaction(id);panel.refreshVoices()
             end)
@@ -336,6 +346,7 @@ function P.show(host)
     local options=WoWStatusPopups.options()
     for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
+    panel.minimap:SetChecked(panel.minimap.get() == true)
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.quiet:SetChecked(panel.quiet.get() == true)
     panel.refreshQuietHours()

@@ -51,6 +51,10 @@ each release changed.
    **Activity** tab at first), or use `/wstatus activity`. `/wstatus <page>` opens any
    tab directly; the window remembers its position.
    Right-click the book for Options; drag it to move it around the minimap.
+   To keep the minimap clear, untick **Show the minimap button** under
+   **Options → AddOns → WoW Status → Notifications**, or type `/wstatus minimap hide`
+   (`show` brings it back). The slash commands and the key bindings keep working
+   while it is hidden.
 4. To invite a friend who does not have the addon yet, right-click their name and
    choose **Share WoW Status** (clients with the modern menu), or type
    `/wstatus share <name>`. It whispers the download link, at most once per person

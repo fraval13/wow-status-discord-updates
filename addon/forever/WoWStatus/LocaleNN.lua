@@ -209,6 +209,11 @@ W.add({
     ["Screenshots are not available in this client."] = "Skjermbilete er ikkje tilgjengeleg i denne klienten.",
     ["A screenshot is already being taken."] = "Det blir alt teke eit skjermbilete.",
     ["Minimap button distance reset."] = "Avstanden til minikartknappen er tilbakestilt.",
+    ["Show the minimap button"] = "Vis minikartknappen",
+    ["Minimap button hidden."] = "Minikartknappen er gøymd.",
+    ["Minimap button shown."] = "Minikartknappen er synleg att.",
+    ["Open it with /wstatus, or with the key binding under Key Bindings."]
+        = "Opne han med /wstatus, eller med tastebindinga under Tastebindingar.",
     -- Controller navigation and key bindings
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",
