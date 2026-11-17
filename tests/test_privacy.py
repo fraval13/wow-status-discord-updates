@@ -73,6 +73,8 @@ def test_the_numbers_it_states_match_the_code():
     cap = int(re.search(r'local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",(\d+),', journal).group(1))
     lua = make_lua()
     body = lua.eval('WoWStatusPrivacy.text()')
+    age = int(re.search(r'local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",\d+,(\d+)\*86400,', journal).group(1))
+    assert f'from the last {age} days' in body
     unrouted = int(re.search(r'localOnly and private>(\d+)', journal).group(1))
     assert (f'newest {cap:,} of your own entries (at most {unrouted:,} of them sent to no group) '
             f'and {cap:,} received ones') in body

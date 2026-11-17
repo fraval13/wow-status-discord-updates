@@ -624,6 +624,8 @@ W.add({
     ["What is shared"] = "Kva som blir delt",
     ["What WoW Status shares"] = "Kva WoW Status deler",
     ["What is sent"] = "Kva som blir sendt",
+    ["A note to each group you join, saying that you joined."] =
+        "Ei melding til kvar gruppe du blir med i, om at du har blitt med.",
     ["The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, and session recaps if you tick them. A death also names what killed you, and where when Location is ticked."] =
         "Måla kunngjeringsvala dine tillèt: nye nivå, dødsfall, første besøk i eit område, kvart 100. oppdrag, yrkesmål, fangehol- og raidmål, ridedyr, omdøme, klasseevner, PvP-rang, første rustning du tek på, og øktsamandrag om du har kryssa av for dei. Eit dødsfall seier òg kva som drap deg, og kvar, når Stad er kryssa av.",
     ["Your character list: the name, race, sex, class, level and XP progress of each character shown to friends, when it reached each tenth level, the player name you chose, a random player ID and your addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it out, even after you stop sharing your list."] =
@@ -654,16 +656,16 @@ W.add({
     ["The only text you type that travels is your player name and the name of a group you list or invite someone to."] =
         "Den einaste teksten du skriv som blir sendt, er spelarnamnet ditt og namnet på ei gruppe du listar eller inviterer nokon til.",
     ["How to stop"] = "Korleis du stoppar det",
-    ["Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, level and XP progress travel with your character list, so unticking them there does not stop them."] =
-        "Fjern krysset for ei kunngjering, eller for ein av figurdetaljane lista over, i Innstillingar. Rase, kjønn, klasse, nivå og XP-framgang følgjer figurlista di, så å fjerne kryssa for dei der stoppar dei ikkje.",
-    ["Untick a character under Characters shown to friends: it leaves everyone's character list, leaderboard and gear view."] =
-        "Fjern krysset for ein figur under Figurar som venene ser: han forsvinn frå figurlista, topplista og utstyrsvisinga til alle.",
+    ["Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, level and XP progress travel with your character list whatever you tick, and the Faction tick changes nothing, as your race shows your faction."] =
+        "Fjern krysset for ei kunngjering, eller for ein av figurdetaljane lista over, i Innstillingar. Rase, kjønn, klasse, nivå og XP-framgang følgjer figurlista di uansett kva du kryssar av for, og krysset for Fraksjon endrar ingenting, sidan rasen viser fraksjonen din.",
+    ["Untick a character under Characters shown to friends: it leaves everyone's character list, leaderboard and gear view, but its announcements still go out, and a death's details carry your player ID."] =
+        "Fjern krysset for ein figur under Figurar som venene ser: han forsvinn frå figurlista, topplista og utstyrsvisinga til alle, men kunngjeringane hans blir framleis sende, og detaljane om eit dødsfall har med spelar-ID-en din.",
     ["Untick Share my character list on the Characters page: your list, details and gear stop, and your friends are told to forget your list."] =
         "Fjern krysset for Del figurlista mi på sida Figurar: lista, detaljane og utstyret ditt stoppar, og venene dine får beskjed om å gløyme lista di.",
     ["Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its character list entry and most ticked details, such as gold, kills and gear, keep going until you hide it or untick them as above."] =
         "Skriv /wstatus pause, eller fjern krysset for Del framgangen min, for å stoppe kunngjeringane til denne figuren. Plassen hans i figurlista og dei fleste detaljane du har kryssa av for, som gull, drap og utstyr, held fram til du gøymer han eller fjernar kryssa som over.",
-    ["Pausing, or unticking an announcement or detail, also deletes this character's saved entries of that kind from your log and from its History / graph."] =
-        "Å setje på pause, eller å fjerne krysset for ei kunngjering eller ein detalj, slettar òg dei lagra oppføringane av det slaget for denne figuren frå loggen din og frå Historikk / graf.",
+    ["Pausing deletes all of this character's own entries from your log and its whole History / graph, for good. Unticking an announcement or detail deletes the saved entries of that kind."] =
+        "Pause slettar alle dei eigne oppføringane til denne figuren frå loggen din og heile Historikk / graf for han, for godt. Å fjerne krysset for ei kunngjering eller ein detalj slettar dei lagra oppføringane av det slaget.",
     ["Remove a group in /wstatus groups to leave it."] =
         "Fjern ei gruppe i /wstatus groups for å gå ut av ho.",
     ["What is kept"] = "Kva som blir teke vare på",

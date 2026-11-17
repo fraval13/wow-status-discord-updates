@@ -11,7 +11,8 @@ local frame
 -- Each section: a heading and its bullet lines, each line translated on its own.
 PV.SECTIONS = {
     {"What is sent",
-     {"The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 "
+     {"A note to each group you join, saying that you joined.",
+      "The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 "
         .. "quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first "
         .. "armor equips, and session recaps if you tick them. A death also names what killed you, and where "
         .. "when Location is ticked.",
@@ -45,16 +46,18 @@ PV.SECTIONS = {
         .. "someone to."}},
     {"How to stop",
      {"Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, "
-        .. "level and XP progress travel with your character list, so unticking them there does not stop them.",
+        .. "level and XP progress travel with your character list whatever you tick, and the Faction tick "
+        .. "changes nothing, as your race shows your faction.",
       "Untick a character under Characters shown to friends: it leaves everyone's character list, "
-        .. "leaderboard and gear view.",
+        .. "leaderboard and gear view, but its announcements still go out, and a death's details carry your "
+        .. "player ID.",
       "Untick Share my character list on the Characters page: your list, details and gear stop, and your "
         .. "friends are told to forget your list.",
       "Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its "
         .. "character list entry and most ticked details, such as gold, kills and gear, keep going until you "
         .. "hide it or untick them as above.",
-      "Pausing, or unticking an announcement or detail, also deletes this character's saved entries of that "
-        .. "kind from your log and from its History / graph.",
+      "Pausing deletes all of this character's own entries from your log and its whole History / graph, for "
+        .. "good. Unticking an announcement or detail deletes the saved entries of that kind.",
       "Remove a group in /wstatus groups to leave it."}},
     {"What is kept",
      {"Your log keeps the newest 2,000 of your own entries (at most 1,000 of them sent to no group) and "
@@ -86,6 +89,7 @@ local function build()
     frame:SetScript("OnDragStart", frame.StartMoving); frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
     local background = frame:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints(); background:SetColorTexture(.025, .035, .065, .97)
+    if WoWStatusTheme and WoWStatusTheme.attachBackground then WoWStatusTheme.attachBackground(background) end
     frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     frame.title:SetPoint("TOPLEFT", 24, -20); frame.title:SetWidth(540); frame.title:SetJustifyH("LEFT")
     frame.scroll = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
