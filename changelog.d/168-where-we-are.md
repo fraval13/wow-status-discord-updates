@@ -1,2 +1,0 @@
-- The Characters page has a new Where we are section: online friends grouped by the zone they last reported.
-- Your own zone comes first, each name shows how old its report is, and reports older than 15 minutes are left out.
