@@ -171,11 +171,11 @@ def test_the_tick_is_a_controller_control_beside_big_banners():
         local found = false
         for _, control in ipairs(WoWStatusGamepad.controls(panel, {panel})) do found = found or control == tick end
         assert(found, "the pad does not reach the tick")
-        -- Same row as Big banners, to its right, clear of the panel's edge.
+        -- Same row as Big banners, to its right, inside the page's 564 px right margin.
         assert(tick.__point[3] == panel.big.__point[3])
         assert(tick.__point[2] == 400 and panel.big.__point[2] == 24)
         -- The Big banners label (from x 62) ends before the tick begins.
-        assert(24 + 38 + panel.big.label.width <= 400 and 400 + 38 + tick.label.width <= 600)
+        assert(24 + 38 + panel.big.label.width <= 400 and 400 + 38 + tick.label.width <= 564)
     ''')
 
 

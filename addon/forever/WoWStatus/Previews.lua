@@ -91,7 +91,7 @@ function P.show(host)
             nil,330)
         -- No slide, fade or pulse; a sample shows it.
         panel.reduceMotion=check("Reduce motion",-options-42,function(o) return o.reduce_motion end,function(value)
-            WoWStatusPopups.setReduceMotion(value);WoWStatusPopups.sample("level") end,400,160)
+            WoWStatusPopups.setReduceMotion(value);WoWStatusPopups.sample("level") end,400,126)
         -- Group status line (#62). Account-wide.
         panel.line={}
         for i,entry in ipairs({{"enabled","Show the group status line"},{"attach","Attach it under the quest tracker"},
