@@ -53,9 +53,9 @@ local XP_INTERVAL = 300
 -- Seconds between checks for friends logging in or out while the page is open.
 R.ONLINE_CHECK = 5
 local onlineCheckedAt, onlineSeen, partyChanged = 0, nil, false
--- "Where we are" as drawn: when a shown age or report next changes, and the
--- newest log entry then, so a new report redraws it too.
-local whereDue, whereNewest, newestReport
+-- "Where we are" as drawn: when a report or shown age next changes, and the
+-- log's zone revision then, so a new report redraws it too.
+local whereDue, whereRevision
 local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
 local equipmentSendState = {}
 
@@ -1197,6 +1197,20 @@ end
 -- the nearest online friend above and below. Only friends whose shared list
 -- R.groups shows (hidden characters and players who share no list are left
 -- out), online now, with a known level. Pass R.groups() when it is at hand.
+-- Friends' characters the "Play together now" and "Where we are" sections may
+-- show: from a list they share (hidden characters are already left out of
+-- R.groups), not this account's own, and online now.
+local function onlineFriends(groups)
+    local rows = {}
+    for _, entry in ipairs(groups or R.groups()) do
+        if not entry.self then
+            for _, row in ipairs(entry.rows) do
+                if row.listed and row.status == "online" then rows[#rows + 1] = {row=row, player=entry.name} end
+            end
+        end
+    end
+    return rows
+end
 function R.together(groups)
     local result = {range=R.togetherRange(), rows={}, inRange=0}
     if not db or not current then return result end
@@ -1205,19 +1219,16 @@ function R.together(groups)
     if not level then return result end
     local party, candidates = grouped(), {}
     -- R.groups lists each character once, so no key repeats here.
-    for _, entry in ipairs(groups or R.groups()) do
-        if not entry.self then
-            for _, row in ipairs(entry.rows) do
-                local k = key(row.name)
-                local theirs = S.number(row.level)
-                if k and row.listed and row.status == "online" and theirs then
-                    local blocked = R.inviteBlocked(row, party)
-                    candidates[#candidates + 1] = {name=row.name, class=row.class, race=row.race, level=theirs,
-                        diff=theirs - level, zone=row.zone, player=entry.name, blocked=blocked,
-                        -- The Classic editions refuse a whisper across factions; Retail allows some.
-                        noWhisper=blocked == "Different faction" and WoWStatusAdapter.client_id ~= "retail"}
-                end
-            end
+    for _, item in ipairs(onlineFriends(groups)) do
+        local row = item.row
+        local k = key(row.name)
+        local theirs = S.number(row.level)
+        if k and theirs then
+            local blocked = R.inviteBlocked(row, party)
+            candidates[#candidates + 1] = {name=row.name, class=row.class, race=row.race, level=theirs,
+                diff=theirs - level, zone=row.zone, player=item.player, blocked=blocked,
+                -- The Classic editions refuse a whisper across factions; Retail allows some.
+                noWhisper=blocked == "Different faction" and WoWStatusAdapter.client_id ~= "retail"}
         end
     end
     table.sort(candidates, function(a, b)
@@ -1243,39 +1254,34 @@ end
 -- R.WHERE_MAX_AGE is left out. {here, zones={{zone, at, here, members}}, people,
 -- count, more, due}: your own zone first, then the newest report; at most
 -- R.WHERE_ROWS zones (more: how many were cut); due: when a shown age next changes.
-R.WHERE_MAX_AGE, R.WHERE_ROWS = 15 * 60, 8
+R.WHERE_MAX_AGE, R.WHERE_ROWS, R.WHERE_NAMES = 15 * 60, 8, 4
 function R.whereWeAre(groups)
     local result = {zones={}, people=0}
     if not db or not current then return result end
     local here = WoWStatusAdapter.zone and S.string(WoWStatusAdapter.zone()) or nil
     result.here = here
     local now, byZone = S.now(), {}
-    -- When a shown age or report next changes: the page redraws then.
-    local function due(at)
+    -- When the view next changes: a report expires (the counts change) or a
+    -- shown age reaches its next minute. The page redraws then.
+    local function due(at, shown)
         local age = math.max(0, now - at)
-        local change = at + math.min(R.WHERE_MAX_AGE + 1, (math.floor(age / 60) + 1) * 60)
+        local change = at + (shown and math.min(R.WHERE_MAX_AGE + 1, (math.floor(age / 60) + 1) * 60) or R.WHERE_MAX_AGE + 1)
         if not result.due or change < result.due then result.due = change end
     end
-    for _, entry in ipairs(groups or R.groups()) do
-        if not entry.self then
-            for _, row in ipairs(entry.rows) do
-                local at = S.number(row.zone_at)
-                -- A stamp far ahead (a skewed clock) would read as "just now" for too long.
-                if row.listed and row.status == "online" and row.zone and at and now - at <= R.WHERE_MAX_AGE
-                    and at <= now + 300 then
-                    local item = byZone[row.zone]
-                    if not item then
-                        item = {zone=row.zone, at=at, here=row.zone == here, members={}}
-                        byZone[row.zone] = item
-                        result.zones[#result.zones + 1] = item
-                    end
-                    item.at = math.max(item.at, at)
-                    item.members[#item.members + 1] = {name=row.name, class=row.class, at=at,
-                        age=math.max(0, now - at)}
-                    result.people = result.people + 1
-                    due(at)
-                end
+    for _, item in ipairs(onlineFriends(groups)) do
+        local row = item.row
+        local at = S.number(row.zone_at)
+        -- A stamp far ahead (a skewed clock) would read as "just now" for too long.
+        if row.zone and at and now - at <= R.WHERE_MAX_AGE and at <= now + 300 then
+            local place = byZone[row.zone]
+            if not place then
+                place = {zone=row.zone, at=at, here=row.zone == here, members={}}
+                byZone[row.zone] = place
+                result.zones[#result.zones + 1] = place
             end
+            place.at = math.max(place.at, at)
+            place.members[#place.members + 1] = {name=row.name, class=row.class, at=at, age=math.max(0, now - at)}
+            result.people = result.people + 1
         end
     end
     local function newest(a, b)
@@ -1289,6 +1295,9 @@ function R.whereWeAre(groups)
     end)
     result.count = #result.zones
     result.more = math.max(0, result.count - R.WHERE_ROWS)
+    for index, place in ipairs(result.zones) do
+        for i, member in ipairs(place.members) do due(member.at, index <= R.WHERE_ROWS and i <= R.WHERE_NAMES) end
+    end
     for i = #result.zones, R.WHERE_ROWS + 1, -1 do result.zones[i] = nil end
     return result
 end
@@ -1317,12 +1326,6 @@ local function onlineSignature()
     return tostring(WoWStatusPopups.onlineCount and WoWStatusPopups.onlineCount() or 0)
 end
 R.onlineSignature = onlineSignature
--- The newest log entry and whether its death details came: a new first visit or
--- death zone changes it. Cheap: the log is kept newest first.
-newestReport = function()
-    local e = WoWStatusJournal.entries()[1]
-    return e and (tostring(e.id) .. (WoWStatusJournal.details(e) and "+" or "")) or ""
-end
 
 function R.setHidden(character, hidden)
     local owned = false
@@ -1555,7 +1558,8 @@ function R.tick()
     if visible and now - onlineCheckedAt >= R.ONLINE_CHECK then
         onlineCheckedAt = now
         local expired = inviteExpired()
-        local stale = (whereDue and S.now() >= whereDue) or (not R.collapsed("where") and newestReport() ~= whereNewest)
+        -- Also folded: its heading counts friends and zones.
+        local stale = (whereDue and S.now() >= whereDue) or WoWStatusJournal.zoneRevision ~= whereRevision
         if partyChanged or expired or stale or onlineSignature() ~= onlineSeen then R.render() end
     end
     if now - lastScan >= 30 then
@@ -2037,10 +2041,10 @@ function R.groups()
     local hidden = R.hiddenNames()
     local online, latest, lastSeen, shared, zones = {}, {}, {}, {}, {}
     local deaths = deathTotals(true)
-    -- A friend's newest reported zone, if under an hour old ("Play together now",
-    -- "Where we are"): a first visit, or where they died. Only friends who share
-    -- their zone send either. Log stamps are realm time (S.now).
-    local zoneSince = S.now() - 3600
+    -- A friend's newest reported zone, if under R.WHERE_MAX_AGE old ("Play together
+    -- now", "Where we are"): a first visit, or where they died. Only friends who
+    -- share their zone send either. Log stamps are realm time (S.now).
+    local zoneSince = S.now() - R.WHERE_MAX_AGE
     local selected = WoWStatusGroups.selected(current)
     local function share(k, group)
         if k and selected[group] then shared[k] = shared[k] or {}; shared[k][group] = true end
@@ -2062,20 +2066,23 @@ function R.groups()
         if level and (not fresher[k] or level > fresher[k]) then fresher[k] = level end
         if k and not latest[k] and e.kind ~= "recap" then latest[k] = e.text end
         if k and (not lastSeen[k] or e.at > lastSeen[k]) then lastSeen[k] = e.at end
-        if k and zones[k] == nil and (e.kind == "zone" or e.kind == "death") then
-            -- The newest first visit or death decides, even without a usable zone
-            -- (a death whose details never came, a client that could not read
-            -- its zone): an older report is no longer where they are.
-            local zone
+        if k and zones[k] == nil then
+            -- The newest first visit decides, even one whose zone the client could
+            -- not read: an older one is no longer where they are. A death counts
+            -- only with its zone: one without (no details came, or they do not
+            -- share their zone) says nothing about where they are.
+            local zone, report
             if e.kind == "zone" then
+                report = true
                 zone = S.string(e.text) and e.text:match("^Entered (.+)$")
                 if zone == "a new zone" then zone = nil end
-            else
+            elseif e.kind == "death" then
                 local details = WoWStatusJournal.details(e)
                 zone = details and S.string(details.zone)
+                report = zone ~= nil
             end
             local at = S.number(e.at) or 0
-            zones[k] = zone and at > zoneSince and {zone=zone, at=at} or false
+            if report then zones[k] = zone and at >= zoneSince and {zone=zone, at=at} or false end
         end
     end
     -- First-name-only entries (older WoW Forever clients announced "Unshaved")
@@ -2709,7 +2716,7 @@ end
 
 -- "Where we are": a section heading, then one row per zone with who is there
 -- and how old each report is. The rows only show text; the heading folds it.
-local WHERE_ROW, WHERE_NAMES = 22, 4
+local WHERE_ROW, WHERE_NAMES = 22, R.WHERE_NAMES
 local function reportAge(seconds)
     if seconds < 60 then return T("just now") end
     return TF("%d min ago", math.floor(seconds / 60))
@@ -2774,8 +2781,7 @@ local function renderWhere(y, groups)
         note:Hide()
     end
     for i = shown + 1, #page.where do page.where[i]:Hide() end
-    whereDue = not closed and data.due or nil
-    whereNewest = newestReport()
+    whereDue, whereRevision = data.due, WoWStatusJournal.zoneRevision
     return y + 4
 end
 

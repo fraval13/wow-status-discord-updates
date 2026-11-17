@@ -174,8 +174,12 @@ local function recordsChange(entry,removed,dropped)
     for _, e in ipairs(dropped) do if F.matters(e) then return true end end
     return false
 end
+-- Counts changes to where friends were (a first visit or a death's zone came),
+-- so "Where we are" redraws for them and for nothing else.
+J.zoneRevision=0
 -- removed: an entry this one replaces, already taken out of the log.
 local function insert(entry,removed)
+    if entry.kind=="zone" or entry.kind=="death" then J.zoneRevision=J.zoneRevision+1 end
     WoWStatusFlavour.text(entry)
     table.insert(db.journal.entries,entry)
     local dropped=rebuild()
@@ -305,6 +309,7 @@ function J.setDetails(id,zone,killer)
     end
     local kept=details[id] and details[id].item
     details[id]={zone=zone,killer=killer,item=kept,at=S.now()}
+    if zone then J.zoneRevision=J.zoneRevision+1 end
     if refresh then refresh() end
     return true
 end

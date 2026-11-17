@@ -186,7 +186,7 @@ def test_the_heading_is_reachable_with_a_controller():
         function methods:SetColorTexture() end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
         WoWStatusSafe={now=function() return 0 end}
-        WoWStatusJournal={entries=function() return {} end, details=function() end}
+        WoWStatusJournal={entries=function() return {} end, details=function() end, zoneRevision=0}
         WoWStatusPopups={}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
             call=function() return false end, classColour=function() end}
@@ -225,15 +225,15 @@ def test_more_zones_than_rows_say_how_many_are_left_out():
     assert page.where[9].zone.text == '|cff9d9d9d+2 more zones|r' and page.where[9].IsShown(page.where[9])
 
 
-def test_an_unread_zone_is_no_place_and_still_the_newest_report():
+def test_an_unread_zone_is_no_place_and_a_death_without_a_zone_moves_nobody():
     thora = friends('Mira-TestRealm', 'Bo-TestRealm')
     report(thora, 'Mira-TestRealm', 'a new zone', ago=10)
     report(thora, 'Mira-TestRealm', 'Duskwood', ago=300, nonce='older')
-    # A death whose details have not come: where they are is not known.
+    # A death without its zone says nothing about where they are: the first visit stands.
     report(thora, 'Bo-TestRealm', 'Westfall', ago=300, nonce='b1')
     thora.execute('''WoWStatusJournal.received({sender="Bo-TestRealm", nonce="b2", kind="death", text="Died",
         at=WoWStatusSafe.now() - 5, group_id=next(character().group_ids)})''')
-    assert where(thora)[1] == []
+    assert where(thora)[1] == [('Westfall', ['Bo-TestRealm'])]
 
 
 def test_a_stamp_far_in_the_future_is_left_out():
@@ -269,3 +269,35 @@ def test_redraws_only_when_an_age_changes_or_a_report_arrives():
     ticks(4300, 631)
     assert thora.eval('__renders') == 2
     assert thora.eval('WoWStatusCharactersPage.where[1].members.text').endswith('(1 min ago)|r')
+
+
+def test_late_death_details_and_older_reports_redraw_and_a_folded_heading_stays_current():
+    thora = friends('Mira-TestRealm', 'Bo-TestRealm')
+    thora.eval('WoWStatusMainWindow.show')('characters')
+    page = thora.eval('WoWStatusCharactersPage')
+    thora.execute('''WoWStatusJournal.received({sender="Mira-TestRealm", nonce="m1", kind="death", text="Died",
+        at=WoWStatusSafe.now() - 20, group_id=next(character().group_ids)})''')
+    report(thora, 'Bo-TestRealm', 'x', ago=0, nonce='b9', kind='level')  # a newer, unrelated entry
+    thora.execute('WoWStatusJournal.setDetails(WoWStatusJournal.eventID("Mira-TestRealm", "m1"), "Duskwood", nil)')
+
+    def ticks(start):
+        for step in range(0, 30, 5):
+            thora.execute(f'__mono = {start} + {step}')
+            thora.eval('WoWStatusRoster.tick')()
+    ticks(5000)
+    assert page.where[1].zone.text == 'Duskwood'
+    head = page.whereHead
+    head.OnClick(head)
+    thora.execute('function time() return __now + 900 end')
+    ticks(5100)
+    assert head.text.text.endswith('0 friends, 0 zones|r')
+
+
+def test_play_together_uses_the_same_fifteen_minutes():
+    _, thora, words = setup()
+    friend(thora, words, 'Mira-TestRealm', 20)
+    online(thora, 'Mira-TestRealm')
+    report(thora, 'Mira-TestRealm', 'Duskwood', ago=16 * 60)
+    assert thora.eval('WoWStatusRoster.together().rows[1].zone') is None
+    report(thora, 'Mira-TestRealm', 'Westfall', ago=60, nonce='new')
+    assert thora.eval('WoWStatusRoster.together().rows[1].zone') == 'Westfall'
