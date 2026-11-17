@@ -457,7 +457,7 @@ function J.groupsChanged()
         if e.owner or next(e.groups or {}) then table.insert(kept,e) end
     end
     db.journal.entries=kept;rebuild()
-    jobs,queuedJobs,contacted,hellos={},{},{},{};loginUntil=S.now()+60
+    jobs,queuedJobs,contacted,hellos={},{},{},{};loginUntil=S.uptime()+60
     if refresh then refresh() end
 end
 function J.privacyChanged()
@@ -658,13 +658,13 @@ end
 -- Members still start a pull at most once per HELLO_INTERVAL (#4).
 function J.syncNow()
     if not db then return false end
-    contacted,loginUntil,loginNonce={},S.now()+60,token()
+    contacted,loginUntil,loginNonce={},S.uptime()+60,token()
     J.sync()
     return true
 end
 function J.sync()
     if not db then return end
-    if S.now()<=loginUntil then
+    if S.uptime()<=loginUntil then
         local groups={};for g in pairs(WoWStatusGroups.selected(current)) do groups[#groups+1]=g end;table.sort(groups)
         for _,group in ipairs(groups) do
             local peers=P.peers(group);table.sort(peers)
@@ -894,7 +894,7 @@ function J.init(database,character)
         if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e)
             and (e.owner or P.fullName(e.sender)) then e.groups=e.groups or {};kept[#kept+1]=e end
     end
-    db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=S.now()+60
+    db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=S.uptime()+60
     -- Once: remove the skill-point cards earlier versions logged.
     if not db.journal.profession_points_removed then
         local cleaned={}
