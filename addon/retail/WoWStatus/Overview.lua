@@ -30,7 +30,7 @@ function O.summary(entries, since)
             local p = players[key]
             if not p then
                 local shown = WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender) or key
-                p = {player=shown, kinds={}, at=e.at}
+                p = {player=shown, kinds={}, at=e.at, sender=e.sender}
                 players[key] = p; table.insert(order, p)
             end
             local kind = p.kinds[e.kind]
@@ -59,6 +59,21 @@ function O.summary(entries, since)
         loot=function(k) return "equipped " .. plural(k.count, "a new item", "new items") end,
         introduction=function() return "joined the group" end,
     }
+    -- Pinned friends (#170) first, in the order they were pinned; the rest stay newest first.
+    local ranks = WoWStatusRoster and WoWStatusRoster.pinRanks and WoWStatusRoster.pinRanks() or {}
+    local function rank(p) local k = WoWStatusRoster and WoWStatusRoster.key and WoWStatusRoster.key(p.sender); return k and ranks[k] end
+    local pinned, rest = {}, {}
+    for i, p in ipairs(order) do
+        p.position = i
+        if rank(p) then table.insert(pinned, p) else table.insert(rest, p) end
+    end
+    table.sort(pinned, function(a, b)
+        local x, y = rank(a), rank(b)
+        if x ~= y then return x < y end
+        return a.position < b.position
+    end)
+    order = pinned
+    for _, p in ipairs(rest) do table.insert(order, p) end
     local sequence = {"level", "dungeon", "death", "profession", "mount", "loot", "zone", "quest", "reputation", "unlock", "pvp", "introduction"}
     for _, p in ipairs(order) do
         local facts = {}
@@ -177,6 +192,7 @@ local function renderGroup()
     local group, names, seen = page.group, {}, {}
     local character = WoWStatusPopups.character and WoWStatusPopups.character()
     local groups = 0
+    local ranks = WoWStatusRoster.pinRanks and WoWStatusRoster.pinRanks() or {}
     for id in pairs(WoWStatusGroups.selected(character)) do
         groups = groups + 1
         for _, peer in ipairs(WoWStatusPopups.peers(id)) do
@@ -184,11 +200,19 @@ local function renderGroup()
             -- Bank alts hidden from lists, and friends muted with "Hide completely" (#169).
             if key and not seen[key] and WoWStatusPopups.fullName(peer) and not WoWStatusRoster.isHidden(peer)
                 and not (WoWStatusMutes and WoWStatusMutes.hidden(peer)) then
-                seen[key] = true; table.insert(names, ((peer:match("^[^-]+") or peer):gsub("|", "||")))
+                seen[key] = true
+                local k = WoWStatusRoster.key and WoWStatusRoster.key(peer)
+                table.insert(names, {text=((peer:match("^[^-]+") or peer):gsub("|", "||")), pin=k and ranks[k]})
             end
         end
     end
-    table.sort(names)
+    -- Pinned friends (#170) first, in the order they were pinned; then by name.
+    table.sort(names, function(a, b)
+        if (a.pin ~= nil) ~= (b.pin ~= nil) then return a.pin ~= nil end
+        if a.pin and a.pin ~= b.pin then return a.pin < b.pin end
+        return a.text < b.text
+    end)
+    for i, item in ipairs(names) do names[i] = item.text end
     local count = #names
     group.count:SetText(groups == 0 and T("Join a group in Options to share with friends.")
         or ("|cff40ff40" .. count .. "|r " .. T("online") .. " · " .. groups .. " " .. T(groups == 1 and "group" or "groups")))

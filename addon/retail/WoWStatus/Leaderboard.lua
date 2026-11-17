@@ -18,8 +18,11 @@ end
 
 -- The Leaderboard view: everyone in the group, sorted by level, deaths, quests or played time.
 local SORTS = {{"level", "Level"}, {"deaths", "Deaths"}, {"quests", "Quests"}, {"played", "Played time"}}
-local function sorted(list, by)
+-- With "Pinned first" (#170), pinned players' characters lead, ranked among
+-- themselves by the same sort; everyone stays on the board either way.
+local function sorted(list, by, pinnedFirst)
     table.sort(list, function(a, b)
+        if pinnedFirst and (a.pin ~= nil) ~= (b.pin ~= nil) then return a.pin ~= nil end
         local x, y = a[by] or -1, b[by] or -1
         if x ~= y then return x > y end
         if by == "level" and (a.xp or -1) ~= (b.xp or -1) then return (a.xp or -1) > (b.xp or -1) end
@@ -44,7 +47,7 @@ end
 local function renderBoard(chosen)
     local data, UI = state() or {}, WoWStatusUI
     local by = data.sort or "level"
-    local list = chosen and sorted(WoWStatusRoster.leaderboard(chosen.id), by) or {}
+    local list = chosen and sorted(WoWStatusRoster.leaderboard(chosen.id), by, data.pinned_first == true) or {}
     page.board = page.board or {}
     for i, entry in ipairs(list) do
         local row = page.board[i] or boardRow(i)
@@ -66,6 +69,7 @@ local function renderBoard(chosen)
     page.boardHeader:SetShown(true)
     page.list:SetHeight(math.max(1, #list * 28))
     page.boardEmpty:SetShown(#list == 0)
+    page.pinnedFirst:SetChecked(data.pinned_first == true)
     page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or by == "played" and "Played time" or "Level"))
 end
 
@@ -101,6 +105,8 @@ function L.render()
         or T("Join a group to compare your characters with friends."))
     page.sort:ClearAllPoints(); page.sort:SetPoint("TOPRIGHT", -24, -8-top)
     UI.call(page.sort, "SetEnabled", chosen ~= nil)
+    page.pinnedFirst:ClearAllPoints(); page.pinnedFirst:SetPoint("TOPRIGHT", -290, -4-top)
+    UI.call(page.pinnedFirst, "SetEnabled", chosen ~= nil)
     page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -44-top)
     page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -66-top)
     page.scroll:SetHeight(464-top)
@@ -110,7 +116,7 @@ end
 local function build(parent)
     local UI = WoWStatusUI
     page = CreateFrame("Frame", "WoWStatusLeaderboardPage", parent); page:SetAllPoints(parent)
-    page.heading = UI.text(page, "GameFontNormalLarge", 24, -12, 520)
+    page.heading = UI.text(page, "GameFontNormalLarge", 24, -12, 390)
     page.heading:SetWordWrap(false)
     page.sort = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sort:SetSize(140, 24)
@@ -121,6 +127,24 @@ local function build(parent)
         page.scroll:SetVerticalScroll(0)
         L.render()
     end)
+    -- "Pinned first" (#170): a view choice for this account, like the sort.
+    page.pinnedFirst = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
+    page.pinnedFirst:SetSize(32, 32)
+    local pinnedLabel = page.pinnedFirst:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+    pinnedLabel:SetPoint("TOPLEFT", 34, -8); pinnedLabel:SetText(T("Pinned first"))
+    page.pinnedFirst:SetScript("OnClick", function(self)
+        state().pinned_first = self:GetChecked() and true or nil
+        page.scroll:SetVerticalScroll(0)
+        L.render()
+    end)
+    page.pinnedFirst:SetScript("OnEnter", function(self)
+        if GameTooltip then
+            GameTooltip:SetOwner(self, "ANCHOR_TOP"); GameTooltip:SetText(T("Pinned first"))
+            GameTooltip:AddLine(T("Players you pinned on the Characters page lead the board. Nobody is left out."), 1, 1, 1, true)
+            GameTooltip:Show()
+        end
+    end)
+    page.pinnedFirst:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
     page.tabs = {}
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetSize(710, 464)

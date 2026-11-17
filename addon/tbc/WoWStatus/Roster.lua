@@ -957,6 +957,115 @@ function R.setOnlineOnly(enabled)
     R.render()
 end
 
+-- Pinned friends (#170): a star on a player's heading or a character's card
+-- lifts them to the top of the Characters page, in the order they were pinned.
+-- Saved for the account (db.roster.pins: "p:<player>" or "c:<character key>" ->
+-- pin number). Pinning changes order only, never what is shown, and nothing
+-- about it is sent.
+R.PIN_MAX = 100
+local function pins()
+    local roster = state()
+    roster.pins = type(roster.pins) == "table" and roster.pins or {}
+    return roster.pins
+end
+local function pinKey(kind, name)
+    if kind == "player" then
+        local n = S.string(name) and S.lowerASCII(S.stripSpace(name))
+        return n and n ~= "" and #n <= 120 and ("p:" .. n) or nil
+    end
+    local k = key(name)
+    return k and ("c:" .. k) or nil
+end
+-- The pin number of a player ("player", heading name) or character
+-- ("character", name); nil when not pinned. Lower numbers were pinned first.
+function R.pinned(kind, name)
+    local k = db and pinKey(kind, name)
+    return k and S.number(pins()[k]) or nil
+end
+function R.setPinned(kind, name, on)
+    local k = db and pinKey(kind, name)
+    if not k then return false end
+    local list = pins()
+    if on and not S.number(list[k]) then
+        local top, count = 0, 0
+        for _, at in pairs(list) do
+            if S.number(at) then count = count + 1; top = math.max(top, at) end
+        end
+        if count >= R.PIN_MAX then return false end
+        list[k] = top + 1
+    elseif not on then
+        list[k] = nil
+    end
+    R.render()
+    if WoWStatusMainWindow and WoWStatusMainWindow.active() == "overview" and WoWStatusOverview then WoWStatusOverview.render() end
+    return true
+end
+function R.togglePin(kind, name) return R.setPinned(kind, name, not R.pinned(kind, name)) end
+-- A player heading's place among the pinned: its own pin or its first-pinned card's.
+local function entryPin(entry)
+    if entry.self then return nil end
+    local best = entry.pinnable and R.pinned("player", entry.name)
+    for _, row in ipairs(entry.rows) do
+        local at = R.pinned("character", row.name)
+        if at and (not best or at < best) then best = at end
+    end
+    return best or nil
+end
+R.entryPin = entryPin
+-- Pinned first, online before offline, then in the order they were pinned; the
+-- rest keep the order they came in.
+local function pinFirst(items, pinOf, onlineOf)
+    local pinned, rest = {}, {}
+    for _, item in ipairs(items) do
+        local at = pinOf(item)
+        if at then pinned[#pinned + 1] = {item=item, at=at, online=onlineOf(item) == true}
+        else rest[#rest + 1] = item end
+    end
+    table.sort(pinned, function(a, b)
+        if a.online ~= b.online then return a.online end
+        return a.at < b.at
+    end)
+    local out = {}
+    for _, p in ipairs(pinned) do out[#out + 1] = p.item end
+    for _, item in ipairs(rest) do out[#out + 1] = item end
+    return out
+end
+-- Player entries (as R.sections holds them) with pinned players and, under
+-- each, pinned characters first.
+function R.pinOrder(entries)
+    for _, entry in ipairs(entries) do
+        if not entry.self then
+            entry.rows = pinFirst(entry.rows, function(row) return R.pinned("character", row.name) end,
+                function(row) return row.status == "online" end)
+        end
+    end
+    return pinFirst(entries, entryPin, function(entry)
+        for _, row in ipairs(entry.rows) do if row.status == "online" then return true end end
+        return false
+    end)
+end
+-- Every pinned character's key -> its player's place among the pinned: a pinned
+-- player, or one character pinned, lifts all of that player's characters.
+function R.pinRanks()
+    local ranks = {}
+    if not db then return ranks end
+    local function better(k, at) if k and at and (not ranks[k] or at < ranks[k]) then ranks[k] = at end end
+    for _, player in pairs(state().players) do
+        local characters = type(player.characters) == "table" and player.characters or {}
+        local at = S.string(player.name) and R.pinned("player", player.name)
+        for _, character in pairs(characters) do
+            local own = type(character) == "table" and R.pinned("character", character.name)
+            if own and (not at or own < at) then at = own end
+        end
+        if at then for k in pairs(characters) do better(k, at) end end
+    end
+    for k, at in pairs(pins()) do
+        local character = type(k) == "string" and k:match("^c:(.+)$")
+        if character and S.number(at) then better(character, at) end
+    end
+    return ranks
+end
+
 -- "Play together now" (#156): friends online now within a few levels of the
 -- current character, closest level first, from the lists they already share.
 -- Nothing is sent for it. The level window is a view choice for this account.
@@ -1941,6 +2050,8 @@ function R.groups()
     end
     for _, entry in ipairs(order) do
         entry.name = entry.title
+        -- "Not announced" gathers several people, so it has no star of its own.
+        entry.pinnable = not entry.self and entry.title ~= "Not announced"
         entry.title = entry.title .. " (" .. #entry.rows .. (#entry.rows == 1 and " character)" or " characters)")
         table.sort(entry.rows, function(a, b) return (a.level or 0) > (b.level or 0) end)
     end
@@ -1953,10 +2064,43 @@ local UI = WoWStatusUI
 -- skill level under its icon, centred between the texts and the XP bar.
 local CARD, HEADER, GAP = 114, 26, 6
 local PROFESSION_ICON, PROFESSION_PITCH, PROFESSION_TOP = 18, 26, -62
+-- The pin star (#170): a Button, so mouse and controller both press it.
+local STAR = "Interface\\TargetingFrame\\UI-RaidTargetingIcon_1"
+local function starTooltip(self)
+    if not GameTooltip or not self.pinKind then return end
+    local on = R.pinned(self.pinKind, self.pinName) ~= nil
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip:SetText(T(on and "Unpin" or (self.pinKind == "player" and "Pin this player to the top" or "Pin this character to the top")))
+    GameTooltip:AddLine(T("Pinned friends come first on the Characters page, online before offline, in the order you pinned them. Only you see this; nothing is sent."), 1, 1, 1, true)
+    GameTooltip:Show()
+end
+local function star(parent)
+    local b = CreateFrame("Button", nil, parent)
+    b:SetSize(18, 18)
+    b.icon = b:CreateTexture(nil, "ARTWORK"); b.icon:SetAllPoints(); b.icon:SetTexture(STAR)
+    b:SetScript("OnClick", function(self)
+        if not self.pinKind then return end
+        R.togglePin(self.pinKind, self.pinName)
+        -- The tooltip says "Unpin" now, or the other way round.
+        if GameTooltip and GameTooltip.IsOwned and GameTooltip:IsOwned(self) then starTooltip(self) end
+    end)
+    b:SetScript("OnEnter", starTooltip)
+    b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+    return b
+end
+local function showStar(b, kind, name)
+    b.pinKind, b.pinName = kind, name
+    local on = R.pinned(kind, name) ~= nil
+    b.pinnedNow = on
+    b.icon:SetAlpha(on and 1 or .3)
+    b.icon:SetVertexColor(on and 1 or .6, on and 1 or .6, on and 1 or .6)
+    b:Show()
+end
 local function header(index)
     local h = CreateFrame("Frame", nil, page.list)
     h:SetSize(680, HEADER)
-    h.text = UI.header(h, "", 0, -4, 680)
+    h.text = UI.header(h, "", 0, -4, 650)
+    h.star = star(h); h.star:SetPoint("TOPRIGHT", -6, -3)
     page.headers[index] = h
     return h
 end
@@ -1982,9 +2126,10 @@ local function card(index)
         c.professions[i] = slot
     end
 
-    c.class = UI.text(c, "GameFontHighlight", 380, -10, 280, "RIGHT")
-    c.latest = UI.text(c, "GameFontDisableSmall", 380, -30, 280, "RIGHT")
-    c.groups = UI.text(c, "GameFontHighlightSmall", 380, -44, 280, "RIGHT")
+    c.class = UI.text(c, "GameFontHighlight", 380, -10, 266, "RIGHT")
+    c.latest = UI.text(c, "GameFontDisableSmall", 380, -30, 266, "RIGHT")
+    c.groups = UI.text(c, "GameFontHighlightSmall", 380, -44, 266, "RIGHT")
+    c.star = star(c); c.star:SetPoint("TOPRIGHT", -8, -9)
     -- Clicking a character shows its entries on the Activity page.
     c:SetScript("OnClick", function(self)
         -- Clicking a character opens their profile (with Show activity on it).
@@ -2050,11 +2195,13 @@ function R.sections(groups)
                     end
                 end
                 if #rows > 0 then
-                    table.insert(section.entries, {title=counted(entry.name, #rows), name=entry.name, note=entry.note, rows=rows})
+                    table.insert(section.entries, {title=counted(entry.name, #rows), name=entry.name, note=entry.note,
+                        rows=rows, pinnable=entry.pinnable})
                     section.characters = section.characters + #rows
                 end
             end
         end
+        section.entries = R.pinOrder(section.entries)
         table.insert(sections, section)
     end
     local other = {key="other", title="Other", entries={}}
@@ -2062,9 +2209,13 @@ function R.sections(groups)
         if not entry.self then
             local rows = {}
             for _, row in ipairs(entry.rows) do if not placed[row] then table.insert(rows, row) end end
-            if #rows > 0 then table.insert(other.entries, {title=counted(entry.name, #rows), name=entry.name, note=entry.note, rows=rows}) end
+            if #rows > 0 then
+                table.insert(other.entries, {title=counted(entry.name, #rows), name=entry.name, note=entry.note,
+                    rows=rows, pinnable=entry.pinnable})
+            end
         end
     end
+    other.entries = R.pinOrder(other.entries)
     if #other.entries > 0 then table.insert(sections, other) end
     return sections
 end
@@ -2082,6 +2233,7 @@ function R.leaderboard(group)
     for _, section in ipairs(R.sections()) do
         if section.key == "you" or section.key == group then
             for _, entry in ipairs(section.entries) do
+                local pin = entryPin(entry)
                 for _, row in ipairs(entry.rows) do
                     local k = key(row.name)
                     -- A friend muted with "Hide completely" (#169) is left out.
@@ -2093,7 +2245,7 @@ function R.leaderboard(group)
                         if q == nil and not row.quests_source then q = quests[k] end
                         table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
                             deaths=S.number(row.deaths), quests=q, quests_source=row.quests_source, online=row.status == "online", own=own,
-                            gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played)})
+                            gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played), pin=pin})
                     end
                 end
             end
@@ -2280,7 +2432,7 @@ function R.render()
                 -- Say which of the two it is: nobody met yet, or nobody online now.
                 local note = (#part.entries > 0 and R.onlineOnly()) and "Nobody from this group is online right now."
                     or "Nobody else seen in this group yet."
-                h.text:SetText("|cff9d9d9d" .. T(note) .. "|r"); h:Show()
+                h.text:SetText("|cff9d9d9d" .. T(note) .. "|r"); h.star:Hide(); h:Show()
                 y = y + HEADER
             end
             for _, group in ipairs(part.entries) do
@@ -2292,6 +2444,7 @@ function R.render()
                 -- The heading counts the cards under it, so the filter shows in it.
                 -- The version note stays small and grey beside the title.
                 h.text:SetText(shownTitle(counted(group.name, #rows)):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
+                if group.pinnable then showStar(h.star, "player", group.name) else h.star:Hide() end
                 y = y + HEADER
                 for _, character in ipairs(rows) do
                     if index >= 200 then break end
@@ -2351,6 +2504,7 @@ function R.render()
                     c.groups:SetText(groups ~= "" and ("|cff9d9d9d" .. T("Groups:") .. "|r " .. groups:gsub("|", "||")) or "")
                     c.text = c.name -- Older callers read a row's text.
                     c.kind, c.character, c.player = "character", character, group
+                    if group.self then c.star:Hide() else showStar(c.star, "character", character.name) end
                     UI.tint(c, false)
                     c:Show()
                     y = y + CARD + GAP
