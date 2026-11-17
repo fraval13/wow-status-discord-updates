@@ -459,6 +459,7 @@ local function initialize()
     end
     if not WoWStatusDB then
         WoWStatusDB = {version = 1, characters = {}}
+        WoWStatusLocale.set(WoWStatusLocale.clientLanguage())
         WoWStatusWhatsNew.fresh(WoWStatusDB)
         WoWStatusDB.guide_pending = true
     end
@@ -802,7 +803,9 @@ SlashCmdList.WOWSTATUS = function(message)
         if WoWStatusLocale.set(lang) then
             say("Language: " .. WoWStatusLocale.LANGUAGES[lang] .. ". Type /reload to change every window.")
         else
-            say("Use /wstatus language nn for Nynorsk or /wstatus language en for English.")
+            local codes={}
+            for _,choice in ipairs(WoWStatusLocale.options()) do codes[#codes+1]=choice.value end
+            say(WoWStatusLocale.T("Use /wstatus language").." "..table.concat(codes,"|")..".")
         end
     elseif command == "personality" then
         -- Caption personality: /wstatus personality <name> (either language), or the list.
