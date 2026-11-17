@@ -1,1 +1,0 @@
-- The minimap tooltip and the People list now show how long ago something happened correctly when your PC clock is off.
