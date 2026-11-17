@@ -237,6 +237,14 @@ def test_the_milestone_option_is_a_checkbox_with_the_settings():
         assert(box:GetChecked() == false)
         box:SetChecked(true); box.OnClick(box)
         assert(WoWStatusStreaks.milestones() == true)
+        -- Kept through the option schema (#231): stored only when on, and a
+        -- hand-edited value of the wrong kind reads as off.
+        assert(WoWStatusDB.streaks.milestones == true)
+        box:SetChecked(false); box.OnClick(box)
+        assert(WoWStatusDB.streaks.milestones == nil and WoWStatusStreaks.milestones() == false)
+        WoWStatusDB.streaks.milestones = "yes"
+        assert(WoWStatusStreaks.milestones() == false)
+        assert(WoWStatusSettings.default("streak_milestones") == false)
     ''')
 
 

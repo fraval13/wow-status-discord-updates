@@ -232,12 +232,10 @@ local function state()
     return data
 end
 function St.milestones()
-    local data = state()
-    return data ~= nil and data.milestones == true
+    return WoWStatusSettings.get("streak_milestones", WoWStatusDB) == true
 end
 function St.setMilestones(value)
-    local data = state()
-    if data then data.milestones = value == true or nil end
+    if state() then WoWStatusSettings.set("streak_milestones", value == true, WoWStatusDB) end
 end
 
 -- The notice text for an entry that brings its streak to a milestone, or nil.
@@ -272,7 +270,7 @@ end
 
 function St.noted(e)
     local data = state()
-    if not data or data.milestones ~= true or type(e) ~= "table" or e.imported or (e.origin ~= "live" and e.origin ~= "mine") then return end
+    if not data or not St.milestones() or type(e) ~= "table" or e.imported or (e.origin ~= "live" and e.origin ~= "mine") then return end
     if e.kind == "death" or not S.number(e.at) or S.outside(e.at, ANNOUNCE_WITHIN, math.huge) then return end
     local k = key(e.sender)
     if not k then return end
