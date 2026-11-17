@@ -435,6 +435,13 @@ refresh = function()
     end
 end
 
+-- Reports a saved-data upgrade step that failed; it runs again at the next login.
+local function upgraded(ok, step, problem)
+    if ok then return end
+    say(WoWStatusLocale.F("Could not upgrade saved data (step %d). It will be tried again at the next login.",
+        step.version) .. " " .. tostring(problem))
+end
+
 local function initialize()
     if not A.supported() then
         if not unsupportedWarned then
@@ -448,7 +455,8 @@ local function initialize()
         WoWStatusWhatsNew.fresh(WoWStatusDB)
         WoWStatusDB.guide_pending = true
     end
-    if WoWStatusDB.version ~= 1 then say("Unsupported saved data version."); return end
+    -- Older saved data is upgraded once, step by step, never refused (#231).
+    upgraded(WoWStatusMigrations.upgradeAccount(WoWStatusDB))
     local identity = A.identity()
     if not identity then
         if not waitingForIdentity then
@@ -472,6 +480,8 @@ local function initialize()
     WoWStatusScreenshots.defaults(current.settings)
     for _, character in pairs(WoWStatusDB.characters) do
         claimSecret(character)
+        -- Not an upgrade: the Discord switch in Features.lua can turn either way
+        -- between releases, so the hidden opt-ins are parked or restored at every login.
         if not WoWStatusFeatures.discord then
             if character.discord_hidden_opt_in==nil then character.discord_hidden_opt_in=character.settings.discord_enabled==true end
             if character.discord_hidden_enrolled==nil then character.discord_hidden_enrolled=character.discord_enrolled==true end
@@ -483,16 +493,14 @@ local function initialize()
             character.discord_hidden_opt_in=nil
         end
     end
-    if current.settings.discord_enabled == nil then
-        current.discord_enrolled = current.enrolled == true
-        current.settings.discord_enabled = false
-    end
+    upgraded(WoWStatusMigrations.upgradeCharacter(current, WoWStatusDB))
+    -- Not upgrades: options the addon no longer lets anyone change, held at
+    -- their fixed values on every login.
+    current.settings.in_game = current.settings.in_game or {}
     current.settings.discord_delivery = "summary"
     current.settings.collection.equipment = false
     current.settings.announcements.equipment = false
-    current.settings.in_game = current.settings.in_game or {}
     current.settings.in_game.equipment = false
-    if current.settings.in_game.recap==nil then current.settings.in_game.recap=false end
     current.settings.collection.recap=true
     current.settings.in_game.introduction=true
     current.settings.collection.introduction=true
@@ -502,18 +510,9 @@ local function initialize()
         current.settings.announcements[removed]=false
         current.settings.in_game[removed]=false
     end
-    for _, field in ipairs({"deaths", "quests", "gold", "kills", "collection"}) do
-        if current.settings.fields[field] == nil then current.settings.fields[field] = true end
-    end
-    for _, kind in ipairs({"quest", "profession", "dungeon", "mount", "reputation", "unlock", "pvp"}) do
-        if current.settings.collection[kind] == nil then current.settings.collection[kind] = true end
-        if current.settings.announcements[kind] == nil then current.settings.announcements[kind] = true end
-    end
-    current.settings.in_game = current.settings.in_game or {}
-    if current.settings.in_game.loot==nil then current.settings.in_game.loot=true end
+    -- A kind that is not collected is not shown in game either.
     if current.settings.collection.loot==false then current.settings.in_game.loot=false end
     for _,kind in ipairs(kinds) do
-        if current.settings.in_game[kind]==nil then current.settings.in_game[kind]=true end
         if current.settings.collection[kind]==false then current.settings.in_game[kind]=false end
     end
     WoWStatusGroups.init(WoWStatusDB, function() return current end, say)
@@ -864,10 +863,8 @@ SlashCmdList.WOWSTATUS = function(message)
         end
     elseif command == "interval" or command == "quality" then
         local number = tonumber(rest)
-        local upper = command == "interval" and 100 or 5
-        local lower = command == "interval" and 1 or 0
-        if number and number == math.floor(number) and number >= lower and number <= upper then
-            current.settings[command == "interval" and "level_interval" or "loot_quality"] = number
+        local key = command == "interval" and "level_interval" or "loot_quality"
+        if WoWStatusSettings.valid(key, number) and WoWStatusSettings.set(key, number, current) then
             if command=="quality" then
                 current.settings.loot_rarities={rare=number<=3,epic=number<=4,legendary=number<=5}
             end

@@ -228,6 +228,8 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Features.lua')
     if discord_feature is not None:
         runtime.globals().WoWStatusFeatures['discord'] = discord_feature
+    run_addon_file(runtime, root / 'Settings.lua')
+    run_addon_file(runtime, root / 'Migrations.lua')
     run_addon_file(runtime, root / 'CaseFold.lua')
     run_addon_file(runtime, root / 'Vanilla.lua')
     run_addon_file(runtime, root / 'Loot.lua')

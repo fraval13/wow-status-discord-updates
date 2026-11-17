@@ -52,6 +52,15 @@ be checked against Git and the environment rather than assumed permanently true.
 - `addon/{vanilla,forever,tbc,retail}/WoWStatus/`: four self-contained distributions
   with edition-specific adapters and TOCs. Keep their shared files in sync.
 - `Safe.lua`: public-value boundary; guard missing APIs and Retail secret values.
+- `Migrations.lua`, `Settings.lua`: saved-data upgrades and the option schema (#231).
+  To change the saved shape, append a numbered step to `WoWStatusMigrations.account`
+  (bumps `WoWStatusDB.version`) or `.character` (bumps each character's
+  `schema_version`) instead of another nil-check in `initialize()`; never renumber
+  or edit a released step, and test each step on its own in `tests/test_migrations.py`.
+  Old saved data is always upgraded, never refused. Declare a new option in
+  `WoWStatusSettings.schema` (`key`, `type`, `default`, `min`, `max`) and read and write
+  it with `WoWStatusSettings.get/set`, which keep a saved value in range.
+  `tests/fixtures/WoWStatusDB-v1.lua` is data saved before migrations; it must load unchanged.
 - `Groups.lua`, `Popups.lua`, `Journal.lua`: membership, live transport/queue and
   persistent log/login recovery. Retain bounded payloads, queues and validation.
 - `Gamepad.lua`, `Bindings.xml`: controller navigation of open windows (D-pad,

@@ -206,7 +206,7 @@ W.add({
     ["Chat is restricted right now; try again later."] = "Chatten er avgrensa no; prøv igjen seinare.",
     ["Whispers are not available in this client."] = "Kviskring er ikkje tilgjengeleg i denne klienten.",
     ["Recent buffer is full; older events remain in History."] = "Bufferen er full; eldre hendingar ligg att i Historikk.",
-    ["Character is not ready."] = "Figuren er ikkje klar.", ["Unsupported saved data version."] = "Ukjend versjon av lagra data.",
+    ["Character is not ready."] = "Figuren er ikkje klar.", ["Could not upgrade saved data (step %d). It will be tried again at the next login."] = "Kunne ikkje oppgradere lagra data (steg %d). Det blir prøvd att neste gong du loggar inn.",
     ["Waiting for readable player identity. Collection will retry after loading/combat."] =
         "Ventar på at spelaridentiteten kan lesast. Prøver igjen etter lasting eller kamp.",
     ["Set the same group ID as your friends in Options > AddOns > WoW Status."] = "Bruk same gruppe-ID som venene dine i Innstillingar > AddOns > WoW Status.",

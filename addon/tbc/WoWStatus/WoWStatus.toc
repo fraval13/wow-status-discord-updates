@@ -11,6 +11,8 @@ Safe.lua
 Locale.lua
 LocaleNN.lua
 Features.lua
+Settings.lua
+Migrations.lua
 CaseFold.lua
 TBC.lua
 Loot.lua
