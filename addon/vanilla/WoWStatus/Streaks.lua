@@ -13,9 +13,9 @@ local T = WoWStatusLocale.T
 St.LONG_LEVELS, St.LONG_DAYS = 5, 7
 local DAY, WEEK = 86400, 7 * 86400
 local ANNOUNCE_WITHIN = 600
--- Results are kept until the log changes, or this long (current streaks grow
--- with time and the roster's death totals can change).
-local MEMO_SECONDS = 30
+-- Results are kept until the log changes, or this long (what is hidden, muted
+-- or shared can change without a new entry), as the roster's log facts are.
+local MEMO_SECONDS = 5
 
 -- The roster's key: on WoW Forever it drops the internal realm, as the roster does.
 local function key(sender) return WoWStatusRoster.key(sender) end
@@ -27,10 +27,10 @@ local function longer(a, b)
     if a.levels ~= b.levels then return a.levels > b.levels end
     return a.seconds > b.seconds
 end
-St.longer = longer
 
 -- {current={key=streak}, best={key=streak}, ended={entry id=streak}, total={key=n}, sender={key=name}}
--- for one group (nil: the whole visible log). A streak is {levels, seconds,
+-- for one group (nil: the whole visible log). A death counts in every group,
+-- even when it was shared in another one: it ends the run all the same. A streak is {levels, seconds,
 -- exact, start}; a current streak's seconds run to the character's newest log
 -- entry, so a friend who stopped playing does not keep gaining days. Levels are
 -- the rise in level since the death when the level then is known, else the
@@ -45,13 +45,15 @@ local function compute(group)
     local list = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if type(e) == "table" and S.number(e.at) and type(e.id) == "string" and not e.imported
-            and (not group or (type(e.groups) == "table" and e.groups[group] == true))
+            and (not group or e.kind == "death" or (type(e.groups) == "table" and e.groups[group] == true))
             and WoWStatusJournal.visible(e) and key(e.sender) then
             list[#list + 1] = e
         end
     end
     table.sort(list, function(a, b) if a.at == b.at then return a.id < b.id end return a.at < b.at end)
     local run, result = {}, {current={}, best={}, ended={}, total={}, sender={}, finished={}}
+    -- The total the previous death carried, if it carried one ("Died" has none).
+    local previousTotal = {}
     local function keep(k, streak)
         local best = result.best[k]
         if not best or longer(streak, best) then result.best[k] = streak end
@@ -73,14 +75,15 @@ local function compute(group)
             local total = tonumber(tostring(e.text or ""):match("^Total deaths: (%d+)$"))
             -- Totals that jump (3, then 5) mean a death between them never reached
             -- the log, so the run they bound was not deathless: it counts nowhere.
-            local previous = result.total[k]
+            local previous = previousTotal[k]
             if not (total and previous and total > previous + 1) then
-                local streak = {levels=levels(r), seconds=math.max(0, e.at - r.start), exact=r.exact, start=r.start, death=e}
+                local streak = {levels=levels(r), seconds=math.max(0, e.at - r.start), exact=r.exact, start=r.start}
                 result.ended[e.id] = streak
                 keep(k, streak)
             end
             run[k] = {start=e.at, exact=true, reached={}, count=0, base=r.top, top=r.top, last=e.at}
             if total then result.total[k] = total end
+            previousTotal[k] = total
             result.finished[k] = WoWStatusProgress.hardcoreDeath(e) or nil
         end
     end
@@ -164,7 +167,6 @@ end
 local function long(streak)
     return streak.levels >= St.LONG_LEVELS or streak.seconds >= St.LONG_DAYS * DAY
 end
-St.long = long
 function St.records(group)
     local data, totals = St.compute(group), St.totals(group)
     local now, ever
@@ -247,14 +249,13 @@ local function milestone(e, streak, data, k)
     local levels = e.kind == "level" and streak.levels % St.LONG_LEVELS == 0 and streak.levels or 0
     local weeks = math.floor(streak.seconds / WEEK)
     local text
+    -- One notice per entry; a week reached on a level milestone waits for the next.
     if levels >= St.LONG_LEVELS and levels > (S.number(seen.levels) or 0) then
-        text = levels .. " levels without a death!"
+        text, seen.levels = levels .. " levels without a death!", levels
     elseif weeks >= 1 and weeks > (S.number(seen.weeks) or 0) then
-        text = weeks == 1 and "A week without a death!" or (weeks .. " weeks without a death!")
+        text, seen.weeks = weeks == 1 and "A week without a death!" or (weeks .. " weeks without a death!"), weeks
     end
     if not text then return nil end
-    seen.levels = math.max(S.number(seen.levels) or 0, levels)
-    seen.weeks = math.max(S.number(seen.weeks) or 0, weeks)
     if not data.weeks[k] then
         -- Bounded: past MEMORY characters, forget the one whose streak began first.
         local count, oldest, oldestStart = 0, nil, math.huge

@@ -389,3 +389,44 @@ def test_milestone_memory_forgets_the_oldest_streak_only():
         assert(__n == 1 and weeks.x and weeks.x.levels == 5)
         assert(weeks.p1 == nil and weeks.p2 ~= nil)
     ''')
+
+
+def test_a_death_without_a_total_between_is_no_gap():
+    """3, then "Died" (total not shared then), then 4: no death is missing."""
+    lua = actor('Thora')
+    clock(lua, 10)
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'death', 40 * DAY, '{text="Total deaths: 3"}'),
+                       ('Mira-TestRealm', '1-2-b', 'death', 30 * DAY, '{text="Died"}'),
+                       ('Mira-TestRealm', '1-3-c', 'death', 3600, '{text="Total deaths: 5"}')])
+    board(lua, {'Mira-TestRealm': 5})
+    text = plain(lua.eval(f'WoWStatusFirsts.funRecords("{lua.eval("__group")}")'))
+    assert 'Longest deathless streak ever: Mira' in text, text
+
+
+def test_a_death_shared_in_another_group_still_ends_the_run():
+    lua = actor('Thora')
+    clock(lua, 10)
+    group = lua.eval('(next(character().group_ids))')
+    with_entries(lua, [('Mira-TestRealm', f'1-1-{level}', 'level', (30 - level) * DAY, f'{{level={level}}}')
+                       for level in range(2, 12)])
+    with_entries(lua, [('Mira-TestRealm', '1-2-a', 'death', 2 * DAY, None)])
+    # The death was shared in another group only.
+    lua.execute('for _, e in ipairs(WoWStatusJournal.entries()) do if e.kind == "death" then e.groups = {other=true} end end')
+    board(lua, {'Mira-TestRealm': 1})
+    lua.execute(f'''
+        local s = WoWStatusStreaks.compute("{group}").current[WoWStatusRoster.key("Mira-TestRealm")]
+        assert(s and s.exact and s.levels == 0, s and s.levels)
+    ''')
+
+
+def test_a_week_reached_on_a_level_milestone_comes_next():
+    lua = actor('Thora')
+    clock(lua, 10)
+    notices(lua)
+    lua.execute('WoWStatusStreaks.setMilestones(true)')
+    board(lua, {'Mira-TestRealm': 1})
+    with_entries(lua, [('Mira-TestRealm', '1-0-a', 'death', 8 * DAY, None),
+                       *[('Mira-TestRealm', f'1-1-{level}', 'level', 300 - level, f'{{level={level}}}') for level in range(2, 7)],
+                       ('Mira-TestRealm', '1-2-a', 'zone', 30, '{text="Entered Duskwood"}')])
+    texts = [lua.eval(f'__notices[{i}].text') for i in range(1, lua.eval('#__notices') + 1)]
+    assert 'A week without a death!' in texts and '5 levels without a death!' in texts, texts
