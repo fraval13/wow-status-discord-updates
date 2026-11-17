@@ -31,8 +31,7 @@ def verifier_module():
 
 def public_verifier(site):
     """The verifier, checking against site, the local build, as the deploy job does."""
-    return functools.partial(verifier_module().verify,
-                             changelog=(site/'changelog/index.html').read_bytes())
+    return functools.partial(verifier_module().verify, pages=verifier_module().local_pages(site))
 
 
 def receiver():
@@ -128,7 +127,8 @@ def test_published_site_verification_checks_every_download(built_site):
 
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
                                    'webp_link_preview','no_twitter_card',
-                                   'no_changelog_link','stale_changelog','truncated_changelog'])
+                                   'no_changelog_link','stale_changelog','truncated_changelog',
+                                   'stale_sitemap','hand_written_robots'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -152,8 +152,15 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data.replace(b'id="v'+version+b'"',b'id="v0.0.0"')
         if path=='changelog/index.html' and fault=='truncated_changelog':
             return data[:len(data)//2]
+        # Issue #192: lastmod must be this release's, and robots.txt the generated one.
+        if path=='sitemap.xml' and fault=='stale_sitemap':
+            return data.replace(b'<lastmod>2',b'<lastmod>1')
+        if path=='robots.txt' and fault=='hand_written_robots':
+            return b'User-agent: *\nDisallow: /\n'
         return data
-    with pytest.raises(ValueError):
+    message={'stale_sitemap':'The live /sitemap.xml differs','hand_written_robots':'The live /robots.txt differs',
+             'stale_changelog':'The live /changelog/ differs','truncated_changelog':'The live /changelog/ differs'}
+    with pytest.raises(ValueError, match=message.get(fault)):
         public_verifier(built_site)('https://example.com',manifest['addon_revision'],site_fetch(built_site,change),
                           expected=manifest)
 
@@ -390,6 +397,29 @@ def test_a_response_cut_short_is_retried_and_never_rolls_back(built_site, framin
     assert result.returncode == verifier_module().UNREACHABLE
     assert 'IncompleteRead' in result.stderr
     assert requests == ['/downloads/release.json'] * 2
+
+
+def test_verifier_checks_every_page_the_build_generates(built_site):
+    # Derived from the builder's VERIFIED_FILES, so a file added there is checked on the live site too.
+    module = verifier_module()
+    assert set(module.generated_pages()) >= {'/changelog/', '/robots.txt', '/sitemap.xml'}
+    assert all((built_site/file).is_file() for file in module.builder().VERIFIED_FILES)
+    # A local build without one is an input error, never a reason to roll the live site back.
+    manifest = local_manifest(built_site)
+    def no_fetch(url):
+        raise AssertionError(f'fetched {url}')
+    pages = module.local_pages(built_site)
+    del pages['/sitemap.xml']
+    with pytest.raises(ValueError, match='not those the build writes'):
+        module.verify('https://example.com', manifest['addon_revision'], no_fetch, expected=manifest, pages=pages)
+
+
+def test_a_missing_local_page_stops_the_verifier_before_any_retry(built_site, tmp_path):
+    site = tmp_path / 'site'
+    shutil.copytree(built_site, site)
+    (site / 'robots.txt').unlink()
+    result = run_verifier(site, 'https://example.com', attempts=3)
+    assert result.returncode == 2 and 'Cannot read a locally built page' in result.stderr
 
 
 def test_command_line_requires_a_manifest_of_the_same_revision(built_site):

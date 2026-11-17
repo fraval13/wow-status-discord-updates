@@ -1,0 +1,1 @@
+- Website: search engines now get a sitemap and robots.txt, so new releases show up in search sooner

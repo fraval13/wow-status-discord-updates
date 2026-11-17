@@ -126,8 +126,18 @@ def check_entries(edition, package):
     return toc
 
 
-def check_inputs(base, revision, expected):
-    """Reject arguments that no retry can fix: a bad URL, revision or local manifest."""
+def generated_pages():
+    """Site paths of the generated pages the live site must serve exactly as built."""
+    return [builder().site_path(file) for file in builder().VERIFIED_FILES]
+
+
+def local_pages(site):
+    """{site path: bytes} of every generated page in the local build at site."""
+    return {builder().site_path(file): (site / file).read_bytes() for file in builder().VERIFIED_FILES}
+
+
+def check_inputs(base, revision, expected, pages):
+    """Reject arguments that no retry can fix: a bad URL, revision, local manifest or pages."""
     address = urlparse(base)
     if (address.username or address.password or address.query or address.fragment
             or (address.scheme != 'https' and not
@@ -136,14 +146,16 @@ def check_inputs(base, revision, expected):
     if not re.fullmatch('[a-f0-9]{40}', revision):
         raise ValueError('Expected a complete Git commit revision')
     check_local(expected, revision)
+    if set(pages) != set(generated_pages()):
+        raise ValueError('The local generated pages are not those the build writes')
 
 
-def verify(base, revision, fetch=read, *, expected, changelog):
+def verify(base, revision, fetch=read, *, expected, pages):
     """Check the live site at base against the local build of revision.
 
-    expected is that build's release.json and changelog its changelog/index.html bytes.
+    expected is that build's release.json and pages its generated pages (local_pages).
     """
-    check_inputs(base, revision, expected)
+    check_inputs(base, revision, expected, pages)
     base = base.rstrip('/')
     manifest = json.loads(fetch(base + '/downloads/release.json'))
     # Checked on its own first: a stale deploy is the common failure, and this says so.
@@ -155,8 +167,8 @@ def verify(base, revision, fetch=read, *, expected, changelog):
     parser = DownloadLinks()
     parser.feed(html)
     text = ' '.join(parser.text)
-    # A small page: checked before the large downloads, so a stale one fails fast.
-    check_changelog(base, fetch, parser.links, changelog)
+    # Small pages: checked before the large downloads, so a stale one fails fast.
+    check_generated_pages(base, fetch, parser.links, pages)
     versions = set()
     for edition in EDITIONS:
         release = expected['editions'][edition]
@@ -186,12 +198,14 @@ def verify(base, revision, fetch=read, *, expected, changelog):
     return manifest
 
 
-def check_changelog(base, fetch, links, local):
-    """Require the homepage's link to /changelog/ and the locally built page there (#194)."""
+def check_generated_pages(base, fetch, links, local):
+    """Require the homepage's link to /changelog/ (#194) and each generated page, such as
+    /changelog/, /robots.txt and /sitemap.xml (#192), to equal the local build's copy."""
     if '/changelog/' not in links:
         raise ValueError('The homepage does not link to /changelog/')
-    if fetch(base + '/changelog/') != local:
-        raise ValueError('The live changelog page differs from the locally built one')
+    for path, data in local.items():
+        if fetch(base + path) != data:
+            raise ValueError(f'The live {path} differs from the locally built one')
 
 
 if __name__ == '__main__':
@@ -200,8 +214,6 @@ if __name__ == '__main__':
     parser.add_argument('--revision', required=True)
     parser.add_argument('--manifest', type=Path, required=True,
                         help='downloads/release.json from the local build of --revision')
-    parser.add_argument('--changelog', type=Path,
-                        help='changelog/index.html from the same local build (default: beside --manifest)')
     parser.add_argument('--attempts', type=int, default=1)
     parser.add_argument('--delay', type=float, default=5)
     args = parser.parse_args()
@@ -211,20 +223,19 @@ if __name__ == '__main__':
         expected = json.loads(args.manifest.read_text(encoding='utf-8'))
     except (OSError, ValueError) as error:
         parser.error(f'Cannot read the local manifest {args.manifest}: {error}')
-    # By default the page the same build wrote beside downloads/.
-    changelog_path = args.changelog or args.manifest.parent.parent / 'changelog/index.html'
+    # The pages the same build wrote beside downloads/.
     try:
-        changelog = changelog_path.read_bytes()
+        pages = local_pages(args.manifest.parent.parent)
     except OSError as error:
-        parser.error(f'Cannot read the local changelog page {changelog_path}: {error}')
+        parser.error(f'Cannot read a locally built page: {error}')
     # Fail now rather than after every retry: a wrong argument or local build never becomes right.
     try:
-        check_inputs(args.url, args.revision, expected)
+        check_inputs(args.url, args.revision, expected, pages)
     except ValueError as error:
         parser.error(str(error))
     for attempt in range(args.attempts):
         try:
-            result = verify(args.url, args.revision, expected=expected, changelog=changelog)
+            result = verify(args.url, args.revision, expected=expected, pages=pages)
             print(f"Verified live release {args.revision}: " + ', '.join(
                 f"{edition} {result['editions'][edition]['version']}" for edition in EDITIONS))
             break

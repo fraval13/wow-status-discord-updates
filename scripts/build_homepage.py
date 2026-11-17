@@ -18,9 +18,11 @@ import sys
 import tempfile
 import tomllib
 import zipfile
+from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlparse
+from xml.sax.saxutils import escape as xml_text
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from whats_new import parse as parse_changelog  # noqa: E402
@@ -48,6 +50,15 @@ PREVIEW_TEXT = ('og:site_name', 'og:title', 'og:description', 'og:url', 'og:imag
                 'twitter:title', 'twitter:description', 'twitter:image', 'twitter:image:alt')
 
 
+# Group routes (/groups/<route key>/) are the addon's service API, never pages. Naming
+# the public prefix reveals no group: the route keys stay in the server's groups.json.
+ROBOTS_DISALLOW = ('/groups/',)
+# Generated into the site root by every build, never kept in website/.
+CRAWLER_FILES = ('robots.txt', 'sitemap.xml')
+# Generated files scripts/verify_homepage.py requires the live site to serve byte for byte.
+VERIFIED_FILES = ('changelog/index.html', *CRAWLER_FILES)
+
+
 class MetaTags(HTMLParser):
     """Every <meta property|name=... content=...> tag of a page, in order."""
     def __init__(self):
@@ -59,6 +70,18 @@ class MetaTags(HTMLParser):
         key = attrs.get('property') or attrs.get('name')
         if tag == 'meta' and key:
             self.tags.append((key, attrs.get('content') or ''))
+
+
+class CanonicalLinks(HTMLParser):
+    """Every <link rel="canonical" href=...> of a page, in order."""
+    def __init__(self):
+        super().__init__()
+        self.links = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'link' and 'canonical' in (attrs.get('rel') or '').lower().split():
+            self.links.append(attrs.get('href') or '')
 
 
 def jpeg_size(data):
@@ -84,7 +107,7 @@ def check_link_preview(html, read):
 
     read(path) returns the bytes served at that site path. Discord and other chat
     clients show a large card only with twitter:card and the image's size, so an
-    incomplete set fails the build and the live verification.
+    incomplete set fails the build and the live verification. Returns og:url, parsed.
     """
     parser = MetaTags()
     parser.feed(html)
@@ -111,6 +134,14 @@ def check_link_preview(html, read):
     if jpeg_size(read(LINK_PREVIEW)) != LINK_PREVIEW_SIZE:
         raise ValueError(f'{LINK_PREVIEW} must be a complete {LINK_PREVIEW_SIZE[0]}×{LINK_PREVIEW_SIZE[1]} '
                          'JPEG; run python scripts/make_link_preview.py')
+    return site
+
+
+def site_path(file):
+    """The site path a file of the build is served at: changelog/index.html is /changelog/."""
+    if file == 'index.html' or file.endswith('/index.html'):
+        file = file.removesuffix('index.html')
+    return '/' + file
 
 
 def site_file(folder):
@@ -232,6 +263,70 @@ def render_changelog(sections):
     return '\n'.join(entries)
 
 
+def commit_time(root, revision):
+    """The committer time of revision in UTC, as a W3C datetime for sitemap lastmod.
+
+    On main the deploy builds the release commit with its website committed (the
+    publisher refuses uncommitted website files), so this is when that release was made.
+    """
+    # log.showSignature would print a signed commit's check before the time.
+    seconds = int(git(root, '-c', 'log.showSignature=false', 'show', '-s', '--format=%ct',
+                      revision).decode().strip())
+    return datetime.fromtimestamp(seconds, timezone.utc).strftime('%Y-%m-%dT%H:%M:%S+00:00')
+
+
+def canonical_url(website, file, site):
+    """The URL of a page in website/, which must declare it as its one canonical link.
+
+    The URL is the page's own site path on the site's origin, so the sitemap never lists
+    an address that is not this page. The build only fills placeholders, so the shipped
+    page keeps the link checked here.
+    """
+    expected = f'{site.scheme}://{site.netloc}{site_path(file)}'
+    parser = CanonicalLinks()
+    parser.feed((website / file).read_text(encoding='utf-8'))
+    if parser.links != [expected]:
+        raise ValueError(f'{file}: a sitemap page needs exactly one <link rel="canonical" href="{expected}">')
+    return expected
+
+
+def render_sitemap(urls, lastmod):
+    """sitemap.xml listing urls, each last modified at lastmod (the release being built)."""
+    entries = ''.join(f'  <url><loc>{xml_text(url)}</loc><lastmod>{lastmod}</lastmod></url>\n' for url in urls)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            f'{entries}</urlset>\n')
+
+
+def render_robots(sitemap):
+    """robots.txt: crawl every page and download, skip the group routes, find the sitemap.
+
+    The site serves only the current release's ZIPs (older releases stay on the server
+    outside the web root), so there is no archive path to keep crawlers out of.
+    """
+    lines = ['# Generated by scripts/build_homepage.py (issue #192).', 'User-agent: *',
+             *(f'Disallow: {path}' for path in ROBOTS_DISALLOW), 'Allow: /', '', f'Sitemap: {sitemap}']
+    return '\n'.join(lines) + '\n'
+
+
+def sitemap_urls(website, site):
+    """The sitemap's URLs: every page of website/, in site path order (issue #192).
+
+    The site's pages are folders (/, /changelog/), so a page is an index.html. Other HTML
+    files, such as a search engine's verification file or an error page, stay out. site is
+    the homepage's og:url as check_link_preview returned it.
+    """
+    pages = (page.relative_to(website).as_posix() for page in website.rglob('index.html'))
+    return [canonical_url(website, page, site) for page in sorted(pages, key=site_path)]
+
+
+def write_crawler_files(output, site, urls, lastmod):
+    """Write robots.txt and sitemap.xml, listing urls, into output."""
+    sitemap = f'{site.scheme}://{site.netloc}/sitemap.xml'
+    (output / 'sitemap.xml').write_text(render_sitemap(urls, lastmod), encoding='utf-8', newline='\n')
+    (output / 'robots.txt').write_text(render_robots(sitemap), encoding='utf-8', newline='\n')
+
+
 def fill(path, values):
     """Replace every __NAME__ placeholder in the file at path in one pass.
 
@@ -308,10 +403,12 @@ def write_package(root, revision, folder, files, archive):
             raise ValueError(f'Broken archive: {archive}')
 
 
-def write_site(root, output, revision, editions, version, sections):
-    """Write the website, its changelog page and the four ZIPs into the new, empty folder output.
+def write_site(root, output, revision, editions, version, sections, site, urls):
+    """Write the website, its changelog page, robots.txt, sitemap.xml and the four ZIPs
+    into the new, empty folder output.
 
-    sections is the parsed CHANGELOG.md from version, the release being built, down.
+    sections is the parsed CHANGELOG.md from version, the release being built, down, site
+    the homepage's checked og:url and urls the sitemap's pages.
     """
     for source in (root / 'website').iterdir():
         if source.name in NOT_SHIPPED or source.name in DESKTOP_FILES:
@@ -339,6 +436,7 @@ def write_site(root, output, revision, editions, version, sections):
     count = len(sections)
     fill(changelog, {**shared, 'RELEASES': f"{count} release{'' if count == 1 else 's'}",
                      'CHANGELOG': render_changelog(sections)})
+    write_crawler_files(output, site, urls, commit_time(root, revision))
     (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
 
 
@@ -347,7 +445,11 @@ def build(root, output, addon_ref):
     output = Path(output)
     replaceable(output)
     website = root / 'website'
-    check_link_preview((website / 'index.html').read_text(encoding='utf-8'), site_file(website))
+    site = check_link_preview((website / 'index.html').read_text(encoding='utf-8'), site_file(website))
+    urls = sitemap_urls(website, site)
+    for name in CRAWLER_FILES:
+        if (website / name).exists():
+            raise ValueError(f'website/{name} must not exist: the build generates {name}')
     # Check every edition before writing anything.
     editions = {}
     for edition in EDITIONS:
@@ -386,7 +488,7 @@ def build(root, output, addon_ref):
     staging = Path(tempfile.mkdtemp(prefix=f'.{output.name}-', dir=output.parent))
     try:
         staging.chmod(0o755)  # mkdtemp's private mode would otherwise become the site folder's
-        write_site(root, staging, revision, editions, expected, sections)
+        write_site(root, staging, revision, editions, expected, sections, site, urls)
         replace_output(staging, output)
     except BaseException:
         shutil.rmtree(staging, ignore_errors=True)

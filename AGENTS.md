@@ -81,8 +81,8 @@ be checked against Git and the environment rather than assumed permanently true.
   live game API availability, rendering or cross-realm delivery.
 - `website/`: buildless static HTML/CSS/JS and locally served artwork/fonts.
 - `scripts/build_homepage.py`: packages committed addon source into four ZIPs;
-  fills website versions/sizes, generates `/changelog/` from `CHANGELOG.md` and
-  publishes a checksummed release manifest.
+  fills website versions/sizes, generates `/changelog/` from `CHANGELOG.md`,
+  writes `robots.txt` and `sitemap.xml` and publishes a checksummed release manifest.
   Each ZIP holds only the TOC, the files it lists, `Bindings.xml` and `Textures/*.tga`; other
   committed files are skipped. The build fails unless all four TOC versions
   equal the `pyproject.toml` version. Each build replaces its output folder as a

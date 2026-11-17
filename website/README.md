@@ -35,6 +35,16 @@ does not parse fails the build, as does a missing template. The homepage links t
 from the download panel, the release panel and the footer, and
 `scripts/verify_homepage.py` checks the live page equals the local build's.
 
+`robots.txt` and `sitemap.xml` are generated at build time too (issue #192), so never
+add them to `website/` (the build fails if you do). The sitemap lists every page (each
+`index.html`, so other HTML files such as a verification file stay out), and each page
+needs one `<link rel="canonical">` naming its own URL (checked before packaging), with
+`lastmod` set to the built commit's time, so a new release tells search engines the
+pages changed. `robots.txt` lets crawlers fetch every page and the current ZIPs (old
+releases are kept on the server outside the web root, so no archive path is public),
+keeps them off the `/groups/` service routes and names the sitemap. Caddy's
+`file_server` serves both with the right content type, so the Caddyfile is unchanged.
+
 ## Deployment
 
 The homepage is independent from the dormant companion services. Caddy serves
@@ -76,7 +86,7 @@ group routes (never the Discord settings) and refuses to change the live routes.
 `--dry-run` prints the Caddy change without uploading anything; that output holds
 the group route keys, so keep it private.
 
-After publication check `/`, `/changelog/`, all four ZIP downloads and their contents, the release
+After publication check `/`, `/changelog/`, `/robots.txt`, `/sitemap.xml`, all four ZIP downloads and their contents, the release
 manifest, both existing group `/health` endpoints, and an unknown group URL.
 When publishing a future release, add its notes to `CHANGELOG.md` (the release
 panel's notes and `/changelog/` are generated from it), rebuild with its addon
@@ -119,7 +129,8 @@ After deployment, the workflow fetches the live homepage, release manifest and
 all four ZIP downloads using `scripts/verify_homepage.py`, and compares them with
 the `release.json` the deploy job built itself (`--manifest`), not only with the
 manifest the site serves. It checks the exact commit revision, that the served
-manifest equals the local one, that `/changelog/` equals the locally built page,
+manifest equals the local one, that `/changelog/`, `/robots.txt` and `/sitemap.xml`
+equal the locally built files,
 the visible download links, that every ZIP's size and SHA-256 match the local
 build, and the version labels. Each ZIP must hold
 exactly its TOC, the files the TOC lists, `Bindings.xml` and `Textures/*.tga` under `WoWStatus/`;
