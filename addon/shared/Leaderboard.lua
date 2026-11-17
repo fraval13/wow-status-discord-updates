@@ -13,6 +13,8 @@ local function state()
     end
     local data = WoWStatusDB.leaderboard
     if data.sort ~= "level" and data.sort ~= "deaths" and data.sort ~= "quests" and data.sort ~= "played" then data.sort="level" end
+    -- Characters (one row each) or Players (one row per player, by their main; #200).
+    if data.mode ~= "players" then data.mode = "characters" end
     return data
 end
 
@@ -30,6 +32,7 @@ local function sorted(list, by, pinnedFirst)
     end)
     return list
 end
+local ROW, PLAYER_ROW = 28, 44
 local function boardRow(index)
     local UI = WoWStatusUI
     local row = CreateFrame("Frame", nil, page.list)
@@ -41,24 +44,59 @@ local function boardRow(index)
     row.deaths = UI.text(row, "GameFontHighlight", 390, -6, 70, "RIGHT")
     row.quests = UI.text(row, "GameFontHighlight", 465, -6, 100, "RIGHT")
     row.played = UI.text(row, "GameFontHighlight", 570, -6, 100, "RIGHT")
+    -- Players mode: the main (or the default) and the alts collapsed under it.
+    row.alts = UI.text(row, "GameFontDisableSmall", 44, -24, 626)
+    row.alts:SetWordWrap(false)
     page.board[index] = row
     return row
+end
+local function short(name) return ((name:match("^[^-]+") or name):gsub("|", "||")) end
+local function coloured(entry)
+    local colour = WoWStatusUI.classColour(entry.class)
+    return colour and (colour .. short(entry.name) .. "|r") or short(entry.name)
+end
+local MAX_ALTS = 6
+-- One Players-mode entry as a ranking row: the main's numbers, the player's name.
+local function playerEntry(item)
+    local main, online, pin = item.main, false, nil
+    for _, row in ipairs(item.rows) do online = online or row.online; pin = pin or row.pin end
+    local name = item.name and item.name:gsub("|", "||")
+        or (item.own and T("You")) or (item.player:match("^character:") and short(main.name)) or T("Unnamed player")
+    local parts = {}
+    for i, alt in ipairs(item.alts) do
+        if i > MAX_ALTS then table.insert(parts, TF("%d more", #item.alts - MAX_ALTS)); break end
+        table.insert(parts, coloured(alt) .. (alt.level and (" " .. alt.level) or ""))
+    end
+    -- A default is never presented as the player's choice.
+    local line = coloured(main) .. " · " .. (item.chosen and T("main") or T("highest level, no main chosen"))
+    if #parts > 0 then line = line .. "   " .. T("Alts:") .. " " .. table.concat(parts, ", ") end
+    return {name=name, level=main.level, xp=main.xp, deaths=main.deaths, quests=main.quests,
+        quests_source=main.quests_source, played=main.played, online=online, own=item.own, line=line, isPlayer=true, pin=pin}
 end
 local function renderBoard(chosen)
     local data, UI = state() or {}, WoWStatusUI
     local by = data.sort or "level"
-    local list = chosen and sorted(WoWStatusRoster.leaderboard(chosen.id), by, data.pinned_first == true) or {}
+    local players, pinned = data.mode == "players", data.pinned_first == true
+    local list = {}
+    if chosen and players then
+        for _, item in ipairs(WoWStatusRoster.players(chosen.id)) do table.insert(list, playerEntry(item)) end
+        sorted(list, by, pinned)
+    elseif chosen then
+        list = sorted(WoWStatusRoster.leaderboard(chosen.id), by, pinned)
+    end
+    local height = players and PLAYER_ROW or ROW
     page.board = page.board or {}
     for i, entry in ipairs(list) do
         local row = page.board[i] or boardRow(i)
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * 28)
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * height)
+        row:SetSize(680, height - 2)
         -- Your own row and the zebra stripes, stronger on High contrast (#186).
         UI.stripe(row.bg, entry.own and "own" or (i % 2 == 0 and "stripe" or nil))
         row.rank:SetText(i .. ".")
-        local name = (entry.name:match("^[^-]+") or entry.name):gsub("|", "||")
-        local colour = UI.classColour(entry.class)
         -- A filled dot online, a hollow ring offline: the shape says it, not only the green (#185).
-        row.name:SetText(UI.presence(entry.online) .. " " .. (colour and (colour .. name .. "|r") or name))
+        row.name:SetText(UI.presence(entry.online) .. " " .. (entry.isPlayer and entry.name or coloured(entry)))
+        row.alts:SetText(entry.line or "")
+        row.alts:SetShown(entry.line ~= nil)
         row.level:SetText(entry.level and (TF("Level %d", entry.level) .. (entry.xp and (" (" .. math.floor(entry.xp / 10) .. " %)") or "")) or "–")
         row.deaths:SetText(entry.deaths and tostring(entry.deaths) or "–")
         row.quests:SetText(entry.quests and (tostring(entry.quests)
@@ -68,10 +106,29 @@ local function renderBoard(chosen)
     end
     for i = #list + 1, #page.board do page.board[i]:Hide() end
     page.boardHeader:SetShown(true)
-    page.list:SetHeight(math.max(1, #list * 28))
+    page.list:SetHeight(math.max(1, #list * height))
     page.boardEmpty:SetShown(#list == 0)
     page.pinnedFirst:SetChecked(data.pinned_first == true)
     page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or by == "played" and "Played time" or "Level"))
+    page.mode:SetText(T("View:") .. " " .. T(players and "Players" or "Characters"))
+    page.nameHeader:SetText(T(players and "Player" or "Character"))
+    -- Your main in this group: Automatic (the default) or one of your listed characters.
+    local choices = chosen and WoWStatusRoster.mainChoices() or {}
+    local main = chosen and WoWStatusRoster.ownMain(chosen.id, choices)
+    page.main:SetText(T("Main:") .. " " .. (main and short(main) or T("Automatic")))
+    UI.call(page.main, "SetEnabled", #choices > 0)
+end
+-- Cycles this group's main: Automatic, then each listed character, highest level first.
+local function nextMain()
+    local group = page.group
+    if not group then return end
+    local choices = WoWStatusRoster.mainChoices()
+    local current = WoWStatusRoster.ownMain(group, choices)
+    local index = 0
+    for i, item in ipairs(choices) do if item.name == current then index = i end end
+    local pick = choices[index + 1]
+    -- setMain re-renders this page through WoWStatusRoster.render.
+    WoWStatusRoster.setMain(group, pick and pick.name or nil)
 end
 
 function L.render()
@@ -109,17 +166,21 @@ function L.render()
         or T("Join a group to compare your characters with friends."))
     page.sort:ClearAllPoints(); page.sort:SetPoint("TOPRIGHT", -24, -8-top)
     UI.call(page.sort, "SetEnabled", chosen ~= nil)
-    page.pinnedFirst:ClearAllPoints(); page.pinnedFirst:SetPoint("TOPRIGHT", -290, -4-top)
-    page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -44-top)
-    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -66-top)
-    page.scroll:SetHeight(464-top)
+    -- View, Main and Pinned first get a line of their own, so the heading keeps its width (#200).
+    page.mode:ClearAllPoints(); page.mode:SetPoint("TOPLEFT", 24, -38-top)
+    UI.call(page.mode, "SetEnabled", chosen ~= nil)
+    page.main:ClearAllPoints(); page.main:SetPoint("TOPLEFT", 150, -38-top)
+    page.pinnedFirst:ClearAllPoints(); page.pinnedFirst:SetPoint("TOPLEFT", 360, -34-top)
+    page.boardHeader:ClearAllPoints(); page.boardHeader:SetPoint("TOPLEFT", 24, -72-top)
+    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -94-top)
+    page.scroll:SetHeight(436-top)
     renderBoard(chosen)
 end
 
 local function build(parent)
     local UI = WoWStatusUI
     page = CreateFrame("Frame", "WoWStatusLeaderboardPage", parent); page:SetAllPoints(parent)
-    page.heading = UI.text(page, "GameFontNormalLarge", 24, -12, 390)
+    page.heading = UI.text(page, "GameFontNormalLarge", 24, -12, 520)
     page.heading:SetWordWrap(false)
     page.sort = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sort:SetSize(140, 24)
@@ -148,13 +209,25 @@ local function build(parent)
         end
     end)
     page.pinnedFirst:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
+    page.mode = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+    page.mode:SetSize(120, 24)
+    page.mode:SetScript("OnClick", function()
+        local data = state()
+        data.mode = data.mode == "players" and "characters" or "players"
+        page.scroll:SetVerticalScroll(0)
+        L.render()
+    end)
+    page.main = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+    page.main:SetSize(200, 24)
+    page.main:SetScript("OnClick", nextMain)
     page.tabs = {}
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
     page.scroll:SetSize(710, 464)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)
     page.scroll:SetScrollChild(page.list)
     page.boardHeader = CreateFrame("Frame", nil, page); page.boardHeader:SetSize(680, 20)
-    UI.text(page.boardHeader, "GameFontNormal", 44, 0, 230):SetText(T("Character"))
+    page.nameHeader = UI.text(page.boardHeader, "GameFontNormal", 44, 0, 230)
+    page.nameHeader:SetText(T("Character"))
     UI.text(page.boardHeader, "GameFontNormal", 280, 0, 105):SetText(T("Level"))
     UI.text(page.boardHeader, "GameFontNormal", 390, 0, 70, "RIGHT"):SetText(T("Deaths"))
     UI.text(page.boardHeader, "GameFontNormal", 465, 0, 100, "RIGHT"):SetText(T("Quests"))

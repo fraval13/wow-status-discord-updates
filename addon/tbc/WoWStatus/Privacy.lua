@@ -17,7 +17,8 @@ PV.SECTIONS = {
         .. "armor equips, and session recaps if you tick them. A death also names what killed you, and where "
         .. "when Location is ticked.",
       "Your character list: the name, race, sex, class, level and XP progress of each character shown to "
-        .. "friends, when it reached each tenth level, the player name you chose, a random player ID and your "
+        .. "friends, when it reached each tenth level, the player name you chose, your main in each group once "
+        .. "you pick one, a random player ID and your "
         .. "addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it "
         .. "out, even after you stop sharing your list.",
       "The character details you tick: played time, professions with skill levels, completed quests, gold "
