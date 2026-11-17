@@ -1217,6 +1217,8 @@ end
 function P.setReduceMotion(value)
     if not prefs then return end
     Z.set("reduce_motion", value == true, root)
+    -- Turned off: a toast already shown keeps its place instead of sliding in again.
+    if not P.reduceMotion() and toast and toast:IsShown() then toast.age = math.max(toast.age or 0, .22) end
 end
 function P.options()
     return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or Z.get("big_banners", root),
@@ -1525,22 +1527,18 @@ local function show(item, now)
             -- Reduce motion has no entrance to wait for.
             local still = P.reduceMotion()
             if P.held() and (still or (self.age or 0) > .22) then
-                self.age = math.min(self.age or 0, 1); self:SetAlpha(1); anchor(self, 0)
-                if still then self.glow:SetAlpha(P.STEADY_GLOW) end
+                self.age = math.min(self.age or 0, 1)
+                if still then steady(self) else self:SetAlpha(1); anchor(self, 0) end
                 return
             end
             self.age = (self.age or 0) + elapsed
             local life, tail = self.life or 6, self.tail or .5
             -- Reduce motion: shown and hidden at once, without sliding or pulsing.
-            if still then
-                steady(self)
-            else
-                local entrance = math.min(1, self.age / .22)
-                local fade = tail > 0 and math.max(0, math.min(1, (life - self.age) / tail)) or 1
-                self:SetAlpha(entrance * fade)
-                anchor(self, (1 - entrance) * 12)
-                self.glow:SetAlpha(.5 + .3 * math.sin(self.age * 7))
-            end
+            local entrance = still and 1 or math.min(1, self.age / .22)
+            local fade = (still or tail <= 0) and 1 or math.max(0, math.min(1, (life - self.age) / tail))
+            self:SetAlpha(entrance * fade)
+            anchor(self, (1 - entrance) * 12)
+            self.glow:SetAlpha(still and P.STEADY_GLOW or .5 + .3 * math.sin(self.age * 7))
             if self.age >= life then self:Hide(); active = nil end
         end)
     end

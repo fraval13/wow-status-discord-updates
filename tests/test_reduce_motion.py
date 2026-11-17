@@ -146,6 +146,21 @@ def test_the_tick_is_a_controller_control_beside_big_banners():
         methods.GetObjectType = methods.GetObjectType or function(self) return self.kind end
         methods.GetScript = methods.GetScript or function(self, name) return self[name] end
         methods.IsEnabled = methods.IsEnabled or function() return true end
+        -- Enough geometry for WoWStatusGamepad.controls: children, visibility and a
+        -- 32 px rect from each TOPLEFT point (top-down, as the panel lays them out).
+        local create = CreateFrame
+        function CreateFrame(kind, name, parent, ...)
+            local frame = create(kind, name, parent, ...)
+            if type(parent) == "table" then parent.__kids = parent.__kids or {}; table.insert(parent.__kids, frame) end
+            return frame
+        end
+        methods.GetChildren = function(self) return (unpack or table.unpack)(self.__kids or {}) end
+        methods.IsVisible = function(self) return self.visible ~= false end -- Shown unless hidden, as in the game.
+        methods.GetRect = function(self)
+            local point = self.__point
+            if not point or type(point[2]) ~= "number" then return 0, 0, 1000, 1000 end
+            return point[2], 2000 + point[3] - 32, 32, 32
+        end
     ''')
     run_addon_file(lua, ROOT / 'addon/vanilla/WoWStatus/Previews.lua')  # Built again with the hooks.
     lua.execute('''
@@ -153,6 +168,9 @@ def test_the_tick_is_a_controller_control_beside_big_banners():
         local panel = WoWStatusNotificationPreviews
         local tick = panel.reduceMotion
         assert(tick.parent == panel and WoWStatusGamepad.interactive(tick))
+        local found = false
+        for _, control in ipairs(WoWStatusGamepad.controls(panel, {panel})) do found = found or control == tick end
+        assert(found, "the pad does not reach the tick")
         -- Same row as Big banners, to its right, clear of the panel's edge.
         assert(tick.__point[3] == panel.big.__point[3])
         assert(tick.__point[2] == 400 and panel.big.__point[2] == 24)
@@ -199,3 +217,19 @@ def test_hover_pauses_the_countdown_at_once_without_an_entrance():
         toast.OnUpdate(toast, 30)
         assert(toast:IsShown() and toast.age == 0)
     ''')
+
+
+def test_turning_it_off_mid_toast_does_not_replay_the_entrance():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute(TRACK_POINTS)
+    lua.execute('''
+        WoWStatusPopups.setReduceMotion(true)
+        WoWStatusPopups.preview("level"); WoWStatusPopups.tick()
+        local toast = WoWStatusLevelPopup
+        toast.OnUpdate(toast, .05)
+        WoWStatusPopups.setReduceMotion(false)
+        toast.OnUpdate(toast, .01)
+        assert(toast.alpha == 1)
+    ''')
+    assert offset(lua) == -170
