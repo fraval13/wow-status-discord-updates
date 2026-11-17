@@ -263,12 +263,15 @@ def test_tooltip_counts_friend_entries_the_activity_log_has_not_listed_yet():
     assert 'New since you last opened the log' not in thora.eval('__hover()')
     thora.execute('__receive(30, 300);__receive(31, 200)')
     assert 'New since you last opened the log: 2' in thora.eval('__hover()')
-    # Opening the Activity page lists them; entries arriving while it lists them are seen too.
-    thora.execute('WoWStatusJournal.show();__receive(32, 100)')
+    # Opening the Activity page sees them. Entries arriving while it is open
+    # count, as its filters may not list them, until it is next opened.
+    thora.execute('WoWStatusJournal.show()')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 0
-    thora.execute('WoWStatusMainFrame:Hide();__receive(33, 50)')
+    thora.execute('__receive(32, 100);WoWStatusMainFrame:Hide()')
     assert 'New since you last opened the log: 1' in thora.eval('__hover()')
-    # Another page of the window does not list the log.
+    thora.execute('WoWStatusJournal.show();WoWStatusMainFrame:Hide();__receive(33, 50)')
+    assert 'New since you last opened the log: 1' in thora.eval('__hover()')
+    # Another page of the window is not the log.
     thora.execute('WoWStatusMainWindow.show("overview");__receive(34, 40)')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
     thora.execute('WoWStatusMainFrame:Hide()')
@@ -307,12 +310,13 @@ def test_opening_the_log_from_a_closed_window_sees_every_new_entry():
     thora.execute('WoWStatusMainFrame:Hide();__receive(32, 30)')
     thora.execute('WoWStatusJournal.showCharacter("Thora-TestRealm")')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 0
-    # The tour shows samples, not the log: it neither sees nor hides news.
+    # The tour shows samples, not the log: opening it then sees nothing.
     thora.execute('''
         WoWStatusMainFrame:Hide();__receive(33, 20)
-        WoWStatusGuide.touring = function() return true end
+        local samples = WoWStatusGuide.sampleEntries
+        WoWStatusGuide.sampleEntries = function() return {} end
         WoWStatusJournal.show();__receive(34, 10)
-        WoWStatusGuide.touring = function() return false end
+        WoWStatusGuide.sampleEntries = samples
     ''')
     assert thora.eval('WoWStatusJournal.unseenCount()') == 2
 

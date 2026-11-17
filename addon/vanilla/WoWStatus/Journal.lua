@@ -180,11 +180,10 @@ J.zoneRevision=0
 -- Friends' entries new to the log since the Activity page was last opened, by
 -- ID, for the minimap tooltip's count (#179). Kept only on this account. IDs
 -- that leave the log are dropped at login and whenever they are counted.
--- The tour (#64) fills the page with samples, so the log is not in view then.
-local function touring() return WoWStatusGuide~=nil and WoWStatusGuide.touring() end
+-- Entries arriving while the page is open count too: its filters (today,
+-- one person, a type) may not list them, and the line says "since opened".
 local function markUnseen(entry)
-    if entry.owner or entry.sample or entry.legacy or entry.kind=="recap" then return end
-    if not touring() and WoWStatusMainWindow.active()=="activity" then return end
+    if entry.owner or entry.legacy or entry.kind=="recap" then return end
     db.journal.unseen[entry.id]=true
 end
 -- removed: an entry this one replaces, already taken out of the log.
@@ -219,7 +218,6 @@ local function add(entry)
             for group in pairs(old.groups) do entry.groups[group]=true end
         end
         for i,e in ipairs(db.journal.entries) do if e==old then table.remove(db.journal.entries,i);break end end
-        -- Marked before insert, whose refresh clears it again if the page lists it.
         local new=not (same and cutOf(old.text,entry.text))
         if new then markUnseen(entry) end
         insert(entry,old)
@@ -977,6 +975,11 @@ function J.init(database,character)
     if register then pcall(register,PREFIX) end
     if WoWStatusFirsts then WoWStatusFirsts.update() end
 end
+-- The name the Activity log shows for an entry's sender (also the minimap tooltip's).
+function J.displayName(e)
+    return (not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
+        and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+end
 local function label(parent,font,x,y,width)
     local f=parent:CreateFontString(nil,"OVERLAY",font);f:SetPoint("TOPLEFT",x,y);f:SetWidth(width);f:SetJustifyH("LEFT");return f
 end
@@ -1122,8 +1125,7 @@ local function render()
             local texture,r,g,b,heading=WoWStatusPresentation.theme(e)
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(T(heading))
-            local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
-                and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+            local who=J.displayName(e)
             row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")))
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
@@ -1197,8 +1199,7 @@ local function build(parent)
             elseif GameTooltip and self.entry then
                 -- The card's lines in full (they may be cut off with "...").
                 local e=self.entry
-                local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
-                    and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+                local who=J.displayName(e)
                 GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText((who:gsub("|","||")))
                 GameTooltip:AddLine(WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")),1,1,1,true)
                 local caption=WoWStatusFlavour.text(e)
@@ -1312,7 +1313,7 @@ function J.latestFriends(limit)
     local list={}
     for _,e in ipairs(J.entries()) do
         if #list>=limit then break end
-        if not e.owner and not e.sample and e.kind~="recap" and J.visible(e) then list[#list+1]=e end
+        if not e.owner and e.kind~="recap" and J.visible(e) then list[#list+1]=e end
     end
     return list
 end
@@ -1328,9 +1329,10 @@ function J.unseenCount()
     end
     return count
 end
--- Opening the Activity page sees everything new, as the tooltip line says.
+-- Opening the Activity page sees everything new, as the tooltip line says;
+-- not while the tour (#64) fills it with samples instead of the log.
 function J.markSeen()
-    if db and not touring() then db.journal.unseen={} end
+    if db and not (WoWStatusGuide and WoWStatusGuide.sampleEntries()) then db.journal.unseen={} end
 end
 -- A private recap has no group scopes and is never sent or offered to peers.
 function J.recordRecap(character,at,text,flavour)

@@ -64,10 +64,7 @@ local function fillTooltip(tooltip,draggable)
     for _,e in ipairs(latest) do
         local minutes=math.max(0,math.floor((now-(e.at or now))/60))
         local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
-        -- The name the Activity log shows for them.
-        local who=WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender)
-            or e.sender:match("^[^-]+") or e.sender
-        who=who:gsub("|","||")
+        local who=J.displayName(e):gsub("|","||")
         local text=S.cut(J.deathText(e),M.TEXT_LENGTH)
         local icon=WoWStatusPresentation and WoWStatusPresentation.theme(e)
         icon=icon and ("|T"..icon..":0|t ") or ""
