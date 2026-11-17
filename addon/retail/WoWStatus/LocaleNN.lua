@@ -628,8 +628,8 @@ W.add({
         "Ei melding til kvar gruppe du blir med i, om at du har blitt med.",
     ["The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, and session recaps if you tick them. A death also names what killed you, and where when Location is ticked."] =
         "Måla kunngjeringsvala dine tillèt: nye nivå, dødsfall, første besøk i eit område, kvart 100. oppdrag, yrkesmål, fangehol- og raidmål, ridedyr, omdøme, klasseevner, PvP-rang, første rustning du tek på, og øktsamandrag om du har kryssa av for dei. Eit dødsfall seier òg kva som drap deg, og kvar, når Stad er kryssa av.",
-    ["Your character list: the name, race, sex, class, level and XP progress of each character shown to friends, when it reached each tenth level, the player name you chose, a random player ID and your addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it out, even after you stop sharing your list."] =
-        "Figurlista di: namn, rase, kjønn, klasse, nivå og XP-framgang for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, ein tilfeldig spelar-ID og versjonen av tillegget. Namnet på ein gøymd figur blir likevel sendt, merkt som gøymd, så lista til venene utelèt han, òg etter at du har slutta å dele lista di.",
+    ["Your character list: the name, race, sex, class, level and XP progress of each character shown to friends, when it reached each tenth level, the player name you chose, your main in each group once you pick one, a random player ID and your addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it out, even after you stop sharing your list."] =
+        "Figurlista di: namn, rase, kjønn, klasse, nivå og XP-framgang for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, hovudfiguren din i kvar gruppe når du har valt ein, ein tilfeldig spelar-ID og versjonen av tillegget. Namnet på ein gøymd figur blir likevel sendt, merkt som gøymd, så lista til venene utelèt han, òg etter at du har slutta å dele lista di.",
     ["The character details you tick: played time, professions with skill levels, completed quests, gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you wear with its combat stats. Friends see them change as you play."] =
         "Figurdetaljane du kryssar av for: speletid, yrke med ferdigheitsnivå, fullførte oppdrag, gull og gull tent, monster drepne, fangehol, ridedyr og æresdrap, dødsfall totalt, og utstyret du har på deg med kamptala. Venene ser dei endre seg medan du spelar.",
     ["The name of a group you tick as Listed, to the members of your other groups."] =
@@ -675,4 +675,10 @@ W.add({
         "Utanom skjermbilete, som er bilete i Screenshots-mappa til spelet, ligg alt WoW Status lagrar, i WTF/Account/<konto>/SavedVariables/WoWStatus.lua, med reservekopien WoWStatus.lua.bak til spelet ved sida av. Å fjerne mappa til tillegget slettar ingen av dei; slett begge filene medan spelet er lukka.",
     ["Friends keep the updates they already received in their own log."] =
         "Venene dine beheld oppdateringane dei alt har fått, i sin eigen logg.",
+})
+-- Players ranking and mains on the Leaderboard (#200).
+W.add({
+    ["View:"] = "Vis:", ["Players"] = "Spelarar", ["Player"] = "Spelar", ["Main:"] = "Hovudfigur:",
+    ["Automatic"] = "Automatisk", ["main"] = "hovudfigur", ["highest level, no main chosen"] = "høgast nivå, ingen hovudfigur vald",
+    ["Alts:"] = "Andre figurar:", ["%d more"] = "%d til", ["You"] = "Du",
 })

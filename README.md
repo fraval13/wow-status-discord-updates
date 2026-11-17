@@ -95,7 +95,12 @@ quest history. **Character details → Completed quests** controls sharing.
 
 **Leaderboard** (**Toppliste** in Nynorsk) has its own tab in the main window,
 alongside Records and Characters, or opens with `/wstatus leaderboard`. Choose a
-group and sort by level, deaths, completed quests or played time. **Records** holds Firsts,
+group and sort by level, deaths, completed quests or played time. **View: Players**
+ranks one row per player by their main character, with their alts listed under it;
+**View: Characters** is the ranking by character. **Main** picks your main for the
+chosen group (one per group, shared with its members); until you choose, your
+highest-level shown character is used and is marked as a default, not a choice.
+A hidden character is never a main. **Records** holds Firsts,
 This week and Fun records.
 
 In **Settings → WoW Status → Characters shown to friends**, untick any of your

@@ -7,6 +7,7 @@
 --   X <group> <playerID>        (stop sharing: forget this player's list)
 --   Z <group> <playerID> <Name-Realm> <revision> <hidden 0|1>
 --   Y <group> <playerID> <Name-Realm> <key:skill:max,...>   (professions)
+--   W <group> <playerID> <Name-Realm|->   (the player's main in that group, #200)
 -- H, J, F and T belong to EquipmentSync on this same prefix: a new line needs a
 -- letter no module uses yet.
 -- Receivers accept only known members of a joined group and strictly
@@ -504,6 +505,21 @@ function R.tooltipFacts(name, liveLevel, guid, want)
         honor_kills=S.number(found.honor_kills)}
 end
 
+-- Whether one of this account's characters goes out in a "C" line: on this
+-- client, not hidden, fully identified. A main is chosen only among these, so
+-- friends always have the character a "W" line names.
+local function listable(c)
+    local info = c.roster_info
+    return type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
+        and info.race and (info.sex == 2 or info.sex == 3) and CLASSES[info.class] and S.number(info.level)
+        and WoWStatusPopups.fullName(WoWStatusPopups.characterName(c)) and true or false
+end
+-- The "W" line: this account's main in a group, or "-" for none (#200).
+local function mainLine(group)
+    local main = R.ownMain(group)
+    return table.concat({"W", group, state().id, main and main:gsub(" ", "_") or "-"}, " ")
+end
+
 local function ownLines(group)
     local roster, lines = state(), {}
     for _, c in pairs(db.characters or {}) do
@@ -516,9 +532,7 @@ local function ownLines(group)
         end
         -- WoW Forever: a character whose full name is not learnt yet would arrive as
         -- a first name only, which members drop; it is sent once the name is known.
-        if type(info) == "table" and c.identity and c.identity.client == WoWStatusAdapter.client_id and not c.hide_from_list
-            and info.race and (info.sex == 2 or info.sex == 3) and CLASSES[info.class] and S.number(info.level)
-            and WoWStatusPopups.fullName(WoWStatusPopups.characterName(c)) then
+        if listable(c) then
             -- A message is split on spaces; WoW Forever names have one ("Edith Aateigen").
             -- Character names cannot contain "_", so it stands for a space here.
             local name = (WoWStatusPopups.characterName(c):gsub(" ", "_"))
@@ -550,6 +564,9 @@ local function ownLines(group)
             end
         end
     end
+    -- The main chosen for this group (#200), or "-" for none; older versions
+    -- ignore "W". Sent once a main was ever chosen, so clearing it reaches friends.
+    if #lines > 0 and type(roster.mains) == "table" then table.insert(lines, mainLine(group)) end
     -- The addon version, once per list; older versions ignore this line.
     local version = WoWStatusPopups.runtimeVersion
     if #lines > 0 and type(version) == "string" and version:match("^%d+%.%d+%.%d+$") then
@@ -1682,6 +1699,24 @@ receive = function(message, sender, distribution)
         R.render()
         return true
     end
+    -- "W": the player's main in this group (#200). One per player and group: a
+    -- newer claim replaces the older one. A name outside their list is dropped.
+    if op == "W" and #words == 4 then
+        local player, name = players[pid], words[4]
+        if not player then return false, "unknown player" end
+        if name == "-" then
+            if type(player.mains) == "table" then player.mains[group] = nil end
+            R.render()
+            return true
+        end
+        if #name > 64 or name:find(S.CONTROL_OR_PIPE) or not name:match("^[^%-]+%-[^%-]+$") then return false end
+        local k = key((name:gsub("_", " ")))
+        if not k or type(player.characters[k]) ~= "table" then return false, "not in their list" end
+        player.mains = type(player.mains) == "table" and player.mains or {}
+        player.mains[group] = k
+        R.render()
+        return true
+    end
     if op == "M" and #words == 7 then
         local short, realmPart = words[4]:match("^([^%-]+)%-([^%-]+)$")
         local level, at, flag, player = tonumber(words[5]), tonumber(words[6]), words[7], players[pid]
@@ -1970,7 +2005,8 @@ function R.groups()
                 deaths=character.deaths, quests=character.quests, quests_source=character.quests_source,
                 gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
                 honor_kills=character.honor_kills, dungeons=character.dungeons, mounts=character.mounts,
-                professions=character.professions, listed=character.listed}
+                professions=character.professions, listed=character.listed, pid=character.pid,
+                player_name=character.player_name}
             -- This account's own characters are listed only under "(you)".
             if WoWStatusPopups.isSelf(character.name) then return end
             local newer = fresher[key(character.name) or ""]
@@ -2010,7 +2046,8 @@ function R.groups()
             quests_source=character.quests_source, gold=S.number(character.gold),
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
             honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts),
-            professions=character.professions, listed=character.listed == true, zone=zones[k] or nil})
+            professions=character.professions, listed=character.listed == true, zone=zones[k] or nil,
+            pid=character.pid, player_name=character.player_name})
     end
     for _, c in pairs(db.characters or {}) do
         local info = c.roster_info
@@ -2028,9 +2065,19 @@ function R.groups()
                 current=c == current}, true, own and own ~= "unknown" and ("v" .. own) or nil)
         end
     end
-    for _, player in pairs(state().players) do
+    -- Newest list first: when two player IDs list one character (a reinstall),
+    -- the newer one owns it, the same every time (#200).
+    local everyone, pids = state().players, {}
+    for pid in pairs(everyone) do pids[#pids + 1] = pid end
+    table.sort(pids, function(a, b)
+        local x, y = S.number(everyone[a].at) or 0, S.number(everyone[b].at) or 0
+        if x ~= y then return x > y end
+        return a < b
+    end)
+    for _, pid in ipairs(pids) do
+        local player = everyone[pid]
         for _, character in pairs(player.characters) do
-            add(player.name or "Unnamed player", {name=character.name, race=character.race, sex=character.sex,
+            add(player.name or "Unnamed player", {name=character.name, pid=pid, player_name=player.name, race=character.race, sex=character.sex,
                 class=character.class, level=character.level, xp=character.xp, at=character.at, groups=player.groups,
                 quests=character.quests, quests_source=character.quests_source,
                 gold=character.gold, earned=character.earned, kills=character.kills, played=character.played,
@@ -2262,15 +2309,139 @@ function R.leaderboard(group)
                         local own = section.key == "you"
                         local q = S.number(row.quests)
                         if q == nil and not row.quests_source then q = quests[k] end
+                        -- Who plays it (#200): you, a named player (merged by name like
+                        -- the Characters page), an unnamed player's ID, or the character alone.
+                        local player = own and "you" or (row.pid and S.string(row.player_name)
+                            and ("name:" .. S.lowerASCII(row.player_name))) or (row.pid and ("id:" .. row.pid)) or ("character:" .. k)
                         table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
                             deaths=S.number(row.deaths), quests=q, quests_source=row.quests_source, online=row.status == "online", own=own,
-                            gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played), pin=pin})
+                            gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played), pin=pin,
+                            player=player, player_name=own and playerName() or S.string(row.player_name), pid=row.pid})
                     end
                 end
             end
         end
     end
     return list
+end
+
+-- Mains (#200). This account's choice is saved per group, account-wide:
+-- WoWStatusDB.roster.mains = {[group] = character key}. A friend's choice arrives
+-- in "W" and is kept on their player entry as player.mains[group].
+-- The characters this account can choose as a main: listed (not hidden) ones
+-- with a full name, highest level first.
+function R.mainChoices()
+    local list = {}
+    for _, item in ipairs(R.ownedCharacters()) do
+        if listable(item.character) then
+            local info = item.character.roster_info
+            list[#list + 1] = {name=item.name, key=key(item.name), level=S.number(info.level) or 0, xp=S.number(info.xp) or -1}
+        end
+    end
+    -- The default main's order (level, XP, name), so Automatic's first step is it.
+    table.sort(list, function(a, b)
+        if a.level ~= b.level then return a.level > b.level end
+        if a.xp ~= b.xp then return a.xp > b.xp end
+        return a.name < b.name
+    end)
+    return list
+end
+-- This account's chosen main in a group, by name, or nil when none is chosen
+-- (or the chosen character is hidden or gone: a hidden main is never shared).
+function R.ownMain(group, choices)
+    local mains = db and state().mains
+    local wanted = type(mains) == "table" and S.string(mains[group])
+    if not wanted then return nil end
+    for _, item in ipairs(choices or R.mainChoices()) do if item.key == wanted then return item.name end end
+    return nil
+end
+-- Choose this account's main in one of its groups (nil: no choice, use the
+-- default) and send the lists again so friends see it.
+function R.setMain(group, name)
+    if not db or not current or type(group) ~= "string" or not WoWStatusGroups.selected(current)[group] then return false end
+    local wanted = nil
+    if name ~= nil then
+        for _, item in ipairs(R.mainChoices()) do if item.name == name then wanted = item.key end end
+        if not wanted then return false end
+    end
+    local roster = state()
+    roster.mains = type(roster.mains) == "table" and roster.mains or {}
+    if roster.mains[group] == wanted then return true end
+    roster.mains[group] = wanted
+    -- Only the "W" line, to this group's members; the rest of the list is unchanged.
+    -- Members already sent the list get the new "W" line. One still waiting in
+    -- the queue is rewritten in place, so cycling the Main button sends one line
+    -- per member, not one per click. Members not yet sent the list get it with it.
+    if roster.share then
+        local text, prefix, queued = mainLine(group), "W " .. group .. " ", {}
+        for _, item in ipairs(outgoing) do
+            if item.text:sub(1, #prefix) == prefix then item.text = text; queued[key(item.target) or ""] = true end
+        end
+        for target in pairs(sentTo[group] or {}) do
+            if not queued[target] then
+                for _, peer in ipairs(WoWStatusPopups.peers(group)) do
+                    if key(peer) == target then table.insert(outgoing, {target=peer, text=text}); break end
+                end
+            end
+        end
+    end
+    R.render()
+    return true
+end
+-- Highest level first, then XP, then name: the default main. Played time is
+-- left out: it grows locally between lists, so friends would see another default.
+local function higher(a, b)
+    if (a.level or -1) ~= (b.level or -1) then return (a.level or -1) > (b.level or -1) end
+    if (a.xp or -1) ~= (b.xp or -1) then return (a.xp or -1) > (b.xp or -1) end
+    return a.name < b.name
+end
+-- The Players ranking of a group (#200): one entry per player, {player, name,
+-- own, main=row, chosen, alts={rows}}, from R.leaderboard's rows. The main is
+-- the character the player chose for this group; with no valid choice it is
+-- their highest-level character and chosen is false, so it reads as a default.
+-- Hidden characters are never in the rows, so they are never a main.
+function R.players(group)
+    local byPlayer, order = {}, {}
+    for _, row in ipairs(R.leaderboard(group)) do
+        local entry = byPlayer[row.player]
+        if not entry then
+            entry = {player=row.player, own=row.own, rows={}}
+            byPlayer[row.player] = entry; order[#order + 1] = entry
+        end
+        entry.name = entry.name or row.player_name
+        table.insert(entry.rows, row)
+    end
+    local players, choices = state().players, R.mainChoices()
+    local mainName, shared = R.ownMain(group, choices), {}
+    for _, item in ipairs(choices) do shared[item.key] = true end
+    local own = mainName and key(mainName)
+    for _, entry in ipairs(order) do
+        -- Whose choice counts: yours, or the newest list's when several player IDs
+        -- share one player name (a reinstall), so an old ID's claim never lingers.
+        local claim = own
+        if not entry.own then
+            local newest, at = nil, -1
+            for _, row in ipairs(entry.rows) do
+                local owner = row.pid and players[row.pid]
+                if type(owner) == "table" and (S.number(owner.at) or 0) > at then newest, at = owner, S.number(owner.at) or 0 end
+            end
+            claim = newest and type(newest.mains) == "table" and newest.mains[group] or nil
+        end
+        local main = nil
+        for _, row in ipairs(entry.rows) do if claim and key(row.name) == claim then main = row end end
+        entry.chosen = main ~= nil
+        if not main then
+            -- Your own default prefers the characters friends are sent, as theirs does.
+            local function sent(row) return not entry.own or shared[key(row.name) or ""] == true end
+            for _, row in ipairs(entry.rows) do
+                if not main or (sent(row) and not sent(main)) or (sent(row) == sent(main) and higher(row, main)) then main = row end
+            end
+        end
+        entry.main, entry.alts = main, {}
+        for _, row in ipairs(entry.rows) do if row ~= main then table.insert(entry.alts, row) end end
+        table.sort(entry.alts, higher)
+    end
+    return order
 end
 
 -- Collapsed sections, saved account-wide by section key.

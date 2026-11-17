@@ -385,7 +385,11 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
             presence=function(online) return online and "(on) " or "(off) " end,
         }
         WoWStatusFirsts={groups=function() return {{id="one",label="One"},{id="two",label="Two"}} end}
-        WoWStatusRoster={leaderboard=function() return {{name="Mira-Realm",level=20,deaths=1,quests=247}} end}
+        WoWStatusRoster={leaderboard=function() return {{name="Mira-Realm",level=20,deaths=1,quests=247}} end,
+            players=function() return {{name="Frank",main={name="Mira-Realm",level=20},rows={{name="Mira-Realm"}},alts={}}} end,
+            mainChoices=function() return {{name="Mira-Realm"}} end,
+            ownMain=function() return __main end,
+            setMain=function(group,name) __main=name; return true end}
         WoWStatusMainWindow.register=function(key,title,build,refresh)
             assert(key=="leaderboard")
             __boardBuild,__boardRefresh=build,refresh
@@ -402,6 +406,8 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
                 __board:Show();__boardRefresh()
                 __board.sort.rect={500,380,140,24}
                 __board.pinnedFirst.rect={300,380,32,32}
+                __board.mode.rect={370,380,120,24}
+                __board.main.rect={190,380,170,24}
                 for i,tab in ipairs(__board.tabs) do tab.rect={120+(i-1)*140,440,128,24} end
             elseif __board then __board:Hide() end
         end
@@ -411,19 +417,25 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
         press("PADRSHOULDER")
         assert(__active=="leaderboard")
         local controls=WoWStatusGamepad.controls(main,{main})
-        local sort,group,pinned=false,false,false
+        local sort,group,pinned,mode,mainButton=false,false,false,false,false
         for _,control in ipairs(controls) do
             if control==__board.sort then sort=true end
             if control==__board.pinnedFirst then pinned=true end
+            if control==__board.mode then mode=true end
+            if control==__board.main then mainButton=true end
             if control==__board.tabs[2] then group=true end
             assert(control~=__board.tabs[1]) -- the selected group is disabled
         end
-        assert(sort and group and pinned)
+        assert(sort and group and pinned and mode and mainButton)
         press("PADDDOWN")
         WoWStatusGamepad.setFocus(__board.sort);press("PAD1")
         assert(WoWStatusDB.leaderboard.sort=="deaths")
         WoWStatusGamepad.setFocus(__board.tabs[2]);press("PAD1")
         assert(WoWStatusDB.leaderboard.tab=="two")
+        WoWStatusGamepad.setFocus(__board.mode);press("PAD1")
+        assert(WoWStatusDB.leaderboard.mode=="players")
+        WoWStatusGamepad.setFocus(__board.main);press("PAD1")
+        assert(__main=="Mira-Realm")
         press("PADRSHOULDER")
         assert(__active=="characters")
         press("PADLSHOULDER")

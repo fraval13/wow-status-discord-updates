@@ -1,0 +1,2 @@
+- The Leaderboard has a Players view: one row per player, ranked by their main character, with their alts under it.
+- Choose your main for each group with the Main button; until you do, your highest-level character is used as a default.
