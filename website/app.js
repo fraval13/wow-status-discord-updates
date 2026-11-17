@@ -1,5 +1,9 @@
 'use strict';
 
+// The main-window demo is set up once the page is parsed, so a fault in the
+// preview below cannot stop it.
+document.addEventListener('DOMContentLoaded', setupWindowDemo);
+
 // The preview is deliberately local and illustrative, with no live player data.
 const samples = [
   { kind: 'level', heading: 'LEVEL UP!', message: 'Thora reached level 33!', icon: 'level', color: '#ebc25e' },
@@ -49,8 +53,13 @@ function setupWindowDemo() {
   const sortButton = document.querySelector('#demo-sort');
   const board = document.querySelector('.demo-board tbody');
   const onlineOnly = document.querySelector('#demo-online-only');
+  const sections = [...document.querySelectorAll('#demo-characters .demo-section')]
+    .map(button => [button, document.getElementById(button.getAttribute('aria-controls'))]);
+  const players = [...document.querySelectorAll('#demo-characters .demo-cards')]
+    .map(list => [list, list.previousElementSibling]);
   // Markup that no longer matches leaves the still picture as it is.
-  if (tabs.length === 0 || panels.includes(null) || !sortButton || !board || !onlineOnly) return;
+  if (tabs.length === 0 || panels.includes(null) || !sortButton || !board || !onlineOnly
+    || sections.some(([, body]) => !body) || players.some(([, heading]) => !heading || !heading.dataset.player)) return;
   function selectTab(index, focus) {
     tabs.forEach((tab, i) => {
       const chosen = i === index;
@@ -70,16 +79,22 @@ function setupWindowDemo() {
       selectTab(next, true);
     });
   });
+  // The panels become tab panels only now, so without JavaScript the Activity
+  // page is plain content rather than a tab panel with no tabs.
+  panels.forEach((panel, i) => {
+    panel.setAttribute('role', 'tabpanel');
+    panel.setAttribute('aria-labelledby', tabs[i].id);
+  });
   tablist.hidden = false;
 
-  // Captions from the same banks as the notifications. A death draws from the
-  // general lines and the fallen character's own class, as in the game.
+  // Captions from the same banks as the notifications, fresh on each visit. A
+  // friend who is not your target or in your party gets the general death lines
+  // in the game, so the demo leaves the class roasts out.
   document.querySelectorAll('.demo-flavour[data-bank]').forEach(line => {
     const bank = (window.WoWStatusFlavour || {})[line.dataset.bank];
     if (!Array.isArray(bank) || bank.length === 0) return;
-    const tags = ['ANY', line.dataset.class].filter(Boolean);
     const pool = bank.map(text => text.match(/^\[([A-Z]+)\] (.+)$/) || [null, null, text])
-      .filter(match => match[1] === null || tags.includes(match[1]))
+      .filter(match => match[1] === null || match[1] === 'ANY')
       .map(match => match[2]);
     if (pool.length > 0) line.textContent = pickFlavour(pool, line.textContent);
   });
@@ -105,10 +120,11 @@ function setupWindowDemo() {
   let sortIndex = 0;
   function sortBoard() {
     const by = sorts[sortIndex][0];
-    const value = row => by === 'level'
-      ? Number(row.dataset.level) * 1000 + Number(row.dataset.xp)
-      : Number(row.dataset[by]);
-    const rows = [...board.rows].sort((a, b) => value(b) - value(a) || a.dataset.name.localeCompare(b.dataset.name));
+    // As Leaderboard.lua: highest first, XP breaks a level tie, then the name.
+    const value = (row, key) => Number(row.dataset[key]);
+    const rows = [...board.rows].sort((a, b) => value(b, by) - value(a, by)
+      || (by === 'level' ? value(b, 'xp') - value(a, 'xp') : 0)
+      || a.dataset.name.localeCompare(b.dataset.name));
     rows.forEach((row, i) => {
       row.cells[0].textContent = `${i + 1}.`;
       board.appendChild(row);
@@ -126,8 +142,7 @@ function setupWindowDemo() {
   });
 
   // Characters: collapsible sections and the Online only filter.
-  document.querySelectorAll('#demo-characters .demo-section').forEach(button => {
-    const body = document.getElementById(button.getAttribute('aria-controls'));
+  sections.forEach(([button, body]) => {
     button.disabled = false;
     button.addEventListener('click', () => {
       const open = button.getAttribute('aria-expanded') !== 'true';
@@ -136,14 +151,13 @@ function setupWindowDemo() {
     });
   });
   function filterCharacters() {
-    document.querySelectorAll('#demo-characters .demo-cards').forEach(list => {
+    players.forEach(([list, heading]) => {
       let visible = 0;
       list.querySelectorAll('.demo-card').forEach(card => {
         card.hidden = onlineOnly.checked && card.dataset.online !== 'true';
         if (!card.hidden) visible += 1;
       });
       // A player's heading counts the cards under it and goes when none are left.
-      const heading = list.previousElementSibling;
       heading.hidden = visible === 0;
       list.hidden = visible === 0;
       heading.textContent = `${heading.dataset.player} (${visible} ${visible === 1 ? 'character' : 'characters'})`;
@@ -165,4 +179,3 @@ function updateNavigation() {
 }
 window.addEventListener('hashchange', updateNavigation);
 updateNavigation();
-setupWindowDemo();

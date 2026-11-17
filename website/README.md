@@ -53,8 +53,8 @@ pages with invented characters and the invented group `the-tavern-crew`. Never p
 real player or group name in it. The markup in `index.html` is the whole demo, so
 without JavaScript it stays a still picture of the Activity page; `app.js` adds the
 tab row, the All/Mine/Friends filter, the Sort button, collapsible sections, Online
-only and fresh captions from `flavour.js` (a death draws from the general lines and
-the character's class, as in the game). Keep it honest: when the real window
+only and a fresh caption from `flavour.js` on each visit (a death uses only the
+general `[ANY]` lines, as the game does for a friend who is not a visible unit). Keep it honest: when the real window
 changes, change the demo with it. `tests/test_website.py` checks the tabs, that each
 caption is in its bank and that the leaderboard rows match their data.
 

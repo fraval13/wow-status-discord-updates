@@ -5,6 +5,7 @@
 else notices a script that no longer parses. `website/flavour.js` is read as
 JSON by `test_flavour.py`; `website/app.js` had no check at all.
 """
+import functools
 import json
 import re
 import shutil
@@ -18,6 +19,11 @@ WEBSITE = Path(__file__).parents[1] / 'website'
 SCRIPTS = sorted(WEBSITE.glob('*.js'))
 # The banks app.js asks window.WoWStatusFlavour for, one per preview button.
 REQUIRED_BANKS = {'level', 'loot', 'profession-learned', 'introduction'}
+
+
+@functools.cache
+def page():
+    return (WEBSITE / 'index.html').read_text(encoding='utf-8')
 
 
 def banks():
@@ -136,8 +142,7 @@ class Demo(HTMLParser):
 
 
 def demo_section():
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    found = re.search(r'<section[^>]*id="window".*?</section>', page, re.S)
+    found = re.search(r'<section[^>]*id="window".*?</section>', page(), re.S)
     assert found, 'no main-window demo'
     return found.group()
 
@@ -146,15 +151,13 @@ def test_demo_is_labelled_as_a_demonstration_with_invented_characters():
     section = demo_section()
     assert 'DEMONSTRATION · INVENTED CHARACTERS' in section
     assert 'A demonstration with invented characters' in section
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    assert '<a href="#window">' in page, 'the side menu does not lead to the demo'
+    assert '<a href="#window">' in page(), 'the side menu does not lead to the demo'
 
 
 def test_page_has_no_inline_styles_the_content_security_policy_would_block():
     """Caddy serves the site with style-src 'self', so style="" never applies."""
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    assert re.search(r'\sstyle\s*=', page) is None
-    assert '<style' not in page
+    assert re.search(r'\sstyle\s*=', page()) is None
+    assert '<style' not in page()
 
 
 def test_demo_tabs_each_control_one_panel_and_only_activity_shows_without_js():
@@ -163,10 +166,10 @@ def test_demo_tabs_each_control_one_panel_and_only_activity_shows_without_js():
     assert len(tablist) == 1 and 'hidden' in tablist[0]['attrs'], 'the tab row must wait for app.js'
     tabs = demo.find(role='tab')
     assert [tab['text'] for tab in tabs] == ['Activity', 'Leaderboard', 'Characters']  # the addon's order
-    panels = demo.find(role='tabpanel')
+    panels = demo.find('wow-page')
     assert [tab['attrs']['aria-controls'] for tab in tabs] == [panel['attrs']['id'] for panel in panels]
-    for tab, panel in zip(tabs, panels):
-        assert panel['attrs']['aria-labelledby'] == tab['attrs']['id']
+    # app.js makes them tab panels; without it there is no tab to belong to.
+    assert demo.find(role='tabpanel') == []
     assert [('hidden' in panel['attrs']) for panel in panels] == [False, True, True]
     assert [tab['attrs']['aria-selected'] for tab in tabs] == ['true', 'false', 'false']
     assert [tab['attrs'].get('tabindex') for tab in tabs] == [None, '-1', '-1']
@@ -182,9 +185,8 @@ def test_demo_controls_are_disabled_until_the_script_runs():
     for hook in ('.wow-tabs', '#demo-activity [data-filter]', '#demo-sort', '.demo-section', '#demo-online-only'):
         assert hook in source, hook
     # Every id and class the script looks up is still in the page.
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    ids = set(re.findall(r'id="([^"]+)"', page))
-    classes = {name for value in re.findall(r'class="([^"]+)"', page) for name in value.split()}
+    ids = set(re.findall(r'id="([^"]+)"', page()))
+    classes = {name for value in re.findall(r'class="([^"]+)"', page()) for name in value.split()}
     selectors = ' '.join(re.findall(r"querySelector(?:All)?\('([^']+)'\)", source))
     assert {name for name in re.findall(r'#([a-z][\w-]*)', selectors)} <= ids
     assert {name for name in re.findall(r'\.([a-z][\w-]*)', selectors)} <= classes
@@ -197,13 +199,13 @@ def test_demo_captions_come_from_the_notification_banks():
     for line in lines:
         bank = line['attrs']['data-bank']
         assert bank in available, bank
-        tags = {'ANY', line['attrs'].get('data-class')}
+        # Class roasts need a visible unit in the game, so the demo uses [ANY] only.
         allowed = set()
         for text in available[bank]:
             tagged = re.match(r'^\[([A-Z]+)\] (.+)$', text)
             if not tagged:
                 allowed.add(text)
-            elif tagged.group(1) in tags:
+            elif tagged.group(1) == 'ANY':
                 allowed.add(tagged.group(2))
         assert line['text'] in allowed, (bank, line['text'])
 
@@ -227,12 +229,11 @@ def test_demo_leaderboard_starts_sorted_by_level_and_matches_its_data():
         assert cells[2] == f"Level {data['level']} ({int(data['xp']) // 10} %)"
         assert cells[3:5] == [data['deaths'], data['quests']]
         assert cells[5] == duration(int(data['played'])), cells  # UI.duration in Theme.lua
-        keys.append(int(data['level']) * 1000 + int(data['xp']))
+        keys.append((int(data['level']), int(data['xp'])))
     assert keys == sorted(keys, reverse=True)
 
 
 def test_every_image_the_page_shows_exists():
-    page = (WEBSITE / 'index.html').read_text(encoding='utf-8')
-    sources = set(re.findall(r'<img[^>]*\ssrc="/([^"]+)"', page))
+    sources = set(re.findall(r'<img[^>]*\ssrc="/([^"]+)"', page()))
     assert sources
     assert [name for name in sorted(sources) if not (WEBSITE / name).is_file()] == []

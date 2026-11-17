@@ -69,13 +69,13 @@
             <div class="wow-window">
               <p class="wow-title">WoW Status</p>
               <div class="wow-tabs" role="tablist" aria-label="Main window pages" hidden><button type="button" role="tab" id="demo-tab-activity" aria-controls="demo-activity" aria-selected="true">Activity</button><button type="button" role="tab" id="demo-tab-leaderboard" aria-controls="demo-leaderboard" aria-selected="false" tabindex="-1">Leaderboard</button><button type="button" role="tab" id="demo-tab-characters" aria-controls="demo-characters" aria-selected="false" tabindex="-1">Characters</button></div>
-              <div class="wow-page" role="tabpanel" id="demo-activity" aria-labelledby="demo-tab-activity">
+              <div class="wow-page" id="demo-activity">
                 <div class="wow-scroll" tabindex="0" role="region" aria-label="Today’s activity">
                   <ol class="demo-log">
                     <li class="demo-entry k-level" data-mine="false"><img src="/assets/icons/level.jpg" width="48" height="48" alt=""><div><p class="demo-heading">LEVEL UP!</p><p class="demo-message">Eldrin — Reached level 35!</p><p class="demo-flavour" data-bank="level">One level wiser. Allegedly.</p><p class="demo-detail">21:42 · Live group update</p></div></li>
-                    <li class="demo-entry k-death" data-mine="false"><img src="/assets/icons/deaths.jpg" width="48" height="48" alt=""><div><p class="demo-heading">A FRIEND HAS FALLEN</p><p class="demo-message">Mira — Died · Arathi Highlands</p><p class="demo-flavour" data-bank="death" data-class="PALADIN">Was bubble on cooldown?</p><p class="demo-detail">21:17 · Live group update</p></div></li>
+                    <li class="demo-entry k-death" data-mine="false"><img src="/assets/icons/deaths.jpg" width="48" height="48" alt=""><div><p class="demo-heading">A FRIEND HAS FALLEN</p><p class="demo-message">Mira — Died · Arathi Highlands</p><p class="demo-flavour" data-bank="death">The floor has accepted your application.</p><p class="demo-detail">21:17 · Live group update</p></div></li>
                     <li class="demo-entry k-zone" data-mine="true"><img src="/assets/icons/location.jpg" width="48" height="48" alt=""><div><p class="demo-heading">ON THE MOVE</p><p class="demo-message">Thora — Entered Arathi Highlands</p><p class="demo-flavour" data-bank="zone">New scenery. Familiar poor directions.</p><p class="demo-detail">20:58 · Your activity</p></div></li>
-                    <li class="demo-entry k-rare" data-mine="false"><img src="/assets/icons/armor.jpg" width="48" height="48" alt=""><div><p class="demo-heading">RARE CHEST EQUIPPED!</p><p class="demo-message">Pellam — Equipped <span class="q-rare">[Blackened Defias Armor]</span></p><p class="demo-flavour" data-bank="loot">Finally, fashion with consequences.</p><p class="demo-detail">20:31 · Live group update</p></div></li>
+                    <li class="demo-entry k-rare" data-mine="false"><img src="/assets/icons/armor.jpg" width="48" height="48" alt=""><div><p class="demo-heading">RARE CHESTPIECE EQUIPPED!</p><p class="demo-message">Pellam — Equipped <span class="q-rare">[Blackened Defias Armor]</span></p><p class="demo-flavour" data-bank="loot">Finally, fashion with consequences.</p><p class="demo-detail">20:31 · Live group update</p></div></li>
                     <li class="demo-entry k-profession" data-mine="true"><img src="/assets/icons/mining.jpg" width="48" height="48" alt=""><div><p class="demo-heading">PROFESSION LEARNED!</p><p class="demo-message">Brisk — Learned Mining (Apprentice)</p><p class="demo-flavour" data-bank="profession-learned">A hobby with operating expenses.</p><p class="demo-detail">19:46 · Your activity</p></div></li>
                     <li class="demo-entry k-quest" data-mine="false"><img src="/assets/icons/quests.jpg" width="48" height="48" alt=""><div><p class="demo-heading">QUEST ACHIEVEMENT!</p><p class="demo-message">Eldrin — Completed 200 quests!</p><p class="demo-flavour" data-bank="quest">Professional errand runner, officially documented.</p><p class="demo-detail">18:20 · Caught up via Mira</p></div></li>
                     <li class="demo-entry k-introduction" data-mine="false"><img src="/assets/icons/quests.jpg" width="48" height="48" alt=""><div><p class="demo-heading">WELCOME, ADVENTURER!</p><p class="demo-message">Mira — Joined the WoW Status group</p><p class="demo-flavour" data-bank="introduction">There goes the neighborhood.</p><p class="demo-detail">17:05 · Caught up via Eldrin</p></div></li>
@@ -83,7 +83,7 @@
                 </div>
                 <div class="wow-bar" role="group" aria-label="Show"><button type="button" class="wow-button" data-filter="all" aria-pressed="true" disabled>All</button><button type="button" class="wow-button" data-filter="mine" aria-pressed="false" disabled>Mine</button><button type="button" class="wow-button" data-filter="friends" aria-pressed="false" disabled>Friends</button></div>
               </div>
-              <div class="wow-page" role="tabpanel" id="demo-leaderboard" aria-labelledby="demo-tab-leaderboard" hidden>
+              <div class="wow-page" id="demo-leaderboard" hidden>
                 <div class="wow-board-head"><p class="wow-page-title">Leaderboard · the-tavern-crew</p><button type="button" class="wow-button" id="demo-sort" disabled>Sort: Level</button></div>
                 <div class="wow-scroll" tabindex="0" role="region" aria-label="Leaderboard">
                   <table class="demo-board">
@@ -98,7 +98,7 @@
                   </table>
                 </div>
               </div>
-              <div class="wow-page" role="tabpanel" id="demo-characters" aria-labelledby="demo-tab-characters" hidden>
+              <div class="wow-page" id="demo-characters" hidden>
                 <div class="wow-scroll" tabindex="0" role="region" aria-label="Characters">
                   <div class="demo-group">
                     <h3><button type="button" class="demo-section" aria-expanded="true" aria-controls="demo-yours" disabled>Your characters</button></h3>
