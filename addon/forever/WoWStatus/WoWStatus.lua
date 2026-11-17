@@ -744,6 +744,7 @@ SlashCmdList.WOWSTATUS = function(message)
         elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
         say(WoWStatusGamepad.report())
     elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
+    elseif command == "compare" then WoWStatusCompare.show(rest ~= "" and rest or nil)
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

@@ -209,6 +209,15 @@ W.add({
     ["Screenshots are not available in this client."] = "Skjermbilete er ikkje tilgjengeleg i denne klienten.",
     ["A screenshot is already being taken."] = "Det blir alt teke eit skjermbilete.",
     ["Minimap button distance reset."] = "Avstanden til minikartknappen er tilbakestilt.",
+    -- Compare two characters (#160)
+    ["Compare"] = "Samanlikn", ["Compare two"] = "Samanlikn to", ["Swap sides"] = "Byt side",
+    ["Choose a character"] = "Vel ein figur",
+    ["Choose two characters to put their numbers side by side."]
+        = "Vel to figurar for å setje tala deira side om side.",
+    ["Neither of them has shared any numbers yet."] = "Ingen av dei har delt tal enno.",
+    ["not shared"] = "ikkje delt",
+    ["XP into the level"] = "Røynsle inn i nivået",
+    ["Played per level"] = "Spelt per nivå",
     -- Controller navigation and key bindings
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",
