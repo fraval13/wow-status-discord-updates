@@ -8,8 +8,9 @@ page holds those numbers and how to repeat them.
 
 `tests/test_login_burst.py` runs the whole addon in several Lua runtimes over an
 in-memory whisper network with one shared clock. Every shown frame's `OnUpdate`
-runs every quarter second, as the game runs them each frame, so the log, the
-character list, equipment and live updates all keep their real pacing. Thora logs
+runs every quarter second, as the game runs them each frame, and `C_Timer`
+tickers run when due, so the log, the character list, equipment and live
+updates all keep their real pacing. Thora logs
 out, her friends log level-ups while she is away and Mira equips a new epic item,
 then Thora logs in again: a fresh runtime that keeps only her SavedVariables, with
 `PLAYER_LOGIN` and `PLAYER_ENTERING_WORLD` fired. Everything she sends from that
@@ -21,8 +22,9 @@ To print the table below:
 .venv/bin/python tests/test_login_burst.py
 ```
 
-Each client's random numbers are seeded, so the figures are the same on every
-run with the same Lua (the default test runtime; `--lua=5.1` draws differently).
+The script runs on Lua 5.1, the game's Lua, with each client's random numbers
+seeded, so it prints the same figures on every run. (Newer Lua reorders tables
+from run to run, which moves the slower figures by a few seconds.)
 The figures are from the mocked clients. They show what the addon asks the game
 to send, not what a live client, its chat throttle or a real realm does with it.
 
@@ -50,6 +52,8 @@ receives 66.
 - There is no burst to stagger. The log and the character list each send at most
   one whisper every half second, so a login sends at most two a second per prefix
   and at most 42 in its first ten seconds however large the group or the backlog.
+  Live updates are not paced that way, but a login sends none of its own; it
+  only answers each live update a friend sends it with one acknowledgement.
   A larger backlog takes longer, it does not send faster.
   `tests/test_login_burst.py` fails if that pace is ever exceeded.
 - Outside instances the game does not throttle addon whispers, so this pace costs
@@ -90,7 +94,8 @@ This is fraval13's check; the harness above is not a live client.
      throttles is sent, and written, again later.
    - entries starting `log send ` (log sync), leaving out those ending in
      `throttled`: that try was refused and the packet is written again when
-     it goes out.
+     it goes out. One ending in `uncertain` (an older client's plain `false`)
+     is tried once more after two seconds, so it may be counted twice.
 
    `live send` entries are live updates, which a login does not send.
 4. `/wstatus debug off`.

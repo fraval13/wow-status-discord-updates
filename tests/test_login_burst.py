@@ -8,22 +8,45 @@ docs/LOGIN_BURST.md quotes, and see that page for the live-client check.
 import collections
 import sys
 
+if __name__ == '__main__':
+    # The figures run on the game's Lua 5.1: newer Lua seeds its string hashing
+    # afresh in each runtime, which reorders peers and queues from run to run.
+    import lupa
+    from lupa import lua51
+    lupa.LuaRuntime = lua51.LuaRuntime
+
 from test_addon import STUBS, make_lua
+from test_addon_claims import saved as saved_variables
 from test_equipment import GEAR
 from test_roster import EXTRA
 
 BASE = 1793000000
 # Every shown frame's OnUpdate runs, as the game runs them each frame; hidden
-# frames (a dismissed toast) do not, as in the game.
+# frames (a dismissed toast) do not, as in the game. C_Timer tickers and
+# timers run when they are due.
 DRIVER = r'''
     __now=__now or 1793000000; __mono=__mono or 0
     function time() return math.floor(__now) end
     function GetTime() return __mono end
+    __timers = {}
+    C_Timer = {
+        NewTicker=function(seconds, fn) table.insert(__timers, {every=seconds, at=__mono+seconds, fn=fn}) end,
+        After=function(seconds, fn) table.insert(__timers, {at=__mono+seconds, fn=fn}) end,
+    }
     function __advance(dt)
         __now=__now+dt; __mono=__mono+dt
         for _, f in ipairs(__frames) do
             if f.OnUpdate and f:IsVisible() then f.OnUpdate(f, dt) end
         end
+        local due = {}
+        for i = #__timers, 1, -1 do
+            local timer = __timers[i]
+            if __mono >= timer.at then
+                table.insert(due, 1, timer)
+                if timer.every then timer.at = timer.at + timer.every else table.remove(__timers, i) end
+            end
+        end
+        for _, timer in ipairs(due) do timer.fn() end
     end
 '''
 
@@ -35,20 +58,6 @@ def stubs_for(name, at, mono):
     return (f'math.randomseed({seed})\n' + STUBS.replace('return "Thora" end', f'return "{name}" end')
             .replace('return "Player-123-0001" end', f'return "Player-123-{name}" end')
             + EXTRA + GEAR + f'\n__now={BASE + at}; __mono={mono}\n' + DRIVER)
-
-
-def saved_variables(lua):
-    return lua.eval('''function()
-        local function literal(value)
-            if type(value)=="table" then
-                local entries={}
-                for key,item in pairs(value) do entries[#entries+1]="["..literal(key).."]="..literal(item) end
-                return "{"..table.concat(entries,",").."}"
-            elseif type(value)=="string" then return string.format("%q",value)
-            else return tostring(value) end
-        end
-        return "WoWStatusDB="..literal(WoWStatusDB)
-    end''')()
 
 
 class Network:
@@ -176,17 +185,32 @@ def busiest_second(log, sender):
     return busiest
 
 
+def catch_up(net, me, login, missing, limit, at_least):
+    """Run until Thora has every missed entry and Mira's new gear, and for at least `at_least` seconds.
+
+    Returns the seconds after login until the first missed entry, all of them
+    and the gear arrived (None for what did not arrive within `limit`).
+    """
+    first = done = changed = None
+    while net.now - login < limit:
+        net.advance(.25)
+        have = ids(me)
+        if first is None and missing & have:
+            first = net.now - login
+        if done is None and missing <= have:
+            done = net.now - login
+        if changed is None and gear(me, 'Mira').startswith('item:42:'):
+            changed = net.now - login
+        if done is not None and changed is not None and net.now - login >= at_least:
+            break
+    return first, done, changed
+
+
 def test_a_login_sends_at_most_two_messages_a_second_per_prefix_and_loses_nothing():
     net, me, login, mark, missing = relog_after_absence(FRIENDS, 21)
     # 21 level-ups and Mira's first equip of the new (epic) item.
-    assert len(missing) == 22 and gear(me, 'Mira') != 'item:42:0:0:0:0:0:0:0'
-    caught_up = None
-    for _ in range(int(240 / .25)):
-        net.advance(.25)
-        if caught_up is None and missing <= ids(me) and gear(me, 'Mira').startswith('item:42:'):
-            caught_up = net.now - login
-        if caught_up is not None and net.now - login >= 10:
-            break
+    assert len(missing) == 22 and not gear(me, 'Mira').startswith('item:42:')
+    _, done, changed = catch_up(net, me, login, missing, limit=240, at_least=10)
     after = net.log[mark:]
     first_ten = sent(after, login, 10, sender=ME)
     # Each module paces its own whispers half a second apart: at most two a
@@ -198,7 +222,7 @@ def test_a_login_sends_at_most_two_messages_a_second_per_prefix_and_loses_nothin
         assert len([p for p in first_ten if p[3] == prefix]) <= 21
     assert busiest_second(after, ME) <= 2
     # Nothing is lost: every missed log entry and the changed gear arrive.
-    assert caught_up is not None, 'catch-up did not finish within four minutes'
+    assert done is not None and changed is not None, 'catch-up did not finish within four minutes'
     assert me.eval('WoWStatusLevelPopup') is None  # caught-up entries stay quiet
 
 
@@ -267,18 +291,7 @@ def figures():
     print('|---|---|---|---|---|---|---|---|')
     for friends, missed in ((FRIENDS[:3], 21), (FRIENDS, 21), (FRIENDS, 105)):
         net, me, login, mark, missing = relog_after_absence(friends, missed)
-        first = done = changed = None
-        for _ in range(int(600 / .25)):
-            net.advance(.25)
-            have = ids(me)
-            if first is None and missing & have:
-                first = net.now - login
-            if done is None and missing <= have:
-                done = net.now - login
-            if changed is None and gear(me, 'Mira').startswith('item:42:'):
-                changed = net.now - login
-            if done is not None and changed is not None and net.now - login >= 120:
-                break
+        first, done, changed = catch_up(net, me, login, missing, limit=600, at_least=120)
         after = net.log[mark:]
         # The character list only: the log already waits for the allowance in an instance.
         roster = [p[0] - login for p in sent(after, login, 120, sender=ME) if p[3] == 'WoWStatusChr']
