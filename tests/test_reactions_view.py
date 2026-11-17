@@ -53,7 +53,12 @@ def test_a_reaction_received_while_away_waits_on_the_page_and_is_counted_until_s
         row.OnClick(row)
         assert(WoWStatusMainWindow.active() == "activity")
         assert(WoWStatusActivityLog.reactionsButton.text == "Reactions")
+        -- Back from the opened update: still the same visit, so still marked.
+        assert(WoWStatusMainWindow.back())
+        assert(WoWStatusMainWindow.active() == "reactions")
+        assert(WoWStatusReactionsPage.rows[1].new.text == "New")
         -- Next visit: no longer new.
+        WoWStatusMainWindow.hide()
         WoWStatusReactions.show()
         assert(WoWStatusReactionsPage.rows[1].new.text == "")
     ''')
@@ -176,7 +181,7 @@ def test_rows_are_reachable_with_a_controller():
         function methods:SetShown(value) self.visible=value end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
         WoWStatusSafe={string=function(v) return type(v)=="string" and v or nil end,
-            number=function(v) return type(v)=="number" and v or nil end}
+            number=function(v) return type(v)=="number" and v or nil end, now=function() return 100 end}
         WoWStatusUI={text=function(parent) return CreateFrame("FontString",nil,parent) end,
             box=function(parent,w,h,kind) return CreateFrame(kind or "Frame",nil,parent) end}
         WoWStatusPresentation={theme=function() return nil,1,1,1,"Level up" end}

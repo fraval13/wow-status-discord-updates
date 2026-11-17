@@ -16,7 +16,7 @@ local page
 -- realm time) and which ones of that same second (seen_keys), for the "new"
 -- marks and the count on the Activity page's button.
 local function state()
-    if type(WoWStatusDB) ~= "table" then return {} end
+    if type(WoWStatusDB) ~= "table" then return {seen_keys={}} end
     if type(WoWStatusDB.reactions) ~= "table" then WoWStatusDB.reactions = {} end
     local data = WoWStatusDB.reactions
     if type(data.seen_keys) ~= "table" then data.seen_keys = {} end
@@ -30,77 +30,84 @@ local function friendName(e)
     return S.string(shown) or sender:match("^[^-]+") or sender
 end
 
--- Calls fn(entry, key, reaction) for each reaction received on a visible log
--- entry. Reactions from a friend hidden with "Hide completely" (#169) are left
--- out, as on the log card.
-local function eachReceived(fn)
-    local J = WoWStatusJournal
-    if not J then return end
+local function isNew(at, id, seen, keys) return at > seen or (at == seen and not keys[id]) end
+-- Realm time for a PC-clock stamp (shown_at), so it sorts among realm-time ones.
+local function realm(at)
+    local offset = S.clockOffset and S.clockOffset()
+    return at and offset and at - offset or at
+end
+
+-- One pass over the log: every reaction you received on a visible entry and
+-- every one you sent, unsorted; the newest received time and the reactions of
+-- that second; and how many received are new against (seen, keys). Reactions
+-- from a friend hidden with "Hide completely" (#169) are left out, as on the
+-- log card. Received text is kept as it arrived; callers escape it.
+local function collect(seen, keys)
+    local list, newest, newestKeys, unseen, J = {}, 0, {}, 0, WoWStatusJournal
+    if not J then return list, newest, newestKeys, unseen end
     for _, e in ipairs(J.entries()) do
-        if type(e) == "table" and e.owner and not e.sample and type(e.reactions) == "table" and J.visible(e) then
-            for key, r in pairs(e.reactions) do
-                if type(r) == "table" and S.string(r.text) and not (WoWStatusMutes and WoWStatusMutes.hidden(key)) then
-                    fn(e, key, r)
+        if type(e) == "table" and not e.sample then
+            if e.owner and type(e.reactions) == "table" and next(e.reactions) and J.visible(e) then
+                for key, r in pairs(e.reactions) do
+                    if type(r) == "table" and S.string(r.text) and not (WoWStatusMutes and WoWStatusMutes.hidden(key)) then
+                        local id, at = tostring(e.id) .. "|" .. tostring(key), S.number(r.at) or S.number(e.at) or 0
+                        list[#list + 1] = {entry=e, received=true, id=id, name=S.string(r.name) or "?", text=r.text, at=at}
+                        if at > newest then newest, newestKeys = at, {} end
+                        if at == newest then newestKeys[id] = true end
+                        if isNew(at, id, seen, keys) then unseen = unseen + 1 end
+                    end
+                end
+            elseif not e.owner then
+                local said = J.sentReaction(e)
+                if said and J.visible(e) then
+                    -- reacted_at is new; older reactions were sent while the notification was up.
+                    list[#list + 1] = {entry=e, received=false, id=tostring(e.id), name=friendName(e), text=said,
+                        at=S.number(e.reacted_at) or realm(S.number(e.shown_at)) or S.number(e.at) or 0}
                 end
             end
         end
     end
+    return list, newest, newestKeys, unseen
 end
-local function receivedAt(e, r) return S.number(r.at) or S.number(e.at) or 0 end
-local function isNew(at, id, seen, keys) return at > seen or (at == seen and not keys[id]) end
+local function seenState()
+    local data = state()
+    return S.number(data.seen) or 0, data.seen_keys
+end
 
--- {entry, received, id, name, text, at}, newest first, at most R.LIMIT.
--- Received text is kept as it arrived; callers escape it.
+-- {entry, received, id, name, text, at}, newest first, at most R.LIMIT, and
+-- the newest received time and keys (for markSeen).
 function R.list()
-    local list, J = {}, WoWStatusJournal
-    if not J then return list end
-    eachReceived(function(e, key, r)
-        list[#list + 1] = {entry=e, received=true, id=tostring(e.id) .. "|" .. tostring(key),
-            name=S.string(r.name) or "?", text=r.text, at=receivedAt(e, r)}
-    end)
-    for _, e in ipairs(J.entries()) do
-        if type(e) == "table" and not e.owner and not e.sample and J.visible(e) then
-            local said = J.sentReaction(e)
-            if said then
-                -- reacted_at is new; older reactions were sent while the notification was up.
-                list[#list + 1] = {entry=e, received=false, id=tostring(e.id), name=friendName(e), text=said,
-                    at=S.number(e.reacted_at) or S.number(e.shown_at) or S.number(e.at) or 0}
-            end
-        end
-    end
+    local list, newest, newestKeys = collect(seenState())
     table.sort(list, function(a, b)
         if a.at ~= b.at then return a.at > b.at end
         return a.id > b.id
     end)
     for i = #list, R.LIMIT + 1, -1 do list[i] = nil end
-    return list
+    return list, newest, newestKeys
 end
 
 -- Received reactions not yet looked at, however many were sent since. Cached:
--- the Activity page asks on every redraw, including while scrolling.
-local unseenCache
+-- the Activity page asks on every redraw, including while scrolling. Log
+-- changes clear it (R.changed); a few seconds' expiry covers hidden friends
+-- changing with the roster.
+local unseenCache, unseenAt
 function R.unseen()
-    if unseenCache then return unseenCache end
-    local data, count = state(), 0
-    local seen, keys = S.number(data.seen) or 0, data.seen_keys
-    eachReceived(function(e, key, r)
-        if isNew(receivedAt(e, r), tostring(e.id) .. "|" .. tostring(key), seen, keys) then count = count + 1 end
-    end)
-    unseenCache = count
+    local now = S.now()
+    if unseenCache and unseenAt and now - unseenAt < 5 then return unseenCache end
+    local _, _, _, count = collect(seenState())
+    unseenCache, unseenAt = count, now
     return count
 end
 
--- Everything received so far counts as looked at.
-local function markSeen()
+-- Everything received up to newest counts as looked at.
+local function markSeen(newest, newestKeys)
     local data = state()
     local seen = S.number(data.seen) or 0
-    local newest = seen
-    eachReceived(function(e, _, r) newest = math.max(newest, receivedAt(e, r)) end)
     if newest > seen then data.seen, data.seen_keys = newest, {} end
-    eachReceived(function(e, key, r)
-        if receivedAt(e, r) == data.seen then data.seen_keys[tostring(e.id) .. "|" .. tostring(key)] = true end
-    end)
-    unseenCache = 0
+    if newest == data.seen then
+        for id in pairs(newestKeys) do data.seen_keys[id] = true end
+    end
+    unseenCache, unseenAt = 0, S.now()
 end
 
 -- "Reactions" or "Reactions (3)" for the Activity page's button.
@@ -128,9 +135,9 @@ local function active()
     return page ~= nil and WoWStatusMainWindow.active and WoWStatusMainWindow.active() == "reactions"
 end
 
-function R.render()
+function R.render(seeAll)
     if not page then return end
-    local list = R.list()
+    local list, newest, newestKeys = R.list()
     local before = page.before or {seen=0, keys={}}
     for i, item in ipairs(list) do
         local row = rowFor(i)
@@ -154,13 +161,13 @@ function R.render()
     page.list:SetHeight(math.max(1, #list * R.ROW))
     page.empty:SetShown(#list == 0)
     -- Looking at the page counts as having seen what is on it.
-    if active() then markSeen() end
+    if seeAll or active() then markSeen(newest, newestKeys) end
 end
 
 -- The log changed (a reaction came or went, a mute, an entry aged out): count
 -- again, and redraw the page while it is the one on screen.
 function R.changed()
-    unseenCache = nil
+    unseenCache, unseenAt = nil, nil
     if active() then R.render() end
 end
 
@@ -183,14 +190,19 @@ end
 
 local function show()
     if not page then return end
-    -- The "new" marks stay for this visit, measured from the visit before.
-    local data, keys = state(), {}
-    for id in pairs(state().seen_keys) do keys[id] = true end
-    page.before = {seen=S.number(data.seen) or 0, keys=keys}
-    page.scroll:SetVerticalScroll(0)
-    R.render()
+    -- The "new" marks stay for this visit, measured from the visit before. A
+    -- visit lasts while the window stays open (Back from an opened update keeps
+    -- the marks), unless something new came in meanwhile.
+    local window = WoWStatusMainFrame
+    if not page.before or not (window and window:IsShown()) or R.unseen() > 0 then
+        local seen, keys = seenState()
+        local copy = {}
+        for id in pairs(keys) do copy[id] = true end
+        page.before = {seen=seen, keys=copy}
+        page.scroll:SetVerticalScroll(0)
+    end
     -- Shown now (the window may only appear after this): all of it is seen.
-    markSeen()
+    R.render(true)
 end
 
 function R.show() return WoWStatusMainWindow.show("reactions") end
