@@ -373,14 +373,22 @@ function P.setSound(kind, id)
     prefs.sounds[kind] = id ~= P.SOUND_USUAL and id or nil
     return true
 end
+-- What picking a sound for a kind lets the player hear: an unpicked big moment
+-- sounds like a big level-up, so it plays the Level-ups sound.
+function P.previewSound(kind)
+    if kind == "big" then return P.soundFor({level = 60}) end
+    return P.sound(kind)
+end
 function P.soundFor(item)
     if type(item) ~= "table" then return 0 end
     local big = chosenSound("big")
     if big and P.bigEvent(item) then return big end
     return P.sound(soundKind(item))
 end
-function P.soundName(id)
-    if id == P.SOUND_USUAL then return "Same as usual" end
+function P.soundName(id, kind)
+    if id == P.SOUND_USUAL then
+        return P.SOUND_FOLLOWS[kind] == "other" and "Same as Everything else" or "Same as usual"
+    end
     for _, entry in ipairs(P.SOUNDS) do if entry[2] == id then return entry[1] end end
     return tostring(id)
 end

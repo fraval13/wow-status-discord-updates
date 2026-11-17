@@ -222,11 +222,13 @@ function P.show(host)
             local widget=button(panel,"",250,y,200,function(self)
                 local items={}
                 -- A kind that follows another sound can go back to doing so.
-                if WoWStatusPopups.SOUND_FOLLOWS[kind] then items[1]={label=WoWStatusLocale.T("Same as usual"),value=WoWStatusPopups.SOUND_USUAL} end
+                if WoWStatusPopups.SOUND_FOLLOWS[kind] then
+                    items[1]={label=WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.SOUND_USUAL,kind)),value=WoWStatusPopups.SOUND_USUAL}
+                end
                 for _,sound in ipairs(WoWStatusPopups.SOUNDS) do items[#items+1]={label=WoWStatusLocale.T(sound[1]),value=sound[2]} end
                 WoWStatusUI.menu(self,items,function(id)
-                    WoWStatusPopups.setSound(kind,id);WoWStatusPopups.playSound(WoWStatusPopups.sound(kind))
-                    self:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.soundChoice(kind))))
+                    WoWStatusPopups.setSound(kind,id);WoWStatusPopups.playSound(WoWStatusPopups.previewSound(kind))
+                    self:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.soundChoice(kind),kind)))
                 end)
             end)
             panel.sounds[kind]=widget
@@ -342,7 +344,7 @@ function P.show(host)
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.quiet:SetChecked(panel.quiet.get() == true)
     panel.refreshQuietHours()
-    for kind,widget in pairs(panel.sounds) do widget:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.soundChoice(kind)))) end
+    for kind,widget in pairs(panel.sounds) do widget:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.soundChoice(kind),kind))) end
     for _,widget in pairs(panel.quietKinds) do widget:SetChecked(widget.get() == true) end
     panel.popupSize:SetText(WoWStatusTheme.popupSizeLabel())
     panel.popupDuration:SetText(WoWStatusPopups.durationLabel())
