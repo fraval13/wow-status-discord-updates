@@ -56,7 +56,7 @@ function P.show(host)
         -- Spoken reactions (Forever only) add their own rows below the sounds.
         local V = WoWStatusVoices
         local voiceRows = V and V.available() and 370 or 0
-        local previews = options + 964 + voiceRows
+        local previews = options + 1066 + voiceRows
         local footer = previews + 96 + #visible * 42
         panel:SetSize(600,footer+60); panel:EnableMouse(true); panel.background=background(panel)
         text(panel,"Notifications",24,-20)
@@ -219,6 +219,8 @@ function P.show(host)
             text(panel,entry[2],44,y-4,200)
             local widget=button(panel,"",250,y,200,function(self)
                 local items={}
+                -- Big moments can also keep the sound of their ordinary kind.
+                if kind=="big" then items[1]={label=WoWStatusLocale.T("Same as usual"),value=WoWStatusPopups.SOUND_USUAL} end
                 for _,sound in ipairs(WoWStatusPopups.SOUNDS) do items[#items+1]={label=WoWStatusLocale.T(sound[1]),value=sound[2]} end
                 WoWStatusUI.menu(self,items,function(id)
                     WoWStatusPopups.setSound(kind,id);WoWStatusPopups.playSound(id)
@@ -233,7 +235,7 @@ function P.show(host)
         -- always use a voiced line. WoW cannot download files, so the pack link is
         -- shown to copy.
         if voiceRows > 0 then
-            local y=-options-962
+            local y=-options-1064
             text(panel,"Spoken reactions",24,y,300)
             panel.voices=check("Read friends' reactions aloud",y-36,function() return V.enabled() end,V.setEnabled)
             -- The addon's own lines when it carries some, else one from the pack.

@@ -1,0 +1,2 @@
+- Pick separate notification sounds for dungeons and raids, for friends joining and for big moments.
+- Big moments like a raid first or every tenth level keep their usual sound until you pick one of their own.
