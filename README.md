@@ -193,6 +193,17 @@ settings, with local samples below them. Notifications queue one at a time, six 
 each by default; **Notification duration** (or `/wstatus popuptime <seconds>`) sets 3 to 20
 seconds, or keeps each one until it is dismissed (`0`).
 
+**Achievements** (Retail only, off until you tick it) shares a fixed list of
+achievements as you earn them: continent exploration, exalted reputation counts,
+mount collection counts, profession ranks and dungeon meta achievements (level
+achievements are left out, since the level-up is announced already). Only the
+achievement's ID is sent; each friend's game supplies the name and icon, and an ID
+that is not on the list (or unknown to that client) is ignored. At most five go out
+live per session (later ones still reach friends' logs quietly), at most ten per
+friend are shown per session, and one already earned on another character of your
+account is not announced again. The
+list is `WoWStatusAchievements.LIST` in `addon/shared/Achievements.lua`.
+
 **Screenshots** (per character, all off by default) can take a picture about one
 second after your own level-up or first dungeon clear, optionally with the interface
 hidden (never in combat, where a normal screenshot is taken). Pictures stay in WoW's

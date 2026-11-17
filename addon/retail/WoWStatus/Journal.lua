@@ -29,7 +29,11 @@ local budgets = {}
 local panel, refresh
 local equipment, lastQuery = {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
-    raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true}
+    raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true,achievement=true}
+-- An achievement entry's whitelisted ID (#165), or nil.
+local function achievementID(e)
+    return WoWStatusAchievements.id(e.achievement_id)
+end
 local fields={level="level",zone="zone",quest="quests",questprogress="quests",profession="professions",
     professionprogress="professions",equipment="gear"}
 local function trim(text,limit)
@@ -109,6 +113,7 @@ end
 -- Never offer a text that updated peers would reject and report as invalid.
 -- Privacy pruning keeps using relayable, so this never drops a group scope.
 local function offerable(entry,group,now)
+    if entry.kind=="achievement" and not achievementID(entry) then return false end
     return relayable(entry,group,now) and J.validText(entry.kind,entry.text,entry.level)
 end
 local function rebuild()
@@ -242,6 +247,8 @@ function J.recordLocal(event,backfill)
     if not db or not event or (event.data and event.data.synthetic) or not sharedKinds[event.kind] then return end
     local loot=event.kind=="loot" and WoWStatusLoot.eventInfo(event.data)
     if event.kind=="loot" and not WoWStatusLoot.allowed(current.settings,loot) then return end
+    -- An achievement this client cannot name has nothing to show (#165).
+    if event.kind=="achievement" and not P.eventText(event) then return end
     local nonce=P.eventNonce(event)
     local id=nonce and J.eventID(ownName(),nonce) or ("archive:"..current.identity.client..":"..event.id)
     local groups={}
@@ -251,7 +258,8 @@ function J.recordLocal(event,backfill)
     add({id=id,client=current.identity.client,sender=ownName(),owner=current.identity.guid,kind=event.kind,
         level=event.kind=="level" and event.data.level or nil,at=event.at,
         text=trim(event.kind=="level" and ("Reached level "..event.data.level.."!") or P.eventText(event) or event.kind,160),
-        quality=loot and loot.quality,class_id=loot and loot.class_id,equip_loc=loot and loot.equip_loc,item_id=loot and loot.item_id,groups=groups,origin="mine"})
+        quality=loot and loot.quality,class_id=loot and loot.class_id,equip_loc=loot and loot.equip_loc,item_id=loot and loot.item_id,
+        achievement_id=event.kind=="achievement" and achievementID(event.data) or nil,groups=groups,origin="mine"})
     if event.kind=="death" and not backfill then J.setDetails(id,event.data.zone,event.data.killer) end
     if loot and not backfill then J.setItem(id,J.itemString(event.data.item)) end
 end
@@ -409,6 +417,7 @@ local function liveEntry(item)
     return {id=id,client=WoWStatusAdapter.client_id,sender=item.sender,kind=item.kind or "level",level=item.level,
         text=trim(item.level and ("Reached level "..item.level.."!") or item.text or "",160),
         quality=item.quality,class_id=item.class_id,equip_loc=item.equip_loc,item_id=item.item_id,flavour=item.flavour,
+        achievement_id=item.kind=="achievement" and achievementID(item) or nil,
         at=item.at or S.now(),groups=groups,origin="live"}
 end
 -- Logs a live update. Returns true when it is new to the log, which includes
@@ -474,8 +483,10 @@ function J.privacyChanged()
     requests,sessions,sendQueue,jobs,queuedJobs={},{},{},{},{}
     if refresh then refresh() end
 end
+-- An achievement travels as its ID alone: the receiver names it itself (#165).
 local function pack(e)
-    local values={e.id,e.client,e.sender,tostring(e.at),e.kind,e.level and tostring(e.level) or "",e.text,e.quality and tostring(e.quality) or "",e.class_id and tostring(e.class_id) or "",e.equip_loc or "",e.item_id and tostring(e.item_id) or ""}
+    local text=e.kind=="achievement" and tostring(achievementID(e) or "") or e.text
+    local values={e.id,e.client,e.sender,tostring(e.at),e.kind,e.level and tostring(e.level) or "",text,e.quality and tostring(e.quality) or "",e.class_id and tostring(e.class_id) or "",e.equip_loc or "",e.item_id and tostring(e.item_id) or ""}
     local parts={}
     for _, value in ipairs(values) do parts[#parts+1]=#value..":"..value end
     return table.concat(parts)
@@ -503,9 +514,17 @@ local function unpackEntry(text)
         level=tonumber(level)
         if not level or level~=math.floor(level) or level<2 or level>WoWStatusAdapter.max_level then return nil,"invalid" end
     elseif level~="" then return nil,"invalid" else level=nil end
+    -- An unknown or malformed achievement ID is an ordinary drop (#165).
+    local achievement
+    if kind=="achievement" then
+        achievement=WoWStatusAchievements.id(detail)
+        detail=achievement and WoWStatusAchievements.text(achievement)
+        if not detail then return nil end
+    end
     if not J.validText(kind,detail,level) then return nil,"invalid" end
     local e={id=id,client=client,sender=sender,at=at,kind=kind,level=level,text=detail,groups={},origin="catchup",
-        quality=tonumber(values[8]),class_id=tonumber(values[9]),equip_loc=values[10],item_id=tonumber(values[11])}
+        quality=tonumber(values[8]),class_id=tonumber(values[9]),equip_loc=values[10],item_id=tonumber(values[11]),
+        achievement_id=achievement}
     if kind=="loot" and (not detail:match("^Equipped ") or not e.item_id or not WoWStatusLoot.allowed(current.settings,e)) then return nil end
     if kind~="loot" and (values[8]~="" or values[9]~="" or values[10]~="" or values[11]~="") then return nil end
     return e
@@ -575,6 +594,8 @@ function J.validText(kind,detail,level)
         return named(detail,"Honored with ") or named(detail,"Revered with ") or named(detail,"Exalted with ")
     end
     if kind=="unlock" then return named(detail,"Unlocked ") end
+    -- The name is always this client's own lookup of a whitelisted ID (#165).
+    if kind=="achievement" then return named(detail,"Earned achievement: ") end
     if kind=="pvp" then
         -- Sender and receiver run the same edition, so the adapter decides the form.
         if WoWStatusAdapter.pvpText then
@@ -962,6 +983,12 @@ J.TYPES={
     {"Mounts",{mount=true,epicmount=true}}, {"Armor",{loot=true,equipment=true}}, {"Reputation",{reputation=true}},
     {"Class abilities",{unlock=true}}, {"PvP",{pvp=true}}, {"Joins",{introduction=true}}, {"Recaps",{recap=true}},
 }
+-- Retail only (#165), right after PvP.
+if WoWStatusAdapter.achievements then
+    for i,t in ipairs(J.TYPES) do
+        if t[2].pvp then table.insert(J.TYPES,i+1,{"Achievements",{achievement=true}});break end
+    end
+end
 -- The day an entry belongs to, in the log's own (Oslo) time: "YYYY-MM-DD".
 local dayCache=setmetatable({},{__mode="k"})
 local function dayOf(e)
@@ -1270,7 +1297,7 @@ local REACTION_KINDS={["GZ!"]={level=true},["Eg ynskjer deg hjarteleg til lukke 
     ["Eg tek av meg hjelmen og bøyer hovudet i sorg."]={death=true},["Øv deg litt meir, så døyr du kanskje sjeldnare!"]={death=true},
     ["Welcome!"]={introduction=true},["Velkomen!"]={introduction=true}}
 local POSITIVE={profession=true,dungeon=true,raid=true,mount=true,epicmount=true,reputation=true,unlock=true,pvp=true,
-    quest=true,loot=true}
+    quest=true,loot=true,achievement=true}
 local REACTION_WINDOW=900
 function J.reaction(text,sender)
     text,sender=S.string(text),S.string(sender)

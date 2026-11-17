@@ -351,6 +351,9 @@
         },
         "discovery_milestones": {
           "$ref": "#/$defs/events"
+        },
+        "achievements": {
+          "$ref": "#/$defs/events"
         }
       }
     },

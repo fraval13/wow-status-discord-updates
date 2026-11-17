@@ -68,7 +68,7 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
     # Progress is kept beside version, which older releases require to stay 1.
     assert lua.eval('WoWStatusDB.version') == 1
     assert after['version'] == 1 and after['schema_version'] == 2
-    assert after['characters'][KEY]['schema_version'] == 2
+    assert after['characters'][KEY]['schema_version'] == 3
     assert after['characters'][KEY]['events'] == before['characters'][KEY]['events']
     assert lua.execute('''
         local P = WoWStatusPopups
@@ -104,7 +104,7 @@ def test_brand_new_account_starts_at_the_latest_versions():
     lua = make_lua()
     assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 2
     assert lua.eval('WoWStatusDB.version') == 1
-    assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 2
+    assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 3
     # A new character still gets every switch a migrated one has.
     assert lua.eval('character().settings.in_game.pvp') is True
     assert lua.eval('character().settings.collection.reputation') is True
@@ -388,3 +388,22 @@ def test_companion_reads_upgraded_saved_data(tmp_path):
     path.write_text(source.replace('["version"] = 1,', '["version"] = 1, schema_version = 2,'), encoding='utf-8')
     db, _ = load(path)
     assert db['version'] == lua.eval('WoWStatusDB.version') == 1
+
+
+def test_character_step_3_turns_achievements_off_on_retail_only():
+    lua = make_lua()
+    lua.execute('''
+        local step = WoWStatusMigrations.character[2]
+        assert(step.version == 3)
+        local function fresh() return {settings = {collection = {}, announcements = {}, in_game = {achievement = true}}} end
+        local c = fresh()
+        step.run(c)          -- Classic: nothing is added
+        assert(c.settings.collection.achievement == nil and c.settings.in_game.achievement == true)
+        WoWStatusAdapter.achievements = true
+        c = fresh(); step.run(c)
+        assert(c.settings.collection.achievement == false and c.settings.announcements.achievement == false)
+        assert(c.settings.in_game.achievement == true)   -- an existing choice is kept
+        c = {settings = {}}; step.run(c)
+        assert(c.settings.in_game.achievement == false)
+        WoWStatusAdapter.achievements = nil
+    ''')

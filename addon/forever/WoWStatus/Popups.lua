@@ -896,6 +896,10 @@ local function commit(c, now)
     if c.quiet or P.quietHoursActive() then noteReceive("quiet_hours", c, now); return false, "logged only (quiet hours)" end
     -- A muted friend (#169): logged above as usual, only the popup is skipped.
     if muted then noteReceive("muted", c, now); return false, "muted: logged without a popup" end
+    -- Past a friend's achievement cap (#165) it is logged, only the popup is skipped.
+    if c.kind == "achievement" and not WoWStatusAchievements.admit(c.key, c.nonce) then
+        noteReceive("achievement_cap", c, now); return false, "logged without a popup (achievement cap)"
+    end
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
@@ -1039,7 +1043,8 @@ receiveUpdate = function(text, sender, channel)
         raw,armor=client~=nil,client~=nil
     end
     if client then
-        local allowed = {raid=true,epicmount=true,recap=true,introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
+        local allowed = {raid=true,epicmount=true,recap=true,introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true,
+            achievement=WoWStatusAchievements and WoWStatusAchievements.available() or nil}
         if extended~=(kind=="raid" or kind=="epicmount" or kind=="recap") then return false end
         local at, now = tonumber(atText), S.now()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
@@ -1057,6 +1062,17 @@ receiveUpdate = function(text, sender, channel)
             detail="Equipped "..name
         end
         if automatic and kind~="dungeon" then return false end
+        -- Achievements (#165) carry only a whitelisted ID; the name shown is this
+        -- client's own. An unknown or malformed ID is dropped without a word.
+        local achievement
+        if kind=="achievement" then
+            if not raw then return false end -- Only the WSTATUS4 form carries achievements.
+            local AC=WoWStatusAchievements
+            achievement=AC.id(detail)
+            local shown=achievement and AC.text(achievement)
+            if not shown then return false, "unknown achievement" end
+            detail=shown
+        end
         if kind=="dungeon" then
             if not automatic then return false end -- Old manual reports used WSTATUS4.
             local id,name=detail:match("^(%d+) (.+)$")
@@ -1070,7 +1086,7 @@ receiveUpdate = function(text, sender, channel)
         -- Check the text as it will be shown, after the loot and dungeon conversions.
         if WoWStatusJournal and not WoWStatusJournal.validText(kind,detail) then return invalidLogData(group,sender) end
         return admit({sender=sender, key=key, group=group, kind=kind, text=detail,
-            automatic=automatic, at=at, nonce=nonce, loot=lootInfo}, now)
+            automatic=automatic, at=at, nonce=nonce, loot=lootInfo or (achievement and {achievement_id=achievement})}, now)
     end
     local client, levelText, atText, nonce = text:match("^WSTATUS2 ([%w%-]+) LEVEL (%d+) (%d+) ([%w%-]+)$")
     if not client and A.client_id == "classic-era" then
@@ -1151,7 +1167,7 @@ end
 -- Reaction whispers offered on a friend's notification: a real chat whisper,
 -- sent only when you click, at most once per notification.
 local POSITIVE = {profession=true, dungeon=true, raid=true, mount=true, epicmount=true, reputation=true,
-    unlock=true, pvp=true, quest=true, zone=true, loot=true, first=true}
+    unlock=true, pvp=true, quest=true, zone=true, loot=true, first=true, achievement=true}
 -- A congratulation that says what for, whispered as written (or in Nynorsk).
 P.CONGRATS = {loot="Congrats on the new gear!", quest="Congrats on all those quests!",
     profession="Congrats on the new profession rank!", dungeon="Congrats on the clear!", raid="Congrats on the boss kill!",
@@ -1777,6 +1793,7 @@ local function eventText(event)
         or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
         or event.kind == "unlock" or event.kind == "pvp" then return data.text end
     if event.kind == "introduction" then return "Joined the WoW Status group" end
+    if event.kind == "achievement" then return WoWStatusAchievements.text(data.achievement_id) end
     if event.kind == "quest" then
         return data.completed and ("Completed " .. data.completed .. " quests!") or nil
     end
@@ -1812,6 +1829,11 @@ function P.broadcast(character, event)
         local id,name=event.data.instance_id,event.data.name
         if type(id)~="number" or id<1 or id>1000000000 or type(name)~="string" or #name>80 or name:find(S.CONTROL_OR_PIPE) then return end
         text="WSTATUS5 " .. A.client_id .. " dungeon " .. event.at .. " " .. nonce .. " " .. id .. " " .. name
+    elseif event.kind == "achievement" then
+        -- The ID alone: receivers name it from their own client (#165).
+        local id=WoWStatusAchievements.id(event.data.achievement_id)
+        if not id then return end
+        text="WSTATUS4 " .. A.client_id .. " achievement " .. event.at .. " " .. nonce .. " " .. id
     elseif event.kind == "level" then
         if event.data.level < 2 or event.data.level > A.max_level then return end
         text = "WSTATUS2 " .. A.client_id .. " LEVEL " .. event.data.level .. " " .. event.at .. " " .. nonce
@@ -1838,13 +1860,19 @@ function P.broadcast(character, event)
     if #text > 220 then return end
     -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
     local groups, full = WoWStatusGroups.selected(character), false
-    local function enqueue(item)
+    local items = {}
+    for id in pairs(groups) do
+        if event.group_ids and event.group_ids[id] then items[#items + 1] = {message = text, at = event.at, event = event, group_id = id} end
+    end
+    if not next(groups) and prefs.legacy_channel then items[#items + 1] = {message = text, at = event.at, event = event} end
+    -- Achievements (#165): only a send that will be queued uses the session cap.
+    -- Past it the event stays in the log, which friends catch up quietly.
+    if event.kind == "achievement" and #items > 0 and #outgoing < 32 and not WoWStatusAchievements.spend() then
+        status("session_cap", event); return
+    end
+    for _, item in ipairs(items) do
         if #outgoing < 32 then table.insert(outgoing, item) else full = true end
     end
-    for id in pairs(groups) do
-        if event.group_ids and event.group_ids[id] then enqueue({message = text, at = event.at, event = event, group_id = id}) end
-    end
-    if not next(groups) and prefs.legacy_channel then enqueue({message = text, at = event.at, event = event}) end
     status(full and "send_queue_full" or #outgoing > 0 and "queued" or "no_group_selected", event)
     P.tick()
 end
