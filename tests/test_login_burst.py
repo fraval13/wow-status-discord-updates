@@ -121,22 +121,26 @@ ME = 'Thora'
 PREFIXES = ('WoWStatus', 'WoWStatusLog', 'WoWStatusChr')
 
 
-def ids(lua):
-    entries = lua.eval('function() local t={} for i,e in ipairs(WoWStatusJournal.entries()) do t[i]=e.id end return t end')()
+def ids(lua, own=False):
+    """A client's log IDs; with own, only the entries it wrote itself."""
+    entries = lua.eval('function(own) local t={} for _,e in ipairs(WoWStatusJournal.entries()) do '
+                       'if not own or e.owner then t[#t+1]=e.id end end return t end')(own)
     return set(entries.values())
 
 
 def gear(lua, name):
     snapshot = lua.eval(f'(WoWStatusRoster.equipment("{name}-TestRealm"))')
-    return snapshot and snapshot['items'][1]
+    return (snapshot and snapshot['items'][1]) or ''
 
 
 def relog_after_absence(friends, missed):
     """Thora logs out; the friends log `missed` level-ups and Mira changes gear; Thora logs in again.
 
-    Returns the network, Thora's new client, the time of her PLAYER_LOGIN, and
-    the log IDs she missed.
+    Returns the network, Thora's new client, the time of her PLAYER_LOGIN, the
+    index of the first message after it, and the log IDs she missed: every entry
+    a friend wrote that she lacks, whether or not it reached the other friends.
     """
+    assert 'Mira' in friends
     net = Network((ME,) + friends)
     net.advance(240)  # every list, log and gear snapshot exchanged
     saved = net.leave(ME)
@@ -148,7 +152,7 @@ def relog_after_absence(friends, missed):
         net.advance(2)
     net.clients['Mira'].execute('__gear[1]="item:42:0:0:0:0:0:0:0"; fire("PLAYER_EQUIPMENT_CHANGED", 1)')
     net.advance(180)  # live updates and their retries have finished
-    want = ids(net.clients['Mira'])
+    want = set().union(*(ids(net.clients[name], own=True) for name in friends))
     login, mark = net.now, len(net.log)
     me = net.relog(ME, saved)
     return net, me, login, mark, want - ids(me)
@@ -160,9 +164,13 @@ def sent(log, since, seconds, sender=None, target=None):
 
 
 def busiest_second(log, sender):
-    """The most messages one client sent on one prefix within one second."""
-    counts = collections.Counter((p[3], int(p[0])) for p in log if p[1] == sender)
-    return max(counts.values(), default=0)
+    """The most messages one client sent on one prefix within any one second."""
+    busiest = 0
+    for prefix in PREFIXES:
+        times = sorted(p[0] for p in log if p[1] == sender and p[3] == prefix)
+        for i, start in enumerate(times):
+            busiest = max(busiest, sum(1 for t in times[i:] if t < start + 1))
+    return busiest
 
 
 def test_a_login_sends_at_most_two_messages_a_second_per_prefix_and_loses_nothing():
@@ -177,8 +185,9 @@ def test_a_login_sends_at_most_two_messages_a_second_per_prefix_and_loses_nothin
             break
     after = net.log[mark:]
     first_ten = sent(after, login, 10, sender=ME)
-    # Each module paces its own whispers half a second apart: two prefixes in
-    # use, so at most four a second and 42 in the first ten seconds (both ends).
+    # Each module paces its own whispers half a second apart: at most two a
+    # second per prefix, so with two prefixes in use at most 42 in the first
+    # ten seconds (both ends counted).
     assert set(p[3] for p in first_ten) <= set(PREFIXES)
     assert len(first_ten) <= 42
     for prefix in PREFIXES:

@@ -30,13 +30,14 @@ to send, not what a live client, its chat throttle or a real realm does with it.
 |---|---|---|---|---|---|---|---|
 | 3 friends online, 22 entries missed | 28 (Chr 20, Log 8) | 51 (Chr 20, Log 31) | 79 | 3.5 s | 30.5 s | 27.0 s | 6 of 31 |
 | 7 friends online, 22 entries missed | 31 (Chr 20, Log 11) | 52 (Chr 26, Log 26) | 83 | 4.5 s | 30.0 s | 61.0 s | 40 of 99 |
-| 7 friends online, 70 entries missed | 38 (Chr 20, Log 18) | 57 (Chr 27, Log 30) | 95 | 4.5 s | 142.25 s | 61.0 s | 40 of 99 |
+| 7 friends online, 106 entries missed | 38 (Chr 20, Log 18) | 57 (Chr 27, Log 30) | 95 | 4.5 s | 171.5 s | 61.0 s | 40 of 99 |
 
 "Chr" is the character list prefix (`WoWStatusChr`: lists, quests, professions,
 statistics, equipment), "Log" the log sync (`WoWStatusLog`). Live updates
 (`WoWStatus`) send nothing at login. The friends' list, the log and the gear
 already saved show at once, from SavedVariables; the times are for what changed
-while Thora was away.
+while Thora was away. "Missed" counts every entry a friend wrote while she was
+away, whether or not it reached the other friends.
 
 Eight friends logging in at the same moment: the whole group sends 275 messages
 in the first ten seconds, 31 to 40 from each client, and the busiest client
@@ -60,6 +61,11 @@ receives 66.
   issue; it is not the login burst #188 describes, and a stagger would not fix it.
 - Nothing is lost at login outside instances: every missed entry and the changed
   gear arrive, and caught-up entries stay quiet.
+- Aside, not about login: in the 106-entry run (a level-up every two seconds
+  for three and a half minutes) the friends who stayed online end up with only
+  about 70 of those entries each, while Thora's login brings her all 106. That
+  is live delivery between online friends, not the login, and is left for a
+  separate look; their own next login sync should bring the rest.
 
 So, per triage, the login timing is left as it is.
 
@@ -69,13 +75,19 @@ This is fraval13's check; the harness above is not a live client.
 
 1. Type `/wstatus debug on`, then log out to the character screen and log in
    again, with friends online.
-2. After a minute, `/reload` so the game writes SavedVariables.
+2. After about 20 seconds, log out to the character screen again: the game
+   writes SavedVariables then. (A `/reload` also counts as a login and adds a
+   `login` line of its own.)
 3. In `WTF/Account/<account>/SavedVariables/WoWStatus.lua`, find the last
-   `debug_log` line ending in `login`. Each line starts with the realm time in
-   seconds. Count the lines in the ten seconds after it that start with
-   `send ` (character list) or `log send ` (log); `live send` lines are live
-   updates. A `log send` or `live send` line ending in `throttled` means the
-   game asked to wait.
+   `debug_log` line ending in `login`. Each line starts with the computer's
+   clock in whole seconds. In the ten seconds after it, count the lines that
+   start with `send ` (character list) and the `log send ` lines that end in
+   `: sent` (log). A `log send` line ending in `throttled` is a try the game
+   asked to wait for; the same packet is logged again when it goes out, so do
+   not count it. `live send` lines are live updates.
 4. `/wstatus debug off`.
 
-The debug log keeps the newest 500 lines and never names a group.
+The debug log keeps the newest 500 lines and never names a group. With seven
+friends online a login writes about 60 lines in its first ten seconds, so 20
+seconds stays well inside that; a much longer wait can push the `login` line
+out.
