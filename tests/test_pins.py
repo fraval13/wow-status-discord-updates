@@ -264,6 +264,9 @@ def test_the_stars_are_reachable_with_a_controller():
         R.onlineOnly=function() return false end
         R.groups=function() return {} end
         R.together=function() return {level=20, range=3, online=0, inRange=0, rows={}} end
+        R.whereWeAre=function() return {zones={}, people=0, count=0} end
+        WoWStatusSafe.now=function() return 0 end
+        WoWStatusJournal={entries=function() return {} end, details=function() end, zoneRevision=0}
         R.portrait=function() end
         R.professionsOf=function() return {} end
         R.isUnreachable=function() return false end
