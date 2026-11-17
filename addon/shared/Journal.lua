@@ -346,8 +346,7 @@ local function achievementDate(month,day,year)
     if not (month and day and year) or month<1 or month>12 or day<1 or day>31 then return nil end
     if year<100 then year=2000+year end
     if year<2004 then return nil end
-    local ok,at=pcall(time,{year=year,month=month,day=day,hour=12})
-    at=ok and S.number(at)
+    local at=S.timeOf({year=year,month=month,day=day,hour=12})
     if not at or at>S.now()+86400 then return nil end
     return at
 end
@@ -458,7 +457,7 @@ function J.groupsChanged()
         if e.owner or next(e.groups or {}) then table.insert(kept,e) end
     end
     db.journal.entries=kept;rebuild()
-    jobs,queuedJobs,contacted,hellos={},{},{},{};loginUntil=time()+60
+    jobs,queuedJobs,contacted,hellos={},{},{},{};loginUntil=S.uptime()+60
     if refresh then refresh() end
 end
 function J.privacyChanged()
@@ -519,7 +518,7 @@ local function queue(group,target,body,entry,expires)
     return true
 end
 local function token()
-    serial=serial+1;db.journal.request_serial=serial;return time().."-"..serial
+    serial=serial+1;db.journal.request_serial=serial;return S.now().."-"..serial
 end
 -- A template's name slot carries the sender's own localized game name (zone,
 -- item, mount, faction, spell, PvP rank). A receiver on another client language
@@ -601,7 +600,7 @@ local function requestPage(group,target,offset,pages,retries)
     -- Never ahead of realm time: a responder drops cutoffs over 300 s ahead.
     local now=S.now()
     local cutoff=math.min(math.max(groupSince(group),now-AGE),now)
-    requests[t]={group=group,target=target,key=P.senderKey(target),at=time(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
+    requests[t]={group=group,target=target,key=P.senderKey(target),at=S.now(),offset=offset,pages=pages or 0,cutoff=cutoff,pending={},parts={},via={},retries=retries or 0}
     queue(group,target,"Q "..t.." "..offset.." "..cutoff.." "..lootMask())
 end
 -- What one member (by sender key) has delivered by catch-up this session:
@@ -659,13 +658,13 @@ end
 -- Members still start a pull at most once per HELLO_INTERVAL (#4).
 function J.syncNow()
     if not db then return false end
-    contacted,loginUntil,loginNonce={},time()+60,token()
+    contacted,loginUntil,loginNonce={},S.uptime()+60,token()
     J.sync()
     return true
 end
 function J.sync()
     if not db then return end
-    if time()<=loginUntil then
+    if S.uptime()<=loginUntil then
         local groups={};for g in pairs(WoWStatusGroups.selected(current)) do groups[#groups+1]=g end;table.sort(groups)
         for _,group in ipairs(groups) do
             local peers=P.peers(group);table.sort(peers)
@@ -702,8 +701,8 @@ function J.receive(message,sender,distribution)
         if last and last.nonce==t then return true end
         -- A new hello from the same member and group starts a pull only so often.
         -- Within the interval it waits, and J.tick starts one pull later (#4).
-        -- Game uptime, unlike time(), can't jump when the PC clock is changed.
-        local uptime=GetTime and GetTime() or time()
+        -- Game uptime, unlike the PC clock, can't jump when that clock is changed.
+        local uptime=S.uptime()
         if last and uptime-last.at<HELLO_INTERVAL then
             last.nonce,last.waiting=t,sender;return false
         end
@@ -715,8 +714,8 @@ function J.receive(message,sender,distribution)
         -- Own and received entries are capped separately, so up to 2*CAP are offered.
         if not offset or offset>2*CAP or not cutoff or S.outside(cutoff,math.huge,300) then return false end
         local rateKey=group..":"..key
-        if rates[rateKey] and time()-rates[rateKey]<2 then return false end
-        rates[rateKey]=time()
+        if rates[rateKey] and S.now()-rates[rateKey]<2 then return false end
+        rates[rateKey]=S.now()
         for sessionKey,session in pairs(sessions) do
             if session.group==group and session.key==key then sessions[sessionKey]=nil end
         end
@@ -732,7 +731,7 @@ function J.receive(message,sender,distribution)
         local offer,list={},{}
         for i=offset+1,math.min(offset+PAGE,#eligible) do local d=digestFor(eligible[i]);offer[d]=eligible[i].id;list[#list+1]=d end
         local cursor=math.min(offset+PAGE,#eligible)
-        sessions[group..":"..key..":"..t]={at=time(),offer=offer,used=false,group=group,key=key}
+        sessions[group..":"..key..":"..t]={at=S.now(),offer=offer,used=false,group=group,key=key}
         queue(group,sender,"I "..t.." "..cursor.." "..(cursor<#eligible and "1" or "0").." "..(#list>0 and table.concat(list,",") or "-"))
         return true
     end
@@ -772,7 +771,7 @@ function J.receive(message,sender,distribution)
         advance(t);return true
     elseif op=="G" then
         local session=sessions[group..":"..key..":"..t]
-        if not session or session.used or time()-session.at>120 or not body:match("^[a-f0-9,]+$") then return false end
+        if not session or session.used or S.now()-session.at>120 or not body:match("^[a-f0-9,]+$") then return false end
         local ids={};for d in body:gmatch("[^,]+") do if #d~=22 or not session.offer[d] or #ids>=PAGE then return false end;ids[#ids+1]=d end
         session.used=true
         for _, d in ipairs(ids) do
@@ -833,7 +832,7 @@ function J.receive(message,sender,distribution)
 end
 function J.tick()
     if not db then return end
-    local now=time()
+    local now=S.now()
     for t,r in pairs(requests) do
         if now-r.at>(r.sent and 120 or 300) then
             requests[t]=nil
@@ -841,7 +840,7 @@ function J.tick()
         end
     end
     for k,s in pairs(sessions) do if now-s.at>120 then sessions[k]=nil end end
-    local uptime=GetTime and GetTime() or now
+    local uptime=S.uptime()
     for _,h in pairs(seenHello) do
         if h.waiting and uptime-h.at>=HELLO_INTERVAL and not pulling(h.group,P.senderKey(h.waiting)) then
             enqueueJob(h.group,h.waiting);h.at,h.waiting=uptime,nil
@@ -852,7 +851,7 @@ function J.tick()
     -- and WoW Forever can report a UI lockdown outside combat, which stopped sync.
     -- Real messaging restrictions are still checked through chatRestricted().
     J.sync()
-    local clock=GetTime and GetTime() or now
+    local clock=S.uptime()
     allowance=math.min(ALLOWANCE,allowance+math.max(0,clock-allowanceAt));allowanceAt=clock
     if clock<holdUntil or clock-lastSend<.5 or #sendQueue==0 or WoWStatusAdapter.chatRestricted() then return end
     if allowance<1 and S.call(IsInInstance) then return end
@@ -895,7 +894,7 @@ function J.init(database,character)
         if type(e)=="table" and type(e.id)=="string" and type(e.at)=="number" and type(e.text)=="string" and permitted(e)
             and (e.owner or P.fullName(e.sender)) then e.groups=e.groups or {};kept[#kept+1]=e end
     end
-    db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=time()+60
+    db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=S.uptime()+60
     -- Once: remove the skill-point cards earlier versions logged.
     if not db.journal.profession_points_removed then
         local cleaned={}
@@ -1006,7 +1005,7 @@ J.REACT_WINDOW=60
 function J.canReact(e)
     local shown=type(e)=="table" and S.number(e.shown_at)
     return shown~=nil and shown~=false and not e.owner and not e.sample and not e.reacted
-        and time()>=shown and time()-shown<J.REACT_WINDOW
+        and S.now()>=shown and S.now()-shown<J.REACT_WINDOW
 end
 local function rowReactions(row,e)
     row.reactions=row.reactions or {}
@@ -1155,7 +1154,7 @@ local function build(parent)
         waited=waited+(delta or 0)
         if waited<1 then return end
         waited=0
-        if panel.reactUntil and time()>=panel.reactUntil then render() end
+        if panel.reactUntil and S.now()>=panel.reactUntil then render() end
     end)
     if panel.scroll.HookScript then panel.scroll:HookScript("OnVerticalScroll",render)
     else panel.scroll:SetScript("OnVerticalScroll",render) end

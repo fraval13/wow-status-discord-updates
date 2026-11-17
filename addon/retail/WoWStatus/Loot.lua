@@ -40,13 +40,13 @@ function L.capture(link,callback)
     local count=0;for _ in pairs(pending) do count=count+1 end
     if pending[link] then
         if #pending[link].callbacks<8 then table.insert(pending[link].callbacks,callback) end
-    elseif count<32 then pending[link]={at=time(),callbacks={callback}} end
+    elseif count<32 then pending[link]={at=S.now(),callbacks={callback}} end
 end
 local frame=CreateFrame("Frame")
 pcall(frame.RegisterEvent,frame,"GET_ITEM_INFO_RECEIVED")
 local function retry()
     for link,item in pairs(pending) do
-        if time()-item.at>30 then pending[link]=nil
+        if S.now()-item.at>30 then pending[link]=nil
         else local info=L.info(link);if info then pending[link]=nil;for _,callback in ipairs(item.callbacks) do callback(info) end end end
     end
 end

@@ -29,8 +29,12 @@ local function account()
     if type(data.errors) ~= "table" then data.errors = {} end
     return data
 end
+-- Realm time from Safe.lua (#229), loaded right after this file; an error
+-- before that is stamped 0 and shown as "?".
 local function now()
-    local ok, value = pcall(time)
+    local S = WoWStatusSafe
+    if type(S) ~= "table" or type(S.now) ~= "function" then return 0 end
+    local ok, value = pcall(S.now)
     return ok and type(value) == "number" and value or 0
 end
 local function stamp(at)

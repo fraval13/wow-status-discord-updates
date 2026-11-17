@@ -191,7 +191,6 @@ function V.lookup(text)
 end
 
 local busyUntil, generation, queue = 0, 0, {}
-local function clock() return S.number(S.call(GetTime)) or time() end
 local function play(file)
     local willPlay = S.call(PlaySoundFile, file, V.channel())
     return willPlay and true or false
@@ -213,7 +212,7 @@ local function speak(clip, tier, tail, tailFirst)
         if C_Timer and C_Timer.After then C_Timer.After(after, function() play(clipFile(two[1], two[2])) end) end
         length = after + (tonumber(d.seconds[two[1]]) or two[3])
     end
-    busyUntil = clock() + length
+    busyUntil = S.uptime() + length
     generation = generation + 1
     local mine = generation
     if C_Timer and C_Timer.After then
@@ -229,7 +228,7 @@ end
 -- Play the queued reactions in order once nothing is playing.
 drain = function()
     if not V.available() or not V.enabled() then queue = {}; return end
-    while #queue > 0 and clock() >= busyUntil do
+    while #queue > 0 and S.uptime() >= busyUntil do
         local item = table.remove(queue, 1)
         if speak(item[1], item[2], item[3], item[4]) then return end
     end
@@ -258,7 +257,7 @@ function V.heard(text)
     end
     local last, now = tonumber(settings().last_at), S.now()
     if last and now >= last and now - last < V.interval() * 60 then return false end
-    if clock() < busyUntil then
+    if S.uptime() < busyUntil then
         if #queue >= V.MAX_QUEUE then return false end
         queue[#queue + 1] = {clip, tier, tail, zone and zone.first}
     elseif not speak(clip, tier, tail, zone and zone.first) then
@@ -276,7 +275,7 @@ end
 function V.simulate(request)
     local d, P = data(), WoWStatusPersonalities
     if not d or not P then return nil end
-    if clock() < busyUntil then return nil, "busy" end
+    if S.uptime() < busyUntil then return nil, "busy" end
     request = type(request) == "string" and request:lower() or ""
     local only = (request:find("level", 1, true) or request:find("nivå", 1, true)) and "level"
         or (request:find("zone", 1, true) or request:find("sone", 1, true)) and "enjoy"
@@ -328,7 +327,7 @@ end
 -- Local only, and it does not count against the interval.
 function V.test()
     local d, P = data(), WoWStatusPersonalities
-    if not d or clock() < busyUntil then return false end
+    if not d or S.uptime() < busyUntil then return false end
     local wanted = P and P.reactionVoice()
     local voices = {}
     for voice in pairs(d.lines) do voices[#voices + 1] = voice end

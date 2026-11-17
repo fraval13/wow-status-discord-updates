@@ -83,7 +83,7 @@ end
 function P.whispered(target)
     local key = whisperKey(target)
     if not key then return end
-    local now, count = time(), 0
+    local now, count = S.now(), 0
     for k, at in pairs(whispers) do
         if now - at > WHISPER_ECHO then whispers[k] = nil else count = count + 1 end
     end
@@ -107,7 +107,7 @@ function P.filterNotFound(message)
     local name = text:match(pattern)
     local key = whisperKey(name)
     local at = key and whispers[key]
-    if not at or time() - at > WHISPER_ECHO then return false end
+    if not at or S.now() - at > WHISPER_ECHO then return false end
     S.debug("whisper bounced (hidden): " .. text)
     for group, known in pairs(knownPeers) do
         for k in pairs(known) do if whisperKey(k) == key then known[k] = nil end end
@@ -308,8 +308,8 @@ end
 -- Read at most once a second: the popup tick runs several times a second.
 local clockAt, clockMinute
 local function localMinute()
-    if not date or not time then return nil end
-    local now = time()
+    local now = date and S.localNow()
+    if not now then return nil end
     if now == clockAt then return clockMinute end
     local ok, hour, minute = pcall(function() return tonumber(date("%H", now)), tonumber(date("%M", now)) end)
     clockAt, clockMinute = now, ok and hour and minute and minuteOfDay(hour * 60 + minute) or nil
@@ -480,8 +480,8 @@ local function advanceRoster()
     local peers,complete=readRoster(request.index,count)
     rosterNote(request.group,"list row "..request.index..", game count "..tostring(count)..", names read "..#peers
         ..(complete and "" or " (incomplete)"))
-    if complete then rosterCache[request.group]={peers=peers,count=count,at=time()};releaseRoster()
-    elseif time()-request.at>=5 then releaseRoster() end
+    if complete then rosterCache[request.group]={peers=peers,count=count,at=S.now()};releaseRoster()
+    elseif S.now()-request.at>=5 then releaseRoster() end
 end
 function P.notePeer(group,target)
     if not group or not WoWStatusGroups.contains(getCharacter(),group) then return end
@@ -494,7 +494,7 @@ function P.notePeer(group,target)
     end
     if count>=64 and not knownPeers[group][key] and oldest then knownPeers[group][oldest]=nil end
     local vouched=knownPeers[group][key] and knownPeers[group][key].vouched
-    knownPeers[group][key]={name=target,at=time(),vouched=vouched}
+    knownPeers[group][key]={name=target,at=S.now(),vouched=vouched}
 end
 -- When the game shows this character alone in a group's channel (WoW Forever
 -- did, while friends in it kept messaging), members who message us with the
@@ -529,8 +529,9 @@ end
 local function withKnown(group,roster)
     local result,seen={},{}
     for _,name in ipairs(roster or {}) do local key=P.senderKey(name);if key then seen[key]=true;result[#result+1]=name end end
+    local now=S.now()
     for key,item in pairs(knownPeers[group] or {}) do
-        if time()-item.at>(item.vouched and VOUCHED_SECONDS or 300) then knownPeers[group][key]=nil
+        if now-item.at>(item.vouched and VOUCHED_SECONDS or 300) then knownPeers[group][key]=nil
         elseif not seen[key] and #result<64 then seen[key]=true;result[#result+1]=item.name end
     end
     return result
@@ -584,15 +585,16 @@ function P.peers(group)
         local name,members=displayInfo(index)
         if name and name:lower()==WoWStatusGroups.channel(group):lower() then
             local cached=rosterCache[group]
-            if cached and cached.count==members and time()-cached.at<30 then rosterBusy=false;return withKnown(group,cached.peers) end
+            if cached and cached.count==members and S.now()-cached.at<30 then rosterBusy=false;return withKnown(group,cached.peers) end
             if not SetSelectedDisplayChannel then
                 local peers,complete=readRoster(index,members)
-                if complete then rosterCache[group]={peers=peers,count=members,at=time()} end
+                if complete then rosterCache[group]={peers=peers,count=members,at=S.now()} end
                 rosterBusy=false;return withKnown(group,peers)
             end
-            if not pendingRoster and (not rosterRequested[group] or time()-rosterRequested[group]>=5) then
-                rosterRequested[group]=time()
-                pendingRoster={group=group,index=index,at=time(),previous=selectedChannel()}
+            local now=S.now()
+            if not pendingRoster and (not rosterRequested[group] or now-rosterRequested[group]>=5) then
+                rosterRequested[group]=now
+                pendingRoster={group=group,index=index,at=now,previous=selectedChannel()}
                 S.call(SetSelectedDisplayChannel,index);rosterSelection=index;advanceRoster()
             end
             cached=rosterCache[group];rosterBusy=false
@@ -610,7 +612,7 @@ local function remember(item, logged)
     if WoWStatusJournal and not logged then WoWStatusJournal.received(item) end
     prefs.activity = prefs.activity or {}
     table.insert(prefs.activity, 1, {sender = item.sender, level = item.level,
-        kind = item.kind or "level", text = item.text, flavour=item.flavour, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = time(), group_id = item.group_id})
+        kind = item.kind or "level", text = item.text, flavour=item.flavour, automatic = item.automatic, nonce = item.nonce, original_at = item.at, quality=item.quality, class_id=item.class_id, equip_loc=item.equip_loc, item_id=item.item_id, at = S.now(), group_id = item.group_id})
     while #prefs.activity > 200 do table.remove(prefs.activity) end
 end
 -- Channels this addon joined, kept in SavedVariables: /reload restarts module
@@ -677,12 +679,12 @@ end
 -- Seconds since this join started waiting for the client's own channels. A
 -- group added later waits the same way, and waits at all only while the low
 -- numbers are still free.
--- GetTime is the client's own clock and keeps counting while time() may jump.
+-- Game uptime (S.uptime) keeps counting while the PC clock may jump.
 local function waited()
-    local now = S.number(S.call(GetTime)) or time()
+    local now = S.uptime()
     if not syncStart then syncStart = now end
     local since = now - syncStart
-    -- A clock that went backwards (another edition's stub, or time() after a
+    -- A clock that went backwards (another edition's stub, or the PC clock after a
     -- correction) must not look like a long wait.
     if since < 0 then syncStart = now; return 0 end
     return since
@@ -724,7 +726,7 @@ local function syncGroups()
 end
 local loggedStatus
 local function status(state, event, target)
-    prefs.last_send = {state = state, at = time(), event_id = event and event.id or nil, target = target}
+    prefs.last_send = {state = state, at = S.now(), event_id = event and event.id or nil, target = target}
     local line = state .. " " .. tostring(event and event.kind) .. " " .. tostring(target)
     if line ~= loggedStatus then loggedStatus = line; S.debug("live send status: " .. line) end
 end
@@ -813,7 +815,7 @@ function P.init(database, getter, reporter)
     local register = C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register, ADDON_PREFIX) end
     clear()
-    pruneSeen(time())
+    pruneSeen(S.now())
     syncPending, syncStart = true, nil
     syncGroups()
 end
@@ -913,7 +915,7 @@ local function memberKeys(group)
     local keys = {}
     local current = P.peers(group)
     local cached = rosterCache[group]
-    local recent = cached and time() - cached.at < LAST_ROSTER_SECONDS and cached.peers or {}
+    local recent = cached and S.now() - cached.at < LAST_ROSTER_SECONDS and cached.peers or {}
     for _, list in ipairs({current, recent}) do
         for _, name in ipairs(list) do
             local key = P.senderKey(name)
@@ -1040,7 +1042,7 @@ receiveUpdate = function(text, sender, channel)
     if client then
         local allowed = {raid=true,epicmount=true,recap=true,introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true}
         if extended~=(kind=="raid" or kind=="epicmount" or kind=="recap") then return false end
-        local at, now = tonumber(atText), time()
+        local at, now = tonumber(atText), S.now()
         if client ~= A.client_id or not allowed[kind] or #nonce > 64 or #encoded > (raw and 120 or 96)
             or (not raw and #encoded % 2 ~= 0) then return false end
         if late(sender, kind, at, now) then return false, "too old or ahead (clock)" end
@@ -1077,7 +1079,7 @@ receiveUpdate = function(text, sender, channel)
         if levelText then client = "classic-era" end
     end
     if client ~= A.client_id then return false end
-    local level, at, now = tonumber(levelText), tonumber(atText), time()
+    local level, at, now = tonumber(levelText), tonumber(atText), S.now()
     if not at or not nonce or #nonce > 64 then return false end
     if late(sender, nil, at, now) then return false end
     if not level or level < 2 or level > A.max_level then return invalidLogData(group,sender) end
@@ -1190,8 +1192,7 @@ end
 -- Clicks in the first 1.5 seconds are ignored: a click meant for something else
 -- must not dismiss a notification that just appeared, or whisper a reaction.
 P.CLICK_GUARD = 1.5
-local function clock() return GetTime and S.number(GetTime()) or time() end
-local function guarded() return toast ~= nil and toast.shownAt ~= nil and clock() - toast.shownAt < P.CLICK_GUARD end
+local function guarded() return toast ~= nil and toast.shownAt ~= nil and S.uptime() - toast.shownAt < P.CLICK_GUARD end
 -- The log entry for a notification (or the entry itself), where a reaction is
 -- remembered, so the notification and the log never whisper the same update twice.
 local function entryOf(item)
@@ -1288,7 +1289,7 @@ local TOAST_HEIGHT, BESIDE_HEADING, COUNTDOWN_ROOM = 124, 300, 36
 -- During the click guard the buttons are greyed out and count down: "GZ! (1.2)".
 local function guardButtons()
     if not toast or not toast.reactions then return end
-    local left = toast.shownAt and P.CLICK_GUARD - (clock() - toast.shownAt) or 0
+    local left = toast.shownAt and P.CLICK_GUARD - (S.uptime() - toast.shownAt) or 0
     for _, button in ipairs(toast.reactions) do
         if button:IsShown() and button.reaction then
             if left > 0 then
@@ -1370,10 +1371,10 @@ P.HOLD_LIMIT = 60
 local holding, heldSince = false, 0
 function P.hold(down)
     holding = down == true and toast ~= nil and toast:IsShown()
-    heldSince = clock()
+    heldSince = S.uptime()
 end
 function P.holding()
-    if holding and clock() - heldSince > P.HOLD_LIMIT then holding = false end
+    if holding and S.uptime() - heldSince > P.HOLD_LIMIT then holding = false end
     return holding
 end
 function P.held()
@@ -1497,14 +1498,14 @@ local function show(item, now)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
-    toast.shownAt = clock()
+    toast.shownAt = S.uptime()
     reactionButtons()
     toast.age = 0
     toast.life, toast.tail = P.lifetime()
     holding = false
     -- The log card offers the same reactions for a minute after this.
     local entry = not item.preview and entryOf(item)
-    if entry and not entry.owner then entry.shown_at = time() end
+    if entry and not entry.owner then entry.shown_at = S.now() end
     toast:SetAlpha(0)
     toast:Show()
     -- The toast's OnUpdate hides it on time; tick() is the fallback (see there).
@@ -1523,7 +1524,7 @@ function P.notice(item)
     if not prefs or #incoming + #notices >= 128 then return false end
     if P.quietHoursActive() and not P.isSelf(item.sender) then return false end
     if item.sender and WoWStatusMutes and WoWStatusMutes.popupsMuted(item.sender) then return false end
-    item.preview, item.key, item.received_at = true, "local-notice", time()
+    item.preview, item.key, item.received_at = true, "local-notice", S.now()
     table.insert(notices, item)
     return true
 end
@@ -1559,7 +1560,7 @@ function P.preview(kind, sample)
     if kind ~= "level" and not samples[kind] then return end
     if #incoming >= 128 then notify("Notification queue is full; wait for previews to finish."); return end
     table.insert(incoming, {sender="Previewlock",key="local-preview",kind=kind=="profession_learned" and "profession" or kind,text=samples[kind],
-        level=kind=="level" and 33 or nil,quality=kind=="loot" and 4 or nil,received_at=time(),preview=true,sample=sample})
+        level=kind=="level" and 33 or nil,quality=kind=="loot" and 4 or nil,received_at=S.now(),preview=true,sample=sample})
     P.tick()
 end
 
@@ -1578,7 +1579,7 @@ local function tick()
     if not prefs then return end
     for _, item in ipairs(notices) do table.insert(incoming, item) end
     notices = {}
-    local now = time()
+    local now = S.now()
     syncGroups()
     if not receiving() then
         unverified = {}
@@ -1610,7 +1611,7 @@ local function tick()
         -- Held (and on screen): OnUpdate restarts the countdown from a second, so
         -- the fallback moves too.
         if active and toast:IsVisible() and P.held() then active.hide_at = math.max(active.hide_at, now + toast.life) end
-        -- time() counts whole seconds, so while the toast's own countdown runs (it is
+        -- S.now() counts whole seconds, so while the toast's own countdown runs (it is
         -- visible and counting), that decides, for up to two seconds more. Else (UI
         -- hidden, or a countdown that stopped) this hides it.
         local counting = toast and (toast.age or 0) > 0 and toast:IsVisible() and toast.age < toast.life
@@ -1921,7 +1922,7 @@ function P.command(text)
         if not receiving() then notify("Join a group first, or use /wstatus popup on for a local preview."); return end
         if #incoming < 20 then
             table.insert(incoming, {sender = "Preview", key = "local-preview", level = 25,
-                received_at = time(), preview = true})
+                received_at = S.now(), preview = true})
             P.tick()
         end
     elseif command == "status" then
@@ -1944,7 +1945,7 @@ function P.command(text)
             .."; popup queue="..#incoming.."; awaiting roster="..#unverified.."; in combat="..tostring(combat() and true or false))
         local dropped=prefs.last_dropped
         if type(dropped)=="table" and type(dropped.offset)=="number" and type(dropped.at)=="number" then
-            local ago=math.max(0,time()-dropped.at)
+            local ago=math.max(0,S.now()-dropped.at)
             notify("Last dropped: "..tostring(dropped.kind).." from "..tostring(dropped.sender).." — "..tostring(dropped.state)
                 .." (stamped "..realmOffset(dropped.offset,dropped.pc_clock)..", "
                 ..(ago<120 and (ago.." s") or (math.floor(ago/60).." min")).." ago)")

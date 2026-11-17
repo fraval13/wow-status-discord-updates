@@ -24,7 +24,7 @@ local function trackHit()
     if not current or S.string(destGUID) ~= current.identity.guid then return end
     local name = sub == "ENVIRONMENTAL_DAMAGE" and ENVIRONMENT[S.string(environment) or ""] or S.string(sourceName)
     if name and #name <= 48 and not name:find(S.CONTROL_OR_PIPE) then
-        lastHit = {name=name, at=GetTime and GetTime() or time()}
+        lastHit = {name=name, at=S.uptime()}
     end
 end
 
@@ -640,7 +640,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
             -- A Hardcore death carries its own fixed text instead of a death total (#163).
             local data = hardcore and {hardcore=true}
                 or current.settings.fields.deaths and {total_deaths=WoWStatusProgress.totalDeaths(current)} or {}
-            local now = GetTime and GetTime() or time()
+            local now = S.uptime()
             if lastHit and now - lastHit.at <= 5 then data.killer = lastHit.name end
             lastHit = nil
             local event = queue("death", data)

@@ -103,7 +103,7 @@ end
 local function inventory(group,peer)
     local k="inventory:"..group..":"..(key(peer) or "")
     if not jobs[k] and count(jobs)>=MAX_JOBS then return false end
-    jobs[k]={group=group,peer=peer,records=records(group),index=1,at=time()}
+    jobs[k]={group=group,peer=peer,records=records(group),index=1,at=S.now()}
     return true
 end
 function G.hello(group,peer,force)
@@ -111,7 +111,7 @@ function G.hello(group,peer,force)
     local k=group..":"..(key(peer) or "")
     if not force and hello[k] then return end
     local ready=inventory(group,peer)
-    if ready and send("J",group,peer,{}) then hello[k]=time() end
+    if ready and send("J",group,peer,{}) then hello[k]=S.now() end
 end
 function G.sync()
     if not db or touring() then return end
@@ -121,7 +121,7 @@ function G.sync()
 end
 function G.changed(character,gearChanged)
     if not db or not character then return end
-    local at=time()+(gearChanged and 1 or 60)
+    local at=S.now()+(gearChanged and 1 or 60)
     local before=dirty[character]
     dirty[character]=before and math.min(before,at) or at
     WoWStatusRoster.render()
@@ -130,7 +130,7 @@ end
 function G.privacyChanged()
     if not db then return end
     E.capture(current)
-    for _, character in pairs(db.characters or {}) do ownRecord(character); dirty[character]=time() end
+    for _, character in pairs(db.characters or {}) do ownRecord(character); dirty[character]=S.now() end
 end
 function G.withdraw(owner)
     if not db then return end
@@ -184,8 +184,8 @@ function G.refresh(name)
     for _, offer in pairs(offers) do
         if key(offer.meta.name)==key(name) then
             local source=offer.sources[1]
-            if source and (not source.asked or time()-source.asked>=60) then
-                source.asked=time()
+            if source and (not source.asked or S.now()-source.asked>=60) then
+                source.asked=S.now()
                 send("J",source.group,source.peer,{})
             end
             return true
@@ -215,10 +215,11 @@ function G.receive(words,sender)
     if op=="J" and #words==3 then
         local before=current.equipment_profile and current.equipment_profile.revision
         E.capture(current)
-        if current.equipment_profile and current.equipment_profile.revision~=before then dirty[current]=time() end
+        local stamp=S.now()
+        if current.equipment_profile and current.equipment_profile.revision~=before then dirty[current]=stamp end
         local k="inventory:"..group..":"..(key(sender) or "")
-        if answered[k] and time()-answered[k]<15 then return false end
-        answered[k]=time(); trim(answered,128)
+        if answered[k] and stamp-answered[k]<15 then return false end
+        answered[k]=stamp; trim(answered,128)
         return inventory(group,sender)
     end
     if op=="H" then
@@ -243,17 +244,17 @@ function G.receive(words,sender)
         end
         if not offer or not same(meta,offer.meta) then
             for token,request in pairs(pending) do if request.record==k then pending[token]=nil end end
-            offer={meta=meta,sources={},at=time(),need=not (same(meta,old) and old.snapshot)}
+            offer={meta=meta,sources={},at=S.now(),need=not (same(meta,old) and old.snapshot)}
             offers[k]=offer; trim(offers,MAX_CACHE)
         end
-        offer.at=time()
+        offer.at=S.now()
         if meta.at>offer.meta.at then offer.meta.at=meta.at end
         local found=false
         for _, source in ipairs(offer.sources) do
-            if source.group==group and key(source.peer)==key(sender) then source.at=time(); found=true end
+            if source.group==group and key(source.peer)==key(sender) then source.at=S.now(); found=true end
         end
         if not found and (#offer.sources<4 or pid==meta.owner) then
-            local source={group=group,peer=sender,pid=pid,at=time()}
+            local source={group=group,peer=sender,pid=pid,at=S.now()}
             if pid==meta.owner then
                 if #offer.sources>=4 then table.remove(offer.sources) end
                 table.insert(offer.sources,1,source)
@@ -284,25 +285,26 @@ function G.receive(words,sender)
         if record.hidden or record.revision~=revision then metadata(record,group,sender); return true end
         local k="data:"..group..":"..(key(sender) or "")..":"..recordKey(owner,name)
         local rate=k..":"..revision
-        if answered[rate] and time()-answered[rate]<15 then return false end
+        local stamp=S.now()
+        if answered[rate] and stamp-answered[rate]<15 then return false end
         if not jobs[k] and count(jobs)>=MAX_JOBS then return false end
         if not record.snapshot then return false end
-        answered[rate]=time(); trim(answered,128)
+        answered[rate]=stamp; trim(answered,128)
         local parts=E.parts(record.snapshot)
         local average=S.number(record.snapshot.average_item_level)
         parts[#parts+1]={"l",average and tostring(math.floor(average*100)) or "-"}
-        jobs[k]={group=group,peer=sender,parts=parts,token=token,index=1,at=time(),own=record.own}
+        jobs[k]={group=group,peer=sender,parts=parts,token=token,index=1,at=stamp,own=record.own}
         return true
     end
     if op=="T" and #words==6 then
         local token,part=words[4],words[5]
         local request=pending[token]
         if not request or request.pid~=pid or request.group~=group or key(request.peer)~=key(sender)
-            or time()-request.at>=180 then return false end
+            or S.now()-request.at>=180 then return false end
         local value=E.part(part,words[6])
         if value==nil or value==false or part=="x" or part=="n" then return false end
         if request.parts[part] then return true end
-        request.parts[part],request.count,request.last=value,request.count+1,time()
+        request.parts[part],request.count,request.last=value,request.count+1,S.now()
         if request.count<24 then return true end
         pending[token]=nil
         local offer=offers[request.record]
@@ -320,7 +322,7 @@ function G.receive(words,sender)
 end
 function G.tick()
     if not db or touring() then return end
-    local stamp=time()
+    local stamp=S.now()
     for token,request in pairs(pending) do
         if not selected(request.group) or stamp-request.at>=180 or (request.count==0 and stamp-request.at>=30) then pending[token]=nil end
     end
