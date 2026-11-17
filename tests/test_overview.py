@@ -165,15 +165,15 @@ def test_not_seen_rule_counts_days_caps_at_the_log_and_skips_online_and_unlisted
             return entry
         end
         local groups = {{
-            player("Thora", {{{{listed=true, status="last seen 12d ago", seen=now - 12 * {DAY} - 5}}}}),
+            player("Thora", {{{{listed=true, groupIds={{g=true}}, status="last seen 12d ago", seen=now - 12 * {DAY} - 5}}}}),
             -- One character online: around, whatever the others say.
-            player("Online", {{{{listed=true, status="online"}}, {{listed=true, status="x", seen=1}}}}),
+            player("Online", {{{{listed=true, groupIds={{g=true}}, status="online"}}, {{listed=true, groupIds={{g=true}}, status="x", seen=1}}}}),
             -- Quiet for longer than the log reaches back.
-            player("Bran", {{{{listed=true, status="x", seen=now - 80 * {DAY}}}}}),
-            player("Recent", {{{{listed=true, status="x", seen=now - 2 * {DAY}}}}}),
+            player("Bran", {{{{listed=true, groupIds={{g=true}}, status="x", seen=now - 80 * {DAY}}}}}),
+            player("Recent", {{{{listed=true, groupIds={{g=true}}, status="x", seen=now - 2 * {DAY}}}}}),
             -- Shares no character list.
             player("Not announced", {{{{status="x", seen=now - 50 * {DAY}}}}}),
-            player("You", {{{{listed=true, status="offline", seen=1}}}}, {{self=true}}),
+            player("You", {{{{listed=true, groupIds={{g=true}}, status="offline", seen=1}}}}, {{self=true}}),
         }}
         local oldest = now - 31 * {DAY} - 7
         local list = WoWStatusOverview.notSeen(groups, now, 7, oldest)
@@ -187,6 +187,18 @@ def test_not_seen_rule_counts_days_caps_at_the_log_and_skips_online_and_unlisted
         assert(#WoWStatusOverview.notSeen(groups, now, 0, oldest) == 0)
         -- With a log reaching back far enough, Bran's absence is exact.
         assert(WoWStatusOverview.notSeen(groups, now, 30, now - 200 * {DAY})[1].days == 80)
+        -- A short log does not hide him: under the threshold, his own days stand.
+        local short = WoWStatusOverview.notSeen(groups, now, 14, now - 10 * {DAY})
+        assert(short[1].player == "Bran" and short[1].days == 80 and not short[1].more)
+        -- No longer sharing a group you are in: left out.
+        groups[3].rows[1].groupIds = {{}}
+        assert(#WoWStatusOverview.notSeen(groups, now, 7, oldest) == 1)
+        -- Lists without a player name stand alone, one per character.
+        local unnamed = {{player("Unnamed player", {{
+            {{name="Ann-Realm", listed=true, groupIds={{g=true}}, status="online"}},
+            {{name="Ivo-Realm", listed=true, groupIds={{g=true}}, status="x", seen=now - 9 * {DAY}}}}})}}
+        local alone = WoWStatusOverview.notSeen(unnamed, now, 7)
+        assert(#alone == 1 and alone[1].player == "Ivo" and alone[1].days == 9)
     ''')
 
 
@@ -237,15 +249,13 @@ def test_not_seen_line_is_translated():
     lua = make_lua(OVERVIEW)
     lua.execute('''
         WoWStatusDB.language = "nn"
-        local line = WoWStatusOverview.notSeenLine({{player="Bran", days=31, more=true}, {player="Thora", days=1}})
-        assert(line == "Ikkje sett på ei stund: Bran (meir enn 31 dagar), Thora (1 dag)", line)
+        local line = WoWStatusOverview.notSeenLine({{player="Bran", days=31, more=true}, {player="Thora", days=12}})
+        assert(line == "Ikkje sett på ei stund: Bran (meir enn 31 dagar), Thora (12 dagar)", line)
         assert(WoWStatusOverview.notSeenLabel(14) == "14 dagar" and WoWStatusOverview.notSeenLabel(0) == "Av")
     ''')
 
 
-def test_options_button_cycles_the_threshold():
-    # A plain UIPanelButtonTemplate Button with OnClick in the Options panel, like
-    # its neighbours there, so the controller walk reaches it.
+def test_options_button_cycles_the_threshold_and_a_controller_reaches_it():
     lua = make_lua(OVERVIEW)
     lua.execute('''
         SlashCmdList.WOWSTATUS("")
@@ -254,4 +264,21 @@ def test_options_button_cycles_the_threshold():
         b.OnClick(b)
         assert(b.text == "30 days" and WoWStatusDB.overview.not_seen_days == 30)
         assert(b.kind == "Button")
+        -- The controller walk needs what these stubs leave out.
+        local methods = getmetatable(b).__index
+        function methods:GetObjectType() return self.kind end
+        function methods:GetScript(name) return self[name] end
+        function methods:GetChildren()
+            local found = {}
+            for _, f in ipairs(__frames) do if f.parent == self then table.insert(found, f) end end
+            return (unpack or table.unpack)(found)
+        end
+        local shown = WoWStatusSetup
+        while shown do shown.visible = true; shown = shown.parent end
+        b.GetRect = function() return 400, 400, 180, 26 end
+        local reached = false
+        for _, control in ipairs(WoWStatusGamepad.controls(WoWStatusSetup, {WoWStatusSetup})) do
+            if control == b then reached = true end
+        end
+        assert(reached, "a controller must reach the threshold button")
     ''')

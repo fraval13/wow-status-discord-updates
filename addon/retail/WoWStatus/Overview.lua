@@ -21,31 +21,25 @@ end
 -- log and the character lists already here and never sends or whispers anything.
 O.NOT_SEEN_CHOICES = {0, 7, 14, 30}
 O.NOT_SEEN_DEFAULT = 14
-local NOT_SEEN_SHOWN = 4
+local NOT_SEEN_SHOWN = 3
+local function notSeenChoice(days)
+    for i, choice in ipairs(O.NOT_SEEN_CHOICES) do if choice == days then return i end end
+end
 function O.notSeenDays()
     local data = state()
     local value = data and S.number(data.not_seen_days)
-    for _, choice in ipairs(O.NOT_SEEN_CHOICES) do if choice == value then return value end end
-    return O.NOT_SEEN_DEFAULT
+    return notSeenChoice(value) and value or O.NOT_SEEN_DEFAULT
 end
 function O.setNotSeenDays(days)
     local data = state()
-    if not data then return false end
-    for _, choice in ipairs(O.NOT_SEEN_CHOICES) do
-        if choice == days then
-            data.not_seen_days = days ~= O.NOT_SEEN_DEFAULT and days or nil
-            return true
-        end
-    end
-    return false
+    if not data or not notSeenChoice(days) then return false end
+    data.not_seen_days = days ~= O.NOT_SEEN_DEFAULT and days or nil
+    return true
 end
 -- The next choice after the current one, wrapping round (the Options button).
 function O.cycleNotSeenDays()
-    local current, choices = O.notSeenDays(), O.NOT_SEEN_CHOICES
-    for i, choice in ipairs(choices) do
-        if choice == current then O.setNotSeenDays(choices[i % #choices + 1]); return O.notSeenDays() end
-    end
-    O.setNotSeenDays(O.NOT_SEEN_DEFAULT)
+    local choices = O.NOT_SEEN_CHOICES
+    O.setNotSeenDays(choices[notSeenChoice(O.notSeenDays()) % #choices + 1])
     return O.notSeenDays()
 end
 function O.notSeenLabel(days)
@@ -55,39 +49,49 @@ function O.notSeenLabel(days)
 end
 
 -- Players quiet for at least `days`, longest first: {player, days, more}.
--- groups: R.groups(). Only players whose shared character list is here count
--- (not "Not announced" senders); one online character means they are around.
--- Hidden bank alts are already left out of R.groups.
--- An absence older than the retained log reads "more than N days", N being the
--- age of the oldest friend entry the log still holds (`oldest`), because the log
--- cannot say what happened before it.
+-- groups: R.groups(); now and the stamps are realm time (S.now). Only players
+-- whose shared character list is here count (not "Not announced" senders), and
+-- only while they share a group you are still in. One online character means
+-- they are around. Hidden bank alts are already left out of R.groups.
+-- When their newest activity is older than the oldest friend entry the log still
+-- holds (`oldest`), later entries of theirs may have been dropped from the log,
+-- so it reads "more than N days", N being how far back the log reaches.
+local UNNAMED = "Unnamed player"
 function O.notSeen(groups, now, days, oldest)
     local result = {}
     if not days or days <= 0 or type(now) ~= "number" then return result end
-    for _, entry in ipairs(groups or {}) do
+    local function consider(player, rows)
         local listed, online, seen = false, false, 0
-        if not entry.self then
-            for _, row in ipairs(entry.rows or {}) do
-                -- A friend muted with "Hide completely" (#169) stays out of it.
-                if row.listed and not (WoWStatusMutes and WoWStatusMutes.hidden(row.name)) then
-                    listed = true
-                    if row.status == "online" then online = true end
-                    seen = math.max(seen, S.number(row.seen) or 0)
-                end
+        for _, row in ipairs(rows) do
+            -- A friend muted with "Hide completely" (#169) stays out of it.
+            if row.listed and type(row.groupIds) == "table" and next(row.groupIds)
+                and not (WoWStatusMutes and WoWStatusMutes.hidden(row.name)) then
+                listed = true
+                if row.status == "online" then online = true end
+                seen = math.max(seen, S.number(row.seen) or 0)
             end
         end
-        if listed and not online then
-            local item
-            if type(oldest) == "number" and seen < oldest then
-                local span = math.floor(math.max(0, now - oldest) / 86400)
-                if span >= days then item = {days=span, more=true} end
-            elseif seen > 0 then
-                local quiet = math.floor(math.max(0, now - seen) / 86400)
-                if quiet >= days then item = {days=quiet} end
-            end
-            if item then
-                item.player = tostring(entry.name or entry.title or "?")
-                table.insert(result, item)
+        if not listed or online or seen <= 0 then return end
+        local quiet = math.floor(math.max(0, now - seen) / 86400)
+        if quiet < days then return end
+        local item = {player=player, days=quiet}
+        if type(oldest) == "number" and seen < oldest then
+            local span = math.floor(math.max(0, now - oldest) / 86400)
+            if span >= days then item.days, item.more = span, true end
+        end
+        table.insert(result, item)
+    end
+    for _, entry in ipairs(groups or {}) do
+        if not entry.self then
+            local name = tostring(entry.name or entry.title or "?")
+            if name == UNNAMED then
+                -- Lists without a player name are merged under one header; each
+                -- character there may be a different person, so each stands alone.
+                for _, row in ipairs(entry.rows or {}) do
+                    consider((tostring(row.name or "?"):match("^[^-]+") or "?"), {row})
+                end
+            else
+                consider(name, entry.rows or {})
             end
         end
     end
@@ -117,8 +121,7 @@ function O.notSeenLine(list)
             table.insert(parts, TF("%d more", #list - NOT_SEEN_SHOWN)); break
         end
         local name = item.player:gsub("|", "||")
-        local span = item.more and TF("more than %d days", item.days)
-            or (item.days == 1 and T("1 day") or TF("%d days", item.days))
+        local span = TF(item.more and "more than %d days" or "%d days", item.days)
         table.insert(parts, name .. " (" .. span .. ")")
     end
     return T("Not seen for a while:") .. " " .. table.concat(parts, ", ")
@@ -320,10 +323,9 @@ local function renderGroup()
     local days = O.notSeenDays()
     local text
     if groups > 0 and days > 0 and WoWStatusRoster.groups then
-        text = O.notSeenLine(O.notSeen(WoWStatusRoster.groups(), time(), days, O.logStart(WoWStatusJournal.entries())))
+        text = O.notSeenLine(O.notSeen(WoWStatusRoster.groups(), S.now(), days, O.logStart(WoWStatusJournal.entries())))
     end
     group.notSeen:SetText(text or "")
-    page.notSeen = text
 end
 
 -- The "Latest records" box: the three newest Firsts medals.
@@ -450,7 +452,10 @@ local function build(parent)
     group.list = CreateFrame("Frame", nil, group.scroll); group.list:SetSize(280, 64)
     group.scroll:SetScrollChild(group.list)
     group.names = UI.text(group.list, "GameFontHighlightSmall", 0, 0, 280)
-    group.notSeen = UI.text(group, "GameFontDisableSmall", 12, -126, 312)
+    -- At most three lines, so a long list never runs out of the box.
+    group.notSeen = UI.text(group, "GameFontDisableSmall", 12, -124, 312)
+    group.notSeen:SetHeight(38)
+    if group.notSeen.SetMaxLines then pcall(group.notSeen.SetMaxLines, group.notSeen, 3) end
     -- Group goal (#157)
     local goal = UI.box(page, 698, 40); goal:SetPoint("TOPLEFT", 24, -178); page.goal = goal
     goal.title = UI.text(goal, "GameFontHighlight", 12, -6, 360)
