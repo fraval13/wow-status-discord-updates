@@ -707,6 +707,8 @@ end)
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match(S.SPLIT_WORD)
+    -- What is shared (#152) needs no character: it describes the addon itself.
+    if command == "privacy" then WoWStatusPrivacy.show(); return end
     if not current then
         -- The main window's pages need a ready character; say how many errors wait.
         if command == "errors" or command == "diagnostics" then

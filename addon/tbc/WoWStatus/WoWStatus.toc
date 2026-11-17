@@ -38,6 +38,7 @@ Theme.lua
 MainWindow.lua
 Overview.lua
 Guide.lua
+Privacy.lua
 Presentation.lua
 Popups.lua
 Journal.lua

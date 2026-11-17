@@ -57,6 +57,10 @@ be checked against Git and the environment rather than assumed permanently true.
 - `Gamepad.lua`, `Bindings.xml`: controller navigation of open windows (D-pad,
   A/B/X, LB/RB, right stick) and key bindings. `Bindings.xml` ships without a TOC
   line and is mirrored by `sync_addons.py` like shared Lua.
+- `Privacy.lua`: the "What WoW Status shares" page (`/wstatus privacy`, setup guide).
+  Its sentences are checked claims about the code and are repeated word for word
+  in the homepage's `#privacy` section (`tests/test_privacy.py`). Any change to what
+  is sent, to whom, or how to stop it must update both.
 - `Presentation.lua`, `Flavour.lua`, `Previews.lua`: themes, caption selection and
   local-only preview controls. Previewing must not send or record real progress.
 - `docs/notification-flavour-text.md`: complete 1,300-line caption catalogue,

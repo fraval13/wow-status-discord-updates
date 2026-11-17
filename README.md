@@ -55,6 +55,10 @@ each release changed.
    choose **Share WoW Status** (clients with the modern menu), or type
    `/wstatus share <name>`. It whispers the download link, at most once per person
    per hour, and is never sent automatically.
+5. `/wstatus privacy` (also a step in the setup guide) shows in plain words what is
+   sent, to whom, what stays on the computer and how to stop. The homepage's
+   **What stays private** section says the same; `tests/test_privacy.py` keeps the two
+   identical, so change both together whenever what is shared changes.
 
 Click a character card, then scroll below the recent activity and gear to see
 their equipped items in a character-sheet layout. Hover a slot for the item's

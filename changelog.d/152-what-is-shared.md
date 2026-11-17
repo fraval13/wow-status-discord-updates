@@ -1,0 +1,2 @@
+- New page What WoW Status shares: what is sent, to whom and how to stop. Open it with /wstatus privacy.
+- The setup guide now links to that page, and the homepage has the same statement under What stays private.

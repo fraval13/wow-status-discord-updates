@@ -616,3 +616,63 @@ W.add({
     ["Only the group leader can invite"] = "Berre gruppeleiaren kan invitere",
     ["Your group is full"] = "Gruppa di er full",
 })
+-- What is shared (#152): the guide step and the /wstatus privacy page.
+W.add({
+    ["What friends can see"] = "Kva venene ser",
+    ["Apart from whispers you click to send, WoW Status shares only with the members of your groups, through the game's own whispers. Nothing goes to a website or to the author. Read exactly what is shared, what stays on your computer and how to stop."] =
+        "Utanom kviskringar du klikkar for å sende, deler WoW Status berre med medlemene i gruppene dine, gjennom kviskringane i sjølve spelet. Ingenting går til ei nettside eller til den som laga tillegget. Les nøyaktig kva som blir delt, kva som blir verande på maskina di, og korleis du stoppar det.",
+    ["What is shared"] = "Kva som blir delt",
+    ["What WoW Status shares"] = "Kva WoW Status deler",
+    ["What is sent"] = "Kva som blir sendt",
+    ["A note to each group you join, saying that you joined."] =
+        "Ei melding til kvar gruppe du blir med i, om at du har blitt med.",
+    ["The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, and session recaps if you tick them. A death also names what killed you, and where when Location is ticked."] =
+        "Måla kunngjeringsvala dine tillèt: nye nivå, dødsfall, første besøk i eit område, kvart 100. oppdrag, yrkesmål, fangehol- og raidmål, ridedyr, omdøme, klasseevner, PvP-rang, første rustning du tek på, og øktsamandrag om du har kryssa av for dei. Eit dødsfall seier òg kva som drap deg, og kvar, når Stad er kryssa av.",
+    ["Your character list: the name, race, sex, class, level and XP progress of each character shown to friends, when it reached each tenth level, the player name you chose, a random player ID and your addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it out, even after you stop sharing your list."] =
+        "Figurlista di: namn, rase, kjønn, klasse, nivå og XP-framgang for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, ein tilfeldig spelar-ID og versjonen av tillegget. Namnet på ein gøymd figur blir likevel sendt, merkt som gøymd, så lista til venene utelèt han, òg etter at du har slutta å dele lista di.",
+    ["The character details you tick: played time, professions with skill levels, completed quests, gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you wear with its combat stats. Friends see them change as you play."] =
+        "Figurdetaljane du kryssar av for: speletid, yrke med ferdigheitsnivå, fullførte oppdrag, gull og gull tent, monster drepne, fangehol, ridedyr og æresdrap, dødsfall totalt, og utstyret du har på deg med kamptala. Venene ser dei endre seg medan du spelar.",
+    ["The name of a group you tick as Listed, to the members of your other groups."] =
+        "Namnet på ei gruppe du kryssar av som Lista, til medlemene i dei andre gruppene dine.",
+    ["Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an invitation to a group, with its name, to the friend you invite."] =
+        "Berre når du klikkar: ei reaksjonskviskring som GZ!, lenkja til heimesida frå Share WoW Status, eller ein invitasjon til ei gruppe, med namnet, til venen du inviterer.",
+    ["Who receives it"] = "Kven som får det",
+    ["The members of your groups. Updates travel as the game's own addon whispers to the members it finds in each group's chat channel, and friends who are online pass them on to members who were offline."] =
+        "Medlemene i gruppene dine. Oppdateringane går som spelet sine eigne tilleggskviskringar til medlemene det finn i chattekanalen til kvar gruppe, og vener som er pålogga, sender dei vidare til medlemer som var avlogga.",
+    ["Your log is part of this: when a member logs in, the group's entries from the last 7 days that you sent or received are offered to them."] =
+        "Loggen din er ein del av dette: når ein medlem loggar inn, blir gruppeoppføringane frå dei siste 7 dagane som du sende eller fekk, tilbodne til han.",
+    ["Anyone who enters the same group name becomes a member, so give it only to people you trust."] =
+        "Alle som skriv inn same gruppenamn, blir medlem, så gje det berre til folk du stolar på.",
+    ["Whispers you click to send go to the player you click on, who may not be in a group with you."] =
+        "Kviskringar du klikkar for å sende, går til spelaren du klikkar på, som kanskje ikkje er i ei gruppe med deg.",
+    ["Nothing goes to a website, to the author or to any server except the game's own, which carries every whisper."] =
+        "Ingenting går til ei nettside, til den som laga tillegget eller til nokon tenar utanom spelet sin eigen, som ber alle kviskringar.",
+    ["What stays on your computer"] = "Kva som blir verande på maskina di",
+    ["Screenshots, your caption personality and reaction voice (a reaction you click is whispered in that voice), your notification and window settings, quiet hours, muted friends, and log entries that went to no group."] =
+        "Skjermbilete, personlegdomen i kommentarane og røysta i reaksjonane (ein reaksjon du klikkar på, blir kviskra med den røysta), innstillingane for varsel og vindauge, stille timar, dempa vener, og loggoppføringar som ikkje gjekk til noka gruppe.",
+    ["What is never sent"] = "Kva som aldri blir sendt",
+    ["Chat you type or read, mail, bag contents, your guild (even with Guild ticked), and which quests you hand in."] =
+        "Chat du skriv eller les, post, innhaldet i sekkene, lauget ditt (sjølv med Laug kryssa av) og kva oppdrag du leverer.",
+    ["The only text you type that travels is your player name and the name of a group you list or invite someone to."] =
+        "Den einaste teksten du skriv som blir sendt, er spelarnamnet ditt og namnet på ei gruppe du listar eller inviterer nokon til.",
+    ["How to stop"] = "Korleis du stoppar det",
+    ["Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, level and XP progress travel with your character list whatever you tick, and the Faction tick changes nothing, as your race shows your faction."] =
+        "Fjern krysset for ei kunngjering, eller for ein av figurdetaljane lista over, i Innstillingar. Rase, kjønn, klasse, nivå og XP-framgang følgjer figurlista di uansett kva du kryssar av for, og krysset for Fraksjon endrar ingenting, sidan rasen viser fraksjonen din.",
+    ["Untick a character under Characters shown to friends: it leaves everyone's character list, leaderboard and gear view, but its announcements still go out, and a death's details carry your player ID."] =
+        "Fjern krysset for ein figur under Figurar som venene ser: han forsvinn frå figurlista, topplista og utstyrsvisinga til alle, men kunngjeringane hans blir framleis sende, og detaljane om eit dødsfall har med spelar-ID-en din.",
+    ["Untick Share my character list on the Characters page: your list, details and gear stop, and your friends are told to forget your list."] =
+        "Fjern krysset for Del figurlista mi på sida Figurar: lista, detaljane og utstyret ditt stoppar, og venene dine får beskjed om å gløyme lista di.",
+    ["Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its character list entry and most ticked details, such as gold, kills and gear, keep going until you hide it or untick them as above."] =
+        "Skriv /wstatus pause, eller fjern krysset for Del framgangen min, for å stoppe kunngjeringane til denne figuren. Plassen hans i figurlista og dei fleste detaljane du har kryssa av for, som gull, drap og utstyr, held fram til du gøymer han eller fjernar kryssa som over.",
+    ["Pausing deletes all of this character's own entries from your log and its whole History / graph, for good. Unticking an announcement or detail deletes the saved entries of that kind."] =
+        "Pause slettar alle dei eigne oppføringane til denne figuren frå loggen din og heile Historikk / graf for han, for godt. Å fjerne krysset for ei kunngjering eller ein detalj slettar dei lagra oppføringane av det slaget.",
+    ["Remove a group in /wstatus groups to leave it."] =
+        "Fjern ei gruppe i /wstatus groups for å gå ut av ho.",
+    ["What is kept"] = "Kva som blir teke vare på",
+    ["Your log keeps the newest 2,000 of your own entries (at most 1,000 of them sent to no group) and 2,000 received ones."] =
+        "Loggen din tek vare på dei 2000 nyaste av dine eigne oppføringar (høgst 1000 av dei som ikkje gjekk til noka gruppe) og 2000 mottekne.",
+    ["Apart from screenshots, which are pictures in the game's Screenshots folder, everything WoW Status saves is in WTF/Account/<account>/SavedVariables/WoWStatus.lua, with the game's backup copy WoWStatus.lua.bak beside it. Removing the addon folder deletes neither; delete both files while the game is closed."] =
+        "Utanom skjermbilete, som er bilete i Screenshots-mappa til spelet, ligg alt WoW Status lagrar, i WTF/Account/<konto>/SavedVariables/WoWStatus.lua, med reservekopien WoWStatus.lua.bak til spelet ved sida av. Å fjerne mappa til tillegget slettar ingen av dei; slett begge filene medan spelet er lukka.",
+    ["Friends keep the updates they already received in their own log."] =
+        "Venene dine beheld oppdateringane dei alt har fått, i sin eigen logg.",
+})

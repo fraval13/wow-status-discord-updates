@@ -14,7 +14,7 @@ def test_guide_appears_once_on_a_new_account_and_can_be_skipped():
     lua = make_lua(guide=True)
     assert lua.eval('WoWStatusGuideFrame:IsShown()') is True
     assert lua.eval('WoWStatusSetup:IsShown()') is False  # Options stays hidden behind the guide.
-    assert lua.eval('WoWStatusGuideFrame.progress.text') == 'Step 1 of 4'
+    assert lua.eval('WoWStatusGuideFrame.progress.text') == 'Step 1 of 5'
     skip = button(lua, 'Skip')
     skip.OnClick(skip)
     assert lua.eval('WoWStatusGuideFrame:IsShown()') is False
@@ -27,7 +27,7 @@ def test_existing_accounts_never_see_the_guide():
     assert lua.eval('WoWStatusGuideFrame') is None
 
 
-def test_steps_walk_through_groups_announcements_and_done():
+def test_steps_walk_through_groups_announcements_sharing_and_done():
     lua = make_lua(guide=True)
     lua.execute('''
         local frame = WoWStatusGuideFrame
@@ -38,11 +38,13 @@ def test_steps_walk_through_groups_announcements_and_done():
         frame.next.OnClick(frame.next)
         assert(frame.action.text == "Open announcement options")
         frame.next.OnClick(frame.next)
+        assert(frame.action.text == "What is shared")
+        frame.next.OnClick(frame.next)
         assert(frame.next.text == "Done" and frame.action.text == "Show me around")
         frame.next.OnClick(frame.next)
         assert(not frame:IsShown() and WoWStatusDB.guide_pending == nil)
         SlashCmdList.WOWSTATUS("guide")
-        assert(frame:IsShown() and frame.progress.text == "Step 1 of 4")
+        assert(frame:IsShown() and frame.progress.text == "Step 1 of 5")
     ''')
 
 
