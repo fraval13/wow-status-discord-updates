@@ -330,25 +330,65 @@ end
 -- Nothing plays unless chosen; "/wstatus popup sound on" makes the chime the default.
 P.SOUNDS = {{"None", 0}, {"Soft chime", 850}, {"Level-up fanfare", 888}, {"Quest complete", 878},
     {"Ready check", 8960}, {"Raid warning", 8959}, {"Alarm", 12889}}
-P.SOUND_KINDS = {{"level", "Level-ups"}, {"death", "Deaths"}, {"loot", "Armor"}, {"zone", "New zones"}, {"other", "Everything else"}}
+P.SOUND_KINDS = {{"level", "Level-ups"}, {"death", "Deaths"}, {"loot", "Armor"}, {"zone", "New zones"},
+    {"dungeon", "Dungeons and raids"}, {"join", "Group joins"}, {"big", "Big moments"}, {"other", "Everything else"}}
+-- Some kinds follow another sound until the player picks one of their own (#181):
+-- dungeons and joins follow "Everything else", where they used to belong, so an
+-- earlier choice keeps covering them; big moments (raid firsts, level caps) play
+-- their ordinary kind's sound. The picker shows that as "Same as usual".
+P.SOUND_USUAL = -1
+P.SOUND_FOLLOWS = {dungeon = "other", join = "other", big = true}
 local function soundKind(item)
     if item.level then return "level" end
     local kind = item.kind
+    if kind == "dungeon" or kind == "raid" then return "dungeon" end
+    if kind == "introduction" then return "join" end
     return (kind == "death" or kind == "loot" or kind == "zone") and kind or "other"
 end
+-- The player's own pick for a kind; nil while it is unpicked or "Same as usual"
+-- (a negative number can only come from hand-edited saved settings).
+local function chosenSound(kind)
+    local id = prefs and type(prefs.sounds) == "table" and S.number(prefs.sounds[kind])
+    return id and id >= 0 and id or nil
+end
+-- The sound kit a kind plays (0 for none). An unpicked big moment has nil, no
+-- sound of its own: P.soundFor plays the moment's ordinary kind instead.
 function P.sound(kind)
-    local chosen = prefs and type(prefs.sounds) == "table" and S.number(prefs.sounds[kind])
+    local chosen = chosenSound(kind)
     if chosen then return chosen end
+    local follows = P.SOUND_FOLLOWS[kind]
+    if type(follows) == "string" then return P.sound(follows) end
+    if follows then return nil end
     return prefs and prefs.sound and 850 or 0
+end
+-- What the settings show for a kind: its pick, or "Same as usual" while it follows another.
+function P.soundChoice(kind)
+    return chosenSound(kind) or (P.SOUND_FOLLOWS[kind] and P.SOUND_USUAL) or P.sound(kind)
 end
 function P.setSound(kind, id)
     if not prefs then return false end
     prefs.sounds = type(prefs.sounds) == "table" and prefs.sounds or {}
-    prefs.sounds[kind] = tonumber(id) or 0
+    id = tonumber(id) or 0
+    -- "Same as usual" is no choice at all: nothing is saved for it.
+    prefs.sounds[kind] = id ~= P.SOUND_USUAL and id or nil
     return true
 end
-function P.soundFor(item) return type(item) == "table" and P.sound(soundKind(item)) or 0 end
-function P.soundName(id)
+-- What picking a sound for a kind lets the player hear: an unpicked big moment
+-- sounds like a big level-up, so it plays the Level-ups sound.
+function P.previewSound(kind)
+    if kind == "big" then return P.soundFor({level = 60}) end
+    return P.sound(kind)
+end
+function P.soundFor(item)
+    if type(item) ~= "table" then return 0 end
+    local big = chosenSound("big")
+    if big and P.bigEvent(item) then return big end
+    return P.sound(soundKind(item))
+end
+function P.soundName(id, kind)
+    if id == P.SOUND_USUAL then
+        return P.SOUND_FOLLOWS[kind] == "other" and "Same as Everything else" or "Same as usual"
+    end
     for _, entry in ipairs(P.SOUNDS) do if entry[2] == id then return entry[1] end end
     return tostring(id)
 end
@@ -1105,6 +1145,11 @@ end
 -- Successful first raid encounters and proven Classic epic mounts also qualify.
 function P.bigMoment(item)
     if not prefs or not Z.get("big_banners", root) then return false end
+    return P.bigEvent(item)
+end
+-- The same moments, whatever the banner setting: they can also have a sound of their own.
+function P.bigEvent(item)
+    if type(item) ~= "table" then return false end
     if item.kind=="raid" or item.kind=="epicmount" or item.kind=="goal" then return true end
     local level = S.number(item.level)
     return level ~= nil and level > 0 and (level % 10 == 0 or level == A.max_level)

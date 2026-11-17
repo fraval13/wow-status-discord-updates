@@ -83,6 +83,8 @@ W.add({
     ["Dungeons cleared"] = "Fangehol klarte", ["Mounts"] = "Ridedyr",
     ["Online now:"] = "Pålogga no:", ["nobody"] = "ingen", ["Latest:"] = "Sist:",
     ["Sounds"] = "Lydar", ["New zones"] = "Nye område", ["Everything else"] = "Alt anna", ["None"] = "Ingen",
+    ["Group joins"] = "Nye i gruppa", ["Big moments"] = "Store augneblinkar", ["Same as usual"] = "Som vanleg",
+    ["Same as Everything else"] = "Som «Alt anna»",
     ["Soft chime"] = "Mjuk klokke", ["Level-up fanfare"] = "Nivåfanfare", ["Quest complete"] = "Oppdrag fullført",
     ["Ready check"] = "Klar-sjekk", ["Raid warning"] = "Raid-åtvaring", ["Alarm"] = "Alarm",
     ["Quiet mode: hold notifications in"] = "Stille modus: hald att varsel i", ["Battlegrounds"] = "Slagmarker", ["Raids"] = "Raid",
