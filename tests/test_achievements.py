@@ -123,13 +123,18 @@ def test_sender_and_receiver_counts_are_bounded_per_session():
     joined(own, friend)
     enable(own)
     own.execute('''
+        -- Without a group nothing is queued, so nothing uses the cap.
+        local groups=character().group_ids;character().group_ids={}
+        fire("ACHIEVEMENT_EARNED",1283,false)
+        character().group_ids=groups
+        assert(WoWStatusDB.popups.last_send.state~="session_cap")
         local ids={42,43,46,522,523,2141,2142}
         for i,id in ipairs(ids) do
             fire("ACHIEVEMENT_EARNED",id,false)
             assert((WoWStatusDB.popups.last_send.state=="session_cap")==(i>WoWStatusAchievements.SESSION_CAP))
         end
         -- Every one is recorded and logged; only the first five go out live.
-        assert(#character().events==#ids)
+        assert(#character().events==#ids+1)
         assert(WoWStatusDB.popups.last_send.state=="session_cap")
         assert(not WoWStatusAchievements.spend())
     ''')
@@ -139,8 +144,11 @@ def test_sender_and_receiver_counts_are_bounded_per_session():
     # A copy of the same update (second group, resend) does not use up the cap.
     for n, nonce in ((42, 'a'), (42, 'a'), (43, 'b'), (46, 'c')):
         receive(f'WSTATUS4 retail achievement 1793000000 {nonce} {n}', 'Thora-TestRealm', group)
-    assert friend.eval(count)() == 2
-    assert friend.eval('WoWStatusAchievements.admit')('Thora-TestRealm', 'a') is True
+    # Past the cap the update is still logged; only the popup is skipped.
+    assert friend.eval(count)() == 3
+    key = friend.eval('WoWStatusPopups.senderKey')('Thora-TestRealm')
+    assert friend.eval('WoWStatusAchievements.admit')(key, 'c') is False
+    assert friend.eval('WoWStatusAchievements.admit')(key, 'a') is True
 
 
 def test_catch_up_carries_only_the_id_and_each_client_names_it():

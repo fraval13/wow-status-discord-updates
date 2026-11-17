@@ -896,6 +896,10 @@ local function commit(c, now)
     if c.quiet or P.quietHoursActive() then noteReceive("quiet_hours", c, now); return false, "logged only (quiet hours)" end
     -- A muted friend (#169): logged above as usual, only the popup is skipped.
     if muted then noteReceive("muted", c, now); return false, "muted: logged without a popup" end
+    -- Past a friend's achievement cap (#165) it is logged, only the popup is skipped.
+    if c.kind == "achievement" and not WoWStatusAchievements.admit(c.key, c.nonce) then
+        noteReceive("achievement_cap", c, now); return false, "logged without a popup (achievement cap)"
+    end
     noteReceive("queued", c, now)
     table.insert(incoming, item)
     return true
@@ -1067,7 +1071,6 @@ receiveUpdate = function(text, sender, channel)
             achievement=AC.id(detail)
             local shown=achievement and AC.text(achievement)
             if not shown then return false, "unknown achievement" end
-            if not AC.admit(key, nonce) then return false, "achievement cap for this session" end
             detail=shown
         end
         if kind=="dungeon" then
@@ -1830,8 +1833,6 @@ function P.broadcast(character, event)
         -- The ID alone: receivers name it from their own client (#165).
         local id=WoWStatusAchievements.id(event.data.achievement_id)
         if not id then return end
-        -- Past the session cap it stays in the log, which friends catch up quietly.
-        if not WoWStatusAchievements.spend() then status("session_cap", event); return end
         text="WSTATUS4 " .. A.client_id .. " achievement " .. event.at .. " " .. nonce .. " " .. id
     elseif event.kind == "level" then
         if event.data.level < 2 or event.data.level > A.max_level then return end
@@ -1859,6 +1860,13 @@ function P.broadcast(character, event)
     if #text > 220 then return end
     -- Updates stay queued for up to LIVE_WINDOW; a full queue says so.
     local groups, full = WoWStatusGroups.selected(character), false
+    -- Achievements (#165): only a send that will be queued uses the session cap.
+    -- Past it the event stays in the log, which friends catch up quietly.
+    if event.kind == "achievement" and #outgoing < 32 then
+        local target = false
+        for id in pairs(groups) do if event.group_ids and event.group_ids[id] then target = true end end
+        if target and not WoWStatusAchievements.spend() then status("session_cap", event); return end
+    end
     local function enqueue(item)
         if #outgoing < 32 then table.insert(outgoing, item) else full = true end
     end

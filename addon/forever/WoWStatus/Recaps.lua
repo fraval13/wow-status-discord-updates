@@ -111,8 +111,10 @@ function R.close(at)
     end
     -- The caption's kind: achievements have no captions, so any other kind first.
     local main = session.top_level and "level" or (#session.dungeons > 0 and "dungeon")
-    for _, kind in ipairs(ORDER) do
-        if not main and kind ~= "achievement" and session.counts[kind] then main = kind end
+    if not main then
+        for _, kind in ipairs(ORDER) do
+            if kind ~= "achievement" and session.counts[kind] then main = kind; break end
+        end
     end
     main = main or next(session.counts)
     local flavour = WoWStatusFlavour.text({kind=main, level=session.top_level, sender=character.chat_name or character.identity.name,

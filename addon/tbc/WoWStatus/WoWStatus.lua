@@ -212,8 +212,8 @@ local function showPanel(host)
         for i,key in ipairs(kinds) do
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end
-        -- An odd number of kinds leaves the left of the last row taken.
-        checkbox("recap","Share my session recaps",#kinds%2==1 and 310 or 24,-480,"in_game")
+        -- The slot after the last kind: beside it on an odd count, else a new row.
+        checkbox("recap","Share my session recaps",#kinds%2==1 and 310 or 24,-270-math.floor(#kinds/2)*42,"in_game")
         section("First-time equipment",-522)
         checkbox("loot","Announce first armor equips",24,-544,"in_game")
         checkbox("rare","Rare equipment",54,-586,"loot_rarities")

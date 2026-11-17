@@ -32,7 +32,7 @@ local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,q
     raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true,achievement=true}
 -- An achievement entry's whitelisted ID (#165), or nil.
 local function achievementID(e)
-    return WoWStatusAchievements and WoWStatusAchievements.id(e.achievement_id) or nil
+    return WoWStatusAchievements.id(e.achievement_id)
 end
 local fields={level="level",zone="zone",quest="quests",questprogress="quests",profession="professions",
     professionprogress="professions",equipment="gear"}
@@ -247,6 +247,8 @@ function J.recordLocal(event,backfill)
     if not db or not event or (event.data and event.data.synthetic) or not sharedKinds[event.kind] then return end
     local loot=event.kind=="loot" and WoWStatusLoot.eventInfo(event.data)
     if event.kind=="loot" and not WoWStatusLoot.allowed(current.settings,loot) then return end
+    -- An achievement this client cannot name has nothing to show (#165).
+    if event.kind=="achievement" and not P.eventText(event) then return end
     local nonce=P.eventNonce(event)
     local id=nonce and J.eventID(ownName(),nonce) or ("archive:"..current.identity.client..":"..event.id)
     local groups={}
@@ -981,7 +983,12 @@ J.TYPES={
     {"Mounts",{mount=true,epicmount=true}}, {"Armor",{loot=true,equipment=true}}, {"Reputation",{reputation=true}},
     {"Class abilities",{unlock=true}}, {"PvP",{pvp=true}}, {"Joins",{introduction=true}}, {"Recaps",{recap=true}},
 }
-if WoWStatusAdapter.achievements then table.insert(J.TYPES,12,{"Achievements",{achievement=true}}) end
+-- Retail only (#165), right after PvP.
+if WoWStatusAdapter.achievements then
+    for i,t in ipairs(J.TYPES) do
+        if t[2].pvp then table.insert(J.TYPES,i+1,{"Achievements",{achievement=true}});break end
+    end
+end
 -- The day an entry belongs to, in the log's own (Oslo) time: "YYYY-MM-DD".
 local dayCache=setmetatable({},{__mode="k"})
 local function dayOf(e)
