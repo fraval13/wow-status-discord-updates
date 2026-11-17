@@ -3,7 +3,8 @@ WoWStatusPopups = {}
 local P = WoWStatusPopups
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local T = WoWStatusLocale.T
-local prefs, getCharacter, notify, toast, active
+local Z = WoWStatusSettings
+local prefs, root, getCharacter, notify, toast, active
 local incoming, outgoing = {}, {}
 local nextSend = 0
 -- When the next notification may show: a second after the last one goes, but
@@ -262,23 +263,20 @@ end
 -- Checked on every read (a few comparisons), so a bad value written into the
 -- saved table by hand can never reach the tick.
 function P.quietHours()
-    if not prefs then return {start = 22 * 60, stop = 7 * 60} end
+    if not prefs then return {start = Z.default("quiet_hours_start"), stop = Z.default("quiet_hours_stop")} end
     local value = type(prefs.quiet_hours) == "table" and prefs.quiet_hours or {}
-    value.enabled = value.enabled == true
-    value.start, value.stop = minuteOfDay(value.start, 22 * 60), minuteOfDay(value.stop, 7 * 60)
     prefs.quiet_hours = value
+    value.enabled = Z.get("quiet_hours_enabled", root)
+    value.start, value.stop = Z.get("quiet_hours_start", root), Z.get("quiet_hours_stop", root)
     return value
 end
 -- key: "enabled" (true/false), or "start"/"stop" (minutes after midnight).
 function P.setQuietHours(key, value)
     if not prefs then return false end
-    local hours = P.quietHours()
-    if key == "enabled" then hours.enabled = value == true; return true end
-    if key ~= "start" and key ~= "stop" then return false end
-    local minute = minuteOfDay(value)
-    if not minute then return false end
-    hours[key] = minute
-    return true
+    P.quietHours() -- Stores the other values repaired too.
+    if key == "enabled" then value = value == true
+    elseif key ~= "start" and key ~= "stop" then return false end
+    return Z.set("quiet_hours_" .. key, value, root)
 end
 -- Move start or end by steps of QUIET_STEP minutes, wrapping round midnight.
 function P.shiftQuietHours(key, steps)
@@ -793,7 +791,7 @@ function P.init(database, getter, reporter)
         receive = true, broadcast = true, sound = false, channel = "WStatusFriends",
         trusted = {}, seen = {},
     }
-    prefs, getCharacter, notify = database.popups, getter, reporter
+    prefs, root, getCharacter, notify = database.popups, database, getter, reporter
     rosterRequested,rosterCache,knownPeers,pendingRoster={},{},{},nil;rosterBusy=false
     prefs.trusted, prefs.seen = prefs.trusted or {}, prefs.seen or {}
     prefs.level_claims = prefs.level_claims or {}
@@ -802,7 +800,8 @@ function P.init(database, getter, reporter)
     prefs.joined_channels = joinedByAddon
     local activity={}
     for _, item in ipairs(prefs.activity or {}) do
-        if item.kind~="discovery" and item.kind~="lfg" and (item.kind~="dungeon" or item.automatic)
+        -- Retired kinds (discovery, lfg) were removed once by WoWStatusMigrations.
+        if (item.kind~="dungeon" or item.automatic)
             and (item.kind~="loot" or WoWStatusLoot.allowed(getter().settings,item)) then
             table.insert(activity,item)
         end
@@ -1089,7 +1088,7 @@ end
 -- Big banners (#61): max level and every 10th level get a larger toast.
 -- Successful first raid encounters and proven Classic epic mounts also qualify.
 function P.bigMoment(item)
-    if not prefs or prefs.big_banners == false then return false end
+    if not prefs or not Z.get("big_banners", root) then return false end
     if item.kind=="raid" or item.kind=="epicmount" or item.kind=="goal" then return true end
     local level = S.number(item.level)
     return level ~= nil and level > 0 and (level % 10 == 0 or level == A.max_level)
@@ -1122,26 +1121,16 @@ function P.restyle()
         toast:SetScale((toast.big and 1.35 or 1) * (WoWStatusTheme and WoWStatusTheme.scale(true) or 1))
     end
 end
-function P.setBigBanners(value) if prefs then prefs.big_banners = value ~= false end end
+function P.setBigBanners(value) if prefs then Z.set("big_banners", value ~= false, root) end end
 -- How long a notification stays (#159): 3 to 20 seconds, or 0 to stay until it is
 -- dismissed. Account-wide; 6 (the old fixed length) is the default.
 P.DURATIONS = {3, 4, 5, 6, 8, 10, 12, 15, 20, 0}
-P.DURATION_MIN, P.DURATION_MAX, P.DURATION_DEFAULT = 3, 20, 6
-local function validDuration(value)
-    value = S.number(tonumber(value))
-    if not value then return nil end
-    if value == 0 then return 0 end
-    value = math.floor(value + .5)
-    if value < P.DURATION_MIN or value > P.DURATION_MAX then return nil end
-    return value
-end
-function P.duration() return prefs and validDuration(prefs.popup_duration) or P.DURATION_DEFAULT end
+local DURATION = Z.entry("popup_duration")
+P.DURATION_MIN, P.DURATION_MAX, P.DURATION_DEFAULT = DURATION.min, DURATION.max, DURATION.default
+function P.duration() return Z.get("popup_duration", prefs and root) end
 -- False for a value out of range; the old duration stays.
 function P.setDuration(value)
-    value = validDuration(value)
-    if not prefs or not value then return false end
-    prefs.popup_duration = value ~= P.DURATION_DEFAULT and value or nil
-    return true
+    return prefs ~= nil and Z.set("popup_duration", value, root)
 end
 function P.durationLabel(value)
     value = value or P.duration()
@@ -1156,7 +1145,7 @@ function P.lifetime(seconds)
     return seconds, seconds / 12
 end
 function P.options()
-    return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or prefs.big_banners ~= false}
+    return {unlocked = prefs and prefs.popup_unlocked == true, big_banners = not prefs or Z.get("big_banners", root)}
 end
 
 -- Reaction whispers offered on a friend's notification: a real chat whisper,
@@ -1825,7 +1814,7 @@ function P.broadcast(character, event)
         if event.data.level < 2 or event.data.level > A.max_level then return end
         text = "WSTATUS2 " .. A.client_id .. " LEVEL " .. event.data.level .. " " .. event.at .. " " .. nonce
     else
-        if event.kind == "loot" and (event.data.quality or 0) < character.settings.loot_quality then return end
+        if event.kind == "loot" and (event.data.quality or 0) < Z.get("loot_quality", character) then return end
         local detail = eventText(event)
         if not detail then return end
         detail = S.stripEscapes(detail):gsub(S.CONTROL_OR_PIPE, " ")
