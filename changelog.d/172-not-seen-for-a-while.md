@@ -1,2 +1,0 @@
-- The Overview quietly lists friends you have not seen for a while, with how many days; nothing is sent to them
-- Choose after how many days in Options (7, 14 or 30), or turn it off
