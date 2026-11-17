@@ -22,6 +22,7 @@ end
 O.NOT_SEEN_CHOICES = {0, 7, 14, 30}
 O.NOT_SEEN_DEFAULT = 14
 local NOT_SEEN_SHOWN = 3
+local function name(sender) return (tostring(sender or "?"):match("^[^-]+") or "?") end
 local function notSeenChoice(days)
     for i, choice in ipairs(O.NOT_SEEN_CHOICES) do if choice == days then return i end end
 end
@@ -83,15 +84,15 @@ function O.notSeen(groups, now, days, oldest)
     end
     for _, entry in ipairs(groups or {}) do
         if not entry.self then
-            local name = tostring(entry.name or entry.title or "?")
-            if name == UNNAMED then
+            local title = tostring(entry.name or entry.title or "?")
+            if title == UNNAMED then
                 -- Lists without a player name are merged under one header; each
                 -- character there may be a different person, so each stands alone.
                 for _, row in ipairs(entry.rows or {}) do
-                    consider((tostring(row.name or "?"):match("^[^-]+") or "?"), {row})
+                    consider(name(row.name), {row})
                 end
             else
-                consider(name, entry.rows or {})
+                consider(title, entry.rows or {})
             end
         end
     end
@@ -128,7 +129,6 @@ function O.notSeenLine(list)
 end
 
 local function plural(count, one, many) return count == 1 and one or (count .. " " .. many) end
-local function name(sender) return (tostring(sender or "?"):match("^[^-]+") or "?") end
 
 -- Facts per player, newest player first. Each fact links to its newest entry.
 -- entries: newest first, as WoWStatusJournal.entries() returns them.
