@@ -345,19 +345,20 @@ local function soundKind(item)
     if kind == "introduction" then return "join" end
     return (kind == "death" or kind == "loot" or kind == "zone") and kind or "other"
 end
--- The player's own pick for a kind; nil while it is unpicked or "Same as usual".
+-- The player's own pick for a kind; nil while it is unpicked or "Same as usual"
+-- (a negative number can only come from hand-edited saved settings).
 local function chosenSound(kind)
     local id = prefs and type(prefs.sounds) == "table" and S.number(prefs.sounds[kind])
     return id and id >= 0 and id or nil
 end
--- The sound kit a kind plays (0 for none). Unpicked big moments have none of
--- their own: P.soundFor plays the moment's ordinary kind instead.
+-- The sound kit a kind plays (0 for none). An unpicked big moment has nil, no
+-- sound of its own: P.soundFor plays the moment's ordinary kind instead.
 function P.sound(kind)
     local chosen = chosenSound(kind)
     if chosen then return chosen end
     local follows = P.SOUND_FOLLOWS[kind]
     if type(follows) == "string" then return P.sound(follows) end
-    if follows then return 0 end
+    if follows then return nil end
     return prefs and prefs.sound and 850 or 0
 end
 -- What the settings show for a kind: its pick, or "Same as usual" while it follows another.
@@ -367,7 +368,9 @@ end
 function P.setSound(kind, id)
     if not prefs then return false end
     prefs.sounds = type(prefs.sounds) == "table" and prefs.sounds or {}
-    prefs.sounds[kind] = tonumber(id) or 0
+    id = tonumber(id) or 0
+    -- "Same as usual" is no choice at all: nothing is saved for it.
+    prefs.sounds[kind] = id ~= P.SOUND_USUAL and id or nil
     return true
 end
 function P.soundFor(item)

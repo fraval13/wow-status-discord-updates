@@ -225,7 +225,7 @@ function P.show(host)
                 if WoWStatusPopups.SOUND_FOLLOWS[kind] then items[1]={label=WoWStatusLocale.T("Same as usual"),value=WoWStatusPopups.SOUND_USUAL} end
                 for _,sound in ipairs(WoWStatusPopups.SOUNDS) do items[#items+1]={label=WoWStatusLocale.T(sound[1]),value=sound[2]} end
                 WoWStatusUI.menu(self,items,function(id)
-                    WoWStatusPopups.setSound(kind,id);WoWStatusPopups.playSound(id)
+                    WoWStatusPopups.setSound(kind,id);WoWStatusPopups.playSound(WoWStatusPopups.sound(kind))
                     self:SetText(WoWStatusLocale.T(WoWStatusPopups.soundName(WoWStatusPopups.soundChoice(kind))))
                 end)
             end)

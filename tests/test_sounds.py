@@ -63,7 +63,7 @@ def test_big_moments_keep_their_usual_sound_until_one_is_chosen():
     lua = actor('Thora')
     lua.execute('WoWStatusPopups.setSound("level", 888); WoWStatusPopups.setSound("dungeon", 8960)')
     assert lua.eval('WoWStatusPopups.soundChoice("big")') == lua.eval('WoWStatusPopups.SOUND_USUAL')
-    assert lua.eval('WoWStatusPopups.sound("big")') == 0
+    assert lua.eval('WoWStatusPopups.sound("big")') is None
     assert sound_for(lua, '{level=40}') == 888
     assert sound_for(lua, '{kind="raid"}') == 8960
     lua.execute('WoWStatusPopups.setSound("big", 12889)')
@@ -77,6 +77,7 @@ def test_big_moments_keep_their_usual_sound_until_one_is_chosen():
     assert sound_for(lua, '{level=40}') == 12889
     lua.execute('WoWStatusPopups.setSound("big", WoWStatusPopups.SOUND_USUAL)')
     assert sound_for(lua, '{level=40}') == 888
+    assert lua.eval('WoWStatusDB.popups.sounds.big') is None
 
 
 def test_a_big_level_plays_the_big_moment_sound():
@@ -125,9 +126,10 @@ def test_kinds_that_follow_another_sound_can_go_back_to_it():
         pick("Ready check")
         assert(dungeon.text == "Ready check" and WoWStatusPopups.soundFor({kind="raid"}) == 8960)
         pick("Same as usual")
-        assert(dungeon.text == "Same as usual" and WoWStatusPopups.soundFor({kind="raid"}) == 878)
+        -- Going back previews what will play: the "Everything else" sound.
+        assert(dungeon.text == "Same as usual" and WoWStatusPopups.soundFor({kind="raid"}) == 878 and __played[3] == 878)
         button = panel.sounds.big
-        assert(WoWStatusPopups.soundChoice("big") == WoWStatusPopups.SOUND_USUAL and button.text == "Same as usual" and #__played == 2 and __played[2] == 8960)
+        assert(WoWStatusPopups.soundChoice("big") == WoWStatusPopups.SOUND_USUAL and button.text == "Same as usual" and #__played == 3 and __played[2] == 8960)
     ''')
 
 
