@@ -2,7 +2,7 @@
 -- what stays on this computer and how to stop. Opened from the setup guide and
 -- with /wstatus privacy. Display only: nothing here sends, saves or changes a
 -- setting. Every sentence describes the code as it is; when sharing changes,
--- change this page (and the homepage's "What you share" section) with it.
+-- change this page (and the homepage's "What stays private" section, #privacy) with it.
 WoWStatusPrivacy = {}
 local PV = WoWStatusPrivacy
 local T = WoWStatusLocale.T
@@ -28,27 +28,33 @@ PV.SECTIONS = {
     {"Who receives it",
      {"The members of your groups. Updates travel as the game's own addon whispers to the members it finds "
         .. "in each group's chat channel, and friends who are online pass them on to members who were offline.",
+      "Your log is part of this: when a member logs in, the group's entries from the last 7 days that you "
+        .. "sent or received are offered to them.",
       "Anyone who enters the same group name becomes a member, so give it only to people you trust.",
       "Whispers you click to send go to the player you click on, who may not be in a group with you.",
       "Nothing goes to a website, to the author or to any server except the game's own, which carries every "
         .. "whisper."}},
     {"What stays on your computer",
      {"Screenshots, your caption personality and reaction voice (a reaction you click is whispered in that "
-        .. "voice), your notification and window settings, quiet hours, muted friends and your saved log."}},
+        .. "voice), your notification and window settings, quiet hours, muted friends, and log entries that went "
+        .. "to no group."}},
     {"What is never sent",
      {"Chat you type or read, mail, bag contents, your guild (even with Guild ticked), and which quests you "
         .. "hand in.",
       "The only text you type that travels is your player name and the name of a group you list or invite "
         .. "someone to."}},
     {"How to stop",
-     {"Untick an announcement, or one of the character details listed above, in Options. Class, race and "
-        .. "level travel with your character list, so unticking them there does not stop them.",
+     {"Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, "
+        .. "level and XP progress travel with your character list, so unticking them there does not stop them.",
       "Untick a character under Characters shown to friends: it leaves everyone's character list, "
         .. "leaderboard and gear view.",
       "Untick Share my character list on the Characters page: your list, details and gear stop, and your "
         .. "friends are told to forget your list.",
       "Type /wstatus pause, or untick Share my progress, to stop this character's announcements. Its "
-        .. "character list entry and ticked details keep going until you hide it or untick them as above.",
+        .. "character list entry and most ticked details, such as gold, kills and gear, keep going until you "
+        .. "hide it or untick them as above.",
+      "Pausing, or unticking an announcement or detail, also deletes this character's saved entries of that "
+        .. "kind from your log and from its History / graph.",
       "Remove a group in /wstatus groups to leave it."}},
     {"What is kept",
      {"Your log keeps the newest 2,000 of your own entries (at most 1,000 of them sent to no group) and "
@@ -74,6 +80,8 @@ end
 local function build()
     frame = CreateFrame("Frame", "WoWStatusPrivacyFrame", UIParent)
     frame:SetSize(600, 480); frame:SetPoint("CENTER"); frame:SetFrameStrata("FULLSCREEN_DIALOG")
+    -- Above the main window, which shares this strata (/wstatus privacy can open over it).
+    if frame.SetToplevel then frame:SetToplevel(true) end
     frame:EnableMouse(true); frame:SetMovable(true); frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", frame.StartMoving); frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
     local background = frame:CreateTexture(nil, "BACKGROUND")
@@ -102,5 +110,6 @@ function PV.show()
     local S = WoWStatusSafe
     frame.child:SetHeight(math.max(1, (S.number(S.call(frame.body.GetStringHeight, frame.body)) or 0) + 8))
     frame:Show()
+    if frame.Raise then frame:Raise() end
     return frame
 end
