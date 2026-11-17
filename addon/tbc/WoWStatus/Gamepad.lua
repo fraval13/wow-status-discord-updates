@@ -292,11 +292,24 @@ local function createHighlight()
     call(fill, "SetAllPoints"); call(fill, "SetColorTexture", 1, .82, 0, .12)
     local edges = {{"TOPLEFT", "TOPRIGHT", nil, 2}, {"BOTTOMLEFT", "BOTTOMRIGHT", nil, 2},
         {"TOPLEFT", "BOTTOMLEFT", 2, nil}, {"TOPRIGHT", "BOTTOMRIGHT", 2, nil}}
+    -- A gold outline with a dark one just inside it (#185): the pair stands out by
+    -- brightness on any background, so the focus never rests on gold alone.
+    highlight.outline, highlight.inner = {}, {}
+    -- Each corner 2 units in, so the dark line runs along the gold one's inside.
+    local function inset(point)
+        return point, point:find("LEFT") and 2 or -2, point:find("TOP") and -2 or 2
+    end
     for _, edge in ipairs(edges) do
         local line = highlight:CreateTexture(nil, "OVERLAY")
         call(line, "SetColorTexture", 1, .82, 0, .95)
         call(line, "SetPoint", edge[1]); call(line, "SetPoint", edge[2])
         if edge[3] then call(line, "SetWidth", edge[3]) else call(line, "SetHeight", edge[4]) end
+        highlight.outline[#highlight.outline + 1] = line
+        local inner = highlight:CreateTexture(nil, "OVERLAY")
+        call(inner, "SetColorTexture", 0, 0, 0, .9)
+        call(inner, "SetPoint", inset(edge[1])); call(inner, "SetPoint", inset(edge[2]))
+        if edge[3] then call(inner, "SetWidth", 1) else call(inner, "SetHeight", 1) end
+        highlight.inner[#highlight.inner + 1] = inner
     end
     highlight:Hide()
 end

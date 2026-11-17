@@ -2462,7 +2462,7 @@ function R.render()
                 h:ClearAllPoints(); h:SetPoint("TOPLEFT", 12, -y)
                 -- The heading counts the cards under it, so the filter shows in it.
                 -- The version note stays small and grey beside the title.
-                h.text:SetText(shownTitle(counted(group.name, #rows)):gsub("|", "||") .. (group.note and ("   |cff808080" .. T(group.note) .. "|r") or "")); h:Show()
+                h.text:SetText(shownTitle(counted(group.name, #rows)):gsub("|", "||") .. (group.note and ("   " .. WoWStatusUI.MUTED_CODE .. T(group.note) .. "|r") or "")); h:Show()
                 if group.pinnable then showStar(h.star, "player", group.name) else h.star:Hide() end
                 y = y + HEADER
                 for _, character in ipairs(rows) do
@@ -2478,7 +2478,8 @@ function R.render()
                     local class = character.class and T(character.class:sub(1, 1) .. character.class:sub(2):lower()) or T("Never met")
                     c.class:SetText(character.race and (shownRace(character.race) .. " " .. class) or class)
                     local online = character.status == "online"
-                    c.dot:SetTexture(online and "Interface\\FriendsFrame\\StatusIcon-Online" or "Interface\\FriendsFrame\\StatusIcon-Offline")
+                    -- Filled when online, a hollow ring when not, beside the status text (#185).
+                    c.dot:SetTexture(online and UI.ONLINE_ICON or UI.OFFLINE_ICON)
                     local gold = S.number(character.gold) and UI.money(character.gold, true)
                     -- Live updates did not reach them (their client never confirmed).
                     local lost = not group.self and R.isUnreachable(character.name) and ("   |cffff5555" .. T("not reached") .. "|r") or ""

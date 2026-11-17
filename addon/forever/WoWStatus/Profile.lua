@@ -62,7 +62,7 @@ function F.data(row)
 end
 
 local function list(box, lines, empty)
-    box.text:SetText(#lines > 0 and table.concat(lines, "\n") or ("|cff808080" .. T(empty) .. "|r"))
+    box.text:SetText(#lines > 0 and table.concat(lines, "\n") or (WoWStatusUI.MUTED_CODE .. T(empty) .. "|r"))
 end
 
 local function equipmentSlot(parent, spec, x, y, width)

@@ -530,6 +530,7 @@ local function build(parent)
     page.status = page:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     page.status:SetPoint("TOPLEFT", 24, -40); page.status:SetWidth(730); page.status:SetJustifyH("LEFT")
     page.hint = page:CreateFontString(nil, "OVERLAY", "GameFontDisable")
+    if WoWStatusUI and WoWStatusUI.mute then WoWStatusUI.mute(page.hint) end
     page.hint:SetPoint("TOPLEFT", 24, -62); page.hint:SetWidth(730); page.hint:SetJustifyH("LEFT")
     page.hint:SetText(T("Copy this report into a bug report on GitHub or Discord. Nothing is sent automatically."))
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")

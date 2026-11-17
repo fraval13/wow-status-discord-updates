@@ -202,7 +202,9 @@ function U.buildSettings(parent, y)
             row.key, row.picked = order[i], picked[order[i]] == true
             row.label:SetText(T(BY_KEY[row.key].label))
             if row.label.SetTextColor then
-                if row.picked then row.label:SetTextColor(1, 1, 1) else row.label:SetTextColor(.5, .5, .5) end
+                -- An unpicked value also says so on its button (Add rather than Remove).
+                local grey = WoWStatusUI and WoWStatusUI.MUTED or .62
+                if row.picked then row.label:SetTextColor(1, 1, 1) else row.label:SetTextColor(grey, grey, grey) end
             end
             row.up:SetText(T("Move up")); row.toggle:SetText(T(row.picked and "Remove" or "Add"))
             -- A button that does nothing is hidden or disabled, so a controller skips it.

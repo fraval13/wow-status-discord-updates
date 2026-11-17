@@ -272,7 +272,7 @@ end
 local function textView(lines, empty)
     local UI = WoWStatusUI
     page.textRows = page.textRows or {}
-    if #lines == 0 then lines = {"|cff808080" .. T(empty) .. "|r"} end
+    if #lines == 0 then lines = {WoWStatusUI.MUTED_CODE .. T(empty) .. "|r"} end
     for i, text in ipairs(lines) do
         local row = page.textRows[i]
         if not row then row = UI.text(page.list, "GameFontHighlight", 8, 0, 660); page.textRows[i] = row end
@@ -343,7 +343,7 @@ local function render()
         if e and e.milestone and not e.exact then when = T("before WoW Status, by") .. " " .. when:sub(1, 10) end
         local empty = medal.key == "dungeon" and T("No dungeon clear recorded yet.") or T("nobody yet")
         local holder = e and (name(e.sender):gsub("|", "||") .. " · " .. when) or empty
-        c.holder:SetText(e and holder or ("|cff808080" .. holder .. "|r"))
+        c.holder:SetText(e and holder or (WoWStatusUI.MUTED_CODE .. holder .. "|r"))
         UI.tint(c, e ~= nil)
         c.text = medal.title .. " — " .. holder -- Plain summary of the card.
         c:Show()
