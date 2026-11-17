@@ -1,5 +1,9 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.75.0", notes={
+        "New page What WoW Status shares: what is sent, to whom and how to stop. Open it with /wstatus privacy.",
+        "The setup guide now links to that page, and the homepage has the same statement under What stays private.",
+    }},
     {version="1.74.0", notes={
         "Online friends now show a filled dot and offline friends a hollow ring, so you can tell them apart without colour.",
         "The controller highlight has a dark inner outline, so it stands out on every theme, not just by its gold.",
@@ -9,8 +13,5 @@ WoWStatusWhatsNewData = {
     }},
     {version="1.73.0", notes={
         "Mål kva ei innlogging sender før vi endrar tida (#188) (#282)",
-    }},
-    {version="1.72.0", notes={
-        "The homepage now has a small demo of the main window, with invented friends on three of its pages.",
     }},
 }
