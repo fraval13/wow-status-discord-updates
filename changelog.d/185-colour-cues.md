@@ -1,5 +1,5 @@
 - Online friends now show a filled dot and offline friends a hollow ring, so you can tell them apart without colour.
 - The controller highlight has a dark inner outline, so it stands out on every theme, not just by its gold.
-- The date picker marks today with brackets, days with entries with a bar under the date, and the picked day with a lighter fill.
+- The date picker marks today with brackets, busy days with a bar under the date and the picked day with a lighter fill.
 - In the level history graph, first observations are larger squares than level-ups.
 - Dates, hints and other secondary lines are a lighter grey, easier to read on every theme.
