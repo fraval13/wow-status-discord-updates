@@ -48,7 +48,7 @@ def test_cancelling_does_not_enable_sharing_or_remember_consent(cancel):
     # A stale callback after closing cannot enable sharing either.
     dialog.accept.OnClick(dialog.accept)
     assert own.eval('WoWStatusGroups.isListed')(group) is False
-    assert own.eval('WoWStatusDB.listing_confirmed') is None
+    assert own.eval('next(WoWStatusDB.listing_confirmed)') is None
     assert not any(text.startswith('G ') for text in pump(own, friend, start=200))
     tick(row, True)
     assert dialog.IsShown(dialog)
