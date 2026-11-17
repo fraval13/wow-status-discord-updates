@@ -665,8 +665,8 @@ W.add({
         "Figurlista di: namn, rase, kjønn, klasse, nivå og XP-framgang for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, hovudfiguren din i kvar gruppe når du har valt ein, ein tilfeldig spelar-ID og versjonen av tillegget. Namnet på ein gøymd figur blir likevel sendt, merkt som gøymd, så lista til venene utelèt han, òg etter at du har slutta å dele lista di.",
     ["The character details you tick: played time, professions with skill levels, completed quests, gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you wear with its combat stats. Friends see them change as you play."] =
         "Figurdetaljane du kryssar av for: speletid, yrke med ferdigheitsnivå, fullførte oppdrag, gull og gull tent, monster drepne, fangehol, ridedyr og æresdrap, dødsfall totalt, og utstyret du har på deg med kamptala. Venene ser dei endre seg medan du spelar.",
-    ["The name of a group you tick as Listed, to the members of your other groups."] =
-        "Namnet på ei gruppe du kryssar av som Lista, til medlemene i dei andre gruppene dine.",
+    ["The name of a group you choose to share with your other groups, to their members. Anyone with the name can join; turning this off cannot take back a name already shared."] =
+        "Namnet på ei gruppe du vel å dele med dei andre gruppene dine, til medlemene der. Alle med namnet kan bli med; å slå dette av kan ikkje ta tilbake eit namn som alt er delt.",
     ["Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an invitation to a group, with its name, to the friend you invite."] =
         "Berre når du klikkar: ei reaksjonskviskring som GZ!, lenkja til heimesida frå Share WoW Status, eller ein invitasjon til ei gruppe, med namnet, til venen du inviterer.",
     ["Who receives it"] = "Kven som får det",
