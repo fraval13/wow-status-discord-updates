@@ -89,10 +89,7 @@ def load(path):
     if len(raw) > MAX_BYTES:
         raise ValidationError('SavedVariables file exceeds 32 MiB')
     db = parse(raw.decode('utf-8-sig'))
-    # The addon upgrades its saved data in numbered steps (#231); every version
-    # since the first keeps the character fields read here.
-    version = db.get('version')
-    if type(version) is not int or version < 1 or not isinstance(db.get('characters'), dict):
+    if db.get('version') != 1 or not isinstance(db.get('characters'), dict):
         raise ValidationError('Unsupported addon data')
     return db, raw
 

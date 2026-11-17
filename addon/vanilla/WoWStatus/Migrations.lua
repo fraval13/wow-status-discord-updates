@@ -1,9 +1,11 @@
 -- Numbered upgrades of the saved data (#231). Each step runs once: after it
--- succeeds, the version it brings the data to is saved (WoWStatusDB.version for
--- the account, schema_version on each character), so a login never repeats it.
+-- succeeds, the version it brings the data to is saved as schema_version (on
+-- WoWStatusDB for the account, on each character), so a login never repeats it.
 -- Version 1 is the shape every release saved before these steps existed; data
--- without a version, or with a broken one, counts as version 1 and is upgraded,
--- never refused. Data saved by a newer release than this one is left as it is.
+-- without a schema_version, or with a broken one, counts as version 1 and is
+-- upgraded, never refused. Data saved by a newer release is left as it is.
+-- WoWStatusDB.version stays 1: earlier releases and the companion refuse any
+-- other value, so a player who goes back to an older release keeps working.
 --
 -- To change the saved shape, append a step with the next number and test it on
 -- its own (tests/test_migrations.py). Never renumber or change a released step:
@@ -55,7 +57,7 @@ M.character = {
             if inGame[kind] == nil then inGame[kind] = true end
         end
         -- Filters out of range (a hand edit) are stored clamped, so the companion,
-        -- which checks the saved value, reads them too.
+        -- which checks the saved value, reads this character again once it logs in.
         for _, key in ipairs({"level_interval", "loot_quality"}) do
             if settings[key] ~= nil then WoWStatusSettings.set(key, WoWStatusSettings.get(key, character), character) end
         end
@@ -76,6 +78,8 @@ end
 -- the ones after it run again at the next login.
 local function upgrade(steps, holder, field, ...)
     local current = version(holder[field])
+    -- A broken or text version is saved as the number it counts as.
+    if holder[field] ~= current then holder[field] = current end
     for _, step in ipairs(steps) do
         if step.version > current then
             local ok, problem = pcall(step.run, ...)
@@ -87,10 +91,8 @@ local function upgrade(steps, holder, field, ...)
     return true
 end
 
-function M.version(value) return version(value) end
-
 function M.upgradeAccount(db)
-    return upgrade(M.account, db, "version", db)
+    return upgrade(M.account, db, "schema_version", db)
 end
 
 function M.upgradeCharacter(character, db)

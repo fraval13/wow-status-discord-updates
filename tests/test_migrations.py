@@ -63,8 +63,10 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
     changed = {path for path in differences(before, after)
                if not any(path[:len(stamp)] == stamp for stamp in login_time)
                and path[:3] != character + ('session',)}
-    assert changed == {('version',)}, changed
-    assert after['version'] == 2 and after['characters'][KEY]['schema_version'] == 2
+    assert changed == set(), changed
+    # Progress is kept beside version, which older releases require to stay 1.
+    assert after['version'] == 1 and after['schema_version'] == 2
+    assert after['characters'][KEY]['schema_version'] == 2
     assert after['characters'][KEY]['events'] == before['characters'][KEY]['events']
     assert lua.execute('''
         local P = WoWStatusPopups
@@ -98,7 +100,8 @@ def test_second_login_runs_no_step_again():
 
 def test_brand_new_account_starts_at_the_latest_versions():
     lua = make_lua()
-    assert lua.eval('WoWStatusDB.version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 2
+    assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 2
+    assert lua.eval('WoWStatusDB.version') == 1
     assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 2
     # A new character still gets every switch a migrated one has.
     assert lua.eval('character().settings.in_game.pvp') is True
@@ -107,16 +110,16 @@ def test_brand_new_account_starts_at_the_latest_versions():
 
 
 def test_newer_saved_data_is_used_and_never_downgraded():
-    lua = login(V1.replace('\n    version = 1,\n', '\n    version = 99,\n'))
-    assert lua.eval('WoWStatusDB.version') == 99
+    lua = login(V1.replace('\n    version = 1,\n', '\n    schema_version = 99,\n    version = 1,\n'))
+    assert lua.eval('WoWStatusDB.schema_version') == 99
     assert lua.eval('WoWStatusPopups.duration()') == 12
     assert lua.eval('character() ~= nil')
 
 
 @pytest.mark.parametrize('broken', ['nil', '"two"', '0', '1.5', '-3', '1/0', '1e300 * 1e300', '0/0'])
 def test_missing_or_broken_version_counts_as_one(broken):
-    lua = login(V1.replace('\n    version = 1,\n', f'\n    version = {broken},\n'))
-    assert lua.eval('WoWStatusDB.version') == 2
+    lua = login(V1.replace('\n    version = 1,\n', f'\n    schema_version = {broken},\n    version = 1,\n'))
+    assert lua.eval('WoWStatusDB.schema_version') == 2
 
 
 @pytest.mark.parametrize('saved', ['"x"', '{}', '{version = 1, characters = "x"}'])
@@ -133,7 +136,7 @@ def test_data_that_is_not_the_addons_is_left_alone_with_one_message(saved):
     assert sum('Saved data is unreadable' in text for text in said) == 1
     assert lua.eval('rawequal(WoWStatusDB, __before)') is True
     # Nothing was upgraded or started on it.
-    assert lua.eval('type(WoWStatusDB) ~= "table" or (WoWStatusDB.version ~= 2 and WoWStatusDB.popups == nil)')
+    assert lua.eval('type(WoWStatusDB) ~= "table" or (WoWStatusDB.schema_version == nil and WoWStatusDB.popups == nil)')
 
 
 # The runner ---------------------------------------------------------------------
@@ -152,25 +155,35 @@ RUNNER = '''
 def test_steps_run_in_order_once_and_save_each_version():
     lua = make_lua()
     lua.execute(RUNNER + '''
-        local db = {version = 1}
+        local db = {schema_version = 1}
         assert(M.upgradeAccount(db))
-        assert(table.concat(__log, ",") == "2,3,4" and db.version == 4)
+        assert(table.concat(__log, ",") == "2,3,4" and db.schema_version == 4)
         assert(M.upgradeAccount(db) and #__log == 3)
-        db = {version = 3}; __log = {}
+        db = {schema_version = 3}; __log = {}
         assert(M.upgradeAccount(db) and table.concat(__log, ",") == "4")
+    ''')
+
+
+def test_text_or_broken_versions_are_saved_as_numbers():
+    lua = make_lua()
+    lua.execute(RUNNER + '''
+        local db = {schema_version = "4"}
+        assert(M.upgradeAccount(db) and db.schema_version == 4 and #__log == 0)
+        db = {schema_version = 99}
+        assert(M.upgradeAccount(db) and db.schema_version == 99)
     ''')
 
 
 def test_failed_step_keeps_its_version_and_runs_again_next_time():
     lua = make_lua()
     lua.execute(RUNNER + '''
-        local db = {version = 1}
+        local db = {schema_version = 1}
         __fail = true
         local ok, step, problem = M.upgradeAccount(db)
         assert(not ok and step.version == 3 and tostring(problem):find("broken", 1, true))
-        assert(db.version == 2 and table.concat(__log, ",") == "2")
+        assert(db.schema_version == 2 and table.concat(__log, ",") == "2")
         __fail = false
-        assert(M.upgradeAccount(db) and db.version == 4 and table.concat(__log, ",") == "2,3,4")
+        assert(M.upgradeAccount(db) and db.schema_version == 4 and table.concat(__log, ",") == "2,3,4")
     ''')
 
 
@@ -187,7 +200,7 @@ def test_failed_step_is_reported_and_login_continues():
     said = '\n'.join(lua.eval('__said').values())
     assert 'Could not upgrade saved data (step 2). It will be tried again at the next login.' in said
     assert 'unreadable' in said
-    assert lua.eval('WoWStatusDB.version') == 1
+    assert lua.eval('WoWStatusDB.schema_version') == 1
     assert lua.eval('character() ~= nil')  # Everything else still started.
 
 
@@ -206,7 +219,7 @@ def test_failed_step_is_reported_once_while_login_waits():
     lua.eval('fire')('PLAYER_ENTERING_WORLD')
     said = '\n'.join(lua.eval('__said').values())
     assert said.count('Could not upgrade saved data (step 2)') == 1
-    assert lua.eval('WoWStatusDB.version') == 2 and lua.eval('character() ~= nil')
+    assert lua.eval('WoWStatusDB.schema_version') == 2 and lua.eval('character() ~= nil')
 
 
 # Each step on its own -----------------------------------------------------------
@@ -359,19 +372,10 @@ def test_slash_filters_still_refuse_out_of_range_values():
 
 # The companion still reads the saved file ----------------------------------------
 
-@pytest.mark.parametrize('version', [1, 2, 7])
-def test_companion_reads_every_saved_data_version(tmp_path, version):
+def test_companion_reads_upgraded_saved_data(tmp_path):
+    lua = make_lua()
     source = (ROOT / 'tests/fixtures/WoWStatus.lua').read_text(encoding='utf-8')
     path = tmp_path / 'WoWStatus.lua'
-    path.write_text(source.replace('["version"] = 1,', f'["version"] = {version},'), encoding='utf-8')
+    path.write_text(source.replace('["version"] = 1,', '["version"] = 1, schema_version = 2,'), encoding='utf-8')
     db, _ = load(path)
-    assert db['version'] == version
-
-
-@pytest.mark.parametrize('version', ['0', '"2"', '1.5', 'true', 'nil'])
-def test_companion_still_refuses_data_that_is_not_the_addons(tmp_path, version):
-    source = (ROOT / 'tests/fixtures/WoWStatus.lua').read_text(encoding='utf-8')
-    path = tmp_path / 'WoWStatus.lua'
-    path.write_text(source.replace('["version"] = 1,', f'["version"] = {version},'), encoding='utf-8')
-    with pytest.raises(Exception, match='Unsupported addon data'):
-        load(path)
+    assert db['version'] == lua.eval('WoWStatusDB.version') == 1

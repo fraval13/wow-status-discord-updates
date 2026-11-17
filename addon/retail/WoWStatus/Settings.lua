@@ -54,8 +54,10 @@ local function normalize(entry, value)
     -- NaN and the infinities are numbers too, but never valid.
     value = WoWStatusSafe.number(value)
     if not value then return nil end
-    for _, allowed in ipairs(entry.also or {}) do
-        if value == allowed then return value, true end
+    if entry.also then
+        for _, allowed in ipairs(entry.also) do
+            if value == allowed then return value, true end
+        end
     end
     if value ~= math.floor(value) then
         if not entry.round then return nil end

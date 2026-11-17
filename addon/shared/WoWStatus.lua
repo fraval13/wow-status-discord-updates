@@ -504,8 +504,11 @@ local function initialize()
     end
     upgraded(WoWStatusMigrations.upgradeCharacter(current, WoWStatusDB))
     -- Not upgrades: options the addon no longer lets anyone change, held at
-    -- their fixed values on every login.
-    current.settings.in_game = current.settings.in_game or {}
+    -- their fixed values on every login. The tables exist even if an upgrade
+    -- step failed, so the rest of the login carries on.
+    for _, part in ipairs({"fields", "collection", "announcements", "in_game"}) do
+        if type(current.settings[part]) ~= "table" then current.settings[part] = {} end
+    end
     current.settings.discord_delivery = "summary"
     current.settings.collection.equipment = false
     current.settings.announcements.equipment = false

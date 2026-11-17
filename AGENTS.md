@@ -54,8 +54,8 @@ be checked against Git and the environment rather than assumed permanently true.
 - `Safe.lua`: public-value boundary; guard missing APIs and Retail secret values.
 - `Migrations.lua`, `Settings.lua`: saved-data upgrades and the option schema (#231).
   To change the saved shape, append a numbered step to `WoWStatusMigrations.account`
-  (bumps `WoWStatusDB.version`) or `.character` (bumps each character's
-  `schema_version`) instead of another nil-check in `initialize()`; never renumber
+  or `.character` (each bumps its own `schema_version`; `WoWStatusDB.version` stays 1
+  so older releases and the companion still read the file) instead of another nil-check in `initialize()`; never renumber
   or edit a released step, and test each step on its own in `tests/test_migrations.py`.
   Old saved data is always upgraded, never refused. Declare a new option in
   `WoWStatusSettings.schema` (`key`, `type`, `default`, `min`, `max`) and read and write
