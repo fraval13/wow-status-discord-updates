@@ -1042,6 +1042,21 @@ local function visibleEntries(allDays)
     end
     return list
 end
+-- What the Export window (#176) takes: "shown" is exactly what the page shows
+-- right now, filters and picked day and all; "week" the last seven days and
+-- "all" every visible entry, both ignoring the filters. Newest first, as on
+-- the page.
+function J.exportEntries(scope)
+    -- Before the page is built there are no filters to follow: that is everything.
+    if (scope=="shown" or scope==nil) and panel then return visibleEntries(false) end
+    local since=scope=="week" and S.now()-7*86400 or nil
+    local list={}
+    for _,e in ipairs(J.displayEntries()) do
+        if J.visible(e) and (not since or (S.number(e.at) and e.at>=since)) then list[#list+1]=e end
+    end
+    table.sort(list,function(a,b) if a.at==b.at then return a.id>b.id end return (a.at or 0)>(b.at or 0) end)
+    return list
+end
 -- A friend's update whose notification appeared less than a minute ago, not
 -- yet reacted to: its log card offers the same reaction buttons.
 J.REACT_WINDOW=60
@@ -1239,10 +1254,14 @@ local function build(parent)
         end)
     end)
     -- Recent reactions (#171), with how many arrived since you last looked.
-    panel.reactionsButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.reactionsButton:SetPoint("TOPLEFT",24,-522);panel.reactionsButton:SetSize(130,24)
+    panel.reactionsButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.reactionsButton:SetPoint("TOPLEFT",24,-522);panel.reactionsButton:SetSize(124,24)
     panel.reactionsButton:SetText(T("Reactions"))
     panel.reactionsButton:SetScript("OnClick",function() if WoWStatusReactions then WoWStatusReactions.show() end end)
-    panel.showing=oneLine(label(panel,"GameFontHighlight",162,-528,282))
+    -- Export (#176): the window opens on what this page shows right now.
+    panel.exportButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.exportButton:SetPoint("TOPLEFT",154,-522);panel.exportButton:SetSize(92,24)
+    panel.exportButton:SetText(T("Export"))
+    panel.exportButton:SetScript("OnClick",function() if WoWStatusExport then WoWStatusExport.showLog("shown") end end)
+    panel.showing=oneLine(label(panel,"GameFontHighlight",254,-528,190))
     panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
     panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
     panel.showAll:SetScript("OnClick",function()

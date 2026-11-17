@@ -743,3 +743,19 @@ W.add({
     ["No online friend has reported a zone in the last %d minutes."] =
         "Ingen pålogga ven har meldt eit område dei siste %d minutta.",
 })
+-- Copyable export of the activity log and records (#176).
+W.add({
+    ["Export"] = "Eksporter", ["Export the activity log"] = "Eksporter aktivitetsloggen",
+    ["Export records"] = "Eksporter rekordane", ["Scope:"] = "Omfang:", ["Format:"] = "Format:",
+    ["Plain text"] = "Rein tekst", ["Everything"] = "Alt",
+    ["What the Activity page shows"] = "Det Aktivitet-sida viser",
+    ["The last seven days"] = "Dei sju siste dagane",
+    ["Exported"] = "Eksportert", ["entries"] = "oppføringar", ["lines"] = "linjer",
+    ["Building"] = "Byggjer",
+    ["Click in the box, press Ctrl-A to select everything and Ctrl-C to copy. Nothing is sent anywhere."] =
+        "Klikk i boksen, trykk Ctrl-A for å velja alt og Ctrl-C for å kopiera. Ingenting vert sendt nokon stad.",
+    ["This text names the characters and players in your group. It never names the group itself. Read it before you paste it anywhere public."] =
+        "Denne teksten namngjev figurane og spelarane i gruppa di. Han namngjev aldri sjølve gruppa. Les han før du limer han inn ein offentleg stad.",
+    ["The export was cut off here: there is more than one box can hold."] =
+        "Eksporten vart kutta her: det er meir enn éin boks kan halda.",
+})

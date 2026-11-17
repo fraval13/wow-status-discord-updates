@@ -1,0 +1,1 @@
+- Export on the Activity page and on Records copies your log or records out of the game as plain text or CSV.

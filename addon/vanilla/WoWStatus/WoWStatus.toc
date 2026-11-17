@@ -58,6 +58,7 @@ Goals.lua
 Profile.lua
 UnitTooltip.lua
 Mutes.lua
+Export.lua
 Minimap.lua
 StatusLine.lua
 Previews.lua

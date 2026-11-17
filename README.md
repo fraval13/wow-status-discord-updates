@@ -252,6 +252,14 @@ achievements appear. Detailed profession and equipment-change activity stays
 private. Eligible announcements and requested equipment snapshots are exchanged
 with group members according to the character's sharing settings.
 
+**Export** on the Activity page and on Records fills a read-only, selectable box
+with the chosen entries as plain text or CSV: click in it, press Ctrl-A, then
+Ctrl-C. The log export follows the page's own filters, or takes everything or the
+last seven days; the records export is shaped for pasting into a chat message.
+Nothing is sent anywhere, the text is built in small steps so a long log never
+freezes the client, and it names the characters and players in your group but
+never the group itself.
+
 At login, the addon greets available group members and both sides automatically
 exchange missing announcement IDs. An already-online friend also recovers saved
 entries from the arriving player. There is no periodic polling after the login

@@ -301,6 +301,8 @@ local function render()
         UI.call(b[1], "SetEnabled", view ~= b[2])
         b[1]:ClearAllPoints(); b[1]:SetPoint("TOPLEFT", ({354, 458, 572})[i], -4 - top)
     end
+    page.export:ClearAllPoints(); page.export:SetPoint("TOPLEFT", 24, -4 - top)
+    UI.call(page.export, "SetEnabled", chosen ~= nil)
     page.weekBack:SetShown(view == "week"); page.weekNext:SetShown(view == "week")
     if page.textRows then for _, row in ipairs(page.textRows) do row:Hide() end end
     for _, row in ipairs(page.rows) do row:SetShown(view == "firsts") end
@@ -451,6 +453,10 @@ function F.buildRecords(parent)
     -- Earlier weeks (until /reload the view starts at this week).
     page.weekBack = button("<", 64, function() page.weekOffset = (page.weekOffset or 0) + 1; F.render() end)
     page.weekNext = button(">", 64, function() page.weekOffset = math.max(0, (page.weekOffset or 0) - 1); F.render() end)
+    -- Export (#176): the chosen group's records as text to copy out of the game.
+    page.export = button("Export", 100, function()
+        if WoWStatusExport then WoWStatusExport.showRecords(page.group) end
+    end)
     return page
 end
 
