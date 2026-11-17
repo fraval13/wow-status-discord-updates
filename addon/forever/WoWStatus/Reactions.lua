@@ -34,12 +34,6 @@ local function friendName(e)
 end
 
 local function isNew(at, id, seen, keys) return at > seen or (at == seen and not keys[id]) end
--- Realm time for a PC-clock stamp (shown_at), so it sorts among realm-time ones.
-local function realm(at)
-    local offset = S.clockOffset and S.clockOffset()
-    return at and offset and at - offset or at
-end
-
 -- One pass over the log: every reaction you received on a visible entry and
 -- every one you sent, unsorted; the newest received time and the reactions of
 -- that second; and how many received are new against (seen, keys). Reactions
@@ -67,7 +61,7 @@ local function collect(seen, keys, countOnly)
                 if said and J.visible(e) then
                     -- reacted_at is new; older reactions were sent while the notification was up.
                     list[#list + 1] = {entry=e, received=false, id=tostring(e.id), name=friendName(e), text=said,
-                        at=S.number(e.reacted_at) or realm(S.number(e.shown_at)) or S.number(e.at) or 0}
+                        at=S.number(e.reacted_at) or S.number(e.shown_at) or S.number(e.at) or 0}
                 end
             end
         end
