@@ -1192,8 +1192,7 @@ end
 -- Clicks in the first 1.5 seconds are ignored: a click meant for something else
 -- must not dismiss a notification that just appeared, or whisper a reaction.
 P.CLICK_GUARD = 1.5
-local clock = S.uptime
-local function guarded() return toast ~= nil and toast.shownAt ~= nil and clock() - toast.shownAt < P.CLICK_GUARD end
+local function guarded() return toast ~= nil and toast.shownAt ~= nil and S.uptime() - toast.shownAt < P.CLICK_GUARD end
 -- The log entry for a notification (or the entry itself), where a reaction is
 -- remembered, so the notification and the log never whisper the same update twice.
 local function entryOf(item)
@@ -1290,7 +1289,7 @@ local TOAST_HEIGHT, BESIDE_HEADING, COUNTDOWN_ROOM = 124, 300, 36
 -- During the click guard the buttons are greyed out and count down: "GZ! (1.2)".
 local function guardButtons()
     if not toast or not toast.reactions then return end
-    local left = toast.shownAt and P.CLICK_GUARD - (clock() - toast.shownAt) or 0
+    local left = toast.shownAt and P.CLICK_GUARD - (S.uptime() - toast.shownAt) or 0
     for _, button in ipairs(toast.reactions) do
         if button:IsShown() and button.reaction then
             if left > 0 then
@@ -1372,10 +1371,10 @@ P.HOLD_LIMIT = 60
 local holding, heldSince = false, 0
 function P.hold(down)
     holding = down == true and toast ~= nil and toast:IsShown()
-    heldSince = clock()
+    heldSince = S.uptime()
 end
 function P.holding()
-    if holding and clock() - heldSince > P.HOLD_LIMIT then holding = false end
+    if holding and S.uptime() - heldSince > P.HOLD_LIMIT then holding = false end
     return holding
 end
 function P.held()
@@ -1499,7 +1498,7 @@ local function show(item, now)
     local flavour=WoWStatusFlavour.text(item)
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
-    toast.shownAt = clock()
+    toast.shownAt = S.uptime()
     reactionButtons()
     toast.age = 0
     toast.life, toast.tail = P.lifetime()

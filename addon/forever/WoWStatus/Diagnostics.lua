@@ -33,7 +33,8 @@ end
 -- before that is stamped 0 and shown as "?".
 local function now()
     local S = WoWStatusSafe
-    local ok, value = pcall(type(S) == "table" and S.now or error)
+    if type(S) ~= "table" or type(S.now) ~= "function" then return 0 end
+    local ok, value = pcall(S.now)
     return ok and type(value) == "number" and value or 0
 end
 local function stamp(at)

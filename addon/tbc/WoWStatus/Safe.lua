@@ -83,6 +83,7 @@ function S.localNow()
 end
 -- A local date table ({year=, month=, day=, ...}) as a timestamp; nil if invalid.
 function S.timeOf(fields)
+    if type(fields) ~= "table" then return nil end
     local ok, at = pcall(time, fields)
     return ok and S.number(at) or nil
 end

@@ -215,10 +215,11 @@ function G.receive(words,sender)
     if op=="J" and #words==3 then
         local before=current.equipment_profile and current.equipment_profile.revision
         E.capture(current)
-        if current.equipment_profile and current.equipment_profile.revision~=before then dirty[current]=S.now() end
+        local stamp=S.now()
+        if current.equipment_profile and current.equipment_profile.revision~=before then dirty[current]=stamp end
         local k="inventory:"..group..":"..(key(sender) or "")
-        if answered[k] and S.now()-answered[k]<15 then return false end
-        answered[k]=S.now(); trim(answered,128)
+        if answered[k] and stamp-answered[k]<15 then return false end
+        answered[k]=stamp; trim(answered,128)
         return inventory(group,sender)
     end
     if op=="H" then

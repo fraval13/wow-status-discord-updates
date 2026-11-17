@@ -10,20 +10,52 @@ from pathlib import Path
 from test_clock_skew import REALM, pc
 
 ROOT = Path(__file__).resolve().parents[1]
-# The global `time` as a call or a value (pcall(time), local t = time), but not
-# a field (x.time, x:time()), a key (time=) or a longer name (playtime).
-BARE_TIME = re.compile(r'(?<![\w.:])time\b(?!\s*=[^=])')
-LONG = re.compile(r'(?:--)?\[(=*)\[.*?\]\1\]', re.S)
+LONG_OPEN = re.compile(r'\[(=*)\[')
+NAME = re.compile(r'[A-Za-z_]\w*')
 
 
-def code_lines(path):
-    """Lines of Lua with comments and string literals blanked out. Long
-    comments and long strings keep their newlines, so line numbers hold."""
-    text = path.read_text(encoding='utf-8')
-    text = LONG.sub(lambda m: '\n' * m.group(0).count('\n'), text)
-    for number, line in enumerate(text.splitlines(), 1):
-        line = re.sub(r'"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'', '""', line)
-        yield number, line.split('--', 1)[0]
+def bare_time(text):
+    """Line numbers where Lua code uses the global `time`: a call, a value
+    (pcall(time)) or an assignment (time = ...). Comments, strings, fields
+    (x.time, x:time()) and table keys ({time = 1}) are skipped. A small
+    tokenizer, so brackets inside strings and comments can't hide code."""
+    found, i, n, prev = [], 0, len(text), ''
+    while i < n:
+        c = text[i]
+        if text.startswith('--', i):
+            long = LONG_OPEN.match(text, i + 2)
+            if long:
+                close = text.find(']' + long.group(1) + ']', long.end())
+                i = n if close < 0 else close + len(long.group(0))
+            else:
+                close = text.find('\n', i)
+                i = n if close < 0 else close
+            continue
+        long = LONG_OPEN.match(text, i)
+        if long:
+            close = text.find(']' + long.group(1) + ']', long.end())
+            i, prev = (n if close < 0 else close + len(long.group(0))), 'string'
+            continue
+        if c in '"\'':
+            i += 1
+            while i < n and text[i] != c and text[i] != '\n':
+                i += 2 if text[i] == '\\' else 1
+            i, prev = i + 1, 'string'
+            continue
+        name = NAME.match(text, i)
+        if name and not (i and (text[i - 1].isalnum() or text[i - 1] == '_')):
+            word, i = name.group(0), name.end()
+            if word == 'time' and not (prev in ('.', ':') and not text.startswith('..', i - 6)):
+                rest = text[i:].lstrip(' \t')
+                key = rest.startswith('=') and not rest.startswith('==') and prev in ('{', ',', ';')
+                if not key:
+                    found.append(text.count('\n', 0, i) + 1)
+            prev = word
+            continue
+        if not c.isspace():
+            prev = c
+        i += 1
+    return found
 
 
 def addon_lua():
@@ -35,19 +67,36 @@ def addon_lua():
 
 
 def test_only_safe_lua_reads_the_pc_clock():
-    found = [f'{path.relative_to(ROOT)}:{number}: {line.strip()}'
+    found = [f'{path.relative_to(ROOT)}:{number}'
              for path in addon_lua() if path.name != 'Safe.lua'
-             for number, line in code_lines(path) if BARE_TIME.search(line)]
+             for number in bare_time(path.read_text(encoding='utf-8'))]
     assert not found, 'use S.now(), S.uptime(), S.localNow() or S.timeOf() instead of time:\n' + '\n'.join(found)
 
 
-def test_guard_sees_a_bare_call_but_not_lookalikes(tmp_path):
-    sample = tmp_path / 'Sample.lua'
-    sample.write_text('local a = S.now()\nlocal b = A.requestPlaytime()\n'
-                      '-- time() in a comment\nlocal c = "time()"\nlocal d = time()\n'
-                      '--[[ time()\n time() ]]\nlocal e = [[\ntime()]]\nlocal f = {time = 1}\n'
-                      'local g = pcall(time)\nlocal h = x.time\n', encoding='utf-8')
-    assert [n for n, line in code_lines(sample) if BARE_TIME.search(line)] == [5, 11]
+def test_guard_sees_a_bare_use_but_not_lookalikes():
+    sample = '\n'.join([
+        'local a = S.now()',                      # 1
+        'local b = A.requestPlaytime()',          # 2
+        '-- time() in a comment',                 # 3
+        'local c = "time()"',                     # 4
+        'local d = time()',                       # 5  call
+        '--[[ time()',                            # 6
+        ' time() ]]',                             # 7
+        'local e = [[',                           # 8
+        'time()]]',                               # 9
+        'local f = {time = 1, x = 2}',            # 10
+        'local g = pcall(time)',                  # 11 value
+        'local h = x.time + y:time()',            # 12
+        'local p = s:gsub("^%[[A-Z]+%] ", "")',   # 13 bracket in a string
+        'local i = time()',                       # 14 call after it
+        'local j = t[k[1]]',                      # 15
+        '---[[ not a long comment',               # 16
+        'time = GetServerTime',                   # 17 assignment
+        'local k = {time',                        # 18 value in a table
+        '}',                                      # 19
+        'local l = "a"..time()',                  # 20 after concatenation
+    ])
+    assert bare_time(sample) == [5, 11, 14, 17, 18, 20]
 
 
 def test_clocks_follow_realm_time_uptime_and_the_pc():
