@@ -1,0 +1,1 @@
+- The Fun records list names who got to the maximum level fastest, counted from their first recorded activity.

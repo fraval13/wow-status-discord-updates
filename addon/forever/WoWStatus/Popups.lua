@@ -409,7 +409,7 @@ local function canShare(character, event)
     if not event then return true end
     if event.kind == "discovery" or event.kind == "lfg" then return false end
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
-    local category=({raid="dungeon",epicmount="mount"})[event.kind] or event.kind
+    local category=WoWStatusSharing.category(event.kind)
     if not character.settings.collection[category] then return false end
     if character.settings.in_game and character.settings.in_game[category] == false then return false end
     if event.kind == "level" and not character.settings.fields.level then return false end

@@ -237,6 +237,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Diagnostics.lua')
     run_addon_file(runtime, root / 'Safe.lua')
     run_addon_file(runtime, root / 'Modules.lua')
+    run_addon_file(runtime, root / 'Sharing.lua')
     run_addon_file(runtime, root / 'Locale.lua')
     run_addon_file(runtime, root / 'LocaleNN.lua')
     run_addon_file(runtime, root / 'Features.lua')

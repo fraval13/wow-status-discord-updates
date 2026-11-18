@@ -69,7 +69,7 @@ function R.sharedText(session,settings)
     local parts={}
     for _,kind in ipairs(sharedOrder) do
         local n=S.number(session.counts[kind])
-        local category=({raid="dungeon",epicmount="mount"})[kind] or kind
+        local category=WoWStatusSharing.category(kind)
         local field=({level="level",zone="zone",quest="quests",profession="professions",loot="gear"})[kind]
         local allowed=not settings or (settings.collection[category] and settings.in_game[category]~=false
             and (not field or settings.fields[field]))

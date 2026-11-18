@@ -1,0 +1,1 @@
+- No change for players: the rules for what may be saved and shared now read one shared table of switches.

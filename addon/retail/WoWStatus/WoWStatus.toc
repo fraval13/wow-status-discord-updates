@@ -13,6 +13,7 @@
 Diagnostics.lua
 Safe.lua
 Modules.lua
+Sharing.lua
 Locale.lua
 LocaleNN.lua
 Features.lua
