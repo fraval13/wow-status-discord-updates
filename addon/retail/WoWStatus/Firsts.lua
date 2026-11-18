@@ -203,7 +203,69 @@ function F.week(group, offset)
         if p.quest > 0 then parts[#parts + 1] = (p.quest * 100) .. " " .. T("quests") end
         lines[#lines + 1] = p.name:gsub("|", "||") .. ": " .. table.concat(parts, " · ")
     end
+    if offset == 1 and WoWStatusFeatures.enabled("chronicle") then
+        for _, line in ipairs(F.chronicleLines(group)) do lines[#lines + 1] = line end
+    end
     return lines, first, last
+end
+
+-- Labs experiment (#241): a short chapter for last week, made once from the
+-- permitted log entries and kept on this computer. It stores the week's facts,
+-- not sentences, so it follows the chosen language. Nothing is sent.
+WoWStatusFeatures.register("chronicle", "Weekly chronicle",
+    "A short chapter about last week's adventures, written once and shown under last week's list.")
+function F.chronicleMake(group)
+    local first, last = F.weekRange(1)
+    local store = type(WoWStatusDB) == "table" and WoWStatusDB or nil
+    if not store then return nil end
+    store.chronicles = type(store.chronicles) == "table" and store.chronicles or {}
+    local kept = store.chronicles[group]
+    if type(kept) == "table" and kept.week == first then return kept end
+    local people, deaths, hardcore, zones, entries = {}, 0, 0, 0, 0
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        local day = S.number(e.at) and dayOf(e.at)
+        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e) then
+            entries = entries + 1
+            local name = shortName(e.sender)
+            if e.kind == "level" and S.number(e.level) then
+                local p = people[name] or {n = 0, level = 0}
+                p.n, p.level = p.n + 1, math.max(p.level, e.level)
+                people[name] = p
+            elseif e.kind == "death" then
+                if WoWStatusProgress.hardcoreDeath(e) then hardcore = hardcore + 1 else deaths = deaths + 1 end
+            elseif e.kind == "zone" then zones = zones + 1 end
+        end
+    end
+    local top
+    for name, p in pairs(people) do
+        if not top or p.n > top.n or (p.n == top.n and name < top.name) then top = {name = name, n = p.n, level = p.level} end
+    end
+    -- The week's chapter is written once: later log changes do not rewrite it.
+    kept = {week = first, top = top, deaths = deaths, hardcore = hardcore, zones = zones, entries = entries}
+    store.chronicles[group] = kept
+    return kept
+end
+function F.chronicleLines(group)
+    local c = F.chronicleMake(group)
+    if not c then return {} end
+    local lines = {" ", "|cffffd100" .. T("Chronicle of the week") .. "|r"}
+    if c.entries == 0 then
+        lines[#lines + 1] = T("A quiet week. The road waits.")
+        return lines
+    end
+    if c.top then
+        lines[#lines + 1] = c.top.name:gsub("|", "||") .. " " .. T("climbed") .. " " .. c.top.n .. " "
+            .. T(c.top.n == 1 and "level" or "levels") .. ", " .. T("reaching level") .. " " .. c.top.level .. "."
+    end
+    if c.deaths > 0 then
+        lines[#lines + 1] = T("The group fell") .. " " .. c.deaths .. " " .. T(c.deaths == 1 and "time" or "times") .. "."
+    end
+    -- A Hardcore death is told plainly, with no joke (#163).
+    if c.hardcore > 0 then lines[#lines + 1] = T("A Hardcore character fell this week. We remember them.") end
+    if c.zones > 0 then
+        lines[#lines + 1] = c.zones .. " " .. T(c.zones == 1 and "new place was explored." or "new places were explored.")
+    end
+    return lines
 end
 
 -- Fun records in one group, only when they are remarkable (high thresholds).
