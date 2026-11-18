@@ -1,0 +1,1 @@
+- Times, the Activity calendar and weekly records now follow your computer's local timezone

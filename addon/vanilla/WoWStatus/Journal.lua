@@ -1047,15 +1047,15 @@ if WoWStatusAdapter.achievements then
         if t[2].pvp then table.insert(J.TYPES,i+1,{"Achievements",{achievement=true}});break end
     end
 end
--- The day an entry belongs to, in the log's own (Oslo) time: "YYYY-MM-DD".
+-- The day an entry belongs to, in the player's local time: "YYYY-MM-DD".
 local dayCache=setmetatable({},{__mode="k"})
 local function dayOf(e)
     local day=dayCache[e]
-    if not day and S.number(e.at) then day=WoWStatusHistory.oslo(e.at):sub(1,10);dayCache[e]=day end
+    if not day and S.number(e.at) then day=WoWStatusHistory.day(e.at);dayCache[e]=day end
     return day
 end
-local function today() return WoWStatusHistory.oslo(S.now()):sub(1,10) end
-local function yesterday() return WoWStatusHistory.oslo(S.now()-86400):sub(1,10) end
+local function today() return WoWStatusHistory.day(S.now()) end
+local function yesterday() return WoWStatusHistory.day(S.now(),-1) end
 -- The picked day: "today" (the default, so the log stays fresh), a day key, or
 -- nil for all days. It lasts until the next /reload.
 local function pickedDay()
@@ -1207,7 +1207,7 @@ local function render()
             local ended=WoWStatusStreaks and WoWStatusStreaks.endedText(e)
             local caption=WoWStatusFlavour.text(e)
             row.flavour:SetText(ended and ("|cffffd100"..ended:gsub("|","||").."|r"..(caption~="" and (" "..caption) or "")) or caption)
-            local when=WoWStatusHistory.oslo(e.at)
+            local when=WoWStatusHistory.localTime(e.at)
             if e.imported then when=when:sub(1,10) end
             local reacted=J.reactionsText(e)
             local said=J.sentReaction(e)

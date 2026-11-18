@@ -102,7 +102,7 @@ local function graph(character)
     end
     graphLabel("Level", 4, 0, 60)
     graphLabel("Elapsed clock time since first observation (includes offline time)", 150, -310, 640)
-    graphLabel(H.oslo(firstAt) .. "  →  " .. H.oslo(lastAt) .. " · Europe/Oslo", 62, -335, 740)
+    graphLabel(H.localTime(firstAt) .. "  →  " .. H.localTime(lastAt), 62, -335, 740)
     for i, point in ipairs(points) do
         if i > 1 then
             local previous = points[i - 1]
@@ -145,7 +145,7 @@ function UI.refresh()
     if mode == "logs" then
         for _, event in ipairs(character.history.events) do
             if category == "all" or event.kind == category then
-                table.insert(rows, H.oslo(event.at) .. " · " .. event.kind
+                table.insert(rows, H.localTime(event.at) .. " · " .. event.kind
                     .. (event.data.synthetic and " [TEST]" or "") .. "\n"
                     .. "Event ID: " .. event.id .. "\nSelected groups: " .. H.serialize(event.group_ids or {}) .. "\nData: " .. H.serialize(event.data)
                     .. "\n")
@@ -155,7 +155,7 @@ function UI.refresh()
         for _, item in ipairs(H.timing(character)) do
             table.insert(rows, "Level " .. item.level .. " → " .. item.next_level .. ": "
                 .. H.duration(item.seconds) .. (item.partial and " (partial; tracking began during this level)" or " (recorded elapsed duration)")
-                .. "\n" .. H.oslo(item.started_at) .. " → " .. H.oslo(item.finished_at) .. "\n")
+                .. "\n" .. H.localTime(item.started_at) .. " → " .. H.localTime(item.finished_at) .. "\n")
         end
     else
         local settings=H.copy(character.settings)
@@ -167,7 +167,7 @@ function UI.refresh()
             "Selected group IDs: " .. H.serialize(character.group_ids or {}),
             "Sharing settings: " .. H.serialize(settings),
             "Current selected snapshot: " .. H.serialize(character.snapshot),
-            "Snapshot observed at: " .. H.oslo(character.exported_at),
+            "Snapshot observed at: " .. H.localTime(character.exported_at),
             "Recorded activity is saved with your character."}
     end
     local pages = math.max(1, math.ceil(#rows / PAGE_SIZE))
@@ -177,7 +177,7 @@ function UI.refresh()
         table.insert(selected, rows[i])
     end
     setText(#selected > 0 and table.concat(selected, "\n") or "No matching recorded history yet.")
-    panel.status:SetText("Page " .. page .. "/" .. pages .. " · " .. #rows .. " records · Europe/Oslo. Scroll within each page.")
+    panel.status:SetText("Page " .. page .. "/" .. pages .. " · " .. #rows .. " records. Scroll within each page.")
 end
 
 function UI.show(getter, selectedMode)
