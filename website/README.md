@@ -26,6 +26,15 @@ are complete and `assets/link-preview.jpg` is a complete 1200×630 JPEG (see `AR
 Version and file sizes on the page come from the packaged release. Checksums and
 the exact addon revision are published at `/downloads/release.json`.
 
+The build adds an invisible JSON-LD block to the homepage with one
+`SoftwareApplication` per edition. Its version, exact ZIP size and download URL
+use the same data as `release.json`; the release date is the built commit's UTC
+committer time. Names, description, image and homepage URL use the page's Open
+Graph metadata. Do not add a hand-written `wow-status-software` block to the
+template. The metadata makes no claim about reviews, ratings or a separate
+installer, and requires the matching WoW client rather than promising native
+support for a particular operating system. There is no FAQ rich-result markup.
+
 `/changelog/` (`changelog/index.html`) is generated at build time: its
 `__CHANGELOG__` placeholder becomes one entry per released `## <version>` section
 of `CHANGELOG.md` at the built revision, newest first, each with a stable `#v<version>`

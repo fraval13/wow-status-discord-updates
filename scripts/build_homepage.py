@@ -21,13 +21,15 @@ import zipfile
 from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from xml.sax.saxutils import escape as xml_text
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from whats_new import parse as parse_changelog  # noqa: E402
 
 EDITIONS = ('vanilla', 'forever', 'tbc', 'retail')
+EDITION_NAMES = {'vanilla': 'Vanilla Classic', 'forever': 'Forever',
+                 'tbc': 'TBC Anniversary', 'retail': 'Retail'}
 # Files the game loads without a TOC line. Anything else committed beside the addon
 # (editor files, a WTF/ folder, notes) stays out of the public ZIP.
 # Dot files such as macOS ._Logo.tga resource forks never match.
@@ -403,6 +405,45 @@ def write_package(root, revision, folder, files, archive):
             raise ValueError(f'Broken archive: {archive}')
 
 
+def software_metadata(page, manifest, published):
+    """Describe each downloadable edition using exactly the packaged release data."""
+    parser = MetaTags()
+    parser.feed(page)
+    tags = dict(parser.tags)
+    site = tags['og:url']
+    applications = []
+    for edition, release in manifest['editions'].items():
+        download = urljoin(site, 'downloads/' + release['file'])
+        applications.append({
+            '@type': 'SoftwareApplication',
+            '@id': site + '#software-' + edition + '-' + release['version'],
+            'name': tags['og:site_name'] + ' — ' + EDITION_NAMES[edition],
+            'description': tags['og:description'], 'url': site, 'image': tags['og:image'],
+            'softwareVersion': release['version'], 'datePublished': published,
+            'downloadUrl': download, 'fileSize': f"{release['bytes']} B",
+            'applicationCategory': 'GameApplication', 'applicationSubCategory': 'World of Warcraft addon',
+            'operatingSystem': 'Any platform supported by the matching World of Warcraft client',
+            'softwareRequirements': 'World of Warcraft — ' + EDITION_NAMES[edition],
+            'isAccessibleForFree': True,
+            'offers': {'@type': 'Offer', 'price': 0, 'url': download},
+            'publisher': {'@type': 'Person', 'name': 'fraval13', 'url': 'https://github.com/fraval13'},
+        })
+    # HTML does not honor JSON string escaping when it looks for </script>.
+    # Escape '<' so even page metadata containing that text remains inert JSON.
+    return json.dumps({'@context': 'https://schema.org', '@graph': applications},
+                      ensure_ascii=True, indent=2).replace('<', '\\u003c')
+
+
+def write_software_metadata(path, manifest, published):
+    page = path.read_text(encoding='utf-8')
+    if page.count('</head>') != 1 or 'id="wow-status-software"' in page:
+        raise ValueError('Homepage needs one </head> and no hand-written wow-status-software block')
+    block = software_metadata(page, manifest, published)
+    page = page.replace('</head>', '  <script id="wow-status-software" type="application/ld+json">\n'
+                        + block + '\n  </script>\n</head>', 1)
+    path.write_text(page, encoding='utf-8')
+
+
 def write_site(root, output, revision, editions, version, sections, site, urls):
     """Write the website, its changelog page, robots.txt, sitemap.xml and the four ZIPs
     into the new, empty folder output.
@@ -437,7 +478,10 @@ def write_site(root, output, revision, editions, version, sections, site, urls):
     fill(changelog, {**shared, 'RELEASES': f"{count} release{'' if count == 1 else 's'}",
                      'CHANGELOG': render_changelog(sections)})
     write_crawler_files(output, site, urls, commit_time(root, revision))
-    (downloads / 'release.json').write_text(json.dumps({'addon_revision': revision, 'editions': releases}, indent=2) + '\n', encoding='utf-8')
+    manifest = {'addon_revision': revision, 'editions': releases}
+    (downloads / 'release.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8')
+    published = datetime.fromtimestamp(int(git(root, 'show', '-s', '--format=%ct', revision)), timezone.utc)
+    write_software_metadata(output / 'index.html', manifest, published.isoformat().replace('+00:00', 'Z'))
 
 
 def build(root, output, addon_ref):
