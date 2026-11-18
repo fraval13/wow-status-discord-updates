@@ -1,0 +1,1 @@
+- Labs: an optional private race to a level against one friend (/wstatus race Name 40), shown in the status line.
