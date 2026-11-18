@@ -111,6 +111,8 @@ function methods:SetShown(value) self.visible=value end
 function methods:SetScript(name, fn) self[name]=fn end
 function methods:GetScript(name) return self[name] end
 function methods:GetChecked() return self.checked end
+function methods:SetEnabled(value) self.enabled=value and true or false end
+function methods:IsEnabled() return self.enabled~=false end
 function methods:SetChecked(value) self.checked=value end
 function methods:SetText(value) self.text=value end
 function methods:GetText() return self.text or "" end
@@ -246,6 +248,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Voices.lua')
     run_addon_file(runtime, root / 'Theme.lua')
     run_addon_file(runtime, root / 'MainWindow.lua')
+    run_addon_file(runtime, root / 'Labs.lua')
     run_addon_file(runtime, root / 'Overview.lua')
     run_addon_file(runtime, root / 'Guide.lua')
     run_addon_file(runtime, root / 'Privacy.lua')

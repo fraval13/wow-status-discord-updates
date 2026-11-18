@@ -223,6 +223,12 @@ W.add({
     ["Minimap button shown."] = "Minikartknappen er synleg att.",
     ["Open it with /wstatus, or with the key binding under Key Bindings."]
         = "Opne han med /wstatus, eller med tastebindinga under Tastebindingar.",
+    -- Labs: experimental features (#222)
+    ["Labs"] = "Laben", ["Labs: experimental features"] = "Laben: eksperiment",
+    ["Experiments in progress. Each one only changes things for you, and every one starts switched off."]
+        = "Eksperiment under arbeid. Kvart av dei endrar berre ting for deg, og alle startar avslåtte.",
+    ["No experiments in this version yet."] = "Ingen eksperiment i denne utgåva enno.",
+    ["Turn all experiments off"] = "Slå av alle eksperiment",
     -- Controller navigation and key bindings
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",

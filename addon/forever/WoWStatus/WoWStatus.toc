@@ -43,6 +43,7 @@ VoiceData.lua
 Voices.lua
 Theme.lua
 MainWindow.lua
+Labs.lua
 Overview.lua
 Guide.lua
 Privacy.lua
