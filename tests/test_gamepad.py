@@ -996,3 +996,21 @@ def test_countdown_goal_buttons_are_reachable_and_set_the_target(lua):
         WoWStatusGamepad.setFocus(__page.clear); press("PAD1")
         assert(__character.personal_goal_level==nil)
     """)
+
+
+def test_manual_hardcore_checkbox_is_reachable_when_needed():
+    runtime = make_lua()
+    runtime.execute("""
+        local panel = WoWStatusMainWindow.show("overview")
+        local check = panel.manualHardcore
+        panel.GetChildren = function() return check end
+        check.GetRect = function() return 310, 200, 32, 32 end
+        check.GetObjectType = function() return "CheckButton" end
+        check.SetEnabled = function(self, enabled) self.enabled = enabled end
+        check.IsEnabled = function(self) return self.enabled end
+        assert(WoWStatusGamepad.controls(panel)[1] == check)
+        C_GameRules = {IsHardcoreActive=function() return false end}
+        WoWStatusMainWindow.refresh("overview")
+        assert(#WoWStatusGamepad.controls(panel) == 0)
+        assert(check:IsEnabled() == false)
+    """)

@@ -308,14 +308,31 @@ function P.totalDeaths(character)
     return base.lifetime + math.max(0, value.deaths - base.tracked)
 end
 -- Hardcore (#163): a death there is permanent, so it gets no roast, no death
--- count and no death record. Only positive evidence counts: Classic Era's
--- C_GameRules.IsHardcoreActive returning true. A missing API, an error or any
--- other answer (TBC, Retail, Forever, normal realms) means not Hardcore.
+-- count and no death record. WoW's result wins on Classic Era. Forever's
+-- player-selected challenge does not have a corresponding Blizzard realm flag.
 P.HARDCORE_DEATH = "Died in Hardcore"
-function P.hardcore()
+local function gameHardcore()
     local rules = C_GameRules
-    if type(rules) ~= "table" then return false end
-    return S.call(rules.IsHardcoreActive) == true
+    if type(rules) == "table" then return S.call(rules.IsHardcoreActive) end
+end
+
+function P.manualHardcoreSupported()
+    local client = WoWStatusAdapter.client_id
+    return client == "classic-era" or client == "forever"
+end
+
+local function useManual(result)
+    local client = WoWStatusAdapter.client_id
+    return client == "forever" or (client == "classic-era" and type(result) ~= "boolean")
+end
+
+function P.manualHardcoreAvailable()
+    return useManual(gameHardcore())
+end
+
+function P.hardcore(character)
+    local result = gameHardcore()
+    return result == true or (useManual(result) and WoWStatusSettings.get("manual_hardcore", character))
 end
 -- A Hardcore death: an own event (data.hardcore) or a log entry or received
 -- notification, whose fixed text says so.

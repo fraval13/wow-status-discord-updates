@@ -82,6 +82,13 @@ M.character = {
             if settings[part].achievement == nil then settings[part].achievement = false end
         end
     end},
+    {version = 4, name = "normalize the manual Hardcore flag", run = function(character)
+        local settings = character.settings
+        if settings.manual_hardcore ~= nil then
+            local Z = WoWStatusSettings
+            Z.set("manual_hardcore", Z.get("manual_hardcore", character), character)
+        end
+    end},
 }
 
 local function latest(steps) return steps[#steps] and steps[#steps].version or 1 end
