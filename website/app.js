@@ -116,8 +116,9 @@ function setupWindowDemo() {
   });
 
   // Leaderboard: the Sort button steps through the same four orders as the addon.
-  const sorts = [['level', 'Level'], ['deaths', 'Deaths'], ['quests', 'Quests'], ['played', 'Played time']];
   const headers = [...document.querySelectorAll('.demo-board th[data-sort]')];
+  const sorts = headers.map(header => [header.dataset.sort, header.textContent.trim()]);
+  const sortPrefix = sortButton.textContent.split(':')[0];
   let sortIndex = 0;
   function sortBoard() {
     const by = sorts[sortIndex][0];
@@ -134,7 +135,7 @@ function setupWindowDemo() {
       if (header.dataset.sort === by) header.setAttribute('aria-sort', 'descending');
       else header.removeAttribute('aria-sort');
     });
-    sortButton.textContent = `Sort: ${sorts[sortIndex][1]}`;
+    sortButton.textContent = `${sortPrefix}: ${sorts[sortIndex][1]}`;
   }
   sortButton.disabled = false;
   sortButton.addEventListener('click', () => {
@@ -151,6 +152,13 @@ function setupWindowDemo() {
       body.hidden = !open;
     });
   });
+  // Keep the page's translated player labels and count words when filtering.
+  const countWords = {};
+  players.forEach(([, heading]) => {
+    const count = heading.textContent.match(/\((\d+) ([^()]+)\)$/);
+    if (count) countWords[Number(count[1]) === 1 ? 'one' : 'many'] = count[2];
+    heading.dataset.player = heading.textContent.replace(/\s+\(\d+ [^()]+\)$/, '');
+  });
   function filterCharacters() {
     players.forEach(([list, heading]) => {
       let visible = 0;
@@ -161,7 +169,7 @@ function setupWindowDemo() {
       // A player's heading counts the cards under it and goes when none are left.
       heading.hidden = visible === 0;
       list.hidden = visible === 0;
-      heading.textContent = `${heading.dataset.player} (${visible} ${visible === 1 ? 'character' : 'characters'})`;
+      heading.textContent = `${heading.dataset.player} (${visible} ${countWords[visible === 1 ? 'one' : 'many']})`;
     });
   }
   onlineOnly.disabled = false;
