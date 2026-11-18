@@ -1,0 +1,1 @@
+- Labs: optional seasonal captions during Hallow's End, Winter Veil, the Lunar Festival and Love is in the Air.
