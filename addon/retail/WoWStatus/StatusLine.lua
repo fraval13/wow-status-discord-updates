@@ -213,7 +213,7 @@ local function goalPage(parent)
         end)
         return b
     end
-    page.less = button("−", 24, -80, 66, function(level, goal) return (goal or level) - 1 end)
+    page.less = button("-", 24, -80, 66, function(level, goal) return (goal or level) - 1 end)
     page.more = button("+", 98, -80, 66, function(level, goal) return (goal or level) + 1 end)
     page.riding = button("Riding level", 24, -118, 160, function() return RIDING_LEVEL[A.client_id] end)
     page.cap = button("Level cap", 192, -118, 160, function() return A.max_level end)
