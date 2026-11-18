@@ -177,16 +177,18 @@ answers a send past that with a throttle result. Whispers outside instances are
 exempt. When a send is throttled, the same whisper goes to the same peer again
 after 2, 4, 8, then every 16 seconds, instead of moving on to the next peer.
 `/wstatus popup status` shows `throttled_retrying` meanwhile, and how many updates
-are still sending. Login sync waits for that allowance inside an instance (up to
-10 messages at once, then one a second) and resends a throttled packet the same
-way. Outside instances it keeps its usual pace. An older client's plain `false` can
+are still sending. Login sync and the character list both wait for that allowance
+inside an instance (up to 10 messages at once, then one a second) and resend a
+throttled packet the same way, keeping its place at the front of their queue
+(#286). Outside instances they keep their usual pace. An older client's plain `false` can
 also mean throttled, so it is tried once more after 2 seconds
 (`uncertain_retrying`). If that retry says `false` too, `false` counts as a plain
 failure for the next minute, so a client that always says `false` is barely
 slowed down.
 
 To test (#25): inside a dungeon, have a friend log in after you have a few hundred
-log entries, and check their log fills completely. With as many friends online as
+log entries, and check their log fills completely and that your character list
+reaches them whole (quests, professions, statistics and XP, #286). With as many friends online as
 you can gather, trigger several milestones at once and check every popup arrives.
 
 ## Relayed entries and event IDs

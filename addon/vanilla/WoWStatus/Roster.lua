@@ -61,7 +61,15 @@ local onlineCheckedAt, onlineSeen, partyChanged = 0, nil, false
 -- log's zone revision then, so a new report redraws it too.
 local whereDue, whereRevision
 local equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
-local equipmentSendState = {}
+-- The game allows each addon-message prefix 10 messages, regained at one a
+-- second, and answers a send past that with a throttle result; whispers
+-- outside instances are exempt. Inside an instance the character list waits
+-- for that allowance, as the log does, and everywhere it checks the result:
+-- a throttled message stays first in the queue and is sent again after a
+-- pause, instead of being dropped (#286).
+local ALLOWANCE = 10
+local allowance, allowanceAt, holdUntil = ALLOWANCE, 0, 0
+local sendState = {}
 
 -- One key per character for the list. WoW Forever spreads characters over many
 -- internal realms ("CAMWOWEU4Realm3PvE") while chat and rosters name them without
@@ -1657,7 +1665,10 @@ function R.tick()
         end
     end
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.tick() end
-    if #outgoing == 0 or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
+    allowance = math.min(ALLOWANCE, allowance + math.max(0, now - allowanceAt)); allowanceAt = now
+    if #outgoing == 0 or now < holdUntil or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
+    -- Outside an instance the allowance does not apply, so nothing is delayed there.
+    if allowance < 1 and S.call(IsInInstance) then return end
     if outgoing[1].notBefore and now < outgoing[1].notBefore then return end
     local item = table.remove(outgoing, 1)
     -- Recheck queued totals at send time: changed privacy must not leak an old count.
@@ -1689,13 +1700,17 @@ function R.tick()
     local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
     if send then
         lastSend = now
-        S.debug("send " .. redacted(item.text) .. " to " .. tostring(item.target))
+        allowance = math.max(0, allowance - 1)
         WoWStatusPopups.whispered(item.target)
-        if item.equipmentGroup then
-            local result = WoWStatusPopups.sendResult(pcall(send, PREFIX, item.text, "WHISPER", item.target))
-            local wait = WoWStatusPopups.retryWait(result, item, equipmentSendState, now)
-            if wait then item.notBefore = now + wait; table.insert(outgoing, 1, item) end
-        else pcall(send, PREFIX, item.text, "WHISPER", item.target) end
+        local result = WoWStatusPopups.sendResult(pcall(send, PREFIX, item.text, "WHISPER", item.target))
+        S.debug("send " .. redacted(item.text) .. " to " .. tostring(item.target) .. ": " .. tostring(result))
+        local wait = WoWStatusPopups.retryWait(result, item, sendState, now)
+        -- The message keeps its place at the front of the queue, so nothing is lost.
+        if wait then
+            item.notBefore = now + wait
+            table.insert(outgoing, 1, item)
+            allowance, holdUntil = 0, now + wait
+        end
     end
 end
 
@@ -3017,7 +3032,7 @@ function R.init(database, character, reporter)
     outgoing, sentTo, lastScan, lastXp = {}, {}, 0, 0
     requested, whoAsked, whoPending = {}, {}, nil
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
-    equipmentSendState = {}
+    allowance, allowanceAt, holdUntil, sendState = ALLOWANCE, 0, 0, {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
     lastQuest, questsSent = 0, character and R.questLine(character)
     questPending, questQueued = nil, {}
