@@ -7,7 +7,7 @@ a game client to confirm.
 from pathlib import Path
 
 import pytest
-from test_addon import lupa
+from test_addon import lupa, make_lua
 
 ROOT = Path(__file__).parents[1]
 
@@ -803,3 +803,21 @@ def test_group_goal_editor_controls_are_reachable(lua):
         WoWStatusGamepad.setFocus(__page.nextGroup);press("PAD1")
         assert(WoWStatusDB.goal_editor.group=="two")
     ''')
+
+
+def test_manual_hardcore_checkbox_is_reachable_when_needed():
+    runtime = make_lua()
+    runtime.execute("""
+        local panel = WoWStatusMainWindow.show("overview")
+        local check = panel.manualHardcore
+        panel.GetChildren = function() return check end
+        check.GetRect = function() return 310, 200, 32, 32 end
+        check.GetObjectType = function() return "CheckButton" end
+        check.SetEnabled = function(self, enabled) self.enabled = enabled end
+        check.IsEnabled = function(self) return self.enabled end
+        assert(WoWStatusGamepad.controls(panel)[1] == check)
+        C_GameRules = {IsHardcoreActive=function() return false end}
+        WoWStatusMainWindow.refresh("overview")
+        assert(#WoWStatusGamepad.controls(panel) == 0)
+        assert(check:IsEnabled() == false)
+    """)

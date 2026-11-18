@@ -388,6 +388,12 @@ end
 local function render()
     if not page then return end
     local data = state() or {}
+    if page.manualHardcore then
+        local character = WoWStatusPopups.character()
+        local available = character ~= nil and WoWStatusProgress.manualHardcoreAvailable()
+        WoWStatusUI.call(page.manualHardcore, "SetEnabled", available)
+        page.manualHardcore:SetChecked(available and WoWStatusSettings.get("manual_hardcore", character))
+    end
     page.status:SetText(O.ownStatus())
     for _, part in ipairs({renderYou, renderGroup, renderGoal, renderRecords}) do
         local ok, problem = pcall(part)
@@ -496,6 +502,17 @@ local function build(parent)
     end
     records.empty = UI.text(records, "GameFontDisable", 12, -38, 674)
     records.empty:SetText(T("No records yet. The first to reach a milestone in your group earns it."))
+    if WoWStatusProgress.manualHardcoreSupported and WoWStatusProgress.manualHardcoreSupported() then
+        local check = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
+        check:SetPoint("TOPLEFT", 24, -514); check:SetSize(24, 24)
+        UI.text(check, "GameFontHighlightSmall", 28, -5, 270):SetText(T("Hardcore character (manual)"))
+        check:SetScript("OnClick", function(self)
+            if WoWStatusProgress.manualHardcoreAvailable() then
+                WoWStatusSettings.set("manual_hardcore", self:GetChecked() and true or false, WoWStatusPopups.character())
+            end
+        end)
+        page.manualHardcore = check
+    end
     return page
 end
 

@@ -663,7 +663,7 @@ frame:SetScript("OnEvent", function(_, event, ...)
         if zone then current.last_zone = zone end
         snapshot()
     elseif event == "PLAYER_DEAD" then
-        local hardcore = WoWStatusProgress.hardcore()
+        local hardcore = WoWStatusProgress.hardcore(current)
         if current.settings.enabled and current.settings.collection.death and WoWStatusProgress.death(current, hardcore) then
             -- A Hardcore death carries its own fixed text instead of a death total (#163).
             local data = hardcore and {hardcore=true}

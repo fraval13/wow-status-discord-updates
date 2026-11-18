@@ -26,6 +26,8 @@ Z.schema = {
      type = "integer", default = 22 * 60, min = 0, max = 24 * 60 - 1},
     {key = "quiet_hours_stop", scope = "account", path = {"popups", "quiet_hours", "stop"},
      type = "integer", default = 7 * 60, min = 0, max = 24 * 60 - 1},
+    {key = "manual_hardcore", scope = "character", path = {"settings", "manual_hardcore"},
+     type = "boolean", default = false, sparse = true},
     -- Character filters (/wstatus interval, /wstatus quality).
     {key = "level_interval", scope = "character", path = {"settings", "level_interval"},
      type = "integer", default = 10, min = 1, max = 100, clamp = true},

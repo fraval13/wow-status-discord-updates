@@ -201,3 +201,36 @@ def test_rebuilt_death_total_leaves_out_hardcore_deaths():
             {kind="death", data={hardcore=true}}, {kind="death", data={total_deaths=1}}}}}
         assert(WoWStatusProgress.totalDeaths(c) == 1)
     ''')
+
+
+def test_manual_hardcore_fallback_uses_existing_death_path():
+    lua = make_lua()
+    lua.execute("""
+        local P, Z, A = WoWStatusProgress, WoWStatusSettings, WoWStatusAdapter
+        local c = character()
+        local check = WoWStatusMainWindow.show("overview").manualHardcore
+        assert(check and not check:GetChecked() and not P.hardcore(c))
+        check:SetChecked(true)
+        check.OnClick(check)
+        assert(Z.get("manual_hardcore", c) and P.hardcore(c))
+        assert(not P.hardcore({settings={}}))
+
+        C_GameRules = {IsHardcoreActive=function() return false end}
+        assert(not P.hardcore(c) and not P.manualHardcoreAvailable())
+        A.client_id = "forever"
+        assert(P.hardcore(c) and P.manualHardcoreAvailable())
+        A.client_id = "tbc-anniversary"
+        assert(not P.hardcore(c) and not P.manualHardcoreSupported())
+        A.client_id = "retail"
+        assert(not P.hardcore(c) and not P.manualHardcoreSupported())
+        A.client_id = "classic-era"
+        C_GameRules = nil
+
+        WoWStatusGroups.update("dawnwatch", "")
+        fire("PLAYER_DEAD")
+        assert(c.snapshot.deaths == 0)
+        assert(WoWStatusJournal.entries()[1].text == P.HARDCORE_DEATH)
+        check:SetChecked(false)
+        check.OnClick(check)
+        assert(not P.hardcore(c) and c.settings.manual_hardcore == nil)
+    """)
