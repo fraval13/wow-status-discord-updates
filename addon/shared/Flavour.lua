@@ -1424,6 +1424,25 @@ local function lookup(text)
     end
     return reverse[text]
 end
+-- Labs (#242): a few seasonal captions during the in-game holidays. Fixed,
+-- approximate dates (month-day, UTC); the client calendar is not consulted.
+WoWStatusFeatures.register("seasonal", "Seasonal captions",
+    "During Hallow's End, Winter Veil, the Lunar Festival and Love is in the Air, a few captions turn festive.")
+local HOLIDAYS={
+    {"hallows","10-18","11-01",{"Even the graveyard looks festive this Hallow's End.","Trick or treat? That was a trick.","Pumpkins everywhere, and now this."}},
+    {"winterveil","12-15","01-02",{"Merry Winter Veil, adventurer.","Even Greatfather Winter nodded at that.","A gift worth unwrapping."}},
+    {"lunar","01-25","02-05",{"Happy Lunar Festival to you and your elders.","Fireworks fit this moment.","Fortune smiles on the Lunar Festival."}},
+    {"love","02-06","02-20",{"Love is in the Air, and so is this news.","Roses are red, milestones are blue.","Even the Love is in the Air crowd took notice."}},
+}
+local function within(day,from,to)
+    if from<=to then return day>=from and day<=to end
+    return day>=from or day<=to -- A holiday across New Year.
+end
+-- The holiday on a date ("MM-DD"; today when omitted) and its caption list.
+function F.holiday(day)
+    day=day or date("!%m-%d",WoWStatusSafe.now())
+    for _,h in ipairs(HOLIDAYS) do if within(day,h[2],h[3]) then return h[1],h[4] end end
+end
 local previous={}
 function F.text(item)
     if type(item)~="table" then return "" end
@@ -1454,6 +1473,16 @@ function F.text(item)
         local text=seed..salt
         for i=1,#text do hash=(hash*131+text:byte(i))%4294967291 end
         return hash % count + 1
+    end
+    -- One caption in seven is seasonal on a holiday. Kept as the item's own text,
+    -- so a saved card does not change when the holiday ends.
+    if WoWStatusFeatures.enabled("seasonal") and kind~="death" then
+        local _,captions=F.holiday()
+        if captions and draw(7,"#season")==1 then
+            local text=captions[draw(#captions,"#seasonline")]
+            if stable then item.flavour=text end
+            return WoWStatusLocale and WoWStatusLocale.T(text) or text
+        end
     end
     -- New captions use the chosen personality. Random picks a voice per event,
     -- Classic included; a voice without this kind falls back to classic.
