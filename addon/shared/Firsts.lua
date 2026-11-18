@@ -333,12 +333,22 @@ local function seedOf(text)
     for i = 1, #text do hash = (hash * 131 + text:byte(i)) % 2147483629 end
     return hash + 1
 end
+-- Shared cards need one calendar even when friends display local dates.
+-- Keep the original Oslo week for bingo, independently of the Records view.
+function F.bingoWeekRange(offset)
+    local now = S.now()
+    local oslo = WoWStatusHistory.oslo(now)
+    local wall = now + (oslo:find("+02:00", 1, true) and 7200 or 3600)
+    local weekday = (tonumber(date("!%w", wall)) + 6) % 7
+    local monday = wall - (weekday + (offset or 0) * 7) * 86400
+    return date("!%Y-%m-%d", monday), date("!%Y-%m-%d", monday + 6 * 86400)
+end
 -- The week's card for a group: 25 {text, by} squares, "by" the name that filled it.
 function F.bingo(group, offset)
-    local first, last = F.weekRange(offset or 0)
+    local first, last = F.bingoWeekRange(offset or 0)
     local list = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
-        local day = S.number(e.at) and dayOf(e.at)
+        local day = S.number(e.at) and WoWStatusHistory.oslo(e.at):sub(1, 10)
         if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e)
             and not WoWStatusProgress.hardcoreDeath(e) then list[#list + 1] = e end
     end
@@ -397,7 +407,7 @@ function F.bingoLines(group)
     local lines = {" ", "|cffffd100" .. T("Weekly bingo:") .. "|r " .. filled .. "/25" .. (win and ("  " .. T("Bingo!")) or "")}
     for _, square in ipairs(card) do
         lines[#lines + 1] = square.by and ("|cff40ff40[x]|r " .. T(square.text) .. " (" .. square.by:gsub("|", "||") .. ")")
-            or ("|cff9d9d9d[ ] " .. T(square.text) .. "|r")
+            or (WoWStatusUI.MUTED_CODE .. "[ ] " .. T(square.text) .. "|r")
     end
     if win then F.announceBingo(group, first, card) end
     return lines
@@ -519,6 +529,7 @@ function F.funRecords(group)
         local days = math.floor(quickest / 86400)
         add("Fastest to maximum level:", fastest, days >= 1 and (days .. " " .. T(days == 1 and "day" or "days"))
             or (math.max(1, math.floor(quickest / 3600)) .. " " .. T("hours")))
+        lines[#lines] = lines[#lines] .. " (" .. T("since first recorded activity") .. ")"
     end
     local mostArmor, pieces = nil, 0
     for name, n in pairs(armor) do if n > pieces then mostArmor, pieces = name, n end end

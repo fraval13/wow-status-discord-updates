@@ -35,6 +35,8 @@ Z.schema = {
     {key = "manual_hardcore", scope = "character", path = {"settings", "manual_hardcore"},
      type = "boolean", default = false, sparse = true},
     -- Character filters (/wstatus interval, /wstatus quality).
+    {key = "personal_goal_level", scope = "character", path = {"personal_goal_level"},
+     type = "integer", default = 0, min = 0, max = 1000, sparse = true},
     {key = "level_interval", scope = "character", path = {"settings", "level_interval"},
      type = "integer", default = 10, min = 1, max = 100, clamp = true},
     {key = "loot_quality", scope = "character", path = {"settings", "loot_quality"},

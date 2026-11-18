@@ -10,7 +10,7 @@ local function refresh(page)
     local selected = page.selected
     local group = groups[selected] or groups[1]
     if groups[selected] == nil then page.selected = 1 end
-    local first = F.weekRange()
+    local first = F.bingoWeekRange()
     page.heading:SetText(group and (group.label:gsub("|", "||") .. " · " .. first)
         or T("Join a group to see its bingo card."))
     WoWStatusUI.call(page.nextGroup, "SetEnabled", #groups > 1)

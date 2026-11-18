@@ -1,6 +1,5 @@
 """The shared kind-to-switch map and owner lookup (#225)."""
 import pytest
-
 from test_addon import STUBS, make_lua
 
 

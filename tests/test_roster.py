@@ -630,11 +630,11 @@ def test_an_unanswered_lookup_stops_reading_system_lines_after_ten_seconds():
     thora.eval('fire')('CHAT_MSG_SYSTEM', 'No players found.')
     assert thora.eval('__reads') == 1
     thora.execute('''
-        local real = time
-        time = function() return real() + 11 end
+        local real = WoWStatusSafe.uptime
+        WoWStatusSafe.uptime = function() return real() + 11 end
         fire('CHAT_MSG_SYSTEM', 'Someone has come online.')
         fire('CHAT_MSG_SYSTEM', 'Someone else has come online.')
-        time = real
+        WoWStatusSafe.uptime = real
     ''')
     assert thora.eval('__reads') == 1
 

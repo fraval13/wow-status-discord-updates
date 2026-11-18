@@ -68,7 +68,7 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
     # Progress is kept beside version, which older releases require to stay 1.
     assert lua.eval('WoWStatusDB.version') == 1
     assert after['version'] == 1 and after['schema_version'] == 3
-    assert after['characters'][KEY]['schema_version'] == 4
+    assert after['characters'][KEY]['schema_version'] == 5
     assert after['characters'][KEY]['events'] == before['characters'][KEY]['events']
     assert lua.execute('''
         local P = WoWStatusPopups
@@ -104,7 +104,7 @@ def test_brand_new_account_starts_at_the_latest_versions():
     lua = make_lua()
     assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 3
     assert lua.eval('WoWStatusDB.version') == 1
-    assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 4
+    assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 5
     # A new character still gets every switch a migrated one has.
     assert lua.eval('character().settings.in_game.pvp') is True
     assert lua.eval('character().settings.collection.reputation') is True

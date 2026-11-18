@@ -89,6 +89,12 @@ M.character = {
             Z.set("manual_hardcore", Z.get("manual_hardcore", character), character)
         end
     end},
+    {version = 5, name = "normalize the personal level countdown", run = function(character)
+        if character.personal_goal_level ~= nil then
+            local Z = WoWStatusSettings
+            Z.set("personal_goal_level", Z.get("personal_goal_level", character), character)
+        end
+    end},
 }
 
 local function latest(steps) return steps[#steps] and steps[#steps].version or 1 end

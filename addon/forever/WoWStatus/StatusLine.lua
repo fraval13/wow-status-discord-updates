@@ -41,9 +41,11 @@ local function goalState()
     local level = A.level()
     if not level then return nil end
     local saved = character.personal_goal_level
-    local goal = S.number(saved)
+    local goal = WoWStatusSettings.get("personal_goal_level", character)
+    if goal == 0 then goal = nil end
     if saved ~= nil and (not goal or goal <= level or goal > A.max_level or goal ~= math.floor(goal)) then
-        character.personal_goal_level, goal = nil, nil
+        WoWStatusSettings.set("personal_goal_level", 0, character)
+        goal = nil
     end
     return character, level, goal
 end
@@ -88,7 +90,8 @@ end
 -- character only and never sent; the friend is not told. It reads the level-ups
 -- already in the shared log.
 WoWStatusFeatures.register("race", "Race a friend to a level",
-    "Pick a friend and a level (/wstatus race Name 40): the status line shows both of you, and a banner says who got there first. The friend is never told.")
+    "Pick a friend and a level (/wstatus race Name 40): the status line shows both of you, and a banner says who got there first. The friend is never told.",
+    function() L.configureRace() end)
 local function raceStore()
     local character = WoWStatusPopups.character and WoWStatusPopups.character()
     if type(WoWStatusDB) ~= "table" or not character or not character.identity then return nil end
@@ -105,9 +108,11 @@ end
 -- Highest level and earliest time at or after the target, for one side of the log.
 local function reached(sender, owner, target)
     local top, first = 0, nil
+    local character = WoWStatusPopups.character()
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if e.kind == "level" and S.number(e.level) and WoWStatusJournal.visible(e)
-            and ((owner and e.owner) or (not owner and not e.owner and e.sender == sender)) then
+            and ((owner and character and character.identity and e.owner == character.identity.guid)
+                or (not owner and not e.owner and e.sender == sender)) then
             if e.level > top then top = e.level end
             if e.level >= target and S.number(e.at) and (not first or e.at < first) then first = e.at end
         end
@@ -119,7 +124,8 @@ local function friendSender(name)
     local want = S.lowerASCII(name)
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if not e.owner and e.kind == "level" and type(e.sender) == "string" and WoWStatusJournal.visible(e)
-            and S.lowerASCII(e.sender:match("^[^-]+") or e.sender) == want then return e.sender end
+            and (S.lowerASCII(e.sender) == want
+                or S.lowerASCII(e.sender:match("^[^-]+") or e.sender) == want) then return e.sender end
     end
 end
 function L.raceStart(name, target)
@@ -138,6 +144,61 @@ function L.raceCancel()
     local store, id = raceStore()
     if store and store[id] then store[id] = nil; L.update(); return true end
     return false
+end
+
+-- The same private race can be configured without typing a slash command.
+function L.configureRace()
+    if not Features.enabled("race") then return end
+    local window, UI = WoWStatusMainWindow, WoWStatusUI
+    local function refresh(page)
+        local names, seen = {}, {}
+        for _, e in ipairs(WoWStatusJournal.entries()) do
+            if not e.owner and e.kind == "level" and type(e.sender) == "string"
+                and WoWStatusJournal.visible(e) and not seen[e.sender] then
+                seen[e.sender] = true; names[#names + 1] = e.sender
+            end
+        end
+        table.sort(names)
+        page.names = names
+        if not seen[page.friendName] then page.friendName = names[1] end
+        page.friend:SetText(page.friendName and page.friendName:gsub("|", "||") or T("Choose a character"))
+        page.targetLevel = math.max(2, math.min(A.max_level, page.targetLevel or (A.level() or 1) + 1))
+        page.target:SetText(TF("Target level: %d", page.targetLevel))
+        UI.call(page.friend, "SetEnabled", #names > 1)
+        UI.call(page.less, "SetEnabled", page.targetLevel > 2)
+        UI.call(page.more, "SetEnabled", page.targetLevel < A.max_level)
+        UI.call(page.start, "SetEnabled", page.friendName ~= nil)
+        UI.call(page.cancel, "SetEnabled", L.race() ~= nil)
+    end
+    local function build(parent)
+        local page = CreateFrame("Frame", nil, parent); page:SetAllPoints(parent)
+        UI.text(page, "GameFontNormalLarge", 24, -12, 700):SetText(T("Race a friend to a level"))
+        page.target = UI.text(page, "GameFontHighlight", 24, -100, 700)
+        page.detail = UI.text(page, "GameFontHighlight", 24, -210, 700)
+        local function button(label, x, y, width, action)
+            local b = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+            b:SetPoint("TOPLEFT", x, y); b:SetSize(width, 26); b:SetText(T(label))
+            b:SetScript("OnClick", function() action(); refresh(page) end)
+            return b
+        end
+        page.friend = button("Choose a character", 24, -52, 300, function()
+            for i, name in ipairs(page.names) do
+                if name == page.friendName then page.friendName = page.names[i % #page.names + 1]; break end
+            end
+        end)
+        page.less = button("-", 24, -130, 66, function() page.targetLevel = page.targetLevel - 1 end)
+        page.more = button("+", 98, -130, 66, function() page.targetLevel = page.targetLevel + 1 end)
+        page.start = button("Start race", 24, -170, 160, function()
+            local ok, problem = L.raceStart(page.friendName, page.targetLevel)
+            page.detail:SetText(T(ok and "Race started." or problem))
+        end)
+        page.cancel = button("Cancel race", 192, -170, 160, function()
+            L.raceCancel(); page.detail:SetText(T("Race cancelled."))
+        end)
+        return page
+    end
+    if not window.has("race") then window.register("race", "Race a friend to a level", build, refresh, {tab=false}) end
+    window.show("race")
 end
 -- The status line text, or nil. Settles the race when either side got there.
 function L.raceText()
@@ -284,7 +345,7 @@ local function goalPage(parent)
             if not character then return end
             local wanted = choose(level, goal)
             if wanted and (wanted <= level or wanted > A.max_level) then return end
-            character.personal_goal_level = wanted
+            WoWStatusSettings.set("personal_goal_level", wanted or 0, character)
             L.update()
             goalPageRefresh(page)
         end)

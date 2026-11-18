@@ -139,6 +139,9 @@ local function shown(data, k, deaths)
     deaths = S.number(deaths)
     if not deaths then return false end
     local logged = data.total[k]
+    -- With no logged total, a positive shared total cannot establish that the
+    -- character survived the retained interval. Wait for a known death boundary.
+    if logged == nil and deaths > 0 then return false end
     return not (logged and deaths > logged)
 end
 

@@ -110,7 +110,7 @@ local function render()
     end
     local data = G.totals(chosen)
     page.heading:SetText(T("Together") .. " · " .. label:gsub("|", "||"))
-    page.since:SetText(G.sinceText(data) .. "  |cff9d9d9d"
+    page.since:SetText(G.sinceText(data) .. "  " .. UI.MUTED_CODE
         .. TF("%d characters", data.members) .. "|r")
     page.week:SetText(G.weekText(data.week) or T("Nothing added yet this week."))
     for i, tile in ipairs(page.tiles) do

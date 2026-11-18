@@ -28,19 +28,23 @@ def level_up(lua, level, party, hidden=(), enabled=True):
 
 
 def test_names_known_friends_in_the_party_only():
-    lua = actor('Thora'); clock(lua, 10)
+    lua = actor('Thora')
+    clock(lua, 10)
     text = level_up(lua, 10, ['Mira', 'Stranger', 'Nils'])
     assert text == ' · with Mira, Nils'
 
 
 def test_hidden_characters_are_never_named():
-    lua = actor('Thora'); clock(lua, 10)
+    lua = actor('Thora')
+    clock(lua, 10)
     assert level_up(lua, 10, ['Mira', 'Nils'], hidden=['Nils']) == ' · with Mira'
 
 
 def test_nothing_without_the_toggle_or_a_party():
-    lua = actor('Thora'); clock(lua, 10)
+    lua = actor('Thora')
+    clock(lua, 10)
     assert level_up(lua, 10, ['Mira'], enabled=False) == ''
-    lua2 = actor('Thora'); clock(lua2, 10)
+    lua2 = actor('Thora')
+    clock(lua2, 10)
     assert level_up(lua2, 10, []) == ''
     assert lua2.eval('WoWStatusDB.journal.with') is None

@@ -1,6 +1,5 @@
 """Labs: seasonal captions during holidays (#242)."""
 import pytest
-
 from test_addon import make_lua
 
 

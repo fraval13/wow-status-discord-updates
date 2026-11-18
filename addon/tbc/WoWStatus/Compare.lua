@@ -103,7 +103,7 @@ local function render()
         if item then
             row.label:SetText(T(item.label))
             local function cell(value, mine)
-                if value == nil then return "|cff9d9d9d" .. T(NOT_SHARED) .. "|r" end
+                if value == nil then return WoWStatusUI.MUTED_CODE .. "" .. T(NOT_SHARED) .. "|r" end
                 return (item.winner == mine and "|cff40ff40" or "") .. value .. (item.winner == mine and "|r" or "")
             end
             row.left:SetText(cell(item.left, 1))

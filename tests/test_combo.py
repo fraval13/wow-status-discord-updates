@@ -27,7 +27,8 @@ def test_three_milestones_within_ten_minutes_make_x3_and_name_everyone():
 
 def test_the_window_resets_after_ten_minutes_without_a_milestone():
     lua = setup()
-    note(lua, 'Mira', 1000); note(lua, 'Nils', 1100)
+    note(lua, 'Mira', 1000)
+    note(lua, 'Nils', 1100)
     assert note(lua, 'Olav', 1100 + 601) is None  # a new combo starts at 1
     assert note(lua, 'Mira', 1100 + 650)['count'] == 2
 

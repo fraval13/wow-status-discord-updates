@@ -7,7 +7,7 @@ from test_addon import STUBS, lupa
 ROOT = Path(__file__).parents[1]
 
 
-def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua'):
+def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua', *, saved='minimap_angle=0'):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS + '''
         function methods:RegisterForClicks() end
@@ -23,6 +23,7 @@ def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua'):
     ''')
     lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
     lua.globals().WoWStatusAdapter = lua.table_from({'client_id': client})
+    lua.execute('WoWStatusDB={' + saved + '}')
     lua.execute(source.read_text(encoding='utf-8'))
     lua.execute('WoWStatusMinimap.init(WoWStatusDB)')
     return lua

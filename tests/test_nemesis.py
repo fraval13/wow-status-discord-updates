@@ -23,7 +23,7 @@ def setup(enabled):
 
 
 def deaths(lua, entries):
-    with_entries(lua, [(f'Mira-TestRealm', f'1-{i}-{k}', 'death', age, '{text="Died"}')
+    with_entries(lua, [('Mira-TestRealm', f'1-{i}-{k}', 'death', age, '{text="Died"}')
                        for i, (k, age) in enumerate(entries)])
 
 

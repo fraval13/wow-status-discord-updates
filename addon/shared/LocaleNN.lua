@@ -961,3 +961,6 @@ W.add({
     ["No activity in the log yet. This fills in as you and your friends play."] =
         "Ingen aktivitet i loggen enno. Dette fyller seg etter kvart som du og venene dine spelar.",
 })
+
+W.add({["Start race"]="Start kappløp", ["Cancel race"]="Avbryt kappløp",
+    ["since first recorded activity"]="sidan første registrerte aktivitet"})

@@ -795,7 +795,7 @@ function R.whoLookup()
     pcall(send, 'n-"' .. short .. '"')
     -- From here a chat line may be the whole answer, so system messages are worth
     -- reading. Outside this window they are not (#227).
-    whoPending = time()
+    whoPending = S.uptime()
     return target
 end
 
@@ -3092,7 +3092,7 @@ frame:SetScript("OnEvent", function(_, event, prefix, message, distribution, sen
     -- work all session and stamped old levels with a fresh time (#227).
     if event == "CHAT_MSG_SYSTEM" then
         if not whoPending then return end
-        if time() - whoPending > WHO_WAIT then whoPending = nil; return end
+        if S.uptime() - whoPending > WHO_WAIT then whoPending = nil; return end
         local _, count = R.readWho()
         if count > 0 then whoPending = nil end
         return

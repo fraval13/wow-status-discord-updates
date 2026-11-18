@@ -972,13 +972,15 @@ def test_countdown_goal_buttons_are_reachable_and_set_the_target(lua):
             __page.clear.rect={456,300,160,26}
         end
     """)
-    for name in ('Features', 'StatusLine'):
+    for name in ('Features', 'Settings', 'StatusLine'):
         lua.execute((ROOT / f'addon/shared/{name}.lua').read_text(encoding='utf-8'))
     lua.execute("""
         WoWStatusDB={}
         WoWStatusFeatures.init(WoWStatusDB)
         assert(WoWStatusFeatures.set("personalCountdown",true))
-        WoWStatusFeatures.experiments()[1].configure()
+        for _, item in ipairs(WoWStatusFeatures.experiments()) do
+            if item.id=="personalCountdown" then item.configure() end
+        end
         WoWStatusGamepad.update()
         local function reachable()
             local controls={}
@@ -999,6 +1001,8 @@ def test_countdown_goal_buttons_are_reachable_and_set_the_target(lua):
 
 
 def test_manual_hardcore_checkbox_is_reachable_when_needed():
+    from test_addon import make_lua
+
     runtime = make_lua()
     runtime.execute("""
         local panel = WoWStatusMainWindow.show("overview")
