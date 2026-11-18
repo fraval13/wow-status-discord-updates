@@ -964,3 +964,5 @@ W.add({
 
 W.add({["Start race"]="Start kappløp", ["Cancel race"]="Avbryt kappløp",
     ["since first recorded activity"]="sidan første registrerte aktivitet"})
+
+W.add({["%d characters"]="%d figurar", ["from %d of %d"]="frå %d av %d"})
