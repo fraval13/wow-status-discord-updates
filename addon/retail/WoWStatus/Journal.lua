@@ -39,8 +39,7 @@ local fields={level="level",zone="zone",quest="quests",questprogress="quests",pr
 local function trim(text,limit)
     if type(text)~="string" then return "" end
     text=S.stripEscapes(text):gsub(S.CONTROL_OR_PIPE," ")
-    if #text>limit then text=text:sub(1,limit-3):gsub("[\194-\244][\128-\191]*$","").."..." end
-    return text
+    return S.cut(text,limit)
 end
 local function ownName()
     return (P.ownName() or current.identity.name).."-"..S.stripSpace(WoWStatusAdapter.realmName() or current.identity.realm)
@@ -178,6 +177,15 @@ end
 -- Counts changes to where friends were (a first visit or a death's zone came),
 -- so "Where we are" redraws for them and for nothing else.
 J.zoneRevision=0
+-- Friends' entries new to the log since the Activity page was last opened, by
+-- ID, for the minimap tooltip's count (#179). Kept only on this account. IDs
+-- that leave the log are dropped at login and whenever they are counted.
+-- Entries arriving while the page is open count too: its filters (today,
+-- one person, a type) may not list them, and the line says "since opened".
+local function markUnseen(entry)
+    if entry.owner or entry.legacy or entry.kind=="recap" then return end
+    db.journal.unseen[entry.id]=true
+end
 -- removed: an entry this one replaces, already taken out of the log.
 local function insert(entry,removed)
     if entry.kind=="zone" or entry.kind=="death" then J.zoneRevision=J.zoneRevision+1 end
@@ -211,8 +219,10 @@ local function add(entry)
             for group in pairs(old.groups) do entry.groups[group]=true end
         end
         for i,e in ipairs(db.journal.entries) do if e==old then table.remove(db.journal.entries,i);break end end
+        local new=not (same and cutOf(old.text,entry.text))
+        if new then markUnseen(entry) end
         insert(entry,old)
-        return not (same and cutOf(old.text,entry.text))
+        return new
     end
     if old then
         if not sameFacts(old,entry) or not (cutOf(old.text,entry.text) or cutOf(entry.text,old.text)) then return false end
@@ -224,6 +234,7 @@ local function add(entry)
         return false
     end
     if ownCharacter(entry) then return false end
+    markUnseen(entry)
     insert(entry)
     return true
 end
@@ -921,6 +932,7 @@ end
 function J.init(database,character)
     db,current=database,character
     db.journal=db.journal or {version=1,entries={}}
+    if type(db.journal.unseen)~="table" then db.journal.unseen={} end
     index,digests={},{};requests,sessions,sendQueue,cursors,rates={},{},{},{},{}
     serial=db.journal.request_serial or 0
     equipment,lastQuery={},{}
@@ -933,6 +945,9 @@ function J.init(database,character)
             and (e.owner or P.fullName(e.sender)) then e.groups=e.groups or {};kept[#kept+1]=e end
     end
     db.journal.entries=kept;rebuild();J.groupsChanged();loginUntil=S.uptime()+60
+    local unseen={}
+    for id,flag in pairs(db.journal.unseen) do if flag==true and index[id] then unseen[id]=true end end
+    db.journal.unseen=unseen
     -- Once: remove the skill-point cards earlier versions logged.
     if not db.journal.profession_points_removed then
         local cleaned={}
@@ -960,6 +975,11 @@ function J.init(database,character)
     local register=C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix or RegisterAddonMessagePrefix
     if register then pcall(register,PREFIX) end
     if WoWStatusFirsts then WoWStatusFirsts.update() end
+end
+-- The name the Activity log shows for an entry's sender (also the minimap tooltip's).
+function J.displayName(e)
+    return (not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
+        and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
 end
 local function label(parent,font,x,y,width)
     local f=parent:CreateFontString(nil,"OVERLAY",font);f:SetPoint("TOPLEFT",x,y);f:SetWidth(width);f:SetJustifyH("LEFT");return f
@@ -1156,8 +1176,7 @@ local function render()
             local texture,r,g,b,heading=WoWStatusPresentation.theme(e)
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(T(heading))
-            local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
-                and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+            local who=J.displayName(e)
             row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")))
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
@@ -1234,8 +1253,7 @@ local function build(parent)
             elseif GameTooltip and self.entry then
                 -- The card's lines in full (they may be cut off with "...").
                 local e=self.entry
-                local who=(not e.owner and not e.sample and WoWStatusRoster and WoWStatusRoster.displayName)
-                    and WoWStatusRoster.displayName(e.sender) or (e.sender:match("^[^-]+") or e.sender)
+                local who=J.displayName(e)
                 GameTooltip:SetOwner(self,"ANCHOR_RIGHT");GameTooltip:SetText((who:gsub("|","||")))
                 GameTooltip:AddLine(WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")),1,1,1,true)
                 local ended=WoWStatusStreaks and WoWStatusStreaks.endedText(e)
@@ -1342,7 +1360,7 @@ local function build(parent)
     return panel
 end
 -- The log is the Activity page of the main window (#57).
-WoWStatusMainWindow.register("activity","Activity",build,function() render() end)
+WoWStatusMainWindow.register("activity","Activity",build,function() J.markSeen();render() end)
 function J.show()
     if not db then return end
     WoWStatusMainWindow.show("activity")
@@ -1381,13 +1399,32 @@ local function hiddenSender(entry)
     return not entry.owner and WoWStatusMutes~=nil and WoWStatusMutes.hidden(entry.sender)
 end
 function J.visible(entry) return db~=nil and (entry.sample==true or (permitted(entry) and not hiddenSender(entry))) end
--- A friend's newest entry (not recaps), for the minimap tooltip.
-function J.latestFriend()
-    local latest
+-- Friends' newest entries (not recaps or previews), newest first, at most
+-- limit of them, for the minimap tooltip (#179). The log is kept newest first.
+function J.latestFriends(limit)
+    local list={}
     for _,e in ipairs(J.entries()) do
-        if not e.owner and e.kind~="recap" and J.visible(e) and (not latest or (e.at or 0)>(latest.at or 0)) then latest=e end
+        if #list>=limit then break end
+        if not e.owner and e.kind~="recap" and J.visible(e) then list[#list+1]=e end
     end
-    return latest
+    return list
+end
+-- How many friends' entries arrived since the Activity page was last opened,
+-- leaving out anything muted, hidden or no longer shared.
+function J.unseenCount()
+    if not db then return 0 end
+    local count=0
+    for id in pairs(db.journal.unseen) do
+        local e=index[id]
+        if not e then db.journal.unseen[id]=nil
+        elseif J.visible(e) then count=count+1 end
+    end
+    return count
+end
+-- Opening the Activity page sees everything new, as the tooltip line says;
+-- not while the tour (#64) fills it with samples instead of the log.
+function J.markSeen()
+    if db and not (WoWStatusGuide and WoWStatusGuide.sampleEntries()) then db.journal.unseen={} end
 end
 -- A private recap has no group scopes and is never sent or offered to peers.
 function J.recordRecap(character,at,text,flavour)

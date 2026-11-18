@@ -4,6 +4,8 @@ local M,button,db=WoWStatusMinimap
 local S=WoWStatusSafe
 local place
 M.MIN_OFFSET,M.MAX_OFFSET=-40,80
+-- The tooltip lists at most this many entries, each cut to this many bytes (#179).
+M.LATEST,M.TEXT_LENGTH=4,60
 -- Extra distance from the map's edge. Players can adjust it with
 -- /wstatus minimap <number> where a client reports an unexpected map size (#85).
 local function offset(default)
@@ -50,12 +52,23 @@ local function fillTooltip(tooltip,draggable)
     for i=1,math.min(#names,8) do shown[i]=names[i]:gsub("|","||") end
     local list=#names==0 and T("nobody") or (table.concat(shown,", ")..(#names>8 and (" +"..(#names-8)) or ""))
     tooltip:AddLine(T("Online now:").." "..list,.4,1,.4,true)
-    local latest=WoWStatusJournal and WoWStatusJournal.latestFriend and WoWStatusJournal.latestFriend()
-    if latest then
-        local minutes=math.max(0,math.floor((S.now()-(latest.at or S.now()))/60))
+    -- How much is new since the log was last opened, then the newest few
+    -- entries (#179). Built from the local log on hover; bounded so the tooltip
+    -- stays readable at the smallest UI scale.
+    local J=WoWStatusJournal
+    local unseen=J and J.unseenCount and J.unseenCount() or 0
+    if unseen>0 then tooltip:AddLine(T("New since you last opened the log:").." "..unseen,1,1,1) end
+    local latest=J and J.latestFriends and J.latestFriends(M.LATEST) or {}
+    if #latest>0 then tooltip:AddLine(T("Latest:"),1,.82,0) end
+    local now=S.now()
+    for _,e in ipairs(latest) do
+        local minutes=math.max(0,math.floor((now-(e.at or now))/60))
         local when=minutes<60 and (minutes.." min") or minutes<1440 and (math.floor(minutes/60).." h") or (math.floor(minutes/1440).." d")
-        local who=(latest.sender:match("^[^-]+") or latest.sender):gsub("|","||")
-        tooltip:AddLine(T("Latest:").." "..who.." — "..WoWStatusJournal.deathText(latest):gsub("|","||").." · "..when,1,.82,0,true)
+        local who=J.displayName(e):gsub("|","||")
+        local text=S.cut(J.deathText(e),M.TEXT_LENGTH)
+        local icon=WoWStatusPresentation and WoWStatusPresentation.theme(e)
+        icon=icon and ("|T"..icon..":0|t ") or ""
+        tooltip:AddLine(icon..who.." — "..text:gsub("|","||").." · "..when,1,.82,0,true)
     end
     -- Quiet hours (#180): say so, so silence does not look like a fault.
     local quiet=WoWStatusPopups and WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText()

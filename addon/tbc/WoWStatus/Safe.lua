@@ -79,6 +79,12 @@ function S.realmTime()
     if realm and realm > 0 then pcMinusRealm = time() - math.floor(realm) end
     return pcMinusRealm and time() - pcMinusRealm or nil
 end
+-- At most limit bytes: a longer text is cut, without splitting a UTF-8
+-- letter, and ends with "...".
+function S.cut(text, limit)
+    if #text <= limit then return text end
+    return (text:sub(1, limit - 3):gsub("[\194-\244][\128-\191]*$", "")) .. "..."
+end
 function S.now()
     return S.realmTime() or time()
 end
