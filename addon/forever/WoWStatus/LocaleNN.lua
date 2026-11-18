@@ -67,6 +67,7 @@ W.add({
     ["level"] = "nivå", ["death"] = "dødsfall", ["zone"] = "område", ["zones"] = "område", ["This week"] = "Denne veka",
     ["Week"] = "Veke", ["Fun records"] = "Morosame rekordar", ["Most levels:"] = "Flest nivå:", ["Most deaths:"] = "Flest dødsfall:",
     ["Most explored:"] = "Mest utforska:", ["Most dangerous zone:"] = "Farlegaste område:",
+    ["Fastest to maximum level:"] = "Raskast til høgste nivå:", ["hours"] = "timar", ["day"] = "dag",
     ["Longest without dying:"] = "Lengst utan å døy:", ["Best evening:"] = "Beste kveld:", ["Most new gear:"] = "Mest ny rustning:",
     ["Most monsters killed:"] = "Flest monster drepne:", ["Richest:"] = "Rikast:",
     ["Nothing happened in this group this week."] = "Ingenting har skjedd i denne gruppa denne veka.",
