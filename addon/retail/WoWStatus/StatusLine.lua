@@ -49,8 +49,87 @@ function L.latest()
     end
 end
 
+-- Labs (#238): a private race to a level against one friend. Stored for this
+-- character only and never sent; the friend is not told. It reads the level-ups
+-- already in the shared log.
+WoWStatusFeatures.register("race", "Race a friend to a level",
+    "Pick a friend and a level (/wstatus race Name 40): the status line shows both of you, and a banner says who got there first. The friend is never told.")
+local function raceStore()
+    local character = WoWStatusPopups.character and WoWStatusPopups.character()
+    if type(WoWStatusDB) ~= "table" or not character or not character.identity then return nil end
+    WoWStatusDB.races = type(WoWStatusDB.races) == "table" and WoWStatusDB.races or {}
+    return WoWStatusDB.races, character.identity.guid
+end
+function L.race()
+    if not WoWStatusFeatures.enabled("race") then return nil end
+    local store, id = raceStore()
+    local race = store and store[id]
+    if type(race) ~= "table" or type(race.friend) ~= "string" or not S.number(race.target) then return nil end
+    return race
+end
+-- Highest level and earliest time at or after the target, for one side of the log.
+local function reached(sender, owner, target)
+    local top, first = 0, nil
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        if e.kind == "level" and S.number(e.level) and WoWStatusJournal.visible(e)
+            and ((owner and e.owner) or (not owner and not e.owner and e.sender == sender)) then
+            if e.level > top then top = e.level end
+            if e.level >= target and S.number(e.at) and (not first or e.at < first) then first = e.at end
+        end
+    end
+    return top, first
+end
+-- The friend's full sender name, from the log, for a typed name.
+local function friendSender(name)
+    local want = S.lowerASCII(name)
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        if not e.owner and e.kind == "level" and type(e.sender) == "string" and WoWStatusJournal.visible(e)
+            and S.lowerASCII(e.sender:match("^[^-]+") or e.sender) == want then return e.sender end
+    end
+end
+function L.raceStart(name, target)
+    if not WoWStatusFeatures.enabled("race") then return false, "Turn on Race a friend on the Labs page first." end
+    local store, id = raceStore()
+    target = math.floor(S.number(target) or 0)
+    local max = WoWStatusAdapter.max_level or 60
+    if not store or target < 2 or target > max then return false, "Pick a level from 2 to " .. max .. "." end
+    local sender = type(name) == "string" and friendSender(name)
+    if not sender then return false, "No friend by that name in your activity log yet." end
+    store[id] = {friend = sender, target = target}
+    L.update()
+    return true
+end
+function L.raceCancel()
+    local store, id = raceStore()
+    if store and store[id] then store[id] = nil; L.update(); return true end
+    return false
+end
+-- The status line text, or nil. Settles the race when either side got there.
+function L.raceText()
+    local race = L.race()
+    if not race then return nil end
+    local store, id = raceStore()
+    local mine, myAt = reached(nil, true, race.target)
+    local theirs, theirAt = reached(race.friend, false, race.target)
+    local name = race.friend:match("^[^-]+") or race.friend
+    if theirs == 0 then store[id] = nil; return nil end -- Left the group: end cleanly.
+    if myAt or theirAt then
+        store[id] = nil
+        local won = myAt and (not theirAt or myAt <= theirAt)
+        if WoWStatusPopups.notice then
+            WoWStatusPopups.notice({sender = race.friend, kind = "first",
+                text = won and (T("You won the race to level") .. " " .. race.target .. "!")
+                    or (name .. " " .. T("got to level") .. " " .. race.target .. " " .. T("first") .. "!")})
+        end
+        return nil
+    end
+    return T("Race to") .. " " .. race.target .. ": " .. T("you") .. " " .. mine .. " · " .. name:gsub("|", "||") .. " " .. theirs
+end
+
 function L.text()
     local parts = {"WoW Status", WoWStatusPopups.onlineCount() .. " " .. T("online")}
+    local race = L.raceText()
+    if race then return race end
     -- Quiet hours take the place of the latest news, so the line stays one line.
     local latest = WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText() or L.latest()
     if latest then table.insert(parts, latest) end

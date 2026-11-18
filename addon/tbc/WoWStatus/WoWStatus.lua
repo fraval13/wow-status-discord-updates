@@ -749,6 +749,14 @@ SlashCmdList.WOWSTATUS = function(message)
         say(WoWStatusGamepad.report())
     elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
     elseif command == "labs" then WoWStatusLabs.show()
+    elseif command == "race" then
+        local name, level = rest:match("^([^ ]+) +([0-9]+)$")
+        if rest:lower() == "cancel" then say(WoWStatusStatusLine.raceCancel() and "Race cancelled." or "No race is running.")
+        elseif not name then say("Usage: /wstatus race Name Level, or /wstatus race cancel")
+        else
+            local ok, problem = WoWStatusStatusLine.raceStart(name, tonumber(level))
+            say(ok and "Race started." or problem)
+        end
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()
