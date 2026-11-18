@@ -752,15 +752,15 @@ def test_group_goal_editor_controls_are_reachable(lua):
     lua.execute('''
         local methods=getmetatable(CreateFrame("Frame")).__index
         function methods:SetText(text) self.text=text end
+        function methods:ClearAllPoints() self.anchor=nil end
+        function methods:SetPoint(point, relative, relativePoint, x, y)
+            if x then self.anchor={point,relative,relativePoint,x,y} end
+        end
         function methods:CreateFontString() return CreateFrame("FontString",nil,self) end
         for _, name in ipairs({"SetJustifyH","SetSize","SetWordWrap"}) do methods[name]=function() end end
         WoWStatusLocale={T=function(text) return text end,F=string.format}
         WoWStatusSafe={now=function() return 1793000000 end, number=function(v) return type(v)=="number" and v or nil end}
         WoWStatusAdapter={max_level=60}
-        WoWStatusUI={
-            text=function(parent) return CreateFrame("FontString",nil,parent) end,
-            call=function(frame,method,...) if frame[method] then return frame[method](frame,...) end end,
-        }
         WoWStatusGroups={contains=function(_, id) return id=="one" or id=="two" end,
             selected=function() return {one={label="One"},two={label="Two"}} end}
         WoWStatusPopups={character=function() return {} end, peers=function() return {} end,
@@ -776,6 +776,7 @@ def test_group_goal_editor_controls_are_reachable(lua):
         end
         WoWStatusMainWindow.refresh=function() end
     ''')
+    lua.execute((ROOT / 'addon/shared/Theme.lua').read_text(encoding='utf-8'))
     lua.execute((ROOT / 'addon/shared/Goals.lua').read_text(encoding='utf-8'))
     lua.execute('''
         local show=WoWStatusMainWindow.show
@@ -783,6 +784,21 @@ def test_group_goal_editor_controls_are_reachable(lua):
             show(key)
             __page=__page or __goalBuild(main)
             __page:Show();__goalRefresh()
+            local positions={
+                heading={24,-8}, nextGroup={600,-6},
+                measure={24,-50}, measureBack={330,-44}, measureNext={376,-44},
+                shape={24,-86}, everybody={330,-80}, together={446,-80},
+                target={24,-122}, muchLess={330,-116}, less={386,-116},
+                more={432,-116}, muchMore={478,-116},
+                deadline={24,-158}, deadlineBack={330,-152}, deadlineNext={376,-152},
+                preview={24,-196}, save={24,-228}, clear={172,-228},
+                current={24,-272}, note={24,-320},
+            }
+            for key, position in pairs(positions) do
+                local point, relative, relativePoint, x, y=unpack(__page[key].anchor)
+                assert(point=="TOPLEFT" and relative==__page and relativePoint=="TOPLEFT", key)
+                assert(x==position[1] and y==position[2], key)
+            end
             __page.measureNext.rect={500,500,40,24}
             __page.together.rect={500,460,110,24}
             __page.nextGroup.rect={650,540,120,24}

@@ -407,6 +407,40 @@ function UI.text(parent, font, x, y, width, justify)
     return text
 end
 
+-- Lay out children of parent in one axis. Padding sets the top-left inset.
+-- An explicit extent reserves space without resizing the widget.
+function UI.stack(parent, options)
+    options = options or {}
+    local padding = options.padding or 0
+    local spacing = options.spacing or 0
+    local horizontal = options.horizontal
+    local x = options.left or padding
+    local y = options.top or padding
+    local stack = {}
+
+    function stack:add(widget, extent, inset)
+        inset = inset or 0
+        widget:ClearAllPoints()
+        if horizontal then
+            widget:SetPoint("TOPLEFT", parent, "TOPLEFT", x, -y - inset)
+            x = x + (extent or widget:GetWidth()) + spacing
+        else
+            widget:SetPoint("TOPLEFT", parent, "TOPLEFT", x + inset, -y)
+            local height = extent or (widget.GetStringHeight and widget:GetStringHeight()) or widget:GetHeight()
+            y = y + height + spacing
+        end
+        return widget
+    end
+
+    function stack:row(height, gap)
+        local row = UI.stack(parent, {horizontal = true, left = x, top = y, spacing = gap})
+        y = y + height + spacing
+        return row
+    end
+
+    return stack
+end
+
 -- A gold section title with a thin line under it.
 function UI.header(parent, label, x, y, width)
     local title = UI.text(parent, "GameFontNormal", x, y, width)
