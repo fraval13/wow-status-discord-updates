@@ -387,7 +387,7 @@ def test_milestone_memory_forgets_the_oldest_streak_only():
     ''')
     # Drive the memory through a real milestone for a new character.
     lua.execute('''
-        function WoWStatusStreaks.compute() return {current={x={levels=5, seconds=0, exact=true, start=5000}}, total={}} end
+        function WoWStatusStreaks.compute() return {current={x={levels=5, seconds=0, exact=true, start=5000}}, total={x=1}} end
         function WoWStatusRoster.key() return "x" end
         WoWStatusRoster.leaderboard = function() return {{name="X-TestRealm", deaths=1}} end
         __n = 0

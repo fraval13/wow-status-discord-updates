@@ -354,7 +354,8 @@ def test_robots_and_sitemap_list_the_pages_with_the_release_date(addon_repo, tmp
     assert root.tag == f'{SITEMAP}urlset'
     entries = [(url.findtext(f'{SITEMAP}loc'), url.findtext(f'{SITEMAP}lastmod')) for url in root]
     assert entries == [('https://wow.frankvalde.com/', lastmod),
-                       ('https://wow.frankvalde.com/changelog/', lastmod)]
+                       ('https://wow.frankvalde.com/changelog/', lastmod),
+                       ('https://wow.frankvalde.com/nn/', lastmod)]
     robots = (tmp_path / 'site/robots.txt').read_bytes()
     assert b'\r' not in robots
     lines = robots.decode('ascii').splitlines()
@@ -371,7 +372,7 @@ def test_lastmod_is_the_built_commits_time_in_utc(addon_repo, tmp_path):
     builder.build(addon_repo, tmp_path / 'later', 'HEAD')
     builder.build(addon_repo, tmp_path / 'earlier', 'HEAD~1')
     later = (tmp_path / 'later/sitemap.xml').read_text(encoding='utf-8')
-    assert later.count('<lastmod>2030-01-02T03:04:05+00:00</lastmod>') == 2
+    assert later.count('<lastmod>2030-01-02T03:04:05+00:00</lastmod>') == 3
     assert '2030-' not in (tmp_path / 'earlier/sitemap.xml').read_text(encoding='utf-8')
 
 
@@ -416,7 +417,8 @@ def test_a_new_page_joins_the_sitemap(addon_repo, tmp_path):
     builder.build(addon_repo, tmp_path / 'site', 'HEAD')
     root = ElementTree.fromstring((tmp_path / 'site/sitemap.xml').read_bytes())
     assert [url.findtext(f'{SITEMAP}loc') for url in root] == [
-        'https://wow.frankvalde.com/', 'https://wow.frankvalde.com/changelog/', 'https://wow.frankvalde.com/faq/']
+        'https://wow.frankvalde.com/', 'https://wow.frankvalde.com/changelog/', 'https://wow.frankvalde.com/faq/',
+        'https://wow.frankvalde.com/nn/']
     page.write_text('<!doctype html>', encoding='utf-8')
     with pytest.raises(ValueError, match='faq/index.html: a sitemap page needs exactly one'):
         builder.build(addon_repo, tmp_path / 'other', 'HEAD')
@@ -430,7 +432,8 @@ def test_html_files_that_are_not_pages_stay_out_of_the_sitemap(addon_repo, tmp_p
     assert (tmp_path / 'site/404.html').is_file()
     root = ElementTree.fromstring((tmp_path / 'site/sitemap.xml').read_bytes())
     assert [url.findtext(f'{SITEMAP}loc') for url in root] == [
-        'https://wow.frankvalde.com/', 'https://wow.frankvalde.com/changelog/']
+        'https://wow.frankvalde.com/', 'https://wow.frankvalde.com/changelog/',
+        'https://wow.frankvalde.com/nn/']
 
 
 def test_site_paths_of_built_files():

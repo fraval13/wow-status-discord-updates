@@ -1,1 +1,2 @@
-- Labs: an optional private race to a level against one friend (/wstatus race Name 40), shown in the status line.
+- Labs adds a private race to a level against a friend. Choose a friend and target with Configure or /wstatus race Name Level.
+- Race progress appears in the status line, with a banner when either character reaches the target.
