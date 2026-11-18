@@ -72,12 +72,29 @@ function P.names()
     return table.concat(list, ", ")
 end
 
--- English and Nynorsk banks for one personality (nil for classic, whose banks
--- Flavour.lua owns, and for random, which has none).
-function P.banks(id)
+-- Generated banks hold a newline-delimited string per category until read.
+-- Keep the expanded array in its place so subsequent draws reuse it.
+local function pool(banks, kind)
+    local packed = banks and banks[kind]
+    if type(packed) ~= "string" then return packed end
+    local lines = {}
+    for line in packed:gmatch("[^\n]+") do lines[#lines + 1] = line end
+    banks[kind] = lines
+    return lines
+end
+
+local function expand(banks)
+    for kind in pairs(banks or {}) do pool(banks, kind) end
+    return banks
+end
+
+-- Without a category, callers can iterate the complete catalogues.
+-- Classic owns its original banks in Flavour.lua and Random has no banks.
+function P.banks(id, kind)
     local def = P.defs[id]
     if not def or not def.en then return nil end
-    return def.en, def.nn
+    if kind then return pool(def.en, kind), pool(def.nn, kind), id end
+    return expand(def.en), expand(def.nn)
 end
 
 -- The voices "random" draws from: every personality with captions, Classic included.
@@ -96,19 +113,25 @@ end
 
 -- Reaction voice -------------------------------------------------------------
 
--- English and Nynorsk reaction banks for one personality: {gz = {lines…}, …}.
-function P.reactionBanks(id)
+local function reactionDefinition(id)
     local def = P.defs[id]
     local banks = def and def.reactions
-    if type(banks) ~= "table" or type(banks.en) ~= "table" then return nil end
-    return banks.en, banks.nn
+    if type(banks) == "table" and type(banks.en) == "table" then return banks end
+end
+
+-- With a key, expand only the requested reaction in both languages.
+function P.reactionBanks(id, key)
+    local banks = reactionDefinition(id)
+    if not banks then return nil end
+    if key then return pool(banks.en, key), pool(banks.nn, key) end
+    return expand(banks.en), expand(banks.nn)
 end
 
 -- Classic, Random and every personality with reaction lines, in menu order.
 function P.reactionVoices()
     local list = {}
     for _, id in ipairs(P.order) do
-        if id == "classic" or id == "random" or P.reactionBanks(id) then table.insert(list, id) end
+        if id == "classic" or id == "random" or reactionDefinition(id) then table.insert(list, id) end
     end
     return list
 end
@@ -179,15 +202,14 @@ function P.reactionLine(key, value)
         voice = list[math.random(#list)]
     end
     if voice == "classic" then return nil end
-    local en, nn = P.reactionBanks(voice)
-    if not en then return nil end
+    local en, nn = P.reactionBanks(voice, key)
     local useNN = WoWStatusLocale and WoWStatusLocale.lang() == "nn"
-    local pool = (useNN and nn and nn[key]) or en[key]
-    if type(pool) ~= "table" or #pool == 0 then return nil end
+    local lines = (useNN and nn) or en
+    if type(lines) ~= "table" or #lines == 0 then return nil end
     -- Nynorsk lines with a recorded voice (Forever) are favoured, so friends hear them.
     local V = WoWStatusVoices
-    local index = (pool == (nn and nn[key]) and V and V.available()) and V.pick(voice, key, #pool, value) or math.random(#pool)
-    return fill(pool[index], value)
+    local index = (lines == nn and V and V.available()) and V.pick(voice, key, #lines, value) or math.random(#lines)
+    return fill(lines[index], value)
 end
 
 -- A received whisper that is one of the voices' reaction lines, in either

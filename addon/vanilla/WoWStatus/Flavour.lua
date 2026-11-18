@@ -1368,6 +1368,16 @@ local function bankSet(personality)
     end
     return banks,WoWStatusFlavourNN
 end
+-- Draws only need one category, so they leave the rest of the voice packed.
+local function bankPair(kind, personality)
+    if not kind then return nil end
+    local P=WoWStatusPersonalities
+    if P and personality and personality~="classic" then
+        local en,nn,voice=P.banks(personality,kind)
+        if voice then return en,nn,voice end
+    end
+    return banks[kind],WoWStatusFlavourNN and WoWStatusFlavourNN[kind]
+end
 -- Positions in the bank this item may draw from (death: general lines and its class).
 local function choices(item,kind,bank)
     if not bank then return nil end
@@ -1385,9 +1395,9 @@ local function choices(item,kind,bank)
 end
 -- A caption line in the chosen language (Nynorsk lines share the English order).
 local function line(kind,pos,personality)
-    local en,nnBanks=bankSet(personality)
-    local nn=WoWStatusLocale and WoWStatusLocale.lang()=="nn" and nnBanks and nnBanks[kind]
-    local text=(nn and nn[pos]) or (en[kind] and en[kind][pos])
+    local en,nn=bankPair(kind,personality)
+    local useNN=WoWStatusLocale and WoWStatusLocale.lang()=="nn"
+    local text=(useNN and nn and nn[pos]) or (en and en[pos])
     return text and (text:gsub("^%[[A-Z]+%] ","")) or ""
 end
 F.line=line
@@ -1453,11 +1463,11 @@ function F.text(item)
         local voices=P.voices()
         personality=voices[draw(#voices,"#voice")]
     end
-    local en=bankSet(personality)
-    local pool=choices(item,kind,en[kind])
-    if (not pool or #pool==0) and en~=banks then
-        personality,en="classic",banks
-        pool=choices(item,kind,banks[kind])
+    local en,_,voice=bankPair(kind,personality)
+    local pool=choices(item,kind,en)
+    if (not pool or #pool==0) and voice then
+        personality,en,voice="classic",banks[kind],nil
+        pool=choices(item,kind,en)
     end
     if not pool or #pool==0 then return "" end
     local index
@@ -1472,7 +1482,7 @@ function F.text(item)
     local pos=pool[index]
     -- The English text stays saved too, for older versions reading this log.
     item.flavour_kind,item.flavour_pos=kind,pos
-    item.flavour_personality=en~=banks and personality or nil
-    item.flavour=(en[kind][pos]:gsub("^%[[A-Z]+%] ",""))
+    item.flavour_personality=voice
+    item.flavour=(en[pos]:gsub("^%[[A-Z]+%] ",""))
     return line(kind,pos,item.flavour_personality)
 end

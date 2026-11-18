@@ -16,6 +16,7 @@ import argparse
 import json
 import re
 import sys
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -166,6 +167,16 @@ def _lua(text: str) -> str:
     return '"' + text + '"'
 
 
+def _packed(lines: Iterable[str]) -> str:
+    # Lua long literals preserve the validated LF-delimited text, except for
+    # the leading newline immediately after the opening delimiter.
+    text = '\n'.join(lines)
+    equals = ''
+    while f']{equals}]' in text:
+        equals += '='
+    return f'[{equals}[\n{text}\n]{equals}]'
+
+
 def render(personality: Personality, source: Path = SOURCE) -> str:
     banks = {}
     for category in CATEGORIES:
@@ -199,11 +210,9 @@ def render(personality: Personality, source: Path = SOURCE) -> str:
     for lang, index in (('en', 1), ('nn', 2)):
         out.append(f'    {lang} = {{')
         for category in CATEGORIES:
-            out.append(f'        {category} = {{')
-            for row in banks[category]:
-                prefix = f'[{row[0]}] ' if row[0] else ''
-                out.append(f'            {_lua(prefix + row[index])},')
-            out.append('        },')
+            lines = (f'[{row[0]}] {row[index]}' if row[0] else row[index]
+                     for row in banks[category])
+            out.append(f'        {category} = {_packed(lines)},')
         out.append('    },')
     if reactions:
         out.extend(_render_reactions(reactions))
@@ -216,10 +225,8 @@ def _render_reactions(reactions: dict[str, list[tuple[str, str]]]) -> list[str]:
     for lang, index in (('en', 0), ('nn', 1)):
         out.append(f'        {lang} = {{')
         for reaction in REACTIONS:
-            out.append(f'            {reaction} = {{')
-            for row in reactions[reaction]:
-                out.append(f'                {_lua(row[index])},')
-            out.append('            },')
+            lines = (row[index] for row in reactions[reaction])
+            out.append(f'            {reaction} = {_packed(lines)},')
         out.append('        },')
     out.append('    },')
     return out

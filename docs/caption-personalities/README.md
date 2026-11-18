@@ -87,3 +87,16 @@ event-identity seed as Classic. The chosen line's personality, category and
 position are saved with it, so a caption never changes when the player later
 picks another personality; it only follows the language setting. Log entries that
 keep only the caption text find their line again by its English or Nynorsk text.
+
+## Loading in the addon
+
+The generated files register personality names and hold each language and category
+as newline-delimited text. Opening the menus or selecting a personality leaves the
+banks packed. A notification or outgoing reaction expands and caches just the two
+language banks for its selected voice and category. The saved caption still points
+to the same personality, category and line number.
+
+Matching older log entries saved as text and recognising another player's reaction
+may need to index the complete corresponding catalogue on first use. The banks
+ship inside each existing addon folder, so every voice works with the standard
+installation.
