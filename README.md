@@ -142,12 +142,15 @@ controls whether it is shared.
 
 ## Language
 
-WoW Status is in English by default. Nynorsk is optional: choose it under
+WoW Status ships English and Nynorsk. New accounts choose an available display
+bank matching the WoW client locale, falling back to English; existing accounts
+keep their choice. Nynorsk is optional: choose it under
 **Notifications → Language** in the settings, or type `/wstatus language nn`
 (`/wstatus language en` switches back), then `/reload`. Windows, notifications, the
 log, records and all 1,300 captions change; what players send each other stays
 English, so friends can use different languages. Diagnostics (`/wstatus popup status`)
-and the release notes stay English.
+and the release notes stay English. Additional display banks can register without
+changing the locale core; see [contributing a display language](docs/display-languages.md).
 
 ## Diagnostics and bug reports
 

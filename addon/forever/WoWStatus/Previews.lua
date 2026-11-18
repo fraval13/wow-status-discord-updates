@@ -183,12 +183,19 @@ function P.show(host)
                 WoWStatusPopups.sample("level")
             end)
         end)
-        -- Language (optional Nynorsk). Built windows change after a reload.
+        -- Registered display languages. Built windows change after a reload.
         panel.language=text(panel,"",24,-options-516,250)
-        panel.languageSwitch=button(panel,"",290,-options-510,150,function()
-            WoWStatusLocale.set(WoWStatusLocale.lang()=="nn" and "en" or "nn")
-            panel.refreshLanguage()
-            panel.reload:Show()
+        panel.languageSwitch=button(panel,"",290,-options-510,150,function(self)
+            local W=WoWStatusLocale
+            local choices=W.options()
+            local function choose(code)
+                W.set(code);panel.refreshLanguage();panel.reload:Show()
+            end
+            if #choices==2 then
+                for _,choice in ipairs(choices) do if choice.value~=W.lang() then choose(choice.value);break end end
+            else
+                WoWStatusUI.menu(self,choices,choose)
+            end
         end)
         panel.reload=button(panel,"",450,-options-510,130,function() if ReloadUI then ReloadUI() end end)
         panel.reload:Hide()
@@ -321,9 +328,16 @@ function P.show(host)
         end
         -- The switch names its target in that language, so each reader finds it.
         function panel.refreshLanguage()
-            local nn=WoWStatusLocale.lang()=="nn"
-            panel.language:SetText(WoWStatusLocale.T("Language:").." "..WoWStatusLocale.LANGUAGES[WoWStatusLocale.lang()])
-            panel.languageSwitch:SetText(nn and "Switch to English" or "Bytt til nynorsk")
+            local W=WoWStatusLocale
+            panel.language:SetText(W.T("Language:").." "..W.LANGUAGES[W.lang()])
+            local choices=W.options()
+            local label=W.T("Choose language")
+            if #choices==2 then
+                for _,choice in ipairs(choices) do
+                    if choice.value~=W.lang() then label=W.banks[choice.value].chooseLabel;break end
+                end
+            end
+            panel.languageSwitch:SetText(label)
             panel.reload:SetText(WoWStatusLocale.T("Reload to apply"))
         end
         -- Caption personality: the voice of the line under each notification.

@@ -1,6 +1,8 @@
 -- Nynorsk texts for WoWStatusLocale (English text -> Nynorsk). Display only:
 -- what players send each other stays English, and is translated when shown.
 local W = WoWStatusLocale
+local bank = W.register("nn", "Nynorsk", {}, nil, nil, "Bytt til nynorsk")
+W.NN, W.PATTERNS = bank.exact, bank.patterns
 
 -- Profession titles and reputation ranks inside facts.
 local TITLES = {Apprentice="Lærling", Journeyman="Svein", Expert="Ekspert", Artisan="Kunstnar",
@@ -826,3 +828,6 @@ W.add({
     ["Period start (local date)"] = "Periodestart (lokal dato)", ["Period end (local date)"] = "Periodeslutt (lokal dato)",
     ["Reached by this date"] = "Nådd innan denne datoen",
 })
+
+-- Registry-based display language selection (#154).
+W.add({["Choose language"]="Vel språk", ["Use /wstatus language"]="Bruk /wstatus language"})
