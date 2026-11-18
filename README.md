@@ -228,7 +228,9 @@ quests, new professions and profession title promotions, first dungeon clears, f
 reputation ranks, major class unlocks and PvP ranks. **Notifications** holds the popup
 settings, with local samples below them. Notifications queue one at a time, six seconds
 each by default; **Notification duration** (or `/wstatus popuptime <seconds>`) sets 3 to 20
-seconds, or keeps each one until it is dismissed (`0`).
+seconds, or keeps each one until it is dismissed (`0`). **Reduce motion** stops
+notifications sliding in, fading out and pulsing their glow: they appear and disappear at
+once, big banners included.
 
 **Achievements** (Retail only, off until you tick it) shares a fixed list of
 achievements as you earn them: continent exploration, exalted reputation counts,

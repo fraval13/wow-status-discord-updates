@@ -201,6 +201,7 @@ W.add({
     ["Notifications"] = "Varsel", ["Previews"] = "Førehandsvising", ["Choose a notification to preview it."] = "Vel eit varsel for å sjå korleis det ser ut.",
     ["Setup guide"] = "Oppsettsrettleiing", ["Unlock popup position"] = "Lås opp plasseringa av varsla",
     ["Reset popup position"] = "Tilbakestill plasseringa", ["Big banners for big moments"] = "Store banner for store augneblinkar",
+    ["Reduce motion"] = "Mindre rørsle",
     ["Next theme"] = "Neste tema",
     ["Use the theme and size for popups too"] = "Bruk temaet og storleiken på varsla òg", ["Apply"] = "Bruk",
     ["Show the group status line"] = "Vis statuslinja for gruppa", ["Attach it under the quest tracker"] = "Fest henne under oppdragslista",

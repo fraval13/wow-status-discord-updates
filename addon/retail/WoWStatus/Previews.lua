@@ -80,17 +80,22 @@ function P.show(host)
             panel.buttons[kind]=button(panel,kind=="pvp" and A.pvpLabel or entry[2],24,-previews-88-(i-1)*42,360,function() WoWStatusPopups.preview(kind) end)
         end
         -- Popup placement and big banners (#61). Account-wide.
-        local function check(title,y,get,set)
+        local function check(title,y,get,set,x,width)
             local widget=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate")
-            widget:SetPoint("TOPLEFT",24,y);widget:SetSize(32,32)
-            text(widget,title,38,-6,460)
+            widget:SetPoint("TOPLEFT",x or 24,y);widget:SetSize(32,32)
+            widget.label=text(widget,title,38,-6,width or 460)
             widget:SetScript("OnClick",function(self) set(self:GetChecked() and true or false) end)
             widget.get=get
             return widget
         end
         panel.unlock=check("Unlock popup position",-options,function(o) return o.unlocked end,WoWStatusPopups.setUnlocked)
         panel.reset=button(panel,"Reset popup position",310,-options,250,function() WoWStatusPopups.resetPosition() end)
-        panel.big=check("Big banners for big moments",-options-42,function(o) return o.big_banners end,WoWStatusPopups.setBigBanners)
+        -- Reduce motion (#184) shares the row: each label is kept to its own half.
+        panel.big=check("Big banners for big moments",-options-42,function(o) return o.big_banners end,WoWStatusPopups.setBigBanners,
+            nil,330)
+        -- No slide, fade or pulse; a sample shows it.
+        panel.reduceMotion=check("Reduce motion",-options-42,function(o) return o.reduce_motion end,function(value)
+            WoWStatusPopups.setReduceMotion(value);WoWStatusPopups.sample("level") end,400,126)
         -- The minimap button can be switched off (#177); the confirmation names
         -- the ways in that do not need it.
         panel.minimap=check("Show the minimap button",-options-84,WoWStatusMinimap.visible,function(value)
@@ -352,7 +357,7 @@ function P.show(host)
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
     end
     local options=WoWStatusPopups.options()
-    for _,widget in ipairs({panel.unlock,panel.big}) do widget:SetChecked(widget.get(options)) end
+    for _,widget in ipairs({panel.unlock,panel.big,panel.reduceMotion}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.minimap:SetChecked(panel.minimap.get() == true)
     panel.themePopups:SetChecked(panel.themePopups.get())
