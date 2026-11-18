@@ -224,6 +224,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
     run_addon_file(runtime, root / 'Diagnostics.lua')
     run_addon_file(runtime, root / 'Safe.lua')
+    run_addon_file(runtime, root / 'Sharing.lua')
     run_addon_file(runtime, root / 'Locale.lua')
     run_addon_file(runtime, root / 'LocaleNN.lua')
     run_addon_file(runtime, root / 'Features.lua')

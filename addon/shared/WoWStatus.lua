@@ -83,7 +83,7 @@ local function snapshot()
 end
 
 local function queue(kind, data, fixed, targetGroups)
-    if not current or not current.settings.enabled or not current.settings.collection[({raid="dungeon",epicmount="mount"})[kind] or kind] then
+    if not current or not current.settings.enabled or not current.settings.collection[WoWStatusSharing.category(kind)] then
         return
     end
     if kind == "discovery" or kind == "lfg" then return end
@@ -126,7 +126,7 @@ local function scrub()
     -- Remove data immediately when privacy choices change, before any disk export.
     local retained = {}
     for _, event in ipairs(current.events) do
-        local allowed = current.settings.enabled and current.settings.collection[({raid="dungeon",epicmount="mount"})[event.kind] or event.kind]
+        local allowed = current.settings.enabled and current.settings.collection[WoWStatusSharing.category(event.kind)]
         if event.kind == "level" and not current.settings.fields.level then allowed = false end
         if event.kind == "zone" and not current.settings.fields.zone then allowed = false end
         if event.kind == "equipment" and not current.settings.fields.gear then allowed = false end

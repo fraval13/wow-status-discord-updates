@@ -77,10 +77,7 @@ local function permitted(entry)
     -- Private recaps retain empty group scope and belong to this account only.
     if entry.kind=="recap" and not next(entry.groups or {}) then
         if not entry.owner then return false end
-        for _, c in pairs(db.characters or {}) do
-            if c.identity.guid==entry.owner and c.identity.client==entry.client then return true end
-        end
-        return false
+        return WoWStatusSharing.ownerOf(db,entry)~=nil
     end
     if entry.kind=="quest" then
         local total=tonumber((entry.text or ""):match("^Completed (%d+) quests!$"))
@@ -88,10 +85,9 @@ local function permitted(entry)
     end
     if (entry.kind=="loot" or entry.kind=="equipment") and not WoWStatusLoot.allowed(current and current.settings,entry) then return false end
     if not entry.owner then return true end
-    local owner
-    for _, c in pairs(db.characters or {}) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
+    local owner=WoWStatusSharing.ownerOf(db,entry)
     if not owner or not owner.settings.enabled then return false end
-    local kind=({raid="dungeon",epicmount="mount",questprogress="quest",professionprogress="profession"})[entry.kind] or entry.kind
+    local kind=WoWStatusSharing.category(entry.kind)
     if entry.kind~="equipment" and not owner.settings.collection[kind] then return false end
     if fields[entry.kind] and not owner.settings.fields[fields[entry.kind]] then return false end
     return true
@@ -103,9 +99,8 @@ local function relayable(entry,group,now)
     local member=groupMember(group)
     if not member or entry.at<groupSince(group) or entry.at<(now or S.now())-AGE then return false end
     if entry.owner then
-        local owner
-        for _, c in pairs(db.characters) do if c.identity.guid==entry.owner and c.identity.client==entry.client then owner=c;break end end
-        if not owner or not owner.settings.in_game or owner.settings.in_game[({raid="dungeon",epicmount="mount"})[entry.kind] or entry.kind]==false then return false end
+        local owner=WoWStatusSharing.ownerOf(db,entry)
+        if not owner or not owner.settings.in_game or owner.settings.in_game[WoWStatusSharing.category(entry.kind)]==false then return false end
         if entry.kind=="loot" and not WoWStatusLoot.allowed(owner.settings,entry) then return false end
     end
     return true
