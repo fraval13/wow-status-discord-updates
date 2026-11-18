@@ -1,0 +1,90 @@
+name: Bug report
+description: Something in WoW Status behaves wrongly in the game
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting. Please do not paste a real group ID anywhere in
+        this form — a group name is a shared secret. Write `<group>` instead.
+
+        For a security problem, close this form and read the
+        [security policy](https://github.com/fraval13/wow-status-discord-updates/security/policy)
+        instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+      placeholder: |
+        A friend reached level 40 and no notification appeared, although their
+        card in Characters shows level 40.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: The shortest sequence that shows it. Say if it happens every time or only sometimes.
+      placeholder: |
+        1. /reload
+        2. Open WoW Status → Characters
+        3. …
+    validations:
+      required: true
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Which game are you playing?
+      options:
+        - Classic Era / Season of Discovery (Vanilla)
+        - WoW Forever
+        - Burning Crusade Classic (TBC)
+        - Retail (current expansion)
+        - More than one
+    validations:
+      required: true
+  - type: input
+    id: addon-version
+    attributes:
+      label: WoW Status version
+      description: The version in the game's AddOns list, or from the Diagnostics report below.
+    validations:
+      required: true
+  - type: input
+    id: client-build
+    attributes:
+      label: WoW client version
+      description: Bottom right of the game's login screen, or `/run print(GetBuildInfo())`.
+      placeholder: "1.15.9 (60123)"
+    validations:
+      required: false
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics report
+      description: |
+        In the game, type `/wstatus errors` (or **Options → Diagnostics**), press
+        **Select all**, copy, and paste it here. It holds the version, edition,
+        client build, memory use, log size, how many groups are joined, and any
+        Lua error with its stack. Group and character names are already replaced
+        by `<group>` and `<name>`, so it is safe to post.
+      render: text
+    validations:
+      required: false
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else
+      description: Other addons that might be involved, a screenshot, how often it happens.
+    validations:
+      required: false
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: This report contains no real group ID.
+          required: true
+        - label: I searched the open issues for the same problem.
+          required: false

@@ -310,6 +310,14 @@ member; the rest come from other members or the next login. Realm/faction/whispe
 restrictions still apply.
 Friends should update to the same release for login sync and armor metadata.
 
+## Taking part
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) says how to report a bug, how to run the
+checks and what a pull request has to get right (all four editions, controller
+support, Nynorsk strings, no version bump). Security problems go through
+[`SECURITY.md`](SECURITY.md) privately, never a public issue. A group ID is a
+shared secret: never paste a real one into an issue, a log or a screenshot.
+
 ## Development
 
 Canonical Lua is in `addon/shared`; run `python scripts/sync_addons.py` after edits
