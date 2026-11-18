@@ -203,6 +203,8 @@ def check_generated_pages(base, fetch, links, local):
     /changelog/, /robots.txt and /sitemap.xml (#192), to equal the local build's copy."""
     if '/changelog/' not in links:
         raise ValueError('The homepage does not link to /changelog/')
+    if '/nn/' not in links:
+        raise ValueError('The homepage does not link to /nn/')
     for path, data in local.items():
         if fetch(base + path) != data:
             raise ValueError(f'The live {path} differs from the locally built one')

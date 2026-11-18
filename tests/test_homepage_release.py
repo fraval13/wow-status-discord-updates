@@ -128,7 +128,8 @@ def test_published_site_verification_checks_every_download(built_site):
 @pytest.mark.parametrize('fault', ['stale_revision','missing_tbc_link','corrupt_tbc_zip','stale_version',
                                    'webp_link_preview','no_twitter_card',
                                    'no_changelog_link','stale_changelog','truncated_changelog',
-                                   'stale_sitemap','hand_written_robots'])
+                                   'stale_sitemap','hand_written_robots',
+                                   'no_nynorsk_link','stale_nynorsk'])
 def test_published_site_verification_rejects_incomplete_updates(built_site,fault):
     manifest=local_manifest(built_site)
     def change(path,data):
@@ -157,6 +158,11 @@ def test_published_site_verification_rejects_incomplete_updates(built_site,fault
             return data.replace(b'<lastmod>2',b'<lastmod>1')
         if path=='robots.txt' and fault=='hand_written_robots':
             return b'User-agent: *\nDisallow: /\n'
+        # Issue #193: the Nynorsk page is deployed with the English one or not at all.
+        if path=='index.html' and fault=='no_nynorsk_link':
+            return data.replace(b'href="/nn/"',b'href="/elsewhere/"')
+        if path=='nn/index.html' and fault=='stale_nynorsk':
+            return data.replace(b'VERSJON '+version,b'VERSJON 0.0.0')
         return data
     message={'stale_sitemap':'The live /sitemap.xml differs','hand_written_robots':'The live /robots.txt differs',
              'stale_changelog':'The live /changelog/ differs','truncated_changelog':'The live /changelog/ differs'}

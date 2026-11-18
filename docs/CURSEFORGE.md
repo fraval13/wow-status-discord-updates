@@ -56,14 +56,14 @@ settings after changing it.
 **Name:** WoW Status
 
 **Summary** (short description):
-See your friends' level-ups, deaths and big firsts pop up in game, cheer with one click, and compare in a group leaderboard.
+See your friends' level-ups, deaths and big firsts pop up in game, cheer with one click, and compare in a group leaderboard. Fully translated to Nynorsk.
 
 **Categories:** Chat & Communication (main), Guild, Quests & Leveling, Achievements
 
 **License:** chosen by the owner. The repository has no license file yet.
 
 **Source / issues:** <https://github.com/fraval13/wow-status-discord-updates>
-**Website:** <https://wow.frankvalde.com/>
+**Website:** <https://wow.frankvalde.com/> (Nynorsk: <https://wow.frankvalde.com/nn/>)
 
 **Description** (Markdown):
 
@@ -103,7 +103,8 @@ No spam: ordinary quests, loot and gear swaps stay quiet.
 - Session recaps of your evening
 - Window themes, adjustable notification size and a compact group status line
 - Optional screenshots on level-up and first dungeon clear
-- English or Norwegian (Nynorsk)
+- English or Norwegian (Nynorsk): every notification, caption, window and
+  reaction whisper is translated, and one setting switches the whole addon over
 
 ## Getting started
 1. Install WoW Status and log in.
