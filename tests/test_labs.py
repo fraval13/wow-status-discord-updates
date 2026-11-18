@@ -13,6 +13,16 @@ def labs(lua):
     return lua.eval('WoWStatusLabsPage')
 
 
+def combo(lua):
+    return lua.eval("""
+        function()
+            for _, row in ipairs(WoWStatusLabsPage.rows) do
+                if row.id == "combo" then return row end
+            end
+        end
+    """)()
+
+
 def test_nothing_is_enabled_and_nothing_is_saved_until_a_player_asks():
     lua = make_lua()
     page = labs(lua)
@@ -30,31 +40,31 @@ def test_nothing_is_enabled_and_nothing_is_saved_until_a_player_asks():
 def test_a_toggle_persists_for_the_account_and_turn_all_off_clears_it():
     lua = make_lua()
     labs(lua)
-    lua.execute('''
-        local row=WoWStatusLabsPage.rows[1]
-        row:SetChecked(true);row.OnClick(row)
-    ''')
+    row = combo(lua)
+    row.SetChecked(row, True)
+    row.OnClick(row)
     assert lua.eval('WoWStatusFeatures.enabled("combo")') is True
     assert lua.eval('WoWStatusFeatures.enabled("bingo")') is False
     assert lua.eval('WoWStatusDB.labs.combo') is True
     assert lua.eval('WoWStatusLabsPage.allOff.enabled') is True
     # Reopening reads the saved value back, as a later login would.
     lua.execute('WoWStatusLabs.render()')
-    assert lua.eval('WoWStatusLabsPage.rows[1]:GetChecked()') is True
+    assert row.GetChecked(row) is True
     lua.execute('WoWStatusLabsPage.allOff.OnClick()')
     assert lua.eval('WoWStatusFeatures.enabled("combo")') is False
     assert lua.eval('WoWStatusDB.labs.combo') is None
-    assert lua.eval('WoWStatusLabsPage.rows[1]:GetChecked()') is False
+    assert row.GetChecked(row) is False
     assert lua.eval('WoWStatusLabsPage.allOff.enabled') is False
 
 
 def test_a_malformed_saved_value_falls_back_to_off():
     lua = make_lua()
     labs(lua)
+    row = combo(lua)
     for value in ('"yes"', '1', 'false', '{}'):
         lua.execute(f'WoWStatusDB.labs.combo={value};WoWStatusLabs.render()')
         assert lua.eval('WoWStatusFeatures.enabled("combo")') is False, value
-        assert lua.eval('WoWStatusLabsPage.rows[1]:GetChecked()') is False, value
+        assert row.GetChecked(row) is False, value
 
 
 def test_an_unknown_experiment_is_never_enabled_and_cannot_be_set():
@@ -65,16 +75,17 @@ def test_an_unknown_experiment_is_never_enabled_and_cannot_be_set():
     assert lua.eval('WoWStatusFeatures.set("smuggled",true)') is False
     assert lua.eval('WoWStatusFeatures.known("smuggled")') is False
     # Registering the same id twice does not add a second row.
+    count = lua.eval('#WoWStatusFeatures.experiments()')
     assert lua.eval('WoWStatusFeatures.register("combo","Again")') is False
-    assert lua.eval('#WoWStatusFeatures.experiments()') == 2
+    assert lua.eval('#WoWStatusFeatures.experiments()') == count
 
 
 def test_discord_stays_a_code_only_flag_and_off_the_page():
     lua = make_lua()
-    labs(lua)
+    page = labs(lua)
     assert lua.eval('WoWStatusFeatures.discord') is False
     assert lua.eval('WoWStatusFeatures.known("discord")') is False
-    labels = [lua.eval(f'WoWStatusLabsPage.rows[{i}].label:GetText()') for i in (1, 2)]
+    labels = [row.label.GetText(row.label) for row in page.rows.values()]
     assert not any('iscord' in (label or '') for label in labels)
 
 

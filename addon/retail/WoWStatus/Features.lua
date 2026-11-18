@@ -15,9 +15,9 @@ local function saved()
     return db.labs
 end
 -- label and description are English keys; Locale.T translates them for display.
-function F.register(id, label, description)
+function F.register(id, label, description, configure)
     if type(id) ~= "string" or id == "" or byId[id] then return false end
-    local item = {id = id, label = label or id, description = description}
+    local item = {id = id, label = label or id, description = description, configure = configure}
     byId[id] = item
     list[#list + 1] = item
     return true

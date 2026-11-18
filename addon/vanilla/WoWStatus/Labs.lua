@@ -25,7 +25,7 @@ local function render()
             row:SetPoint("TOPLEFT", 4, -(i - 1) * ROW)
             row:SetSize(32, 32)
             row.label = text(row, "GameFontNormalLarge", 38, -6, 600)
-            row.description = text(row, "GameFontHighlightSmall", 38, -30, 600)
+            row.description = text(row, "GameFontHighlightSmall", 38, -30, 490)
             row:SetScript("OnClick", function(self)
                 F.set(self.id, self:GetChecked() and true or false)
                 render()
@@ -35,7 +35,20 @@ local function render()
         row.id = item.id
         row.label:SetText(T(item.label))
         row.description:SetText(item.description and T(item.description) or "")
-        row:SetChecked(F.enabled(item.id))
+        local enabled = F.enabled(item.id)
+        row:SetChecked(enabled)
+        if enabled and item.configure then
+            if not row.configure then
+                row.configure = CreateFrame("Button", nil, row, "UIPanelButtonTemplate")
+                row.configure:SetPoint("TOPLEFT", 544, -6)
+                row.configure:SetSize(100, 26)
+            end
+            row.configure:SetText(T("Configure"))
+            row.configure:SetScript("OnClick", item.configure)
+            row.configure:Show()
+        elseif row.configure then
+            row.configure:Hide()
+        end
         row:Show()
     end
     for i = #items + 1, #page.rows do page.rows[i]:Hide() end
