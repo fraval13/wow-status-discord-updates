@@ -368,3 +368,20 @@ def test_profession_skill_points_are_not_logged_and_old_ones_are_removed():
         for _,e in ipairs(WoWStatusJournal.entries()) do assert(e.kind~="professionprogress") end
         assert(WoWStatusDB.journal.profession_points_removed)
     ''')
+
+
+def test_group_anniversary_is_reported_once_per_year_from_the_stored_join_time():
+    lua = actor('Thora')
+    lua.execute("""
+        local YEAR=365*24*3600
+        local group=next(WoWStatusDB.account_groups)
+        assert(WoWStatusGroups.anniversary()==nil)          -- joined just now
+        WoWStatusDB.account_group_joined_at[group]=time()-YEAR+1
+        assert(WoWStatusGroups.anniversary()==nil)          -- a day short of a year
+        WoWStatusDB.account_group_joined_at[group]=time()-YEAR
+        assert(WoWStatusGroups.anniversary()==1)
+        assert(WoWStatusGroups.anniversary()==nil)          -- /reload or an alt: no replay
+        WoWStatusDB.account_group_joined_at[group]=time()-2*YEAR-5
+        assert(WoWStatusGroups.anniversary()==2)
+        assert(WoWStatusGroups.anniversary()==nil)
+    """)

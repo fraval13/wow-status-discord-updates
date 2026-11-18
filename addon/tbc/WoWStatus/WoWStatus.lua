@@ -552,6 +552,7 @@ local function initialize()
         end
     end
     WoWStatusGroups.announce()
+    if WoWStatusGroups.anniversary() then say("Another year together in your WoW Status group. Well played!") end
     -- Existing equipped items establish a silent baseline on first installation.
     if not current.equipped_items then
         current.equipped_items={}
