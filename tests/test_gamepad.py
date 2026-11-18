@@ -1014,3 +1014,27 @@ def test_manual_hardcore_checkbox_is_reachable_when_needed():
         assert(#WoWStatusGamepad.controls(panel) == 0)
         assert(check:IsEnabled() == false)
     """)
+
+
+def test_bingo_board_cells_are_controller_controls():
+    from test_journal import actor
+
+    runtime = actor('Thora')
+    runtime.execute("""
+        local F = WoWStatusFeatures
+        local unpack = unpack or table.unpack
+        F.set("bingo", true)
+        SlashCmdList.WOWSTATUS("labs")
+        for _, row in ipairs(WoWStatusLabsPage.rows) do
+            if row.id == "bingo" then row.configure.OnClick(row.configure) end
+        end
+        assert(WoWStatusMainWindow.active() == "bingo")
+        local page = WoWStatusMainWindow.show("bingo")
+        page.GetChildren = function() return unpack(page.cells) end
+        for i, cell in ipairs(page.cells) do
+            cell.GetRect = function() return (i-1)%5*142, 500-math.floor((i-1)/5)*78, 136, 72 end
+            cell.GetObjectType = function() return "Button" end
+            cell.GetScript = function(self, script) return self[script] end
+        end
+        assert(#WoWStatusGamepad.controls(page) == 25)
+    """)

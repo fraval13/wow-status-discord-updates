@@ -273,6 +273,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'WhatsNew.lua')
     run_addon_file(runtime, root / 'Firsts.lua')
     run_addon_file(runtime, root / 'Streaks.lua')
+    run_addon_file(runtime, root / 'Bingo.lua')
     run_addon_file(runtime, root / 'Leaderboard.lua')
     run_addon_file(runtime, root / 'WhenWePlay.lua')
     run_addon_file(runtime, root / 'Reactions.lua')

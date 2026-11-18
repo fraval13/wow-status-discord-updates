@@ -258,7 +258,8 @@ end
 -- seeded from the group ID and the week, so every member sees the same one
 -- without anything being sent; the seed itself is never shown or logged.
 WoWStatusFeatures.register("bingo", "Weekly group bingo card",
-    "A 5x5 card of group events for the week, filled in from the shared log and shown under This week.")
+    "A 5x5 card of group events for the week, filled in from the shared log and shown under This week.",
+    function() WoWStatusBingo.show() end)
 -- A square: {text, test(list)}, where list is the week's entries (oldest first) and
 -- test returns the name of whoever completed it, or nil.
 local function nth(n, pred)
@@ -373,6 +374,21 @@ function F.bingoWins(card)
     end
     return false
 end
+function F.announceBingo(group, first, card)
+    -- One banner per group and week.
+    local seen = type(WoWStatusDB) == "table" and WoWStatusDB or nil
+    if seen and WoWStatusPopups.notice then
+        seen.bingo_weeks = type(seen.bingo_weeks) == "table" and seen.bingo_weeks or {}
+        if seen.bingo_weeks[group] ~= first then
+            seen.bingo_weeks[group] = first
+            local by
+            for _, square in ipairs(card) do by = by or square.by end
+            WoWStatusPopups.notice({sender = by and (by .. "-" .. (GetRealmName and GetRealmName() or "Realm")) or "Group",
+                kind = "first", text = T("Bingo!") .. " " .. T("The weekly card has a full line.")})
+        end
+    end
+end
+
 function F.bingoLines(group)
     local card, first = F.bingo(group, 0)
     local filled = 0
@@ -383,18 +399,7 @@ function F.bingoLines(group)
         lines[#lines + 1] = square.by and ("|cff40ff40[x]|r " .. T(square.text) .. " (" .. square.by:gsub("|", "||") .. ")")
             or ("|cff9d9d9d[ ] " .. T(square.text) .. "|r")
     end
-    -- One banner per group and week.
-    local seen = type(WoWStatusDB) == "table" and WoWStatusDB or nil
-    if win and seen and WoWStatusPopups.notice then
-        seen.bingo_weeks = type(seen.bingo_weeks) == "table" and seen.bingo_weeks or {}
-        if seen.bingo_weeks[group] ~= first then
-            seen.bingo_weeks[group] = first
-            local by
-            for _, square in ipairs(card) do by = by or square.by end
-            WoWStatusPopups.notice({sender = by and (by .. "-" .. (GetRealmName and GetRealmName() or "Realm")) or "Group",
-                kind = "first", text = T("Bingo!") .. " " .. T("The weekly card has a full line.")})
-        end
-    end
+    if win then F.announceBingo(group, first, card) end
     return lines
 end
 
