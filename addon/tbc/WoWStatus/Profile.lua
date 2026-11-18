@@ -33,6 +33,8 @@ function F.data(row)
     local xp = S.number(row.xp)
     fact("Level", S.number(row.level) and (row.level .. (xp and (" (" .. math.floor(xp / 10) .. "%)") or "")))
     fact("Deaths", S.number(row.deaths))
+    -- Levels and days since the last death (#164), only while the death total is shared.
+    fact("Deathless streak", WoWStatusStreaks.describe(WoWStatusStreaks.forRow(row)))
     fact("Monsters killed", S.number(row.kills))
     local quests = S.number(row.quests)
     for _, e in ipairs(not row.quests_source and entries or {}) do

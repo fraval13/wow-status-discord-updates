@@ -211,25 +211,20 @@ function F.week(group, offset)
 end
 
 -- Fun records in one group, only when they are remarkable (high thresholds).
-F.FUN = {zone_deaths=5, life_days=3, evening_levels=4, deaths=25, kills=1000, gold=1000000, armor=5}
+F.FUN = {zone_deaths=5, evening_levels=4, deaths=25, kills=1000, gold=1000000, armor=5}
 function F.funRecords(group)
-    local deathsIn, lastDeath, longest, evenings, armor = {}, {}, {}, {}, {}
+    local deathsIn, evenings, armor = {}, {}, {}
     local entries = {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         if inGroup(e, group) and WoWStatusJournal.visible(e) and S.number(e.at) then entries[#entries + 1] = e end
     end
     table.sort(entries, function(a, b) return a.at < b.at end)
-    local firstSeen = {}
     for _, e in ipairs(entries) do
         local name = shortName(e.sender)
-        firstSeen[name] = firstSeen[name] or e.at
-        -- A Hardcore death (#163) adds nothing: no "dangerous zone", no streak.
+        -- A Hardcore death (#163) makes no zone dangerous.
         if e.kind == "death" and not WoWStatusProgress.hardcoreDeath(e) then
             local d = WoWStatusJournal.details(e)
             if d and d.zone then deathsIn[d.zone] = (deathsIn[d.zone] or 0) + 1 end
-            local since = lastDeath[name] or firstSeen[name]
-            longest[name] = math.max(longest[name] or 0, e.at - since)
-            lastDeath[name] = e.at
         elseif e.kind == "level" then
             local k = name .. "|" .. dayOf(e.at)
             evenings[k] = (evenings[k] or 0) + 1
@@ -237,7 +232,6 @@ function F.funRecords(group)
             armor[name] = (armor[name] or 0) + 1
         end
     end
-    for name, at in pairs(lastDeath) do longest[name] = math.max(longest[name] or 0, S.now() - at) end
     local lines = {}
     local function add(label, who, value)
         lines[#lines + 1] = "|cffffd100" .. T(label) .. "|r " .. tostring(who):gsub("|", "||") .. " — " .. value
@@ -245,9 +239,13 @@ function F.funRecords(group)
     local zone, count = nil, 0
     for z, n in pairs(deathsIn) do if n > count then zone, count = z, n end end
     if zone and count >= F.FUN.zone_deaths then add("Most dangerous zone:", zone, count .. " " .. T("deaths")) end
-    local who, span = nil, 0
-    for name, s in pairs(longest) do if s > span then who, span = name, s end end
-    if who and span >= F.FUN.life_days * 86400 then add("Longest without dying:", who, math.floor(span / 86400) .. " " .. T("days")) end
+    -- Deathless streaks (#164): levels and days since the last death.
+    local now, ever = WoWStatusStreaks.records(group)
+    if now then add("Longest deathless streak now:", now.name, WoWStatusStreaks.describe(now.streak)) end
+    -- The same run twice says nothing new: "ever" only when it differs from "now".
+    if ever and not (now and now.streak == ever.streak) then
+        add("Longest deathless streak ever:", ever.name, WoWStatusStreaks.describe(ever.streak))
+    end
     local best, levels = nil, 0
     for k, n in pairs(evenings) do if n > levels then best, levels = k, n end end
     if best and levels >= F.FUN.evening_levels then

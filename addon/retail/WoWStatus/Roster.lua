@@ -2178,6 +2178,9 @@ function R.groups()
         table.insert(entry.rows, {name=character.name, race=character.race, sex=character.sex, class=character.class,
             level=character.level, xp=character.xp, status=status, latest=latest[k], groups=labels, groupIds=ids,
             deaths=S.number(character.deaths) or deaths[k] or nil, quests=S.number(character.quests),
+            -- What the friend shares itself (false: Total deaths is off), unlike
+            -- deaths, which falls back to the log's newest death announcement.
+            deaths_shared=S.number(character.deaths) or false,
             quests_source=character.quests_source, gold=S.number(character.gold),
             earned=S.number(character.earned), kills=S.number(character.kills), played=S.number(character.played),
             honor_kills=S.number(character.honor_kills), dungeons=S.number(character.dungeons), mounts=S.number(character.mounts),
@@ -2458,7 +2461,7 @@ function R.leaderboard(group)
                         local player = own and "you" or (row.pid and S.string(row.player_name)
                             and ("name:" .. S.lowerASCII(row.player_name))) or (row.pid and ("id:" .. row.pid)) or ("character:" .. k)
                         table.insert(list, {name=row.name, class=row.class, level=S.number(row.level), xp=S.number(row.xp),
-                            deaths=S.number(row.deaths), quests=q, quests_source=row.quests_source, online=row.status == "online", own=own,
+                            deaths=S.number(row.deaths), deaths_shared=row.deaths_shared, quests=q, quests_source=row.quests_source, online=row.status == "online", own=own,
                             gold=S.number(row.gold), kills=S.number(row.kills), played=S.number(row.played), pin=pin,
                             player=player, player_name=own and playerName() or S.string(row.player_name), pid=row.pid})
                     end
