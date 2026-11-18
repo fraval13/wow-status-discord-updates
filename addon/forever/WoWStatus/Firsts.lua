@@ -219,9 +219,16 @@ function F.funRecords(group)
         if inGroup(e, group) and WoWStatusJournal.visible(e) and S.number(e.at) then entries[#entries + 1] = e end
     end
     table.sort(entries, function(a, b) return a.at < b.at end)
+    local firstSeen, toCap = {}, {}
+    local cap = WoWStatusAdapter and WoWStatusAdapter.max_level
     for _, e in ipairs(entries) do
         local name = shortName(e.sender)
-        -- A Hardcore death (#163) makes no zone dangerous.
+        firstSeen[name] = firstSeen[name] or e.at
+        -- Time from a person's first recorded activity to the level cap (#166).
+        if e.kind == "level" and cap and S.number(e.level) == cap and not toCap[name] then
+            toCap[name] = e.at - firstSeen[name]
+        end
+        -- A Hardcore death (#163) adds nothing: no "dangerous zone", no streak.
         if e.kind == "death" and not WoWStatusProgress.hardcoreDeath(e) then
             local d = WoWStatusJournal.details(e)
             if d and d.zone then deathsIn[d.zone] = (deathsIn[d.zone] or 0) + 1 end
@@ -251,6 +258,15 @@ function F.funRecords(group)
     if best and levels >= F.FUN.evening_levels then
         local name, day = best:match("^(.-)|(.+)$")
         add("Best evening:", name, levels .. " " .. T("levels") .. " (" .. day .. ")")
+    end
+    local fastest, quickest = nil, nil
+    for name, s in pairs(toCap) do
+        if s > 0 and (not quickest or s < quickest or (s == quickest and name < fastest)) then fastest, quickest = name, s end
+    end
+    if fastest then
+        local days = math.floor(quickest / 86400)
+        add("Fastest to maximum level:", fastest, days >= 1 and (days .. " " .. T(days == 1 and "day" or "days"))
+            or (math.max(1, math.floor(quickest / 3600)) .. " " .. T("hours")))
     end
     local mostArmor, pieces = nil, 0
     for name, n in pairs(armor) do if n > pieces then mostArmor, pieces = name, n end end

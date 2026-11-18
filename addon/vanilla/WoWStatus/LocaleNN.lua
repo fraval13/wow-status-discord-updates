@@ -77,6 +77,7 @@ W.add({
     ["Most explored:"] = "Mest utforska:", ["Most dangerous zone:"] = "Farlegaste område:",
     ["Longest deathless streak now:"] = "Lengst utan å døy no:",
     ["Longest deathless streak ever:"] = "Lengst utan å døy nokon gong:", ["Best evening:"] = "Beste kveld:", ["Most new gear:"] = "Mest ny rustning:",
+    ["Fastest to maximum level:"] = "Raskast til høgste nivå:", ["hours"] = "timar", ["day"] = "dag",
     ["Most monsters killed:"] = "Flest monster drepne:", ["Richest:"] = "Rikast:",
     ["Nothing happened in this group this week."] = "Ingenting har skjedd i denne gruppa denne veka.",
     ["No fun records yet. They appear when someone does something remarkable."] = "Ingen morosame rekordar enno. Dei dukkar opp når nokon gjer noko utruleg.",

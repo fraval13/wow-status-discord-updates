@@ -90,3 +90,20 @@ def test_this_week_orders_people_by_level_then_name():
         match = re.match(r'^([A-Z][a-z]+): (?:\+(\d+) levels?)?', line)
         got.append((match[1], int(match[2]) if match[2] else 0))
     assert got == sorted(got, key=lambda person: (-person[1], person[0])), got
+
+
+def test_fun_records_name_the_fastest_to_the_level_cap():
+    lua = actor('Thora')
+    clock(lua, 10)
+    group = lua.eval('(next(character().group_ids))')
+    cap = lua.eval('WoWStatusAdapter.max_level')
+    day = 86400
+    with_entries(lua, [
+        ('Mira-TestRealm', '1-a', 'level', 20 * day, '{level=2}'),
+        ('Mira-TestRealm', '1-b', 'level', 20 * day - 9 * day, f'{{level={cap}}}'),
+        ('Nils-TestRealm', '2-a', 'level', 20 * day, '{level=2}'),
+        ('Nils-TestRealm', '2-b', 'level', 20 * day - 5 * day, f'{{level={cap}}}'),
+        ('Olav-TestRealm', '3-a', 'level', 20 * day, '{level=2}'),
+    ])
+    lines = plain(lua.eval(f'WoWStatusFirsts.funRecords("{group}")'))
+    assert 'Fastest to maximum level: Nils — 5 days' in lines, lines
