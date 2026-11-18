@@ -265,6 +265,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Guide.lua')
     run_addon_file(runtime, root / 'Privacy.lua')
     run_addon_file(runtime, root / 'Presentation.lua')
+    run_addon_file(runtime, root / 'Wire.lua')
     run_addon_file(runtime, root / 'Popups.lua')
     run_addon_file(runtime, root / 'Journal.lua')
     run_addon_file(runtime, root / 'Export.lua')

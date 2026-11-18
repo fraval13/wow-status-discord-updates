@@ -49,6 +49,7 @@ Overview.lua
 Guide.lua
 Privacy.lua
 Presentation.lua
+Wire.lua
 Popups.lua
 Journal.lua
 Export.lua

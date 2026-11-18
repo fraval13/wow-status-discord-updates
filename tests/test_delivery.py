@@ -380,3 +380,30 @@ def test_a_query_that_timed_out_while_queued_is_not_sent():
     queries = [a['text'].split(' ')[3] for a in newcomer.eval('__attempts').values()
                if a['prefix'] == 'WoWStatusLog' and a['text'].split(' ')[2] == 'Q']
     assert len(set(queries)) == 1   # Only the retry's token was ever tried.
+
+
+def test_shared_wire_attempt_preserves_retry_state_and_send_arguments():
+    lua = actor("Mira")
+    lua.execute("""
+        local W = WoWStatusWire
+        local pacing, item = {}, {}
+        local function throttle(prefix, text, kind, target)
+            assert(prefix == "Example" and text == "sample" and kind == "WHISPER" and target == "Ada")
+            return 3
+        end
+        for i, expected in ipairs({2, 4, 8, 16, 16}) do
+            local result, wait = W.attempt(throttle, item, pacing, i, "Example", "sample", "WHISPER", "Ada")
+            assert(result == "throttled" and wait == expected)
+        end
+        local function uncertain() return false end
+        local result, wait = W.attempt(uncertain, item, pacing, 10)
+        assert(result == "uncertain" and wait == 2)
+        result, wait = W.attempt(uncertain, item, pacing, 12)
+        assert(result == "uncertain" and wait == nil and pacing.throttles == 0)
+        result, wait = W.attempt(uncertain, {}, pacing, 71)
+        assert(result == "uncertain" and wait == nil)
+        result, wait = W.attempt(uncertain, {}, pacing, 72)
+        assert(result == "uncertain" and wait == 2)
+        result, wait = W.attempt(function() return 0 end, item, pacing, 73)
+        assert(result == "sent" and wait == nil)
+    """)

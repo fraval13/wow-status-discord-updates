@@ -3,14 +3,14 @@ WoWStatusPopups = {}
 local P = WoWStatusPopups
 local A, S = WoWStatusAdapter, WoWStatusSafe
 local T = WoWStatusLocale.T
-local Z = WoWStatusSettings
+local Z, W = WoWStatusSettings, WoWStatusWire
 local prefs, root, getCharacter, notify, toast, active
 local incoming, outgoing = {}, {}
 local nextSend = 0
 -- When the next notification may show: a second after the last one goes, but
 -- never later than a second after its full duration (the old fixed cadence).
 local nextDisplay, displayed, displayedAt = 0, false, 0
-local pacing = {} -- Throttles in a row on this prefix: see P.retryWait.
+local pacing = {} -- Throttles in a row on this prefix: see W.retryWait.
 local joinedByAddon, syncPending = {}, false
 -- Chat channel numbers. The game gives a joined channel the lowest free number
 -- and no API can ask for a particular one. The client joins General, Trade and
@@ -773,46 +773,8 @@ local function clear()
     nextSend, pacing = 0, {}
     if toast then toast:Hide() end
 end
--- Classifies a pcall of a send: "sent"; "throttled" (the game asks to wait, so
--- retry later); "uncertain" (an older client's false, which can also mean
--- throttled); "offline" (the target logged off); or "failed". SendAddonMessage
--- returns an Enum.SendAddonMessageResult on newer clients and a boolean on older
--- ones; the deprecated global wrapper returns the code second, so the last value
--- that is not nil counts.
-local RESULT = {Success = 0, AddonMessageThrottle = 3, ChannelThrottle = 8, AddOnMessageLockdown = 11, TargetOffline = 12}
-function P.sendResult(ok, ...)
-    if not ok then return "failed" end
-    local result
-    for i = select("#", ...), 1, -1 do
-        local value = select(i, ...)
-        if value ~= nil then result = S.value(value); break end
-    end
-    if type(result) ~= "number" then return result == false and "uncertain" or "sent" end
-    local codes = type(Enum) == "table" and type(Enum.SendAddonMessageResult) == "table" and Enum.SendAddonMessageResult or {}
-    local function is(name) return result == (codes[name] or RESULT[name]) end
-    if is("Success") then return "sent" end
-    if is("AddonMessageThrottle") or is("ChannelThrottle") or is("AddOnMessageLockdown") then return "throttled" end
-    return is("TargetOffline") and "offline" or "failed"
-end
--- Seconds to wait before sending item again after result, or nil to move on.
--- A throttle is always retried, after 2, 4, 8, then every 16 s while throttles
--- on the queue's prefix (counted in state) continue. An older client's false is
--- retried once, after 2 s, without counting as a throttle. If that retry says
--- false too, false is final on this queue for the next minute, so a client that
--- always says false is barely slowed down, and one whose false is a long
--- throttle still gets retries again after that.
-function P.retryWait(result, item, state, now)
-    if result == "throttled" then
-        state.throttles = (state.throttles or 0) + 1
-        return math.min(2 ^ state.throttles, 16)
-    end
-    if result == "uncertain" then
-        if not item.unsure and now >= (state.falseFinalUntil or 0) then item.unsure = true; return 2 end
-        if item.unsure then state.falseFinalUntil = now + 60 end
-    end
-    item.unsure, state.throttles = nil, 0
-    return nil
-end
+-- Transitional aliases for the log and equipment queues.
+P.sendResult, P.retryWait = W.sendResult, W.retryWait
 local function pruneSeen(now)
     local count, oldest, oldestAt = 0, nil, math.huge
     for key, at in pairs(prefs.seen) do
@@ -1769,11 +1731,10 @@ local function tick()
     end
     local unpackArgs = unpack or table.unpack
     if args[3] == "WHISPER" then P.whispered(args[4]) end
-    local result = P.sendResult(pcall(send, unpackArgs(args, 1, 4)))
+    local result, wait = W.attempt(send, item, pacing, now, unpackArgs(args, 1, 4))
     S.debug("live send " .. tostring(item.event and item.event.kind) .. " to " .. tostring(args[4]) .. ": " .. tostring(result))
     -- A throttled whisper goes to the same target again after a pause; only a
     -- send that went out or failed moves on to the next target.
-    local wait = P.retryWait(result, item, pacing, now)
     if wait then
         nextSend = now + wait
         status(result .. "_retrying", item.event, args[4])
