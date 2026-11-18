@@ -52,6 +52,8 @@ Firsts.lua
 Streaks.lua
 Leaderboard.lua
 Reactions.lua
+
+Together.lua
 Recaps.lua
 Equipment.lua
 EquipmentSync.lua

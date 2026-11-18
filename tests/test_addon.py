@@ -261,6 +261,8 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Streaks.lua')
     run_addon_file(runtime, root / 'Leaderboard.lua')
     run_addon_file(runtime, root / 'Reactions.lua')
+
+    run_addon_file(runtime, root / 'Together.lua')
     run_addon_file(runtime, root / 'Recaps.lua')
     run_addon_file(runtime, root / 'Equipment.lua')
     run_addon_file(runtime, root / 'EquipmentSync.lua')

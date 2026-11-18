@@ -187,6 +187,21 @@ picked, so a hidden bank alt stays out. A value its owner never shared reads *no
 shared* rather than `0`, a measure neither of them shared is left out, and each
 column says how fresh its data is.
 
+## Together: the group's totals
+
+**Together** on the Overview page, or `/wstatus together`, adds the whole group up:
+hours played, levels between you, quests finished, deaths survived, monsters felled,
+dungeons cleared, mounts, honorable kills, gold, and zones discovered. A line says
+how long you have been a group, using the join date already stored, and another says
+what the group added **this week**.
+
+It is honest about gaps. A total that only some members shared says *from 6 of 8*
+under the number rather than quietly under-reporting; a measure nobody shared is left
+out instead of showing `0`; zones are counted by name, so two friends in Duskwood are
+one zone; and a character in two of your groups is counted once. Hidden characters
+are left out, because the Characters page leaves them out. All of it is local
+arithmetic over data already held — nothing new is sent or recorded.
+
 ## Controller
 
 With gamepad support switched on in the game's own options, WoW Status windows

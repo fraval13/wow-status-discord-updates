@@ -446,7 +446,12 @@ local function build(parent)
     you.update = UI.text(you, "GameFontNormalSmall", 12, -150, 326)
     -- Your group
     local group = UI.box(page, 336, 166); group:SetPoint("TOPLEFT", 386, -4); page.group = group
-    UI.header(group, T("Your group"), 12, -10, 312)
+    UI.header(group, T("Your group"), 12, -10, 200)
+    -- What the whole group adds up to (#167).
+    group.together = CreateFrame("Button", nil, group, "UIPanelButtonTemplate")
+    group.together:SetPoint("TOPRIGHT", -12, -8); group.together:SetSize(104, 22)
+    group.together:SetText(T("Together"))
+    group.together:SetScript("OnClick", function() WoWStatusTogether.show() end)
     group.count = UI.text(group, "GameFontHighlight", 12, -34, 312)
     group.scroll = CreateFrame("ScrollFrame", nil, group, "UIPanelScrollFrameTemplate")
     group.scroll:SetPoint("TOPLEFT", 12, -56); group.scroll:SetSize(286, 64)

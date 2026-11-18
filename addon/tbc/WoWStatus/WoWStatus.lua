@@ -791,6 +791,8 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "labs" then WoWStatusLabs.show()
 
     elseif command == "compare" then WoWStatusCompare.show(rest ~= "" and rest or nil)
+
+    elseif command == "together" then WoWStatusTogether.show()
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()
