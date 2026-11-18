@@ -1,1 +1,0 @@
-- A group you have belonged to for a full year now gets one quiet thank-you line in chat each anniversary.

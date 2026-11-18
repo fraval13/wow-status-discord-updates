@@ -1,1 +1,0 @@
-- Classic Era and Forever can use a manual Hardcore setting on Overview for respectful death notices when needed.

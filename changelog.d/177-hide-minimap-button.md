@@ -1,1 +1,0 @@
-- The minimap button can be switched off in Options; /wstatus and the key binding still open the window

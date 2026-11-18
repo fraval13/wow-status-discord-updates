@@ -1,1 +1,0 @@
-- Labs: an optional "with" note on your own log cards naming the friends who were in your party.

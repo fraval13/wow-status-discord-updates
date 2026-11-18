@@ -1,1 +1,0 @@
-- Copy the current Activity or Records view as CSV, with UTC timestamps and group names removed.

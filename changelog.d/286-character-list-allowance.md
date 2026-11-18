@@ -1,1 +1,0 @@
-- Inside dungeons the character list now waits its turn, so friends no longer miss your quests, professions and XP.

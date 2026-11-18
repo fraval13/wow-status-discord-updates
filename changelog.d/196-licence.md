@@ -1,1 +1,0 @@
-- WoW Status now has a licence: the code is MIT, and you may share the addon with friends and guildmates.

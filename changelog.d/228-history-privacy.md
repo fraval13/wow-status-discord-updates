@@ -1,1 +1,0 @@
-- Privacy: turning off quest or profession details also removes their saved local history

@@ -1,2 +1,0 @@
-- The minimap button's tooltip now lists your friends' four newest log entries, each with its icon and how long ago.
-- It also says how many entries are new since you last opened the activity log.

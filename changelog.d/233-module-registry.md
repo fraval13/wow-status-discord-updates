@@ -1,1 +1,0 @@
-- Type /wstatus help to see the available commands and main window pages.

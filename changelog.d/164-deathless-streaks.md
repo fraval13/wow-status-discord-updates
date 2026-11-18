@@ -1,3 +1,0 @@
-- Deathless streaks: Fun records show who has gone longest without dying, now and ever, counted in levels and days
-- A character's profile shows its current deathless streak, and the activity log notes when a long streak ends
-- Optional notices every 5 levels or week without a death; turn them on under Notifications

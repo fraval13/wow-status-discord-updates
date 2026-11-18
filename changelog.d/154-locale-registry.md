@@ -1,1 +1,0 @@
-- Display languages can now register their own translations; new accounts use an available client-language bank.

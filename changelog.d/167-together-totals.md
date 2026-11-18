@@ -1,1 +1,0 @@
-- Together: one page adds the whole group up, with what you added this week and an honest count of who shared
