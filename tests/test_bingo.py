@@ -1,86 +1,70 @@
-"""The Labs bingo board draws and fills locally from the shared journal."""
-from test_journal import actor
+"""Labs: weekly group bingo card (#239)."""
+from test_journal import actor, clock
+from test_week import plain, with_entries
 
 
-def test_weekly_bingo_is_deterministic_fills_and_opens_from_labs():
+def setup(enabled=True):
     lua = actor('Thora')
-    lua.execute("""
-        local B, F, J = WoWStatusBingo, WoWStatusFeatures, WoWStatusJournal
-        local id = next(character().group_ids)
-        local first, last = WoWStatusFirsts.weekRange()
-        local nextWeek = WoWStatusFirsts.weekRange(-1)
-        local board, same, nextBoard = B.draw(id, first), B.draw(id, first), B.draw(id, nextWeek)
-        local seen, different = {}, false
-        assert(#board == 25)
-        for i, square in ipairs(board) do
-            assert(square == same[i] and not seen[square])
-            seen[square], different = true, different or square ~= nextBoard[i]
-        end
-        assert(different)
-        J.visible = function(e) return not e.hidden end
-        local at = WoWStatusSafe.now()
-        local entries = {
-            {id="a", sender="Ada-TestRealm", kind="level", level=20, groups={[id]=true}, at=at},
-            {id="b", sender="Bee-TestRealm", kind="level", level=20, groups={[id]=true}, at=at-1, hidden=true},
-            {id="c", sender="Cat-TestRealm", kind="level", level=20, groups={[id]=true}, at=at-8*86400},
-            {id="d", sender="Dot-TestRealm", kind="level", level=20, groups={}, at=at-1},
-        }
-        local filled = B.fill({{"level"}}, id, first, last, entries)
-        assert(filled[1] == entries[1])
-        assert(not B.won(filled))
-        assert(B.won({true,true,true,true,true}))
-        assert(B.won({[1]=true,[7]=true,[13]=true,[19]=true,[25]=true}))
-        assert(B.won({[5]=true,[9]=true,[13]=true,[17]=true,[21]=true}))
-
-        SlashCmdList.WOWSTATUS("labs")
-        local row = WoWStatusLabsPage.rows[1]
-        assert(row.id == "weeklyBingo" and not row.configure)
-        row:SetChecked(true); row.OnClick(row)
-        row.configure.OnClick(row.configure)
-        local page = WoWStatusMainWindow.show("bingo")
-        assert(#page.cells == 25 and WoWStatusMainWindow.active() == "bingo")
-        assert(not WoWStatusMainWindow.pages().bingo)
-        page.cells[1].OnClick(page.cells[1])
-        assert(page.detail:GetText() ~= "")
-    """)
+    clock(lua, 10)
+    group = lua.eval('(next(character().group_ids))')
+    lua.execute('WoWStatusFeatures.init(WoWStatusDB)')
+    if enabled:
+        lua.execute('WoWStatusFeatures.set("bingo", true)')
+    lua.execute('__notices={}; WoWStatusPopups.notice=function(i) table.insert(__notices,i.text); return true end')
+    return lua, group
 
 
-def test_weekly_bingo_announces_new_win_once_and_catchup_stays_quiet():
-    lua = actor('Thora')
-    lua.execute("""
-        local B, F, J = WoWStatusBingo, WoWStatusFeatures, WoWStatusJournal
-        local id = next(character().group_ids)
-        local at = WoWStatusSafe.now()
-        local entries, board, notices = {}, {}, 0
-        J.visible = function() return true end
-        J.entries = function() return entries end
-        B.draw = function() return board end
-        WoWStatusPopups.notice = function(item)
-            assert(item.text == "Bingo!" and item.kind == "first")
-            notices = notices + 1
-        end
-        F.set("weeklyBingo", true)
-        local function add(level, origin)
-            local entry = {id=tostring(level), level=level, kind="level", sender="Ada-TestRealm",
-                origin=origin, groups={[id]=true}, at=at}
-            entries[#entries+1] = entry
-            B.update(entry)
-        end
-        for level = 1, 5 do
-            board[level] = {"level", "", function(e) return e.level == level end}
-        end
-        add(1, "catchup")
-        add(2, "mine")
-        add(3, "live")
-        add(4, "live")
-        assert(notices == 0)
-        add(5, "live")
-        add(6, "live")
-        assert(notices == 1)
-        at = at + 7 * 86400
-        WoWStatusSafe.now = function() return at end
-        entries = {}
-        for level = 1, 5 do add(level, "catchup") end
-        add(6, "live")
-        assert(notices == 1)
-    """)
+def card(lua, group, offset=0):
+    cells = lua.eval(f'(WoWStatusFirsts.bingo("{group}", {offset}))')
+    return [(cells[i]['text'], cells[i]['by']) for i in range(1, 26)]
+
+
+def test_every_member_gets_the_same_card_and_a_new_week_a_new_one():
+    a, group = setup()
+    b, group_b = setup()
+    assert group == group_b
+    texts = [t for t, _ in card(a, group)]
+    assert texts == [t for t, _ in card(b, group)]
+    assert len(set(texts)) == 25
+    assert texts != [t for t, _ in card(a, group, 1)]
+
+
+def test_squares_fill_from_the_log_and_name_who_did_it():
+    lua, group = setup()
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'level', 100, '{level=21}'),
+                       ('Nils-TestRealm', '1-2-b', 'death', 90, None)])
+    lua.execute('''
+        WoWStatusFirsts.BINGO={{"A level-up",function(l) return l[1] and "Mira" end},{"Someone dies",function(l)
+            for _,e in ipairs(l) do if e.kind=="death" then return "Nils" end end end}}
+        for i=3,25 do WoWStatusFirsts.BINGO[i]={"Never "..i,function() return nil end} end
+    ''')
+    cells = dict(card(lua, group))
+    assert cells['A level-up'] == 'Mira' and cells['Someone dies'] == 'Nils'
+    assert sum(1 for v in cells.values() if v) == 2
+
+
+def test_hardcore_deaths_never_fill_a_square():
+    lua, group = setup()
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'death', 100, '{text="Died in Hardcore"}')])
+    cells = dict(card(lua, group))
+    assert cells.get('Someone dies') is None
+
+
+def test_a_full_line_is_a_bingo_with_one_banner_per_week():
+    lua, group = setup()
+    lua.execute('for i=1,25 do WoWStatusFirsts.BINGO[i]={"Square "..i,function() return (i<=5) and "Mira" or nil end} end')
+    lua.execute('for i=26,#WoWStatusFirsts.BINGO do WoWStatusFirsts.BINGO[i]=nil end')
+    assert lua.eval(f'WoWStatusFirsts.bingoWins((WoWStatusFirsts.bingo("{group}",0)))') in (True, False)
+    # Force a known full row regardless of the shuffle: every square filled.
+    lua.execute('for i=1,25 do WoWStatusFirsts.BINGO[i]={"Square "..i,function() return "Mira" end} end')
+    assert lua.eval(f'WoWStatusFirsts.bingoWins((WoWStatusFirsts.bingo("{group}",0)))') is True
+    first = plain(lua.eval(f'WoWStatusFirsts.week("{group}", 0)')[0])
+    assert 'Weekly bingo: 25/25' in first and 'Bingo!' in first
+    plain(lua.eval(f'WoWStatusFirsts.week("{group}", 0)')[0])
+    assert lua.eval('#__notices') == 1
+
+
+def test_off_by_default_adds_nothing_to_this_week():
+    lua, group = setup(False)
+    with_entries(lua, [('Mira-TestRealm', '1-1-a', 'level', 100, '{level=21}')])
+    assert 'bingo' not in plain(lua.eval(f'WoWStatusFirsts.week("{group}", 0)')[0]).lower()

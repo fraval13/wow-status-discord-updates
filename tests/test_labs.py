@@ -5,6 +5,7 @@ from test_addon import make_lua
 def labs(lua):
     """Register two experiments and open the page, as a feature module would."""
     lua.execute('''
+        WoWStatusFeatures.forgetAll() -- the experiments the addon itself registers
         assert(WoWStatusFeatures.register("combo","Hype combo banner","A banner when friends hit milestones together"))
         assert(WoWStatusFeatures.register("bingo","Weekly group bingo card"))
         SlashCmdList.WOWSTATUS("labs")
@@ -30,7 +31,7 @@ def test_a_toggle_persists_for_the_account_and_turn_all_off_clears_it():
     lua = make_lua()
     labs(lua)
     lua.execute('''
-        local row=WoWStatusLabsPage.rows[2]
+        local row=WoWStatusLabsPage.rows[1]
         row:SetChecked(true);row.OnClick(row)
     ''')
     assert lua.eval('WoWStatusFeatures.enabled("combo")') is True
@@ -39,11 +40,11 @@ def test_a_toggle_persists_for_the_account_and_turn_all_off_clears_it():
     assert lua.eval('WoWStatusLabsPage.allOff.enabled') is True
     # Reopening reads the saved value back, as a later login would.
     lua.execute('WoWStatusLabs.render()')
-    assert lua.eval('WoWStatusLabsPage.rows[2]:GetChecked()') is True
+    assert lua.eval('WoWStatusLabsPage.rows[1]:GetChecked()') is True
     lua.execute('WoWStatusLabsPage.allOff.OnClick()')
     assert lua.eval('WoWStatusFeatures.enabled("combo")') is False
     assert lua.eval('WoWStatusDB.labs.combo') is None
-    assert lua.eval('WoWStatusLabsPage.rows[2]:GetChecked()') is False
+    assert lua.eval('WoWStatusLabsPage.rows[1]:GetChecked()') is False
     assert lua.eval('WoWStatusLabsPage.allOff.enabled') is False
 
 
@@ -53,7 +54,7 @@ def test_a_malformed_saved_value_falls_back_to_off():
     for value in ('"yes"', '1', 'false', '{}'):
         lua.execute(f'WoWStatusDB.labs.combo={value};WoWStatusLabs.render()')
         assert lua.eval('WoWStatusFeatures.enabled("combo")') is False, value
-        assert lua.eval('WoWStatusLabsPage.rows[2]:GetChecked()') is False, value
+        assert lua.eval('WoWStatusLabsPage.rows[1]:GetChecked()') is False, value
 
 
 def test_an_unknown_experiment_is_never_enabled_and_cannot_be_set():
@@ -65,7 +66,7 @@ def test_an_unknown_experiment_is_never_enabled_and_cannot_be_set():
     assert lua.eval('WoWStatusFeatures.known("smuggled")') is False
     # Registering the same id twice does not add a second row.
     assert lua.eval('WoWStatusFeatures.register("combo","Again")') is False
-    assert lua.eval('#WoWStatusFeatures.experiments()') == 3
+    assert lua.eval('#WoWStatusFeatures.experiments()') == 2
 
 
 def test_discord_stays_a_code_only_flag_and_off_the_page():
@@ -79,7 +80,7 @@ def test_discord_stays_a_code_only_flag_and_off_the_page():
 
 def test_the_page_says_so_when_a_version_ships_no_experiments():
     lua = make_lua()
-    lua.execute('WoWStatusFeatures.experiments = function() return {} end; SlashCmdList.WOWSTATUS("labs")')
+    lua.execute('WoWStatusFeatures.forgetAll(); SlashCmdList.WOWSTATUS("labs")')
     assert lua.eval('#WoWStatusFeatures.experiments()') == 0
     assert lua.eval('WoWStatusLabsPage.empty:IsShown()') is True
     assert lua.eval('WoWStatusLabsPage.empty:GetText()') == 'No experiments in this version yet.'
@@ -96,7 +97,7 @@ def test_the_rows_and_the_button_are_controller_controls_in_a_scroll_frame():
     assert page.allOff.kind == 'Button'
     assert page.allOff.OnClick is not None
     assert page.scroll.kind == 'ScrollFrame'
-    assert lua.eval('WoWStatusLabsPage.rows[2]:GetParent()==WoWStatusLabsPage.child') is True
+    assert lua.eval('WoWStatusLabsPage.rows[1]:GetParent()==WoWStatusLabsPage.child') is True
     # The page lives in the main window, which is the frame B closes.
     assert lua.eval('WoWStatusMainWindow.has("labs")') is True
     assert lua.eval('WoWStatusLabsPage:GetParent()') is not None

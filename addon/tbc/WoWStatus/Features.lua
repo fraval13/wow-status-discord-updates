@@ -23,6 +23,8 @@ function F.register(id, label, description, configure)
     return true
 end
 function F.experiments() return list end
+-- Tests only: forget every registered experiment, so a test can set up its own.
+function F.forgetAll() for i = #list, 1, -1 do byId[list[i].id] = nil; list[i] = nil end end
 function F.known(id) return byId[id] ~= nil end
 -- Only a saved true means on. Anything else — nil, a string, a number left by a
 -- hand-edited or truncated SavedVariables file — reads as off, so a malformed

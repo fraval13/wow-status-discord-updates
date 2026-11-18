@@ -802,8 +802,12 @@ def test_bingo_board_cells_are_controller_controls():
     runtime.execute("""
         local F = WoWStatusFeatures
         local unpack = unpack or table.unpack
-        F.set("weeklyBingo", true)
-        F.experiments()[1].configure()
+        F.set("bingo", true)
+        SlashCmdList.WOWSTATUS("labs")
+        for _, row in ipairs(WoWStatusLabsPage.rows) do
+            if row.id == "bingo" then row.configure.OnClick(row.configure) end
+        end
+        assert(WoWStatusMainWindow.active() == "bingo")
         local page = WoWStatusMainWindow.show("bingo")
         page.GetChildren = function() return unpack(page.cells) end
         for i, cell in ipairs(page.cells) do

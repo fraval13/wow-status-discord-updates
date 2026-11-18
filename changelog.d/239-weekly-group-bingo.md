@@ -1,1 +1,0 @@
-- Labs adds a weekly bingo card that fills as your group reaches milestones.
