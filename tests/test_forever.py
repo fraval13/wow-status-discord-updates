@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
-from test_addon import PERSONALITY_FILES, STUBS, lupa, run_addon_file
+from lua_loader import load_edition
+from test_addon import STUBS, lupa
 
 
 def forever_runtime(name='Thora', extra=''):
@@ -22,9 +23,7 @@ def forever_runtime(name='Thora', extra=''):
     ''' + extra)
     runtime.globals().date = lambda fmt, at: datetime.fromtimestamp(
         at, timezone.utc).strftime(fmt.lstrip('!'))
-    root = Path(__file__).parents[1] / 'addon/forever/WoWStatus'
-    for name in ('Diagnostics.lua', 'Safe.lua', 'Modules.lua', 'Sharing.lua', 'Locale.lua', 'LocaleNN.lua', 'Features.lua', 'Settings.lua', 'Migrations.lua', 'CaseFold.lua', 'Forever.lua', 'Loot.lua', 'Progress.lua', 'History.lua', 'HistoryUI.lua', 'Groups.lua', 'Share.lua', 'Flavour.lua', 'FlavourNN.lua', 'Personalities.lua', 'FlavourWholesome.lua', 'FlavourBard.lua', 'FlavourVeteran.lua', 'FlavourGoblin.lua', 'FlavourChristian.lua', 'FlavourSmug.lua', 'FlavourDwarf.lua', 'FlavourJealous.lua', 'FlavourDrama.lua', 'FlavourAgent.lua', 'FlavourLegend.lua', 'VoiceData.lua', 'Voices.lua', 'Theme.lua', 'MainWindow.lua', 'Labs.lua', 'Overview.lua', 'Guide.lua', 'Privacy.lua', 'Presentation.lua', 'Wire.lua', 'Popups.lua', 'Journal.lua', 'Export.lua', 'WhatsNewData.lua', 'WhatsNew.lua', 'Firsts.lua', 'Streaks.lua', 'Bingo.lua', 'Leaderboard.lua', 'WhenWePlay.lua', 'Reactions.lua', 'Together.lua', 'Recaps.lua', 'Equipment.lua', 'EquipmentSync.lua', 'Roster.lua', 'Goals.lua', 'Profile.lua', 'Compare.lua', 'UnitTooltip.lua', 'Mutes.lua', 'Minimap.lua', 'StatusLine.lua', 'Previews.lua', 'Screenshots.lua', 'Milestones.lua', 'Achievements.lua', 'Gamepad.lua', 'WoWStatus.lua'):
-        run_addon_file(runtime, root / name)
+    load_edition(runtime, 'forever')
     return runtime
 
 

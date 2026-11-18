@@ -5,6 +5,7 @@ client formats its paths and stacks needs a game client to confirm.
 """
 from pathlib import Path
 
+from lua_loader import load_edition
 from test_addon import STUBS, lupa, make_lua, run_addon_file
 
 ROOT = Path(__file__).parents[1]
@@ -287,8 +288,7 @@ def test_a_failing_capture_never_blocks_the_error_display():
 def test_early_errors_are_redacted_before_they_are_stored():
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(STUBS + HANDLER)
-    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Diagnostics.lua')
-    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Safe.lua')
+    load_edition(runtime, 'vanilla', only=('Diagnostics.lua', 'Safe.lua'))
     runtime.execute('''
         raise("Interface/AddOns/WoWStatus/Locale.lua:3: early from Eldrin-TestRealm", "")
         WoWStatusDB = {version = 1, characters = {}, account_groups = {abc = "Moonwell Secret"},
@@ -402,8 +402,7 @@ def test_secrets_next_to_slashes_and_punctuation_are_hidden():
 def test_long_early_stacks_are_redacted_before_they_are_cut():
     runtime = lupa.LuaRuntime(unpack_returned_tuples=True)
     runtime.execute(STUBS + HANDLER)
-    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Diagnostics.lua')
-    run_addon_file(runtime, ROOT / 'addon/vanilla/WoWStatus/Safe.lua')
+    load_edition(runtime, 'vanilla', only=('Diagnostics.lua', 'Safe.lua'))
     runtime.execute('''
         local lines = {}
         for i = 1, 23 do lines[i] = "Interface/AddOns/WoWStatus/X.lua:" .. i .. ": " .. string.rep("y", 90) end

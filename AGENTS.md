@@ -169,8 +169,9 @@ all four editions, deleting tracked edition copies whose shared source is gone
 a new shared file first, and add a new edition-owned adapter file to `EDITIONS` in
 the script. Inspect pending changes first: it can also propagate unrelated branding
 work. With unrelated edits present, copy only task-owned files or use an isolated
-worktree. Add new Lua files to each edition's TOC before consumers and update any
-explicit test-harness load lists (`test_addon.py`, `test_forever.py`).
+worktree. Add new Lua files to each edition's TOC before consumers. Test clients
+load those files in TOC order through `tests/lua_loader.py`; no test load list
+needs updating. Small isolated tests can select a subset in that same order.
 
 Versions: feature pull requests must NOT change the version. On each main push,
 `checks.yml` first runs `scripts/prepare_release.py` in a trusted job. It increments
@@ -235,7 +236,7 @@ python -X utf8=0 -m pytest -q`.
 `-n 0` runs it in one process, e.g. for a debugger. Homepage tests share template
 repositories and compressed ZIPs across workers (`shared_once`, `clone_repository`,
 `reuse_homepage_packages` in `tests/conftest.py`), and Lua harnesses load each
-addon file as bytecode compiled once per run (`run_addon_file` in `test_addon.py`).
+addon file as bytecode compiled once per run (`run_addon_file` in `tests/lua_loader.py`).
 
 Use existing environments when available. Run checks appropriate to the change;
 documentation-only changes need link/whitespace review, not a full runtime suite.
