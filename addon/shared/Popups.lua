@@ -853,6 +853,26 @@ local function late(sender, kind, at, now)
     end
     return reason ~= nil
 end
+-- Labs (#236): live milestones from friends less than ten minutes apart make a
+-- combo. Built only from updates already received; nothing is sent or saved.
+WoWStatusFeatures.register("combo", "Hype combo banner",
+    "When friends hit milestones within ten minutes of each other, the banner says Combo x2, x3 and names them.")
+local COMBO_WINDOW, COMBO_NAMES = 600, 4
+local combo = {count = 0, names = {}, last = nil}
+function P.comboReset() combo = {count = 0, names = {}, last = nil} end
+-- Counts one live milestone and returns {count, names} once there are two.
+local function comboNote(item, now)
+    if not WoWStatusFeatures.enabled("combo") or item.kind == "introduction" or P.isSelf(item.sender) then return nil end
+    if not combo.last or now - combo.last > COMBO_WINDOW then combo = {count = 0, names = {}, last = nil} end
+    combo.last, combo.count = now, combo.count + 1
+    local name = (item.sender:match("^[^-]+") or item.sender)
+    local present = false
+    for _, n in ipairs(combo.names) do if n == name then present = true end end
+    if not present and #combo.names < COMBO_NAMES then combo.names[#combo.names + 1] = name end
+    if combo.count < 2 then return nil end
+    return {count = combo.count, names = table.concat(combo.names, ", ")}
+end
+P.comboNote = comboNote
 -- Store a validated update from a known peer (or a trusted legacy sender): log
 -- it, then queue its popup unless the log already had it.
 local function commit(c, now)
@@ -903,6 +923,7 @@ local function commit(c, now)
         noteReceive("achievement_cap", c, now); return false, "logged without a popup (achievement cap)"
     end
     noteReceive("queued", c, now)
+    item.combo = comboNote(item, now)
     table.insert(incoming, item)
     return true
 end
@@ -1518,6 +1539,7 @@ local function show(item, now)
         local level = S.number(item.level)
         heading = level == A.max_level and "MAXIMUM LEVEL!" or ("LEVEL " .. level .. "!")
     end
+    if item.combo and not item.preview then heading = T("COMBO") .. " x" .. item.combo.count .. "!" end
     toast:SetScale((big and 1.35 or 1) * (WoWStatusTheme and WoWStatusTheme.scale(true) or 1))
     toast.big, toast.item = big, item
     toast.handle:SetShown(prefs.popup_unlocked == true)
@@ -1532,6 +1554,7 @@ local function show(item, now)
     detail = WoWStatusPresentation.colourItem(item, T(detail))
     toast.message:SetText(name .. ((item.level or item.kind=="guard") and " " or " — ") .. detail)
     local flavour=WoWStatusFlavour.text(item)
+    if item.combo and not item.preview then flavour = item.combo.names:gsub("|", "||") end
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
     toast.shownAt = S.uptime()
