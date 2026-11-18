@@ -166,3 +166,50 @@ def test_dragging_an_attached_line_unpins_it_from_the_tracker():
         WoWStatusStatusLine.update()
         assert(not f.attached and f.anchor[1] == "TOPLEFT")
     ''')
+
+
+def test_private_level_countdown_tracks_xp_and_clears_when_reached():
+    lua = actor('Thora')
+    lua.execute("""
+        WoWStatusGroups.update("", "")
+        __level = 38
+        local xp, maximum = 700, 1000
+        UnitXP = function() return xp end
+        UnitXPMax = function() return maximum end
+        local L, F, c = WoWStatusStatusLine, WoWStatusFeatures, character()
+        local sent, events = #__sent, #c.events
+        assert(not F.enabled("personalCountdown"))
+        c.personal_goal_level = 40
+        L.update()
+        assert(not WoWStatusStatusLineFrame or not WoWStatusStatusLineFrame:IsShown())
+
+        SlashCmdList.WOWSTATUS("labs")
+        local row
+        for _, candidate in ipairs(WoWStatusLabsPage.rows) do
+            if candidate.id == "personalCountdown" then row = candidate end
+        end
+        assert(row and not row.configure)
+        row:SetChecked(true); row.OnClick(row)
+        assert(row.configure:IsShown())
+        row.configure.OnClick(row.configure)
+        local page = WoWStatusMainWindow.show("personal-countdown")
+        assert(page.target:GetText() == "Target level: 40")
+        page.clear.OnClick()
+        assert(c.personal_goal_level == nil)
+        page.riding.OnClick()
+        assert(c.personal_goal_level == 40)
+        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Levels left: 2 (1.3 XP bars)")
+        __level, xp = 39, 999
+        L.update()
+        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Levels left: 1 (0.1 XP bars)")
+        maximum = nil
+        L.update()
+        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Levels left: 1")
+        WoWStatusLocale.set("nn")
+        L.update()
+        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Nivå att: 1")
+        __level = 40
+        L.update()
+        assert(c.personal_goal_level == nil and not WoWStatusStatusLineFrame:IsShown())
+        assert(#__sent == sent and #c.events == events)
+    """)

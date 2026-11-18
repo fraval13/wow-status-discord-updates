@@ -3,7 +3,9 @@
 -- otherwise it is a small panel you can drag; dragging an attached line unpins it. Clicking it opens the main
 -- window. Settings are account-wide in WoWStatusDB.status_line.
 WoWStatusStatusLine = {}
-local L, S = WoWStatusStatusLine, WoWStatusSafe
+local L, S, A = WoWStatusStatusLine, WoWStatusSafe, WoWStatusAdapter
+local Features = WoWStatusFeatures
+local GOAL = "personalCountdown"
 local line, inCombat
 
 local function settings()
@@ -27,6 +29,39 @@ function L.tracker()
 end
 
 local T = WoWStatusLocale.T
+local TF = WoWStatusLocale.F
+-- The first ordinary riding milestone makes a useful preset. Players can pick
+-- any higher level up to their edition's cap.
+local RIDING_LEVEL = {["classic-era"] = 40, forever = 40, ["tbc-anniversary"] = 30, retail = 10}
+
+local function goalState()
+    if not Features.enabled(GOAL) then return nil end
+    local character = WoWStatusPopups.character()
+    if not character then return nil end
+    local level = A.level()
+    if not level then return nil end
+    local saved = character.personal_goal_level
+    local goal = S.number(saved)
+    if saved ~= nil and (not goal or goal <= level or goal > A.max_level or goal ~= math.floor(goal)) then
+        character.personal_goal_level, goal = nil, nil
+    end
+    return character, level, goal
+end
+
+local function countdown()
+    local _, level, goal = goalState()
+    if not goal then return nil end
+    local levels = goal - level
+    local xp = S.number(S.call(UnitXP, "player"))
+    local maximum = S.number(S.call(UnitXPMax, "player"))
+    if xp and maximum and maximum > 0 and xp >= 0 and xp < maximum then
+        -- One partly filled bar plus one full bar for each later level.
+        local bars = levels - 1 + math.ceil((maximum - xp) * 10 / maximum) / 10
+        return TF("Levels left: %d (%.1f XP bars)", levels, bars)
+    end
+    return TF("Levels left: %d", levels)
+end
+
 local function age(seconds)
     if seconds < 60 then return T("now") end
     if seconds < 3600 then return math.floor(seconds / 60) .. "m" end
@@ -49,18 +84,27 @@ function L.latest()
     end
 end
 
-function L.text()
+local function text(goal, grouped)
+    if goal and not grouped then return "WoW Status · " .. goal end
     local parts = {"WoW Status", WoWStatusPopups.onlineCount() .. " " .. T("online")}
-    -- Quiet hours take the place of the latest news, so the line stays one line.
-    local latest = WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText() or L.latest()
+    -- Keep the existing quiet-hours notice. Otherwise the goal takes the
+    -- latest-news slot while active, so the status line stays compact.
+    local latest = (WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText()) or goal or L.latest()
     if latest then table.insert(parts, latest) end
     return table.concat(parts, " · ")
 end
 
-local function hidden(value)
-    if not value.enabled or not next(WoWStatusGroups.selected(WoWStatusPopups.character and WoWStatusPopups.character() or nil)) then
-        return true
-    end
+local function hasGroup()
+    return next(WoWStatusGroups.selected(WoWStatusPopups.character and WoWStatusPopups.character() or nil)) ~= nil
+end
+
+function L.text()
+    local goal = countdown()
+    return text(goal, goal and hasGroup())
+end
+
+local function hidden(value, goal, grouped)
+    if not value.enabled or (not goal and not grouped) then return true end
     if value.hide_combat and inCombat then return true end
     if value.hide_instance then
         local inside, kind = S.call(IsInInstance)
@@ -121,13 +165,14 @@ end
 function L.update()
     local value = settings()
     if not value or not WoWStatusPopups.onlineCount then return end
-    if hidden(value) then
+    local goal, grouped = countdown(), hasGroup()
+    if hidden(value, goal, grouped) then
         if line then line:Hide() end
         return
     end
     if not line then create() end
     place(value)
-    line.text:SetText(L.text())
+    line.text:SetText(text(goal, grouped))
     line:Show()
 end
 
@@ -137,6 +182,55 @@ function L.set(key, enabled)
     value[key] = enabled == true
     L.update()
 end
+
+local function goalPageRefresh(page)
+    local _, level, goal = goalState()
+    local cap, riding = A.max_level, RIDING_LEVEL[A.client_id]
+    page.target:SetText(goal and TF("Target level: %d", goal) or T("No level goal"))
+    WoWStatusUI.call(page.less, "SetEnabled", goal ~= nil and goal > level + 1)
+    WoWStatusUI.call(page.more, "SetEnabled", level ~= nil and (goal or level) < cap)
+    WoWStatusUI.call(page.riding, "SetEnabled", level ~= nil and riding ~= nil and riding > level and riding ~= goal)
+    WoWStatusUI.call(page.cap, "SetEnabled", level ~= nil and cap > level and cap ~= goal)
+    WoWStatusUI.call(page.clear, "SetEnabled", goal ~= nil)
+end
+
+local function goalPage(parent)
+    local page = CreateFrame("Frame", nil, parent)
+    page:SetAllPoints(parent)
+    WoWStatusUI.text(page, "GameFontNormalLarge", 24, -12, 700):SetText(T("Personal level countdown"))
+    page.target = WoWStatusUI.text(page, "GameFontHighlight", 24, -52, 700)
+    local function button(label, x, y, width, choose)
+        local b = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
+        b:SetPoint("TOPLEFT", x, y); b:SetSize(width, 26); b:SetText(T(label))
+        b:SetScript("OnClick", function()
+            local character, level, goal = goalState()
+            if not character then return end
+            local wanted = choose(level, goal)
+            if wanted and (wanted <= level or wanted > A.max_level) then return end
+            character.personal_goal_level = wanted
+            L.update()
+            goalPageRefresh(page)
+        end)
+        return b
+    end
+    page.less = button("−", 24, -80, 66, function(level, goal) return (goal or level) - 1 end)
+    page.more = button("+", 98, -80, 66, function(level, goal) return (goal or level) + 1 end)
+    page.riding = button("Riding level", 24, -118, 160, function() return RIDING_LEVEL[A.client_id] end)
+    page.cap = button("Level cap", 192, -118, 160, function() return A.max_level end)
+    page.clear = button("Clear goal", 360, -118, 160, function() return nil end)
+    return page
+end
+
+local function configureGoal()
+    if not Features.enabled(GOAL) then return end
+    local window = WoWStatusMainWindow
+    if not window.has("personal-countdown") then
+        window.register("personal-countdown", "Personal level countdown", goalPage, goalPageRefresh, {tab=false})
+    end
+    window.show("personal-countdown")
+end
+
+Features.register(GOAL, "Personal level countdown", "Show a private level and XP countdown in the status line.", configureGoal)
 
 local frame = CreateFrame("Frame")
 for _, event in ipairs({"PLAYER_ENTERING_WORLD", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",

@@ -756,7 +756,8 @@ def test_labs_rows_and_the_all_off_button_are_reachable(lua):
     lua.execute('''
         WoWStatusDB={}
         WoWStatusFeatures.init(WoWStatusDB)
-        WoWStatusFeatures.register("combo","Hype combo banner","A banner for milestones together")
+        WoWStatusFeatures.register("combo","Hype combo banner","A banner for milestones together",
+            function() __configured=true end)
         WoWStatusFeatures.register("bingo","Weekly group bingo card")
         local show=WoWStatusMainWindow.show
         WoWStatusMainWindow.show=function(key)
@@ -777,7 +778,7 @@ def test_labs_rows_and_the_all_off_button_are_reachable(lua):
             if control==__page.rows[2] then second=true end
             if control==__page.allOff then off=true end
         end
-        assert(first and second)
+        assert(first and second and not __page.rows[1].configure)
         -- Nothing is on yet, so Turn all off does nothing and is disabled.
         assert(not off and __page.allOff.enabled==false)
         press("PADDDOWN") -- the first press shows the highlight
@@ -785,11 +786,75 @@ def test_labs_rows_and_the_all_off_button_are_reachable(lua):
         assert(WoWStatusFeatures.enabled("combo"))
         assert(__page.allOff.enabled==true)
         -- Now it does something, so the pad can reach it.
-        local reached=false
+        local configure=__page.rows[1].configure
+        configure.rect={660,400,100,26}
+        local reached, reachesConfigure=false,false
         for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do
             if control==__page.allOff then reached=true end
+            if control==configure then reachesConfigure=true end
         end
-        assert(reached)
+        assert(reached and reachesConfigure)
+        WoWStatusGamepad.setFocus(configure);press("PAD1")
+        assert(__configured)
         WoWStatusGamepad.setFocus(__page.allOff);press("PAD1")
-        assert(not WoWStatusFeatures.enabled("combo"))
+        assert(not WoWStatusFeatures.enabled("combo") and not configure:IsShown())
     ''')
+
+
+def test_countdown_goal_buttons_are_reachable_and_set_the_target(lua):
+    main_window(lua)
+    lua.execute("""
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:SetText(text) self.text=text end
+        function methods:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        WoWStatusLocale={T=function(text) return text end,F=string.format}
+        WoWStatusSafe={number=tonumber}
+        WoWStatusAdapter={level=function() return 38 end,max_level=60,client_id="classic-era"}
+        __character={}
+        WoWStatusPopups={character=function() return __character end}
+        WoWStatusUI={
+            text=function(parent) return CreateFrame("FontString",nil,parent) end,
+            call=function(frame,name,...) return frame[name](frame,...) end,
+        }
+        local window=WoWStatusMainWindow
+        window.has=function() return __build~=nil end
+        window.register=function(key, title, build, refresh, options)
+            assert(key=="personal-countdown" and options.tab==false)
+            __build,__refresh=build,refresh
+        end
+        local show=window.show
+        window.show=function(key)
+            show(key)
+            __page=__build(main)
+            __page:Show(); __refresh(__page)
+            __page.less.rect={120,340,66,26}
+            __page.more.rect={194,340,66,26}
+            __page.riding.rect={120,300,160,26}
+            __page.cap.rect={288,300,160,26}
+            __page.clear.rect={456,300,160,26}
+        end
+    """)
+    for name in ('Features', 'StatusLine'):
+        lua.execute((ROOT / f'addon/shared/{name}.lua').read_text(encoding='utf-8'))
+    lua.execute("""
+        WoWStatusDB={}
+        WoWStatusFeatures.init(WoWStatusDB)
+        assert(WoWStatusFeatures.set("personalCountdown",true))
+        WoWStatusFeatures.experiments()[1].configure()
+        WoWStatusGamepad.update()
+        local function reachable()
+            local controls={}
+            for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do controls[control]=true end
+            return controls
+        end
+        local controls=reachable()
+        assert(controls[__page.more] and controls[__page.riding] and controls[__page.cap])
+        assert(not controls[__page.less] and not controls[__page.clear])
+        press("PADDDOWN")
+        WoWStatusGamepad.setFocus(__page.riding); press("PAD1")
+        assert(__character.personal_goal_level==40)
+        controls=reachable()
+        assert(controls[__page.less] and controls[__page.clear] and not controls[__page.riding])
+        WoWStatusGamepad.setFocus(__page.clear); press("PAD1")
+        assert(__character.personal_goal_level==nil)
+    """)
