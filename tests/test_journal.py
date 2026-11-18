@@ -368,3 +368,159 @@ def test_profession_skill_points_are_not_logged_and_old_ones_are_removed():
         for _,e in ipairs(WoWStatusJournal.entries()) do assert(e.kind~="professionprogress") end
         assert(WoWStatusDB.journal.profession_points_removed)
     ''')
+
+
+def search_for(lua, text):
+    """Type into the search box and let the debounce elapse, as a player would.
+
+    The text has to differ from what is in the box; typing the same thing again
+    is not a change and schedules nothing.
+    """
+    lua.execute(f'''
+        local panel=WoWStatusActivityLog
+        panel.searchBox:SetText({text!r})
+        panel.searchBox.OnTextChanged(panel.searchBox)
+    ''')
+    assert lua.eval('WoWStatusActivityLog.searchWait') is not None, 'typing did not schedule a filter'
+    lua.execute('WoWStatusActivityLog.OnUpdate(WoWStatusActivityLog,.3)')
+    assert lua.eval('WoWStatusActivityLog.searchWait') is None
+    return [lua.eval(f'WoWStatusActivityLog.entriesList[{i}].text')
+            for i in range(1, lua.eval('#WoWStatusActivityLog.entriesList') + 1)]
+
+
+def test_searching_the_log_folds_case_and_accents_and_looks_past_the_day_picker():
+    # #175: "when did Thora get her mount" must not need clicking through days.
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        WoWStatusJournal.observe("zone","Entered Ærie Peak")
+        WoWStatusJournal.observe("profession","Learned Mining")
+        WoWStatusJournal.observe("quest","Completed 100 quests!")
+        -- The oldest entry is a week back, so the day picker hides it.
+        local entries=WoWStatusJournal.entries()
+        for _,e in ipairs(entries) do if e.text=="Entered Ærie Peak" then e.at=e.at-7*86400 end end
+        WoWStatusJournal.redraw()
+    ''')
+    lua.eval('SlashCmdList.WOWSTATUS')('activity')
+    today_only = lua.eval('#WoWStatusActivityLog.entriesList')
+    assert today_only == 2
+
+    assert search_for(lua, 'aerie') == ['Entered Ærie Peak']
+    assert search_for(lua, 'ÆRIE PEAK') == ['Entered Ærie Peak']
+    assert search_for(lua, 'mining') == ['Learned Mining']
+    assert search_for(lua, 'nothing like this') == []
+    assert lua.eval('WoWStatusActivityLog.empty:IsShown()') is True
+    assert lua.eval('WoWStatusActivityLog.empty:GetText()') == 'Nothing in the log matches that.'
+    assert lua.eval('WoWStatusActivityLog.searchCount:GetText()') == '0 matches in the whole log'
+
+    # Clearing it brings the day picker's own view back, unchanged.
+    lua.execute('WoWStatusActivityLog.searchClear.OnClick()')
+    assert lua.eval('WoWStatusActivityLog.search') is None
+    assert lua.eval('WoWStatusActivityLog.searchCount:GetText()') == ''
+    assert lua.eval('#WoWStatusActivityLog.entriesList') == today_only
+
+
+def test_search_reaches_every_field_and_combines_with_the_type_filter():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute("""
+        WoWStatusJournal.observe("zone","Entered Duskwood")
+        WoWStatusJournal.observe("quest","Completed 100 quests!")
+        local group=next(character().group_ids)
+        WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-a",kind="death",
+            text="Total deaths: 1",at=time(),group_id=group})
+        for _,e in ipairs(WoWStatusJournal.entries()) do
+            if e.kind=="death" then WoWStatusJournal.setDetails(e.id,"Duskwood","Defias Pillager") end
+        end
+    """)
+    lua.eval('SlashCmdList.WOWSTATUS')('activity')
+    # The entry text, the zone and the killer from a death's details, and the name.
+    assert len(search_for(lua, 'duskwood')) == 2
+    assert search_for(lua, 'pillager') == ['Total deaths: 1']
+    assert search_for(lua, 'mira') == ['Total deaths: 1']
+    # A type filter still applies on top of the search ("ed" is in all three texts).
+    assert len(search_for(lua, 'ed')) == 3
+    lua.execute("""
+        local panel=WoWStatusActivityLog
+        for i,t in ipairs(WoWStatusJournal.TYPES) do if t[1]=="Zones" then panel.typeFilter=i end end
+        WoWStatusJournal.redraw()
+    """)
+    assert search_for(lua, 'duskwood') == ['Entered Duskwood']
+    # The Showing line names both, and Show all clears both at once.
+    showing = lua.eval('WoWStatusActivityLog.showing:GetText()')
+    assert 'Zones' in showing and 'duskwood' in showing
+    lua.execute('WoWStatusActivityLog.showAll.OnClick()')
+    assert lua.eval('WoWStatusActivityLog.search') is None
+    assert lua.eval('WoWStatusActivityLog.typeFilter') is None
+    assert lua.eval('WoWStatusActivityLog.searchBox:GetText()') == ''
+
+
+def test_a_jump_to_one_entry_drops_a_search_that_would_hide_it():
+    # The same trap as #119: a filter left over must not make the jump do nothing.
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        WoWStatusJournal.observe("zone","Entered Duskwood")
+        WoWStatusJournal.observe("profession","Learned Mining")
+    ''')
+    lua.eval('SlashCmdList.WOWSTATUS')('activity')
+    assert search_for(lua, 'duskwood') == ['Entered Duskwood']
+    target = lua.eval('''(function()
+        for _,e in ipairs(WoWStatusJournal.entries()) do
+            if e.text=="Learned Mining" then return e.id end
+        end
+    end)()''')
+    assert target is not None
+    assert lua.eval('WoWStatusJournal.focus')(target) is True
+    assert lua.eval('WoWStatusActivityLog.search') is None
+    assert lua.eval('WoWStatusActivityLog.searchBox:GetText()') == ''
+
+
+def test_the_search_is_never_saved_and_starts_empty():
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('WoWStatusJournal.observe("profession","Learned Mining")')
+    lua.eval('SlashCmdList.WOWSTATUS')('activity')
+    assert lua.eval('WoWStatusActivityLog.searchBox:GetText()') == ''
+    assert search_for(lua, 'mining') == ['Learned Mining']
+    assert lua.eval('''(function()
+        local found=0
+        for _,table_ in ipairs({WoWStatusDB,WoWStatusDB.journal}) do
+            for key in pairs(table_) do if tostring(key):find("search") then found=found+1 end end
+        end
+        return found
+    end)()''') == 0
+
+
+def test_the_search_box_and_its_clear_button_are_controller_controls():
+    # Gamepad.lua walks visible frames, so the box must be a real EditBox and the
+    # button a real Button with an OnClick (AGENTS.md's controller rule).
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.eval('SlashCmdList.WOWSTATUS')('activity')
+    assert lua.eval('WoWStatusActivityLog.searchBox.kind') == 'EditBox'
+    assert lua.eval('WoWStatusActivityLog.searchBox.template') == 'InputBoxTemplate'
+    assert lua.eval('WoWStatusActivityLog.searchBox.OnEscapePressed') is not None
+    assert lua.eval('WoWStatusActivityLog.searchBox.OnEnterPressed') is not None
+    assert lua.eval('WoWStatusActivityLog.searchClear.kind') == 'Button'
+    assert lua.eval('WoWStatusActivityLog.searchClear.OnClick') is not None
+    # Escape (B on a pad) leaves the field and keeps what was typed.
+    assert search_for(lua, 'mining') == []
+    lua.execute('WoWStatusActivityLog.searchBox.OnEscapePressed(WoWStatusActivityLog.searchBox)')
+    assert lua.eval('WoWStatusActivityLog.search') == 'mining'
+
+
+def test_a_long_log_filters_over_the_loaded_table_without_new_frames():
+    # #175: the page keeps its six reused rows however many entries match, and the
+    # folded text of each entry is built once, not per keystroke.
+    lua = actor('Thora')
+    clock(lua, 10)
+    lua.execute('''
+        for i=1,600 do WoWStatusJournal.observe("zone","Entered Zone "..i) end
+        WoWStatusJournal.observe("zone","Entered Ærie Peak")
+    ''')
+    lua.eval('SlashCmdList.WOWSTATUS')('activity')
+    assert lua.eval('#WoWStatusActivityLog.rows') == 6
+    assert search_for(lua, 'aerie') == ['Entered Ærie Peak']
+    assert len(search_for(lua, 'zone 1')) == 111  # 1, 10-19 and 100-199
+    assert lua.eval('#WoWStatusActivityLog.rows') == 6

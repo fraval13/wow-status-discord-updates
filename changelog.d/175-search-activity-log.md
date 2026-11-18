@@ -1,0 +1,1 @@
+- The activity log has a search box: type a name, a zone or a word and it looks through the whole log

@@ -229,6 +229,9 @@ W.add({
         = "Eksperiment under arbeid. Kvart av dei endrar berre ting for deg, og alle startar avslåtte.",
     ["No experiments in this version yet."] = "Ingen eksperiment i denne utgåva enno.",
     ["Turn all experiments off"] = "Slå av alle eksperiment",
+    ["Search:"] = "Søk:", ["Clear"] = "Tøm",
+    ["%d matches in the whole log"] = "%d treff i heile loggen",
+    ["Nothing in the log matches that."] = "Ingenting i loggen passar med det.",
     -- Controller navigation and key bindings
     ["Open or close WoW Status"] = "Opne eller lukk WoW Status",
     ["Open the activity log"] = "Opne aktivitetsloggen",
