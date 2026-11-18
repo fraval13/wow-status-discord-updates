@@ -35,10 +35,10 @@ def test_generated_files_match_their_json_and_every_edition():
         assert tuple(toc[start + 1:start + 1 + len(PERSONALITY_FILES)]) == PERSONALITY_FILES
 
 
-def test_the_builder_rejects_broken_sources(tmp_path):
+def test_the_builder_rejects_broken_sources(tmp_path, monkeypatch):
     build = builder()
     # This test is about the caption files, so the fake personality has no reaction voice.
-    build.REACTION_VOICES = ()
+    monkeypatch.setattr(build, 'REACTION_VOICES', ())
     personality = build.PERSONALITIES[0]
     folder = tmp_path / personality.id
     folder.mkdir()
