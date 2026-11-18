@@ -401,10 +401,12 @@ def test_sync_looks_up_one_member_with_who():
     thora.execute('__results = {{fullName="Mira", level=42}, {fullName="Stranger", level=5}}')
     thora.eval('fire')('WHO_LIST_UPDATE')
     assert level_of(thora, 'Mira-TestRealm')[0] == 42
-    # A /who the player types, answered as a chat line.
+    # #227: the list has been read, so a later system line leaves it alone. Without
+    # this, every login, loot roll and AFK notice re-read the same old rows and
+    # stamped them with a fresh time.
     thora.execute('__results = {{fullName="Mira", level=43}}')
     thora.eval('fire')('CHAT_MSG_SYSTEM', 'Mira: Level 43 Dwarf Warrior')
-    assert level_of(thora, 'Mira-TestRealm')[0] == 43
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
     # Only group members are remembered.
     assert thora.eval('(function() local n = 0; for _ in pairs(WoWStatusDB.roster.who) do n = n + 1 end; return n end)()') == 1
 
@@ -571,5 +573,83 @@ def test_old_who_results_are_not_counted_again():
         __results = {{fullName="Mira", level=42}}
         C_FriendList = {GetNumWhoResults=function() return #__results end, GetWhoInfo=function(i) return __results[i] end}
     ''')
-    assert thora.eval('WoWStatusRoster.readWho()') == 1
-    assert thora.eval('WoWStatusRoster.readWho()') == 0
+    # Learnt levels, and how many rows the client's list held.
+    assert thora.eval('WoWStatusRoster.readWho()') == (1, 1)
+    assert thora.eval('WoWStatusRoster.readWho()') == (0, 1)
+
+
+def test_system_lines_read_who_only_while_our_own_lookup_waits():
+    # #227: a short /who answer can be a chat line, so system messages are read
+    # while our lookup waits for one — and at no other time.
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        __who, __results = {}, {{fullName="Mira", level=42}}
+        C_FriendList = {
+            SendWho=function(filter) table.insert(__who, filter) end,
+            GetNumWhoResults=function() return #__results end,
+            GetWhoInfo=function(i) return __results[i] end,
+        }
+        __reads = 0
+        local readWho = WoWStatusRoster.readWho
+        WoWStatusRoster.readWho = function(...) __reads = __reads + 1; return readWho(...) end
+    ''')
+    # No lookup of ours is waiting, so an unrelated system line costs nothing.
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'Someone has come online.')
+    assert thora.eval('__reads') == 0
+    # Still only the level the roster sync carried, never the one in the old list.
+    assert level_of(thora, 'Mira-TestRealm')[0] == 1
+
+    assert thora.eval('WoWStatusRoster.whoLookup()') == 'Mira-TestRealm'
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'Mira: Level 42 Dwarf Warrior')
+    assert thora.eval('__reads') == 1
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
+    # Learnt once: the next system line is not another read.
+    thora.execute('__results = {{fullName="Mira", level=43}}')
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'Mira has gone AFK.')
+    assert thora.eval('__reads') == 1
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
+
+
+def test_an_unanswered_lookup_stops_reading_system_lines_after_ten_seconds():
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        __who, __results = {}, {}
+        C_FriendList = {
+            SendWho=function(filter) table.insert(__who, filter) end,
+            GetNumWhoResults=function() return #__results end,
+            GetWhoInfo=function(i) return __results[i] end,
+        }
+        __reads = 0
+        local readWho = WoWStatusRoster.readWho
+        WoWStatusRoster.readWho = function(...) __reads = __reads + 1; return readWho(...) end
+        assert(WoWStatusRoster.whoLookup())
+    ''')
+    # An empty answer never clears the wait, so the clock has to.
+    thora.eval('fire')('CHAT_MSG_SYSTEM', 'No players found.')
+    assert thora.eval('__reads') == 1
+    thora.execute('''
+        local real = time
+        time = function() return real() + 11 end
+        fire('CHAT_MSG_SYSTEM', 'Someone has come online.')
+        fire('CHAT_MSG_SYSTEM', 'Someone else has come online.')
+        time = real
+    ''')
+    assert thora.eval('__reads') == 1
+
+
+def test_a_who_list_update_is_read_whoever_asked_for_it():
+    # A /who the player typed themselves still teaches levels: the event means the
+    # client's list is new, so nothing old is re-read or restamped.
+    mira, thora = pair()
+    pump(mira, thora)
+    thora.execute('''
+        __results = {{fullName="Mira", level=42}}
+        C_FriendList = {GetNumWhoResults=function() return #__results end, GetWhoInfo=function(i) return __results[i] end}
+    ''')
+    thora.eval('fire')('WHO_LIST_UPDATE')
+    assert level_of(thora, 'Mira-TestRealm')[0] == 42
+    thora.execute('__results = {{fullName="Mira", level=44}}')
+    thora.eval('fire')('WHO_LIST_UPDATE')
+    assert level_of(thora, 'Mira-TestRealm')[0] == 44
