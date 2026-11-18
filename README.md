@@ -152,6 +152,10 @@ English, so friends can use different languages. Diagnostics (`/wstatus popup st
 and the release notes stay English. Additional display banks can register without
 changing the locale core; see [contributing a display language](docs/display-languages.md).
 
+The Options pages (WoW Status, Groups and Notifications) and every page of the
+main window are built the first time they are opened, not at login, so a
+session that never opens them never pays for their frames.
+
 ## Diagnostics and bug reports
 
 When WoW Status itself raises a Lua error, it keeps a copy: the last 10 errors from

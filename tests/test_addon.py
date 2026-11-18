@@ -141,17 +141,20 @@ function CreateFrame(kind, name, parent, template)
     return f
 end
 -- Model the native canvas host so settings tests exercise the scrollable page.
+-- A canvas page may have no content until it is first shown (#187), so the
+-- scroll child is looked up again rather than only at registration.
 __categories = {}
+function __canvasContent(category)
+    for _, child in ipairs(__frames) do
+        if child.parent == category.page and child.child then category.content = child.child end
+    end
+end
 Settings = {
     RegisterCanvasLayoutCategory = function(page, name)
         local category = {page=page,name=name,GetID=function(self) return self.name end}
         __categories[name] = category
-        for _, child in ipairs(__frames) do
-            if child.parent == page and child.child then
-                category.content = child.child
-                child.child:Hide()
-            end
-        end
+        __canvasContent(category)
+        if category.content then category.content:Hide() end
         return category
     end,
     RegisterCanvasLayoutSubcategory = function(parent, page, name)
@@ -164,8 +167,12 @@ Settings = {
     end,
     OpenToCategory = function(id)
         __opened = id
-        for _, category in pairs(__categories) do category.content:Hide() end
+        for _, category in pairs(__categories) do
+            __canvasContent(category)
+            if category.content then category.content:Hide() end
+        end
         __categories[id].page.OnShow()
+        __canvasContent(__categories[id])
     end,
 }
 function fire(event, ...)
@@ -1449,6 +1456,43 @@ def test_settings_in_combat_explain_why_without_detaching_pages(mode, language):
     assert lua.eval('__opened') == {'': 'WoW Status', 'groups': 'Groups',
                                     'previews': 'Notifications', 'discord': 'Discord (optional)'}[mode]
 
+
+
+def test_the_options_pages_are_built_on_first_open_not_at_login():
+    """#187: an ordinary login creates none of the Options frames.
+
+    A fresh character still gets Options opened for it, as before; this is the
+    login after that, which is every login from then on.
+    """
+    from test_addon_claims import saved
+    first = make_lua()
+    known = make_lua(STUBS + saved(first) + '\nfunction character() for _,c in pairs(WoWStatusDB.characters) do '
+                     'if c.identity.guid==UnitGUID("player") then return c end end end\n', guide=True)
+    at_login = known.eval('#__frames')
+    assert known.eval('WoWStatusSetup') is None
+    assert known.eval('WoWStatusNotificationPreviews') is None
+    assert known.eval('WoWStatusGroupWindow') is None
+    known.eval('SlashCmdList.WOWSTATUS')('')
+    # Opening it builds exactly what login used to: nothing is lost, only delayed.
+    assert known.eval('WoWStatusSetup') is not None
+    assert known.eval('WoWStatusNotificationPreviews') is not None
+    assert known.eval('WoWStatusGroupWindow') is not None
+    assert known.eval('WoWStatusSetup:IsShown()') is True
+    assert known.eval('#__frames') > at_login * 4
+
+
+def test_the_main_window_pages_are_built_on_first_open(lua):
+    """Measured for #187: the tabbed pages were already lazy, and stay that way."""
+    before = lua.eval('#__frames')
+    assert lua.eval('WoWStatusActivityLog') is None and lua.eval('WoWStatusRecordsPage') is None
+    lua.eval('WoWStatusMainWindow.show')('activity')
+    assert lua.eval('WoWStatusActivityLog') is not None
+    assert lua.eval('WoWStatusRecordsPage') is None  # still unbuilt
+    after_activity = lua.eval('#__frames')
+    assert after_activity > before
+    lua.eval('WoWStatusMainWindow.show')('records')
+    assert lua.eval('WoWStatusRecordsPage') is not None
+    assert lua.eval('#__frames') > after_activity
 
 
 def test_notifications_page_has_settings_first_and_previews_below_a_line():

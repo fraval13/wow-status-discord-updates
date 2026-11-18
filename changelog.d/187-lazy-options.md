@@ -1,0 +1,1 @@
+- WoW Status no longer builds its Options windows at every login, so logging in is a little lighter.
