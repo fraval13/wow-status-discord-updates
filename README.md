@@ -350,6 +350,29 @@ support, Nynorsk strings, no version bump). Security problems go through
 [`SECURITY.md`](SECURITY.md) privately, never a public issue. A group ID is a
 shared secret: never paste a real one into an issue, a log or a screenshot.
 
+## Licence
+
+You may share WoW Status with friends and guildmates, unchanged or modified.
+Which terms apply depends on the part:
+
+- **Code** (Lua, Python, scripts, website code, tests): [MIT](LICENSE).
+- **Original artwork** (the logo and branding in `assets/branding/`, the homepage
+  illustration and other original images described in
+  [website/ARTWORK.md](website/ARTWORK.md)) and **caption and reaction text**
+  (the flavour captions, death roasts and reaction whispers in every language, in
+  `docs/notification-flavour-text.md`, `docs/caption-personalities/`, the
+  `Flavour*.lua` files and `website/flavour.js`): all rights reserved by the
+  author. You may redistribute them only as part of WoW Status or a fork of it,
+  not reuse them on their own.
+- **Third-party material** keeps its own terms: Blizzard game artwork and icons
+  (see [website/ARTWORK.md](website/ARTWORK.md) and
+  `assets/discord-emojis/README.md`) belong to Blizzard Entertainment, and the
+  Cinzel font is under the SIL Open Font License
+  (`website/assets/fonts/Cinzel-OFL.txt`).
+
+By contributing, you agree that your contribution is covered by the same terms
+as the part you change.
+
 ## Development
 
 Canonical Lua is in `addon/shared`; run `python scripts/sync_addons.py` after edits
