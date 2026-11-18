@@ -1000,6 +1000,29 @@ local function grouped()
         assistant=raid and S.call(UnitIsGroupAssistant, "player") and true or false,
         now=GetTime and GetTime() or time()}
 end
+-- Labs (#243): the short names of friends in your party or raid right now who
+-- share a list through one of these groups. A hidden character is never named.
+function R.companions(groupIds)
+    local names = {}
+    if not db then return names end
+    local units = {}
+    for i = 1, 4 do units[#units + 1] = "party" .. i end
+    if S.call(IsInRaid) then for i = 1, 40 do units[#units + 1] = "raid" .. i end end
+    local seen = {}
+    for _, unit in ipairs(units) do
+        local name, realm = S.call(UnitName, unit)
+        name, realm = S.string(name), S.string(realm)
+        local k = name and key(realm and (name .. "-" .. realm) or name)
+        if k and not seen[k] and not R.isHidden(k) then
+            for group in pairs(groupIds or {}) do
+                if R.knownMember(group, k) then seen[k] = true; names[#names + 1] = name; break end
+            end
+        end
+    end
+    table.sort(names)
+    while #names > 4 do names[#names] = nil end
+    return names
+end
 -- The name to whisper or invite: the plain name on this realm and on WoW Forever
 -- (its whispers bounce with a realm, see recentMembers), "Name-Realm" otherwise.
 local function chatTarget(name)
