@@ -8,6 +8,7 @@
 ## X-Client-Support: Burning Crusade Classic Anniversary 2.5.x only
 Diagnostics.lua
 Safe.lua
+Modules.lua
 Locale.lua
 LocaleNN.lua
 Features.lua

@@ -611,7 +611,7 @@ local function initialize()
         say("Set the same group ID as your friends in Options > AddOns > WoW Status.")
         openSettings()
     end
-    WoWStatusWhatsNew.check(WoWStatusDB)
+    WoWStatus.initializeModules(WoWStatusDB, current)
 end
 
 -- Client builds differ in event availability; one absent event must not abort
@@ -755,11 +755,272 @@ frame:SetScript("OnEvent", function(_, event, ...)
     end
 end)
 
+-- Core commands can migrate to their owning modules as those modules are touched.
+local slash = {privacy = function() WoWStatusPrivacy.show() end}
+function slash.groups(rest)
+    if rest == "legacy" then
+        current.group_ids = {}
+        current.legacy_upload = true
+        S.stampExport(current)
+        WoWStatusPopups.groupsChanged()
+        say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
+    else openSettings("groups") end
+end
+
+function slash.milestones()
+    -- Milestone choices live on the main page; there is no separate Milestones page.
+    openSettings()
+    say("Milestone choices are on the main WoW Status page.")
+end
+
+function slash.discover()
+    say("Manual announcements have been removed. Milestones are detected automatically.")
+end
+slash.dungeon = slash.discover
+slash.lfg = slash.discover
+
+function slash.previews()
+    openSettings("previews")
+end
+
+function slash.screenshot()
+    if not WoWStatusScreenshots.available() then say("Screenshots are not available in this client.")
+    elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
+end
+
+function slash.discord()
+    openSettings("discord")
+end
+
+function slash.share(rest)
+    WoWStatusShare.send(rest)
+end
+
+function slash.minimap(rest)
+    if rest == "" then say(WoWStatusMinimap.report())
+    elseif rest == "reset" then WoWStatusMinimap.setOffset(nil); say("Minimap button distance reset.")
+    elseif rest == "hide" or rest == "show" then
+        WoWStatusMinimap.setVisible(rest == "show")
+        if rest == "hide" then say(T("Minimap button hidden.") .. " " .. T(WoWStatusMinimap.WAYS))
+        else say("Minimap button shown.") end
+    elseif tonumber(rest) and WoWStatusMinimap.setOffset(tonumber(rest)) then say("Minimap button distance set to " .. rest .. ".")
+    else say("Usage: /wstatus minimap [hide | show | distance " .. WoWStatusMinimap.MIN_OFFSET .. " to " .. WoWStatusMinimap.MAX_OFFSET .. " | reset]") end
+end
+
+function slash.controller(rest)
+    local choice = rest:lower()
+    if choice == "on" or choice == "off" then WoWStatusGamepad.setAllowed(choice == "on")
+    elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
+    say(WoWStatusGamepad.report())
+end
+slash.gamepad = slash.controller
+
+function slash.errors()
+    WoWStatusDiagnostics.show()
+end
+slash.diagnostics = slash.errors
+
+function slash.guide()
+    WoWStatusGuide.show()
+end
+
+function slash.tour()
+    WoWStatusGuide.tour()
+end
+
+function slash.mutes()
+    WoWStatusMutes.show()
+end
+slash.muted = slash.mutes
+
+function slash.goal()
+    WoWStatusGoals.show()
+end
+slash.goals = slash.goal
+
+function slash.sync()
+    say("Activity syncs automatically when group members log in.")
+end
+
+function slash.journal()
+    WoWStatusPopups.showActivity()
+end
+slash.friends = slash.journal
+slash.activity = slash.journal
+
+function slash.popup(rest)
+    WoWStatusPopups.command(rest)
+end
+
+function slash.logs(rest, command)
+    local mode = command == "graph" and "graph" or (command == "times" and "timing" or "logs")
+    WoWStatusHistoryUI.show(function() return current end, mode)
+end
+slash.graph = slash.logs
+slash.times = slash.logs
+
+function slash.pause()
+    current.settings.enabled = false
+    current.settings.introduction_confirmed = false
+    scrub()
+    refresh()
+    say("Sharing paused.")
+end
+
+function slash.test()
+    queue("level", {level = 10, synthetic = true})
+    say("Synthetic level 10 event requested; requires sharing, level field and level storage.")
+end
+
+function slash.language(rest)
+    local lang = rest:lower()
+    if WoWStatusLocale.set(lang) then
+        say("Language: " .. WoWStatusLocale.LANGUAGES[lang] .. ". Type /reload to change every window.")
+    else
+        local codes={}
+        for _,choice in ipairs(WoWStatusLocale.options()) do codes[#codes+1]=choice.value end
+        say(T("Use /wstatus language").." "..table.concat(codes,"|")..".")
+    end
+end
+
+function slash.personality(rest)
+    -- Caption personality: /wstatus personality <name> (either language), or the list.
+    local P = WoWStatusPersonalities
+    local id = (rest or "") ~= "" and P.find(rest)
+    if id then
+        P.set(id)
+        say(T("Caption personality:") .. " " .. P.name(id) .. ".")
+    else
+        say(T("Caption personalities:") .. " " .. P.names() .. ". " .. T("Use /wstatus personality <name>."))
+    end
+end
+
+function slash.voice(rest)
+    -- Reaction voice: /wstatus voice <name> (either language), or the list.
+    local P = WoWStatusPersonalities
+    local id = (rest or "") ~= "" and P.findReaction(rest)
+    if id then
+        P.setReaction(id)
+        say(T("Reaction voice:") .. " " .. P.name(id) .. ".")
+    else
+        say(T("Reaction voices:") .. " " .. P.reactionNames() .. ". " .. T("Use /wstatus voice <name>."))
+    end
+end
+
+function slash.voicetest(rest)
+    -- Spoken reactions (Forever): hear a recorded line as a friend's reaction
+    -- would sound, without a friend. /wstatus voicetest [voice] [level|zone]
+    local V, P = WoWStatusVoices, WoWStatusPersonalities
+    local text, voice
+    if V then text, voice = V.simulate(rest) end
+    if text then
+        say(T("Spoken reaction test:") .. " " .. P.name(voice) .. ": " .. text)
+    elseif voice == "busy" then
+        say("A voice is already playing.")
+    else
+        say("No recorded voice to test here. Spoken reactions are for WoW Forever.")
+    end
+end
+
+function slash.debug(rest)
+    local value = rest:lower()
+    if value == "on" or value == "off" then
+        WoWStatusDB.debug = value == "on" or nil
+        if value == "on" then WoWStatusDB.debug_log = {} end
+        say("Debug log " .. value .. (value == "on" and ". Type /reload to save it for reading." or "."))
+    else
+        say("Use /wstatus debug on or /wstatus debug off.")
+    end
+end
+
+function slash.popupsize(rest)
+    if WoWStatusTheme.setPopupSize(rest) then
+        say("Notification size: " .. WoWStatusTheme.popupSize() .. "%.")
+        WoWStatusPopups.sample("level")
+    else
+        say("Notification size is now " .. WoWStatusTheme.popupSize() .. "%. Use /wstatus popupsize "
+            .. WoWStatusTheme.POPUP_MIN .. "-" .. WoWStatusTheme.POPUP_MAX .. " (100 is the default).")
+    end
+end
+
+function slash.quiethours(rest)
+    -- Quiet hours (#180): /wstatus quiethours [on | off | 22:00-07:00].
+    local P, choice = WoWStatusPopups, S.trim(rest):lower()
+    local from, to = S.trim(rest):match("^([^%-]+)%-([^%-]+)$")
+    local start, stop = P.parseClock(from), P.parseClock(to)
+    if choice == "on" or choice == "off" then P.setQuietHours("enabled", choice == "on")
+    elseif start and stop then
+        P.setQuietHours("start", start); P.setQuietHours("stop", stop); P.setQuietHours("enabled", true)
+    elseif choice ~= "" then say("Usage: /wstatus quiethours [on | off | 22:00-07:00]"); return end
+    local hours = P.quietHours()
+    say(T(hours.enabled and "Quiet hours on (local time):" or "Quiet hours off:") .. " "
+        .. P.clockText(hours.start) .. "-" .. P.clockText(hours.stop))
+    if hours.enabled and hours.start == hours.stop then say("Same start and end: never quiet") end
+    if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
+end
+
+function slash.popuptime(rest)
+    local P = WoWStatusPopups
+    if rest ~= "" and P.setDuration(rest) then
+        say(P.duration() == 0 and "Notifications now stay until dismissed."
+            or WoWStatusLocale.F("Notifications now stay for %d seconds.", P.duration()))
+        P.sample("level")
+    else
+        say(P.duration() == 0 and "Notifications stay until dismissed."
+            or WoWStatusLocale.F("Notifications stay for %d seconds.", P.duration()))
+        say(WoWStatusLocale.F("Use /wstatus popuptime %d-%d, or 0 to keep notifications until dismissed (%d is the default).",
+            P.DURATION_MIN, P.DURATION_MAX, P.DURATION_DEFAULT))
+    end
+end
+
+function slash.interval(rest, command)
+    local number = tonumber(rest)
+    local key = command == "interval" and "level_interval" or "loot_quality"
+    if WoWStatusSettings.valid(key, number) and WoWStatusSettings.set(key, number, current) then
+        if command=="quality" then
+            current.settings.loot_rarities={rare=number<=3,epic=number<=4,legendary=number<=5}
+        end
+        scrub()
+        say("Filter updated.")
+    else say("Invalid filter value.") end
+end
+slash.quality = slash.interval
+
+function slash.professions(rest)
+    if not current.settings.enabled or not current.settings.fields.professions then
+        say("Enable profession sharing first. Names are player-entered, not verified skill ranks.")
+        return
+    end
+    local names = {}
+    for rawName in rest:gmatch("[^,]+") do
+        local name = S.trim(rawName)
+        if #name > 0 and #name <= 50 and #names < 6 then
+            table.insert(names, {name = name, source = "player_entered"})
+        end
+    end
+    current.professions = names
+    snapshot()
+    say("Shared profession labels updated. /reload to export.")
+end
+
+function slash.labs() WoWStatusLabs.show() end
+function slash.compare(rest) WoWStatusCompare.show(rest ~= "" and rest or nil) end
+function slash.together() WoWStatusTogether.show() end
+function slash.when() WoWStatusWhenWePlay.show() end
+
+WoWStatus.register({name = "core", slash = slash,
+    enabled = {discord = function() return WoWStatusFeatures.discord end}})
+
 SLASH_WOWSTATUS1 = "/wstatus"
 SlashCmdList.WOWSTATUS = function(message)
     local command, rest = message:match(S.SPLIT_WORD)
     -- What is shared (#152) needs no character: it describes the addon itself.
-    if command == "privacy" then WoWStatusPrivacy.show(); return end
+    if command == "privacy" then WoWStatus.runCommand(command, rest, current, say); return end
+    if command == "help" then
+        say(T("Commands:") .. " " .. table.concat(WoWStatus.commands(), ", "))
+        say(T("Window pages:") .. " " .. table.concat(WoWStatusMainWindow.pages(), ", "))
+        return
+    end
     if not current then
         -- The main window's pages need a ready character; say how many errors wait.
         if command == "errors" or command == "diagnostics" then
@@ -768,182 +1029,8 @@ SlashCmdList.WOWSTATUS = function(message)
         end
         say(A.display_name .. " character is not ready or identity is currently restricted."); return
     end
-    if command == "groups" then
-        if rest == "legacy" then
-            current.group_ids = {}
-            current.legacy_upload = true
-            S.stampExport(current)
-            WoWStatusPopups.groupsChanged()
-            say("Legacy single-service upload selected. Only use with your own configured /link credentials.")
-        else openSettings("groups") end
-    elseif command == "milestones" then
-        -- Milestone choices live on the main page; there is no separate Milestones page.
-        openSettings()
-        say("Milestone choices are on the main WoW Status page.")
-    elseif command == "discover" or command == "dungeon" or command == "lfg" then
-        say("Manual announcements have been removed. Milestones are detected automatically.")
-    elseif command == "previews" then openSettings("previews")
-    elseif command == "screenshot" then
-        if not WoWStatusScreenshots.available() then say("Screenshots are not available in this client.")
-        elseif not WoWStatusScreenshots.manual(current.settings) then say("A screenshot is already being taken.") end
-    elseif command == "discord" and WoWStatusFeatures.discord then openSettings("discord")
-    elseif command == "share" then WoWStatusShare.send(rest)
-    elseif command == "minimap" then
-        if rest == "" then say(WoWStatusMinimap.report())
-        elseif rest == "reset" then WoWStatusMinimap.setOffset(nil); say("Minimap button distance reset.")
-        -- Hiding the button is safe: the slash command stays, so say so (#177).
-        elseif rest == "hide" or rest == "show" then
-            WoWStatusMinimap.setVisible(rest == "show")
-            if rest == "hide" then say(T("Minimap button hidden.") .. " " .. T(WoWStatusMinimap.WAYS))
-            else say("Minimap button shown.") end
-        -- A word is not a distance: without the guard, tonumber(rest) is nil and
-        -- setOffset(nil) would quietly reset the distance instead.
-        elseif tonumber(rest) and WoWStatusMinimap.setOffset(tonumber(rest)) then say("Minimap button distance set to " .. rest .. ".")
-        else say("Usage: /wstatus minimap [hide | show | distance " .. WoWStatusMinimap.MIN_OFFSET .. " to " .. WoWStatusMinimap.MAX_OFFSET .. " | reset]") end
-    elseif command == "controller" or command == "gamepad" then
-        local choice = rest:lower()
-        if choice == "on" or choice == "off" then WoWStatusGamepad.setAllowed(choice == "on")
-        elseif choice ~= "" then say("Usage: /wstatus controller [on | off]"); return end
-        say(WoWStatusGamepad.report())
-    elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
-    elseif command == "labs" then WoWStatusLabs.show()
-
-    elseif command == "compare" then WoWStatusCompare.show(rest ~= "" and rest or nil)
-
-    elseif command == "together" then WoWStatusTogether.show()
-    elseif command == "guide" then WoWStatusGuide.show()
-    elseif command == "tour" then WoWStatusGuide.tour()
-    elseif command == "news" then WoWStatusWhatsNew.show()
-    elseif command == "mutes" or command == "muted" then WoWStatusMutes.show()
-    elseif command == "goal" or command == "goals" then WoWStatusGoals.show()
-    elseif command == "when" then WoWStatusWhenWePlay.show()
-    elseif command == "sync" then say("Activity syncs automatically when group members log in.")
-    elseif command == "journal" or command == "friends" or command == "activity" then WoWStatusPopups.showActivity()
-    elseif command == "popup" then
-        WoWStatusPopups.command(rest)
-    elseif command == "logs" or command == "graph" or command == "times" then
-        local mode = command == "graph" and "graph" or (command == "times" and "timing" or "logs")
-        WoWStatusHistoryUI.show(function() return current end, mode)
-    elseif command == "pause" then
-        current.settings.enabled = false
-        current.settings.introduction_confirmed = false
-        scrub()
-        refresh()
-        say("Sharing paused.")
-    elseif command == "test" then
-        queue("level", {level = 10, synthetic = true})
-        say("Synthetic level 10 event requested; requires sharing, level field and level storage.")
-    elseif command == "language" then
-        local lang = rest:lower()
-        if WoWStatusLocale.set(lang) then
-            say("Language: " .. WoWStatusLocale.LANGUAGES[lang] .. ". Type /reload to change every window.")
-        else
-            local codes={}
-            for _,choice in ipairs(WoWStatusLocale.options()) do codes[#codes+1]=choice.value end
-            say(WoWStatusLocale.T("Use /wstatus language").." "..table.concat(codes,"|")..".")
-        end
-    elseif command == "personality" then
-        -- Caption personality: /wstatus personality <name> (either language), or the list.
-        local P = WoWStatusPersonalities
-        local id = (rest or "") ~= "" and P.find(rest)
-        if id then
-            P.set(id)
-            say(T("Caption personality:") .. " " .. P.name(id) .. ".")
-        else
-            say(T("Caption personalities:") .. " " .. P.names() .. ". " .. T("Use /wstatus personality <name>."))
-        end
-    elseif command == "voice" then
-        -- Reaction voice: /wstatus voice <name> (either language), or the list.
-        local P = WoWStatusPersonalities
-        local id = (rest or "") ~= "" and P.findReaction(rest)
-        if id then
-            P.setReaction(id)
-            say(T("Reaction voice:") .. " " .. P.name(id) .. ".")
-        else
-            say(T("Reaction voices:") .. " " .. P.reactionNames() .. ". " .. T("Use /wstatus voice <name>."))
-        end
-    elseif command == "voicetest" then
-        -- Spoken reactions (Forever): hear a recorded line as a friend's reaction
-        -- would sound, without a friend. /wstatus voicetest [voice] [level|zone]
-        local V, P = WoWStatusVoices, WoWStatusPersonalities
-        local text, voice
-        if V then text, voice = V.simulate(rest) end
-        if text then
-            say(T("Spoken reaction test:") .. " " .. P.name(voice) .. ": " .. text)
-        elseif voice == "busy" then
-            say("A voice is already playing.")
-        else
-            say("No recorded voice to test here. Spoken reactions are for WoW Forever.")
-        end
-    elseif command == "debug" then
-        local value = rest:lower()
-        if value == "on" or value == "off" then
-            WoWStatusDB.debug = value == "on" or nil
-            if value == "on" then WoWStatusDB.debug_log = {} end
-            say("Debug log " .. value .. (value == "on" and ". Type /reload to save it for reading." or "."))
-        else
-            say("Use /wstatus debug on or /wstatus debug off.")
-        end
-    elseif command == "popupsize" then
-        if WoWStatusTheme.setPopupSize(rest) then
-            say("Notification size: " .. WoWStatusTheme.popupSize() .. "%.")
-            WoWStatusPopups.sample("level")
-        else
-            say("Notification size is now " .. WoWStatusTheme.popupSize() .. "%. Use /wstatus popupsize "
-                .. WoWStatusTheme.POPUP_MIN .. "-" .. WoWStatusTheme.POPUP_MAX .. " (100 is the default).")
-        end
-    elseif command == "quiethours" then
-        -- Quiet hours (#180): /wstatus quiethours [on | off | 22:00-07:00].
-        local P, choice = WoWStatusPopups, S.trim(rest):lower()
-        local from, to = S.trim(rest):match("^([^%-]+)%-([^%-]+)$")
-        local start, stop = P.parseClock(from), P.parseClock(to)
-        if choice == "on" or choice == "off" then P.setQuietHours("enabled", choice == "on")
-        elseif start and stop then
-            P.setQuietHours("start", start); P.setQuietHours("stop", stop); P.setQuietHours("enabled", true)
-        elseif choice ~= "" then say("Usage: /wstatus quiethours [on | off | 22:00-07:00]"); return end
-        local hours = P.quietHours()
-        say(T(hours.enabled and "Quiet hours on (local time):" or "Quiet hours off:") .. " "
-            .. P.clockText(hours.start) .. "-" .. P.clockText(hours.stop))
-        if hours.enabled and hours.start == hours.stop then say("Same start and end: never quiet") end
-        if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
-    elseif command == "popuptime" then
-        local P = WoWStatusPopups
-        if rest ~= "" and P.setDuration(rest) then
-            say(P.duration() == 0 and "Notifications now stay until dismissed."
-                or WoWStatusLocale.F("Notifications now stay for %d seconds.", P.duration()))
-            P.sample("level")
-        else
-            say(P.duration() == 0 and "Notifications stay until dismissed."
-                or WoWStatusLocale.F("Notifications stay for %d seconds.", P.duration()))
-            say(WoWStatusLocale.F("Use /wstatus popuptime %d-%d, or 0 to keep notifications until dismissed (%d is the default).",
-                P.DURATION_MIN, P.DURATION_MAX, P.DURATION_DEFAULT))
-        end
-    elseif command == "interval" or command == "quality" then
-        local number = tonumber(rest)
-        local key = command == "interval" and "level_interval" or "loot_quality"
-        if WoWStatusSettings.valid(key, number) and WoWStatusSettings.set(key, number, current) then
-            if command=="quality" then
-                current.settings.loot_rarities={rare=number<=3,epic=number<=4,legendary=number<=5}
-            end
-            scrub()
-            say("Filter updated.")
-        else say("Invalid filter value.") end
-    elseif command == "professions" then
-        if not current.settings.enabled or not current.settings.fields.professions then
-            say("Enable profession sharing first. Names are player-entered, not verified skill ranks.")
-            return
-        end
-        local names = {}
-        for rawName in rest:gmatch("[^,]+") do
-            local name = S.trim(rawName)
-            if #name > 0 and #name <= 50 and #names < 6 then
-                table.insert(names, {name = name, source = "player_entered"})
-            end
-        end
-        current.professions = names
-        snapshot()
-        say("Shared profession labels updated. /reload to export.")
-    elseif WoWStatusMainWindow.has(command) then WoWStatusMainWindow.show(command)
+    if WoWStatus.runCommand(command, rest, current, say) then return end
+    if WoWStatusMainWindow.has(command) then WoWStatusMainWindow.show(command)
     else openSettings() end
 end
 
