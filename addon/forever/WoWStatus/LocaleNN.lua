@@ -794,6 +794,7 @@ W.add({
     ["Turn on sharing your character list to set a goal."] = "Slå på deling av figurlista di for å setje eit mål.",
     ["Change this goal from the character that set it."] = "Endre dette målet frå figuren som sette det.",
     ["Your group's goal is done. Well played, all of you."] = "Gruppa har nådd målet sitt. Godt spelt, alle saman.",
+    ["Another year together in your WoW Status group. Well played!"] = "Eit år til saman i WoW Status-gruppa di. Godt spelt!",
     ["Measure:"] = "Kva det gjeld:", ["Shape:"] = "Form:", ["Target:"] = "Måltal:", ["Deadline:"] = "Frist:", ["none"] = "ingen",
     ["Everybody"] = "Alle", ["Together"] = "Saman", ["Dungeon clears"] = "Fangehol rydda",
     ["Played time (hours)"] = "Speletid (timar)", ["Deaths (fewer than)"] = "Dødsfall (færre enn)",

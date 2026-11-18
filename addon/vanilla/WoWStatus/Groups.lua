@@ -163,6 +163,26 @@ function G.init(db, getter, reporter)
     pruneListingChoices()
     for _, character in pairs(database.characters) do apply(character) end
 end
+-- One quiet line per full year since the account joined a group (#173). The
+-- year reached is saved per group, so a /reload or another character never
+-- repeats it. It uses the stored join time only: nothing is sent, and the
+-- group name is not shown (a name is a shared secret).
+local YEAR = 365 * 24 * 3600
+function G.anniversary()
+    if not database or type(database.account_group_joined_at) ~= "table" then return nil end
+    database.group_anniversary = type(database.group_anniversary) == "table" and database.group_anniversary or {}
+    local best, now = 0, S.now()
+    for id in pairs(database.account_groups or {}) do
+        local at = database.account_group_joined_at[id]
+        local years = type(at) == "number" and math.floor((now - at) / YEAR) or 0
+        local seen = database.group_anniversary[id]
+        if years >= 1 and years > (type(seen) == "number" and seen or 0) then
+            database.group_anniversary[id] = years
+            if years > best then best = years end
+        end
+    end
+    return best > 0 and best or nil
+end
 local function update(text, playerName)
     local selected, count = {}, 0
     for label in text:gmatch("[^\r\n]+") do
