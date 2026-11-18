@@ -1,5 +1,0 @@
-- Together gains Daily, Weekly, Monthly, Yearly and Total views, with explicit calendar dates.
-- Dated Together views count retained milestones; shared snapshot statistics remain in Total.
-- Together now explains how many characters supplied each partial total.
-- Settings and Notifications have category dropdowns, so related choices are easier to find.
-- Forever character visibility settings show names without internal realm identifiers.

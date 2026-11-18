@@ -1,5 +1,12 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.86.0", notes={
+        "Together gains Daily, Weekly, Monthly, Yearly and Total views, with explicit calendar dates.",
+        "Dated Together views count retained milestones; shared snapshot statistics remain in Total.",
+        "Together now explains how many characters supplied each partial total.",
+        "Settings and Notifications have category dropdowns, so related choices are easier to find.",
+        "Forever character visibility settings show names without internal realm identifiers.",
+    }},
     {version="1.85.0", notes={
         "Caption and reaction banks take less memory at login and expand as the addon uses them.",
         "Display languages can now register their own translations; new accounts use an available client-language bank.",
@@ -42,9 +49,5 @@ WoWStatusWhatsNewData = {
     {version="1.84.0", notes={
         "The Characters page has a new Where we are section: online friends grouped by the zone they last reported.",
         "Your own zone comes first, each name shows how old its report is, and reports older than 15 minutes are left out.",
-    }},
-    {version="1.83.0", notes={
-        "Pick separate notification sounds for dungeons and raids, for friends joining and for big moments.",
-        "Big moments like a raid first or every tenth level keep their usual sound until you pick one of their own.",
     }},
 }
