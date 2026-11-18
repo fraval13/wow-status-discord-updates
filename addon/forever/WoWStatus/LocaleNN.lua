@@ -810,3 +810,19 @@ W.add({
     ["No online friend has reported a zone in the last %d minutes."] =
         "Ingen pålogga ven har meldt eit område dei siste %d minutta.",
 })
+-- Local copy of the current Activity/Records view (#176).
+W.add({
+    ["Export"] = "Eksporter", ["Copy export"] = "Kopier eksport",
+    ["Contains character and player names. Group names are removed. Check before sharing."] =
+        "Inneheld figur- og spelarnamn. Gruppenamn er fjerna. Sjå gjennom før du deler.",
+    ["CSV · UTC timestamps. Select all, then copy. Use Next page for the rest. Nothing is sent."] =
+        "CSV · UTC-tidsstempel. Merk alt og kopier. Bruk Neste side for resten. Ingenting blir sendt.",
+    ["Previous page"] = "Førre side", ["Next page"] = "Neste side",
+    ["Page %d of %d · %d rows"] = "Side %d av %d · %d rader",
+    ["Preparing export: %d rows"] = "Førebur eksport: %d rader",
+    ["Export is no longer available."] = "Eksporten er ikkje tilgjengeleg lenger.",
+    ["Cannot export safely with the current group names."] = "Kan ikkje eksportere trygt med gruppenamna som er i bruk.",
+    ["Timestamp (UTC)"] = "Tidsstempel (UTC)", ["Category"] = "Kategori", ["Details"] = "Detaljar",
+    ["Period start (local date)"] = "Periodestart (lokal dato)", ["Period end (local date)"] = "Periodeslutt (lokal dato)",
+    ["Reached by this date"] = "Nådd innan denne datoen",
+})

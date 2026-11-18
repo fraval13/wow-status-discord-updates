@@ -46,6 +46,7 @@ Privacy.lua
 Presentation.lua
 Popups.lua
 Journal.lua
+Export.lua
 WhatsNewData.lua
 WhatsNew.lua
 Firsts.lua

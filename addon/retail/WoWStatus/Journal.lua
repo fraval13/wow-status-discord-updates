@@ -1147,6 +1147,7 @@ end
 local function render()
     if not panel then return end
     local list=visibleEntries();panel.entriesList=list
+    panel.export:SetEnabled(#list>0 and not list[1].sample)
     panel.reactUntil=nil
     panel.empty:SetShown(#list==0)
     local query=searchQuery()
@@ -1350,7 +1351,10 @@ local function build(parent)
     panel.reactionsButton=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.reactionsButton:SetPoint("TOPLEFT",24,-522);panel.reactionsButton:SetSize(130,24)
     panel.reactionsButton:SetText(T("Reactions"))
     panel.reactionsButton:SetScript("OnClick",function() if WoWStatusReactions then WoWStatusReactions.show() end end)
-    panel.showing=oneLine(label(panel,"GameFontHighlight",162,-528,282))
+    panel.export=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate")
+    panel.export:SetPoint("TOPLEFT",162,-522);panel.export:SetSize(100,24);panel.export:SetText(T("Export"))
+    panel.export:SetScript("OnClick",function() WoWStatusExport.activity(visibleEntries()) end)
+    panel.showing=oneLine(label(panel,"GameFontHighlight",270,-528,174))
     panel.showAll=CreateFrame("Button",nil,panel,"UIPanelButtonTemplate");panel.showAll:SetPoint("TOPLEFT",450,-522);panel.showAll:SetSize(110,24)
     panel.showAll:SetText(T("Show all"));panel.showAll:Hide()
     panel.showAll:SetScript("OnClick",function()

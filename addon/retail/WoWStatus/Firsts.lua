@@ -305,6 +305,8 @@ local function render()
     if page.recapBox then page.recapBox:SetShown(view == "firsts") end
     page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -36 - top)
     page.group = chosen and chosen.id
+    page.export:ClearAllPoints(); page.export:SetPoint("TOPLEFT", 24, -4 - top)
+    page.export:SetEnabled(chosen ~= nil)
     local label = chosen and chosen.label:gsub("|", "||")
     if not chosen then
         page.heading:SetText(T("Join a group to compete for records with your friends."))
@@ -446,6 +448,10 @@ function F.buildRecords(parent)
     page.viewFirsts = button("Firsts", 100, function() local d = state(); if d then d.view = "firsts" end; F.render() end)
     page.viewWeek = button("This week", 110, function() local d = state(); if d then d.view = "week" end; page.weekOffset = 0; F.render() end)
     page.viewFun = button("Fun records", 124, function() local d = state(); if d then d.view = "fun" end; F.render() end)
+    page.export = button("Export", 110, function()
+        local d = state() or {}
+        WoWStatusExport.records(page.group, d.view or "firsts", page.weekOffset or 0)
+    end)
     -- Earlier weeks (until /reload the view starts at this week).
     page.weekBack = button("<", 64, function() page.weekOffset = (page.weekOffset or 0) + 1; F.render() end)
     page.weekNext = button(">", 64, function() page.weekOffset = math.max(0, (page.weekOffset or 0) - 1); F.render() end)
