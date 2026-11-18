@@ -789,6 +789,8 @@ SlashCmdList.WOWSTATUS = function(message)
         say(WoWStatusGamepad.report())
     elseif command == "errors" or command == "diagnostics" then WoWStatusDiagnostics.show()
     elseif command == "labs" then WoWStatusLabs.show()
+
+    elseif command == "compare" then WoWStatusCompare.show(rest ~= "" and rest or nil)
     elseif command == "guide" then WoWStatusGuide.show()
     elseif command == "tour" then WoWStatusGuide.tour()
     elseif command == "news" then WoWStatusWhatsNew.show()

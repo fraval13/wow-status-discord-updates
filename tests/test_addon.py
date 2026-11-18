@@ -267,6 +267,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     run_addon_file(runtime, root / 'Roster.lua')
     run_addon_file(runtime, root / 'Goals.lua')
     run_addon_file(runtime, root / 'Profile.lua')
+    run_addon_file(runtime, root / 'Compare.lua')
     run_addon_file(runtime, root / 'UnitTooltip.lua')
     run_addon_file(runtime, root / 'Mutes.lua')
     run_addon_file(runtime, root / 'Minimap.lua')

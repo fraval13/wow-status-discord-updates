@@ -62,6 +62,7 @@ EquipmentSync.lua
 Roster.lua
 Goals.lua
 Profile.lua
+Compare.lua
 UnitTooltip.lua
 Mutes.lua
 Minimap.lua

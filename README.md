@@ -172,6 +172,21 @@ registered can never be switched on. Nothing about an experiment is shared with
 other players. The `discord` flag in `Features.lua` stays code-only and is not
 listed on the page. A version that ships no experiments says so.
 
+## Compare two characters
+
+**Compare two** on the Leaderboard, or `/wstatus compare [name]`, puts two
+characters' numbers side by side: level and XP into it, quests, deaths, monsters
+killed, dungeons cleared, mounts, honorable kills, played time — and **played per
+level**, which answers whether somebody is faster or just playing more. The better
+side of each row is marked and the gap is given as a number; more playing is not
+treated as better than less, so that row has no winner.
+
+Everything comes from the roster the client already holds: no new traffic and no new
+sharing settings. Only characters you can already see on the Characters page can be
+picked, so a hidden bank alt stays out. A value its owner never shared reads *not
+shared* rather than `0`, a measure neither of them shared is left out, and each
+column says how fresh its data is.
+
 ## Controller
 
 With gamepad support switched on in the game's own options, WoW Status windows

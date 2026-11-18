@@ -1,0 +1,1 @@
+- Compare two characters side by side: levels, quests, deaths, played time and who levels faster
