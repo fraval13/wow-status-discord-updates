@@ -793,3 +793,23 @@ def test_labs_rows_and_the_all_off_button_are_reachable(lua):
         WoWStatusGamepad.setFocus(__page.allOff);press("PAD1")
         assert(not WoWStatusFeatures.enabled("combo"))
     ''')
+
+
+def test_bingo_board_cells_are_controller_controls():
+    from test_journal import actor
+
+    runtime = actor('Thora')
+    runtime.execute("""
+        local F = WoWStatusFeatures
+        local unpack = unpack or table.unpack
+        F.set("weeklyBingo", true)
+        F.experiments()[1].configure()
+        local page = WoWStatusMainWindow.show("bingo")
+        page.GetChildren = function() return unpack(page.cells) end
+        for i, cell in ipairs(page.cells) do
+            cell.GetRect = function() return (i-1)%5*142, 500-math.floor((i-1)/5)*78, 136, 72 end
+            cell.GetObjectType = function() return "Button" end
+            cell.GetScript = function(self, script) return self[script] end
+        end
+        assert(#WoWStatusGamepad.controls(page) == 25)
+    """)

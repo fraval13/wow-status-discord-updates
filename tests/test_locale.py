@@ -7,7 +7,8 @@ from test_journal import actor
 
 ROOT = Path(__file__).parents[1]
 # Words that are the same in Nynorsk.
-SAME = {"Paladin", "Mine", "Troll", "Tauren", "Draenei", "Goblin", "Pandaren", "Dracthyr", "WoW Status", "X",
+SAME = {
+    "Bingo!","Paladin", "Mine", "Troll", "Tauren", "Draenei", "Goblin", "Pandaren", "Dracthyr", "WoW Status", "X",
         "%", "-", "+", "Type:", "Person:", "PvP", "<", ">", "Mana"}
 
 
