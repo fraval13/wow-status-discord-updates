@@ -94,3 +94,9 @@ function W.check(db)
     W.show(sections)
     return true
 end
+
+WoWStatus.register({
+    name = "whatsNew",
+    init = W.check,
+    slash = {news = function() W.show() end},
+})

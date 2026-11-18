@@ -224,6 +224,7 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
     root = Path(__file__).parents[1] / 'addon/vanilla/WoWStatus'
     run_addon_file(runtime, root / 'Diagnostics.lua')
     run_addon_file(runtime, root / 'Safe.lua')
+    run_addon_file(runtime, root / 'Modules.lua')
     run_addon_file(runtime, root / 'Locale.lua')
     run_addon_file(runtime, root / 'LocaleNN.lua')
     run_addon_file(runtime, root / 'Features.lua')
@@ -297,6 +298,49 @@ def make_lua(stubs=STUBS, *, discord_feature=None, join_announcements=False, gui
 @pytest.fixture
 def lua():
     return make_lua()
+
+
+def test_registered_module_initializes_in_order_and_adds_a_command():
+    runtime = make_lua(STUBS + '\nfunction UnitGUID() return nil end\n')
+    runtime.execute("""
+        local output = {}
+        DEFAULT_CHAT_FRAME.AddMessage = function(_, text)
+            output[#output + 1] = text
+        end
+        local order = {}
+        WoWStatus.register({
+            name = "firstTest",
+            init = function(db, character)
+                assert(db == WoWStatusDB)
+                assert(character.identity.guid == "Player-123-0001")
+                order[#order + 1] = "first"
+            end,
+            slash = {example = function(rest, command, character, say)
+                assert(command == "example" and character.identity.guid == "Player-123-0001")
+                say("Example: " .. rest)
+            end},
+        })
+        WoWStatus.register({name = "secondTest", init = function()
+            order[#order + 1] = "second"
+        end})
+        SlashCmdList.WOWSTATUS("example before login")
+        assert(output[#output]:find("character is not ready", 1, true))
+        assert(#order == 0)
+
+        SlashCmdList.WOWSTATUS("help")
+        local commands = output[#output - 1]
+        assert(commands:find("example", 1, true) and commands:find("news", 1, true))
+        assert(commands:find("diagnostics", 1, true) and commands:find("errors", 1, true))
+        assert(not commands:find("discord", 1, true))
+        assert(output[#output]:find("characters", 1, true))
+
+        UnitGUID = function() return "Player-123-0001" end
+        fire("PLAYER_ENTERING_WORLD")
+        fire("PLAYER_REGEN_ENABLED")
+        assert(table.concat(order, ",") == "first,second")
+        SlashCmdList.WOWSTATUS("example with arguments")
+        assert(output[#output]:find("Example: with arguments", 1, true))
+    """)
 
 
 def test_first_run_sharing_defaults_on_without_introduction_button(lua):

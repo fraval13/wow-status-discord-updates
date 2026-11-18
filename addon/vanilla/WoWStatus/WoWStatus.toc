@@ -9,6 +9,7 @@
 ## X-Client-Support: Vanilla Classic / Classic Era only
 Diagnostics.lua
 Safe.lua
+Modules.lua
 Locale.lua
 LocaleNN.lua
 Features.lua
