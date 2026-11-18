@@ -1,9 +1,18 @@
 -- Account-wide group choices, with per-character join times and history boundaries.
 WoWStatusGroups = {}
 local G, S = WoWStatusGroups, WoWStatusSafe
-local T = WoWStatusLocale.T
-local getCharacter, database, report, panel
+local T, TF = WoWStatusLocale.T, WoWStatusLocale.F
+local getCharacter, database, report, panel, listingConfirm
 local MAX_GROUPS = 8
+local function pruneListingChoices()
+    for _, field in ipairs({"listed_groups", "listing_confirmed"}) do
+        if type(database[field]) == "table" then
+            for id in pairs(database[field]) do
+                if not database.account_groups[id] then database[field][id] = nil end
+            end
+        end
+    end
+end
 
 -- One-way fingerprints of retired routing IDs. These are not usable group
 -- names or route keys. Never put the underlying values here. Empty: the owner
@@ -151,6 +160,7 @@ function G.init(db, getter, reporter)
         joined[id] = type(at) == "number" and math.min(at, now) or now
     end
     database.account_group_joined_at = joined
+    pruneListingChoices()
     for _, character in pairs(database.characters) do apply(character) end
 end
 local function update(text, playerName)
@@ -176,6 +186,7 @@ local function update(text, playerName)
     database.account_group_joined_at = joined
     database.account_groups = {}
     for id, member in pairs(selected) do database.account_groups[id] = member.label end
+    pruneListingChoices()
     local renamed = (database.player_name or "") ~= playerName
     database.player_name = playerName
     database.retired_groups_removed=nil
@@ -235,6 +246,7 @@ local function renderGroups()
     local groups = groupList()
     panel.count:SetText(T("Groups") .. " (" .. #groups .. " / " .. MAX_GROUPS .. ")")
     panel.empty:SetShown(#groups == 0)
+    panel.list:SetHeight(math.max(1, #groups * 70))
     for i, row in ipairs(panel.rows) do
         local group = groups[i]
         row.id = group and group.id
@@ -242,9 +254,78 @@ local function renderGroups()
         row:SetShown(group ~= nil)
         if group then
             row.label:SetText((group.label:gsub("|", "||")))
-            row.listed:SetChecked(G.isListed(group.id))
+            local listed = G.isListed(group.id)
+            row.listed:SetChecked(listed)
+            row.listedLabel:SetText(T(listed and "Sharing this group's name with my other groups" or "Share this group's name with my other groups"))
         end
     end
+end
+-- Only online peers are knowable now; offline members can learn the name later.
+function G.listingAudience(id)
+    local seen, count = {}, 0
+    local P = WoWStatusPopups
+    for group in pairs(G.selected(getCharacter())) do
+        if group ~= id and P and P.peers then
+            for _, peer in ipairs(P.peers(group)) do
+                local key = WoWStatusRoster and WoWStatusRoster.key and WoWStatusRoster.key(peer) or P.senderKey(peer)
+                if key and not P.isSelf(peer) and not seen[key] then seen[key] = true; count = count + 1 end
+            end
+        end
+    end
+    return count
+end
+-- The UI asks before the first opt-in for each group on this account. setListed
+-- remains the data setter; only this explicit confirmation records consent.
+function G.requestListing(id, listed)
+    if listingConfirm then listingConfirm:Hide() end
+    if not database or not database.account_groups[id] then return false end
+    local confirmed = type(database.listing_confirmed) == "table" and database.listing_confirmed[id] == true
+    if not listed or confirmed then
+        local ok = G.setListed(id, listed)
+        if panel then renderGroups() end
+        return ok
+    end
+    if panel then renderGroups() end -- The checkbox stays off until confirmation.
+    if not listingConfirm then
+        listingConfirm = CreateFrame("Frame", "WoWStatusGroupListingConfirm", UIParent)
+        listingConfirm:SetSize(560, 300); listingConfirm:SetPoint("CENTER")
+        listingConfirm:SetFrameStrata("FULLSCREEN_DIALOG"); listingConfirm:EnableMouse(true)
+        listingConfirm:SetScript("OnHide", function(self) self.groupID = nil end)
+        local bg = listingConfirm:CreateTexture(nil, "BACKGROUND")
+        bg:SetAllPoints(); bg:SetColorTexture(.025, .035, .055, .98)
+        if WoWStatusTheme and WoWStatusTheme.attachBackground then WoWStatusTheme.attachBackground(bg) end
+        local title = listingConfirm:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+        title:SetPoint("TOPLEFT", 24, -20); title:SetText(T("Share this group's name?"))
+        listingConfirm.body = listingConfirm:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        listingConfirm.body:SetPoint("TOPLEFT", 24, -60); listingConfirm.body:SetWidth(512)
+        listingConfirm.body:SetJustifyH("LEFT"); listingConfirm.body:SetWordWrap(true)
+        local function action(text, x, width, fn)
+            local b = CreateFrame("Button", nil, listingConfirm, "UIPanelButtonTemplate")
+            b:SetPoint("BOTTOMLEFT", x, 20); b:SetSize(width, 28)
+            b:SetText(T(text)); b:SetScript("OnClick", fn)
+            return b
+        end
+        listingConfirm.cancel = action("Cancel", 24, 150, function() listingConfirm:Hide() end)
+        listingConfirm.accept = action("Share the name", 300, 236, function()
+            local pending = listingConfirm.groupID
+            if not pending or not listingConfirm:IsShown() then return end
+            -- The group might have been removed while the question was open.
+            if G.setListed(pending, true) then
+                database.listing_confirmed = type(database.listing_confirmed) == "table" and database.listing_confirmed or {}
+                database.listing_confirmed[pending] = true
+                if panel then renderGroups() end
+            end
+            listingConfirm:Hide()
+        end)
+        table.insert(UISpecialFrames, "WoWStatusGroupListingConfirm")
+    end
+    listingConfirm.groupID = id
+    listingConfirm.body:SetText(T("Share this group's name with your other groups? Anyone with the name can join.")
+        .. "\n" .. database.account_groups[id]:gsub("|", "||")
+        .. "\n\n" .. TF("%d known friends are online in your other groups now. Others may receive it later.", G.listingAudience(id))
+        .. "\n\n" .. T("Turning this off later cannot take back a name already shared."))
+    listingConfirm:Show()
+    return false
 end
 local function saveList(groups)
     local labels = {}
@@ -329,7 +410,7 @@ function G.show(host)
         -- Groups friends listed, to join with one click.
         panel.browse = button(panel, "Browse groups", 430, -300, 144, function(self)
             local list = WoWStatusRoster and WoWStatusRoster.listings and WoWStatusRoster.listings() or {}
-            if #list == 0 then refuse("No listed groups yet. Friends list a group by ticking Listed on their Groups page."); return end
+            if #list == 0 then refuse("No shared group names yet. Friends can share a group's name from their Groups page."); return end
             local items = {}
             for _, item in ipairs(list) do
                 items[#items + 1] = {label = item.name:gsub("|", "||") .. "  " .. WoWStatusUI.MUTED_CODE .. T("listed by") .. " " .. item.by:gsub("|", "||") .. "|r", value = item.name}
@@ -341,13 +422,17 @@ function G.show(host)
             end)
         end)
         panel.empty = label("No groups selected. Enter a group ID above and click Add.", -344)
+        panel.scroll = CreateFrame("ScrollFrame", nil, panel, "UIPanelScrollFrameTemplate")
+        panel.scroll:SetPoint("TOPLEFT", 24, -338); panel.scroll:SetSize(550, 304)
+        panel.list = CreateFrame("Frame", nil, panel.scroll); panel.list:SetSize(550, 1)
+        panel.scroll:SetScrollChild(panel.list)
         panel.rows = {}
         for i = 1, MAX_GROUPS do
-            local row = CreateFrame("Frame", nil, panel)
-            row:SetPoint("TOPLEFT", 24, -338 - (i - 1) * 36)
-            row:SetSize(550, 32)
+            local row = CreateFrame("Frame", nil, panel.list)
+            row:SetPoint("TOPLEFT", 0, -(i - 1) * 70)
+            row:SetSize(550, 64)
             row.label = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
-            row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(290)
+            row.label:SetPoint("TOPLEFT", 0, -6); row.label:SetWidth(410)
             row.label:SetJustifyH("LEFT"); row.label:SetWordWrap(false)
             row:EnableMouse(true)
             row:SetScript("OnEnter", function(self)
@@ -358,16 +443,16 @@ function G.show(host)
                 end
             end)
             row:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
-            -- Listed: friends in your other groups can see and join it.
+            -- The consequence is in the label, including the active sharing state.
             row.listed = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
-            row.listed:SetPoint("TOPLEFT", 300, 0); row.listed:SetSize(30, 30)
+            row.listed:SetPoint("TOPLEFT", 0, -30); row.listed:SetSize(30, 30)
             row.listedLabel = row.listed:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
-            row.listedLabel:SetPoint("TOPLEFT", 32, -8); row.listedLabel:SetText(T("Listed"))
-            row.listed:SetScript("OnClick", function(self) G.setListed(row.id, self:GetChecked() and true or false) end)
+            row.listedLabel:SetPoint("TOPLEFT", 32, -8); row.listedLabel:SetWidth(490)
+            row.listed:SetScript("OnClick", function(self) G.requestListing(row.id, self:GetChecked() and true or false) end)
             row.listed:SetScript("OnEnter", function(self)
                 if GameTooltip then
-                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(T("Listed group"))
-                    GameTooltip:AddLine(T("Friends in your other groups can see this group under Browse groups and join it. Leave it off for a private group."), 1, 1, 1, true)
+                    GameTooltip:SetOwner(self, "ANCHOR_RIGHT"); GameTooltip:SetText(T("Share this group's name with my other groups"))
+                    GameTooltip:AddLine(T("Anyone with the name can join. Turning this off later cannot take back a name already shared."), 1, 1, 1, true)
                     GameTooltip:Show()
                 end
             end)

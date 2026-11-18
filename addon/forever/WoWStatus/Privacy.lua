@@ -24,7 +24,7 @@ PV.SECTIONS = {
       "The character details you tick: played time, professions with skill levels, completed quests, gold "
         .. "and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you "
         .. "wear with its combat stats. Friends see them change as you play.",
-      "The name of a group you tick as Listed, to the members of your other groups.",
+      "The name of a group you choose to share with your other groups, to their members. Anyone with the name can join; turning this off cannot take back a name already shared.",
       "Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an "
         .. "invitation to a group, with its name, to the friend you invite."}},
     {"Who receives it",

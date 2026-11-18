@@ -67,7 +67,7 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
     assert changed == set(), changed
     # Progress is kept beside version, which older releases require to stay 1.
     assert lua.eval('WoWStatusDB.version') == 1
-    assert after['version'] == 1 and after['schema_version'] == 2
+    assert after['version'] == 1 and after['schema_version'] == 3
     assert after['characters'][KEY]['schema_version'] == 3
     assert after['characters'][KEY]['events'] == before['characters'][KEY]['events']
     assert lua.execute('''
@@ -102,7 +102,7 @@ def test_second_login_runs_no_step_again():
 
 def test_brand_new_account_starts_at_the_latest_versions():
     lua = make_lua()
-    assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 2
+    assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 3
     assert lua.eval('WoWStatusDB.version') == 1
     assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 3
     # A new character still gets every switch a migrated one has.
@@ -121,7 +121,7 @@ def test_newer_saved_data_is_used_and_never_downgraded():
 @pytest.mark.parametrize('broken', ['nil', '"two"', '0', '1.5', '-3', '1/0', '1e300 * 1e300', '0/0'])
 def test_missing_or_broken_version_counts_as_one(broken):
     lua = login(V1.replace('\n    version = 1,\n', f'\n    schema_version = {broken},\n    version = 1,\n'))
-    assert lua.eval('WoWStatusDB.schema_version') == 2
+    assert lua.eval('WoWStatusDB.schema_version') == 3
 
 
 @pytest.mark.parametrize('saved', ['"x"', '{}', '{version = 1, characters = "x"}'])
@@ -227,7 +227,7 @@ def test_failed_step_is_reported_once_while_login_waits():
     lua.eval('fire')('PLAYER_ENTERING_WORLD')
     said = '\n'.join(lua.eval('__said').values())
     assert said.count('Could not upgrade saved data (step 2)') == 1
-    assert lua.eval('WoWStatusDB.schema_version') == 2 and lua.eval('character() ~= nil')
+    assert lua.eval('WoWStatusDB.schema_version') == 3 and lua.eval('character() ~= nil')
 
 
 # Each step on its own -----------------------------------------------------------
@@ -406,4 +406,19 @@ def test_character_step_3_turns_achievements_off_on_retail_only():
         c = {settings = {}}; step.run(c)
         assert(c.settings.in_game.achievement == false)
         WoWStatusAdapter.achievements = nil
+    ''')
+
+
+@pytest.mark.parametrize('saved', ['nil', 'false', '"broken"', '{}', '{synthetic=true}'])
+def test_listing_confirmation_migration_never_enables_or_confirms_a_group(saved):
+    lua = make_lua()
+    lua.execute('''
+        local db={schema_version=2,listing_confirmed='''+saved+''',listed_groups={existing=true},
+            account_groups={existing="Synthetic group"},unrelated={keep=true}}
+        local old=db.listing_confirmed
+        assert(WoWStatusMigrations.upgradeAccount(db))
+        assert(db.schema_version==3 and type(db.listing_confirmed)=="table")
+        if type(old)=="table" then assert(db.listing_confirmed==old)
+        else assert(next(db.listing_confirmed)==nil) end
+        assert(not db.listing_confirmed.existing and db.listed_groups.existing and db.unrelated.keep)
     ''')

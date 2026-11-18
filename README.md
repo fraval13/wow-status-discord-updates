@@ -64,6 +64,12 @@ each release changed.
    **What stays private** section says the same; `tests/test_privacy.py` keeps the two
    identical, so change both together whenever what is shared changes.
 
+Keep your group name private: anyone who knows it can join. **Share this group's
+name with my other groups** hands it to friends in those groups, who can find it
+under **Browse groups**. The first time, a confirmation shows the known online
+recipient count; offline members may learn it later. Turning sharing off cannot
+take back copies already shared. Removing a group clears its sharing choice.
+
 Click a character card, then scroll below the recent activity and gear to see
 their equipped items in a character-sheet layout. Hover a slot for the item's
 full tooltip, including its enchant and random suffix. Available combat stats

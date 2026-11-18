@@ -1,0 +1,1 @@
+- Groups: sharing a group's name now explains who can join and asks for confirmation the first time

@@ -28,6 +28,10 @@ M.account = {
         end
         popups.activity = kept
     end},
+    {version = 3, name = "start group-name listing confirmations", run = function(db)
+        -- Existing listings keep their state; none is treated as UI consent.
+        if type(db.listing_confirmed) ~= "table" then db.listing_confirmed = {} end
+    end},
 }
 
 -- What each character step receives: the character's saved table (its settings
