@@ -332,6 +332,9 @@ end
 
 -- Both pages live inside the game's AddOns settings, with scrollable content.
 local settingsCategory, groupsCategory, discordCategory, previewsCategory
+-- Every registered canvas page, so openSettings() can fill them before the
+-- Settings API shows one (#187).
+local settingsPages = {}
 local function settingsPage(name, width, show)
     local page = CreateFrame("Frame")
     page:Hide()
@@ -350,7 +353,9 @@ local function settingsPage(name, width, show)
             content:SetWidth(math.max(width, available or width))
         end
     end
+    local built = false
     local function display()
+        built = true
         show(scroll)
         local pages = {Groups=WoWStatusGroupWindow, Discord=WoWStatusDiscordSettings,
             ["Notifications"]=WoWStatusNotificationPreviews}
@@ -358,13 +363,18 @@ local function settingsPage(name, width, show)
         scroll:SetScrollChild(content)
         resize()
     end
+    -- Build the content the first time the page is shown, not at login: a
+    -- session that never opens Options never pays for these frames (#187).
+    -- Canvas frames can be shown without an OnShow transition, so a refresh and
+    -- openSettings() both make sure it exists; neither rebuilds a built page,
+    -- so unsaved edits in it survive.
+    local function ensure() if not built then display() end end
     page:SetScript("OnShow", display)
     page:SetScript("OnSizeChanged", resize)
-    -- Canvas frames start shown in WoW. Build while explicitly hidden so the first
-    -- sidebar selection works even when the Settings API skips an OnShow transition.
-    display()
-    page.OnRefresh = resize
-    page.refresh = resize -- Legacy InterfaceOptions refresh callback.
+    page.ensure = ensure
+    settingsPages[#settingsPages + 1] = page
+    page.OnRefresh = function() ensure(); resize() end
+    page.refresh = page.OnRefresh -- Legacy InterfaceOptions refresh callback.
     return page
 end
 
@@ -424,7 +434,13 @@ openSettings = function(mode)
     end
     if not ok then
         say("Cannot open now: WoW could not open settings. Try Options > AddOns > WoW Status.")
+        return
     end
+    -- The category is open now, so make sure every page has its content. Login
+    -- left them empty on purpose (#187) and the Settings API can show a canvas
+    -- page without an OnShow to build from; nothing is built before WoW has
+    -- actually opened the window.
+    for _, page in ipairs(settingsPages) do pcall(page.ensure) end
 end
 
 refresh = function()
