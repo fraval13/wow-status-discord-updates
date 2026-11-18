@@ -203,7 +203,154 @@ function F.week(group, offset)
         if p.quest > 0 then parts[#parts + 1] = (p.quest * 100) .. " " .. T("quests") end
         lines[#lines + 1] = p.name:gsub("|", "||") .. ": " .. table.concat(parts, " · ")
     end
+    if (offset or 0) == 0 and WoWStatusFeatures.enabled("bingo") then
+        for _, line in ipairs(F.bingoLines(group)) do lines[#lines + 1] = line end
+    end
     return lines, first, last
+end
+
+-- Labs experiment (#239): a bingo card of group events for the week. The card is
+-- seeded from the group ID and the week, so every member sees the same one
+-- without anything being sent; the seed itself is never shown or logged.
+WoWStatusFeatures.register("bingo", "Weekly group bingo card",
+    "A 5x5 card of group events for the week, filled in from the shared log and shown under This week.")
+-- A square: {text, test(list)}, where list is the week's entries (oldest first) and
+-- test returns the name of whoever completed it, or nil.
+local function nth(n, pred)
+    return function(list)
+        local count = 0
+        for _, e in ipairs(list) do
+            if pred(e) then count = count + 1; if count == n then return shortName(e.sender) end end
+        end
+    end
+end
+local function kindIs(k) return function(e) return e.kind == k end end
+local function levelAtLeast(n) return function(e) return e.kind == "level" and (S.number(e.level) or 0) >= n end end
+local function hourIn(from, to)
+    return function(e)
+        local hour = tonumber(WoWStatusHistory.oslo(e.at):sub(12, 13))
+        return e.kind == "level" and hour ~= nil and hour >= from and hour <= to
+    end
+end
+local function epic(e) return e.kind == "loot" and (S.number(e.quality) or 0) >= 4 end
+local function rare(e) return e.kind == "loot" and (S.number(e.quality) or 0) >= 3 end
+local function quests(e) return e.kind == "quest" end
+local function anyone(n)
+    return function(list)
+        local seen, count = {}, 0
+        for _, e in ipairs(list) do
+            local name = shortName(e.sender)
+            if not seen[name] then seen[name] = true; count = count + 1; if count == n then return name end end
+        end
+    end
+end
+F.BINGO = {
+    {"A level-up", nth(1, kindIs("level"))}, {"Three level-ups", nth(3, kindIs("level"))},
+    {"Five level-ups", nth(5, kindIs("level"))}, {"Ten level-ups", nth(10, kindIs("level"))},
+    {"A level-up after midnight", nth(1, hourIn(0, 5))}, {"A level-up before lunch", nth(1, hourIn(6, 11))},
+    {"A level-up in the evening", nth(1, hourIn(19, 23))}, {"Someone reaches level 20", nth(1, levelAtLeast(20))},
+    {"Someone reaches level 40", nth(1, levelAtLeast(40))}, {"Someone reaches level 60", nth(1, levelAtLeast(60))},
+    {"Someone dies", nth(1, kindIs("death"))}, {"Three deaths", nth(3, kindIs("death"))},
+    {"Five deaths", nth(5, kindIs("death"))}, {"A new zone", nth(1, kindIs("zone"))},
+    {"Three new zones", nth(3, kindIs("zone"))}, {"100 quests", nth(1, quests)},
+    {"Two quest milestones", nth(2, quests)}, {"A dungeon clear", nth(1, kindIs("dungeon"))},
+    {"Two dungeon clears", nth(2, kindIs("dungeon"))}, {"A raid boss", nth(1, kindIs("raid"))},
+    {"A mount", nth(1, kindIs("mount"))}, {"An epic mount", nth(1, kindIs("epicmount"))},
+    {"A new reputation standing", nth(1, kindIs("reputation"))}, {"A profession milestone", nth(1, kindIs("profession"))},
+    {"A PvP promotion", nth(1, kindIs("pvp"))}, {"A newly unlocked ability", nth(1, kindIs("unlock"))},
+    {"An armor first", nth(1, kindIs("loot"))}, {"Three armor firsts", nth(3, kindIs("loot"))},
+    {"A rare or better item", nth(1, rare)}, {"An epic item", nth(1, epic)},
+    {"Someone new joins the group", nth(1, kindIs("introduction"))},
+    {"Two people active", anyone(2)}, {"Three people active", anyone(3)}, {"Five people active", anyone(5)},
+    {"Ten entries in the log", nth(10, function() return true end)},
+    {"Twenty-five entries in the log", nth(25, function() return true end)},
+    {"Fifty entries in the log", nth(50, function() return true end)},
+    {"A death and a level-up", function(list)
+        local died, levelled
+        for _, e in ipairs(list) do
+            if e.kind == "death" then died = died or shortName(e.sender) end
+            if e.kind == "level" then levelled = levelled or shortName(e.sender) end
+        end
+        return died and levelled and levelled or nil
+    end},
+    {"Four kinds of milestone", function(list)
+        local kinds = {}
+        for _, e in ipairs(list) do kinds[e.kind] = true end
+        local n = 0
+        for _ in pairs(kinds) do n = n + 1 end
+        return n >= 4 and shortName(list[#list].sender) or nil
+    end},
+}
+-- A number from text, for seeding. Integer arithmetic stays exact in Lua 5.1.
+local function seedOf(text)
+    local hash = 5381
+    for i = 1, #text do hash = (hash * 131 + text:byte(i)) % 2147483629 end
+    return hash + 1
+end
+-- The week's card for a group: 25 {text, by} squares, "by" the name that filled it.
+function F.bingo(group, offset)
+    local first, last = F.weekRange(offset or 0)
+    local list = {}
+    for _, e in ipairs(WoWStatusJournal.entries()) do
+        local day = S.number(e.at) and dayOf(e.at)
+        if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e)
+            and not WoWStatusProgress.hardcoreDeath(e) then list[#list + 1] = e end
+    end
+    table.sort(list, function(a, b) return a.at < b.at end)
+    local order = {}
+    for i = 1, #F.BINGO do order[i] = i end
+    local state = seedOf(tostring(group) .. "|" .. first)
+    for i = #order, 2, -1 do
+        state = (state * 48271) % 2147483647
+        local j = state % i + 1
+        order[i], order[j] = order[j], order[i]
+    end
+    local card = {}
+    for i = 1, 25 do
+        local square = F.BINGO[order[i]]
+        card[i] = {text = square[1], by = square[2](list)}
+    end
+    return card, first
+end
+-- Whether any row, column or diagonal of a card is complete.
+function F.bingoWins(card)
+    local lines = {}
+    for r = 0, 4 do
+        local row, col = {}, {}
+        for c = 1, 5 do row[c] = r * 5 + c; col[c] = (c - 1) * 5 + r + 1 end
+        lines[#lines + 1] = row; lines[#lines + 1] = col
+    end
+    lines[#lines + 1] = {1, 7, 13, 19, 25}; lines[#lines + 1] = {5, 9, 13, 17, 21}
+    for _, cells in ipairs(lines) do
+        local all = true
+        for _, i in ipairs(cells) do if not card[i].by then all = false end end
+        if all then return true end
+    end
+    return false
+end
+function F.bingoLines(group)
+    local card, first = F.bingo(group, 0)
+    local filled = 0
+    for _, square in ipairs(card) do if square.by then filled = filled + 1 end end
+    local win = F.bingoWins(card)
+    local lines = {" ", "|cffffd100" .. T("Weekly bingo:") .. "|r " .. filled .. "/25" .. (win and ("  " .. T("Bingo!")) or "")}
+    for _, square in ipairs(card) do
+        lines[#lines + 1] = square.by and ("|cff40ff40[x]|r " .. T(square.text) .. " (" .. square.by:gsub("|", "||") .. ")")
+            or ("|cff9d9d9d[ ] " .. T(square.text) .. "|r")
+    end
+    -- One banner per group and week.
+    local seen = type(WoWStatusDB) == "table" and WoWStatusDB or nil
+    if win and seen and WoWStatusPopups.notice then
+        seen.bingo_weeks = type(seen.bingo_weeks) == "table" and seen.bingo_weeks or {}
+        if seen.bingo_weeks[group] ~= first then
+            seen.bingo_weeks[group] = first
+            local by
+            for _, square in ipairs(card) do by = by or square.by end
+            WoWStatusPopups.notice({sender = by and (by .. "-" .. (GetRealmName and GetRealmName() or "Realm")) or "Group",
+                kind = "first", text = T("Bingo!") .. " " .. T("The weekly card has a full line.")})
+        end
+    end
+    return lines
 end
 
 -- Fun records in one group, only when they are remarkable (high thresholds).

@@ -1,0 +1,1 @@
+- Labs: an optional weekly bingo card of group events under This week, the same for every member.
