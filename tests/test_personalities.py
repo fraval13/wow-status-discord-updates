@@ -67,6 +67,39 @@ def test_the_builder_rejects_broken_sources(tmp_path, monkeypatch):
         (folder / f'{kind}.json').write_text(good, encoding='utf-8')
 
 
+def test_login_and_personality_selection_leave_banks_packed_until_used():
+    lua = make_lua(reaction_default=None)
+    lua.execute("""
+        local P, F = WoWStatusPersonalities, WoWStatusFlavour
+        assert(P.current() == "random" and P.reactionVoice() == "wholesome")
+        assert(#P.voices() == 12 and #P.reactionVoices() == 13)
+        assert(P.names():find("Dwarf", 1, true))
+        SlashCmdList.WOWSTATUS("personality dverg")
+        assert(P.current() == "dwarf")
+        for _, id in ipairs(P.voices()) do
+            if id ~= "classic" then
+                local def = P.defs[id]
+                assert(type(def.en.level) == "string", id)
+                assert(type(def.nn.level) == "string", id)
+                assert(type(def.reactions.en.gz) == "string", id)
+            end
+        end
+
+        local caption = F.text({kind="level", level=10, id="packed-test"})
+        local dwarf = P.defs.dwarf
+        assert(caption ~= "" and #dwarf.en.level == 300 and #dwarf.nn.level == 300)
+        assert(type(dwarf.en.death) == "string" and type(P.defs.agent.en.level) == "string")
+        local cached = dwarf.en.level
+        F.text({kind="level", level=20, id="packed-test-again"})
+        assert(dwarf.en.level == cached)
+
+        assert(P.reactionLine("gz") ~= nil)
+        local wholesome = P.defs.wholesome.reactions
+        assert(#wholesome.en.gz == 300 and #wholesome.nn.gz == 300)
+        assert(type(wholesome.en.f) == "string" and type(dwarf.reactions.en.gz) == "string")
+    """)
+
+
 def test_every_personality_has_paired_banks_of_300_and_30_deaths_per_class():
     lua = make_lua()
     lua.execute('''

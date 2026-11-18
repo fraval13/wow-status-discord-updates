@@ -1,0 +1,1 @@
+- Caption and reaction banks take less memory at login and expand as the addon uses them.
