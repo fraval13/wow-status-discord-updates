@@ -52,6 +52,7 @@ WhatsNew.lua
 Firsts.lua
 Streaks.lua
 Leaderboard.lua
+WhenWePlay.lua
 Reactions.lua
 
 Together.lua

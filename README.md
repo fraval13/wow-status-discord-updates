@@ -335,6 +335,13 @@ achievements appear. Detailed profession and equipment-change activity stays
 private. Eligible announcements and requested equipment snapshots are exchanged
 with group members according to the character's sharing settings.
 
+**When we play** (the button on Overview, or `/wstatus when`) charts when each
+player in your group has been around: one row per player, a cell per weekday and
+a line such as *usually Tue-Thu, 20:00-24:00*, with the hours of the day under a
+row you click. It is read only from the log already on your computer, in your own
+local time, and reaches back only as far as the log does. Nothing is sent, and a
+player the log says little about reads *not enough yet* rather than *never*.
+
 At login, the addon greets available group members and both sides automatically
 exchange missing announcement IDs. An already-online friend also recovers saved
 entries from the arriving player. There is no periodic polling after the login
