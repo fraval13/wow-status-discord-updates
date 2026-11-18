@@ -274,6 +274,9 @@ function J.recordLocal(event,backfill)
         achievement_id=event.kind=="achievement" and achievementID(event.data) or nil,groups=groups,origin="mine"})
     if event.kind=="death" and not backfill then J.setDetails(id,event.data.zone,event.data.killer) end
     if loot and not backfill then J.setItem(id,J.itemString(event.data.item)) end
+    if not backfill and event.kind~="death" and event.kind~="introduction" and WoWStatusFeatures.enabled("with") then
+        J.setWith(id,WoWStatusRoster.companions(event.group_ids))
+    end
 end
 -- The item string of a link ("item:16923:2564:0:..."), with its suffix and enchant.
 function J.itemString(link)
@@ -296,6 +299,28 @@ function J.setItem(id,item)
     end
     details[id].item=item
     return true
+end
+WoWStatusFeatures.register("with", "Who you played with",
+    "Your own log cards name the friends who were in your party at the milestone.")
+-- Labs (#243): who from the group was in your party at one of your own
+-- milestones, by entry ID, on this computer only. At most 300, oldest dropped.
+function J.setWith(id,names)
+    if not db or type(id)~="string" or type(names)~="table" or #names==0 then return false end
+    db.journal.with=type(db.journal.with)=="table" and db.journal.with or {}
+    local with=db.journal.with
+    if not with[id] then
+        local count,oldest,oldestAt=0,nil,math.huge
+        for key,item in pairs(with) do count=count+1;if (item.at or 0)<oldestAt then oldest,oldestAt=key,item.at or 0 end end
+        if count>=300 and oldest then with[oldest]=nil end
+    end
+    with[id]={names=table.concat(names,", "),at=S.now()}
+    return true
+end
+-- " · with Fra" for an own entry that has companions, or "".
+function J.withText(e)
+    local with=db and type(db.journal.with)=="table" and type(e)=="table" and db.journal.with[e.id]
+    if not with or not WoWStatusFeatures.enabled("with") or type(with.names)~="string" then return "" end
+    return " · "..T("with").." "..with.names
 end
 -- Death details (zone, killer) by entry ID: this character's own deaths, and
 -- friends' from a separate "K" message, which older versions ignore. Kept apart
@@ -1173,7 +1198,7 @@ local function render()
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(T(heading))
             local who=J.displayName(e)
-            row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,J.deathText(e):gsub("|","||")))
+            row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,(J.deathText(e)..J.withText(e)):gsub("|","||")))
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
                 or e.origin=="legacy" and T("Saved group update") or T("Live group update"))
