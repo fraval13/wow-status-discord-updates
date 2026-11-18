@@ -770,8 +770,15 @@ SlashCmdList.WOWSTATUS = function(message)
     elseif command == "minimap" then
         if rest == "" then say(WoWStatusMinimap.report())
         elseif rest == "reset" then WoWStatusMinimap.setOffset(nil); say("Minimap button distance reset.")
-        elseif WoWStatusMinimap.setOffset(tonumber(rest)) then say("Minimap button distance set to " .. rest .. ".")
-        else say("Usage: /wstatus minimap [distance " .. WoWStatusMinimap.MIN_OFFSET .. " to " .. WoWStatusMinimap.MAX_OFFSET .. " | reset]") end
+        -- Hiding the button is safe: the slash command stays, so say so (#177).
+        elseif rest == "hide" or rest == "show" then
+            WoWStatusMinimap.setVisible(rest == "show")
+            if rest == "hide" then say(T("Minimap button hidden.") .. " " .. T(WoWStatusMinimap.WAYS))
+            else say("Minimap button shown.") end
+        -- A word is not a distance: without the guard, tonumber(rest) is nil and
+        -- setOffset(nil) would quietly reset the distance instead.
+        elseif tonumber(rest) and WoWStatusMinimap.setOffset(tonumber(rest)) then say("Minimap button distance set to " .. rest .. ".")
+        else say("Usage: /wstatus minimap [hide | show | distance " .. WoWStatusMinimap.MIN_OFFSET .. " to " .. WoWStatusMinimap.MAX_OFFSET .. " | reset]") end
     elseif command == "controller" or command == "gamepad" then
         local choice = rest:lower()
         if choice == "on" or choice == "off" then WoWStatusGamepad.setAllowed(choice == "on")

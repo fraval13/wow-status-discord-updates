@@ -100,9 +100,27 @@ function WoWStatus_OnAddonCompartmentClick(_,input)
 end
 function WoWStatus_OnAddonCompartmentEnter(_,owner) showTooltip(owner,false) end
 function WoWStatus_OnAddonCompartmentLeave() hideTooltip() end
+-- The button can be switched off (#177). Account-wide, and never a lock-out:
+-- /wstatus and the key binding open the addon without it.
+function M.visible()
+    return not (db and db.minimap_hidden)
+end
+local function apply()
+    if button and button.SetShown then button:SetShown(M.visible()) end
+end
+function M.setVisible(show)
+    if not db then return false end
+    db.minimap_hidden=(not show) or nil
+    apply()
+    return true
+end
+-- Named in the chat confirmation and under the tick, so nobody hides the
+-- button and believes the addon is gone.
+M.WAYS="Open it with /wstatus, or with the key binding under Key Bindings."
 function M.init(database)
     db=database
-    if button or not Minimap then return end
+    if button then apply(); return end
+    if not Minimap then return end
     button=CreateFrame("Button","WoWStatusMinimapButton",Minimap)
     button:SetSize(32,32);button:SetFrameStrata("MEDIUM");button:EnableMouse(true)
     local icon=button:CreateTexture(nil,"ARTWORK");icon:SetPoint("CENTER",-1,1);icon:SetSize(21,21)
@@ -144,5 +162,5 @@ function M.init(database)
     button:SetScript("OnDragStop",function(self) self:SetScript("OnUpdate",nil) end)
     button:SetScript("OnEnter",function(self) showTooltip(self,true) end)
     button:SetScript("OnLeave",function() hideTooltip() end)
-    place();button:Show()
+    place();button:Show();apply()
 end

@@ -7,7 +7,7 @@ from test_addon import STUBS, lupa
 ROOT = Path(__file__).parents[1]
 
 
-def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua'):
+def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua', saved='minimap_angle=0'):
     lua = lupa.LuaRuntime(unpack_returned_tuples=True)
     lua.execute(STUBS + '''
         function methods:RegisterForClicks() end
@@ -19,8 +19,8 @@ def minimap_runtime(client, source=ROOT / 'addon/shared/Minimap.lua'):
         function Minimap:GetCenter() return 20,30 end
         function Minimap:GetEffectiveScale() return .75 end
         function GetCursorPosition() return 150,22.5 end
-        WoWStatusDB={minimap_angle=0}
-    ''')
+        WoWStatusDB={%s}
+    ''' % saved)
     lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
     lua.globals().WoWStatusAdapter = lua.table_from({'client_id': client})
     lua.execute(source.read_text(encoding='utf-8'))
@@ -207,3 +207,64 @@ def test_toc_names_compartment_handlers_that_ship_in_that_edition(edition):
     lua = minimap_runtime(edition, folder / 'Minimap.lua')
     for key in ('AddonCompartmentFunc', 'AddonCompartmentFuncOnEnter', 'AddonCompartmentFuncOnLeave'):
         assert lua.eval(f'type({fields[key]})') == 'function', key
+
+
+def test_the_button_can_be_hidden_and_shown_again_without_a_reload():
+    lua = minimap_runtime('retail')
+    assert lua.eval('WoWStatusMinimap.visible()') is True
+    assert lua.eval('WoWStatusMinimapButton.visible') is not False
+    lua.execute('assert(WoWStatusMinimap.setVisible(false))')
+    assert lua.eval('WoWStatusMinimapButton.visible') is False
+    assert lua.eval('WoWStatusMinimap.visible()') is False
+    assert lua.eval('WoWStatusDB.minimap_hidden') is True
+    lua.execute('assert(WoWStatusMinimap.setVisible(true))')
+    assert lua.eval('WoWStatusMinimap.visible()') is True
+    assert lua.eval('WoWStatusMinimapButton.visible') is True
+    # Nothing is left behind in the saved variables once it is shown again.
+    assert lua.eval('WoWStatusDB.minimap_hidden') is None
+
+
+def test_a_login_with_the_button_switched_off_never_shows_it():
+    lua = minimap_runtime('retail', saved='minimap_angle=0,minimap_hidden=true')
+    assert lua.eval('WoWStatusMinimap.visible()') is False
+    assert lua.eval('WoWStatusMinimapButton.visible') is False
+
+
+def test_the_slash_command_and_the_tick_hide_the_button_and_name_a_way_in():
+    from test_addon import make_lua
+    lua = make_lua()
+    lua.execute("""
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        function methods:RegisterForClicks() end
+        function methods:HookScript(event, fn) self[event] = fn end
+        Minimap=CreateFrame("Frame","Minimap",UIParent)
+        function Minimap:GetCenter() return 0,0 end
+        function Minimap:GetEffectiveScale() return 1 end
+        WoWStatusMinimap.init(WoWStatusDB)
+        local said, addMessage = {}, DEFAULT_CHAT_FRAME.AddMessage
+        DEFAULT_CHAT_FRAME.AddMessage = function(_, message) table.insert(said, message) end
+        SlashCmdList.WOWSTATUS("minimap hide")
+        SlashCmdList.WOWSTATUS("minimap wobble")
+        SlashCmdList.WOWSTATUS("minimap show")
+        DEFAULT_CHAT_FRAME.AddMessage = addMessage
+        assert(said[1]:find("Minimap button hidden.", 1, true), said[1])
+        -- Nobody may hide the button and lose the addon with it.
+        assert(said[1]:find("/wstatus", 1, true), said[1])
+        assert(said[2]:find("hide | show", 1, true), said[2])
+        assert(said[3]:find("Minimap button shown.", 1, true), said[3])
+        assert(WoWStatusMinimap.visible())
+
+        -- The tick on the Notifications page does the same, and says so too.
+        WoWStatusPreviews.show()
+        local tick = WoWStatusNotificationPreviews.minimap
+        assert(tick:GetChecked())
+        said, addMessage = {}, DEFAULT_CHAT_FRAME.AddMessage
+        DEFAULT_CHAT_FRAME.AddMessage = function(_, message) table.insert(said, message) end
+        tick:SetChecked(false); tick.OnClick(tick)
+        DEFAULT_CHAT_FRAME.AddMessage = addMessage
+        assert(not WoWStatusMinimap.visible())
+        assert(WoWStatusMinimapButton.visible == false)
+        assert(said[1] and said[1]:find("/wstatus", 1, true), said[1] or "nothing said")
+        WoWStatusPreviews.show()
+        assert(not WoWStatusNotificationPreviews.minimap:GetChecked())
+    """)
