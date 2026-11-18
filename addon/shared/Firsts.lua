@@ -210,6 +210,47 @@ function F.week(group, offset)
     return lines, first, last
 end
 
+-- Labs experiment (#237): the killer and the zone behind the group's deaths.
+WoWStatusFeatures.register("nemesis", "Group nemesis and deadliest zone",
+    "Records name who has killed the group most, and the zone it died in most this week.")
+-- The names (ties together) with the highest count, and that count.
+local function leaders(counts)
+    local top, names = 0, {}
+    for name, n in pairs(counts) do
+        if n > top then top, names = n, {name} elseif n == top then names[#names + 1] = name end
+    end
+    table.sort(names)
+    return names, top
+end
+-- Only deaths with a known killer or zone count; a Hardcore death never does.
+function F.nemesisLines(entries)
+    local first, last = F.weekRange(0)
+    local killers, weekKillers, weekZones = {}, {}, {}
+    for _, e in ipairs(entries) do
+        if e.kind == "death" and not WoWStatusProgress.hardcoreDeath(e) then
+            local d = WoWStatusJournal.details(e)
+            local day = dayOf(e.at)
+            local thisWeek = day >= first and day <= last
+            if d and d.killer then
+                killers[d.killer] = (killers[d.killer] or 0) + 1
+                if thisWeek then weekKillers[d.killer] = (weekKillers[d.killer] or 0) + 1 end
+            end
+            if d and d.zone and thisWeek then weekZones[d.zone] = (weekZones[d.zone] or 0) + 1 end
+        end
+    end
+    local lines = {}
+    local function add(label, counts, unit, unitMany)
+        local names, n = leaders(counts)
+        if n == 0 then return end
+        lines[#lines + 1] = "|cffffd100" .. T(label) .. "|r " .. table.concat(names, ", "):gsub("|", "||")
+            .. " — " .. n .. " " .. T(n == 1 and unit or unitMany)
+    end
+    add("Group nemesis:", killers, "kill", "kills")
+    add("Nemesis this week:", weekKillers, "kill", "kills")
+    add("Deadliest zone this week:", weekZones, "death", "deaths")
+    return lines
+end
+
 -- Fun records in one group, only when they are remarkable (high thresholds).
 F.FUN = {zone_deaths=5, evening_levels=4, deaths=25, kills=1000, gold=1000000, armor=5}
 function F.funRecords(group)
@@ -271,6 +312,9 @@ function F.funRecords(group)
     local mostArmor, pieces = nil, 0
     for name, n in pairs(armor) do if n > pieces then mostArmor, pieces = name, n end end
     if mostArmor and pieces >= F.FUN.armor then add("Most new gear:", mostArmor, tostring(pieces)) end
+    if WoWStatusFeatures.enabled("nemesis") then
+        for _, line in ipairs(F.nemesisLines(entries)) do lines[#lines + 1] = line end
+    end
     local board = WoWStatusRoster.leaderboard(group)
     local function top(field)
         local t

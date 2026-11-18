@@ -5,6 +5,7 @@ from test_addon import make_lua
 def labs(lua):
     """Register two experiments and open the page, as a feature module would."""
     lua.execute('''
+        WoWStatusFeatures.forgetAll() -- the experiments the addon itself registers
         assert(WoWStatusFeatures.register("combo","Hype combo banner","A banner when friends hit milestones together"))
         assert(WoWStatusFeatures.register("bingo","Weekly group bingo card"))
         SlashCmdList.WOWSTATUS("labs")
@@ -79,7 +80,7 @@ def test_discord_stays_a_code_only_flag_and_off_the_page():
 
 def test_the_page_says_so_when_a_version_ships_no_experiments():
     lua = make_lua()
-    lua.execute('SlashCmdList.WOWSTATUS("labs")')
+    lua.execute('WoWStatusFeatures.forgetAll(); SlashCmdList.WOWSTATUS("labs")')
     assert lua.eval('#WoWStatusFeatures.experiments()') == 0
     assert lua.eval('WoWStatusLabsPage.empty:IsShown()') is True
     assert lua.eval('WoWStatusLabsPage.empty:GetText()') == 'No experiments in this version yet.'
