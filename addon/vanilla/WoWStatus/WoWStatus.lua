@@ -155,20 +155,24 @@ local function scrub()
 end
 
 local function button(parent, text, x, y, width, fn)
-    local b = CreateFrame("Button", nil, parent, "UIPanelButtonTemplate")
+    local layout = parent.settingsCategories
+    local b = CreateFrame("Button", nil, layout and layout:parent() or parent, "UIPanelButtonTemplate")
     b:SetPoint("TOPLEFT", x, y)
     b:SetSize(width, 26)
     b:SetText(T(text))
     b:SetScript("OnClick", fn)
+    if layout then layout:place(b, x, y) end
     return b
 end
 
 local function label(parent, text, x, y, width)
-    local t = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    local layout = parent.settingsCategories
+    local t = (layout and layout:parent() or parent):CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     t:SetPoint("TOPLEFT", x, y)
     t:SetWidth(width or 560)
     t:SetJustifyH("LEFT")
     t:SetText(T(text))
+    if layout then layout:place(t, x, y) end
     return t
 end
 
@@ -186,13 +190,24 @@ local function showPanel(host)
         if WoWStatusTheme and WoWStatusTheme.attachBackground then WoWStatusTheme.attachBackground(panel.background) end
         label(panel,"WoW Status",24,-20)
         label(panel,"Set the same group ID as your friends to start sharing.",24,-64,550)
+        local categories = {
+            {value="sharing", label="Sharing and milestones"},
+            {value="details", label="Character details"},
+            {value="characters", label="Characters shown to friends"},
+            {value="friends", label="Friends' tooltips"},
+        }
+        if WoWStatusScreenshots.available() then categories[#categories+1] = {value="screenshots", label="Screenshots"} end
+        categories[#categories+1] = {value="tools", label="Help and tools"}
+        panel.settingsCategories = WoWStatusUI.settingsCategories(panel, categories, "sharing")
+        local layout = panel.settingsCategories
         panel.checks={}
         local function section(text,y)
             local title=label(panel,text,24,y,550);title:SetTextColor(1,.82,.25)
         end
         local function checkbox(key,title,x,y,group)
-            local check=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate")
+            local check=CreateFrame("CheckButton",nil,layout:parent(),"UICheckButtonTemplate")
             check:SetPoint("TOPLEFT",x,y);check:SetSize(32,32)
+            layout:place(check,x,y)
             label(check,title,38,-6,group=="loot_rarities" and 460 or 230)
             check:SetScript("OnClick",function(self)
                 local target=group and current.settings[group] or current.settings
@@ -206,6 +221,7 @@ local function showPanel(host)
         button(panel,"Groups",24,-116,160,function() openSettings("groups") end)
         button(panel,"Activity log",204,-116,160,function() WoWStatusJournal.show() end)
         button(panel,"Notifications",384,-116,170,function() openSettings("previews") end)
+        layout:category("sharing",174)
         checkbox("enabled","Share my progress",24,-174)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
@@ -221,6 +237,7 @@ local function showPanel(host)
         checkbox("rare","Rare equipment",54,-586,"loot_rarities")
         checkbox("epic","Epic equipment",54,-628,"loot_rarities")
         checkbox("legendary","Legendary equipment",54,-670,"loot_rarities")
+        layout:category("details",742)
         section("Character details",-742)
         local names={level="Level and XP",class="Class",race="Race and male/female",faction="Faction",
             guild="Guild",gear="Equipment and combat stats",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
@@ -231,19 +248,26 @@ local function showPanel(host)
         local bottom=-1072
         -- Clients without Screenshot() never show these options.
         if WoWStatusScreenshots.available() then
+            layout:category("screenshots",1072)
             section("Screenshots",-1072)
             checkbox("level","Screenshot on level up",24,-1108,"screenshots")
             checkbox("dungeon","Screenshot on first dungeon clear",310,-1108,"screenshots")
             checkbox("hide_ui","Hide interface in screenshots",24,-1150,"screenshots")
             bottom=-1212
         end
+        layout:category("characters",-bottom)
         section("Characters shown to friends",bottom)
         label(panel,"Untick bank alts to hide them from everyone's character list and leaderboard.",24,bottom-32,520)
         panel.visibility=WoWStatusRoster.buildVisibilitySettings(panel,bottom-84)
+        layout:adopt(panel.visibility,24,bottom-84,160)
         bottom=bottom-260
         -- A short block in group members' unit tooltips (#183). Account-wide.
+        layout:category("friends",-bottom)
         section("Friends' tooltips",bottom)
-        panel.unitTooltip=WoWStatusUnitTooltip.buildSettings(panel,bottom-36)
+        local tooltipSettings=CreateFrame("Frame",nil,layout:parent())
+        tooltipSettings:SetSize(600,WoWStatusUnitTooltip.HEIGHT)
+        layout:place(tooltipSettings,0,bottom-36,WoWStatusUnitTooltip.HEIGHT)
+        panel.unitTooltip=WoWStatusUnitTooltip.buildSettings(tooltipSettings,0)
         bottom=bottom-36-WoWStatusUnitTooltip.HEIGHT
         -- "Not seen for a while" on the Overview (#172). Account-wide, local only.
         section("Friends not seen for a while",bottom)
@@ -253,11 +277,18 @@ local function showPanel(host)
             if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
         end)
         bottom=bottom-NOT_SEEN_HEIGHT
+        layout:category("tools",-bottom)
         button(panel,"History / graph",24,bottom,170,function() WoWStatusHistoryUI.show(function() return current end,"logs") end)
         button(panel,"Diagnostics",214,bottom,170,function() WoWStatusDiagnostics.show() end)
+        layout.active=nil
         panel.close=button(panel,"Close",424,bottom,130,function() panel:Hide() end)
         -- Experiments, every one off until the player switches it on (#222).
+        layout:category("tools",-bottom)
         button(panel,"Labs: experimental features",24,bottom-40,360,function() WoWStatusLabs.show() end)
+        button(panel,"Setup guide",24,bottom-80,170,function() WoWStatusGuide.show() end)
+        button(panel,"Show me around",214,bottom-80,170,function() WoWStatusGuide.tour() end)
+        button(panel,"What WoW Status shares",24,bottom-120,360,function() WoWStatusPrivacy.show() end)
+        layout:finish()
     end
     for i = #UISpecialFrames, 1, -1 do
         if UISpecialFrames[i] == "WoWStatusSetup" then table.remove(UISpecialFrames, i) end
@@ -276,6 +307,7 @@ local function showPanel(host)
     if host then panel:SetFrameLevel(host:GetFrameLevel() + 1) end
     if not host and WoWStatusGroupWindow then WoWStatusGroupWindow:Hide() end
     refresh()
+    panel.settingsCategories:render()
     panel:Show()
 end
 
@@ -445,6 +477,7 @@ openSettings = function(mode)
     -- page without an OnShow to build from; nothing is built before WoW has
     -- actually opened the window.
     for _, page in ipairs(settingsPages) do pcall(page.ensure) end
+    return true
 end
 
 refresh = function()
@@ -757,6 +790,9 @@ end)
 
 -- Core commands can migrate to their owning modules as those modules are touched.
 local slash = {privacy = function() WoWStatusPrivacy.show() end}
+function slash.visibility()
+    if openSettings() then panel.settingsCategories:select("characters") end
+end
 function slash.groups(rest)
     if rest == "legacy" then
         current.group_ids = {}
@@ -769,7 +805,7 @@ end
 
 function slash.milestones()
     -- Milestone choices live on the main page; there is no separate Milestones page.
-    openSettings()
+    if openSettings() then panel.settingsCategories:select("sharing") end
     say("Milestone choices are on the main WoW Status page.")
 end
 

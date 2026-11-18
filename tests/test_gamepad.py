@@ -1042,3 +1042,94 @@ def test_bingo_board_cells_are_controller_controls():
         end
         assert(#WoWStatusGamepad.controls(page) == 25)
     """)
+
+
+def test_settings_category_picker_reaches_only_the_visible_controls(lua):
+    main_window(lua)
+    lua.execute('''
+        local m=getmetatable(CreateFrame("Frame")).__index
+        function m:SetText(value) self.text=value end
+        function m:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function m:SetShown(value) self.visible=value end
+        function m:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function m:SetHeight(h) self.rect[4]=h end
+        function m:SetScrollChild(child) self.child=child end
+        for _,name in ipairs({"SetJustifyH","SetScale"}) do m[name]=function() end end
+    ''')
+    for name in ('Safe', 'Locale', 'LocaleNN', 'Theme'):
+        lua.execute((ROOT / f'addon/shared/{name}.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        local layout=WoWStatusUI.settingsCategories(main,{
+            {value="one",label="One"},{value="two",label="Two"}},"one")
+        layout:category("one",200)
+        local a=button(layout:parent(),"A",120,400,80,24)
+        layout:place(a,24,-200)
+        layout:category("two",300)
+        local b=button(layout:parent(),"B",120,400,80,24)
+        layout:place(b,24,-300)
+        layout:finish()
+        layout.pick.rect={120,480,350,30}
+        local function controls()
+            local found={}
+            for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do found[control]=true end
+            return found
+        end
+        assert(controls()[layout.pick] and controls()[a] and not controls()[b])
+        layout.pick:Click()
+        local menu=WoWStatusMenu
+        menu.rect={100,200,370,100}
+        for i,row in ipairs(menu.rows) do row.rect={120,280-i*24,300,22} end
+        local reached={}
+        for _,control in ipairs(WoWStatusGamepad.controls(menu,{menu})) do reached[control]=true end
+        for _,row in ipairs(menu.rows) do
+            assert(reached[row])
+            if row.value=="two" then row:Click() end
+        end
+        assert(layout.selected=="two" and not controls()[a] and controls()[b])
+    ''')
+
+
+def test_together_period_menu_options_are_reachable_by_controller(lua):
+    main_window(lua)
+    lua.execute('''
+        local m=getmetatable(CreateFrame("Frame")).__index
+        function m:SetText(value) self.text=value end
+        function m:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function m:SetShown(value) self.visible=value end
+        function m:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function m:SetHeight(h) self.rect[4]=h end
+        function m:SetScrollChild(child) self.child=child end
+        for _,name in ipairs({"SetJustifyH","SetWordWrap","SetScale"}) do m[name]=function() end end
+    ''')
+    for name in ('Safe', 'Locale', 'LocaleNN', 'Theme'):
+        lua.execute((ROOT / f'addon/shared/{name}.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusGroups={historySince=function() return nil end}
+        WoWStatusJournal={entries=function() return {} end}
+        WoWStatusRoster={groups=function() return {} end,hiddenNames=function() return {} end}
+        WoWStatusFirsts={groups=function() return {{id="synthetic",label="Example"}} end,
+            weekRange=function() return "2026-11-16","2026-11-22" end}
+        WoWStatusMainWindow.register=function(_,_,build,refresh)
+            __build,__refresh=build,refresh;return true
+        end
+        WoWStatusMainWindow.show=function()
+            __page=__page or __build(main)
+            __refresh()
+        end
+    ''')
+    lua.execute((ROOT / 'addon/shared/Together.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusTogether.show()
+        local p=__page
+        p.period.rect={120,400,180,26}
+        assert(p.period:GetScript("OnClick"))
+        p.period:Click()
+        local menu=WoWStatusMenu
+        menu.rect={100,200,220,160}
+        for i,row in ipairs(menu.rows) do row.rect={120,350-i*24,180,22} end
+        local reached={}
+        for _,control in ipairs(WoWStatusGamepad.controls(menu,{menu})) do reached[control]=true end
+        local count=0
+        for _,row in ipairs(menu.rows) do assert(reached[row]);count=count+1 end
+        assert(count==5)
+    ''')

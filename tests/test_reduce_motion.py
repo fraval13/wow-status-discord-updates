@@ -167,7 +167,7 @@ def test_the_tick_is_a_controller_control_beside_big_banners():
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
         local tick = panel.reduceMotion
-        assert(tick.parent == panel and WoWStatusGamepad.interactive(tick))
+        assert(tick.parent == panel.settingsCategories.frames.popups and WoWStatusGamepad.interactive(tick))
         local found = false
         for _, control in ipairs(WoWStatusGamepad.controls(panel, {panel})) do found = found or control == tick end
         assert(found, "the pad does not reach the tick")

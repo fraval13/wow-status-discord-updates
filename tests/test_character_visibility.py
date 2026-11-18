@@ -44,7 +44,8 @@ def test_settings_can_hide_and_restore_an_owned_offline_alt(edition):
     lua = client_runtime(edition)
     lua.execute('''
         local original=character()
-        __alt={identity={name="Bank Person",realm="TestRealm",client=WoWStatusAdapter.client_id},
+        local realm=WoWStatusAdapter.full_names and "CAMWOWEU5Realm7PvE" or "TestRealm"
+        __alt={identity={name="Bank Person",realm=realm,client=WoWStatusAdapter.client_id},
             settings=original.settings,events={{kind="level",level=1}},roster_info=original.roster_info}
         WoWStatusDB.characters.bank=__alt
         SlashCmdList.WOWSTATUS("")
@@ -53,11 +54,13 @@ def test_settings_can_hide_and_restore_an_owned_offline_alt(edition):
         local row
         for _, candidate in ipairs(list.rows) do if candidate.character==__alt then row=candidate end end
         assert(row and row.kind=="CheckButton" and row:GetChecked())
+        assert(row.label:GetText() == (WoWStatusAdapter.full_names and "Bank Person" or "Bank Person-TestRealm"))
         row:SetChecked(false);row.OnClick(row)
         assert(__alt.hide_from_list and __alt.visibility_revision==1)
         assert(# __alt.events==1 and not original.hide_from_list)
         row:SetChecked(true);row.OnClick(row)
         assert(not __alt.hide_from_list and __alt.visibility_revision==2)
+        assert(__alt.identity.realm==realm) -- Display changes never rewrite the saved realm.
         assert(not WoWStatusRoster.setHidden({identity=__alt.identity},true))
     ''')
 

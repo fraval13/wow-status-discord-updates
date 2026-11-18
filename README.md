@@ -152,6 +152,12 @@ English, so friends can use different languages. Diagnostics (`/wstatus popup st
 and the release notes stay English. Additional display banks can register without
 changing the locale core; see [contributing a display language](docs/display-languages.md).
 
+The **Settings category** dropdown divides the WoW Status page into sharing and
+milestones, character details, character visibility, friend tooltips, screenshots
+(when available), and help/tools. Notifications has separate categories for
+popups, appearance, text/language, quiet hours, sounds/voices, and previews. The
+Characters page’s **Character visibility** shortcut opens that category directly.
+
 The Options pages (WoW Status, Groups and Notifications) and every page of the
 main window are built the first time they are opened, not at login, so a
 session that never opens them never pays for their frames.
@@ -209,8 +215,14 @@ dungeons cleared, mounts, honorable kills, gold, and zones discovered. A line sa
 how long you have been a group, using the join date already stored, and another says
 what the group added **this week**.
 
-It is honest about gaps. A total that only some members shared says *from 6 of 8*
-under the number rather than quietly under-reporting; a measure nobody shared is left
+Choose **Daily**, **Weekly**, **Monthly**, **Yearly** or **Total** with the period
+dropdown. Dated views count recorded milestones in that local calendar period and
+show its dates; older activity may be missing from the bounded log. Played time,
+gold and other snapshot statistics remain under Total because they have no
+recorded historical changes.
+
+It is honest about gaps. A total that only some members shared says
+*Based on data from 6 of 8 characters* under the number rather than quietly under-reporting; a measure nobody shared is left
 out instead of showing `0`; zones are counted by name, so two friends in Duskwood are
 one zone; and a character in two of your groups is counted once. Hidden characters
 are left out, because the Characters page leaves them out. All of it is local

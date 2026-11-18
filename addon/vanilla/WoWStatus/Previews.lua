@@ -13,13 +13,17 @@ local examples = {
 }
 local T = WoWStatusLocale.T
 local function text(parent, value, x, y, width)
-    local label = parent:CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
+    local layout = parent.settingsCategories
+    local label = (layout and layout:parent() or parent):CreateFontString(nil, "OVERLAY", "GameFontHighlightLarge")
     label:SetPoint("TOPLEFT",x,y); label:SetWidth(width or 550); label:SetJustifyH("LEFT"); label:SetText(T(value))
+    if layout then layout:place(label,x,y) end
     return label
 end
 local function button(parent, value, x, y, width, fn)
-    local widget=CreateFrame("Button",nil,parent,"UIPanelButtonTemplate")
+    local layout = parent.settingsCategories
+    local widget=CreateFrame("Button",nil,layout and layout:parent() or parent,"UIPanelButtonTemplate")
     widget:SetPoint("TOPLEFT",x,y); widget:SetSize(width,30); widget:SetText(T(value)); widget:SetScript("OnClick",fn)
+    if layout then layout:place(widget,x,y) end
     return widget
 end
 -- The addon's chat prefix, as in WoWStatus.lua and Profile.lua.
@@ -70,8 +74,16 @@ function P.show(host)
         panel.tour=button(panel,"Show me around",210,-96,170,function() WoWStatusGuide.tour() end)
         -- Friends muted from their profile (#169), to check and unmute.
         panel.mutes=button(panel,"Muted friends",396,-96,170,function() WoWStatusMutes.show() end)
-        panel.divider=panel:CreateTexture(nil,"ARTWORK")
+        panel.settingsCategories=WoWStatusUI.settingsCategories(panel,{
+            {value="popups",label="Popups"}, {value="appearance",label="Appearance"},
+            {value="text",label="Text and language"}, {value="quiet",label="Quiet hours"},
+            {value="sounds",label="Sounds and voices"}, {value="previews",label="Previews"},
+        },"popups")
+        local layout=panel.settingsCategories
+        layout:category("previews",previews)
+        panel.divider=layout:parent():CreateTexture(nil,"ARTWORK")
         panel.divider:SetPoint("TOPLEFT",24,-previews);panel.divider:SetSize(540,1);panel.divider:SetColorTexture(.82,.68,.32,.6)
+        layout:place(panel.divider,24,-previews,1)
         text(panel,"Previews",24,-previews-16)
         text(panel,"Choose a notification to preview it.",24,-previews-48)
         panel.buttons={}
@@ -81,13 +93,15 @@ function P.show(host)
         end
         -- Popup placement and big banners (#61). Account-wide.
         local function check(title,y,get,set,x,width)
-            local widget=CreateFrame("CheckButton",nil,panel,"UICheckButtonTemplate")
+            local widget=CreateFrame("CheckButton",nil,layout:parent(),"UICheckButtonTemplate")
             widget:SetPoint("TOPLEFT",x or 24,y);widget:SetSize(32,32)
+            layout:place(widget,x or 24,y)
             widget.label=text(widget,title,38,-6,width or 460)
             widget:SetScript("OnClick",function(self) set(self:GetChecked() and true or false) end)
             widget.get=get
             return widget
         end
+        layout:category("popups",options)
         panel.unlock=check("Unlock popup position",-options,function(o) return o.unlocked end,WoWStatusPopups.setUnlocked)
         panel.reset=button(panel,"Reset popup position",310,-options,250,function() WoWStatusPopups.resetPosition() end)
         -- Reduce motion (#184) shares the row: each label is kept to its own half.
@@ -98,14 +112,17 @@ function P.show(host)
             WoWStatusPopups.setReduceMotion(value);WoWStatusPopups.sample("level") end,400,126)
         -- The minimap button can be switched off (#177); the confirmation names
         -- the ways in that do not need it.
+        layout:category("appearance",options+84)
         panel.minimap=check("Show the minimap button",-options-84,WoWStatusMinimap.visible,function(value)
             WoWStatusMinimap.setVisible(value)
             if not value then notice(T("Minimap button hidden.").." "..T(WoWStatusMinimap.WAYS)) end
         end)
         -- Deathless streak milestones (#164): off by default, so they add no noise.
-        panel.streaks=check("Deathless streak milestones (every 5 levels or week)",-options-126,
+        layout:category("popups",options)
+        panel.streaks=check("Deathless streak milestones (every 5 levels or week)",-options-84,
             function() return WoWStatusStreaks.milestones() end,WoWStatusStreaks.setMilestones)
         -- Group status line (#62). Account-wide.
+        layout:category("appearance",options+168,42)
         panel.line={}
         for i,entry in ipairs({{"enabled","Show the group status line"},{"attach","Attach it under the quest tracker"},
             {"hide_combat","Hide the status line in combat"},{"hide_instance","Hide the status line in dungeons and raids"}}) do
@@ -114,12 +131,14 @@ function P.show(host)
                 function(value) WoWStatusStatusLine.set(key,value) end)
         end
         -- Window theme and size (#60). Account-wide, applied at once.
+        layout:category("appearance",options+340,228)
         panel.theme=text(panel,WoWStatusTheme.label(),24,-options-346,300)
         -- The window size (#182) as a percentage to type, with - and + stepping 10 %.
-        panel.windowSize=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+        panel.windowSize=CreateFrame("EditBox",nil,layout:parent(),"InputBoxTemplate")
         -- A small line under the label when the screen shows the window smaller.
-        panel.themeNote=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        panel.themeNote=layout:parent():CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
         panel.themeNote:SetPoint("TOPLEFT",24,-options-366);panel.themeNote:SetWidth(300);panel.themeNote:SetJustifyH("LEFT")
+        layout:place(panel.themeNote,24,-options-366)
         local function refreshTheme()
             panel.theme:SetText(T(WoWStatusTheme.label()))
             local note=WoWStatusTheme.shownNote()
@@ -137,6 +156,7 @@ function P.show(host)
         panel.themeNext=button(panel,"Next theme",330,-options-340,120,function() WoWStatusTheme.next();refreshTheme() end)
         panel.smaller=button(panel,"-",456,-options-340,26,function() step(-WoWStatusTheme.STEP) end)
         panel.windowSize:SetPoint("TOPLEFT",490,-options-340);panel.windowSize:SetSize(36,30)
+        layout:place(panel.windowSize,490,-options-340)
         panel.windowSize:SetAutoFocus(false);panel.windowSize:SetMaxLetters(3)
         if panel.windowSize.SetNumeric then panel.windowSize:SetNumeric(true) end
         text(panel,"%",528,-options-346,14)
@@ -158,6 +178,7 @@ function P.show(host)
         panel.themePopups=check("Use the theme and size for popups too",-options-382,function() return WoWStatusTheme.settings().popups end,
             WoWStatusTheme.setPopups)
         -- Notification size in percent (complaints that toasts were too big or small).
+        layout:category("popups",options+430,144)
         text(panel,("Notification size (%d–%d%%)"):format(WoWStatusTheme.POPUP_MIN,WoWStatusTheme.POPUP_MAX),24,-options-430,250)
         -- A dropdown, so a controller can pick a size without typing.
         panel.popupSize=button(panel,"",290,-options-424,180,function(self)
@@ -184,6 +205,7 @@ function P.show(host)
             end)
         end)
         -- Registered display languages. Built windows change after a reload.
+        layout:category("text",options+510)
         panel.language=text(panel,"",24,-options-516,250)
         panel.languageSwitch=button(panel,"",290,-options-510,150,function(self)
             local W=WoWStatusLocale
@@ -200,6 +222,7 @@ function P.show(host)
         panel.reload=button(panel,"",450,-options-510,130,function() if ReloadUI then ReloadUI() end end)
         panel.reload:Hide()
         -- Quiet mode: notifications wait in the instances ticked (off by default).
+        layout:category("quiet",options+642)
         panel.quiet=check("Quiet mode: hold notifications in",-options-642,function() return WoWStatusPopups.quietSettings().enabled end,
             function(value) WoWStatusPopups.setQuiet("enabled",value) end)
         -- Quiet hours (#180): a daily window on the local clock, off by default.
@@ -217,8 +240,9 @@ function P.show(host)
             panel.quietClock[key.."Later"]=button(panel,"Later",296,y,90,function()
                 WoWStatusPopups.shiftQuietHours(key,1);panel.refreshQuietHours() end)
         end
-        panel.quietState=panel:CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
+        panel.quietState=layout:parent():CreateFontString(nil,"OVERLAY","GameFontHighlightSmall")
         panel.quietState:SetPoint("TOPLEFT",400,-options-766);panel.quietState:SetWidth(170);panel.quietState:SetJustifyH("LEFT")
+        layout:place(panel.quietState,400,-options-766)
         -- The window can begin or end while the page is open: check once a second.
         local sinceQuietCheck=0
         panel:SetScript("OnUpdate",function(_,elapsed)
@@ -239,6 +263,7 @@ function P.show(host)
             if WoWStatusStatusLine and WoWStatusStatusLine.update then WoWStatusStatusLine.update() end
         end
         -- Sounds, one per kind of notification; picking one plays it.
+        layout:category("sounds",options+844)
         text(panel,"Sounds",24,-options-844,300)
         panel.sounds={}
         for i,entry in ipairs(WoWStatusPopups.SOUND_KINDS) do
@@ -290,8 +315,9 @@ function P.show(host)
             panel.voicePack=text(panel,"",24,y-244,540)
             panel.voiceGet=text(panel,"Get the full voice pack: copy this link into your browser, unzip it into Interface/AddOns and restart WoW.",
                 24,y-284,540)
-            panel.voiceLink=CreateFrame("EditBox",nil,panel,"InputBoxTemplate")
+            panel.voiceLink=CreateFrame("EditBox",nil,layout:parent(),"InputBoxTemplate")
             panel.voiceLink:SetPoint("TOPLEFT",30,y-332);panel.voiceLink:SetSize(530,30);panel.voiceLink:SetAutoFocus(false)
+            layout:place(panel.voiceLink,30,y-332)
             local function selectLink(self)
                 self:SetText(V.packURL() or "")
                 WoWStatusUI.call(self,"HighlightText")
@@ -318,12 +344,14 @@ function P.show(host)
                 panel.voiceLink:SetText(V.packURL() or "")
             end
         end
+        layout:category("quiet",options+642)
         panel.quietKinds={}
         for i,entry in ipairs({{"pvp","Battlegrounds"},{"raid","Raids"},{"party","Dungeons"}}) do
             local key=entry[1]
             local widget=check(entry[2],-options-678,function() return WoWStatusPopups.quietSettings()[key] end,
                 function(value) WoWStatusPopups.setQuiet(key,value) end)
             widget:ClearAllPoints();widget:SetPoint("TOPLEFT",54+(i-1)*170,-options-678)
+            layout:place(widget,54+(i-1)*170,-options-678)
             panel.quietKinds[key]=widget
         end
         -- The switch names its target in that language, so each reader finds it.
@@ -349,6 +377,7 @@ function P.show(host)
             for _,id in ipairs(ids) do items[#items+1]={label=P.name(id),value=id} end
             return items
         end
+        layout:category("text",options+552,48)
         text(panel,"Caption personality:",24,-options-558,300)
         panel.personalityPick=button(panel,"",330,-options-552,230,function(self)
             WoWStatusUI.menu(self,choices(P.order),function(id)
@@ -368,7 +397,9 @@ function P.show(host)
             panel.personalityPick:SetText(P.name(P.current()))
             panel.reactionVoicePick:SetText(P.name(P.reactionVoice()))
         end
+        layout.active=nil
         panel.close=button(panel,"Close",424,-footer,140,function() panel:Hide() end)
+        layout:finish()
     end
     local options=WoWStatusPopups.options()
     for _,widget in ipairs({panel.unlock,panel.big,panel.reduceMotion}) do widget:SetChecked(widget.get(options)) end
@@ -387,6 +418,7 @@ function P.show(host)
     panel.refreshTheme()
     panel.refreshVoices()
     if panel.refreshSpoken then panel.refreshSpoken() end
+    panel.settingsCategories:render()
     panel:SetParent(host or UIParent); panel:ClearAllPoints(); panel:SetPoint(host and "TOPLEFT" or "CENTER")
     panel.close:SetShown(not host)
     panel.background:SetShown(not host)

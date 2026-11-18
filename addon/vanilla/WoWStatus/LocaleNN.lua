@@ -965,4 +965,24 @@ W.add({
 W.add({["Start race"]="Start kappløp", ["Cancel race"]="Avbryt kappløp",
     ["since first recorded activity"]="sidan første registrerte aktivitet"})
 
-W.add({["%d characters"]="%d figurar", ["from %d of %d"]="frå %d av %d"})
+W.add({["%d characters"]="%d figurar",
+    ["Based on data from %d of %d characters"]="Byggjer på tal frå %d av %d figurar"})
+
+-- Settings categories and calendar views in Together.
+W.add({
+    ["Settings category:"]="Innstillingskategori:",
+    ["Sharing and milestones"]="Deling og milepælar", ["Help and tools"]="Hjelp og verktøy",
+    ["Popups"]="Sprettoppvarsel", ["Appearance"]="Utsjånad",
+    ["Text and language"]="Tekst og språk", ["Quiet hours"]="Stille timar",
+    ["Sounds and voices"]="Lyd og stemmer",
+    ["Daily"]="Dagleg", ["Weekly"]="Vekevis", ["Monthly"]="Månadleg",
+    ["Yearly"]="Årleg", ["Total"]="Totalt", ["Period:"]="Periode:",
+    ["Dates: from"]="Datoar: frå", ["to"]="til",
+    ["Recorded milestones in your retained log. Older activity may be missing."]=
+        "Registrerte milepælar i den lagra loggen din. Eldre aktivitet kan mangle.",
+    ["Level-up milestones"]="Nivåmilepælar", ["Deaths recorded"]="Registrerte dødsfall",
+    ["Quest milestones"]="Oppdragsmilepælar", ["Raid boss kills"]="Raidbossar felte",
+    ["Armor first equips"]="Første rustningsbruk", ["Reputation milestones"]="Omdømemilepælar",
+    ["Class unlocks"]="Klasseopplåsingar", ["PvP promotions"]="PvP-opprykk",
+    ["Achievements earned"]="Bragder oppnådde", ["Zones explored"]="Område utforska",
+})

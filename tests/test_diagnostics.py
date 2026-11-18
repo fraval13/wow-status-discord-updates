@@ -244,8 +244,9 @@ def test_page_opens_by_command_without_a_tab_and_clears():
 def test_page_opens_from_the_options_and_waits_for_a_ready_character():
     lua = diagnostics()
     lua.execute('''
+        WoWStatusSetup.settingsCategories:select("tools")
         for _, f in ipairs(__frames) do
-            if f.parent == WoWStatusSetup and f.text == "Diagnostics" then f.OnClick(f) end
+            if f.parent == WoWStatusSetup.settingsCategories.frames.tools and f.text == "Diagnostics" then f.OnClick(f) end
         end
         assert(WoWStatusMainWindow.active() == "diagnostics")
     ''')

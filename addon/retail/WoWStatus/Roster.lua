@@ -1412,7 +1412,11 @@ function R.buildVisibilitySettings(parent, y)
                 self.rows[i] = row
             end
             row.character = item.character
-            row.label:SetText(item.name:gsub("|", "||"))
+            -- Forever's internal realm distinguishes saved identities, but is
+            -- not part of the character name players see in the game.
+            local name = WoWStatusAdapter and WoWStatusAdapter.full_names
+                and (item.name:match("^[^-]+") or item.name) or item.name
+            row.label:SetText(name:gsub("|", "||"))
             row:SetChecked(not item.character.hide_from_list); row:Show()
         end
         for i = #owned+1, #self.rows do self.rows[i]:Hide() end
@@ -3003,7 +3007,7 @@ local function build(parent)
     page.visibility = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.visibility:SetPoint("TOPLEFT", 330, -486); page.visibility:SetSize(240, 28)
     page.visibility:SetText(T("Character visibility"))
-    page.visibility:SetScript("OnClick", function() SlashCmdList.WOWSTATUS("") end)
+    page.visibility:SetScript("OnClick", function() SlashCmdList.WOWSTATUS("visibility") end)
     page.sync = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.sync:SetPoint("TOPLEFT", 594, -486); page.sync:SetSize(128, 28)
     page.sync:SetScript("OnClick", function() if R.syncNow() then R.whoLookup() end end)

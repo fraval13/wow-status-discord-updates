@@ -309,10 +309,11 @@ def test_the_duration_dropdown_is_a_controller_control_and_does_not_overlap():
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
         local pick = panel.popupDuration
-        assert(pick.parent == panel and WoWStatusGamepad.interactive(pick))
+        assert(pick.parent == panel.settingsCategories.frames.popups and WoWStatusGamepad.interactive(pick))
         local function top(widget) return widget.__point[3] end
-        -- Its row sits between the size row and the language row, 30 px buttons apart.
-        assert(top(panel.popupSize) - top(pick) >= 34 and top(pick) - top(panel.languageSwitch) >= 34)
+        -- Size and duration have separate rows; language lives in its own category.
+        assert(top(panel.popupSize) - top(pick) >= 34)
+        assert(panel.languageSwitch.parent == panel.settingsCategories.frames.text)
     ''')
 
 

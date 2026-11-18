@@ -150,6 +150,7 @@ def test_every_sound_picker_is_reachable_with_a_controller():
         function methods:GetScript(name) return self[name] end
         function methods:GetRect() return 0, 0, 10, 10 end
         local panel = WoWStatusNotificationPreviews
+        panel.settingsCategories:select("sounds")
         local reached = {}
         for _, control in ipairs(WoWStatusGamepad.controls(panel, {panel})) do reached[control] = true end
         for _, entry in ipairs(WoWStatusPopups.SOUND_KINDS) do assert(reached[panel.sounds[entry[1]]], entry[1]) end

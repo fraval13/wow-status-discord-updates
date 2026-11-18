@@ -103,6 +103,7 @@ function methods:SetAlpha(value) self.alpha=value end
 function methods:SetTexture(value) self.texture=value end
 function methods:GetWidth() return self.width or 700 end
 function methods:SetWidth(width) self.width=width end
+function methods:SetHeight(height) self.height=height end
 function methods:SetSize(width, height) self.width=width; self.height=height end
 function methods:SetFontObject(font) self.font=font end
 function methods:SetFocus() self.focused=true end
@@ -133,7 +134,7 @@ function methods:CreateTexture() return setmetatable({}, {__index=methods}) end
 function methods:CreateFontString(_, _, font) return setmetatable({font=font}, {__index=methods}) end
 for _, name in ipairs({"SetPoint","SetJustifyH","SetFrameStrata",
     "EnableMouse","SetMovable","RegisterForDrag","SetAllPoints","SetColorTexture",
-    "StartMoving","StopMovingOrSizing","SetHeight","SetJustifyV","ClearAllPoints",
+    "StartMoving","StopMovingOrSizing","SetJustifyV","ClearAllPoints",
     "SetBlendMode","SetVertexColor","SetTextColor","SetWordWrap","SetFrameLevel","SetTextInsets","ClearFocus","SetThickness","SetStartPoint","SetEndPoint","SetAutoFocus","SetMaxLetters"}) do methods[name]=function() end end
 function CreateFrame(kind, name, parent, template)
     local f=setmetatable({kind=kind,parent=parent,template=template}, {__index=methods})
@@ -1458,14 +1459,24 @@ def test_the_main_window_pages_are_built_on_first_open(lua):
     assert lua.eval('#__frames') > after_activity
 
 
-def test_notifications_page_has_settings_first_and_previews_below_a_line():
-    lua = make_lua(STUBS + '''
-        local methods = getmetatable(CreateFrame("Frame")).__index
-        function methods:SetPoint(_, _, y) self.y = y end
-    ''')
+def test_notifications_settings_and_previews_have_separate_categories():
+    lua = make_lua()
     lua.eval('SlashCmdList.WOWSTATUS')('previews')
-    panel = lua.eval('WoWStatusNotificationPreviews')
-    lowest_setting = min(panel.languageSwitch.y, panel.popupSize.y, panel.unlock.y)
-    assert lowest_setting > panel.divider.y
-    assert all(b.y < panel.divider.y for b in panel.buttons.values())
-    assert panel.close.y < min(b.y for b in panel.buttons.values())
+    lua.execute("""
+        local page=WoWStatusNotificationPreviews
+        local layout=page.settingsCategories
+        assert(layout.selected=="popups" and layout.frames.popups:IsShown())
+        assert(page.unlock:GetParent()==layout.frames.popups)
+        assert(page.languageSwitch:GetParent()==layout.frames.text)
+        assert(page.buttons.level:GetParent()==layout.frames.previews)
+        assert(not layout.frames.previews:IsShown() and not layout.frames.text:IsShown())
+        local sent=#__sent
+        layout.pick.OnClick(layout.pick)
+        local menu=WoWStatusUI.menuFrame
+        for _,row in ipairs(menu.rows) do if row.value=="previews" then row.OnClick(row) end end
+        assert(layout.selected=="previews" and layout.frames.previews:IsShown())
+        assert(not layout.frames.popups:IsShown())
+        assert(page.height<1000 and #__sent==sent)
+        WoWStatusPreviews.show()
+        assert(layout.selected=="previews") -- Refresh retains the selected category.
+    """)

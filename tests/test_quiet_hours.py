@@ -314,6 +314,7 @@ def test_notifications_page_has_quiet_hours_controls_a_controller_can_reach():
     lua.execute('''
         WoWStatusPreviews.show()
         local panel = WoWStatusNotificationPreviews
+        panel.settingsCategories:select("quiet")
         assert(not panel.quietHours:GetChecked())
         assert(panel.quietClock.start.text == "22:00" and panel.quietClock.stop.text == "07:00")
         panel.quietHours:SetChecked(true); panel.quietHours.OnClick(panel.quietHours)
@@ -337,6 +338,6 @@ def test_notifications_page_has_quiet_hours_controls_a_controller_can_reach():
         function methods:IsEnabled() return true end
         for _, control in ipairs({panel.quietHours, panel.quietClock.startEarlier, panel.quietClock.startLater,
                 panel.quietClock.stopEarlier, panel.quietClock.stopLater}) do
-            assert(control.parent == panel and WoWStatusGamepad.interactive(control))
+            assert(control.parent == panel.settingsCategories.frames.quiet and WoWStatusGamepad.interactive(control))
         end
     ''')

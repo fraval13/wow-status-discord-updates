@@ -259,6 +259,7 @@ def test_options_button_cycles_the_threshold_and_a_controller_reaches_it():
     lua = make_lua(OVERVIEW)
     lua.execute('''
         SlashCmdList.WOWSTATUS("")
+        WoWStatusSetup.settingsCategories:select("friends")
         local b = WoWStatusSetup.notSeen
         assert(b and b.text == "14 days", b and b.text)
         b.OnClick(b)

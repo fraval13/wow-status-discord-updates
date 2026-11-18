@@ -713,3 +713,66 @@ function UI.menu(owner, items, onPick, minWidth)
     menu:Show()
     return menu
 end
+
+-- Keep the native settings pages, but show one short category at a time. All
+-- controls retain their handlers and saved values; a hidden category's parent
+-- keeps its controls out of both mouse and controller navigation.
+function UI.settingsCategories(panel, definitions, initial)
+    local layout = {panel=panel, definitions=definitions, selected=initial, frames={}, heights={}}
+    UI.text(panel, "GameFontNormal", 24, -158, 180):SetText(WoWStatusLocale.T("Settings category:"))
+    layout.pick = CreateFrame("Button", nil, panel, "UIPanelButtonTemplate")
+    layout.pick:SetPoint("TOPLEFT", 210, -152); layout.pick:SetSize(350, 30)
+    function layout:select(id)
+        for _, item in ipairs(self.definitions) do
+            if item.value == id then
+                self.selected = id
+                self:render()
+                UI.call(self.panel:GetParent(), "SetVerticalScroll", 0)
+                return true
+            end
+        end
+        return false
+    end
+    layout.pick:SetScript("OnClick", function(owner)
+        local choices = {}
+        for _, item in ipairs(definitions) do
+            choices[#choices+1] = {value=item.value, label=WoWStatusLocale.T(item.label)}
+        end
+        UI.menu(owner, choices, function(id) layout:select(id) end, 350)
+    end)
+    function layout:category(id, originalTop, relativeTop)
+        if not self.frames[id] then
+            local frame = CreateFrame("Frame", nil, self.panel)
+            frame:SetPoint("TOPLEFT", 0, -204); frame:SetSize(600, 40)
+            self.frames[id], self.heights[id] = frame, 40
+        end
+        self.active, self.origin, self.offset = id, originalTop, relativeTop or 0
+    end
+    function layout:parent() return self.active and self.frames[self.active] or self.panel end
+    function layout:place(widget, x, y, height)
+        if not self.active then return widget end
+        local localY = y + self.origin - self.offset
+        widget:ClearAllPoints(); widget:SetPoint("TOPLEFT", x, localY)
+        self.heights[self.active] = math.max(self.heights[self.active], -localY + (height or 40))
+        return widget
+    end
+    function layout:adopt(widget, x, y, height)
+        widget:SetParent(self:parent())
+        return self:place(widget, x, y, height)
+    end
+    function layout:render()
+        for id, frame in pairs(self.frames) do
+            frame:SetHeight(self.heights[id]); frame:SetShown(id == self.selected)
+        end
+        for _, item in ipairs(self.definitions) do
+            if item.value == self.selected then self.pick:SetText(WoWStatusLocale.T(item.label) .. " ▾") end
+        end
+        local bottom = 204 + (self.heights[self.selected] or 40)
+        self.panel:SetHeight(bottom + 72)
+        if self.panel.close then
+            self.panel.close:ClearAllPoints(); self.panel.close:SetPoint("TOPLEFT", 424, -bottom-20)
+        end
+    end
+    function layout:finish() self.active=nil; self:render() end
+    return layout
+end
