@@ -1,2 +1,0 @@
-- Player rankings give mains and alts separate wrapping lines, with taller rows that fit their text.
-- Level numbers are centered inside their portrait badges.

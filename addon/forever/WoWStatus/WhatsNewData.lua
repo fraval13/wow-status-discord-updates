@@ -1,5 +1,12 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.89.0", notes={
+        "Player rankings give mains and alts separate wrapping lines, with taller rows that fit their text.",
+        "Level numbers are centered inside their portrait badges.",
+        "Character profiles show shared read-only talent trees beneath gear and combat stats.",
+        "Group friends appear on the world map and nearby on the minimap, with names and report ages on hover.",
+        "Map positions follow Location and character-list sharing, are not saved, and expire when updates stop.",
+    }},
     {version="1.88.0", notes={
         "Online only is now above the Characters list, where it stays visible as you scroll.",
         "Dropdown buttons use a WoW arrow icon, fixing square symbols in clients whose fonts lack the arrow character.",
@@ -12,12 +19,5 @@ WoWStatusWhatsNewData = {
         "Weekly records have a separate date line and aligned character statistics instead of long repeated sentences.",
         "Characters without counted weekly activity no longer leave empty name rows.",
         "Records labels stay within buttons, and long medal titles and recaps have more room to wrap.",
-    }},
-    {version="1.86.0", notes={
-        "Together gains Daily, Weekly, Monthly, Yearly and Total views, with explicit calendar dates.",
-        "Dated Together views count retained milestones; shared snapshot statistics remain in Total.",
-        "Together now explains how many characters supplied each partial total.",
-        "Settings and Notifications have category dropdowns, so related choices are easier to find.",
-        "Forever character visibility settings show names without internal realm identifiers.",
     }},
 }
