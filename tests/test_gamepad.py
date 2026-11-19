@@ -106,7 +106,8 @@ function methods:SetPropagateKeyboardInput() error("SetPropagateKeyboardInput is
 function methods:RegisterEvent(name) self.events = self.events or {}; self.events[name] = true end
 function methods:SetFocus() self.typing = true; __focusEdit = self end
 function methods:ClearFocus() self.typing = false; __focusEdit = nil end
-function methods:CreateTexture() return setmetatable({children={}, scripts={}}, meta) end
+function methods:CreateTexture() return setmetatable({children={}, scripts={}, rect={0,0,10,10}}, meta) end
+function methods:SetTexture(path) self.texture=path end
 for _, name in ipairs({"SetPoint", "ClearAllPoints", "SetAllPoints", "SetColorTexture", "SetWidth", "SetHeight"}) do
     methods[name] = function() end
 end

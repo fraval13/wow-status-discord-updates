@@ -70,6 +70,9 @@ under **Browse groups**. The first time, a confirmation shows the known online
 recipient count; offline members may learn it later. Turning sharing off cannot
 take back copies already shared. Removing a group clears its sharing choice.
 
+Use **Online only** above the Characters list to show just online characters.
+The filter stays visible while scrolling and affects only your own view.
+
 Click a character card, then scroll below the recent activity and gear to see
 their equipped items in a character-sheet layout. Hover a slot for the item's
 full tooltip, including its enchant and random suffix. Available combat stats

@@ -197,3 +197,54 @@ def test_cards_use_a_full_bottom_xp_bar_and_show_item_level_on_the_overview():
     assert card.itemLevel.text.endswith('45')
     lua.eval('WoWStatusMainWindow.show')('overview')
     assert lua.eval('WoWStatusOverviewPage.you.itemLevel.text').endswith('45')
+
+
+def test_opened_profile_has_a_reserved_transfer_slot_ahead_of_background_gear():
+    lua = person('Thora', 'Synthetic Viewer')
+    lua.execute('''
+        __gearRequests={}
+        WoWStatusRoster.equipmentQueueSize=function() return 0 end
+        WoWStatusEquipmentSync.init(WoWStatusDB,character(),function(_,peer,text)
+            __gearRequests[#__gearRequests+1]=text;return true
+        end)
+        local group=next(character().group_ids)
+        for i=1,6 do
+            local owner=string.format("%016x",i)
+            assert(WoWStatusEquipmentSync.receive({"H",group,"abcdefabcdefabcd",owner,
+                "Friend"..i.."-TestRealm","1",tostring(time()),"0","Dwarf","3","WARRIOR","24"},"Mira-TestRealm"))
+        end
+        WoWStatusEquipmentSync.tick()
+    ''')
+    requests = [line for line in lua.eval('__gearRequests').values() if line.startswith('F ')]
+    assert len(requests) == 3  # One slot stays free for an explicitly opened profile.
+    active_names = {line.split()[5] for line in requests}
+    target = next(f'Friend{i}-TestRealm' for i in range(1, 7)
+                  if f'Friend{i}-TestRealm' not in active_names)
+    before = lua.eval('#__gearRequests')
+    assert lua.eval('WoWStatusRoster.requestEquipment')(target)
+    lua.eval('WoWStatusEquipmentSync.tick')()
+    new = [lua.eval(f'__gearRequests[{i}]') for i in range(before + 1, lua.eval('#__gearRequests') + 1)]
+    assert len(new) == 1 and new[0].startswith('F ') and new[0].split()[5] == target
+    lua.eval('WoWStatusEquipmentSync.tick')()
+    assert lua.eval('#__gearRequests') == before + 1  # Still bounded to four active requests.
+
+
+def test_profile_refresh_recovers_evicted_gear_without_requesting_another_inventory():
+    net = Network('Mira', 'Thora')
+    net.advance()
+    thora = net.clients['Thora']
+    assert snapshot(thora) is not None
+    thora.execute('''
+        WoWStatusDB.roster.equipment_cache={}
+        for _,player in pairs(WoWStatusDB.roster.players) do
+            for _,character in pairs(player.characters) do character.equipment_profile=nil end
+        end
+    ''')
+    assert snapshot(thora) is None
+    before = len(net.packets)
+    assert thora.eval('WoWStatusRoster.requestEquipment')('Mira-TestRealm')
+    net.advance(40)
+    assert snapshot(thora)['items'][1].startswith('item:16963:')
+    sent = [p[2] for p in net.packets[before:] if p[0] == 'Thora']
+    assert any(line.startswith('F ') for line in sent)
+    assert not any(line.startswith('J ') for line in sent)

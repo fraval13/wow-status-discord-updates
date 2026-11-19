@@ -48,20 +48,33 @@ def test_lists_online_friends_within_the_window_closest_first():
     assert data.above is None and data.below is None
 
 
-def test_with_nobody_in_range_the_nearest_above_and_below_are_offered():
-    _, thora, words = setup()
-    friend(thora, words, 'Mira-TestRealm', 26)
-    friend(thora, words, 'Cy-TestRealm', 31)
-    friend(thora, words, 'Bo-TestRealm', 12)
-    online(thora, 'Mira-TestRealm', 'Cy-TestRealm', 'Bo-TestRealm')
+def test_no_out_of_range_fallback_when_you_are_24_and_the_hunter_is_56():
+    _, thora, words = setup(level=24)
+    friend(thora, words, 'Mira-TestRealm', 56, klass='HUNTER')
+    online(thora, 'Mira-TestRealm')
     data, rows = together(thora)
-    assert rows == []
-    assert data.above.name == 'Mira-TestRealm' and data.above.diff == 6
-    assert data.below.name == 'Bo-TestRealm' and data.below.diff == -8
+    assert data.level == 24 and data.range == 3 and data.online == 1
+    assert data.inRange == 0 and rows == []
     thora.eval('WoWStatusMainWindow.show')('characters')
     page = thora.eval('WoWStatusCharactersPage')
-    assert page.togetherBar.note.text == 'Nobody that close. Nearest online:'
-    assert page.together[1].level.text == 'Level 26 (+6)' and page.together[2].level.text == 'Level 12 (-8)'
+    assert page.togetherBar.note.text == 'No online friends within your level range.'
+    assert len(page.together) == 0
+    # Boundary levels are included; the first levels outside the window are not.
+    for name, level in [('Low-TestRealm', 21), ('High-TestRealm', 27),
+                        ('TooLow-TestRealm', 20), ('TooHigh-TestRealm', 28)]:
+        friend(thora, words, name, level)
+    online(thora, 'Mira-TestRealm', 'Low-TestRealm', 'High-TestRealm',
+           'TooLow-TestRealm', 'TooHigh-TestRealm')
+    assert together(thora)[1] == [('High-TestRealm', 27, 3), ('Low-TestRealm', 21, -3)]
+    thora.eval('WoWStatusRoster.render')()
+    assert page.together[1].IsShown(page.together[1])
+    # A shrinking window also removes previously rendered recommendations.
+    thora.eval('WoWStatusRoster.setTogetherRange')(2)
+    assert together(thora)[1] == []
+    assert not page.together[1].IsShown(page.together[1])
+    assert not page.together[2].IsShown(page.together[2])
+    thora.execute('WoWStatusLocale.set("nn"); WoWStatusRoster.render()')
+    assert page.togetherBar.note.text == 'Ingen pålogga vener innanfor nivåspennet ditt.'
 
 
 def test_only_characters_from_a_shared_list_that_the_viewer_may_see():
@@ -193,6 +206,7 @@ def test_the_band_follows_a_friend_logging_out_without_a_sync():
 
 def test_the_band_collapses_like_a_section_and_keeps_the_existing_sections():
     _, thora, words = setup()
+    friend(thora, words, 'Mira-TestRealm', 20)
     online(thora, 'Mira-TestRealm')
     thora.eval('WoWStatusMainWindow.show')('characters')
     page = thora.eval('WoWStatusCharactersPage')
@@ -290,6 +304,8 @@ def test_party_changes_redraw_once_on_the_next_tick():
     _, thora, words = setup()
     friend(thora, words, 'Mira-TestRealm', 20)
     online(thora, 'Mira-TestRealm')
+    # Settle the initial all-empty mocked inventory before counting live redraws.
+    thora.execute('__mono=__mono+6; WoWStatusEquipment.capture(character())')
     thora.eval('WoWStatusMainWindow.show')('characters')
     thora.execute('''
         __renders = 0
@@ -370,6 +386,8 @@ def test_a_closed_window_stops_the_live_redraws():
     _, thora, words = setup()
     friend(thora, words, 'Mira-TestRealm', 20)
     online(thora, 'Mira-TestRealm')
+    # Settle the initial all-empty mocked inventory before counting live redraws.
+    thora.execute('__mono=__mono+6; WoWStatusEquipment.capture(character())')
     thora.eval('WoWStatusMainWindow.show')('characters')
     thora.execute('''
         __renders = 0

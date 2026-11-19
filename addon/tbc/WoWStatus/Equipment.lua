@@ -61,11 +61,20 @@ local function spellValue(fn)
     end
     return best
 end
+local worldReady = type(IsLoggedIn) ~= "function" or S.call(IsLoggedIn) == true
+local retryAt, emptySince
 function E.capture(character)
     local settings = character and character.settings
     if not settings or not settings.fields or not settings.fields.gear then
         if character then character.equipment_profile = nil end
+        retryAt,emptySince=nil,nil
         return nil
+    end
+    -- Login/logout and loading screens can expose an empty inventory before
+    -- its data is ready. Keep the last complete observation and its timestamp.
+    if not worldReady or (type(IsLoggedIn)=="function" and S.call(IsLoggedIn)~=true)
+        or (type(UnitExists)=="function" and S.call(UnitExists,"player")~=true) then
+        return character.equipment_profile
     end
     local snapshot = {at=math.floor(S.now()), items={}, stats={}}
     -- Retail and Forever use this equipped value in their character sheet.
@@ -73,7 +82,19 @@ function E.capture(character)
     local _, average = S.call(GetAverageItemLevel)
     average = S.number(average)
     snapshot.average_item_level = average and average >= 0 and average < 1000000 and average or nil
-    for slot = 0, 19 do snapshot.items[slot] = slotValue(slot) end
+    local allEmpty = true
+    for slot = 0, 19 do
+        snapshot.items[slot] = slotValue(slot)
+        if snapshot.items[slot] ~= "-" then allEmpty = false end
+    end
+    if allEmpty then
+        emptySince = emptySince or S.uptime()
+        if S.uptime()-emptySince < 5 then
+            retryAt = S.uptime()+1
+            return character.equipment_profile
+        end
+    else emptySince = nil end
+    retryAt = nil
     local stats = snapshot.stats
     stats.health = number(S.call(UnitHealthMax, "player"))
     stats.mana = number(S.call(UnitPowerMax, "player", 0))
@@ -166,7 +187,7 @@ end
 -- Save locally without announcements or network traffic. Delayed item data and
 -- restricted combat values are tried again after loading/combat has ended.
 local frame = CreateFrame("Frame")
-for _, event in ipairs({"PLAYER_EQUIPMENT_CHANGED", "PLAYER_ENTERING_WORLD", "PLAYER_REGEN_ENABLED",
+for _, event in ipairs({"PLAYER_EQUIPMENT_CHANGED", "PLAYER_ENTERING_WORLD", "PLAYER_LEAVING_WORLD", "PLAYER_REGEN_ENABLED",
     "PLAYER_LOGOUT", "GET_ITEM_INFO_RECEIVED", "UNIT_STATS", "UNIT_MAXHEALTH", "UNIT_MAXPOWER", "UNIT_INVENTORY_CHANGED"}) do
     if not C_EventUtils or not C_EventUtils.IsEventValid or S.call(C_EventUtils.IsEventValid, event) == true then
         pcall(frame.RegisterEvent, frame, event)
@@ -175,6 +196,8 @@ end
 local dirty = false
 frame:SetScript("OnEvent", function(_, event, unit)
     if event:sub(1, 5) == "UNIT_" and S.string(unit) ~= "player" then return end
+    if event == "PLAYER_LEAVING_WORLD" then worldReady=false; retryAt=nil; return end
+    if event == "PLAYER_ENTERING_WORLD" then worldReady=true; emptySince=nil end
     local character = WoWStatusPopups and WoWStatusPopups.character()
     if event == "PLAYER_LOGOUT" then E.capture(character) else dirty = true end
 end)
@@ -183,7 +206,7 @@ frame:SetScript("OnUpdate", function(_, delta)
     elapsed = elapsed + delta
     if elapsed < 1 then return end
     elapsed = 0
-    if dirty then
+    if dirty or (retryAt and S.uptime()>=retryAt) then
         dirty = false
         E.capture(WoWStatusPopups and WoWStatusPopups.character())
         if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end

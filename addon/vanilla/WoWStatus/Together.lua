@@ -167,12 +167,12 @@ local function render()
     local label
     for _, group in ipairs(groups) do if group.id == chosen then label = group.label end end
     if not label then chosen = groups[1] and groups[1].id or nil; label = groups[1] and groups[1].label end
-    page.pick:SetText(label and label:gsub("|", "||") or T("No group"))
+    UI.dropdownLabel(page.pick, label and label:gsub("|", "||") or T("No group"))
     UI.call(page.pick, "SetEnabled", #groups > 1)
     UI.call(page.period, "SetEnabled", chosen ~= nil)
     local periodLabel = "Total"
     for _, item in ipairs(G.PERIODS) do if item.value == period then periodLabel = item.label end end
-    page.period:SetText(T("Period:") .. " " .. T(periodLabel) .. " ▾")
+    UI.dropdownLabel(page.period, T("Period:") .. " " .. T(periodLabel))
     if not chosen then
         page.heading:SetText(T("Join a group to add your adventures up together."))
         page.since:SetText("")

@@ -1,0 +1,1 @@
+- Opening a character prioritizes their missing gear, with a transfer slot reserved ahead of background downloads.

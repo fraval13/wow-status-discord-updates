@@ -108,8 +108,8 @@ def test_native_button_label_is_bounded_for_long_localized_text():
         function methods:GetHeight() return self.height end
         local b = CreateFrame("Button")
         b:SetSize(256, 28); b.label=b:CreateFontString()
-        WoWStatusUI.buttonLabel(b, "Vis: Morosame rekordar ▾")
+        WoWStatusUI.buttonLabel(b, "Vis: Morosame rekordar")
         assert(b.label.width <= 232 and b.label.height <= 22)
         assert(b.label.wrap == false and b.label.lines == 1)
-        assert(b.fullLabel == "Vis: Morosame rekordar ▾")
+        assert(b.fullLabel == "Vis: Morosame rekordar")
     ''')

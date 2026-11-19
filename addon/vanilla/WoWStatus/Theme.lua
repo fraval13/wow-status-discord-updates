@@ -663,12 +663,25 @@ function UI.buttonLabel(button, text)
     local font = S.call(button.GetFontString, button)
     if font then
         local width = S.number(S.call(button.GetWidth, button))
-        call(font, "ClearAllPoints"); call(font, "SetPoint", "CENTER", 0, 0)
-        if width then call(font, "SetWidth", math.max(1, width-24)) end
+        call(font, "ClearAllPoints"); call(font, "SetPoint", "CENTER", button.dropdownArrow and -10 or 0, 0)
+        if width then call(font, "SetWidth", math.max(1, width-(button.dropdownArrow and 44 or 24))) end
         local height = S.number(S.call(button.GetHeight, button))
         if height then call(font, "SetHeight", math.max(1, height-6)) end
         call(font, "SetWordWrap", false); call(font, "SetMaxLines", 1)
     end
+end
+
+-- Use the game's dropdown icon: its fonts do not all contain Unicode arrows.
+-- This is decoration on the existing button, so mouse and controller clicks
+-- still use the same full button and its OnClick handler.
+function UI.dropdownLabel(button, text)
+    if not button.dropdownArrow then
+        local arrow = button:CreateTexture(nil, "OVERLAY")
+        arrow:SetTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+        arrow:SetPoint("RIGHT", -4, 0); arrow:SetSize(20, 20)
+        button.dropdownArrow = arrow
+    end
+    UI.buttonLabel(button, text)
 end
 
 -- A small drop-down list under a button: items {label=, value=}; onPick(value).
@@ -781,7 +794,7 @@ function UI.settingsCategories(panel, definitions, initial)
             frame:SetHeight(self.heights[id]); frame:SetShown(id == self.selected)
         end
         for _, item in ipairs(self.definitions) do
-            if item.value == self.selected then self.pick:SetText(WoWStatusLocale.T(item.label) .. " ▾") end
+            if item.value == self.selected then UI.dropdownLabel(self.pick, WoWStatusLocale.T(item.label)) end
         end
         local bottom = 204 + (self.heights[self.selected] or 40)
         self.panel:SetHeight(bottom + 72)

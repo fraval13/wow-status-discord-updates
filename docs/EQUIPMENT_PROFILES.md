@@ -27,7 +27,10 @@ Each character saves a snapshot on login and on equipment/stat changes (coalesce
 to once a second), after loading/combat, and on logout. Other characters on the
 same account keep their own last saved snapshots. The Equipment and combat stats
 character-detail checkbox controls both capture and sharing. Turning it off
-scrubs the local equipment snapshot. Character-list sharing and Hide this
+scrubs the local equipment snapshot. Loading/logout observations keep the last
+complete snapshot. An entirely empty inventory is retried for five seconds
+before accepting it as a genuine unequip; retries preserve the old timestamp.
+Character-list sharing and Hide this
 character also gate responses; queued gear packets re-check those choices and
 current group membership before sending. No gear changes become announcements.
 
@@ -92,8 +95,10 @@ and equipped average item level. Slots distinguish empty (-) from unavailable
 (?). Stats and item levels use bounded integers on the wire. Item strings retain
 enchants/gems/suffixes; arbitrary hyperlinks and nonfinite values fail.
 
-Up to four background requests can be active, with at most four providers per
-record and 64 queued compact jobs. Inventories prioritize owned and newest gear.
+Up to four requests can be active, with one slot reserved for the profile you
+open rather than background downloads. Its missing gear is requested before
+other queued snapshots. At most four providers per record and 64 queued compact
+jobs are retained. Inventories prioritize owned and newest gear.
 Only a small packet window enters the shared queue (hard limit 256 packets);
 responses precede inventory traffic. Group membership and own privacy are
 rechecked when packets are sent. Metadata requests are limited to one per 15

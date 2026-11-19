@@ -6,6 +6,7 @@ local G, S, E = WoWStatusEquipmentSync, WoWStatusSafe, WoWStatusEquipment
 local db, current, transport
 local jobs, hello, offers, pending, answered, dirty = {}, {}, {}, {}, {}, {}
 local MAX_CACHE, MAX_JOBS, MAX_PENDING = 256, 64, 4
+local focused -- One transfer slot is reserved for the profile explicitly opened.
 local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=true, DEATHKNIGHT=true,
     SHAMAN=true, MAGE=true, WARLOCK=true, MONK=true, DRUID=true, DEMONHUNTER=true, EVOKER=true}
 local function now() return S.now() end
@@ -181,16 +182,30 @@ function G.waiting(name)
 end
 function G.refresh(name)
     if not db or touring() then return nil end
-    for _, offer in pairs(offers) do
+    local best, chosen
+    for k, offer in pairs(offers) do
         if key(offer.meta.name)==key(name) then
-            local source=offer.sources[1]
-            if source and (not source.asked or S.now()-source.asked>=60) then
-                source.asked=S.now()
-                send("J",source.group,source.peer,{})
+            for _, source in ipairs(offer.sources) do
+                if selected(source.group) and (not best or G.newer(offer.meta,best.meta)) then
+                    best,chosen=offer,k
+                end
             end
-            return true
         end
     end
+    if not best then return nil end
+    focused=chosen
+    -- A cache entry may have been evicted while its provider offer remains.
+    local saved=cache()[chosen]
+    if not saved or not same(saved,best.meta) or not saved.snapshot then best.need=true end
+    -- A missing snapshot already has precise metadata: request its data rather
+    -- than putting another whole inventory in front of the selected character.
+    if best.need then return true end
+    for _, source in ipairs(best.sources) do
+        if selected(source.group) and (not source.asked or S.now()-source.asked>=60) then
+            if send("J",source.group,source.peer,{}) then source.asked=S.now(); return true end
+        end
+    end
+    return true
 end
 local function parseMetadata(words)
     if #words~=12 or not validID(words[4]) or not words[5] or #words[5]>64
@@ -363,8 +378,19 @@ function G.tick()
     local busy={}
     for _,request in pairs(pending) do busy[request.record]=true end
     if count(pending)>=MAX_PENDING then return end
+    local waiting={}
     for k,offer in pairs(offers) do
-        if offer.need and not busy[k] and WoWStatusRoster.equipmentQueueSize()<32 then
+        if offer.need and not busy[k] then waiting[#waiting+1]={key=k,offer=offer} end
+    end
+    table.sort(waiting,function(a,b)
+        if (a.key==focused)~=(b.key==focused) then return a.key==focused end
+        if a.offer.at~=b.offer.at then return a.offer.at<b.offer.at end
+        return a.key<b.key
+    end)
+    for _,item in ipairs(waiting) do
+        local k,offer=item.key,item.offer
+        local limit=k==focused and MAX_PENDING or MAX_PENDING-1
+        if count(pending)<limit and WoWStatusRoster.equipmentQueueSize()<32 then
             for offset=0,#offer.sources-1 do
                 local index=((offer.next or 1)+offset-1)%#offer.sources+1
                 local source=offer.sources[index]
@@ -390,6 +416,7 @@ end
 function G.init(database,character,sender)
     db,current,transport=database,character,sender
     jobs,hello,offers,pending,answered,dirty={},{},{},{},{},{}
+    focused=nil
     db.roster.equipment_cache=type(db.roster.equipment_cache)=="table" and db.roster.equipment_cache or {}
     trim(cache(),MAX_CACHE)
 end

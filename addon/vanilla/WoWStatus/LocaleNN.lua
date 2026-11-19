@@ -799,7 +799,7 @@ W.add({
     ["Play together now"] = "Spel saman no", ["%d within %d levels"] = "%d innanfor %d nivå", ["%d within 1 level"] = "%d innanfor 1 nivå",
     ["Level range: ±%d"] = "Nivåspenn: ±%d", ["Your level is not known yet."] = "Nivået ditt er ikkje kjent enno.",
     ["No friends who share their list are online right now."] = "Ingen vener som deler lista si, er pålogga no.",
-    ["Nobody that close. Nearest online:"] = "Ingen så nære. Nærast av dei pålogga:",
+    ["No online friends within your level range."] = "Ingen pålogga vener innanfor nivåspennet ditt.",
     ["Closest level first."] = "Nærast nivå først.",
     ["Whisper"] = "Kviskre", ["Invite"] = "Inviter", ["Invite to your group"] = "Inviter til gruppa di",
     ["Already in your group"] = "Alt i gruppa di", ["Different faction"] = "Anna fraksjon",

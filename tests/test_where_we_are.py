@@ -245,6 +245,8 @@ def test_a_stamp_far_in_the_future_is_left_out():
 
 def test_redraws_only_when_an_age_changes_or_a_report_arrives():
     thora = friends('Mira-TestRealm', 'Bo-TestRealm')
+    # Finish the initial gear observation before measuring zone-only redraws.
+    thora.execute('__mono=__mono+6; WoWStatusEquipment.capture(character())')
     thora.eval('WoWStatusMainWindow.show')('characters')
     thora.execute('''
         __renders = 0

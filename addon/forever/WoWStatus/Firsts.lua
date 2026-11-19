@@ -660,8 +660,8 @@ local function render()
     local view = data.view or "firsts"
     if view ~= "firsts" and view ~= "week" and view ~= "fun" then view, data.view = "firsts", "firsts" end
     local titles = {firsts="Firsts", week="This week", fun="Fun records"}
-    UI.buttonLabel(page.view, T("View:") .. " " .. T(titles[view]) .. " ▾")
-    UI.buttonLabel(page.pick, chosen and chosen.label:gsub("|", "||") .. " ▾" or T("No group"))
+    UI.dropdownLabel(page.view, T("View:") .. " " .. T(titles[view]))
+    UI.dropdownLabel(page.pick, chosen and chosen.label:gsub("|", "||") or T("No group"))
     UI.call(page.pick, "SetEnabled", #groups > 1)
     UI.call(page.view, "SetEnabled", chosen ~= nil)
     page.weekBack:SetShown(view == "week" and chosen ~= nil)

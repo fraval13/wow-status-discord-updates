@@ -141,7 +141,7 @@ def test_each_group_has_its_own_records_in_the_group_dropdown():
         assert(WoWStatusFirsts.compute(entries, ids.beta).death.sender == "Cid-TestRealm")
         SlashCmdList.WOWSTATUS("records")
         local page = WoWStatusRecordsPage
-        assert(page.pick.text == "alpha ▾")
+        assert(page.pick.text == "alpha")
         local function deathHolder()
             for _, row in ipairs(page.rows) do
                 if row.text:find("First in the group to die", 1, true) then return row.text end

@@ -1280,10 +1280,8 @@ function R.together(groups)
         if math.abs(item.diff) <= result.range then
             result.inRange = result.inRange + 1
             if #result.rows < R.TOGETHER_ROWS then result.rows[#result.rows + 1] = item end
-        elseif item.diff > 0 then result.above = result.above or item
-        else result.below = result.below or item end
+        end
     end
-    if #result.rows > 0 then result.above, result.below = nil, nil end
     return result
 end
 -- "Where we are" (#168): online friends by the zone they last reported, from
@@ -2743,10 +2741,7 @@ local function renderTogether(y, groups)
         elseif #list == 0 and (data.online or 0) == 0 then
             bar.note:SetText(T("No friends who share their list are online right now."))
         elseif #list == 0 then
-            bar.note:SetText(T("Nobody that close. Nearest online:"))
-            list = {}
-            if data.above then list[#list + 1] = data.above end
-            if data.below then list[#list + 1] = data.below end
+            bar.note:SetText(T("No online friends within your level range."))
         else
             bar.note:SetText(T("Closest level first."))
         end
@@ -2972,7 +2967,7 @@ function R.render()
     for i = sections + 1, #page.sections do page.sections[i]:Hide() end
     page.list:SetHeight(math.max(1, y))
     page.empty:SetText(T(R.onlineOnly() and "Nobody is online right now." or "No characters yet."))
-    page.empty:ClearAllPoints(); page.empty:SetPoint("TOPLEFT", 24, -(12 + band))
+    page.empty:ClearAllPoints(); page.empty:SetPoint("TOPLEFT", 24, -(52 + band))
     page.empty:SetShown(index == 0 and sections == 0)
     page.count = index
 end
@@ -2980,7 +2975,7 @@ end
 local function build(parent)
     page = CreateFrame("Frame", "WoWStatusCharactersPage", parent); page:SetAllPoints(parent)
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
-    page.scroll:SetPoint("TOPLEFT", 24, -4); page.scroll:SetSize(710, 470)
+    page.scroll:SetPoint("TOPLEFT", 24, -44); page.scroll:SetSize(710, 430)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 32); page.lines, page.headers, page.sections = {}, {}, {}
     page.together, page.where = {}, {}
     page.scroll:SetScrollChild(page.list)
@@ -2992,7 +2987,7 @@ local function build(parent)
     shareLabel:SetPoint("TOPLEFT", 38, -8); shareLabel:SetText(T("Share my character list"))
     page.share:SetScript("OnClick", function(self) R.setSharing(self:GetChecked() and true or false) end)
     page.onlineOnly = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
-    page.onlineOnly:SetPoint("TOPLEFT", 206, -486); page.onlineOnly:SetSize(32, 32)
+    page.onlineOnly:SetPoint("TOPLEFT", 24, -4); page.onlineOnly:SetSize(32, 32)
     local onlineLabel = page.onlineOnly:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
     onlineLabel:SetPoint("TOPLEFT", 34, -8); onlineLabel:SetText(T("Online only"))
     page.onlineOnly:SetScript("OnClick", function(self) R.setOnlineOnly(self:GetChecked() and true or false) end)

@@ -344,3 +344,59 @@ def test_explicit_game_throttles_pause_and_retry_equipment_packets(which):
     request(own, friend)
     transfer(own, friend)
     assert snapshot(friend)['items'][16].startswith('item:19019:2564:')
+
+
+def test_loading_does_not_publish_an_empty_inventory_over_saved_gear():
+    own, _ = clients()
+    own.execute('''
+        local c=character()
+        local good=WoWStatusEquipment.capture(c)
+        local revision,at=good.revision,good.at
+        __gear={}
+        function IsLoggedIn() return false end
+        assert(WoWStatusEquipment.capture(c)==good)
+        function IsLoggedIn() return true end
+        -- A transient all-nil inventory after loading gets a short retry window.
+        assert(WoWStatusEquipment.capture(c)==good)
+        __mono=__mono+3
+        assert(WoWStatusEquipment.capture(c)==good)
+        assert(c.equipment_revision==revision and c.equipment_profile.at==at)
+        __gear[16]="item:19019:2564:0:0:0:0:0:0"
+        __mono=__mono+1
+        local driver=__events.PLAYER_LEAVING_WORLD[1]
+        driver.OnUpdate(driver,1.1)
+        local ready=c.equipment_profile
+        assert(ready.items[16]==__gear[16] and ready.items[1]=="-")
+        assert(ready.revision==revision+1)
+    ''')
+
+
+def test_an_actually_empty_inventory_can_replace_gear_after_the_retry_window():
+    own, _ = clients()
+    own.execute('''
+        local c=character()
+        local good=WoWStatusEquipment.capture(c)
+        __gear={}
+        assert(WoWStatusEquipment.capture(c)==good)
+        __mono=__mono+6
+        local empty=WoWStatusEquipment.capture(c)
+        assert(empty~=good and empty.revision==good.revision+1)
+        for slot=0,19 do assert(empty.items[slot]=="-") end
+    ''')
+
+
+def test_world_exit_and_logout_preserve_the_last_loaded_snapshot():
+    own, _ = clients()
+    own.execute('''
+        local c=character()
+        local good=WoWStatusEquipment.capture(c)
+        fire("PLAYER_LEAVING_WORLD")
+        __gear={}; __mono=__mono+60
+        fire("PLAYER_LOGOUT")
+        assert(c.equipment_profile==good)
+        __gear[16]="item:42"
+        fire("PLAYER_ENTERING_WORLD")
+        local driver=__events.PLAYER_LEAVING_WORLD[1]
+        driver.OnUpdate(driver,1.1)
+        assert(c.equipment_profile.items[16]=="item:42")
+    ''')
