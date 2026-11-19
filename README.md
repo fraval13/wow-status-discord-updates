@@ -110,8 +110,14 @@ ranks one row per player by their main character, with their alts listed under i
 **View: Characters** is the ranking by character. **Main** picks your main for the
 chosen group (one per group, shared with its members); until you choose, your
 highest-level shown character is used and is marked as a default, not a choice.
-A hidden character is never a main. **Records** holds Firsts,
-This week and Fun records. **Export** copies the selected Records view as CSV.
+A hidden character is never a main.
+
+The **Records** page has a group dropdown and a view dropdown for Firsts, This
+week, and Fun records. Weekly dates have their own line, highlights sit above a
+table of each character’s level-ups, deaths, zones, armor and quest milestones,
+and the arrows browse earlier weeks. Export keeps the selected group and view.
+
+**Export** copies the selected Records view as CSV.
 The Activity page also has **Export**, using its current day, person, type and
 All/Mine/Friends filters, including entries below the visible cards. The copy
 window warns that character and player names are included; known group names and

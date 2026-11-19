@@ -1133,3 +1133,54 @@ def test_together_period_menu_options_are_reachable_by_controller(lua):
         for _,row in ipairs(menu.rows) do assert(reached[row]);count=count+1 end
         assert(count==5)
     ''')
+
+
+def test_records_group_and_view_menus_are_reachable_by_controller(lua):
+    main_window(lua)
+    lua.execute('''
+        local m=getmetatable(CreateFrame("Frame")).__index
+        function m:SetText(value) self.text=value end
+        function m:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function m:SetShown(value) self.visible=value end
+        function m:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function m:SetHeight(h) self.rect[4]=h end
+        function m:SetScrollChild(child) self.child=child end
+        function m:GetWidth() return self.rect[3] end
+        for _,name in ipairs({"SetJustifyH","SetWordWrap","SetScale"}) do m[name]=function() end end
+    ''')
+    for name in ('Safe', 'Locale', 'LocaleNN', 'Theme'):
+        lua.execute((ROOT / f'addon/shared/{name}.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusFeatures={register=function() end}
+        WoWStatusMainWindow.register=function(_,_,build,refresh) __build,__refresh=build,refresh end
+        WoWStatusDB.firsts={view="week"}
+    ''')
+    lua.execute((ROOT / 'addon/shared/Firsts.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        WoWStatusFirsts.groups=function() return {{id="one",label="Example One"},{id="two",label="Example Two"}} end
+        WoWStatusFirsts.weekData=function() return {first="2026-11-16",last="2026-11-22",people={},highlights={},extras={}} end
+        local p=__build(main); __refresh()
+        p.pick.rect={120,440,290,28}; p.view.rect={420,440,256,28}; p.export.rect={690,440,118,28}
+        p.weekBack.rect={650,400,56,28}; p.weekNext.rect={720,400,56,28}
+        local reached={}
+        for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do reached[control]=true end
+        assert(reached[p.pick] and reached[p.view] and reached[p.export] and reached[p.weekBack])
+        assert(not reached[p.weekNext]) -- there is no future week to open
+        local function menuControls(count)
+            local menu=WoWStatusMenu
+            menu.rect={100,200,400,160}
+            for i,row in ipairs(menu.rows) do row.rect={120,350-i*24,360,22} end
+            local found={}
+            for _,control in ipairs(WoWStatusGamepad.controls(menu,{menu})) do found[control]=true end
+            for i=1,count do assert(found[menu.rows[i]]) end
+            return menu
+        end
+        p.pick:Click(); local menu=menuControls(2)
+        menu.rows[2]:Click()
+        assert(WoWStatusDB.firsts.tab=="two")
+        p.view:Click(); menu=menuControls(3)
+        menu.rows[2]:Click()
+        assert(WoWStatusDB.firsts.view=="week" and p.weekOffset==0)
+        p.weekBack:Click();assert(p.weekOffset==1)
+        assert(p.weekNext:IsEnabled())
+    ''')

@@ -61,7 +61,8 @@ def test_group_and_sort_choices_move_from_records_and_remain_independent():
         assert(WoWStatusDB.leaderboard.tab==selected)
         SlashCmdList.WOWSTATUS("records")
         assert(WoWStatusDB.firsts.view=="firsts") -- old embedded view no longer exists
-        WoWStatusRecordsPage.viewWeek.OnClick()
+        WoWStatusRecordsPage.view.OnClick(WoWStatusRecordsPage.view)
+        WoWStatusMenu.rows[2].OnClick(WoWStatusMenu.rows[2])
         SlashCmdList.WOWSTATUS("leaderboard")
         assert(page.group==selected and page.sort.text=="Sort: Level")
         assert(WoWStatusDB.firsts.tab==second and WoWStatusDB.firsts.view=="week")

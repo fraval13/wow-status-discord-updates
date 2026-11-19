@@ -123,7 +123,7 @@ def test_records_page_lists_every_medal():
     ''')
 
 
-def test_each_group_has_its_own_records_in_tabs():
+def test_each_group_has_its_own_records_in_the_group_dropdown():
     lua = actor('Thora')
     lua.execute(ENTRY)
     lua.eval('WoWStatusGroups.update')('alpha\nbeta', '')
@@ -141,14 +141,17 @@ def test_each_group_has_its_own_records_in_tabs():
         assert(WoWStatusFirsts.compute(entries, ids.beta).death.sender == "Cid-TestRealm")
         SlashCmdList.WOWSTATUS("records")
         local page = WoWStatusRecordsPage
-        assert(page.tabs[1].text == "alpha" and page.tabs[2].text == "beta")
+        assert(page.pick.text == "alpha ▾")
         local function deathHolder()
             for _, row in ipairs(page.rows) do
                 if row.text:find("First in the group to die", 1, true) then return row.text end
             end
         end
         assert(page.group == ids.alpha and deathHolder():find("Bob", 1, true))
-        page.tabs[2].OnClick(page.tabs[2])
+        page.pick.OnClick(page.pick)
+        local menu = WoWStatusMenu
+        assert(menu.items[1].label == "alpha" and menu.items[2].label == "beta")
+        menu.rows[2].OnClick(menu.rows[2])
         assert(page.group == ids.beta and deathHolder():find("Cid", 1, true))
         assert(WoWStatusDB.firsts.tab == ids.beta)
         -- The Overview names the group of each record.

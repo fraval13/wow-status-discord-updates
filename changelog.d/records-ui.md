@@ -1,0 +1,4 @@
+- Records uses group and view dropdowns, leaving more room for the results.
+- Weekly records have a separate date line and aligned character statistics instead of long repeated sentences.
+- Characters without counted weekly activity no longer leave empty name rows.
+- Records labels stay within buttons, and long medal titles and recaps have more room to wrap.

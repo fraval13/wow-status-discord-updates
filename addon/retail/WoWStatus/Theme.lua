@@ -656,6 +656,21 @@ function UI.classColour(class)
     return colour and colour.colorStr and ("|c" .. colour.colorStr) or nil
 end
 
+-- Keep native button labels within their borders, including longer display
+-- languages. The game's font string clips a single line to the available width.
+function UI.buttonLabel(button, text)
+    button:SetText(text); button.fullLabel = text
+    local font = S.call(button.GetFontString, button)
+    if font then
+        local width = S.number(S.call(button.GetWidth, button))
+        call(font, "ClearAllPoints"); call(font, "SetPoint", "CENTER", 0, 0)
+        if width then call(font, "SetWidth", math.max(1, width-24)) end
+        local height = S.number(S.call(button.GetHeight, button))
+        if height then call(font, "SetHeight", math.max(1, height-6)) end
+        call(font, "SetWordWrap", false); call(font, "SetMaxLines", 1)
+    end
+end
+
 -- A small drop-down list under a button: items {label=, value=}; onPick(value).
 -- One shared list, closed by picking, by clicking its button again or by Escape.
 -- Built from plain buttons, since the game's dropdown menus differ by client.
@@ -703,6 +718,7 @@ function UI.menu(owner, items, onPick, minWidth)
         -- The list is shared: rows made for a narrower menu take this one's width.
         row:SetSize(width, rowHeight); row.text:SetWidth(width - 12)
         row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * rowHeight)
+        call(row.text, "SetWordWrap", false); call(row.text, "SetMaxLines", 1)
         row.text:SetText(item.label); row.value = item.value; row:Show()
     end
     for i = #items + 1, #menu.rows do menu.rows[i]:Hide() end

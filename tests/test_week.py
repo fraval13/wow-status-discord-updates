@@ -47,9 +47,11 @@ def test_week_view_on_the_records_page():
     lua.execute('''
         WoWStatusMainWindow.show("records")
         local page = WoWStatusRecordsPage
-        page.viewWeek.OnClick(page.viewWeek)
+        page.view.OnClick(page.view)
+        WoWStatusMenu.rows[2].OnClick(WoWStatusMenu.rows[2])
         assert(page.heading.text:find("This week", 1, true))
-        assert(page.textRows[1].text:find("Mira", 1, true))
+        assert(page.weekly.rows[1].cells[1].text == "Mira")
+        assert(page.weekly.rows[1].cells[2].text == "+1")
         page.weekBack.OnClick(page.weekBack)
         assert(page.heading.text:find("Week", 1, true) and not page.heading.text:find("This week", 1, true))
     ''')

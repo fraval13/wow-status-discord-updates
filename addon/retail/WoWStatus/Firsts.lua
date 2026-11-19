@@ -112,48 +112,25 @@ local function medalIcon(medal)
     return (WoWStatusPresentation.theme(item))
 end
 
-local CARD_W, CARD_H, GAP = 336, 56, 8
+local CARD_W, CARD_H, GAP = 336, 76, 8
 local function card(index)
     local UI = WoWStatusUI
     local c = UI.box(page.list, CARD_W, CARD_H)
     c.icon = UI.icon(c, 40); c.icon:SetPoint("TOPLEFT", 8, -8)
-    c.title = UI.text(c, "GameFontNormal", 56, -10, 270)
-    c.holder = UI.text(c, "GameFontHighlightSmall", 56, -32, 270)
+    c.title = UI.text(c, "GameFontNormal", 56, -8, 270)
+    c.title:SetHeight(32); c.title:SetWordWrap(true)
+    c.holder = UI.text(c, "GameFontHighlightSmall", 56, -46, 270)
+    c.holder:SetHeight(26); c.holder:SetWordWrap(true)
     page.rows[index] = c
     return c
 end
 
--- The selected group tab, kept when it still exists.
+-- The selected group, kept when it still exists.
 local function selectedGroup(groups)
     local data = state() or {}
     for _, group in ipairs(groups) do if group.id == data.tab then return group end end
     return groups[1]
 end
-local function tabs(groups, chosen)
-    local UI = WoWStatusUI
-    page.tabs = page.tabs or {}
-    for i, group in ipairs(groups) do
-        local tab = page.tabs[i]
-        if not tab then
-            tab = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
-            tab:SetSize(128, 24)
-            tab:SetScript("OnClick", function(self)
-                local data = state()
-                if data then data.tab = self.group end
-                F.render()
-            end)
-            page.tabs[i] = tab
-        end
-        tab:ClearAllPoints(); tab:SetPoint("TOPLEFT", 24 + ((i - 1) % 5) * 134, -4 - math.floor((i - 1) / 5) * 28)
-        tab.group = group.id
-        tab:SetText(group.label)
-        UI.call(tab, "SetEnabled", group ~= chosen)
-        tab:Show()
-    end
-    for i = #groups + 1, #page.tabs do page.tabs[i]:Hide() end
-    return math.ceil(#groups / 5) * 28
-end
-
 -- This week (Monday to Sunday, the player's local time) in one group, or an earlier
 -- week (offset 1, 2, ...): highlights and one line per person.
 local function dayOf(at) return WoWStatusHistory.day(at) end
@@ -165,14 +142,15 @@ function F.weekRange(offset)
     return WoWStatusHistory.day(now, shift - weekday), WoWStatusHistory.day(now, shift + 6 - weekday)
 end
 local function inGroup(e, group) return type(e.groups) == "table" and e.groups[group] == true end
-function F.week(group, offset)
+function F.weekData(group, offset)
     local first, last = F.weekRange(offset)
     local people, order = {}, {}
     for _, e in ipairs(WoWStatusJournal.entries()) do
         local day = S.number(e.at) and dayOf(e.at)
         -- A Hardcore death never counts toward "Most deaths" or a person's line (#163).
         if day and day >= first and day <= last and inGroup(e, group) and WoWStatusJournal.visible(e)
-            and not WoWStatusProgress.hardcoreDeath(e) then
+            and not WoWStatusProgress.hardcoreDeath(e)
+            and (e.kind == "level" or e.kind == "death" or e.kind == "zone" or e.kind == "loot" or e.kind == "quest") then
             local name = shortName(e.sender)
             local p = people[name]
             if not p then p = {name=name, level=0, death=0, zone=0, loot=0, quest=0}; people[name] = p; order[#order + 1] = p end
@@ -187,15 +165,34 @@ function F.week(group, offset)
         if a.level ~= b.level then return a.level > b.level end
         return a.name < b.name
     end)
-    local lines = {}
-    local function best(key, label)
+    local highlights, extras = {}, {}
+    for _, measure in ipairs({{"level", "Most levels:"}, {"death", "Most deaths:"},
+        {"zone", "Most explored:"}, {"loot", "Most new gear:"}}) do
         local top
-        for _, p in ipairs(order) do if p[key] > 0 and (not top or p[key] > top[key]) then top = p end end
-        if top then lines[#lines + 1] = "|cffffd100" .. T(label) .. "|r " .. top.name:gsub("|", "||") .. " (" .. top[key] .. ")" end
+        for _, p in ipairs(order) do
+            if p[measure[1]] > 0 and (not top or p[measure[1]] > top[measure[1]]) then top = p end
+        end
+        if top then highlights[#highlights+1] = {label=measure[2], name=top.name, count=top[measure[1]]} end
     end
-    best("level", "Most levels:"); best("death", "Most deaths:"); best("zone", "Most explored:"); best("loot", "Most new gear:")
-    if #lines > 0 then lines[#lines + 1] = " " end
-    for _, p in ipairs(order) do
+    if (offset or 0) == 0 and WoWStatusFeatures.enabled("bingo") then
+        for _, line in ipairs(F.bingoLines(group)) do extras[#extras+1] = line end
+    end
+    if offset == 1 and WoWStatusFeatures.enabled("chronicle") then
+        for _, line in ipairs(F.chronicleLines(group)) do extras[#extras+1] = line end
+    end
+    return {first=first, last=last, people=order, highlights=highlights, extras=extras}
+end
+
+-- Keep the plain-text summary for exports; the page lays out the same data in
+-- columns so every person's numbers share one set of labels.
+function F.week(group, offset)
+    local report = F.weekData(group, offset)
+    local lines = {}
+    for _, h in ipairs(report.highlights) do
+        lines[#lines+1] = "|cffffd100" .. T(h.label) .. "|r " .. h.name:gsub("|", "||") .. " (" .. h.count .. ")"
+    end
+    if #lines > 0 then lines[#lines+1] = " " end
+    for _, p in ipairs(report.people) do
         local parts = {}
         if p.level > 0 then parts[#parts + 1] = "+" .. p.level .. " " .. T(p.level == 1 and "level" or "levels") end
         if p.death > 0 then parts[#parts + 1] = p.death .. " " .. T(p.death == 1 and "death" or "deaths") end
@@ -204,13 +201,8 @@ function F.week(group, offset)
         if p.quest > 0 then parts[#parts + 1] = (p.quest * 100) .. " " .. T("quests") end
         lines[#lines + 1] = p.name:gsub("|", "||") .. ": " .. table.concat(parts, " · ")
     end
-    if (offset or 0) == 0 and WoWStatusFeatures.enabled("bingo") then
-        for _, line in ipairs(F.bingoLines(group)) do lines[#lines + 1] = line end
-    end
-    if offset == 1 and WoWStatusFeatures.enabled("chronicle") then
-        for _, line in ipairs(F.chronicleLines(group)) do lines[#lines + 1] = line end
-    end
-    return lines, first, last
+    for _, line in ipairs(report.extras) do lines[#lines+1] = line end
+    return lines, report.first, report.last
 end
 
 -- Labs experiment (#237): the killer and the zone behind the group's deaths.
@@ -552,19 +544,111 @@ function F.funRecords(group)
     return lines
 end
 
--- Lines of text for the This week and Fun records views.
+-- Wrapped text uses its rendered height rather than a fixed one-line step.
+local function textHeight(text, fallback)
+    return math.max(fallback or 20, S.number(S.call(text.GetStringHeight, text)) or 0)
+end
 local function textView(lines, empty)
     local UI = WoWStatusUI
     page.textRows = page.textRows or {}
-    if #lines == 0 then lines = {WoWStatusUI.MUTED_CODE .. T(empty) .. "|r"} end
+    if #lines == 0 then lines = {UI.MUTED_CODE .. T(empty) .. "|r"} end
+    local y = 0
     for i, text in ipairs(lines) do
         local row = page.textRows[i]
-        if not row then row = UI.text(page.list, "GameFontHighlight", 8, 0, 660); page.textRows[i] = row end
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, -(i - 1) * 24)
+        if not row then
+            row = UI.text(page.list, "GameFontHighlight", 8, 0, 660)
+            row:SetWordWrap(true); page.textRows[i] = row
+        end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 8, -y)
         row:SetText(text); row:Show()
+        y = y + textHeight(row, 24) + 10
     end
     for i = #lines + 1, #page.textRows do page.textRows[i]:Hide() end
-    page.list:SetHeight(math.max(1, #lines * 24))
+    page.list:SetHeight(math.max(1, y))
+end
+
+local WEEK_COLUMNS = {
+    {key="name", label="Character", x=8, width=222, align="LEFT"},
+    {key="level", label="Level-ups", x=238, width=76},
+    {key="death", label="Deaths", x=318, width=76},
+    {key="zone", label="Zones", x=398, width=76},
+    {key="loot", label="Armor", x=478, width=76},
+    {key="quest", label="Quests", x=558, width=112},
+}
+local function weekView(report)
+    local UI = WoWStatusUI
+    local frame = page.weekly
+    if not frame then
+        frame = CreateFrame("Frame", nil, page.list); page.weekly = frame
+        frame:SetPoint("TOPLEFT"); frame:SetSize(686, 1)
+        frame.highlights, frame.headers, frame.rows, frame.notes = {}, {}, {}, {}
+    end
+    frame:Show()
+    for i, h in ipairs(report.highlights) do
+        local row = frame.highlights[i]
+        if not row then
+            row = CreateFrame("Frame", nil, frame); row:SetSize(330, 46)
+            row.label = UI.text(row, "GameFontNormalSmall", 8, 0, 314)
+            row.value = UI.text(row, "GameFontHighlight", 8, -18, 314)
+            row.value:SetHeight(28); row.value:SetWordWrap(true)
+            frame.highlights[i] = row
+        end
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", ((i-1)%2)*348, -math.floor((i-1)/2)*52)
+        row.label:SetText(T(h.label)); row.value:SetText(h.name:gsub("|", "||") .. " (" .. h.count .. ")")
+        row:Show()
+    end
+    for i=#report.highlights+1,#frame.highlights do frame.highlights[i]:Hide() end
+    local y = math.ceil(#report.highlights/2)*52 + 8
+    for i, col in ipairs(WEEK_COLUMNS) do
+        local header = frame.headers[i]
+        if not header then
+            header = UI.text(frame, "GameFontNormalSmall", col.x, 0, col.width, col.align or "RIGHT")
+            frame.headers[i] = header
+        end
+        header:ClearAllPoints(); header:SetPoint("TOPLEFT", col.x, -y)
+        header:SetText(T(col.label)); header:SetShown(#report.people > 0)
+    end
+    if #report.people > 0 then y = y + 26 end
+    for i, person in ipairs(report.people) do
+        local row = frame.rows[i]
+        if not row then
+            row = CreateFrame("Frame", nil, frame); row:SetWidth(686)
+            row.fill = row:CreateTexture(nil, "BACKGROUND"); row.fill:SetAllPoints()
+            row.fill:SetColorTexture(1, 1, 1, i%2 == 1 and .045 or 0)
+            row.cells = {}
+            for c, col in ipairs(WEEK_COLUMNS) do
+                local cell = UI.text(row, "GameFontHighlight", col.x, -8, col.width, col.align or "RIGHT")
+                cell:SetWordWrap(true); row.cells[c] = cell
+            end
+            frame.rows[i] = row
+        end
+        for c, col in ipairs(WEEK_COLUMNS) do
+            local value = person[col.key]
+            if col.key == "name" then value = value:gsub("|", "||")
+            elseif value == 0 then value = UI.MUTED_CODE .. "–|r"
+            elseif col.key == "level" then value = "+" .. value
+            elseif col.key == "quest" then value = tostring(value*100)
+            else value = tostring(value) end
+            row.cells[c]:SetText(value)
+        end
+        local height = textHeight(row.cells[1], 20) + 16
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y); row:SetHeight(height); row:Show()
+        y = y + height
+    end
+    for i=#report.people+1,#frame.rows do frame.rows[i]:Hide() end
+    local notes = report.extras
+    if #report.people == 0 and #notes == 0 then notes = {T("Nothing happened in this group this week.")} end
+    if #notes > 0 then y = y + 12 end
+    for i, line in ipairs(notes) do
+        local note = frame.notes[i]
+        if not note then
+            note = UI.text(frame, "GameFontHighlight", 8, 0, 660); note:SetWordWrap(true); frame.notes[i] = note
+        end
+        note:ClearAllPoints(); note:SetPoint("TOPLEFT", 8, -y); note:SetText(line); note:Show()
+        y = y + textHeight(note, 24) + 8
+    end
+    for i=#notes+1,#frame.notes do frame.notes[i]:Hide() end
+    frame:SetHeight(math.max(1,y)); page.list:SetHeight(math.max(1,y))
 end
 
 local function render()
@@ -572,51 +656,50 @@ local function render()
     local UI = WoWStatusUI
     local groups = F.groups()
     local chosen = selectedGroup(groups)
-    local top = tabs(groups, chosen)
-    -- Firsts, This week or Fun records, remembered.
     local data = state() or {}
     local view = data.view or "firsts"
-    if view == "leaderboard" then view, data.view = "firsts", "firsts" end
-    for i, b in ipairs({{page.viewFirsts, "firsts"}, {page.viewWeek, "week"}, {page.viewFun, "fun"}}) do
-        UI.call(b[1], "SetEnabled", view ~= b[2])
-        b[1]:ClearAllPoints(); b[1]:SetPoint("TOPLEFT", ({354, 458, 572})[i], -4 - top)
-    end
-    page.weekBack:SetShown(view == "week"); page.weekNext:SetShown(view == "week")
+    if view ~= "firsts" and view ~= "week" and view ~= "fun" then view, data.view = "firsts", "firsts" end
+    local titles = {firsts="Firsts", week="This week", fun="Fun records"}
+    UI.buttonLabel(page.view, T("View:") .. " " .. T(titles[view]) .. " ▾")
+    UI.buttonLabel(page.pick, chosen and chosen.label:gsub("|", "||") .. " ▾" or T("No group"))
+    UI.call(page.pick, "SetEnabled", #groups > 1)
+    UI.call(page.view, "SetEnabled", chosen ~= nil)
+    page.weekBack:SetShown(view == "week" and chosen ~= nil)
+    page.weekNext:SetShown(view == "week" and chosen ~= nil)
     if page.textRows then for _, row in ipairs(page.textRows) do row:Hide() end end
+    if page.weekly then page.weekly:Hide() end
     for _, row in ipairs(page.rows) do row:SetShown(view == "firsts") end
     if page.recapBox then page.recapBox:SetShown(view == "firsts") end
-    page.heading:ClearAllPoints(); page.heading:SetPoint("TOPLEFT", 24, -36 - top)
     page.group = chosen and chosen.id
-    page.export:ClearAllPoints(); page.export:SetPoint("TOPLEFT", 24, -4 - top)
     page.export:SetEnabled(chosen ~= nil)
-    local label = chosen and chosen.label:gsub("|", "||")
+    page.dates:SetText("")
+    page.heading:SetWidth(view == "week" and 530 or 690)
+    page.heading:SetHeight(view == "week" and 28 or 48)
     if not chosen then
         page.heading:SetText(T("Join a group to compete for records with your friends."))
     end
-    if view == "week" or view == "fun" then
-        page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -66 - top)
-        page.scroll:SetHeight(464 - top)
-        if view == "week" then
-            page.weekOffset = page.weekOffset or 0
-            local lines, first, last = F.week(chosen and chosen.id or "", page.weekOffset)
-            if chosen then
-                page.heading:SetText((page.weekOffset == 0 and T("This week") or T("Week")) .. " · " .. label
-                    .. "  " .. WoWStatusUI.MUTED_CODE .. first .. " – " .. last .. "|r")
-            end
-            page.weekBack:ClearAllPoints(); page.weekBack:SetPoint("TOPLEFT", 570, -32 - top)
-            page.weekNext:ClearAllPoints(); page.weekNext:SetPoint("TOPLEFT", 640, -32 - top)
-            UI.call(page.weekNext, "SetEnabled", page.weekOffset > 0)
-            textView(lines, "Nothing happened in this group this week.")
-        else
-            if chosen then page.heading:SetText(T("Fun records") .. " · " .. label) end
-            textView(F.funRecords(chosen and chosen.id or ""), "No fun records yet. They appear when someone does something remarkable.")
-        end
+    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -114)
+    page.scroll:SetHeight(416)
+    if not chosen and view ~= "firsts" then
+        page.list:SetHeight(1)
         return
     end
-    if chosen then page.heading:SetText(T("Firsts in") .. " " .. label) end
-    page.scroll:ClearAllPoints(); page.scroll:SetPoint("TOPLEFT", 24, -64 - top)
-    page.scroll:SetHeight(466 - top)
-    local result, medals = F.compute(WoWStatusJournal.entries(), chosen and chosen.id or "")
+    if view == "week" then
+        page.weekOffset = page.weekOffset or 0
+        local report = F.weekData(chosen.id, page.weekOffset)
+        page.heading:SetText(T(page.weekOffset == 0 and "This week" or "Week"))
+        page.dates:SetText(T("Dates: from") .. " " .. report.first .. " " .. T("to") .. " " .. report.last)
+        UI.call(page.weekNext, "SetEnabled", page.weekOffset > 0)
+        weekView(report)
+        return
+    elseif view == "fun" then
+        page.heading:SetText(T("Fun records"))
+        textView(F.funRecords(chosen.id), "No fun records yet. They appear when someone does something remarkable.")
+        return
+    end
+    if chosen then page.heading:SetText(T("Firsts in") .. " " .. chosen.label:gsub("|", "||")) end
+    local result, medals = {}, {}
+    if chosen then result, medals = F.compute(WoWStatusJournal.entries(), chosen.id) end
     for i, medal in ipairs(medals) do
         local c = page.rows[i] or card(i)
         local column, line = (i - 1) % 2, math.floor((i - 1) / 2)
@@ -652,15 +735,18 @@ local function render()
         page.recaps = {}
     end
     box:ClearAllPoints(); box:SetPoint("TOPLEFT", 0, -(medalsHeight + 6))
+    local recapY = 36
     for i, text in ipairs(lines) do
         local row = page.recaps[i]
         if not row then row = UI.text(box, "GameFontHighlight", 12, 0, 2 * CARD_W - 20); page.recaps[i] = row end
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 12, -14 - i * 22)
+        row:SetWordWrap(true)
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 12, -recapY)
         row:SetText(text); row:Show()
+        recapY = recapY + textHeight(row, 22) + 8
     end
     for i = #lines + 1, #page.recaps do page.recaps[i]:Hide() end
-    box:SetHeight(40 + #lines * 22)
-    page.list:SetHeight(medalsHeight + 52 + #lines * 22)
+    box:SetHeight(recapY + 12)
+    page.list:SetHeight(medalsHeight + recapY + 24)
 end
 F.render = render
 F.medalIcon = medalIcon
@@ -714,29 +800,64 @@ end
 
 function F.buildRecords(parent)
     page = CreateFrame("Frame", "WoWStatusRecordsPage", parent); page:SetAllPoints(parent)
-    page.heading = page:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
-    -- render() sets the heading for every view, so none is needed here.
-    page.heading:SetPoint("TOPLEFT", 24, -4)
+    local UI = WoWStatusUI
+    page.heading = UI.text(page, "GameFontNormalLarge", 24, -52, 530)
+    page.heading:SetHeight(28); page.heading:SetWordWrap(true)
+    page.dates = UI.text(page, "GameFontHighlightSmall", 24, -84, 690)
+    page.dates:SetHeight(20)
     page.scroll = CreateFrame("ScrollFrame", nil, page, "UIPanelScrollFrameTemplate")
-    page.scroll:SetPoint("TOPLEFT", 24, -32); page.scroll:SetSize(710, 494)
+    page.scroll:SetPoint("TOPLEFT", 24, -114); page.scroll:SetSize(710, 416)
     page.list = CreateFrame("Frame", nil, page.scroll); page.list:SetSize(686, 24)
     page.scroll:SetScrollChild(page.list)
     page.rows = {}
-    local function button(label, width, fn)
+    local function button(label, x, width, fn)
         local b = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
-        b:SetSize(width, 24); b:SetText(T(label)); b:SetScript("OnClick", fn)
+        b:SetPoint("TOPLEFT", x, -8); b:SetSize(width, 28)
+        UI.buttonLabel(b, T(label)); b:SetScript("OnClick", fn)
+        b:SetScript("OnEnter", function(self)
+            if GameTooltip and self.fullLabel and self.fullLabel ~= "" then
+                GameTooltip:SetOwner(self, "ANCHOR_TOP")
+                GameTooltip:ClearLines(); GameTooltip:AddLine(self.fullLabel, 1, 1, 1, true); GameTooltip:Show()
+            end
+        end)
+        b:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
         return b
     end
-    page.viewFirsts = button("Firsts", 100, function() local d = state(); if d then d.view = "firsts" end; F.render() end)
-    page.viewWeek = button("This week", 110, function() local d = state(); if d then d.view = "week" end; page.weekOffset = 0; F.render() end)
-    page.viewFun = button("Fun records", 124, function() local d = state(); if d then d.view = "fun" end; F.render() end)
-    page.export = button("Export", 110, function()
+    local function resetScroll() UI.call(page.scroll, "SetVerticalScroll", 0) end
+    page.pick = button("", 24, 290, function(self)
+        local items = {}
+        for _, group in ipairs(F.groups()) do
+            items[#items+1] = {label=group.label:gsub("|", "||"), value=group.id}
+        end
+        if #items < 2 then return end
+        UI.menu(self, items, function(id)
+            local d = state(); if d then d.tab = id end
+            resetScroll(); F.render()
+        end, 360)
+    end)
+    page.view = button("", 326, 256, function(self)
+        UI.menu(self, {
+            {label=T("Firsts"), value="firsts"}, {label=T("This week"), value="week"},
+            {label=T("Fun records"), value="fun"},
+        }, function(value)
+            local d = state(); if d then d.view = value end
+            if value == "week" then page.weekOffset = 0 end
+            resetScroll(); F.render()
+        end, 256)
+    end)
+    page.export = button("Export", 594, 118, function()
         local d = state() or {}
         WoWStatusExport.records(page.group, d.view or "firsts", page.weekOffset or 0)
     end)
     -- Earlier weeks (until /reload the view starts at this week).
-    page.weekBack = button("<", 64, function() page.weekOffset = (page.weekOffset or 0) + 1; F.render() end)
-    page.weekNext = button(">", 64, function() page.weekOffset = math.max(0, (page.weekOffset or 0) - 1); F.render() end)
+    page.weekBack = button("<", 586, 56, function()
+        page.weekOffset = (page.weekOffset or 0) + 1; resetScroll(); F.render()
+    end)
+    page.weekNext = button(">", 654, 56, function()
+        page.weekOffset = math.max(0, (page.weekOffset or 0) - 1); resetScroll(); F.render()
+    end)
+    page.weekBack:ClearAllPoints(); page.weekBack:SetPoint("TOPLEFT", 586, -52)
+    page.weekNext:ClearAllPoints(); page.weekNext:SetPoint("TOPLEFT", 654, -52)
     return page
 end
 
