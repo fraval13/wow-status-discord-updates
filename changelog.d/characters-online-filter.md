@@ -1,1 +1,0 @@
-- Online only is now above the Characters list, where it stays visible as you scroll.

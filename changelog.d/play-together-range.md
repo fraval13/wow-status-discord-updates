@@ -1,1 +1,0 @@
-- Play together now strictly respects your selected level range, even when no nearby-level friends are online.

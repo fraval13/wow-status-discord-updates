@@ -1,1 +1,0 @@
-- Dropdown buttons use a WoW arrow icon, fixing square symbols in clients whose fonts lack the arrow character.

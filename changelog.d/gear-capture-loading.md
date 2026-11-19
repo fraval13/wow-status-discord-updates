@@ -1,1 +1,0 @@
-- Gear capture keeps the last snapshot during loading and briefly retries all-empty inventories before replacing it.
