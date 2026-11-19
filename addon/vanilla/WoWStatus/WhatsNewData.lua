@@ -1,5 +1,11 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.87.0", notes={
+        "Records uses group and view dropdowns, leaving more room for the results.",
+        "Weekly records have a separate date line and aligned character statistics instead of long repeated sentences.",
+        "Characters without counted weekly activity no longer leave empty name rows.",
+        "Records labels stay within buttons, and long medal titles and recaps have more room to wrap.",
+    }},
     {version="1.86.0", notes={
         "Together gains Daily, Weekly, Monthly, Yearly and Total views, with explicit calendar dates.",
         "Dated Together views count retained milestones; shared snapshot statistics remain in Total.",
@@ -45,9 +51,5 @@ WoWStatusWhatsNewData = {
         "Labs: an optional \"with\" note on your own log cards naming the friends who were in your party.",
         "Labs can show a private countdown to a level you pick, with levels and XP bars left on the status line.",
         "Inside dungeons the character list now waits its turn, so friends no longer miss your quests, professions and XP.",
-    }},
-    {version="1.84.0", notes={
-        "The Characters page has a new Where we are section: online friends grouped by the zone they last reported.",
-        "Your own zone comes first, each name shows how old its report is, and reports older than 15 minutes are left out.",
     }},
 }
