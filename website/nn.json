@@ -136,8 +136,8 @@
   "Every release so far": "Alle utgåvene så langt",
   "Fresh from the forge": "Nytt frå smia",
   "PATCH __VERSION__": "OPPDATERING __VERSION__",
-  "Clearer groups.": "Klårare grupper.",
-  "Cleaner history.": "Reinare historie.",
+  "Find your friends.": "Finn venene dine.",
+  "See their builds.": "Sjå talentvala deira.",
   "Read the full changelog": "Les heile endringsloggen",
   "Preview a notification": "Sjå eit varsel",
   "Better with friends": "Betre med vener",
@@ -325,5 +325,8 @@
   "XP 21%": "XP 21 %",
   "2026-11-14 17:05:00 +01:00 · Caught up via Eldrin": "2026-11-14 17:05:00 +01:00 · Henta inn via Eldrin",
   "Level 33 (62 %)": "Nivå 33 (62 %)",
-  "/wstatus groups": "/wstatus groups"
+  "/wstatus groups": "/wstatus groups",
+  "Your active talent build, including the talent tree layout and allocated ranks, when Equipment, talents and combat stats is ticked.": "Det aktive talentbygget ditt, med oppsettet til talenttreet og valde rangar, når Utstyr, talent og kampdata er kryssa av.",
+  "Your current map coordinates while you are online, when Location and Share my character list are ticked. Group members see named markers on their world map and minimap.": "Kartkoordinatane dine medan du er pålogga, når Plassering og Del figurlista mi er kryssa av. Gruppemedlemer ser namngjevne punkt på verdskartet og minikartet.",
+  "Talent snapshots are kept with your characters and up to 64 received builds are cached. Live map coordinates are not saved or relayed, and markers expire after 90 seconds without updates.": "Talentbilete vert lagra med figurane dine, og opptil 64 mottekne bygg vert mellomlagra. Levande kartkoordinatar vert ikkje lagra eller sende vidare, og punkta forsvinn etter 90 sekund utan oppdateringar."
 }

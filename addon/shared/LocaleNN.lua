@@ -986,3 +986,29 @@ W.add({
     ["Class unlocks"]="Klasseopplåsingar", ["PvP promotions"]="PvP-opprykk",
     ["Achievements earned"]="Bragder oppnådde", ["Zones explored"]="Område utforska",
 })
+
+-- Shared talent snapshots and live group map positions.
+W.add({
+    ["Talents"]="Talent",
+    ["Talent node"]="Talentknute",
+    ["Refresh talents"]="Oppdater talent",
+    ["Requesting talents…"]="Hentar talent…",
+    ["No talent snapshot yet. Their owner needs the updated addon."]="Inga talentoversikt enno. Eigaren treng det oppdaterte tillegget.",
+    ["Rank %d of %d"]="Rang %d av %d",
+    ["%d talent points"]="%d talentpoeng",
+    ["Friends on the map"]="Vener på kartet",
+    ["Equipment, talents and combat stats"]="Utstyr, talent og kampdata",
+    ["Location and map position"]="Plassering og kartpunkt",
+    ["Position received %d sec ago"]="Posisjon motteken for %d sek sidan",
+    ["%d sec ago"]="%d sek sidan",
+    ["Reported positions expire when updates stop. Select a friend to open their map."]="Rapporterte posisjonar forsvinn når oppdateringane stoppar. Vel ein ven for å opne kartet.",
+    ["No recent positions. Friends need the updated addon and Location enabled."]="Ingen nye posisjonar. Venene treng det oppdaterte tillegget og Plassering slått på.",
+    ["Your active talent build, including the talent tree layout and allocated ranks, when Equipment, talents and combat stats is ticked."]="Det aktive talentbygget ditt, med oppsettet til talenttreet og valde rangar, når Utstyr, talent og kampdata er kryssa av.",
+    ["Your current map coordinates while you are online, when Location and Share my character list are ticked. Group members see named markers on their world map and minimap."]="Kartkoordinatane dine medan du er pålogga, når Plassering og Del figurlista mi er kryssa av. Gruppemedlemer ser namngjevne punkt på verdskartet og minikartet.",
+    ["Talent snapshots are kept with your characters and up to 64 received builds are cached. Live map coordinates are not saved or relayed, and markers expire after 90 seconds without updates."]="Talentbilete vert lagra med figurane dine, og opptil 64 mottekne bygg vert mellomlagra. Levande kartkoordinatar vert ikkje lagra eller sende vidare, og punkta forsvinn etter 90 sekund utan oppdateringar.",
+})
+
+W.add({
+    ["Log into this character to capture its talents."]="Logg inn på denne figuren for å lagre talenta.",
+    ["Talents are not available for this character yet."]="Talent er ikkje tilgjengelege for denne figuren enno.",
+})

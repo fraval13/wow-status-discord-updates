@@ -1,0 +1,3 @@
+- Character profiles show shared read-only talent trees beneath gear and combat stats.
+- Group friends appear on the world map and nearby on the minimap, with names and report ages on hover.
+- Map positions follow Location and character-list sharing, are not saved, and expire when updates stop.

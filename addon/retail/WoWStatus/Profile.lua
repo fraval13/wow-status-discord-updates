@@ -126,6 +126,9 @@ local function buildEquipment(body)
     box.note = UI.text(box, "GameFontHighlightSmall", 14, -500, 680)
     box.note:SetText(T("Hover an item for its full tooltip. Stats include buffs at the time recorded."))
     local stats = UI.box(body, 710, 268); stats:SetPoint("TOPLEFT", 0, -982); view.attributes = stats
+    if WoWStatusTalents then
+        view.talents=WoWStatusTalents.build(body);view.talents:SetPoint("TOPLEFT",0,-1262)
+    end
     UI.header(stats, T("Combat attributes"), 12, -10, 686)
     stats.cells = {}
     for i = 1, #E.STATS do
@@ -175,6 +178,10 @@ function F.refreshEquipment()
         local value = snapshot and snapshot.stats[spec[1]]
         local shown = value and (spec[3] and string.format("%.2f%%", value / 100) or tostring(value)) or "—"
         view.attributes.cells[i]:SetText("|cffd0b070" .. T(spec[2]) .. ":|r " .. shown)
+    end
+    if view.talents then
+        local height=WoWStatusTalents.render(view.talents,row.name)
+        view.body:SetHeight(1274+height)
     end
 end
 
@@ -246,7 +253,7 @@ local function build(page)
     view.scroll:SetScrollChild(view.body)
     if view.scroll.EnableMouseWheel then view.scroll:EnableMouseWheel(true) end
     view.scroll:SetScript("OnMouseWheel", function(self, delta)
-        self:SetVerticalScroll(math.max(0, math.min(832, self:GetVerticalScroll() - delta * 64)))
+        self:SetVerticalScroll(math.max(0, math.min(math.max(0,(S.number(S.call(view.body.GetHeight,view.body)) or 1262)-430), self:GetVerticalScroll() - delta * 64)))
     end)
     -- Statistics
     local stats = UI.box(view.body, 710, 118); stats:SetPoint("TOPLEFT", 0, 0); view.stats = stats
@@ -344,6 +351,7 @@ function F.show(row, entry)
     view.scroll:SetVerticalScroll(0)
     view:Show()
     WoWStatusRoster.requestEquipment(row.name)
+    if WoWStatusTalents then WoWStatusTalents.request(row.name) end
     F.refreshEquipment()
     WoWStatusMainWindow.go({page="characters", profile=row.name})
     return true

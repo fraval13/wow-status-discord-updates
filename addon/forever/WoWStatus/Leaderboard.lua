@@ -32,7 +32,7 @@ local function sorted(list, by, pinnedFirst)
     end)
     return list
 end
-local ROW, PLAYER_ROW = 28, 44
+local ROW, PLAYER_ROW = 28, 72
 local function boardRow(index)
     local UI = WoWStatusUI
     local row = CreateFrame("Frame", nil, page.list)
@@ -44,9 +44,11 @@ local function boardRow(index)
     row.deaths = UI.text(row, "GameFontHighlight", 390, -6, 70, "RIGHT")
     row.quests = UI.text(row, "GameFontHighlight", 465, -6, 100, "RIGHT")
     row.played = UI.text(row, "GameFontHighlight", 570, -6, 100, "RIGHT")
-    -- Players mode: the main (or the default) and the alts collapsed under it.
-    row.alts = UI.text(row, "GameFontDisableSmall", 44, -24, 626)
-    row.alts:SetWordWrap(false)
+    -- Player details get separate, wrapping lines below the ranked values.
+    row.main = UI.text(row, "GameFontHighlightSmall", 44, -32, 626)
+    row.main:SetWordWrap(true)
+    row.alts = UI.text(row, "GameFontDisableSmall", 44, -56, 626)
+    row.alts:SetWordWrap(true)
     page.board[index] = row
     return row
 end
@@ -68,10 +70,11 @@ local function playerEntry(item)
         table.insert(parts, coloured(alt) .. (alt.level and (" " .. alt.level) or ""))
     end
     -- A default is never presented as the player's choice.
-    local line = coloured(main) .. " · " .. (item.chosen and T("main") or T("highest level, no main chosen"))
-    if #parts > 0 then line = line .. "   " .. T("Alts:") .. " " .. table.concat(parts, ", ") end
+    local mainLine = T("Main:") .. " " .. coloured(main)
+        .. (not item.chosen and (" · " .. T("Automatic")) or "")
+    local altsLine = #parts > 0 and (T("Alts:") .. " " .. table.concat(parts, ", ")) or nil
     return {name=name, level=main.level, xp=main.xp, deaths=main.deaths, quests=main.quests,
-        quests_source=main.quests_source, played=main.played, online=online, own=item.own, line=line, isPlayer=true, pin=pin}
+        quests_source=main.quests_source, played=main.played, online=online, own=item.own, mainLine=mainLine, altsLine=altsLine, isPlayer=true, pin=pin}
 end
 local function renderBoard(chosen)
     local data, UI = state() or {}, WoWStatusUI
@@ -84,19 +87,27 @@ local function renderBoard(chosen)
     elseif chosen then
         list = sorted(WoWStatusRoster.leaderboard(chosen.id), by, pinned)
     end
-    local height = players and PLAYER_ROW or ROW
+    local y = 0
     page.board = page.board or {}
     for i, entry in ipairs(list) do
         local row = page.board[i] or boardRow(i)
-        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -(i - 1) * height)
-        row:SetSize(680, height - 2)
+        row:ClearAllPoints(); row:SetPoint("TOPLEFT", 0, -y)
         -- Your own row and the zebra stripes, stronger on High contrast (#186).
         UI.stripe(row.bg, entry.own and "own" or (i % 2 == 0 and "stripe" or nil))
         row.rank:SetText(i .. ".")
         -- A filled dot online, a hollow ring offline: the shape says it, not only the green (#185).
         row.name:SetText(UI.presence(entry.online) .. " " .. (entry.isPlayer and entry.name or coloured(entry)))
-        row.alts:SetText(entry.line or "")
-        row.alts:SetShown(entry.line ~= nil)
+        row.main:SetText(entry.mainLine or ""); row.main:SetShown(entry.mainLine ~= nil)
+        row.alts:SetText(entry.altsLine or ""); row.alts:SetShown(entry.altsLine ~= nil)
+        local height = ROW
+        if players then
+            local mainHeight = math.max(16, WoWStatusSafe.number(WoWStatusSafe.call(row.main.GetStringHeight,row.main)) or 0)
+            local altsTop = 32 + mainHeight + 8
+            row.alts:ClearAllPoints(); row.alts:SetPoint("TOPLEFT",44,-altsTop)
+            local altsHeight = entry.altsLine and math.max(16, WoWStatusSafe.number(WoWStatusSafe.call(row.alts.GetStringHeight,row.alts)) or 0) or 0
+            height = math.max(PLAYER_ROW, entry.altsLine and (altsTop+altsHeight+16) or (32+mainHeight+16))
+        end
+        row:SetSize(680,height-4); y=y+height
         row.level:SetText(entry.level and (TF("Level %d", entry.level) .. (entry.xp and (" (" .. math.floor(entry.xp / 10) .. " %)") or "")) or "–")
         row.deaths:SetText(entry.deaths and tostring(entry.deaths) or "–")
         row.quests:SetText(entry.quests and (tostring(entry.quests)
@@ -106,7 +117,7 @@ local function renderBoard(chosen)
     end
     for i = #list + 1, #page.board do page.board[i]:Hide() end
     page.boardHeader:SetShown(true)
-    page.list:SetHeight(math.max(1, #list * height))
+    page.list:SetHeight(math.max(1, y))
     page.boardEmpty:SetShown(#list == 0)
     page.pinnedFirst:SetChecked(data.pinned_first == true)
     page.sort:SetText(T("Sort:") .. " " .. T(by == "deaths" and "Deaths" or by == "quests" and "Quests" or by == "played" and "Played time" or "Level"))

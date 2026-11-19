@@ -458,17 +458,18 @@ function UI.levelBadge(parent, size)
     local badge = CreateFrame("Frame", nil, parent)
     badge:SetSize(size, size)
     -- Proportions of the minimap button: 32 px button, 54 px ring at its top-left,
-    -- content centred one pixel left of and above the middle.
+    -- shift the artwork's inset circle one pixel into the frame's centre.
     local unit = size / 32
     badge.fill = badge:CreateTexture(nil, "BACKGROUND")
-    badge.fill:SetPoint("CENTER", -unit, unit); badge.fill:SetSize(size * .72, size * .72)
+    badge.fill:SetPoint("CENTER", 0, 0); badge.fill:SetSize(size * .72, size * .72)
     badge.fill:SetTexture("Interface\\CharacterFrame\\TempPortraitAlphaMask")
     call(badge.fill, "SetVertexColor", .08, .06, .02, .95)
     badge.ring = badge:CreateTexture(nil, "OVERLAY")
-    badge.ring:SetPoint("TOPLEFT"); badge.ring:SetSize(54 * unit, 54 * unit)
+    badge.ring:SetPoint("TOPLEFT", unit, -unit); badge.ring:SetSize(54 * unit, 54 * unit)
     badge.ring:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
     badge.text = badge:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    badge.text:SetPoint("CENTER", -unit, unit)
+    badge.text:SetAllPoints(badge)
+    badge.text:SetJustifyH("CENTER"); badge.text:SetJustifyV("MIDDLE")
     function badge:SetLevel(level) self.text:SetText(level and tostring(level) or "?") end
     return badge
 end

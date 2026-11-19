@@ -607,6 +607,11 @@ G.PAGE_SHORTCUTS = {
 -- Theme's drop-down menu and calendar float above the main window and belong to
 -- the page that opened them, so they go when the page changes or the window closes.
 local PAGE_POPUPS = {"WoWStatusMenu", "WoWStatusCalendar"}
+function G.mapFriends()
+    if combat() or not WoWStatusLocations then return false end
+    WoWStatusLocations.show();return true
+end
+
 function G.togglePage(key)
     if combat() then return false end
     local M = WoWStatusMainWindow
@@ -633,6 +638,7 @@ function G.bindingNames()
     _G.BINDING_HEADER_WOWSTATUS = "WoW Status"
     _G.BINDING_NAME_WOWSTATUS_TOGGLE = T("Open or close WoW Status")
     _G.BINDING_NAME_WOWSTATUS_ACTIVITY = T("Open the activity log")
+    _G.BINDING_NAME_WOWSTATUS_MAPFRIENDS = T("Friends on the map")
     _G.BINDING_NAME_WOWSTATUS_DISMISS = T("Dismiss the notification")
     _G.BINDING_NAME_WOWSTATUS_HOLD = T("Hold the notification (while pressed)")
     for _, page in ipairs(G.PAGE_SHORTCUTS) do

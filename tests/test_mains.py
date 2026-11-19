@@ -1,7 +1,7 @@
 """A player's main character and the Players ranking on the Leaderboard (#200)."""
 import pytest
 from test_client_compatibility import client_runtime
-from test_roster import pair, pump
+from test_roster import pair, pump, without_capabilities
 
 ALT = '''
     local original=character()
@@ -52,7 +52,7 @@ def test_a_chosen_main_reaches_friends_and_a_second_claim_replaces_the_first():
     mira, thora = owner_with_alt()
     g = group(mira)
     assert mira.eval(f'WoWStatusRoster.setMain("{g}", "Mira-TestRealm")') is True
-    packets = pump(mira, thora, start=300)
+    packets = without_capabilities(pump(mira, thora, start=300))
     # Only the main travels again, not the whole list.
     assert packets == [f'W {g} {mira.eval("WoWStatusDB.roster.id")} Mira-TestRealm']
     assert frank(thora) == {'main': 'Mira-TestRealm', 'chosen': True, 'alts': ['Bank Person-TestRealm']}
@@ -121,7 +121,7 @@ def test_cycling_the_main_queues_one_line_per_member():
     g = group(mira)
     for name in ('"Bank Person-TestRealm"', '"Mira-TestRealm"', 'nil', '"Mira-TestRealm"'):
         assert mira.eval(f'WoWStatusRoster.setMain("{g}", {name})') is True
-    packets = pump(mira, thora, start=300)
+    packets = without_capabilities(pump(mira, thora, start=300))
     assert packets == [f'W {g} {mira.eval("WoWStatusDB.roster.id")} Mira-TestRealm']
 
 
@@ -156,11 +156,11 @@ def test_players_view_and_main_choice_on_the_leaderboard(edition, language):
         local function own()
             local found
             for _, row in ipairs(page.board) do
-                if row:IsShown() and row.alts.text:find("Bank",1,true) then assert(not found); found=row end
+                if row:IsShown() and row.main.text:find("Bank",1,true) then assert(not found); found=row end
             end
             return found
         end
-        assert(own().alts.text:find("Bank Person · "..T("highest level, no main chosen"),1,true))
+        assert(own().main.text:find("Bank Person",1,true) and own().main.text:find(T("Automatic"),1,true))
         assert(own().alts.text:find(T("Alts:"),1,true))
         -- Cycle: Automatic -> Bank Person (highest level) -> each other listed character -> Automatic.
         local choices=WoWStatusRoster.mainChoices()
@@ -170,7 +170,7 @@ def test_players_view_and_main_choice_on_the_leaderboard(edition, language):
             assert(WoWStatusRoster.ownMain(id)==choice.name)
             assert(page.main.text==T("Main:").." "..choice.name:match("^[^-]+"))
         end
-        assert(own().alts.text:find(" · "..T("main"),1,true))
+        assert(own().main.text:find(T("Main:"),1,true) and not own().main.text:find(T("Automatic"),1,true))
         page.main.OnClick(page.main)
         assert(WoWStatusRoster.ownMain(id)==nil and page.main.text==T("Main:").." "..T("Automatic"))
         -- Controller reach of both buttons: tests/test_gamepad.py.

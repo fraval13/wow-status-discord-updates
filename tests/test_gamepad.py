@@ -398,6 +398,7 @@ def test_leaderboard_controls_are_reachable_and_shoulders_visit_its_page(lua):
             __pages={"overview","activity","records","leaderboard","characters"}
         end
     ''')
+    lua.execute((ROOT / 'addon/shared/Safe.lua').read_text(encoding='utf-8'))
     lua.execute((ROOT / 'addon/shared/Leaderboard.lua').read_text(encoding='utf-8'))
     lua.execute('''
         local show=WoWStatusMainWindow.show
@@ -1184,4 +1185,52 @@ def test_records_group_and_view_menus_are_reachable_by_controller(lua):
         assert(WoWStatusDB.firsts.view=="week" and p.weekOffset==0)
         p.weekBack:Click();assert(p.weekOffset==1)
         assert(p.weekNext:IsEnabled())
+    ''')
+
+
+def test_talent_nodes_and_named_map_friends_are_reachable_with_a_controller(lua):
+    main_window(lua)
+    lua.execute('''
+        function time() return 1793000000 end
+        function GetTime() return 0 end
+        local m=getmetatable(CreateFrame("Frame")).__index
+        function m:SetText(value) self.text=value end
+        function m:CreateFontString() return CreateFrame("FontString",nil,self) end
+        function m:SetShown(value) self.visible=value end
+        function m:SetSize(w,h) self.rect[3],self.rect[4]=w,h end
+        function m:SetHeight(h) self.rect[4]=h end
+        function m:SetScrollChild(child) self.child=child end
+        function m:GetWidth() return self.rect[3] end
+        function m:GetHeight() return self.rect[4] end
+        for _,name in ipairs({"SetJustifyH","SetJustifyV","SetWordWrap","SetScale","SetAlpha"}) do m[name]=function() end end
+        WoWStatusHistory={localTime=function() return "2026-11-19" end}
+    ''')
+    for name in ('Safe', 'Locale', 'LocaleNN', 'Theme', 'Talents', 'Locations'):
+        lua.execute((ROOT / f'addon/shared/{name}.lua').read_text(encoding='utf-8'))
+    lua.execute('''
+        local build={at=1793000000,mode="classic",labels={"Arms"},nodes={
+            {id=1,spell=0,icon="132400",x=1,y=1,rank=1,max=5,spent=1,name="Example Talent"},
+            {id=2,spell=0,icon="132400",x=2,y=2,rank=0,max=1,spent=0,name="Other Talent"}},edges={}}
+        WoWStatusTalents.get=function() return build end
+        local box=WoWStatusTalents.build(main)
+        box.rect={110,110,550,370};box.canvas.rect={110,110,540,300}
+        WoWStatusTalents.render(box,"Mira-Realm")
+        box.refresh.rect={500,440,130,24}
+        for i,node in ipairs(box.nodes) do node.rect={120,200+i*40,28,28} end
+        local found={}
+        for _,control in ipairs(WoWStatusGamepad.controls(main,{main})) do found[control]=true end
+        assert(found[box.refresh] and found[box.nodes[1]] and found[box.nodes[2]])
+        local record={name="Mira-Realm",received=0,map=42,x=.5,y=.5}
+        WoWStatusLocations.entries=function() return {record} end
+        local list=WoWStatusLocations.show()
+        list.rect={100,100,550,470};list.scroll.rect={120,160,490,310};list.list.rect={120,160,480,310}
+        list.rows[1].rect={120,400,480,40};list.close.rect={500,120,120,28}
+        local reached={}
+        for _,control in ipairs(WoWStatusGamepad.controls(list,{list})) do reached[control]=true end
+        assert(reached[list.rows[1]] and reached[list.close])
+        assert(list.rows[1].text:find("Mira",1,true))
+        local special=false
+        for _,name in ipairs(UISpecialFrames) do special=special or name=="WoWStatusMapFriends" end
+        assert(special)
+        list.close:Click();assert(not list:IsShown())
     ''')

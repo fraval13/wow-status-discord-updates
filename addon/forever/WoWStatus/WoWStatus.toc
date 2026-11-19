@@ -65,6 +65,8 @@ Reactions.lua
 
 Together.lua
 Recaps.lua
+Talents.lua
+Locations.lua
 Equipment.lua
 EquipmentSync.lua
 Roster.lua

@@ -106,3 +106,31 @@ def test_played_time_uses_shared_seconds_and_sorts_missing_values_last():
         assert(page.board[3].name.text:find("Missing",1,true))
         assert(page.board[3].played.text=="–")
     ''')
+
+
+def test_player_rows_grow_for_wrapped_main_and_alts_then_shrink_in_character_mode():
+    lua = make_lua(WINDOW)
+    lua.execute('''
+        WoWStatusGroups.update("Example Crew", "")
+        local m=getmetatable(CreateFrame("Frame")).__index
+        function m:SetPoint(...) self.point={...} end
+        function m:GetStringHeight() return self.text and self.text:find("Long",1,true) and 48 or 14 end
+        WoWStatusRoster.players=function() return {
+            {name="First Player",player="first",rows={},chosen=false,
+             main={name="Long Main-Realm",level=24},alts={{name="Long Alt-Realm",level=20}}},
+            {name="Second Player",player="second",rows={},chosen=true,
+             main={name="Other-Realm",level=20},alts={}}} end
+        WoWStatusDB.leaderboard={mode="players"}
+        WoWStatusMainWindow.show("leaderboard")
+        local p=WoWStatusLeaderboardPage
+        local first,second=p.board[1],p.board[2]
+        assert(first.main.text:find("Long Main",1,true))
+        assert(first.alts.text:find("Long Alt",1,true))
+        assert(first.height>=140)
+        assert(first.point[3]-second.point[3]>=first.height)
+        assert(-first.alts.point[3]>=32+48+8)
+        p.mode.OnClick(p.mode)
+        for _,row in ipairs(p.board) do
+            if row:IsShown() then assert(not row.main:IsShown() and not row.alts:IsShown() and row.height==24) end
+        end
+    ''')
