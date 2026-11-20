@@ -1,2 +1,0 @@
-- Fix Forever startup when regional names are enabled and the client no longer supplies a conventional realm name.
-- Keep existing character history and settings when Forever switches from a shard name to a ruleset.

@@ -1,2 +1,0 @@
-- Center character levels inside the visible gold ring by removing the border texture's transparent padding.
-- Keep shared talents and live map positions out of this recovery release.
