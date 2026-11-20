@@ -32,10 +32,6 @@ M.account = {
         -- Existing listings keep their state; none is treated as UI consent.
         if type(db.listing_confirmed) ~= "table" then db.listing_confirmed = {} end
     end},
-    {version = 4, name = "start bounded talent snapshot caching", run = function(db)
-        if type(db.roster)~="table" then db.roster={} end
-        if type(db.roster.talent_cache)~="table" then db.roster.talent_cache={} end
-    end},
 }
 
 -- What each character step receives: the character's saved table (its settings
@@ -97,15 +93,6 @@ M.character = {
         if character.personal_goal_level ~= nil then
             local Z = WoWStatusSettings
             Z.set("personal_goal_level", Z.get("personal_goal_level", character), character)
-        end
-    end},
-    {version = 6, name = "validate the optional saved talent build", run = function(character)
-        local build=character.talent_profile
-        if build~=nil then
-            local decoded=type(build)=="table" and type(build.encoded)=="string" and WoWStatusTalents and WoWStatusTalents.decode(build.encoded)
-            if decoded and WoWStatusSafe.number(build.at) then
-                decoded.encoded,decoded.at=build.encoded,build.at;character.talent_profile=decoded
-            else character.talent_profile=nil end
         end
     end},
 }

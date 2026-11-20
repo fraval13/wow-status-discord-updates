@@ -67,8 +67,8 @@ def test_release_data_loads_unchanged_and_keeps_its_options():
     assert changed == set(), changed
     # Progress is kept beside version, which older releases require to stay 1.
     assert lua.eval('WoWStatusDB.version') == 1
-    assert after['version'] == 1 and after['schema_version'] == 4
-    assert after['characters'][KEY]['schema_version'] == 6
+    assert after['version'] == 1 and after['schema_version'] == 3
+    assert after['characters'][KEY]['schema_version'] == 5
     assert after['characters'][KEY]['events'] == before['characters'][KEY]['events']
     assert lua.execute('''
         local P = WoWStatusPopups
@@ -102,9 +102,9 @@ def test_second_login_runs_no_step_again():
 
 def test_brand_new_account_starts_at_the_latest_versions():
     lua = make_lua()
-    assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 4
+    assert lua.eval('WoWStatusDB.schema_version') == lua.eval('WoWStatusMigrations.ACCOUNT_LATEST') == 3
     assert lua.eval('WoWStatusDB.version') == 1
-    assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 6
+    assert lua.eval('character().schema_version') == lua.eval('WoWStatusMigrations.CHARACTER_LATEST') == 5
     # A new character still gets every switch a migrated one has.
     assert lua.eval('character().settings.in_game.pvp') is True
     assert lua.eval('character().settings.collection.reputation') is True
@@ -121,7 +121,7 @@ def test_newer_saved_data_is_used_and_never_downgraded():
 @pytest.mark.parametrize('broken', ['nil', '"two"', '0', '1.5', '-3', '1/0', '1e300 * 1e300', '0/0'])
 def test_missing_or_broken_version_counts_as_one(broken):
     lua = login(V1.replace('\n    version = 1,\n', f'\n    schema_version = {broken},\n    version = 1,\n'))
-    assert lua.eval('WoWStatusDB.schema_version') == 4
+    assert lua.eval('WoWStatusDB.schema_version') == 3
 
 
 @pytest.mark.parametrize('saved', ['"x"', '{}', '{version = 1, characters = "x"}'])
@@ -227,7 +227,7 @@ def test_failed_step_is_reported_once_while_login_waits():
     lua.eval('fire')('PLAYER_ENTERING_WORLD')
     said = '\n'.join(lua.eval('__said').values())
     assert said.count('Could not upgrade saved data (step 2)') == 1
-    assert lua.eval('WoWStatusDB.schema_version') == 4 and lua.eval('character() ~= nil')
+    assert lua.eval('WoWStatusDB.schema_version') == 3 and lua.eval('character() ~= nil')
 
 
 # Each step on its own -----------------------------------------------------------
@@ -417,7 +417,7 @@ def test_listing_confirmation_migration_never_enables_or_confirms_a_group(saved)
             account_groups={existing="Synthetic group"},unrelated={keep=true}}
         local old=db.listing_confirmed
         assert(WoWStatusMigrations.upgradeAccount(db))
-        assert(db.schema_version==WoWStatusMigrations.ACCOUNT_LATEST and type(db.listing_confirmed)=="table")
+        assert(db.schema_version==3 and type(db.listing_confirmed)=="table")
         if type(old)=="table" then assert(db.listing_confirmed==old)
         else assert(next(db.listing_confirmed)==nil) end
         assert(not db.listing_confirmed.existing and db.listed_groups.existing and db.unrelated.keep)
@@ -438,31 +438,3 @@ def test_character_migration_normalizes_manual_hardcore_without_opt_in():
         step.run(character)
         assert(character.settings.manual_hardcore == true)
     """)
-
-
-def test_talent_cache_migration_only_initializes_its_new_storage():
-    lua = make_lua()
-    lua.execute('''
-        local step=WoWStatusMigrations.account[3]
-        assert(step.version==4)
-        local saved={keep=true}
-        local db={roster={talent_cache=saved,players={keep=true}},unrelated=true}
-        step.run(db)
-        assert(db.roster.talent_cache==saved and db.roster.players.keep and db.unrelated)
-        db.roster.talent_cache="broken";step.run(db)
-        assert(type(db.roster.talent_cache)=="table" and next(db.roster.talent_cache)==nil)
-    ''')
-
-
-def test_talent_character_migration_validates_and_rebuilds_the_saved_tree():
-    lua = make_lua()
-    lua.execute('''
-        local step=WoWStatusMigrations.character[5]
-        assert(step.version==6)
-        local encoded="1|classic|1|0|24|41726d73|1001,90001,132400,1,1,1,5,1,1,|"
-        local c={talent_profile={encoded=encoded,at=123,nodes="broken"},unrelated=true}
-        step.run(c)
-        assert(c.talent_profile.nodes[1].rank==1 and c.talent_profile.at==123 and c.unrelated)
-        c.talent_profile={encoded="broken",at=123};step.run(c)
-        assert(c.talent_profile==nil and c.unrelated)
-    ''')

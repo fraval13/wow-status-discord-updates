@@ -571,21 +571,12 @@ function G.tick(elapsed)
 end
 
 -- Key bindings (Bindings.xml); work with or without a controller.
-local function waitingOptions()
-    local P=WoWStatusPopups
-    if P and P.character and not P.character() then
-        if not combat() and SlashCmdList and SlashCmdList.WOWSTATUS then SlashCmdList.WOWSTATUS("") end
-        return true
-    end
-end
 function G.toggle()
-    if waitingOptions() then return end
     local M = WoWStatusMainWindow
     if not M then return end
     if M.active and M.active() then M.hide() else M.show() end
 end
 function G.activity()
-    if waitingOptions() then return end
     if WoWStatusPopups and WoWStatusPopups.showActivity then WoWStatusPopups.showActivity() end
 end
 function G.dismiss()
@@ -616,15 +607,8 @@ G.PAGE_SHORTCUTS = {
 -- Theme's drop-down menu and calendar float above the main window and belong to
 -- the page that opened them, so they go when the page changes or the window closes.
 local PAGE_POPUPS = {"WoWStatusMenu", "WoWStatusCalendar"}
-function G.mapFriends()
-    if combat() or not WoWStatusLocations then return false end
-    if waitingOptions() then return true end
-    WoWStatusLocations.show();return true
-end
-
 function G.togglePage(key)
     if combat() then return false end
-    if waitingOptions() then return true end
     local M = WoWStatusMainWindow
     if not (M and M.show and M.hide and M.active and M.has) or type(key) ~= "string" then return false end
     if not M.has(key) then return false end
@@ -649,7 +633,6 @@ function G.bindingNames()
     _G.BINDING_HEADER_WOWSTATUS = "WoW Status"
     _G.BINDING_NAME_WOWSTATUS_TOGGLE = T("Open or close WoW Status")
     _G.BINDING_NAME_WOWSTATUS_ACTIVITY = T("Open the activity log")
-    _G.BINDING_NAME_WOWSTATUS_MAPFRIENDS = T("Friends on the map")
     _G.BINDING_NAME_WOWSTATUS_DISMISS = T("Dismiss the notification")
     _G.BINDING_NAME_WOWSTATUS_HOLD = T("Hold the notification (while pressed)")
     for _, page in ipairs(G.PAGE_SHORTCUTS) do

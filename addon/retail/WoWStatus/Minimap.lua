@@ -46,12 +46,6 @@ end
 local function fillTooltip(tooltip,draggable)
     local T=WoWStatusLocale.T
     tooltip:SetText("WoW Status")
-    if WoWStatusPopups and WoWStatusPopups.character and not WoWStatusPopups.character() then
-        tooltip:AddLine(T("Waiting for character information…"),1,.82,0,true)
-        tooltip:AddLine(T("Left-click: Options"),1,1,1)
-        tooltip:AddLine(T("Right-click: Options"),1,1,1)
-        return
-    end
     -- Who is online, and the newest thing a friend did.
     local names=WoWStatusRoster and WoWStatusRoster.onlineNames and WoWStatusRoster.onlineNames() or {}
     local shown={}
@@ -87,10 +81,6 @@ end
 -- Same actions as the minimap button: left opens the log, right the options.
 -- Other mouse buttons do nothing, as on the button.
 local function click(which)
-    if (which=="LeftButton" or which=="RightButton") and WoWStatusPopups
-        and WoWStatusPopups.character and not WoWStatusPopups.character() then
-        SlashCmdList.WOWSTATUS("");return
-    end
     if which=="RightButton" then SlashCmdList.WOWSTATUS("")
     elseif which=="LeftButton" then WoWStatusJournal.show() end
 end

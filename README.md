@@ -54,10 +54,7 @@ each release changed.
    To keep the minimap clear, untick **Show the minimap button** under
    **Options → AddOns → WoW Status → Notifications**, or type `/wstatus minimap hide`
    (`show` brings it back). The slash commands and the key bindings keep working
-   while it is hidden. The icon and AddOns settings remain available while
-   character information is loading; startup retries automatically until it is
-   readable. During that wait, the icon and opening bindings show the settings
-   status page.
+   while it is hidden.
 4. To invite a friend who does not have the addon yet, right-click their name and
    choose **Share WoW Status** (clients with the modern menu), or type
    `/wstatus share <name>`. It whispers the download link, at most once per person
@@ -75,22 +72,6 @@ take back copies already shared. Removing a group clears its sharing choice.
 
 Use **Online only** above the Characters list to show just online characters.
 The filter stays visible while scrolling and affects only your own view.
-**Friends on the map** (also `/wstatus mapfriends` and a key binding) opens a
-controller-friendly list of recently reported positions. Named markers appear on
-the world map and, within range, on the minimap. Hover a marker for the name,
-coordinates and age. Location and character-list sharing control sending; hidden
-characters do not send. Updates use paced group whispers, so larger groups update
-less frequently. Marks fade after 15 seconds and expire after 90; no coordinates
-are saved or relayed, and unavailable/restricted map APIs never produce a position.
-
-Character profiles also show a read-only talent tree below equipment and combat
-stats, using the actual node positions, icons, ranks and connections supplied by
-the owner's client. It supports Classic talent tabs and modern trait trees;
-unsupported or loading APIs keep the last known build. Opening a profile fetches
-its build quietly from the owner or an online alt; previously received builds and
-own alts remain available offline. Both sides need the updated addon. The
-Equipment, talents and combat stats detail controls capture and sharing.
-See [talents and map positions](docs/TALENTS_AND_MAP.md) for limits and live-client checks.
 
 Click a character card, then scroll below the recent activity and gear to see
 their equipped items in a character-sheet layout. Hover a slot for the item's
@@ -109,7 +90,7 @@ and incomplete transfers never replace a complete snapshot.
 The character list and Overview show the game's average **equipped** item level
 when available; bag gear and required character level are not substituted.
 Character cards have more room and a full-width XP bar along the bottom.
-**Character details → Equipment, talents and combat stats** controls sharing. Hidden
+**Character details → Equipment and combat stats** controls sharing. Hidden
 characters and accounts with character-list sharing off do not send gear.
 Both sides need the updated addon for background sync; older clients keep the
 original profile-open request. Characters must log in with the gear feature
