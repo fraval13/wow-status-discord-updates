@@ -176,7 +176,7 @@ local function label(parent, text, x, y, width)
     return t
 end
 
-local openSettings, registerSettings
+local openSettings, registerSettings, initialize
 local NOT_SEEN_HEIGHT = 84 -- The "Friends not seen for a while" section.
 
 local function showPanel(host)
@@ -391,6 +391,20 @@ local function settingsPage(name, width, show)
     end
     local built = false
     local function display()
+        if not current then
+            if not page.waiting then
+                page.waiting=CreateFrame("Frame",nil,scroll)
+                page.waiting:SetSize(width,112)
+                local title=WoWStatusUI.text(page.waiting,"GameFontNormalLarge",24,-20,width-48)
+                title:SetText(T("Waiting for character information…"))
+                local note=WoWStatusUI.text(page.waiting,"GameFontHighlight",24,-54,width-48)
+                note:SetText(T("WoW Status will finish loading automatically when your character information is available."))
+                note:SetWordWrap(true);note:SetHeight(48)
+            end
+            content=page.waiting;content:Show();scroll:SetScrollChild(content);resize()
+            return
+        end
+        if page.waiting then page.waiting:Hide() end
         built = true
         show(scroll)
         local pages = {Groups=WoWStatusGroupWindow, Discord=WoWStatusDiscordSettings,
@@ -502,7 +516,7 @@ local function upgraded(ok, step, problem)
         step.version) .. " " .. tostring(problem))
 end
 
-local function initialize()
+initialize = function()
     if not A.supported() then
         if not unsupportedWarned then
             say("This addon folder targets " .. A.display_name .. ". Collection is disabled on this client.")
@@ -526,15 +540,26 @@ local function initialize()
     WoWStatusDB.version = 1
     -- Older saved data is upgraded once, step by step, never refused (#231).
     upgraded(WoWStatusMigrations.upgradeAccount(WoWStatusDB))
+    -- Account UI must stay reachable while player identity is loading/restricted.
+    -- Character sharing still waits for the adapter's public identity boundary.
+    WoWStatusMinimap.init(WoWStatusDB)
+    registerSettings()
     local identity = A.identity()
     if not identity then
         if not waitingForIdentity then
             say("Waiting for readable player identity. Collection will retry after loading/combat.")
             waitingForIdentity = true
+            local elapsed=0
+            frame:SetScript("OnUpdate",function(_,delta)
+                elapsed=elapsed+delta
+                if elapsed<1 then return end
+                elapsed=0;initialize()
+            end)
         end
         return
     end
     waitingForIdentity = false
+    frame:SetScript("OnUpdate",nil)
     local key = identity.client .. ":" .. identity.realm .. ":" .. identity.guid
     local first = not WoWStatusDB.characters[key]
     WoWStatusDB.characters[key] = WoWStatusDB.characters[key] or {
@@ -645,6 +670,9 @@ local function initialize()
         openSettings()
     end
     WoWStatus.initializeModules(WoWStatusDB, current)
+    for _,page in ipairs(settingsPages) do
+        if page.waiting and page:IsShown() then page.ensure() end
+    end
 end
 
 -- Client builds differ in event availability; one absent event must not abort
@@ -664,7 +692,9 @@ for _,event in ipairs(EVENTS) do
 end
 frame:SetScript("OnEvent", function(_, event, ...)
     if event == "ADDON_LOADED" then
-        if current then registerSettings();WoWStatusMinimap.init(WoWStatusDB) end
+        if A.supported() and type(WoWStatusDB)=="table" and type(WoWStatusDB.characters)=="table" then
+            registerSettings();WoWStatusMinimap.init(WoWStatusDB)
+        end
         return
     end
     -- Marks where a login's traffic starts in the debug log (#188).
@@ -1065,6 +1095,10 @@ SlashCmdList.WOWSTATUS = function(message)
     if command == "help" then
         say(T("Commands:") .. " " .. table.concat(WoWStatus.commands(), ", "))
         say(T("Window pages:") .. " " .. table.concat(WoWStatusMainWindow.pages(), ", "))
+        return
+    end
+    if not current and (command=="" or command=="minimap") then
+        if command=="minimap" then slash.minimap(rest) else openSettings() end
         return
     end
     if not current then

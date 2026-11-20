@@ -1012,3 +1012,9 @@ W.add({
     ["Log into this character to capture its talents."]="Logg inn på denne figuren for å lagre talenta.",
     ["Talents are not available for this character yet."]="Talent er ikkje tilgjengelege for denne figuren enno.",
 })
+
+W.add({
+    ["Waiting for character information…"]="Ventar på opplysningar om figuren…",
+    ["WoW Status will finish loading automatically when your character information is available."]="WoW Status lastar ferdig automatisk når opplysningane om figuren din er tilgjengelege.",
+    ["Left-click: Options"]="Venstreklikk: Innstillingar",
+})

@@ -571,12 +571,21 @@ function G.tick(elapsed)
 end
 
 -- Key bindings (Bindings.xml); work with or without a controller.
+local function waitingOptions()
+    local P=WoWStatusPopups
+    if P and P.character and not P.character() then
+        if not combat() and SlashCmdList and SlashCmdList.WOWSTATUS then SlashCmdList.WOWSTATUS("") end
+        return true
+    end
+end
 function G.toggle()
+    if waitingOptions() then return end
     local M = WoWStatusMainWindow
     if not M then return end
     if M.active and M.active() then M.hide() else M.show() end
 end
 function G.activity()
+    if waitingOptions() then return end
     if WoWStatusPopups and WoWStatusPopups.showActivity then WoWStatusPopups.showActivity() end
 end
 function G.dismiss()
@@ -609,11 +618,13 @@ G.PAGE_SHORTCUTS = {
 local PAGE_POPUPS = {"WoWStatusMenu", "WoWStatusCalendar"}
 function G.mapFriends()
     if combat() or not WoWStatusLocations then return false end
+    if waitingOptions() then return true end
     WoWStatusLocations.show();return true
 end
 
 function G.togglePage(key)
     if combat() then return false end
+    if waitingOptions() then return true end
     local M = WoWStatusMainWindow
     if not (M and M.show and M.hide and M.active and M.has) or type(key) ~= "string" then return false end
     if not M.has(key) then return false end

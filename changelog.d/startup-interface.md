@@ -1,0 +1,2 @@
+- Keep the minimap icon and AddOns settings available while character information is loading.
+- Automatically finish startup when readable character information becomes available, without another loading screen.

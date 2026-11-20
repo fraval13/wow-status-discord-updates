@@ -54,7 +54,10 @@ each release changed.
    To keep the minimap clear, untick **Show the minimap button** under
    **Options → AddOns → WoW Status → Notifications**, or type `/wstatus minimap hide`
    (`show` brings it back). The slash commands and the key bindings keep working
-   while it is hidden.
+   while it is hidden. The icon and AddOns settings remain available while
+   character information is loading; startup retries automatically until it is
+   readable. During that wait, the icon and opening bindings show the settings
+   status page.
 4. To invite a friend who does not have the addon yet, right-click their name and
    choose **Share WoW Status** (clients with the modern menu), or type
    `/wstatus share <name>`. It whispers the download link, at most once per person
