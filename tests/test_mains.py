@@ -1,7 +1,7 @@
 """A player's main character and the Players ranking on the Leaderboard (#200)."""
 import pytest
 from test_client_compatibility import client_runtime
-from test_roster import pair, pump
+from test_roster import pair, pump, without_map_support
 
 ALT = '''
     local original=character()
@@ -52,7 +52,7 @@ def test_a_chosen_main_reaches_friends_and_a_second_claim_replaces_the_first():
     mira, thora = owner_with_alt()
     g = group(mira)
     assert mira.eval(f'WoWStatusRoster.setMain("{g}", "Mira-TestRealm")') is True
-    packets = pump(mira, thora, start=300)
+    packets = without_map_support(pump(mira, thora, start=300))
     # Only the main travels again, not the whole list.
     assert packets == [f'W {g} {mira.eval("WoWStatusDB.roster.id")} Mira-TestRealm']
     assert frank(thora) == {'main': 'Mira-TestRealm', 'chosen': True, 'alts': ['Bank Person-TestRealm']}
@@ -121,7 +121,7 @@ def test_cycling_the_main_queues_one_line_per_member():
     g = group(mira)
     for name in ('"Bank Person-TestRealm"', '"Mira-TestRealm"', 'nil', '"Mira-TestRealm"'):
         assert mira.eval(f'WoWStatusRoster.setMain("{g}", {name})') is True
-    packets = pump(mira, thora, start=300)
+    packets = without_map_support(pump(mira, thora, start=300))
     assert packets == [f'W {g} {mira.eval("WoWStatusDB.roster.id")} Mira-TestRealm']
 
 

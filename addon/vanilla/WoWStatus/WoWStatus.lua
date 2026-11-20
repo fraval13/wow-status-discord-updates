@@ -38,7 +38,7 @@ end
 
 local function defaults()
     return {
-        enabled = true, discord_enabled = false, discord_delivery = "summary", introduction_confirmed = false, character_role = "alt",
+        enabled = true, share_position = true, discord_enabled = false, discord_delivery = "summary", introduction_confirmed = false, character_role = "alt",
         fields = {level = true, class = true, race = true, faction = true, guild = true,
                   gear = true, zone = true, playtime = true, professions = true, deaths = true, quests = true, gold = true, kills = true, collection = true},
         collection = {introduction = true, level = true, loot = true, equipment = false,
@@ -223,6 +223,7 @@ local function showPanel(host)
         button(panel,"Notifications",384,-116,170,function() openSettings("previews") end)
         layout:category("sharing",174)
         checkbox("enabled","Share my progress",24,-174)
+        checkbox("share_position","Share my position",310,-174)
         section("Announcements",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
             profession="Profession milestones",dungeon="Dungeon / raid milestones",mount="Mount milestones",

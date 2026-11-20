@@ -1186,3 +1186,33 @@ def test_records_group_and_view_menus_are_reachable_by_controller(lua):
         p.weekBack:Click();assert(p.weekOffset==1)
         assert(p.weekNext:IsEnabled())
     ''')
+
+
+def test_share_position_checkbox_in_real_settings_is_reachable_with_a_controller():
+    from test_addon import make_lua
+    runtime=make_lua()
+    runtime.execute('''
+        local unpack=unpack or table.unpack
+        local m=getmetatable(CreateFrame("Frame")).__index
+        function m:GetObjectType() return self.kind end
+        function m:GetRect() return 100,100,600,500 end
+        function m:GetChildren()
+            local children={}
+            for _,frame in ipairs(__frames) do if frame.parent==self then children[#children+1]=frame end end
+            return unpack(children)
+        end
+        SlashCmdList.WOWSTATUS("")
+        local page=WoWStatusSetup
+        assert(page.settingsCategories.selected=="sharing")
+        -- The stub main window stays hidden, and the walk skips invisible frames.
+        local shown=page
+        while shown do shown.visible=true;shown=shown.parent end
+        local check
+        for _,entry in ipairs(page.checks) do if entry.key=="share_position" then check=entry.widget end end
+        assert(check and check:GetParent()==page.settingsCategories.frames.sharing)
+        local reached=false
+        for _,control in ipairs(WoWStatusGamepad.controls(page,{page})) do reached=reached or control==check end
+        assert(reached and check:GetChecked())
+        check:SetChecked(false);check.OnClick(check)
+        assert(not character().settings.share_position)
+    ''')

@@ -79,6 +79,26 @@ take back copies already shared. Removing a group clears its sharing choice.
 Use **Online only** above the Characters list to show just online characters.
 The filter stays visible while scrolling and affects only your own view.
 
+Live positions are shared automatically with members of your joined addon groups
+while you are online. No map-sharing button, menu or character-list setting is
+required. Open the normal world map to see friends' markers, or watch the minimap
+for nearby friends; hover a marker for their name, coordinates and report age.
+Character-list visibility and the Location detail setting do not stop map sharing.
+Untick **Share my position** under **Options → AddOns → WoW Status → Sharing and
+milestones** to opt this character out of sending positions; it is on by default.
+You can still see friends' markers while opted out. Leaving a group also stops
+sharing your live position with its members.
+
+Both sides need a build with map sharing: clients without it receive only a small
+support query, not continuous coordinates. Earlier map-capable builds can use the
+same location protocol without talent-tree code, subject to their own sharing
+settings. Positions use paced group whispers, at most one packet per second
+globally and at least five seconds per recipient. Larger groups and busy queues
+update less frequently. Pins fade after 15 seconds and expire after 90.
+Coordinates are never saved or relayed. Missing/restricted map APIs stop reporting;
+the game controls realm, faction, instance and phase visibility. Native map
+rendering still needs live checks.
+
 Click a character card, then scroll below the recent activity and gear to see
 their equipped items in a character-sheet layout. Hover a slot for the item's
 full tooltip, including its enchant and random suffix. Available combat stats

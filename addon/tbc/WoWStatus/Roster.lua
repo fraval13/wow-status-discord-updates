@@ -36,6 +36,7 @@ local CLASSES = {WARRIOR=true, PALADIN=true, HUNTER=true, ROGUE=true, PRIEST=tru
 local db, current, page, report
 -- A roster line for the debug log, its group name left out.
 local function redacted(text)
+    if type(text)=="string" and (text:sub(1,2)=="L " or text:sub(1,2)=="B ") then return text:sub(1,1).." <group> <map detail>" end
     local op, rest = tostring(text):match("^(" .. S.NONSPACE .. "+) " .. S.NONSPACE .. "+(.*)$")
     return op and (op .. " <group>" .. rest) or "?"
 end
@@ -696,6 +697,7 @@ function R.scan()
         for _, peer in ipairs(WoWStatusPopups.peers(group)) do
             noteSeen(group, peer); enqueue(group, peer)
             if WoWStatusEquipmentSync then WoWStatusEquipmentSync.hello(group, peer) end
+            if WoWStatusLocations then WoWStatusLocations.hello(group,peer) end
             -- Ask each member once a session for their list: one sent while this
             -- account was offline (a level-up) never reached it. Older versions ignore it.
             local k = key(peer)
@@ -706,7 +708,10 @@ function R.scan()
             end
         end
         if WoWStatusEquipmentSync and #WoWStatusPopups.peers(group)==0 and R.recentMembers then
-            for _,peer in ipairs(R.recentMembers(group)) do WoWStatusEquipmentSync.hello(group,peer) end
+            for _,peer in ipairs(R.recentMembers(group)) do
+                WoWStatusEquipmentSync.hello(group,peer)
+                if WoWStatusLocations then WoWStatusLocations.hello(group,peer) end
+            end
         end
     end
 end
@@ -1516,6 +1521,23 @@ local function queueEquipment(group, peer, text, owner)
     outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),equipmentOwner=owner,equipmentSync=true}
     return true
 end
+-- Live positions use the bounded whisper queue independently of roster sharing.
+-- Keep only the newest position per recipient and group while the queue is busy.
+function R.queueLocation(group,peer,text,coalesce)
+    if not db or not current or type(text)~="string" or #text>250 or not WoWStatusGroups.contains(current,group) then return false end
+    local target=R.chatTarget(peer)
+    local locationKey=coalesce and (group..":"..(key(peer) or ""))
+    local locationReport=coalesce and text:sub(-2)~=" -"
+    if locationKey then
+        for _,item in ipairs(outgoing) do
+            if item.locationKey==locationKey then item.text,item.equipmentAt,item.locationReport=text,S.now(),locationReport;return true end
+        end
+    end
+    if #outgoing>=64 then return false end
+    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),locationKey=locationKey,locationReport=locationReport}
+    return true
+end
+
 -- A relay carries the original identity and capture time, not a claim that the
 -- offline owner is online now. Existing live roster details are retained.
 function R.storeEquipment(record,group)
@@ -1690,6 +1712,7 @@ function R.tick()
         end
     end
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.tick() end
+    if WoWStatusLocations then WoWStatusLocations.tick() end
     allowance = math.min(ALLOWANCE, allowance + math.max(0, now - allowanceAt)); allowanceAt = now
     if #outgoing == 0 or now < holdUntil or now - lastSend < .5 or WoWStatusAdapter.chatRestricted() then return end
     -- Outside an instance the allowance does not apply, so nothing is delayed there.
@@ -1719,6 +1742,8 @@ function R.tick()
     end
     if item.equipmentAt and S.now() - item.equipmentAt >= 180 then return end
     if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
+    -- Never send a queued coordinate after this character has opted out.
+    if item.locationReport and (not WoWStatusLocations or not WoWStatusLocations.sharing()) then return end
     -- A privacy change can happen while a snapshot is queued for transmission.
     local owner = item.equipmentOwner
     if owner and (not state().share or owner.hide_from_list or not owner.settings.fields.gear) then return end
@@ -1751,8 +1776,12 @@ end
 local receive
 function R.receive(message, sender, distribution)
     local ok, why = receive(message, sender, distribution)
-    -- New numbers can move a group goal (#157): check it at the next tick.
-    if ok and WoWStatusGoals then WoWStatusGoals.touch() end
+    if ok and WoWStatusLocations and type(message)=="string" and message:sub(1,2)~="L " then
+        local group=message:match("^[^ ]+ ([^ ]+) ")
+        if group then WoWStatusLocations.hello(group,sender) end
+    end
+    -- Map traffic carries no progress towards a goal.
+    if ok and WoWStatusGoals and type(message)=="string" and message:sub(1,2)~="L " and message:sub(1,2)~="B " then WoWStatusGoals.touch() end
     if db and type(message) == "string" then
         S.debug("got " .. redacted(message) .. " from " .. tostring(sender) .. ": " .. (ok and "ok" or tostring(why or "ignored")))
     end
@@ -1774,6 +1803,7 @@ receive = function(message, sender, distribution)
     end
     if not pid or #pid ~= 16 or not pid:match("^[0-9a-f]+$") or pid == state().id then return false, "bad player ID" end
     local players = state().players
+    if op=="L" or (op=="B" and #words==4 and words[4]=="C") then return WoWStatusLocations and WoWStatusLocations.receive(words,sender) or false end
     if op=="H" or op=="J" or op=="F" or op=="T" then
         return WoWStatusEquipmentSync and WoWStatusEquipmentSync.receive(words,sender) or false
     end
@@ -3056,6 +3086,7 @@ function R.init(database, character, reporter)
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
     allowance, allowanceAt, holdUntil, sendState = ALLOWANCE, 0, 0, {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
+    if WoWStatusLocations then WoWStatusLocations.init(database,character,R.queueLocation) end
     lastQuest, questsSent = 0, character and R.questLine(character)
     questPending, questQueued = nil, {}
     xpSent = character and character.roster_info and character.roster_info.xp

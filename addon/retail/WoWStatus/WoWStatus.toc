@@ -66,6 +66,7 @@ Together.lua
 Recaps.lua
 Equipment.lua
 EquipmentSync.lua
+Locations.lua
 Roster.lua
 Goals.lua
 Profile.lua

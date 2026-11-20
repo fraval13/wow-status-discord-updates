@@ -1,0 +1,3 @@
+- Automatically share live positions with everyone in the same addon group, with no button or menu required.
+- Show group friends on the normal world map and nearby minimap, with names on hover.
+- Add Share my position in settings, on by default; unticking stops your updates while keeping friends visible.
