@@ -262,3 +262,59 @@ def test_native_group_member_positions_do_not_require_a_shared_roster_on_any_edi
         assert(#entries==1 and entries[1].name=="Mira-TestRealm" and entries[1].x==.55)
         assert(WoWStatusDB.roster.players[pid]==nil and WoWStatusMapFriends==nil)
     ''')
+
+
+def test_opt_out_stops_sending_and_withdraws_your_marker_but_keeps_friends_visible():
+    net=network()
+    mira,thora=net.clients['Mira'],net.clients['Thora']
+    mira.execute('''
+        SlashCmdList.WOWSTATUS("")
+        for _,entry in ipairs(WoWStatusSetup.checks) do
+            if entry.key=="share_position" then __positionCheck=entry.widget end
+        end
+        assert(__positionCheck and __positionCheck:GetChecked())
+        __positionCheck:SetChecked(false);__positionCheck.OnClick(__positionCheck)
+        assert(character().settings.share_position==false and not WoWStatusLocations.sharing())
+    ''')
+    before=len(net.packets)
+    net.advance(15)
+    assert len(thora.eval('WoWStatusLocations.entries()'))==0
+    assert len(mira.eval('WoWStatusLocations.entries()'))==1
+    assert not any(source=='Mira' and text.startswith('L ') and not text.endswith(' -')
+                   for source,_,text in net.packets[before:])
+    mira.execute('__positionCheck:SetChecked(true);__positionCheck.OnClick(__positionCheck)')
+    net.advance(12)
+    assert len(thora.eval('WoWStatusLocations.entries()'))==1
+
+
+def test_opt_out_blocks_a_coordinate_already_queued_before_the_setting_changed():
+    net=network()
+    mira=net.clients['Mira']
+    mira.execute('''
+        local group=next(character().group_ids)
+        local text=table.concat({"L",group,WoWStatusDB.roster.id,"Mira-TestRealm",WoWStatusSafe.now(),42,8100,5000}," ")
+        assert(WoWStatusRoster.queueLocation(group,"Thora-TestRealm",text,true))
+        character().settings.share_position=false
+        -- Hold the location producer: the queued-coordinate privacy check must
+        -- work independently of a subsequent coalesced withdrawal.
+        WoWStatusLocations.tick=function() end
+    ''')
+    before=len(net.packets)
+    net.advance(12)
+    assert not any(source=='Mira' and text.startswith('L ') and ' 8100 ' in text
+                   for source,_,text in net.packets[before:])
+
+
+@pytest.mark.parametrize('edition',['vanilla','forever','tbc','retail'])
+def test_position_preference_defaults_on_and_preserves_the_character_opt_out(edition):
+    lua=client_runtime(edition)
+    lua.execute('''
+        local L=WoWStatusLocations
+        assert(character().settings.share_position==true and L.sharing())
+        character().settings.share_position=false
+        L.init(WoWStatusDB,character(),WoWStatusRoster.queueLocation)
+        assert(character().settings.share_position==false and not L.sharing())
+        character().settings.share_position=nil
+        L.init(WoWStatusDB,character(),WoWStatusRoster.queueLocation)
+        assert(character().settings.share_position==true and L.sharing())
+    ''')

@@ -31,6 +31,10 @@ function L.capture()
     if not x or not y or x<0 or y<0 or x>1 or y>1 or (x==0 and y==0) then return nil end
     return {map=map,x=x,y=y,at=math.floor(S.now())}
 end
+-- This character's opt-out affects sending only, never receiving friends' pins.
+function L.sharing()
+    return current and current.settings and current.settings.share_position~=false or false
+end
 local function recipients()
     if S.uptime()-peerCacheAt<5 then return peerCache end
     local list={}
@@ -248,7 +252,7 @@ function L.tick()
     if WoWStatusRoster.equipmentQueueSize()>=24 then return end
     local peers=recipients()
     if #peers==0 then return end
-    local own=L.capture()
+    local own=L.sharing() and L.capture()
     local name=WoWStatusPopups.characterName(current)
     if not S.string(name) or #name>64 then return end
     for offset=1,#peers do
@@ -269,6 +273,7 @@ function L.tick()
 end
 function L.init(database,character,transport)
     db,current,send=database,character,transport
+    if current and current.settings and current.settings.share_position==nil then current.settings.share_position=true end
     reports,lastFor={},{};capabilities,helloAt={},{};lastTick,cursor=0,0;peerCache,peerCacheAt={},-5
     for _,p in ipairs(worldPins) do p:Hide() end;for _,p in ipairs(miniPins) do p:Hide() end
 end

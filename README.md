@@ -84,7 +84,10 @@ while you are online. No map-sharing button, menu or character-list setting is
 required. Open the normal world map to see friends' markers, or watch the minimap
 for nearby friends; hover a marker for their name, coordinates and report age.
 Character-list visibility and the Location detail setting do not stop map sharing.
-Leave a group to stop sharing your live position with its members.
+Untick **Share my position** under **Options → AddOns → WoW Status → Sharing and
+milestones** to opt this character out of sending positions; it is on by default.
+You can still see friends' markers while opted out. Leaving a group also stops
+sharing your live position with its members.
 
 Both sides need a build with map sharing: clients without it receive only a small
 support query, not continuous coordinates. Earlier map-capable builds can use the

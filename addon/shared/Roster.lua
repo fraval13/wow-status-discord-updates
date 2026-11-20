@@ -1527,13 +1527,14 @@ function R.queueLocation(group,peer,text,coalesce)
     if not db or not current or type(text)~="string" or #text>250 or not WoWStatusGroups.contains(current,group) then return false end
     local target=R.chatTarget(peer)
     local locationKey=coalesce and (group..":"..(key(peer) or ""))
+    local locationReport=coalesce and text:sub(-2)~=" -"
     if locationKey then
         for _,item in ipairs(outgoing) do
-            if item.locationKey==locationKey then item.text,item.equipmentAt=text,S.now();return true end
+            if item.locationKey==locationKey then item.text,item.equipmentAt,item.locationReport=text,S.now(),locationReport;return true end
         end
     end
     if #outgoing>=64 then return false end
-    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),locationKey=locationKey}
+    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),locationKey=locationKey,locationReport=locationReport}
     return true
 end
 
@@ -1741,6 +1742,8 @@ function R.tick()
     end
     if item.equipmentAt and S.now() - item.equipmentAt >= 180 then return end
     if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
+    -- Never send a queued coordinate after this character has opted out.
+    if item.locationReport and (not WoWStatusLocations or not WoWStatusLocations.sharing()) then return end
     -- A privacy change can happen while a snapshot is queued for transmission.
     local owner = item.equipmentOwner
     if owner and (not state().share or owner.hide_from_list or not owner.settings.fields.gear) then return end

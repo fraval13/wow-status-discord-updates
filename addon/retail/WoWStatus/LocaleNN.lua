@@ -988,8 +988,9 @@ W.add({
 })
 
 W.add({
+    ["Share my position"]="Del posisjonen min",
     ["Position received %d sec ago"]="Posisjon motteken for %d sek sidan",
-    ["Your current map coordinates are shared automatically while you are online with members of your joined addon groups. Named markers appear on the world map and nearby minimap, with no button or window required."]="Kartkoordinatane dine vert delte automatisk medan du er pålogga med medlemer i tilleggsgruppene dine. Namngjevne punkt vert viste på verdskartet og minikartet i nærleiken, utan at du treng ein knapp eller eit vindauge.",
-    ["Map sharing is separate from character-list and Location settings. Leave a group to stop sharing your live position with its members."]="Kartdeling er uavhengig av figurlista og innstillinga Plassering. Forlat ei gruppe for å slutte å dele den levande posisjonen din med medlemene.",
+    ["Your current map coordinates are shared automatically with members of your joined addon groups while you are online and Share my position is ticked (on by default). Named markers appear on the world map and nearby minimap without opening an addon window."]="Kartkoordinatane dine vert delte automatisk med medlemer i tilleggsgruppene dine medan du er pålogga og Del posisjonen min er kryssa av (på som standard). Namngjevne punkt vert viste på verdskartet og minikartet i nærleiken utan å opne eit tilleggsvindauge.",
+    ["Untick Share my position under Sharing and milestones to stop sending this character's live map position. You can still see friends' markers. Character-list and Location settings are separate."]="Fjern haka for Del posisjonen min under Deling og milepålar for å slutte å sende kartposisjonen til denne figuren. Du kan framleis sjå punkta til venene dine. Figurlista og innstillinga Plassering er uavhengige.",
     ["Live map coordinates are not saved or relayed, and markers expire after 90 seconds without updates."]="Kartkoordinatar vert ikkje lagra eller sende vidare, og punkta forsvinn etter 90 sekund utan oppdateringar.",
 })
