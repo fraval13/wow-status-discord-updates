@@ -61,7 +61,7 @@ def test_continuous_positions_are_scoped_named_and_not_saved_or_relayed():
 
 
 @pytest.mark.parametrize('privacy', ['zone', 'hidden', 'sharing'])
-def test_stopping_location_sharing_removes_the_marker(privacy):
+def test_map_sharing_is_independent_of_character_list_and_detail_settings(privacy):
     net = network()
     mira, thora = net.clients['Mira'], net.clients['Thora']
     assert len(thora.eval('WoWStatusLocations.entries()')) == 1
@@ -71,8 +71,9 @@ def test_stopping_location_sharing_removes_the_marker(privacy):
         mira.eval('WoWStatusRoster.setHidden')(mira.eval('character()'), True)
     else:
         mira.eval('WoWStatusRoster.setSharing')(False)
+    mira.execute('__posX=.65')
     net.advance(15)
-    assert len(thora.eval('WoWStatusLocations.entries()')) == 0
+    assert thora.eval('WoWStatusLocations.entries()[1].x') == .65
 
 
 def test_offline_or_stale_markers_expire_and_cannot_be_replayed_as_fresh():
@@ -99,16 +100,14 @@ def test_world_and_minimap_pins_have_names_on_hover_and_follow_map_rotation():
         function WorldMapFrame:GetMapID() return 42 end
         function WorldMapFrame:GetCanvasContainer() return self.canvas end
         GameTooltip={SetOwner=function() end,SetText=function(_,text) __tooltip=text end,AddLine=function() end,Show=function() end,Hide=function() end}
-        WoWStatusLocations.renderPins()
+        for _,frame in ipairs(__frames) do if frame.OnUpdate then frame.OnUpdate(frame,.25) end end
         local L=WoWStatusLocations
         assert(#L.worldPins==1 and #L.miniPins==1)
         L.miniPins[1].OnEnter(L.miniPins[1])
         assert(__tooltip=="Mira")
         L.worldPins[1].OnEnter(L.worldPins[1]);assert(__tooltip=="Mira")
-        assert(L.worldPins[1].OnClick and L.miniPins[1].OnClick)
-        L.miniPins[1].OnClick(L.miniPins[1])
-        assert(WoWStatusMapFriends:IsShown() and WoWStatusMapFriends.scroll.kind=="ScrollFrame")
-        assert(WoWStatusMapFriends.rows[1].text:find("Mira",1,true))
+        assert(L.worldPins[1].OnClick==nil and L.miniPins[1].OnClick==nil)
+        assert(WoWStatusMapFriends==nil and WoWStatusCharactersPage==nil)
     ''')
     project = lua.eval('WoWStatusLocations.minimapOffset')
     player = lua.table_from({'map': 42, 'x': .5, 'y': .5})
@@ -141,57 +140,6 @@ def test_older_clients_are_not_sent_coordinates_before_the_support_handshake():
     net.advance(45)
     assert any(source == 'Mira' and text.startswith('B ') and text.endswith(' C') for source, _, text in net.packets)
     assert not any(source == 'Mira' and text.startswith('L ') and not text.endswith(' C') for source, _, text in net.packets)
-
-
-@pytest.mark.parametrize('edition', ['vanilla','forever','tbc','retail'])
-def test_common_map_selects_the_nearest_shared_parent_and_bounds_cycles(edition):
-    lua=client_runtime(edition)
-    lua.execute(MAP+'''
-        local parents={[42]=9,[43]=9,[9]=1,[90]=10,[10]=1}
-        C_Map.GetMapInfo=function(id) return {parentMapID=parents[id] or 0} end
-        local L=WoWStatusLocations
-        assert(L.commonMap({{map=42},{map=43}})==9)
-        assert(L.commonMap({{map=42},{map=90}})==1)
-        assert(L.commonMap({{map=42}})==42 and L.commonMap({})==nil)
-        parents[9]=42
-        assert(L.commonMap({{map=42},{map=43}})==42)
-    ''')
-
-
-def test_show_everyone_opens_the_shared_map_and_keeps_both_named_markers():
-    net=network()
-    bob=net.add('Bob')
-    bob.execute(MAP+'function C_Map.GetBestMapForUnit() return 43 end;__posX=.6')
-    net.advance(180)  # Login gear catch-up has priority on the shared queue.
-    lua=net.clients['Thora']
-    lua.execute('''
-        local methods=getmetatable(CreateFrame("Frame")).__index
-        function methods:GetHeight() return self.height end
-        C_Map.GetMapInfo=function(id) return {name="Example",parentMapID=id==9 and 0 or 9} end
-        WorldMapFrame=CreateFrame("Frame");WorldMapFrame:Hide()
-        WorldMapFrame.canvas=CreateFrame("Frame",nil,WorldMapFrame);WorldMapFrame.canvas:SetSize(680,500)
-        function WorldMapFrame:SetMapID(id) self.map=id end
-        function WorldMapFrame:GetMapID() return self.map end
-        function WorldMapFrame:GetCanvasContainer() return self.canvas end
-        local L=WoWStatusLocations
-        assert(#L.entries()==2 and L.showAll())
-        assert(WorldMapFrame:IsShown() and WorldMapFrame.map==9 and #L.worldPins==2)
-        local list=L.show()
-        assert(list.all:IsEnabled() and #list.rows==2)
-        list.all.OnClick()
-        assert(not list:IsShown() and WorldMapFrame:IsShown() and WorldMapFrame.map==9)
-        assert(WoWStatusTalents==nil)
-    ''')
-
-
-def test_empty_map_list_has_an_explanation_and_no_dead_overview_button():
-    lua=client_runtime('forever')
-    lua.execute('''
-        assert(WoWStatusLocations.showAll()==false)
-        assert(WoWStatusMapFriends:IsShown() and WoWStatusMapFriends.empty:IsShown())
-        assert(not WoWStatusMapFriends.all:IsEnabled())
-        assert(__categories["WoW Status"] and WoWStatusPopups.character())
-    ''')
 
 
 def test_positions_are_redacted_from_the_persistent_debug_log():
@@ -246,3 +194,71 @@ def test_world_map_uses_public_child_rectangles_without_world_coordinates():
         local x,y=WoWStatusLocations.project({map=42,x=.5,y=.5},1)
         assert(math.abs(x-.2)<.00001 and math.abs(y-.4)<.00001)
     """)
+
+
+def test_joining_a_group_is_enough_without_a_roster_or_any_addon_window():
+    net=Network('Mira','Thora')
+    for lua in net.clients.values():
+        lua.execute(MAP+'''
+            WoWStatusRoster.setSharing(false)
+            character().settings.fields.zone=false
+            WoWStatusRoster.setHidden(character(),true)
+        ''')
+    net.advance(50)
+    for own,friend in (('Mira','Thora'),('Thora','Mira')):
+        lua=net.clients[own]
+        entries=lua.eval('WoWStatusLocations.entries()')
+        assert len(entries)==1 and entries[1].name==friend+'-TestRealm'
+        assert lua.eval('WoWStatusCharactersPage') is None
+        assert lua.eval('WoWStatusMapFriends') is None
+    net.clients['Mira'].execute('__posX=.7')
+    net.advance(12)
+    assert net.clients['Thora'].eval('WoWStatusLocations.entries()[1].x')==.7
+
+
+def test_leaving_the_group_stops_reporting_and_removes_received_positions():
+    net=network()
+    lua=net.clients['Thora']
+    lua.eval('WoWStatusGroups.update')('', '')
+    before=len(net.packets)
+    net.advance(15)
+    assert len(lua.eval('WoWStatusLocations.entries()'))==0
+    assert not any(source=='Thora' and text.startswith('L ') for source,_,text in net.packets[before:])
+
+
+def test_missing_public_position_withdraws_only_the_senders_marker():
+    net=network()
+    net.clients['Mira'].execute('C_Map.GetPlayerMapPosition=function() return nil end')
+    net.advance(10)
+    assert len(net.clients['Thora'].eval('WoWStatusLocations.entries()'))==0
+    assert any(source=='Mira' and text.startswith('L ') and text.endswith(' -') for source,_,text in net.packets)
+
+
+def test_another_member_cannot_withdraw_someone_elses_marker_by_claiming_their_id():
+    net=network()
+    net.add('Bob').execute(MAP)
+    net.advance(60)
+    lua=net.clients['Thora']
+    group=lua.eval('(next(character().group_ids))')
+    pid=net.clients['Mira'].eval('WoWStatusDB.roster.id')
+    assert lua.eval('WoWStatusRoster.receive')(f'L {group} {pid} -','Bob-TestRealm','WHISPER')
+    assert any(entry.name=='Mira-TestRealm' for entry in lua.eval('WoWStatusLocations.entries()').values())
+
+
+@pytest.mark.parametrize('edition', ['vanilla','forever','tbc','retail'])
+def test_native_group_member_positions_do_not_require_a_shared_roster_on_any_edition(edition):
+    lua=client_runtime(edition)
+    lua.execute(MAP+'''
+        WoWStatusGroups.update("dawnwatch","")
+        __peers={"Mira-TestRealm"}
+        WoWStatusRoster.setSharing(false)
+        character().settings.fields.zone=false
+        local group=next(character().group_ids)
+        local pid="aaaaaaaaaaaaaaaa"
+        assert(WoWStatusDB.roster.players[pid]==nil)
+        local text=table.concat({"L",group,pid,"Mira-TestRealm",WoWStatusSafe.now(),42,5500,5000}," ")
+        assert(WoWStatusRoster.receive(text,"Mira-TestRealm","WHISPER"))
+        local entries=WoWStatusLocations.entries()
+        assert(#entries==1 and entries[1].name=="Mira-TestRealm" and entries[1].x==.55)
+        assert(WoWStatusDB.roster.players[pid]==nil and WoWStatusMapFriends==nil)
+    ''')

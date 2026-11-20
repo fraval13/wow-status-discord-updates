@@ -24,7 +24,7 @@ PV.SECTIONS = {
       "The character details you tick: played time, professions with skill levels, completed quests, gold "
         .. "and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you "
         .. "wear with its combat stats. Friends see them change as you play.",
-      "Your current map coordinates while you are online, when Location and Share my character list are ticked. Group members see named markers on their world map and minimap.",
+      "Your current map coordinates are shared automatically while you are online with members of your joined addon groups. Named markers appear on the world map and nearby minimap, with no button or window required.",
       "The name of a group you choose to share with your other groups, to their members. Anyone with the name can join; turning this off cannot take back a name already shared.",
       "Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an "
         .. "invitation to a group, with its name, to the friend you invite."}},
@@ -63,6 +63,7 @@ PV.SECTIONS = {
         .. "hide it or untick them as above.",
       "Pausing deletes all of this character's own entries from your log and its whole History / graph, for "
         .. "good. Unticking an announcement or detail deletes the saved entries of that kind.",
+      "Map sharing is separate from character-list and Location settings. Leave a group to stop sharing your live position with its members.",
       "Remove a group in /wstatus groups to leave it."}},
     {"What is kept",
      {"Your log keeps the newest 2,000 of your own entries (at most 1,000 of them sent to no group) and "

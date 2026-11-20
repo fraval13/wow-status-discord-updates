@@ -7,5 +7,4 @@
 	<Binding name="WOWSTATUS_CHARACTERS">WoWStatusGamepad.togglePage("characters")</Binding>
 	<Binding name="WOWSTATUS_LEADERBOARD">WoWStatusGamepad.togglePage("leaderboard")</Binding>
 	<Binding name="WOWSTATUS_RECORDS">WoWStatusGamepad.togglePage("records")</Binding>
-	<Binding name="WOWSTATUS_MAPFRIENDS">WoWStatusGamepad.mapFriends()</Binding>
 </Bindings>

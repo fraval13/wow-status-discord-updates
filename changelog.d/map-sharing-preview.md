@@ -1,2 +1,2 @@
-- Show recent group positions together on the world map and nearby on the minimap, with names on hover.
-- Add Show everyone on map and a controller-friendly list of friends with recent position reports.
+- Automatically share live positions with everyone in the same addon group, with no button or menu required.
+- Show group friends on the normal world map and nearby minimap, with names on hover.

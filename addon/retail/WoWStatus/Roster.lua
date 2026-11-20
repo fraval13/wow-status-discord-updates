@@ -1521,19 +1521,19 @@ local function queueEquipment(group, peer, text, owner)
     outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),equipmentOwner=owner,equipmentSync=true}
     return true
 end
--- Extra character details use the same bounded, throttled whisper queue.
--- The field and owner are rechecked when sent; location updates coalesce.
-function R.queueShared(group,peer,text,field,owner,coalesce)
+-- Live positions use the bounded whisper queue independently of roster sharing.
+-- Keep only the newest position per recipient and group while the queue is busy.
+function R.queueLocation(group,peer,text,coalesce)
     if not db or not current or type(text)~="string" or #text>250 or not WoWStatusGroups.contains(current,group) then return false end
     local target=R.chatTarget(peer)
-    local sharedKey=coalesce and (coalesce..":"..group..":"..(key(peer) or ""))
-    if sharedKey then
+    local locationKey=coalesce and (group..":"..(key(peer) or ""))
+    if locationKey then
         for _,item in ipairs(outgoing) do
-            if item.sharedKey==sharedKey then item.text,item.equipmentAt,item.sharedOwner,item.sharedField=text,S.now(),owner,field;return true end
+            if item.locationKey==locationKey then item.text,item.equipmentAt=text,S.now();return true end
         end
     end
     if #outgoing>=64 then return false end
-    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),sharedOwner=owner,sharedField=field,sharedKey=sharedKey}
+    outgoing[#outgoing+1]={target=target,text=text,equipmentGroup=group,equipmentAt=S.now(),locationKey=locationKey}
     return true
 end
 
@@ -1742,8 +1742,6 @@ function R.tick()
     if item.equipmentAt and S.now() - item.equipmentAt >= 180 then return end
     if item.equipmentGroup and not WoWStatusGroups.contains(current, item.equipmentGroup) then return end
     -- A privacy change can happen while a snapshot is queued for transmission.
-    local detailOwner=item.sharedOwner
-    if detailOwner and (not state().share or detailOwner.hide_from_list or not detailOwner.settings.fields[item.sharedField]) then return end
     local owner = item.equipmentOwner
     if owner and (not state().share or owner.hide_from_list or not owner.settings.fields.gear) then return end
     local send = C_ChatInfo and C_ChatInfo.SendAddonMessage or SendAddonMessage
@@ -1843,7 +1841,6 @@ receive = function(message, sender, distribution)
         for _ in pairs(owner.characters) do count = count+1 end
         if not old and count >= 200 then return false end
         owner.characters[k] = {name=name, revision=revision, hidden=flag == "1"}
-        if flag=="1" and WoWStatusLocations then WoWStatusLocations.forget(pid) end
         owner.at = S.now()
         R.render()
         if WoWStatusMainWindow then WoWStatusMainWindow.refresh("overview") end
@@ -1853,7 +1850,6 @@ receive = function(message, sender, distribution)
     if op == "X" and #words == 3 then
         players[pid] = nil
         if WoWStatusEquipmentSync then WoWStatusEquipmentSync.withdraw(pid) end
-        if WoWStatusLocations then WoWStatusLocations.forget(pid) end
         R.render()
         if WoWStatusProfile and WoWStatusProfile.refreshEquipment then WoWStatusProfile.refreshEquipment() end
         return true
@@ -3030,10 +3026,6 @@ local function build(parent)
         end
     end)
     page.onlineOnly:SetScript("OnLeave", function() if GameTooltip then GameTooltip:Hide() end end)
-    page.mapFriends=CreateFrame("Button",nil,page,"UIPanelButtonTemplate")
-    page.mapFriends:SetPoint("TOPRIGHT",-48,-6);page.mapFriends:SetSize(210,28)
-    page.mapFriends:SetText(T("Show everyone on map"))
-    page.mapFriends:SetScript("OnClick",function() if WoWStatusLocations then WoWStatusLocations.showAll() end end)
     page.visibility = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
     page.visibility:SetPoint("TOPLEFT", 330, -486); page.visibility:SetSize(240, 28)
     page.visibility:SetText(T("Character visibility"))
@@ -3091,7 +3083,7 @@ function R.init(database, character, reporter)
     equipmentPending, equipmentAsked, equipmentAnswered = {}, {}, {}
     allowance, allowanceAt, holdUntil, sendState = ALLOWANCE, 0, 0, {}
     if WoWStatusEquipmentSync then WoWStatusEquipmentSync.init(database,character,queueEquipment) end
-    if WoWStatusLocations then WoWStatusLocations.init(database,character,R.queueShared) end
+    if WoWStatusLocations then WoWStatusLocations.init(database,character,R.queueLocation) end
     lastQuest, questsSent = 0, character and R.questLine(character)
     questPending, questQueued = nil, {}
     xpSent = character and character.roster_info and character.roster_info.xp

@@ -2,7 +2,7 @@
 -- Whispers are paced through the roster's shared queue; stale pins expire.
 WoWStatusLocations = {}
 local L,S=WoWStatusLocations,WoWStatusSafe
-local T,TF=WoWStatusLocale.T,WoWStatusLocale.F
+local TF=WoWStatusLocale.F
 local db,current,send
 local reports,lastFor={},{}
 local capabilities,helloAt={},{}
@@ -10,7 +10,6 @@ local lastTick,cursor=0,0
 local peerCache,peerCacheAt={},-5
 local MAX_REPORTS,EXPIRE=128,90
 local worldPins,miniPins={},{}
-local window
 local function key(name) return WoWStatusRoster.key(name) end
 local function integer(value,low,high)
     value=S.number(value);return value and value==math.floor(value) and value>=low and value<=high and value or nil
@@ -32,11 +31,6 @@ function L.capture()
     if not x or not y or x<0 or y<0 or x>1 or y>1 or (x==0 and y==0) then return nil end
     return {map=map,x=x,y=y,at=math.floor(S.now())}
 end
-local function allowed()
-    return db and current and db.roster.share and not current.hide_from_list
-        and current.settings and current.settings.fields and current.settings.fields.zone
-        and not (WoWStatusGuide and WoWStatusGuide.touring())
-end
 local function recipients()
     if S.uptime()-peerCacheAt<5 then return peerCache end
     local list={}
@@ -50,13 +44,6 @@ local function recipients()
     table.sort(list,function(a,b) return a.id<b.id end)
     peerCache,peerCacheAt=list,S.uptime()
     return list
-end
-function L.forget(owner,group)
-    for k,r in pairs(reports) do
-        if r.owner==owner then
-            if group then r.groups[group]=nil;if not next(r.groups) then reports[k]=nil end else reports[k]=nil end
-        end
-    end
 end
 local function trim(map,maximum)
     local count=0;for _ in pairs(map) do count=count+1 end
@@ -92,16 +79,20 @@ function L.receive(w,sender)
         capabilities[group..":"..(key(sender) or "")]={owner=pid,at=S.uptime()}
         trim(capabilities,128);L.hello(group,sender,true);return true
     end
-    local owner=db.roster.players and db.roster.players[pid]
-    if not owner or not owner.characters or not owner.characters[key(sender) or ""] then return false end
-    if #w==4 and w[4]=="-" then L.forget(pid,group);return true end
+    -- Roster.receive has checked native group membership. A character need not
+    -- share its roster, gear or coarse location to share its live map position.
+    local k=pid..":"..(key(sender) or "")
+    if #w==4 and w[4]=="-" then
+        local old=reports[k]
+        if old then old.groups[group]=nil;if not next(old.groups) then reports[k]=nil end end
+        return true
+    end
     if #w~=8 or #w[4]>64 or w[4]:find(S.CONTROL_OR_PIPE) or not w[4]:match("^[^%-]+%-[^%-]+$") then return false end
     local name=w[4]:gsub("_"," ")
-    if key(name)~=key(sender) or WoWStatusRoster.isHidden(name) then return false end
+    if key(name)~=key(sender) then return false end
     local at,map,x,y=integer(tonumber(w[5]),1,100000000000),integer(tonumber(w[6]),1,1000000),
         integer(tonumber(w[7]),0,10000),integer(tonumber(w[8]),0,10000)
     if not at or not map or not x or not y or (x==0 and y==0) or S.outside(at,EXPIRE,5) then return false end
-    local k=pid..":"..(key(name) or "")
     local old=reports[k]
     if old and old.at>at then return false end
     local count,oldest,stamp=0,nil,math.huge
@@ -119,7 +110,7 @@ function L.entries()
         for group in pairs(r.groups) do
             if WoWStatusGroups.contains(current,group) then shared=true else r.groups[group]=nil end
         end
-        if not shared or S.uptime()-r.received>EXPIRE or S.outside(r.at,EXPIRE,5) or WoWStatusRoster.isHidden(r.name) then reports[k]=nil
+        if not shared or S.uptime()-r.received>EXPIRE or S.outside(r.at,EXPIRE,5) then reports[k]=nil
         else list[#list+1]=r end
     end
     table.sort(list,function(a,b) return a.name<b.name end)
@@ -187,11 +178,10 @@ end
 local function pin(parent,pool,index)
     local button=pool[index]
     if not button then
-        button=CreateFrame("Button",nil,parent);button:SetSize(16,16)
+        button=CreateFrame("Frame",nil,parent);button:SetSize(16,16);button:EnableMouse(true)
         button.icon=button:CreateTexture(nil,"ARTWORK");button.icon:SetAllPoints()
         button.icon:SetTexture(WoWStatusUI.ONLINE_ICON)
         button:SetScript("OnEnter",tooltip);button:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
-        button:SetScript("OnClick",function(self) if self.item then L.show(self.item.name) end end)
         pool[index]=button
     end
     button:SetParent(parent)
@@ -251,92 +241,6 @@ function L.renderPins()
     for i=count+1,#miniPins do miniPins[i]:Hide() end
     L.worldPins,L.miniPins=worldPins,miniPins
 end
-local function openMap(item)
-    if not WorldMapFrame then S.call((C_AddOns and C_AddOns.LoadAddOn) or LoadAddOn,"Blizzard_WorldMap") end
-    if not WorldMapFrame or type(WorldMapFrame.SetMapID)~="function" then return false end
-    local ok=pcall(WorldMapFrame.SetMapID,WorldMapFrame,item.map)
-    if not ok then return false end
-    if window then window:Hide() end
-    if WoWStatusMainWindow then WoWStatusMainWindow.hide() end
-    WorldMapFrame:Show();L.renderPins();return true
-end
--- Find the nearest shared zone/continent/world instead of showing only the
--- first friend's zone. Walk bounded, public map-parent chains without cycles.
-function L.commonMap(list)
-    local function ancestors(map)
-        local chain,seen={},{}
-        for _=1,16 do
-            if not map or seen[map] then break end
-            chain[#chain+1]=map;seen[map]=true
-            local info=C_Map and S.call(C_Map.GetMapInfo,map)
-            map=type(info)=="table" and integer(info.parentMapID,1,1000000) or nil
-        end
-        return chain
-    end
-    if #list==0 then return nil end
-    local chain=ancestors(list[1].map)
-    local shared={};for _,id in ipairs(chain) do shared[id]=true end
-    for i=2,#list do
-        local found={};for _,id in ipairs(ancestors(list[i].map)) do found[id]=true end
-        for id in pairs(shared) do if not found[id] then shared[id]=nil end end
-    end
-    for _,id in ipairs(chain) do if shared[id] then return id end end
-end
-function L.showAll()
-    local list=L.entries()
-    local map=L.commonMap(list)
-    if map and openMap({map=map}) then return true end
-    local frame=L.show()
-    if #list>0 then frame.note:SetText(T("The world map is not available right now.")) end
-    return false
-end
-function L.renderList()
-    if not window or not window:IsShown() then return end
-    local list=L.entries()
-    for i,item in ipairs(list) do
-        local row=window.rows[i]
-        if not row then
-            row=CreateFrame("Button",nil,window.list,"UIPanelButtonTemplate");row:SetSize(480,40)
-            row:SetScript("OnClick",function(self)
-                if self.item and not openMap(self.item) then window.note:SetText(T("The world map is not available right now.")) end
-            end)
-            row:SetScript("OnEnter",tooltip);row:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
-            window.rows[i]=row
-        end
-        row.item=item;row:ClearAllPoints();row:SetPoint("TOPLEFT",0,-(i-1)*46)
-        WoWStatusUI.buttonLabel(row,(item.name:match("^[^-]+") or item.name):gsub("|","||")
-            .." · "..TF("%d sec ago",math.max(0,math.floor(S.uptime()-item.received))))
-        row:Show()
-    end
-    for i=#list+1,#window.rows do window.rows[i]:Hide() end
-    window.list:SetHeight(math.max(1,#list*46));window.empty:SetShown(#list==0)
-    window.all:SetEnabled(#list>0)
-end
-function L.show(name)
-    if not window then
-        local UI=WoWStatusUI
-        window=UI.box(UIParent,550,470,nil,"WoWStatusMapFriends")
-        window:SetPoint("CENTER");window:SetFrameStrata("FULLSCREEN_DIALOG");window:EnableMouse(true)
-        UI.header(window,T("Friends on the map"),20,-20,500)
-        window.note=UI.text(window,"GameFontHighlightSmall",20,-52,500)
-        window.note:SetText(T("Reported positions expire when updates stop. Select a friend to open their map."));window.note:SetHeight(32)
-        window.scroll=CreateFrame("ScrollFrame",nil,window,"UIPanelScrollFrameTemplate")
-        window.scroll:SetPoint("TOPLEFT",20,-94);window.scroll:SetSize(490,310)
-        window.list=CreateFrame("Frame",nil,window.scroll);window.list:SetSize(480,1);window.scroll:SetScrollChild(window.list)
-        window.empty=UI.text(window,"GameFontHighlight",20,-100,480)
-        window.empty:SetText(T("No recent positions. Friends need the updated addon and Location enabled."))
-        window.close=CreateFrame("Button",nil,window,"UIPanelButtonTemplate")
-        window.close:SetPoint("BOTTOMRIGHT",-20,16);window.close:SetSize(120,28);window.close:SetText(T("Close"))
-        window.close:SetScript("OnClick",function() window:Hide() end)
-        window.all=CreateFrame("Button",nil,window,"UIPanelButtonTemplate")
-        window.all:SetPoint("BOTTOMLEFT",20,16);window.all:SetSize(260,28)
-        window.all:SetText(T("Show everyone on map"));window.all:SetScript("OnClick",L.showAll)
-        window.rows={};table.insert(UISpecialFrames,"WoWStatusMapFriends")
-    end
-    window:Show();if window.Raise then window:Raise() end;L.renderList()
-    if name then for i,row in ipairs(window.rows) do if row.item and key(row.item.name)==key(name) then window.scroll:SetVerticalScroll((i-1)*46);break end end end
-    return window
-end
 function L.tick()
     if not db or S.uptime()-lastTick<1 then return end
     lastTick=S.uptime()
@@ -344,7 +248,7 @@ function L.tick()
     if WoWStatusRoster.equipmentQueueSize()>=24 then return end
     local peers=recipients()
     if #peers==0 then return end
-    local own=allowed() and L.capture()
+    local own=L.capture()
     local name=WoWStatusPopups.characterName(current)
     if not S.string(name) or #name>64 then return end
     for offset=1,#peers do
@@ -356,7 +260,7 @@ function L.tick()
             local text=own and table.concat({"L",peer.group,db.roster.id,name:gsub(" ","_"),own.at,own.map,
                 math.floor(own.x*10000+.5),math.floor(own.y*10000+.5)}," ")
                 or table.concat({"L",peer.group,db.roster.id,"-"}," ")
-            if send(peer.group,peer.peer,text,own and "zone" or nil,own and current or nil,"position") then
+            if send(peer.group,peer.peer,text,true) then
                 lastFor[peer.id]=own and S.uptime() or nil;trim(lastFor,256);cursor=index
             end
             break
@@ -372,5 +276,5 @@ local driver=CreateFrame("Frame")
 local elapsed=0
 driver:SetScript("OnUpdate",function(_,delta)
     elapsed=elapsed+delta;if elapsed<.25 then return end;elapsed=0
-    if db then L.renderPins();L.renderList() end
+    if db then L.renderPins() end
 end)

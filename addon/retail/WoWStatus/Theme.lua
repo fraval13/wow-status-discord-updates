@@ -291,9 +291,9 @@ UI.XP_COLOUR = {.58, .0, .55}
 UI.GOLD = {1, .82, 0}
 
 -- A frame with the tooltip border (the look most addons use for panels).
-function UI.box(parent, width, height, kind, name)
+function UI.box(parent, width, height, kind)
     local template = BackdropTemplateMixin and "BackdropTemplate" or nil
-    local frame = CreateFrame(kind or "Frame", name, parent, template)
+    local frame = CreateFrame(kind or "Frame", nil, parent, template)
     frame:SetSize(width, height)
     if not call(frame, "SetBackdrop", {bgFile="Interface\\Tooltips\\UI-Tooltip-Background",
         edgeFile="Interface\\Tooltips\\UI-Tooltip-Border", tile=true, tileSize=16, edgeSize=14,

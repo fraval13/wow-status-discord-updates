@@ -240,7 +240,7 @@ local function showPanel(host)
         layout:category("details",742)
         section("Character details",-742)
         local names={level="Level and XP",class="Class",race="Race and male/female",faction="Faction",
-            guild="Guild",gear="Equipment and combat stats",zone="Location and map position",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
+            guild="Guild",gear="Equipment and combat stats",zone="Location",playtime="Played time",professions="Professions",deaths="Total deaths",quests="Completed quests",
             gold="Gold and gold earned",kills="Monsters killed",collection="Dungeons, mounts and honor kills"}
         for i,key in ipairs(fields) do
             checkbox(key,names[key] or key,(i-1)%2==0 and 24 or 310,-780-math.floor((i-1)/2)*42,"fields")
@@ -844,10 +844,6 @@ end
 
 function slash.share(rest)
     WoWStatusShare.send(rest)
-end
-
-function slash.mapfriends()
-    if WoWStatusLocations then WoWStatusLocations.showAll() end
 end
 
 function slash.minimap(rest)
