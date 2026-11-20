@@ -325,5 +325,7 @@
   "XP 21%": "XP 21 %",
   "2026-11-14 17:05:00 +01:00 · Caught up via Eldrin": "2026-11-14 17:05:00 +01:00 · Henta inn via Eldrin",
   "Level 33 (62 %)": "Nivå 33 (62 %)",
-  "/wstatus groups": "/wstatus groups"
+  "/wstatus groups": "/wstatus groups",
+  "Your current map coordinates while you are online, when Location and Share my character list are ticked. Group members see named markers on their world map and minimap.": "Kartkoordinatane dine medan du er pålogga, når Plassering og Del figurlista mi er kryssa av. Gruppemedlemer ser namngjevne punkt på verdskartet og minikartet.",
+  "Live map coordinates are not saved or relayed, and markers expire after 90 seconds without updates.": "Kartkoordinatar vert ikkje lagra eller sende vidare, og punkta forsvinn etter 90 sekund utan oppdateringar."
 }

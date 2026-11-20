@@ -24,6 +24,7 @@ PV.SECTIONS = {
       "The character details you tick: played time, professions with skill levels, completed quests, gold "
         .. "and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you "
         .. "wear with its combat stats. Friends see them change as you play.",
+      "Your current map coordinates while you are online, when Location and Share my character list are ticked. Group members see named markers on their world map and minimap.",
       "The name of a group you choose to share with your other groups, to their members. Anyone with the name can join; turning this off cannot take back a name already shared.",
       "Only when you click: a reaction whisper such as GZ!, the homepage link from Share WoW Status, or an "
         .. "invitation to a group, with its name, to the friend you invite."}},
@@ -70,6 +71,7 @@ PV.SECTIONS = {
         .. "saves is in WTF/Account/<account>/SavedVariables/WoWStatus.lua, with the game's backup copy "
         .. "WoWStatus.lua.bak beside it. Removing the addon folder deletes neither; delete both files while the "
         .. "game is closed.",
+      "Live map coordinates are not saved or relayed, and markers expire after 90 seconds without updates.",
       "Friends keep the updates they already received in their own log."}},
 }
 

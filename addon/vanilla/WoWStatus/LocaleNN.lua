@@ -986,3 +986,16 @@ W.add({
     ["Class unlocks"]="Klasseopplåsingar", ["PvP promotions"]="PvP-opprykk",
     ["Achievements earned"]="Bragder oppnådde", ["Zones explored"]="Område utforska",
 })
+
+W.add({
+    ["Show everyone on map"]="Vis alle på kartet",
+    ["Friends on the map"]="Vener på kartet",
+    ["Location and map position"]="Plassering og kartpunkt",
+    ["Position received %d sec ago"]="Posisjon motteken for %d sek sidan",
+    ["%d sec ago"]="%d sek sidan",
+    ["Reported positions expire when updates stop. Select a friend to open their map."]="Rapporterte posisjonar forsvinn når oppdateringane stoppar. Vel ein ven for å opne kartet.",
+    ["No recent positions. Friends need the updated addon and Location enabled."]="Ingen nye posisjonar. Venene treng det oppdaterte tillegget og Plassering slått på.",
+    ["The world map is not available right now."]="Verdskartet er ikkje tilgjengeleg akkurat no.",
+    ["Your current map coordinates while you are online, when Location and Share my character list are ticked. Group members see named markers on their world map and minimap."]="Kartkoordinatane dine medan du er pålogga, når Plassering og Del figurlista mi er kryssa av. Gruppemedlemer ser namngjevne punkt på verdskartet og minikartet.",
+    ["Live map coordinates are not saved or relayed, and markers expire after 90 seconds without updates."]="Kartkoordinatar vert ikkje lagra eller sende vidare, og punkta forsvinn etter 90 sekund utan oppdateringar.",
+})

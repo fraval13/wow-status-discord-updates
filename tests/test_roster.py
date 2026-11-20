@@ -33,6 +33,11 @@ def pump(sender, receiver, start=100):
     return delivered
 
 
+def without_map_support(packets):
+    """Keep data messages, omitting only the coordinate-protocol handshake."""
+    return [line for line in packets if not (line[:2] in ('L ','B ') and line.split()[3:] == ['C'])]
+
+
 def pair():
     mira, thora = person('Mira', 'Frank'), person('Thora', 'Ada')
     for lua in (mira, thora):
@@ -42,7 +47,7 @@ def pair():
 
 def test_characters_are_announced_once_per_member_and_grouped_by_player():
     mira, thora = pair()
-    sent = [line for line in pump(mira, thora) if line[0] not in 'ROSQHJFT']
+    sent = [line for line in without_map_support(pump(mira, thora)) if line[0] not in 'ROSQHJFT']
     assert len(sent) == 1
     assert sent[0].split(' ')[0] == 'C' and sent[0].endswith('Mira-TestRealm Dwarf 3 WARRIOR 1')
     assert pump(mira, thora, start=200) == []  # not repeated to the same member
@@ -111,13 +116,13 @@ def test_hiding_a_character_and_turning_sharing_off():
     pump(mira, thora)
     assert thora.eval('next(WoWStatusDB.roster.players)') is not None
     mira.execute('WoWStatusRoster.setHidden(character(), true)')
-    assert [p for p in pump(mira, thora, start=300) if p[0] not in 'HJFTZ'] == []
+    assert [p for p in without_map_support(pump(mira, thora, start=300)) if p[0] not in 'HJFTZ'] == []
     mira.execute('WoWStatusRoster.setHidden(character(), false); WoWStatusRoster.setSharing(false)')
     sent = [p for p in pump(mira, thora, start=400) if p[0] not in 'HJFTZ']
     assert len(sent) == 1 and sent[0].startswith('X ')
     assert thora.eval('next(WoWStatusDB.roster.players)') is None
     mira.execute('WoWStatusRoster.setSharing(true)')
-    assert [line[0] for line in pump(mira, thora, start=500) if line[0] not in 'HJFT'] == ['C', 'O', 'Q', 'S', 'Z']
+    assert [line[0] for line in without_map_support(pump(mira, thora, start=500)) if line[0] not in 'HJFT'] == ['C', 'O', 'Q', 'S', 'Z']
 
 
 def test_log_senders_without_a_list_show_as_never_met():
