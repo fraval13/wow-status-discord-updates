@@ -1,5 +1,9 @@
 -- Generated from CHANGELOG.md by scripts/whats_new.py. Do not edit.
 WoWStatusWhatsNewData = {
+    {version="1.91.0", notes={
+        "Restore the working addon before shared talents and live map positions, keeping the UI layout fixes.",
+        "Player rankings retain taller rows with separate main and alt lines, and level badges remain centered.",
+    }},
     {version="1.90.0", notes={
         "Keep the minimap icon and AddOns settings available while character information is loading.",
         "Automatically finish startup when readable character information becomes available, without another loading screen.",
@@ -10,12 +14,5 @@ WoWStatusWhatsNewData = {
         "Character profiles show shared read-only talent trees beneath gear and combat stats.",
         "Group friends appear on the world map and nearby on the minimap, with names and report ages on hover.",
         "Map positions follow Location and character-list sharing, are not saved, and expire when updates stop.",
-    }},
-    {version="1.88.0", notes={
-        "Online only is now above the Characters list, where it stays visible as you scroll.",
-        "Dropdown buttons use a WoW arrow icon, fixing square symbols in clients whose fonts lack the arrow character.",
-        "Gear capture keeps the last snapshot during loading and briefly retries all-empty inventories before replacing it.",
-        "Play together now strictly respects your selected level range, even when no nearby-level friends are online.",
-        "Opening a character prioritizes their missing gear, with a transfer slot reserved ahead of background downloads.",
     }},
 }

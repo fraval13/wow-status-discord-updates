@@ -1,2 +1,0 @@
-- Restore the working addon before shared talents and live map positions, keeping the UI layout fixes.
-- Player rankings retain taller rows with separate main and alt lines, and level badges remain centered.
