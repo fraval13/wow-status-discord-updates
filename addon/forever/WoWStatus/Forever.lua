@@ -16,11 +16,41 @@ function A.supported()
     -- Earlier client snapshots shared the Mainline project constant; retain the interface guard.
     return WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 end
+-- Forever may have region-unique names and no conventional realm. Use its
+-- public ruleset in that mode, as AceDB does; never invent a realm
+-- from a surname, a GUID component, or an unreadable game-rule result.
+local function regionalNames()
+    if type(RegionalUniqueNamesEnabled)~="function" then return false end
+    local regional=S.call(RegionalUniqueNamesEnabled)
+    if type(regional)=="boolean" then return regional end
+end
+local function ruleset()
+    local rules=Enum and S.value(Enum.GameRule)
+    if not C_GameRules or type(rules)~="table" then return nil end
+    local function active(name)
+        local id=S.number(rules[name])
+        if not id then return nil end
+        local value=S.call(C_GameRules.IsGameRuleActive,id)
+        if type(value)=="boolean" then return value end
+    end
+    local hardcore=active("HardcoreRuleset")
+    if hardcore==nil then return nil end
+    if hardcore then return "Hardcore" end
+    local rp,pvp=active("RPRuleset"),active("PvPRuleset")
+    if rp==nil or pvp==nil then return nil end
+    return rp and (pvp and "RP-PvP" or "RP") or (pvp and "PvP" or "PvE")
+end
+local function identityRealm()
+    local regional=regionalNames()
+    if regional==nil then return nil end
+    if regional then return ruleset() end
+    return S.stringCall(GetRealmName)
+end
 function A.identity()
     local _, build, _, interface = GetBuildInfo()
     local guid = S.stringCall(UnitGUID, "player")
     local name = S.stringCall(UnitName, "player")
-    local realm = S.stringCall(GetRealmName)
+    local realm = identityRealm()
     -- No replacement identity is fabricated when the actual player identity is restricted.
     if not guid or not name or not realm then return nil end
     cachedIdentity = {guid = guid, name = name, realm = realm, client = A.client_id,
@@ -29,6 +59,9 @@ function A.identity()
 end
 function A.playerName() return cachedIdentity and cachedIdentity.name or S.stringCall(UnitName, "player") end
 function A.realmName()
+    local regional=regionalNames()
+    if regional==nil then return nil end
+    if regional then return ruleset() end
     return S.stringCall(GetNormalizedRealmName) or (cachedIdentity and cachedIdentity.realm) or S.stringCall(GetRealmName)
 end
 function A.level()

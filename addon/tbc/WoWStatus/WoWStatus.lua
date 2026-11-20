@@ -536,6 +536,20 @@ local function initialize()
     end
     waitingForIdentity = false
     local key = identity.client .. ":" .. identity.realm .. ":" .. identity.guid
+    -- A Forever ruleset replaces the old shard-realm name, but this is the same
+    -- public GUID. Reuse its existing record/key so history and preferences stay
+    -- with the character; other editions retain their realm-specific keys.
+    if A.client_id=="forever" and not WoWStatusDB.characters[key] then
+        local found,latest
+        for savedKey,saved in pairs(WoWStatusDB.characters) do
+            local old=type(saved)=="table" and saved.identity
+            if type(savedKey)=="string" and type(old)=="table" and old.client==identity.client and old.guid==identity.guid then
+                local at=S.number(saved.exported_at) or 0
+                if not found or at>latest or (at==latest and savedKey<found) then found,latest=savedKey,at end
+            end
+        end
+        if found then key=found end
+    end
     local first = not WoWStatusDB.characters[key]
     WoWStatusDB.characters[key] = WoWStatusDB.characters[key] or {
         identity = identity, settings = defaults(), snapshot = {}, events = {}, sequence = 0,

@@ -318,3 +318,73 @@ def test_forever_never_registers_for_the_combat_log(forever_lua):
     # combat log with a "blocked action" dialog; pcall cannot prevent it.
     assert forever_lua.eval('__events.COMBAT_LOG_EVENT_UNFILTERED') is None
     assert forever_lua.eval('__events.PLAYER_DEAD') is not None
+
+
+REALMLESS = '''
+    function RegionalUniqueNamesEnabled() return true end
+    GetRealmName=nil;GetNormalizedRealmName=nil
+    Enum={GameRule={HardcoreRuleset=1,RPRuleset=2,PvPRuleset=3}}
+    __rules={false,false,false}
+    C_GameRules={IsGameRuleActive=function(id) return __rules[id] end}
+    local methods=getmetatable(CreateFrame("Frame")).__index
+    function methods:RegisterForClicks() end
+    function methods:GetHeight() return self.height end
+    function methods:HookScript() end
+    Minimap=CreateFrame("Frame","Minimap",UIParent);Minimap:SetSize(198,198)
+'''
+
+
+@pytest.mark.parametrize('hardcore,rp,pvp,expected', [
+    (False,False,False,'PvE'),(False,False,True,'PvP'),
+    (False,True,False,'RP'),(False,True,True,'RP-PvP'),(True,True,True,'Hardcore'),
+])
+def test_forever_realmless_rulesets_initialize_without_a_legacy_realm(hardcore,rp,pvp,expected):
+    lua=forever_runtime(extra=REALMLESS)
+    lua.globals().__rules=lua.table_from([hardcore,rp,pvp])
+    lua.eval('fire')('PLAYER_LOGIN')
+    assert lua.eval('character().identity.realm') == expected
+    assert lua.eval('WoWStatusAdapter.realmName()') == expected
+    assert lua.eval('WoWStatusMinimapButton:IsShown()')
+    assert lua.eval('__categories["WoW Status"]~=nil and __categories.Groups~=nil')
+
+
+@pytest.mark.parametrize('broken', [
+    'C_GameRules=nil','Enum.GameRule=nil',
+    'C_GameRules.IsGameRuleActive=function() error("unavailable") end',
+    'C_GameRules.IsGameRuleActive=function() return __secret end',
+    '__rules[2]=nil','__rules[3]=__secret',
+    'RegionalUniqueNamesEnabled=function() return __secret end',
+    'UnitGUID=function() return __secret end',
+    'UnitName=function() return __secret end',
+])
+def test_forever_does_not_invent_a_ruleset_from_missing_or_restricted_values(broken):
+    lua=forever_runtime(extra=REALMLESS+broken)
+    assert lua.eval('WoWStatusAdapter.identity()') is None
+    lua.eval('fire')('PLAYER_LOGIN')
+    assert lua.eval('next(WoWStatusDB.characters)') is None
+
+
+def test_forever_keeps_the_existing_record_when_the_client_becomes_realmless():
+    saved=(Path(__file__).parent/'fixtures/WoWStatusDB-v1.lua').read_text(encoding='utf-8').replace('classic-era','forever')
+    lua=forever_runtime(extra=saved+REALMLESS+'''
+        __existing=WoWStatusDB.characters["forever:Test Realm:Player-123-0001"]
+        __existing.marker="keep this character"
+        __quality=__existing.settings.loot_quality
+        __epoch=__existing.epoch
+    ''')
+    lua.eval('fire')('PLAYER_LOGIN')
+    lua.execute('''
+        assert(WoWStatusDB.characters["forever:Test Realm:Player-123-0001"]==__existing)
+        assert(not WoWStatusDB.characters["forever:PvE:Player-123-0001"])
+        assert(__existing.identity.realm=="PvE" and __existing.normalized_realm=="PvE")
+        assert(__existing.marker=="keep this character" and __existing.settings.loot_quality==__quality)
+        assert(__existing.epoch==__epoch and WoWStatusMinimapButton:IsShown())
+        assert(__categories["WoW Status"] and WoWStatusPopups.character()==__existing)
+    ''')
+
+
+def test_forever_legacy_clients_still_require_a_public_realm_name():
+    lua=forever_runtime(extra='function RegionalUniqueNamesEnabled() return false end; function GetRealmName() return __secret end')
+    assert lua.eval('WoWStatusAdapter.identity()') is None
+    lua.execute('function GetRealmName() return "Old Test Realm" end')
+    assert lua.eval('WoWStatusAdapter.identity().realm') == 'Old Test Realm'

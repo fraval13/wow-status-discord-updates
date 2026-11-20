@@ -28,6 +28,12 @@ the current source and this README take precedence over them.
 
 ## Start sharing
 
+Forever clients with regional names use their public game ruleset (PvE, PvP,
+RP, RP-PvP or Hardcore) as the realm namespace. They do not need a conventional
+realm name to start. Existing characters retain their saved record by GUID when
+that namespace changes, preserving history and preferences. Missing or restricted
+identity/ruleset values still wait for readable game data.
+
 The addon groups the character list by player with
 class portraits, adds window themes and a size setting, a first-time setup guide
 and Show me around tour, session recaps, Firsts medals, and catches group history
