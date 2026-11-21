@@ -8,7 +8,6 @@
 --   Z <group> <playerID> <Name-Realm> <revision> <hidden 0|1>
 --   Y <group> <playerID> <Name-Realm> <key:skill:max,...>   (professions)
 --   W <group> <playerID> <Name-Realm|->   (the player's main in that group, #200)
---   A <group> <playerID> <at> <measure> <shape> <target> <deadline>  (group goal, Goals.lua)
 -- H, J, F and T belong to EquipmentSync on this same prefix: a new line needs a
 -- letter no module uses yet.
 -- Receivers accept only known members of a joined group and strictly
@@ -615,9 +614,6 @@ local function enqueue(group, target)
             table.insert(outgoing, {target=target, text=line, questName=questName, questGroup=questName and group})
         end
     end
-    -- The group goal this account set (#157), after the lines that tie the sender to its player ID.
-    local goal = state().share and WoWStatusGoals and WoWStatusGoals.line(group)
-    if goal then table.insert(outgoing, {target=target, text=goal}) end
 end
 
 -- Members seen in a group's channel roster, saved so everyone in the group is
@@ -1647,7 +1643,6 @@ function R.tick()
     if now - lastScan >= 30 then
         lastScan = now; R.scan()
     end
-    if WoWStatusGoals then WoWStatusGoals.tick(now) end
     if now - lastQuest >= R.QUEST_INTERVAL then
         lastQuest = now
         local line = R.questLine(current)
@@ -1789,8 +1784,6 @@ function R.receive(message, sender, distribution)
         local group=message:match("^[^ ]+ ([^ ]+) ")
         if group then WoWStatusLocations.hello(group,sender) end
     end
-    -- Map traffic carries no progress towards a goal.
-    if ok and WoWStatusGoals and type(message)=="string" and message:sub(1,2)~="L " and message:sub(1,2)~="B " then WoWStatusGoals.touch() end
     if db and type(message) == "string" then
         S.debug("got " .. redacted(message) .. " from " .. tostring(sender) .. ": " .. (ok and "ok" or tostring(why or "ignored")))
     end
@@ -1817,17 +1810,6 @@ receive = function(message, sender, distribution)
         return WoWStatusEquipmentSync and WoWStatusEquipmentSync.receive(words,sender) or false
     end
     if op == "D" or op == "E" then return equipmentMessage(words, sender) end
-    -- "A": the group goal (#157). Only a character the player ID itself announced
-    -- (in its list, or hidden in its visibility lines) speaks for that player.
-    if op == "A" then
-        if not WoWStatusGoals then return false end
-        return WoWStatusGoals.receive(words, sender, function(id, from)
-            local k = key(from)
-            local player, owner = players[id], visibility()[id]
-            return k ~= nil and ((player and type(player.characters) == "table" and player.characters[k] ~= nil)
-                or (owner and type(owner.characters) == "table" and owner.characters[k] ~= nil))
-        end)
-    end
     -- Revisioned owner visibility survives stale list packets and log fallbacks.
     if op == "Z" and #words == 6 then
         local name, revision, flag = words[4], tonumber(words[5]), words[6]

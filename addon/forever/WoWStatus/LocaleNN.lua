@@ -988,6 +988,7 @@ W.add({
 })
 
 W.add({
+    ["%d players online"]="%d spelarar pålogga",
     ["Share my position"]="Del posisjonen min",
     ["Position received %d sec ago"]="Posisjon motteken for %d sek sidan",
     ["Your current map coordinates are shared automatically with members of your joined addon groups while you are online and Share my position is ticked (on by default). Named markers appear on the world map and nearby minimap without opening an addon window."]="Kartkoordinatane dine vert delte automatisk med medlemer i tilleggsgruppene dine medan du er pålogga og Del posisjonen min er kryssa av (på som standard). Namngjevne punkt vert viste på verdskartet og minikartet i nærleiken utan å opne eit tilleggsvindauge.",

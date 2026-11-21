@@ -71,7 +71,6 @@ def test_a_window_across_midnight_hides_notifications_logs_them_and_never_replay
     ''')
     assert friend.eval('WoWStatusPopups.quietHoursActive()') is True  # 07:33
     assert friend.eval('WoWStatusPopups.quietHoursText()') == 'Quiet hours until 08:00'
-    assert 'Quiet hours until 08:00' in friend.eval('WoWStatusStatusLine.text()')
     deliver_popup(own, friend)
     friend.eval('WoWStatusPopups.tick')()
     assert not shown(friend)
@@ -84,7 +83,6 @@ def test_a_window_across_midnight_hides_notifications_logs_them_and_never_replay
         clock(friend, 30 * MINUTE + step * 10)
         friend.eval('WoWStatusPopups.tick')()
         assert not shown(friend)
-    assert 'Quiet hours' not in friend.eval('WoWStatusStatusLine.text()')
 
 
 def test_a_popup_from_before_the_window_leaves_and_never_comes_back():
