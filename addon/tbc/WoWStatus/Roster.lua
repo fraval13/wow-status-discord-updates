@@ -1454,6 +1454,15 @@ function R.equipment(name)
         if character then return character.equipment_profile, character.equipment_hidden end
     end
 end
+-- The class token saved for a character name, for anything that colours it.
+function R.classFor(name)
+    local wanted = key(name)
+    if not wanted or not db then return nil end
+    for _, player in pairs(state().players) do
+        local character = type(player.characters) == "table" and player.characters[wanted]
+        if type(character) == "table" and CLASSES[character.class] then return character.class end
+    end
+end
 local function expireEquipment(map, age)
     local count, now = 0, S.now()
     for id, item in pairs(map) do

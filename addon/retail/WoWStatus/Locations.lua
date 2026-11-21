@@ -172,24 +172,56 @@ local function tooltip(self)
     if not GameTooltip or not self.item then return end
     local item=self.item
     GameTooltip:SetOwner(self,"ANCHOR_RIGHT")
-    GameTooltip:SetText((item.name:match("^[^-]+") or item.name):gsub("|","||"))
+    -- One value only: gsub also returns its count, which SetText took as a colour.
+    local short=(item.name:match("^[^-]+") or item.name):gsub("|","||")
+    GameTooltip:SetText(short)
     local info=C_Map and S.call(C_Map.GetMapInfo,item.map)
     local name=type(info)=="table" and S.string(info.name)
     GameTooltip:AddLine((name and name:gsub("|","||").." · " or "")..string.format("%.1f, %.1f",item.x*100,item.y*100),1,1,1)
     GameTooltip:AddLine(TF("Position received %d sec ago",math.max(0,math.floor(S.uptime()-item.received))),1,.82,0)
     GameTooltip:Show()
 end
+-- The marker is a plain coloured square over a dark one, not the green status
+-- dot: a class colour has to read true, and tinting a green texture cannot.
 local function pin(parent,pool,index)
     local button=pool[index]
     if not button then
         button=CreateFrame("Frame",nil,parent);button:SetSize(16,16);button:EnableMouse(true)
-        button.icon=button:CreateTexture(nil,"ARTWORK");button.icon:SetAllPoints()
-        button.icon:SetTexture(WoWStatusUI.ONLINE_ICON)
+        button.outline=button:CreateTexture(nil,"BACKGROUND")
+        button.outline:SetPoint("CENTER");button.outline:SetSize(12,12)
+        button.outline:SetColorTexture(0,0,0,.85)
+        button.icon=button:CreateTexture(nil,"ARTWORK")
+        button.icon:SetPoint("CENTER");button.icon:SetSize(8,8)
+        -- The name sits under the marker, since a tooltip needs a hover the map
+        -- does not always pass on.
+        button.label=button:CreateFontString(nil,"OVERLAY","GameFontNormalSmall")
+        button.label:SetPoint("TOP",button,"BOTTOM",0,-1)
+        S.call(button.label.SetShadowColor,button.label,0,0,0,1)
+        S.call(button.label.SetShadowOffset,button.label,1,-1)
         button:SetScript("OnEnter",tooltip);button:SetScript("OnLeave",function() if GameTooltip then GameTooltip:Hide() end end)
         pool[index]=button
     end
     button:SetParent(parent)
     return button
+end
+-- A friend's class colour, falling back to the former green when the roster has
+-- not learned their class yet.
+local function colour(item)
+    local class=WoWStatusRoster.classFor and WoWStatusRoster.classFor(item.name)
+    local value=class and rawget(_G,"RAID_CLASS_COLORS") and RAID_CLASS_COLORS[class]
+    if type(value)=="table" and S.number(value.r) and S.number(value.g) and S.number(value.b) then
+        return value.r,value.g,value.b
+    end
+    return .22,.85,.33
+end
+-- named shows the name under the marker; the minimap stays plain, for room.
+local function paint(p,item,named)
+    local r,g,b=colour(item)
+    p.icon:SetColorTexture(r,g,b,1)
+    if named then
+        local short=(item.name:match("^[^-]+") or item.name):gsub("|","||")
+        p.label:SetText(short);p.label:SetTextColor(r,g,b);p.label:Show()
+    else p.label:Hide() end
 end
 local DIAMETERS={outdoor={466+2/3,400,333+1/3,266+2/3,200,133+1/3},indoor={300,240,180,120,80,50}}
 function L.renderPins()
@@ -200,7 +232,10 @@ function L.renderPins()
     end
     local frame=WorldMapFrame
     local visible=frame and S.call(frame.IsShown,frame)
-    local canvas=visible and (S.call(frame.GetCanvasContainer,frame) or (frame.ScrollContainer and frame.ScrollContainer.Child))
+    -- The canvas child is what pans and zooms; its container keeps still, so
+    -- markers placed against it drifted off their spot as soon as you zoomed.
+    local canvas=visible and (S.call(frame.GetCanvas,frame) or (frame.ScrollContainer and frame.ScrollContainer.Child)
+        or S.call(frame.GetCanvasContainer,frame))
     local map=visible and S.number(S.call(frame.GetMapID,frame))
     local width,height=canvas and S.number(S.call(canvas.GetWidth,canvas)),canvas and S.number(S.call(canvas.GetHeight,canvas))
     local count=0
@@ -209,6 +244,7 @@ function L.renderPins()
             local x,y=L.project(item,map)
             if x and y then
                 count=count+1;local p=pin(canvas,worldPins,count);p.item=item
+                paint(p,item,true)
                 p:ClearAllPoints();p:SetPoint("CENTER",canvas,"TOPLEFT",x*width,-y*height)
                 p:SetFrameLevel((S.number(S.call(canvas.GetFrameLevel,canvas)) or 1)+30)
                 p:SetAlpha(S.uptime()-item.received>15 and .55 or 1);p:Show()
@@ -235,6 +271,7 @@ function L.renderPins()
                 local x,y=L.minimapOffset(item,player,radius,w,h,facing)
                 if x and y then
                     count=count+1;local p=pin(mini,miniPins,count);p.item=item
+                    paint(p,item,false)
                     p:ClearAllPoints();p:SetPoint("CENTER",mini,"CENTER",x,y)
                     p:SetFrameLevel((S.number(S.call(mini.GetFrameLevel,mini)) or 1)+30)
                     p:SetAlpha(S.uptime()-item.received>15 and .55 or 1);p:Show()
