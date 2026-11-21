@@ -1,2 +1,0 @@
-- Add Show friends on the map in Notifications, so you can hide friends' markers without changing what you share.
-- Fix /wstatus controller off, which never stayed off because the setting was not saved.
