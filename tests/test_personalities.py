@@ -72,6 +72,10 @@ def test_login_and_personality_selection_leave_banks_packed_until_used():
     lua = make_lua(reaction_default=None)
     lua.execute("""
         local P, F = WoWStatusPersonalities, WoWStatusFlavour
+        -- An ordinary day. The harness clock falls inside Hallow's End, and on
+        -- a holiday one caption in seven is festive instead of drawn from a
+        -- bank (#242), which is not what this test is about.
+        WoWStatusFlavour.holiday=function() return nil end
         assert(P.current() == "random" and P.reactionVoice() == "wholesome")
         assert(#P.voices() == 12 and #P.reactionVoices() == 13)
         assert(P.names():find("Dwarf", 1, true))
