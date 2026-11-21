@@ -884,11 +884,6 @@ function slash.mutes()
 end
 slash.muted = slash.mutes
 
-function slash.goal()
-    WoWStatusGoals.show()
-end
-slash.goals = slash.goal
-
 function slash.sync()
     say("Activity syncs automatically when group members log in.")
 end
@@ -1054,15 +1049,6 @@ function slash.professions(rest)
     say("Shared profession labels updated. /reload to export.")
 end
 
-function slash.race(rest)
-    local name, level = rest:match("^([^ ]+) +([0-9]+)$")
-    if rest:lower() == "cancel" then say(WoWStatusStatusLine.raceCancel() and "Race cancelled." or "No race is running.")
-    elseif not name then say("Usage: /wstatus race Name Level, or /wstatus race cancel")
-    else
-        local ok, problem = WoWStatusStatusLine.raceStart(name, tonumber(level))
-        say(ok and "Race started." or problem)
-    end
-end
 function slash.labs() WoWStatusLabs.show() end
 function slash.compare(rest) WoWStatusCompare.show(rest ~= "" and rest or nil) end
 function slash.together() WoWStatusTogether.show() end

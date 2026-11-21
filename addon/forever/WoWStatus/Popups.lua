@@ -1133,7 +1133,7 @@ end
 -- The same moments, whatever the banner setting: they can also have a sound of their own.
 function P.bigEvent(item)
     if type(item) ~= "table" then return false end
-    if item.kind=="raid" or item.kind=="epicmount" or item.kind=="goal" then return true end
+    if item.kind=="raid" or item.kind=="epicmount" then return true end
     local level = S.number(item.level)
     return level ~= nil and level > 0 and (level % 10 == 0 or level == A.max_level)
 end

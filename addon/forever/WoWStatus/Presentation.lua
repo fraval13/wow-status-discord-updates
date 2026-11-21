@@ -68,7 +68,6 @@ function WoWStatusPresentation.theme(item)
         pvp={"Achievement_PVP_A_01",1,.35,.2,"PVP PROMOTION!"},
         achievement={"Achievement_General",1,.82,.2,"ACHIEVEMENT EARNED!"},
         first={"INV_Misc_Coin_01",1,.85,.3,"A NEW FIRST!"},
-        goal={"INV_Misc_Coin_01",1,.85,.3,"GOAL REACHED!"},
         recap={"INV_Misc_Book_09",.8,.7,.5,"SESSION RECAP"},
         tracking={"INV_Misc_Book_07",.6,.75,.9,"TRACKING STARTED"},
     }

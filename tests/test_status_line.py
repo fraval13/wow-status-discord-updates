@@ -13,12 +13,14 @@ def line(lua):
     return lua.eval('WoWStatusStatusLineFrame')
 
 
-def test_line_shows_online_count_and_latest_announcement_and_updates_live():
+def test_line_shows_the_icon_and_the_online_count_and_nothing_else():
     own, friend = actor('Mira'), actor('Thora')
     friend.execute(TRACKER)
     friend.execute('__peers={"Thora-TestRealm","Mira-TestRealm","Bob-TestRealm"}')
     friend.eval('WoWStatusStatusLine.update')()
-    assert friend.eval('WoWStatusStatusLineFrame.text.text').startswith('WoW Status · ')
+    assert friend.eval('WoWStatusStatusLineFrame.text.text') == '2 players online'
+    assert friend.eval('WoWStatusStatusLineFrame.icon.texture').endswith('Textures\\Logo')
+    # A friend's announcement reaches the log and the popup, never the line.
     clock(own, 10)
     clock(friend, 10)
     own.eval('fire')('PLAYER_LEVEL_UP', 42)
@@ -26,8 +28,8 @@ def test_line_shows_online_count_and_latest_announcement_and_updates_live():
     clock(friend, 310)
     friend.eval('WoWStatusStatusLine.update')()
     text = friend.eval('WoWStatusStatusLineFrame.text.text')
-    assert text.endswith('Mira hit 42 (5m)'), text
-    assert ' online · ' in text
+    assert text == '2 players online', text
+    assert 'Mira' not in text and 'WoW Status' not in text
 
 
 def test_online_count_uses_the_channel_count_without_requesting_a_roster():
@@ -166,50 +168,3 @@ def test_dragging_an_attached_line_unpins_it_from_the_tracker():
         WoWStatusStatusLine.update()
         assert(not f.attached and f.anchor[1] == "TOPLEFT")
     ''')
-
-
-def test_private_level_countdown_tracks_xp_and_clears_when_reached():
-    lua = actor('Thora')
-    lua.execute("""
-        WoWStatusGroups.update("", "")
-        __level = 38
-        local xp, maximum = 700, 1000
-        UnitXP = function() return xp end
-        UnitXPMax = function() return maximum end
-        local L, F, c = WoWStatusStatusLine, WoWStatusFeatures, character()
-        local sent, events = #__sent, #c.events
-        assert(not F.enabled("personalCountdown"))
-        c.personal_goal_level = 40
-        L.update()
-        assert(not WoWStatusStatusLineFrame or not WoWStatusStatusLineFrame:IsShown())
-
-        SlashCmdList.WOWSTATUS("labs")
-        local row
-        for _, candidate in ipairs(WoWStatusLabsPage.rows) do
-            if candidate.id == "personalCountdown" then row = candidate end
-        end
-        assert(row and not row.configure)
-        row:SetChecked(true); row.OnClick(row)
-        assert(row.configure:IsShown())
-        row.configure.OnClick(row.configure)
-        local page = WoWStatusMainWindow.show("personal-countdown")
-        assert(page.target:GetText() == "Target level: 40")
-        page.clear.OnClick()
-        assert(c.personal_goal_level == nil)
-        page.riding.OnClick()
-        assert(c.personal_goal_level == 40)
-        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Levels left: 2 (1.3 XP bars)")
-        __level, xp = 39, 999
-        L.update()
-        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Levels left: 1 (0.1 XP bars)")
-        maximum = nil
-        L.update()
-        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Levels left: 1")
-        WoWStatusLocale.set("nn")
-        L.update()
-        assert(WoWStatusStatusLineFrame.text.text == "WoW Status · Nivå att: 1")
-        __level = 40
-        L.update()
-        assert(c.personal_goal_level == nil and not WoWStatusStatusLineFrame:IsShown())
-        assert(#__sent == sent and #c.events == events)
-    """)

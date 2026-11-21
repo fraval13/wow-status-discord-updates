@@ -201,7 +201,6 @@ def test_friends_show_as_character_and_player_name():
         WoWStatusJournal.received({sender="Mira-TestRealm",nonce="1-1-aaaa",kind="death",text="Died",at=time(),group_id=group})
         WoWStatusJournal.show()
         assert(WoWStatusActivityLog.rows[1].message.text:find("Mira (Frank) — ",1,true))
-        assert(WoWStatusStatusLine.latest():find("Mira (Frank)",1,true))
         WoWStatusPopups.notice({sender="Mira-TestRealm",kind="first",text="First in the group to die!"})
         WoWStatusPopups.tick()
         assert(WoWStatusLevelPopup.message:GetText():find("Mira (Frank) — ",1,true))

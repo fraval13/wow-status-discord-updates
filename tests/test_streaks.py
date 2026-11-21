@@ -234,7 +234,7 @@ def test_the_milestone_option_is_a_checkbox_with_the_settings():
         local panel = WoWStatusNotificationPreviews
         local box = panel.streaks
         assert(box.parent == panel.settingsCategories.frames.popups and box.y < panel.big.y)
-        assert(panel.line.enabled.parent == panel.settingsCategories.frames.appearance)
+        assert(panel.minimap.parent == panel.settingsCategories.frames.appearance)
         assert(not panel.settingsCategories.frames.previews:IsShown())
         assert(box:GetChecked() == false)
         box:SetChecked(true); box.OnClick(box)

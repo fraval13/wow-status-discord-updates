@@ -356,35 +356,6 @@ local function renderRecords()
     box.empty:SetShown(#won == 0)
 end
 
--- The group goal band (#157): one group's goal and its progress, with "Goal…"
--- to set or change it. With several groups, ">" shows the next group's.
-local function renderGoal()
-    local band, G = page.goal, WoWStatusGoals
-    local groups = G and G.groups() or {}
-    local data = state() or {}
-    local chosen
-    for _, group in ipairs(groups) do if group.id == data.goal_group then chosen = group end end
-    if not chosen then
-        -- The first group with a goal, else the first group.
-        for _, group in ipairs(groups) do if not chosen and G.get(group.id) then chosen = group end end
-        chosen = chosen or groups[1]
-    end
-    band.group = chosen and chosen.id
-    WoWStatusUI.call(band.next, "SetEnabled", #groups > 1)
-    WoWStatusUI.call(band.edit, "SetEnabled", chosen ~= nil)
-    local goal = chosen and G.get(chosen.id)
-    if not goal then
-        band.title:SetText(chosen and (T("No group goal yet.") .. "  " .. WoWStatusUI.MUTED_CODE .. chosen.label:gsub("|", "||") .. "|r")
-            or T("Join a group to share a goal with friends."))
-        band.bar:SetProgress(nil); band.status:SetText("")
-        return
-    end
-    local title, fraction, status = G.describe(chosen.id, goal)
-    band.title:SetText("|cffffd100" .. title .. "|r  " .. WoWStatusUI.MUTED_CODE .. chosen.label:gsub("|", "||") .. "|r")
-    band.bar:SetProgress(fraction, "")
-    band.status:SetText(status)
-end
-
 local function render()
     if not page then return end
     local data = state() or {}
@@ -395,7 +366,7 @@ local function render()
         page.manualHardcore:SetChecked(available and WoWStatusSettings.get("manual_hardcore", character))
     end
     page.status:SetText(O.ownStatus())
-    for _, part in ipairs({renderYou, renderGroup, renderGoal, renderRecords}) do
+    for _, part in ipairs({renderYou, renderGroup, renderRecords}) do
         local ok, problem = pcall(part)
         if not ok then page.problem = problem end -- One box failing must not blank the page.
     end
@@ -475,25 +446,8 @@ local function build(parent)
     group.notSeen = UI.text(group, "GameFontDisableSmall", 12, -124, 312)
     group.notSeen:SetHeight(38)
     if group.notSeen.SetMaxLines then pcall(group.notSeen.SetMaxLines, group.notSeen, 3) end
-    -- Group goal (#157)
-    local goal = UI.box(page, 698, 40); goal:SetPoint("TOPLEFT", 24, -178); page.goal = goal
-    goal.title = UI.text(goal, "GameFontHighlight", 12, -6, 360)
-    goal.title:SetWordWrap(false)
-    goal.bar = UI.xpBar(goal, 200, 10); goal.bar:SetPoint("TOPLEFT", 12, -24)
-    goal.status = UI.text(goal, "GameFontHighlightSmall", 220, -22, 260)
-    goal.next = CreateFrame("Button", nil, goal, "UIPanelButtonTemplate")
-    goal.next:SetSize(32, 24); goal.next:SetPoint("TOPRIGHT", -112, -8); goal.next:SetText(">")
-    goal.next:SetScript("OnClick", function()
-        local data = state()
-        if not data or not goal.group then return end
-        data.goal_group = WoWStatusGoals.nextGroup(goal.group)
-        render()
-    end)
-    goal.edit = CreateFrame("Button", nil, goal, "UIPanelButtonTemplate")
-    goal.edit:SetSize(96, 24); goal.edit:SetPoint("TOPRIGHT", -10, -8); goal.edit:SetText(T("Goal…"))
-    goal.edit:SetScript("OnClick", function() if goal.group then WoWStatusGoals.show(goal.group) end end)
     -- Since you were last here
-    local since = UI.box(page, 698, 154); since:SetPoint("TOPLEFT", 24, -226); page.since = since
+    local since = UI.box(page, 698, 154); since:SetPoint("TOPLEFT", 24, -178); page.since = since
     page.heading = UI.text(since, "GameFontNormalLarge", 12, -10, 674)
     page.scroll = CreateFrame("ScrollFrame", nil, since, "UIPanelScrollFrameTemplate")
     page.scroll:SetPoint("TOPLEFT", 12, -38); page.scroll:SetSize(650, 184)
@@ -516,7 +470,7 @@ local function build(parent)
     records.empty:SetText(T("No records yet. The first to reach a milestone in your group earns it."))
     if WoWStatusProgress.manualHardcoreSupported and WoWStatusProgress.manualHardcoreSupported() then
         local check = CreateFrame("CheckButton", nil, page, "UICheckButtonTemplate")
-        check:SetPoint("TOPLEFT", 24, -514); check:SetSize(24, 24)
+        check:SetPoint("TOPLEFT", 24, -466); check:SetSize(24, 24)
         UI.text(check, "GameFontHighlightSmall", 28, -5, 270):SetText(T("Hardcore character (manual)"))
         check:SetScript("OnClick", function(self)
             if WoWStatusProgress.manualHardcoreAvailable() then

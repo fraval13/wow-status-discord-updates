@@ -40,8 +40,6 @@ function F.medals()
         local maximum = tonumber(tostring(e.text or ""):match("%((%d+) max%)$"))
         return maximum ~= nil and maximum >= 300
     end)
-    -- The group's shared goal (#157): held by the goal itself, never by a log entry.
-    table.insert(list, {key="goal", title="Group goal reached", match=function() return false end})
     return list
 end
 
@@ -82,7 +80,6 @@ function F.compute(entries, group)
             end
         end
     end
-    if group and WoWStatusGoals and WoWStatusGoals.medal then result.goal = WoWStatusGoals.medal(group) end
     return result, medals
 end
 
@@ -105,8 +102,7 @@ end
 
 -- Icon for a medal, from the same vocabulary as popups and the activity log.
 local MEDAL_ITEMS = {death={kind="death"}, dungeon={kind="dungeon"}, mount={kind="mount"}, raid={kind="raid"},
-    epicmount={kind="epicmount"}, epic={kind="loot", quality=4}, artisan={kind="profession", text="Tailoring: Artisan"},
-    goal={kind="goal"}}
+    epicmount={kind="epicmount"}, epic={kind="loot", quality=4}, artisan={kind="profession", text="Tailoring: Artisan"}}
 local function medalIcon(medal)
     local item = medal.key:match("^level:") and {kind="level", level=10} or MEDAL_ITEMS[medal.key] or {kind="first"}
     return (WoWStatusPresentation.theme(item))
