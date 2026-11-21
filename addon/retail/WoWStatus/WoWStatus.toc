@@ -2,7 +2,7 @@
 ## Title: WoW Status — Retail
 ## Notes: Retail adapter authored from client API docs. In-game validation pending.
 ## Author: fraval13
-## Version: 1.94.0
+## Version: 1.95.0
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber
 ## X-Client-Support: Retail/Mainline only; verify installed build metadata
@@ -68,7 +68,6 @@ Equipment.lua
 EquipmentSync.lua
 Locations.lua
 Roster.lua
-Goals.lua
 Profile.lua
 Compare.lua
 UnitTooltip.lua

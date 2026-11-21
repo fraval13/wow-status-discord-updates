@@ -190,8 +190,6 @@ local function insert(entry,removed)
     if refresh then refresh() end
     if WoWStatusStatusLine then WoWStatusStatusLine.update() end
     if WoWStatusFirsts and recordsChange(entry,removed,dropped) then WoWStatusFirsts.update() end
-    -- A death or level-up can move a group goal (#157): checked at a coming tick.
-    if WoWStatusGoals then WoWStatusGoals.touch() end
     if WoWStatusStreaks then WoWStatusStreaks.noted(entry) end
     if WoWStatusBingo then WoWStatusBingo.update() end
 end

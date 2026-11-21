@@ -1,11 +1,9 @@
--- Compact group status line (#62): "WoW Status · 3 online · Bob hit 42 (5m)".
+-- Compact group status line (#62): the WoW Status icon and "3 players online".
 -- It sits under the quest tracker when one is found and attaching is chosen,
 -- otherwise it is a small panel you can drag; dragging an attached line unpins it. Clicking it opens the main
 -- window. Settings are account-wide in WoWStatusDB.status_line.
 WoWStatusStatusLine = {}
-local L, S, A = WoWStatusStatusLine, WoWStatusSafe, WoWStatusAdapter
-local Features = WoWStatusFeatures
-local GOAL = "personalCountdown"
+local L, S = WoWStatusStatusLine, WoWStatusSafe
 local line, inCombat
 
 local function settings()
@@ -28,208 +26,13 @@ function L.tracker()
     end
 end
 
-local T = WoWStatusLocale.T
 local TF = WoWStatusLocale.F
--- The first ordinary riding milestone makes a useful preset. Players can pick
--- any higher level up to their edition's cap.
-local RIDING_LEVEL = {["classic-era"] = 40, forever = 40, ["tbc-anniversary"] = 30, retail = 10}
 
-local function goalState()
-    if not Features.enabled(GOAL) then return nil end
-    local character = WoWStatusPopups.character()
-    if not character then return nil end
-    local level = A.level()
-    if not level then return nil end
-    local saved = character.personal_goal_level
-    local goal = WoWStatusSettings.get("personal_goal_level", character)
-    if goal == 0 then goal = nil end
-    if saved ~= nil and (not goal or goal <= level or goal > A.max_level or goal ~= math.floor(goal)) then
-        WoWStatusSettings.set("personal_goal_level", 0, character)
-        goal = nil
-    end
-    return character, level, goal
-end
-
-local function countdown()
-    local _, level, goal = goalState()
-    if not goal then return nil end
-    local levels = goal - level
-    local xp = S.number(S.call(UnitXP, "player"))
-    local maximum = S.number(S.call(UnitXPMax, "player"))
-    if xp and maximum and maximum > 0 and xp >= 0 and xp < maximum then
-        -- One partly filled bar plus one full bar for each later level.
-        local bars = levels - 1 + math.ceil((maximum - xp) * 10 / maximum) / 10
-        return TF("Levels left: %d (%.1f XP bars)", levels, bars)
-    end
-    return TF("Levels left: %d", levels)
-end
-
-local function age(seconds)
-    if seconds < 60 then return T("now") end
-    if seconds < 3600 then return math.floor(seconds / 60) .. "m" end
-    if seconds < 86400 then return math.floor(seconds / 3600) .. "h" end
-    return math.floor(seconds / 86400) .. "d"
-end
-
--- The newest friend announcement, in a few words.
-function L.latest()
-    for _, e in ipairs(WoWStatusJournal.entries()) do
-        if type(e) == "table" and not e.owner and WoWStatusJournal.visible(e) and e.kind ~= "introduction" then
-            local name = WoWStatusRoster and WoWStatusRoster.displayName and WoWStatusRoster.displayName(e.sender)
-                or tostring(e.sender or "?"):match("^[^-]+") or "?"
-            local text = e.kind == "level" and S.number(e.level) and (name .. " " .. T("hit") .. " " .. e.level)
-                or (name .. ": " .. T(tostring(e.text or "")))
-            if #text > 48 then text = text:sub(1, 45) .. "..." end
-            local now = S.now()
-            return text:gsub("|", "||") .. " (" .. age(math.max(0, now - (e.at or now))) .. ")"
-        end
-    end
-end
-
--- Labs (#238): a private race to a level against one friend. Stored for this
--- character only and never sent; the friend is not told. It reads the level-ups
--- already in the shared log.
-WoWStatusFeatures.register("race", "Race a friend to a level",
-    "Pick a friend and a level (/wstatus race Name 40): the status line shows both of you, and a banner says who got there first. The friend is never told.",
-    function() L.configureRace() end)
-local function raceStore()
-    local character = WoWStatusPopups.character and WoWStatusPopups.character()
-    if type(WoWStatusDB) ~= "table" or not character or not character.identity then return nil end
-    WoWStatusDB.races = type(WoWStatusDB.races) == "table" and WoWStatusDB.races or {}
-    return WoWStatusDB.races, character.identity.guid
-end
-function L.race()
-    if not WoWStatusFeatures.enabled("race") then return nil end
-    local store, id = raceStore()
-    local race = store and store[id]
-    if type(race) ~= "table" or type(race.friend) ~= "string" or not S.number(race.target) then return nil end
-    return race
-end
--- Highest level and earliest time at or after the target, for one side of the log.
-local function reached(sender, owner, target)
-    local top, first = 0, nil
-    local character = WoWStatusPopups.character()
-    for _, e in ipairs(WoWStatusJournal.entries()) do
-        if e.kind == "level" and S.number(e.level) and WoWStatusJournal.visible(e)
-            and ((owner and character and character.identity and e.owner == character.identity.guid)
-                or (not owner and not e.owner and e.sender == sender)) then
-            if e.level > top then top = e.level end
-            if e.level >= target and S.number(e.at) and (not first or e.at < first) then first = e.at end
-        end
-    end
-    return top, first
-end
--- The friend's full sender name, from the log, for a typed name.
-local function friendSender(name)
-    local want = S.lowerASCII(name)
-    for _, e in ipairs(WoWStatusJournal.entries()) do
-        if not e.owner and e.kind == "level" and type(e.sender) == "string" and WoWStatusJournal.visible(e)
-            and (S.lowerASCII(e.sender) == want
-                or S.lowerASCII(e.sender:match("^[^-]+") or e.sender) == want) then return e.sender end
-    end
-end
-function L.raceStart(name, target)
-    if not WoWStatusFeatures.enabled("race") then return false, "Turn on Race a friend on the Labs page first." end
-    local store, id = raceStore()
-    target = math.floor(S.number(target) or 0)
-    local max = WoWStatusAdapter.max_level or 60
-    if not store or target < 2 or target > max then return false, "Pick a level from 2 to " .. max .. "." end
-    local sender = type(name) == "string" and friendSender(name)
-    if not sender then return false, "No friend by that name in your activity log yet." end
-    store[id] = {friend = sender, target = target}
-    L.update()
-    return true
-end
-function L.raceCancel()
-    local store, id = raceStore()
-    if store and store[id] then store[id] = nil; L.update(); return true end
-    return false
-end
-
--- The same private race can be configured without typing a slash command.
-function L.configureRace()
-    if not Features.enabled("race") then return end
-    local window, UI = WoWStatusMainWindow, WoWStatusUI
-    local function refresh(page)
-        local names, seen = {}, {}
-        for _, e in ipairs(WoWStatusJournal.entries()) do
-            if not e.owner and e.kind == "level" and type(e.sender) == "string"
-                and WoWStatusJournal.visible(e) and not seen[e.sender] then
-                seen[e.sender] = true; names[#names + 1] = e.sender
-            end
-        end
-        table.sort(names)
-        page.names = names
-        if not seen[page.friendName] then page.friendName = names[1] end
-        page.friend:SetText(page.friendName and page.friendName:gsub("|", "||") or T("Choose a character"))
-        page.targetLevel = math.max(2, math.min(A.max_level, page.targetLevel or (A.level() or 1) + 1))
-        page.target:SetText(TF("Target level: %d", page.targetLevel))
-        UI.call(page.friend, "SetEnabled", #names > 1)
-        UI.call(page.less, "SetEnabled", page.targetLevel > 2)
-        UI.call(page.more, "SetEnabled", page.targetLevel < A.max_level)
-        UI.call(page.start, "SetEnabled", page.friendName ~= nil)
-        UI.call(page.cancel, "SetEnabled", L.race() ~= nil)
-    end
-    local function build(parent)
-        local page = CreateFrame("Frame", nil, parent); page:SetAllPoints(parent)
-        UI.text(page, "GameFontNormalLarge", 24, -12, 700):SetText(T("Race a friend to a level"))
-        page.target = UI.text(page, "GameFontHighlight", 24, -100, 700)
-        page.detail = UI.text(page, "GameFontHighlight", 24, -210, 700)
-        local function button(label, x, y, width, action)
-            local b = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
-            b:SetPoint("TOPLEFT", x, y); b:SetSize(width, 26); b:SetText(T(label))
-            b:SetScript("OnClick", function() action(); refresh(page) end)
-            return b
-        end
-        page.friend = button("Choose a character", 24, -52, 300, function()
-            for i, name in ipairs(page.names) do
-                if name == page.friendName then page.friendName = page.names[i % #page.names + 1]; break end
-            end
-        end)
-        page.less = button("-", 24, -130, 66, function() page.targetLevel = page.targetLevel - 1 end)
-        page.more = button("+", 98, -130, 66, function() page.targetLevel = page.targetLevel + 1 end)
-        page.start = button("Start race", 24, -170, 160, function()
-            local ok, problem = L.raceStart(page.friendName, page.targetLevel)
-            page.detail:SetText(T(ok and "Race started." or problem))
-        end)
-        page.cancel = button("Cancel race", 192, -170, 160, function()
-            L.raceCancel(); page.detail:SetText(T("Race cancelled."))
-        end)
-        return page
-    end
-    if not window.has("race") then window.register("race", "Race a friend to a level", build, refresh, {tab=false}) end
-    window.show("race")
-end
--- The status line text, or nil. Settles the race when either side got there.
-function L.raceText()
-    local race = L.race()
-    if not race then return nil end
-    local store, id = raceStore()
-    local mine, myAt = reached(nil, true, race.target)
-    local theirs, theirAt = reached(race.friend, false, race.target)
-    local name = race.friend:match("^[^-]+") or race.friend
-    if theirs == 0 then store[id] = nil; return nil end -- Left the group: end cleanly.
-    if myAt or theirAt then
-        store[id] = nil
-        local won = myAt and (not theirAt or myAt <= theirAt)
-        if WoWStatusPopups.notice then
-            WoWStatusPopups.notice({sender = race.friend, kind = "first",
-                text = won and (T("You won the race to level") .. " " .. race.target .. "!")
-                    or (name .. " " .. T("got to level") .. " " .. race.target .. " " .. T("first") .. "!")})
-        end
-        return nil
-    end
-    return T("Race to") .. " " .. race.target .. ": " .. T("you") .. " " .. mine .. " · " .. name:gsub("|", "||") .. " " .. theirs
-end
-
-local function text(goal, grouped)
-    if goal and not grouped then return "WoW Status · " .. goal end
-    local parts = {"WoW Status", WoWStatusPopups.onlineCount() .. " " .. T("online")}
-    -- Keep the existing quiet-hours notice. Otherwise the goal takes the
-    -- latest-news slot while active, so the status line stays compact.
-    local latest = (WoWStatusPopups.quietHoursText and WoWStatusPopups.quietHoursText()) or L.raceText() or goal or L.latest()
-    if latest then table.insert(parts, latest) end
-    return table.concat(parts, " · ")
+-- The line says one thing, beside the icon: how many of your group are online.
+-- The latest news, quiet hours and milestones all live in the windows, so
+-- nothing of ours sits on the screen competing with the game.
+local function text()
+    return TF("%d players online", WoWStatusPopups.onlineCount())
 end
 
 local function hasGroup()
@@ -237,12 +40,11 @@ local function hasGroup()
 end
 
 function L.text()
-    local goal = countdown()
-    return text(goal, goal and hasGroup())
+    return text()
 end
 
-local function hidden(value, goal, grouped)
-    if not value.enabled or (not goal and not grouped) then return true end
+local function hidden(value, grouped)
+    if not value.enabled or not grouped then return true end
     if value.hide_combat and inCombat then return true end
     if value.hide_instance then
         local inside, kind = S.call(IsInInstance)
@@ -268,12 +70,15 @@ end
 
 local function create()
     line = CreateFrame("Button", "WoWStatusStatusLineFrame", UIParent)
-    line:SetSize(320, 22); line:SetFrameStrata("LOW")
+    line:SetSize(166, 22); line:SetFrameStrata("LOW")
     line:SetMovable(true); line:RegisterForDrag("LeftButton")
     local background = line:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints(); background:SetColorTexture(0, 0, 0, .45)
+    line.icon = line:CreateTexture(nil, "ARTWORK")
+    line.icon:SetPoint("LEFT", 4, 0); line.icon:SetSize(16, 16)
+    line.icon:SetTexture("Interface\\AddOns\\WoWStatus\\Textures\\Logo")
     line.text = line:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    line.text:SetPoint("LEFT", 6, 0); line.text:SetWidth(308); line.text:SetJustifyH("LEFT")
+    line.text:SetPoint("LEFT", 24, 0); line.text:SetWidth(138); line.text:SetJustifyH("LEFT")
     line:SetScript("OnClick", function(self)
         if self.moved then self.moved = false; return end
         WoWStatusMainWindow.show()
@@ -303,14 +108,13 @@ end
 function L.update()
     local value = settings()
     if not value or not WoWStatusPopups.onlineCount then return end
-    local goal, grouped = countdown(), hasGroup()
-    if hidden(value, goal, grouped) then
+    if hidden(value, hasGroup()) then
         if line then line:Hide() end
         return
     end
     if not line then create() end
     place(value)
-    line.text:SetText(text(goal, grouped))
+    line.text:SetText(text())
     line:Show()
 end
 
@@ -320,55 +124,6 @@ function L.set(key, enabled)
     value[key] = enabled == true
     L.update()
 end
-
-local function goalPageRefresh(page)
-    local _, level, goal = goalState()
-    local cap, riding = A.max_level, RIDING_LEVEL[A.client_id]
-    page.target:SetText(goal and TF("Target level: %d", goal) or T("No level goal"))
-    WoWStatusUI.call(page.less, "SetEnabled", goal ~= nil and goal > level + 1)
-    WoWStatusUI.call(page.more, "SetEnabled", level ~= nil and (goal or level) < cap)
-    WoWStatusUI.call(page.riding, "SetEnabled", level ~= nil and riding ~= nil and riding > level and riding ~= goal)
-    WoWStatusUI.call(page.cap, "SetEnabled", level ~= nil and cap > level and cap ~= goal)
-    WoWStatusUI.call(page.clear, "SetEnabled", goal ~= nil)
-end
-
-local function goalPage(parent)
-    local page = CreateFrame("Frame", nil, parent)
-    page:SetAllPoints(parent)
-    WoWStatusUI.text(page, "GameFontNormalLarge", 24, -12, 700):SetText(T("Personal level countdown"))
-    page.target = WoWStatusUI.text(page, "GameFontHighlight", 24, -52, 700)
-    local function button(label, x, y, width, choose)
-        local b = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
-        b:SetPoint("TOPLEFT", x, y); b:SetSize(width, 26); b:SetText(T(label))
-        b:SetScript("OnClick", function()
-            local character, level, goal = goalState()
-            if not character then return end
-            local wanted = choose(level, goal)
-            if wanted and (wanted <= level or wanted > A.max_level) then return end
-            WoWStatusSettings.set("personal_goal_level", wanted or 0, character)
-            L.update()
-            goalPageRefresh(page)
-        end)
-        return b
-    end
-    page.less = button("-", 24, -80, 66, function(level, goal) return (goal or level) - 1 end)
-    page.more = button("+", 98, -80, 66, function(level, goal) return (goal or level) + 1 end)
-    page.riding = button("Riding level", 24, -118, 160, function() return RIDING_LEVEL[A.client_id] end)
-    page.cap = button("Level cap", 192, -118, 160, function() return A.max_level end)
-    page.clear = button("Clear goal", 360, -118, 160, function() return nil end)
-    return page
-end
-
-local function configureGoal()
-    if not Features.enabled(GOAL) then return end
-    local window = WoWStatusMainWindow
-    if not window.has("personal-countdown") then
-        window.register("personal-countdown", "Personal level countdown", goalPage, goalPageRefresh, {tab=false})
-    end
-    window.show("personal-countdown")
-end
-
-Features.register(GOAL, "Personal level countdown", "Show a private level and XP countdown in the status line.", configureGoal)
 
 local frame = CreateFrame("Frame")
 for _, event in ipairs({"PLAYER_ENTERING_WORLD", "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED",

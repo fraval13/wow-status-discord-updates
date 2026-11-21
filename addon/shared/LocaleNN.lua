@@ -988,6 +988,7 @@ W.add({
 })
 
 W.add({
+    ["%d players online"]="%d spelarar pålogga",
     ["Show friends on the map"]="Vis vener på kartet",
     ["Share my position"]="Del posisjonen min",
     ["Position received %d sec ago"]="Posisjon motteken for %d sek sidan",
