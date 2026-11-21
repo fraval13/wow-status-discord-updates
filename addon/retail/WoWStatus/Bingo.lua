@@ -47,8 +47,20 @@ local function build(parent)
         local cell = CreateFrame("Button", nil, page, "UIPanelButtonTemplate")
         cell:SetSize(136, 72)
         cell:SetPoint("TOPLEFT", 24 + (i - 1) % SIZE * 142, -48 - math.floor((i - 1) / SIZE) * 78)
-        cell.label = UI.text(cell, "GameFontHighlightSmall", 6, -7, 124, "CENTER")
-        cell.sender = UI.text(cell, "GameFontNormalSmall", 6, -51, 124, "CENTER")
+        -- Both lines are anchored to the square itself, as one block in the
+        -- middle: the task centred in the room above the name, the name just
+        -- under it. Fixed offsets pinned the task to the very top edge and the
+        -- name to the very bottom, with a hole between them, and a task that
+        -- wrapped to two lines made the hole look different in every square.
+        cell.label = UI.text(cell, "GameFontHighlightSmall", 0, 0, nil, "CENTER")
+        cell.label:ClearAllPoints()
+        cell.label:SetPoint("TOPLEFT", 6, -6)
+        cell.label:SetPoint("BOTTOMRIGHT", -6, 24)
+        cell.label:SetJustifyV("MIDDLE")
+        cell.sender = UI.text(cell, "GameFontNormalSmall", 0, 0, nil, "CENTER")
+        cell.sender:ClearAllPoints()
+        cell.sender:SetPoint("BOTTOMLEFT", 6, 8)
+        cell.sender:SetPoint("BOTTOMRIGHT", -6, 8)
         cell:SetScript("OnClick", function(self) page.detail:SetText(self.detail) end)
         page.cells[i] = cell
     end

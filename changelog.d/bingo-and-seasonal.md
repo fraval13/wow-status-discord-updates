@@ -1,0 +1,2 @@
+- The bingo card holds each square's task and name together in the middle, not at the top and bottom edges.
+- Seasonal captions are no longer an experiment: holiday captions now show for everyone.

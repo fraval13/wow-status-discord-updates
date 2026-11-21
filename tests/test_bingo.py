@@ -68,3 +68,45 @@ def test_off_by_default_adds_nothing_to_this_week():
     lua, group = setup(False)
     with_entries(lua, [('Mira-TestRealm', '1-1-a', 'level', 100, '{level=21}')])
     assert 'bingo' not in plain(lua.eval(f'WoWStatusFirsts.week("{group}", 0)')[0]).lower()
+
+
+def board(lua):
+    """Open the bingo page with widget anchors recorded, and return it."""
+    lua.execute('''
+        WoWStatusFeatures.set("bingo", true)
+        local methods = getmetatable(CreateFrame("Frame")).__index
+        methods.SetPoint = function(self, point, a, b, c)
+            self.points = self.points or {}
+            -- (point, x, y) on these labels; the relative form is not used.
+            table.insert(self.points, {point, tonumber(a) or 0, tonumber(b) or 0, c})
+        end
+        -- The mock drops ClearAllPoints; honour it, so what is recorded is
+        -- the anchors the widget actually ends up with.
+        methods.ClearAllPoints = function(self) self.points = nil end
+        methods.SetJustifyV = function(self, value) self.justifyV = value end
+        SlashCmdList.WOWSTATUS("labs")
+        for _, row in ipairs(WoWStatusLabsPage.rows) do
+            if row.id == "bingo" then row.configure.OnClick(row.configure) end
+        end
+        __board = WoWStatusMainWindow.show("bingo")
+    ''')
+
+
+def anchors(lua, path):
+    return [tuple(p.values())[:3] for p in lua.eval(path).values()]
+
+
+def test_each_square_holds_its_task_and_name_as_one_centred_block():
+    lua, _ = setup()
+    board(lua)
+    for cell in ('1', '13', '25'):
+        label = anchors(lua, f'__board.cells[{cell}].label.points')
+        sender = anchors(lua, f'__board.cells[{cell}].sender.points')
+        # The task is bounded top and bottom and centred between them, instead
+        # of hanging from one fixed top offset against the square's edge.
+        assert [p for p, _, _ in label] == ['TOPLEFT', 'BOTTOMRIGHT']
+        assert lua.eval(f'__board.cells[{cell}].label.justifyV') == 'MIDDLE'
+        # The name sits on the bottom edge, right under the task: no hole.
+        assert [p for p, _, _ in sender] == ['BOTTOMLEFT', 'BOTTOMRIGHT']
+        floor = sender[0][2]
+        assert 0 < floor < label[1][2] <= floor + 20

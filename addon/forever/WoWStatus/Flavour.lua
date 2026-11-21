@@ -1424,10 +1424,9 @@ local function lookup(text)
     end
     return reverse[text]
 end
--- Labs (#242): a few seasonal captions during the in-game holidays. Fixed,
--- approximate dates (month-day, UTC); the client calendar is not consulted.
-WoWStatusFeatures.register("seasonal", "Seasonal captions",
-    "During Hallow's End, Winter Veil, the Lunar Festival and Love is in the Air, a few captions turn festive.")
+-- A few seasonal captions during the in-game holidays. Fixed, approximate
+-- dates (month-day, UTC); the client calendar is not consulted. This began as
+-- a Labs experiment (#242) and is now simply how captions read on a holiday.
 local HOLIDAYS={
     {"hallows","10-18","11-01",{"Even the graveyard looks festive this Hallow's End.","Trick or treat? That was a trick.","Pumpkins everywhere, and now this."}},
     {"winterveil","12-15","01-02",{"Merry Winter Veil, adventurer.","Even Greatfather Winter nodded at that.","A gift worth unwrapping."}},
@@ -1476,7 +1475,7 @@ function F.text(item)
     end
     -- One caption in seven is seasonal on a holiday. Kept as the item's own text,
     -- so a saved card does not change when the holiday ends.
-    if WoWStatusFeatures.enabled("seasonal") and kind~="death" then
+    if kind~="death" then
         local _,captions=F.holiday()
         if captions and draw(7,"#season")==1 then
             local text=captions[draw(#captions,"#seasonline")]
