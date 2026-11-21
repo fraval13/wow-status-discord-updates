@@ -1,3 +1,0 @@
-- Remove shared group goals, including the Overview band, the leaderboard row and the goal window.
-- The group status line now shows only the WoW Status icon and how many players are online.
-- Remove the Race a friend and Personal level countdown experiments, which only ever showed in that line.
