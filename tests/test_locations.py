@@ -361,3 +361,62 @@ def test_markers_sit_on_the_zooming_canvas_with_class_colours_and_names_under_th
         L.renderPins()
         assert(math.abs(L.worldPins[1].icon.colour[1]-.22)<1e-9)
     ''')
+
+
+def test_friends_markers_can_be_switched_off_without_changing_what_you_send():
+    net = network()
+    thora = net.clients['Thora']
+    thora.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:GetHeight() return self.height end
+        Minimap=CreateFrame("Frame");Minimap:SetSize(160,160);Minimap:Show()
+        C_Minimap={GetViewRadius=function() return 100 end}
+        function GetCVar() return "0" end
+        WorldMapFrame=CreateFrame("Frame");WorldMapFrame:Show()
+        WorldMapFrame.child=CreateFrame("Frame",nil,WorldMapFrame);WorldMapFrame.child:SetSize(680,500)
+        function WorldMapFrame:GetMapID() return 42 end
+        function WorldMapFrame:GetCanvas() return self.child end
+        local L=WoWStatusLocations
+        L.renderPins()
+        assert(L.showing() and L.worldPins[1]:IsShown() and L.miniPins[1]:IsShown())
+        assert(L.setShowing(false))
+        assert(not L.showing() and WoWStatusDB.map_friends==false)
+        assert(not L.worldPins[1]:IsShown() and not L.miniPins[1]:IsShown())
+        -- The report itself is untouched, so the markers come straight back.
+        assert(#L.entries()==1)
+        assert(L.setShowing(true))
+        assert(WoWStatusDB.map_friends==nil and L.worldPins[1]:IsShown())
+    ''')
+    # Switching the view off must not change this character's own sending.
+    thora.execute('WoWStatusLocations.setShowing(false)')
+    before = len(net.packets)
+    net.advance(15)
+    assert any(source == 'Thora' and text.startswith('L ')
+               for source, _, text in net.packets[before:])
+
+
+def test_the_map_checkbox_is_in_the_options_and_reachable_with_a_controller():
+    lua = client_runtime('forever')
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:GetObjectType() return self.kind end
+        function methods:GetRect() return 100,100,600,500 end
+        function methods:GetChildren()
+            local found={}
+            for _,f in ipairs(__frames) do if f.parent==self then found[#found+1]=f end end
+            return (unpack or table.unpack)(found)
+        end
+        SlashCmdList.WOWSTATUS("previews")
+        local panel=WoWStatusNotificationPreviews
+        local box=panel.mapFriends
+        assert(box and box.kind=="CheckButton")
+        assert(box.parent==panel.settingsCategories.frames.appearance)
+        panel.settingsCategories:select("appearance")
+        local shown=panel
+        while shown do shown.visible=true;shown=shown.parent end
+        local reached=false
+        for _,control in ipairs(WoWStatusGamepad.controls(panel,{panel})) do reached=reached or control==box end
+        assert(reached,"a controller must reach the map checkbox")
+        box:SetChecked(false);box.OnClick(box)
+        assert(WoWStatusDB.map_friends==false and not WoWStatusLocations.showing())
+    ''')

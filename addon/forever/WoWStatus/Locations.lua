@@ -35,6 +35,19 @@ end
 function L.sharing()
     return current and current.settings and current.settings.share_position~=false or false
 end
+-- Whether friends' markers are drawn at all. This is a local view: switching it
+-- off hides every marker and changes nothing about what this character sends.
+function L.showing()
+    return type(WoWStatusDB)~="table" or WoWStatusDB.map_friends~=false
+end
+function L.setShowing(value)
+    if type(WoWStatusDB)~="table" then return false end
+    -- false is off; nil keeps the saved file quiet for an untouched account.
+    -- Not "x and false or nil": in Lua that collapses to nil for either value.
+    if value then WoWStatusDB.map_friends=nil else WoWStatusDB.map_friends=false end
+    L.renderPins()
+    return true
+end
 local function recipients()
     if S.uptime()-peerCacheAt<5 then return peerCache end
     local list={}
@@ -225,7 +238,7 @@ local function paint(p,item,named)
 end
 local DIAMETERS={outdoor={466+2/3,400,333+1/3,266+2/3,200,133+1/3},indoor={300,240,180,120,80,50}}
 function L.renderPins()
-    local list=L.entries()
+    local list=L.showing() and L.entries() or {}
     if #list==0 then
         for _,p in ipairs(worldPins) do p:Hide() end;for _,p in ipairs(miniPins) do p:Hide() end
         L.worldPins,L.miniPins=worldPins,miniPins;return

@@ -61,7 +61,9 @@ local function number(value) return type(value) == "number" and value == value a
 function G.allowed() return not (type(WoWStatusDB) == "table" and WoWStatusDB.controller == false) end
 function G.setAllowed(value)
     if type(WoWStatusDB) ~= "table" then return false end
-    WoWStatusDB.controller = (not value) and false or nil
+    -- "(not value) and false or nil" read as nil for either value, so turning
+    -- the controller off never stuck: false or nil is nil.
+    if value then WoWStatusDB.controller = nil else WoWStatusDB.controller = false end
     G.update()
     return true
 end
