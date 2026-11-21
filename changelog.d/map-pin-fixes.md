@@ -1,4 +1,0 @@
-- Keep friends' map markers in place when you zoom the world map.
-- Fix the Lua error when hovering a marker, and show each friend's name under their marker.
-- Colour each map marker with that friend's class colour.
-- Make dropdown lists solid, so text underneath no longer shows through them.
