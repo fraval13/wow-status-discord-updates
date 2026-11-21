@@ -318,3 +318,46 @@ def test_position_preference_defaults_on_and_preserves_the_character_opt_out(edi
         L.init(WoWStatusDB,character(),WoWStatusRoster.queueLocation)
         assert(character().settings.share_position==true and L.sharing())
     ''')
+
+
+def test_markers_sit_on_the_zooming_canvas_with_class_colours_and_names_under_them():
+    net = network()
+    lua = net.clients['Thora']
+    lua.execute('''
+        local methods=getmetatable(CreateFrame("Frame")).__index
+        function methods:GetHeight() return self.height end
+        function methods:SetColorTexture(r,g,b,a) self.colour={r,g,b,a} end
+        Minimap=CreateFrame("Frame");Minimap:SetSize(160,160);Minimap:Show()
+        C_Minimap={GetViewRadius=function() return 100 end}
+        function GetCVar() return "0" end
+        WorldMapFrame=CreateFrame("Frame");WorldMapFrame:Show()
+        -- The container keeps still; the child is what pans and zooms.
+        WorldMapFrame.container=CreateFrame("Frame",nil,WorldMapFrame);WorldMapFrame.container:SetSize(680,500)
+        WorldMapFrame.child=CreateFrame("Frame",nil,WorldMapFrame.container);WorldMapFrame.child:SetSize(1360,1000)
+        function WorldMapFrame:GetMapID() return 42 end
+        function WorldMapFrame:GetCanvasContainer() return self.container end
+        function WorldMapFrame:GetCanvas() return self.child end
+        -- SetText takes one argument: gsub's substitution count must not reach it.
+        GameTooltip={SetOwner=function() end,
+            SetText=function(_,text,...) __tooltip,__extra=text,select("#",...) end,
+            AddLine=function() end,Show=function() end,Hide=function() end}
+        for _,frame in ipairs(__frames) do if frame.OnUpdate then frame.OnUpdate(frame,.25) end end
+        local L=WoWStatusLocations
+        local class=WoWStatusRoster.classFor("Mira-TestRealm")
+        assert(class,"the roster knows a group friend's class")
+        assert(WoWStatusRoster.classFor("Nobody-TestRealm")==nil)
+        RAID_CLASS_COLORS={[class]={r=.1,g=.2,b=.3}}
+        L.renderPins()
+        local world=L.worldPins[1]
+        assert(world:GetParent()==WorldMapFrame.child)
+        assert(world.icon.colour[1]==.1 and world.icon.colour[2]==.2 and world.icon.colour[3]==.3)
+        assert(world.label:GetText()=="Mira" and world.label:IsShown()~=false)
+        world.OnEnter(world)
+        assert(__tooltip=="Mira" and __extra==0)
+        -- The minimap marker keeps the colour but not the name, for room.
+        assert(L.miniPins[1].icon.colour[1]==.1 and L.miniPins[1].label:IsShown()==false)
+        -- An unknown class keeps the former green.
+        RAID_CLASS_COLORS={}
+        L.renderPins()
+        assert(math.abs(L.worldPins[1].icon.colour[1]-.22)<1e-9)
+    ''')

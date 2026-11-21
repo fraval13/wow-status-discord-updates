@@ -703,6 +703,12 @@ function UI.menu(owner, items, onPick, minWidth)
     if not menu then
         menu = UI.box(UIParent, 200, 40)
         menu:SetFrameStrata("TOOLTIP"); menu:EnableMouse(true) -- Above the main window's cards.
+        -- A box is translucent in the mood themes, so whatever the list covered
+        -- showed through its rows. The menu floats over the window's own text,
+        -- and therefore carries a solid fill of its own inside the border.
+        menu.solid = menu:CreateTexture(nil, "BACKGROUND")
+        menu.solid:SetPoint("TOPLEFT", 3, -3); menu.solid:SetPoint("BOTTOMRIGHT", -3, 3)
+        menu.solid:SetColorTexture(.03, .04, .06, 1)
         menu.scroll = CreateFrame("ScrollFrame", nil, menu, "UIPanelScrollFrameTemplate")
         menu.scroll:SetPoint("TOPLEFT", 6, -6)
         menu.list = CreateFrame("Frame", nil, menu.scroll)
