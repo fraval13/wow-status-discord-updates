@@ -130,6 +130,10 @@ function P.show(host)
             panel.line[key]=check(entry[2],-options-168-(i-1)*42,function() return WoWStatusStatusLine.settings()[key] end,
                 function(value) WoWStatusStatusLine.set(key,value) end)
         end
+        -- Friends' map markers can be switched off. A view setting: it hides
+        -- the markers for you and changes nothing about what you send.
+        panel.mapFriends=check("Show friends on the map",-options-336,
+            WoWStatusLocations.showing,WoWStatusLocations.setShowing)
         -- Window theme and size (#60). Account-wide, applied at once.
         layout:category("appearance",options+340,228)
         panel.theme=text(panel,WoWStatusTheme.label(),24,-options-346,300)
@@ -405,6 +409,7 @@ function P.show(host)
     for _,widget in ipairs({panel.unlock,panel.big,panel.reduceMotion}) do widget:SetChecked(widget.get(options)) end
     for _,widget in pairs(panel.line) do widget:SetChecked(widget.get()) end
     panel.minimap:SetChecked(panel.minimap.get() == true)
+    panel.mapFriends:SetChecked(panel.mapFriends.get() == true)
     panel.themePopups:SetChecked(panel.themePopups.get())
     panel.quiet:SetChecked(panel.quiet.get() == true)
     panel.streaks:SetChecked(panel.streaks.get() == true)

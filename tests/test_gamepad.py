@@ -1216,3 +1216,19 @@ def test_share_position_checkbox_in_real_settings_is_reachable_with_a_controller
         check:SetChecked(false);check.OnClick(check)
         assert(not character().settings.share_position)
     ''')
+
+
+def test_controller_off_is_saved_and_survives_a_reload():
+    from test_addon import make_lua
+
+    runtime = make_lua()
+    runtime.execute('''
+        local G=WoWStatusGamepad
+        assert(G.allowed())
+        -- /wstatus controller off has to persist: "x and false or nil" read as
+        -- nil for either value, so the opt-out never reached the saved file.
+        SlashCmdList.WOWSTATUS("controller off")
+        assert(WoWStatusDB.controller==false and not G.allowed())
+        SlashCmdList.WOWSTATUS("controller on")
+        assert(WoWStatusDB.controller==nil and G.allowed())
+    ''')
