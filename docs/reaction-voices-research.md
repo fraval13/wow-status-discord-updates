@@ -9,7 +9,7 @@
 > chosen.
 
 Question: how could the friend who *receives* a reaction (GZ!, F, Congrats! and
-the personality lines matched in `J.reaction`, `addon/shared/Journal.lua`) hear
+the personality lines matched in `J.reaction`, `addon/shared/JournalStore.lua`) hear
 it spoken? Options compared: the game's own text-to-speech (TTS), AI voice clips
 made in the cloud, AI voice clips made on the owner's M3 Mac (36 GB), and a mix.
 
@@ -43,7 +43,7 @@ page; **[2nd]** a secondary source such as warcraft.wiki.gg or a forum;
 
 ## What the receiver has today [src: this repo]
 
-- `Journal.lua:1327-1329` listens for `CHAT_MSG_WHISPER` and calls
+- `JournalSync.lua` listens for `CHAT_MSG_WHISPER` and calls
   `J.reaction(text, sender)`.
 - `J.reaction` accepts a whisper only if the sender is a group member, it
   arrives within 900 s (`REACTION_WINDOW`), and it matches one of the

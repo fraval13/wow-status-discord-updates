@@ -53,7 +53,9 @@ Privacy.lua
 Presentation.lua
 Wire.lua
 Popups.lua
-Journal.lua
+JournalStore.lua
+JournalSync.lua
+ActivityLogPage.lua
 Export.lua
 WhatsNewData.lua
 WhatsNew.lua

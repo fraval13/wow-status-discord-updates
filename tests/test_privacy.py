@@ -69,7 +69,7 @@ def test_every_line_has_nynorsk_and_the_page_follows_the_language():
 
 def test_the_numbers_it_states_match_the_code():
     # A wrong reassurance is worse than none: the retention figure is the log's cap.
-    journal = (ROOT / 'addon/shared/Journal.lua').read_text(encoding='utf-8')
+    journal = (ROOT / 'addon/shared/JournalStore.lua').read_text(encoding='utf-8')
     cap = int(re.search(r'local PREFIX, CAP, AGE, PAGE = "WoWStatusLog",(\d+),', journal).group(1))
     lua = make_lua()
     body = lua.eval('WoWStatusPrivacy.text()')
