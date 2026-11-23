@@ -495,7 +495,7 @@ function J.redraw() if I.refresh then I.refresh() end end
 function J.groupsChanged()
     if not db then return end
     J.zoneRevision=J.zoneRevision+1
-    -- Pulls and queued sends for left groups stop (JournalSync.lua).
+    -- Every pull and queued send starts over, greeting the groups now joined (JournalSync.lua).
     I.syncGroupsChanged()
     local kept={}
     for _, e in ipairs(db.journal.entries) do
