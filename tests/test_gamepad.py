@@ -677,6 +677,7 @@ def test_settings_character_visibility_checkboxes_are_reachable(lua):
         WoWStatusMainWindow.register=function() end
     ''')
     lua.execute((ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))
+    lua.execute((ROOT / 'addon/shared/CharactersPage.lua').read_text(encoding='utf-8'))
     lua.execute('''
         local bank={hide_from_list=true}
         local active={}

@@ -193,6 +193,7 @@ def test_the_heading_is_reachable_with_a_controller():
         WoWStatusMainWindow.register=function(key,title,build) __build=build end
     ''')
     runtime.execute((ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))
+    runtime.execute((ROOT / 'addon/shared/CharactersPage.lua').read_text(encoding='utf-8'))
     runtime.execute('''
         local R=WoWStatusRoster
         R.collapsed=function() return false end

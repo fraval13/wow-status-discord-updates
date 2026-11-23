@@ -70,6 +70,7 @@ Equipment.lua
 EquipmentSync.lua
 Locations.lua
 Roster.lua
+CharactersPage.lua
 Profile.lua
 Compare.lua
 UnitTooltip.lua

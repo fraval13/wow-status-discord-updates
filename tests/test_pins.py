@@ -258,6 +258,7 @@ def test_the_stars_are_reachable_with_a_controller():
         WoWStatusMainWindow.register=function(key,title,build) __build=build end
     ''')
     runtime.execute((root / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))
+    runtime.execute((root / 'addon/shared/CharactersPage.lua').read_text(encoding='utf-8'))
     runtime.execute('''
         local R=WoWStatusRoster
         R.collapsed=function() return false end
