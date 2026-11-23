@@ -2092,8 +2092,6 @@ receive = function(message, sender, distribution)
     return true
 end
 
--- Portrait, best available first: live unit, then race/sex face, then silhouette.
-
 local function ago(at)
     local seconds = math.max(0, S.now() - (at or S.now()))
     if seconds < 3600 then return math.floor(seconds / 60) .. "m ago" end
@@ -2521,8 +2519,6 @@ function R.players(group)
     end
     return order
 end
-
--- Collapsed sections, saved account-wide by section key.
 
 -- Saved lists keyed before the realm was left out (WoW Forever): merge to one key,
 -- keeping the newest copy of each character.

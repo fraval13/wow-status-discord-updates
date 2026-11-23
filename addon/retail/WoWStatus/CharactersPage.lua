@@ -9,6 +9,7 @@ local key, state, shownRace, shownTitle, counted, onlineSignature, updateSyncBut
     I.key, I.state, I.shownRace, I.shownTitle, I.counted, I.onlineSignature, I.updateSyncButton
 local page
 
+-- Portrait, best available first: live unit, then race/sex face, then silhouette.
 local UNITS = {"target", "mouseover", "focus", "party1", "party2", "party3", "party4"}
 function R.portrait(texture, name, race, sex)
     local wanted = key(name)
@@ -146,6 +147,7 @@ local function card(index)
     return c
 end
 
+-- Collapsed sections, saved account-wide by section key.
 function R.collapsed(key)
     local roster = state()
     roster.collapsed = type(roster.collapsed) == "table" and roster.collapsed or {}
