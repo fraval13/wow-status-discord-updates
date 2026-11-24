@@ -66,6 +66,7 @@ function WoWStatusPresentation.theme(item)
         reputation={"Achievement_Reputation_01",.3,.8,1,"REPUTATION MILESTONE!"},
         unlock={"INV_Misc_Book_07",.6,.4,1,"CLASS ABILITY UNLOCKED!"},
         pvp={"Achievement_PVP_A_01",1,.35,.2,"PVP PROMOTION!"},
+        battleground={"Achievement_PVP_A_01",1,.78,.3,"BATTLEGROUND WON!"},
         achievement={"Achievement_General",1,.82,.2,"ACHIEVEMENT EARNED!"},
         first={"INV_Misc_Coin_01",1,.85,.3,"A NEW FIRST!"},
         recap={"INV_Misc_Book_09",.8,.7,.5,"SESSION RECAP"},
@@ -81,6 +82,10 @@ function WoWStatusPresentation.theme(item)
         if rarity then themes.loot={"INV_Chest_Plate04",rarity[1],rarity[2],rarity[3],rarity[4].." "..piece.." EQUIPPED!"} end
     end
     if item.kind=="pvp" and (item.text or ""):match("^Reached honor level ") then themes.pvp[5]="HONOR LEVEL UP!" end
+    -- A loss is the same banner in a cooler colour: it is news either way.
+    if item.kind=="battleground" and (item.text or ""):match("^Lost ") then
+        themes.battleground={"Achievement_PVP_A_01",.62,.68,.78,"BATTLEGROUND LOST"}
+    end
     local kind = ({professionprogress="profession"})[item.kind] or item.kind
     local theme = themes[item.level and "level" or kind] or themes.session
     local icon = theme[1]

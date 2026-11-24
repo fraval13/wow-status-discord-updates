@@ -7,7 +7,8 @@ local Sh = WoWStatusSharing
 
 -- Kinds that share another kind's switch. The progress kinds are local
 -- bookkeeping for quests and professions and follow those switches too.
-local CATEGORY = {raid = "dungeon", epicmount = "mount", questprogress = "quest", professionprogress = "profession"}
+local CATEGORY = {raid = "dungeon", epicmount = "mount", questprogress = "quest", professionprogress = "profession",
+    battleground = "pvp"}
 function Sh.category(kind) return CATEGORY[kind] or kind end
 
 -- The character (from the account's saved characters) that wrote a log entry.

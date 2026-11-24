@@ -1066,7 +1066,7 @@ receiveUpdate = function(text, sender, channel)
         raw,armor=client~=nil,client~=nil
     end
     if client then
-        local allowed = {raid=true,epicmount=true,recap=true,introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true,
+        local allowed = {raid=true,epicmount=true,recap=true,introduction=true,loot=true, death=true, zone=true, quest=true, profession=true, dungeon=true, mount=true, reputation=true, unlock=true, pvp=true, battleground=true,
             achievement=WoWStatusAchievements and WoWStatusAchievements.available() or nil}
         if extended~=(kind=="raid" or kind=="epicmount" or kind=="recap") then return false end
         local at, now = tonumber(atText), S.now()
@@ -1856,6 +1856,11 @@ local function eventText(event)
     if event.kind == "death" and data.hardcore == true then return WoWStatusProgress.HARDCORE_DEATH end
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end
+    if event.kind == "battleground" then
+        local name = data.name
+        if type(name) ~= "string" or name == "" then return nil end
+        return (data.won and "Won " or "Lost ") .. name
+    end
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end
     if event.kind == "loot" or event.kind == "equipment" then
         local item = data.item and data.item:match("%[([^%]]+)%]") or "an item"
@@ -1896,7 +1901,7 @@ function P.broadcast(character, event)
         if not detail:find("[^ ]") then return end
         local extended=event.kind=="raid" or event.kind=="epicmount" or event.kind=="recap"
         local modern = extended or event.kind == "introduction" or event.kind == "dungeon" or event.kind == "mount" or event.kind == "reputation"
-            or event.kind == "unlock" or event.kind == "pvp"
+            or event.kind == "unlock" or event.kind == "pvp" or event.kind == "battleground"
         local limit = modern and 120 or 48
         detail = S.cut(detail, limit)
         -- Never send a text that updated receivers would reject and report as invalid.

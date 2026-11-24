@@ -29,7 +29,8 @@ local budgets = {}
 local panel, refresh
 local equipment, lastQuery = {}, {}
 local sharedKinds={introduction=true,level=true,loot=true,death=true,zone=true,quest=true,profession=true,
-    raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true,achievement=true}
+    raid=true,epicmount=true,recap=true,dungeon=true,mount=true,reputation=true,unlock=true,pvp=true,achievement=true,
+    battleground=true}
 -- An achievement entry's whitelisted ID (#165), or nil.
 local function achievementID(e)
     return WoWStatusAchievements.id(e.achievement_id)
@@ -643,6 +644,8 @@ function J.validText(kind,detail,level)
     if kind=="unlock" then return named(detail,"Unlocked ") end
     -- The name is always this client's own lookup of a whitelisted ID (#165).
     if kind=="achievement" then return named(detail,"Earned achievement: ") end
+    -- One match, one line: "Won Warsong Gulch" or "Lost Warsong Gulch".
+    if kind=="battleground" then return named(detail,"Won ") or named(detail,"Lost ") end
     if kind=="pvp" then
         -- Sender and receiver run the same edition, so the adapter decides the form.
         if WoWStatusAdapter.pvpText then
@@ -1037,7 +1040,7 @@ J.TYPES={
     {"Level-ups",{level=true}}, {"Deaths",{death=true}}, {"Zones",{zone=true}}, {"Quests",{quest=true}},
     {"Professions",{profession=true,professionprogress=true}}, {"Dungeons and raids",{dungeon=true,raid=true}},
     {"Mounts",{mount=true,epicmount=true}}, {"Armor",{loot=true,equipment=true}}, {"Reputation",{reputation=true}},
-    {"Class abilities",{unlock=true}}, {"PvP",{pvp=true}}, {"Joins",{introduction=true}}, {"Recaps",{recap=true}},
+    {"Class abilities",{unlock=true}}, {"PvP",{pvp=true,battleground=true}}, {"Joins",{introduction=true}}, {"Recaps",{recap=true}},
 }
 -- Retail only (#165), right after PvP.
 if WoWStatusAdapter.achievements then

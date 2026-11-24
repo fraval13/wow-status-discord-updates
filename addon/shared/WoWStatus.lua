@@ -82,6 +82,20 @@ local function snapshot()
     end
 end
 
+-- The kind of instance the player is in, which the game names itself: "pvp"
+-- for a battleground and "arena" for an arena match.
+local function instanceKind()
+    local _, kind = S.call(IsInInstance)
+    return S.string(kind)
+end
+local function battlegroundInstance() return instanceKind() == "pvp" end
+-- A match whose deaths are part of the game rather than news.
+local function matchInstance()
+    local kind = instanceKind()
+    return kind == "pvp" or kind == "arena"
+end
+-- The match whose result has been reported, cleared when the player leaves.
+local battlegroundReported = false
 local function queue(kind, data, fixed, targetGroups)
     if not current or not current.settings.enabled or not current.settings.collection[WoWStatusSharing.category(kind)] then
         return
@@ -667,7 +681,8 @@ end
 local EVENTS = {"ADDON_LOADED","PLAYER_LOGIN","PLAYER_ENTERING_WORLD","PLAYER_REGEN_ENABLED",
     "PLAYER_LOGOUT","PLAYER_LEVEL_UP","PLAYER_EQUIPMENT_CHANGED","ZONE_CHANGED_NEW_AREA",
     "PLAYER_DEAD","TIME_PLAYED_MSG","PLAYER_XP_UPDATE","QUEST_TURNED_IN","QUEST_LOG_UPDATE",
-    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST","PLAYER_MONEY","CHAT_MSG_COMBAT_XP_GAIN"}
+    "QUEST_QUERY_COMPLETE","SKILL_LINES_CHANGED","PLAYER_ALIVE","PLAYER_UNGHOST","PLAYER_MONEY","CHAT_MSG_COMBAT_XP_GAIN",
+    "UPDATE_BATTLEFIELD_STATUS"}
 -- What killed you, from the combat log. Midnight-era clients (WoW Forever,
 -- Retail) forbid it: registering alone raises a "blocked action" dialog, and
 -- pcall cannot stop that. Deaths there show the zone only.
@@ -735,6 +750,10 @@ frame:SetScript("OnEvent", function(_, event, ...)
         snapshot()
     elseif event == "PLAYER_DEAD" then
         local hardcore = WoWStatusProgress.hardcore(current)
+        -- Dying is the ordinary course of a battleground or an arena match, and
+        -- announcing each one buried the group in deaths. The match reports its
+        -- own result instead, so these deaths are neither announced nor counted.
+        if matchInstance() then return end
         if current.settings.enabled and current.settings.collection.death and WoWStatusProgress.death(current, hardcore) then
             -- A Hardcore death carries its own fixed text instead of a death total (#163).
             local data = hardcore and {hardcore=true}
@@ -744,6 +763,22 @@ frame:SetScript("OnEvent", function(_, event, ...)
             lastHit = nil
             local event = queue("death", data)
             if event and WoWStatusRoster.deathDetails then WoWStatusRoster.deathDetails(event) end
+        end
+    elseif event == "UPDATE_BATTLEFIELD_STATUS" then
+        -- The event fires throughout a match; GetBattlefieldWinner answers only
+        -- once it is over. The latch clears on leaving, so the next match is
+        -- reported too and this one is reported once.
+        if not battlegroundInstance() then battlegroundReported = false
+        elseif not battlegroundReported then
+            -- 0 is Horde and 1 is Alliance. Anything else: say nothing.
+            local winner = S.number(S.call(GetBattlefieldWinner))
+            local side = winner == 0 and "Horde" or winner == 1 and "Alliance" or nil
+            local faction = S.stringCall(UnitFactionGroup, "player")
+            local name = S.string(S.call(GetInstanceInfo)) or A.zone()
+            if side and faction and name then
+                battlegroundReported = true
+                queue("battleground", {name=S.cut(name, 48), won=side == faction})
+            end
         end
     elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
         trackHit()
