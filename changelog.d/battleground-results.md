@@ -1,1 +1,0 @@
-- Battleground and arena deaths are no longer reported; a finished battleground reports Won or Lost with its name.
