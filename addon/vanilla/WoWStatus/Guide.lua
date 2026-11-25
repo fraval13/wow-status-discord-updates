@@ -18,7 +18,7 @@ local STEPS = {
         .. "Groups are saved for your whole account. Keep the name private: sharing it with your other groups lets their members join too.",
      action={"Open Groups", function() SlashCmdList.WOWSTATUS("groups") end}},
     {title="Choose your announcements",
-     text="Decide which milestones you share: levels, deaths, first zone visits, professions, dungeon clears and more. "
+     text="Choose which milestones you share and see from friends: levels, deaths, first zone visits, professions, dungeon clears and more. "
         .. "You can change this at any time.",
      action={"Open announcement options", function() SlashCmdList.WOWSTATUS("") end}},
     {title="What friends can see",

@@ -11,6 +11,14 @@ local CATEGORY = {raid = "dungeon", epicmount = "mount", questprogress = "quest"
     battleground = "pvp"}
 function Sh.category(kind) return CATEGORY[kind] or kind end
 
+-- Announcement choices apply to sending and receiving for this character.
+-- A missing choice retains the existing default; character details and the
+-- master sending switch do not opt friends out of reception.
+function Sh.wants(character, kind)
+    local choices = character and character.settings and character.settings.in_game
+    return not choices or choices[Sh.category(kind)] ~= false
+end
+
 -- The character (from the account's saved characters) that wrote a log entry.
 function Sh.ownerOf(db, entry)
     for _, c in pairs(db and db.characters or {}) do

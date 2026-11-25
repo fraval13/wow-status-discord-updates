@@ -101,6 +101,7 @@ def test_receiver_names_the_achievement_itself_and_rejects_forged_names():
     friend = retail_runtime('Eldrin', extra=GERMAN + ACHIEVEMENTS)
     joined(own, friend)
     enable(own)
+    enable(friend)
     own.eval('fire')('ACHIEVEMENT_EARNED', 43, False)
     packet = own.eval('__sent[1].text')
     friend.eval('fire')('CHAT_MSG_ADDON', 'WoWStatus', packet, 'WHISPER', 'Thora-TestRealm')
@@ -122,6 +123,7 @@ def test_sender_and_receiver_counts_are_bounded_per_session():
     friend = retail_runtime('Eldrin', extra=ACHIEVEMENTS)
     joined(own, friend)
     enable(own)
+    enable(friend)
     own.execute('''
         -- Without a group nothing is queued, so nothing uses the cap.
         local groups=character().group_ids;character().group_ids={}

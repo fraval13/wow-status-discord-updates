@@ -84,7 +84,7 @@ local function permitted(entry)
         if not total or total<100 or total%100~=0 then return false end
     end
     if (entry.kind=="loot" or entry.kind=="equipment") and not WoWStatusLoot.allowed(current and current.settings,entry) then return false end
-    if not entry.owner then return true end
+    if not entry.owner then return WoWStatusSharing.wants(current, entry.kind) end
     local owner=WoWStatusSharing.ownerOf(db,entry)
     if not owner or not owner.settings.enabled then return false end
     local kind=WoWStatusSharing.category(entry.kind)

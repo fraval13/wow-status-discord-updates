@@ -314,6 +314,14 @@ still comes from the selected reaction voice.
 
 ## Announcements
 
+Each announcement choice controls both what this character shares and what you
+see from friends, including popups, the activity log and login catch-up. Turn off
+Deaths, for example, to stop sharing your deaths and seeing friends' death
+announcements. Dungeon / raid and mount choices also cover raids and epic mounts;
+the PvP choice covers battleground results. Session recaps follow their own
+share-and-see choice (off by default). Character-detail and map-sharing choices
+remain separate.
+
 The main settings page controls levels, deaths, first recorded zone visits, each 100 completed
 quests, new professions and profession title promotions, first dungeon clears, first raid boss kills, first mount,
 reputation ranks, major class unlocks and PvP ranks. **Notifications** holds the popup

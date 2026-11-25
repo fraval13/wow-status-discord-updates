@@ -781,7 +781,7 @@ function F.update(quietly)
                 if not quiet and previous == nil and e.origin == "live" and not announced[seen]
                     and not S.outside(e.at, ANNOUNCE_WITHIN, math.huge) and WoWStatusPopups.notice then
                     announced[seen] = true
-                    WoWStatusPopups.notice({sender=e.sender, kind="first", text=medal.title .. "!",
+                    WoWStatusPopups.notice({sender=e.sender, kind="first", source_kind=e.kind, text=medal.title .. "!",
                         flavour=T("A new record in") .. " " .. group.label:gsub("|", "||") .. "."})
                 end
             end

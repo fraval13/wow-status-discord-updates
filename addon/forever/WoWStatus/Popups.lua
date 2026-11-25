@@ -403,6 +403,10 @@ end
 local function receiving()
     return prefs and (groupMode() or prefs.receive)
 end
+local function wantedPopup(item)
+    if item.preview and item.key ~= "local-notice" then return true end
+    return WoWStatusSharing.wants(getCharacter(), item.source_kind or item.kind or "level")
+end
 local function canShare(character, event)
     if not (prefs and character and character.settings.enabled
         and (groupMode(character) or prefs.broadcast)) then return false end
@@ -411,7 +415,7 @@ local function canShare(character, event)
     if event.kind == "dungeon" and event.data.source ~= "game_api" then return false end
     local category=WoWStatusSharing.category(event.kind)
     if not character.settings.collection[category] then return false end
-    if character.settings.in_game and character.settings.in_game[category] == false then return false end
+    if not WoWStatusSharing.wants(character, event.kind) then return false end
     if event.kind == "level" and not character.settings.fields.level then return false end
     if event.kind == "zone" and not character.settings.fields.zone then return false end
     if event.kind == "equipment" then return false end
@@ -876,6 +880,10 @@ P.comboNote = comboNote
 -- Store a validated update from a known peer (or a trusted legacy sender): log
 -- it, then queue its popup unless the log already had it.
 local function commit(c, now)
+    if not WoWStatusSharing.wants(getCharacter(), c.kind or "level") then
+        noteReceive("category_disabled", c, now)
+        return false, "announcement category disabled"
+    end
     pruneSeen(now)
     local item = {sender=c.sender, key=c.key, kind=c.kind, level=c.level, count=c.level and 1 or nil, text=c.text,
         automatic=c.automatic, received_at=now, at=c.at, nonce=c.nonce, group_id=c.group~="legacy" and c.group or nil}
@@ -1581,6 +1589,7 @@ local notices = {}
 function P.notice(item)
     -- Quiet hours: a notice about a friend is skipped; the Records page has it.
     if not prefs or #incoming + #notices >= 128 then return false end
+    if not wantedPopup(item) then return false end
     if P.quietHoursActive() and not P.isSelf(item.sender) then return false end
     if item.sender and WoWStatusMutes and WoWStatusMutes.popupsMuted(item.sender) then return false end
     item.preview, item.key, item.received_at = true, "local-notice", S.now()
@@ -1683,7 +1692,8 @@ local function tick()
         if (receiving() or (#incoming > 0 and incoming[1].preview)) and not active and #incoming > 0 and now >= nextDisplay then
             local item = table.remove(incoming, 1)
             if (item.preview or (item.group_id and WoWStatusGroups.contains(getCharacter(), item.group_id))
-                or prefs.trusted[item.key]) and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
+                or prefs.trusted[item.key]) and wantedPopup(item)
+                and (item.kind~="guard" or canShare(getCharacter())) then show(item, now) end
         end
     end
     P.checkDeliveries(now)
@@ -1795,7 +1805,7 @@ function P.awaitDelivery(item, target, now)
     local key = P.senderKey(target)
     if not nonce or not key or not item.group_id then return end
     if #pending >= 200 then table.remove(pending, 1) end
-    table.insert(pending, {nonce=nonce, target=target, key=key, group=item.group_id, message=item.message, at=now, tries=1})
+    table.insert(pending, {nonce=nonce, target=target, key=key, group=item.group_id, message=item.message, event=item.event, at=now, tries=1})
 end
 function P.delivered(sender, nonce)
     local key = P.senderKey(sender)
@@ -1810,7 +1820,9 @@ end
 function P.checkDeliveries(now)
     for i = #pending, 1, -1 do
         local item = pending[i]
-        if now - item.at >= P.ACK_WAIT then
+        if not canShare(getCharacter(), item.event) then
+            table.remove(pending, i)
+        elseif now - item.at >= P.ACK_WAIT then
             if not supportsAcks(item.target) then
                 table.remove(pending, i) -- Older versions never confirm.
             elseif item.tries < 2 then
@@ -1938,6 +1950,16 @@ function P.privacyChanged()
         if canShare(getCharacter(), item.event) then table.insert(kept, item) end
     end
     outgoing = kept
+    for i = #pending, 1, -1 do
+        if not canShare(getCharacter(), pending[i].event) then table.remove(pending, i) end
+    end
+    dropQueued(wantedPopup)
+    for i = #notices, 1, -1 do if not wantedPopup(notices[i]) then table.remove(notices, i) end end
+    kept = {}
+    for _, item in ipairs(unverified) do
+        if WoWStatusSharing.wants(getCharacter(), item.kind or "level") then kept[#kept+1] = item end
+    end
+    unverified = kept
     if not canShare(getCharacter()) and prefs.last_send then status("disabled_by_character_privacy") end
 end
 

@@ -1,0 +1,1 @@
+- Announcement choices now control both what you share and what you see from friends, including log catch-up

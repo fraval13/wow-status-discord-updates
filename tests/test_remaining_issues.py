@@ -130,6 +130,7 @@ def test_new_kinds_live_and_quiet_catchup_roundtrip():
     assert b.eval('WoWStatusLevelPopup.message:GetText()').find('Lucifron') >= 0
     assert b.eval('WoWStatusJournal.entries()[1].kind') == 'raid'
     c = actor('Eldrin')
+    c.execute('character().settings.in_game.recap=true')
     mesh({'Thora': a, 'Eldrin': c})
     assert c.eval('WoWStatusJournal.entries()[1].kind') == 'raid'
     assert c.eval('WoWStatusLevelPopup') is None
@@ -139,6 +140,7 @@ def test_shared_recap_opt_in_strict_text_and_no_recursive_session():
     a, b = actor('Thora'), actor('Eldrin')
     clock(a, 10)
     clock(b, 10)
+    b.execute('character().settings.in_game.recap=true')
     a.execute('''
         assert(character().settings.in_game.recap==false)
         character().settings.in_game.recap=true
@@ -159,6 +161,7 @@ def test_shared_recap_opt_in_strict_text_and_no_recursive_session():
     assert b.eval('WoWStatusJournal.entries()[1].kind') == 'recap'
     assert b.eval('WoWStatusJournal.visible(WoWStatusJournal.entries()[1])')
     c = actor('Eldrin')
+    c.execute('character().settings.in_game.recap=true')
     mesh({'Thora': a, 'Eldrin': c})
     assert c.eval('WoWStatusJournal.entries()[1].kind') == 'recap'
     assert c.eval('WoWStatusLevelPopup') is None

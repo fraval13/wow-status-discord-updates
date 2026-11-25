@@ -295,8 +295,8 @@ W.add({
     ["Pick a group ID and give the same ID to your friends. Everyone with the same ID shares updates. Groups are saved for your whole account."] =
         "Vel ein gruppe-ID og gje same ID til venene dine. Alle med same ID deler oppdateringar. Gruppene blir lagra for heile kontoen.",
     ["Open Groups"] = "Opne Grupper", ["Choose your announcements"] = "Vel kva du vil kunngjere",
-    ["Decide which milestones you share: levels, deaths, first zone visits, professions, dungeon clears and more. You can change this at any time."] =
-        "Bestem kva mål du deler: nivå, dødsfall, første besøk i område, yrke, fangehol og meir. Du kan endre dette når som helst.",
+    ["Choose which milestones you share and see from friends: levels, deaths, first zone visits, professions, dungeon clears and more. You can change this at any time."] =
+        "Vel kva mål du deler og ser frå vener: nivå, dødsfall, første besøk i område, yrke, fangehol og meir. Du kan endre dette når som helst.",
     ["Open announcement options"] = "Opne kunngjeringsval", ["You're all set"] = "No er du klar",
     ["Click the minimap book to open the WoW Status window. Want to see what it looks like with friends? Show me around fills it with sample adventurers. Sample data is never saved or sent."] =
         "Klikk på boka ved minikartet for å opne WoW Status-vindauget. Vil du sjå korleis det ser ut med vener? Vis meg rundt fyller det med eksempel-eventyrarar. Eksempeldata blir aldri lagra eller sende.",
@@ -322,7 +322,10 @@ W.add({
     -- Main settings page
     ["Set the same group ID as your friends to start sharing."] = "Bruk same gruppe-ID som venene dine for å byrje å dele.",
     ["Activity log"] = "Aktivitetslogg", ["Share my progress"] = "Del framgangen min",
-    ["Announcements"] = "Kunngjeringar", ["Share my session recaps"] = "Del øktsamandraga mine",
+    ["Announcements"] = "Kunngjeringar",
+    ["Announcements — share and see"] = "Kunngjeringar – del og sjå",
+    ["Share and see session recaps"] = "Del og sjå øktsamandrag",
+    ["Share and see first armor equips"] = "Del og sjå første rustning", ["Share my session recaps"] = "Del øktsamandraga mine",
     ["First-time equipment"] = "Utstyr første gong", ["Announce first armor equips"] = "Kunngjer første rustning",
     ["Rare equipment"] = "Sjeldan utstyr", ["Epic equipment"] = "Episk utstyr", ["Legendary equipment"] = "Legendarisk utstyr",
     ["Screenshots"] = "Skjermbilete", ["Screenshot on level up"] = "Skjermbilete ved nytt nivå",
@@ -851,8 +854,8 @@ W.add({
     ["The only text you type that travels is your player name and the name of a group you list or invite someone to."] =
         "Den einaste teksten du skriv som blir sendt, er spelarnamnet ditt og namnet på ei gruppe du listar eller inviterer nokon til.",
     ["How to stop"] = "Korleis du stoppar det",
-    ["Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, level and XP progress travel with your character list whatever you tick, and the Faction tick changes nothing, as your race shows your faction."] =
-        "Fjern krysset for ei kunngjering, eller for ein av figurdetaljane lista over, i Innstillingar. Rase, kjønn, klasse, nivå og XP-framgang følgjer figurlista di uansett kva du kryssar av for, og krysset for Fraksjon endrar ingenting, sidan rasen viser fraksjonen din.",
+    ["Untick an announcement in Options to stop sharing it and seeing it from friends, including in log sync. Character details are separate. Race, sex, class, level and XP progress travel with your character list whatever you tick, and the Faction tick changes nothing, as your race shows your faction."] =
+        "Fjern krysset for ei kunngjering i Innstillingar for å slutte å dele henne og sjå henne frå vener, òg ved logsynk. Figurdetaljar er eigne val. Rase, kjønn, klasse, nivå og XP-framgang følgjer figurlista di uansett kva du kryssar av for, og krysset for Fraksjon endrar ingenting, sidan rasen viser fraksjonen din.",
     ["Untick a character under Characters shown to friends: it leaves everyone's character list, leaderboard and gear view, but its announcements still go out, and a death's details carry your player ID."] =
         "Fjern krysset for ein figur under Figurar som venene ser: han forsvinn frå figurlista, topplista og utstyrsvisinga til alle, men kunngjeringane hans blir framleis sende, og detaljane om eit dødsfall har med spelar-ID-en din.",
     ["Untick Share my character list on the Characters page: your list, details and gear stop, and your friends are told to forget your list."] =

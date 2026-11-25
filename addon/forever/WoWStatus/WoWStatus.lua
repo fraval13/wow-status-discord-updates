@@ -238,7 +238,7 @@ local function showPanel(host)
         layout:category("sharing",174)
         checkbox("enabled","Share my progress",24,-174)
         checkbox("share_position","Share my position",310,-174)
-        section("Announcements",-234)
+        section("Announcements — share and see",-234)
         local titles={level="Level up",death="Deaths",zone="First zone visit",quest="Every 100 quests",
             profession="Profession milestones",dungeon="Dungeon / raid milestones",mount="Mount milestones",
             reputation="Reputation rank",unlock="Class ability unlock",pvp=A.pvpLabel or "PvP rank",achievement="Achievements"}
@@ -246,9 +246,9 @@ local function showPanel(host)
             checkbox(key,titles[key] or key,(i-1)%2==0 and 24 or 310,-270-math.floor((i-1)/2)*42,"in_game")
         end
         -- The slot after the last kind: beside it on an odd count, else a new row.
-        checkbox("recap","Share my session recaps",#kinds%2==1 and 310 or 24,-270-math.floor(#kinds/2)*42,"in_game")
+        checkbox("recap","Share and see session recaps",#kinds%2==1 and 310 or 24,-270-math.floor(#kinds/2)*42,"in_game")
         section("First-time equipment",-522)
-        checkbox("loot","Announce first armor equips",24,-544,"in_game")
+        checkbox("loot","Share and see first armor equips",24,-544,"in_game")
         checkbox("rare","Rare equipment",54,-586,"loot_rarities")
         checkbox("epic","Epic equipment",54,-628,"loot_rarities")
         checkbox("legendary","Legendary equipment",54,-670,"loot_rarities")

@@ -50,7 +50,7 @@ PV.SECTIONS = {
       "The only text you type that travels is your player name and the name of a group you list or invite "
         .. "someone to."}},
     {"How to stop",
-     {"Untick an announcement, or one of the character details listed above, in Options. Race, sex, class, "
+     {"Untick an announcement in Options to stop sharing it and seeing it from friends, including in log sync. Character details are separate. Race, sex, class, "
         .. "level and XP progress travel with your character list whatever you tick, and the Faction tick "
         .. "changes nothing, as your race shows your faction.",
       "Untick a character under Characters shown to friends: it leaves everyone's character list, "
