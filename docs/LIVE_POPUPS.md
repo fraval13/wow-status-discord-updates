@@ -262,3 +262,17 @@ with `/wstatus debug on`, then `/reload` again so the log is saved for reading:
 5. The calendar and drop-down menus open above the window.
 6. Characters: friends' levels, gold and kills look current; "Not announced"
    only lists members on versions before 1.17.
+
+## Battleground scoreboard totals
+
+In each edition, finish a win and a loss and compare the single result's killing
+blows, honorable kills, deaths, honor gained, damage and healing with your own
+final scoreboard row. Check another realm's player with the same short name is
+not selected. Ask a group friend to check the popup and activity card in English
+and Nynorsk; all six totals should remain readable with a controller. Missing or
+restricted fields show a dash, and unavailable APIs leave the plain result.
+Confirm a delayed scoreboard arrives within three seconds, leaving immediately
+still records one result, and entering the next match resets the report latch.
+Turn PvP off and confirm neither sharing nor friends' results appear. Catch-up
+must recover the same result and totals quietly, once. BG and arena deaths must
+remain absent from ordinary death announcements and world death totals.

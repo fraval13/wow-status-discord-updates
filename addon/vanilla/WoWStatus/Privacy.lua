@@ -14,7 +14,7 @@ PV.SECTIONS = {
      {"A note to each group you join, saying that you joined.",
       "The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 "
         .. "quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first "
-        .. "armor equips, and session recaps if you tick them. A death also names what killed you, and where "
+        .. "armor equips, battleground results with your scoreboard totals when available, and session recaps if you tick them. A death also names what killed you, and where "
         .. "when Location is ticked.",
       "Your character list: the name, race, sex, class, level and XP progress of each character shown to "
         .. "friends, when it reached each tenth level, the player name you chose, your main in each group once "

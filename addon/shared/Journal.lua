@@ -645,7 +645,7 @@ function J.validText(kind,detail,level)
     -- The name is always this client's own lookup of a whitelisted ID (#165).
     if kind=="achievement" then return named(detail,"Earned achievement: ") end
     -- One match, one line: "Won Warsong Gulch" or "Lost Warsong Gulch".
-    if kind=="battleground" then return named(detail,"Won ") or named(detail,"Lost ") end
+    if kind=="battleground" then return WoWStatusBattlegrounds.validText(detail) end
     if kind=="pvp" then
         -- Sender and receiver run the same edition, so the adapter decides the form.
         if WoWStatusAdapter.pvpText then
@@ -1200,13 +1200,20 @@ local function render()
             row.icon:SetTexture(texture);row.accent:SetColorTexture(r,g,b,1);row.heading:SetTextColor(r,g,b)
             row.heading:SetText(T(heading))
             local who=J.displayName(e)
-            row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,(J.deathText(e)..J.withText(e)):gsub("|","||")))
+            local message, bgStats = e.text, nil
+            if e.kind == "battleground" then message, bgStats = WoWStatusBattlegrounds.parts(e.text) end
+            message = bgStats and T(message) or J.deathText(e)
+            row.message:SetText(who:gsub("|","||").." — "..WoWStatusPresentation.colourItem(e,(message..J.withText(e)):gsub("|","||")))
             local scope=e.imported=="achievement" and T("From your achievements (date only)") or e.owner and T("Your activity")
                 or (e.origin=="catchup" and (T("Caught up via").." "..(e.via or T("a group member"))..(e.relay and (", "..T("passed on by").." "..e.relay) or ""))
                 or e.origin=="legacy" and T("Saved group update") or T("Live group update"))
             -- A death that ends a long deathless streak says so before its caption (#164).
             local ended=WoWStatusStreaks and WoWStatusStreaks.endedText(e)
-            local caption=WoWStatusFlavour.text(e)
+            local caption=bgStats or WoWStatusFlavour.text(e)
+            row.flavour:ClearAllPoints();row.flavour:SetPoint("TOPLEFT",88,bgStats and -64 or -74)
+            row.flavour:SetHeight(bgStats and 30 or 18);row.flavour:SetWordWrap(bgStats ~= nil)
+            if row.flavour.SetMaxLines then row.flavour:SetMaxLines(bgStats and 2 or 1) end
+            row.flavour.oneLine = not bgStats
             row.flavour:SetText(ended and ("|cffffd100"..ended:gsub("|","||").."|r"..(caption~="" and (" "..caption) or "")) or caption)
             local when=WoWStatusHistory.localTime(e.at)
             if e.imported then when=when:sub(1,10) end

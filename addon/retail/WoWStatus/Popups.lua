@@ -1559,9 +1559,11 @@ local function show(item, now)
     local detail = item.level and ("reached level " .. item.level .. "!"
         .. ((item.count or 1) > 1 and (" (" .. item.count .. " recorded level-ups)") or ""))
         or ((item.text or "Shared an update"):gsub("|", "||"))
+    local bgStats
+    if item.kind == "battleground" then detail, bgStats = WoWStatusBattlegrounds.parts(detail) end
     detail = WoWStatusPresentation.colourItem(item, T(detail))
     toast.message:SetText(name .. ((item.level or item.kind=="guard") and " " or " — ") .. detail)
-    local flavour=WoWStatusFlavour.text(item)
+    local flavour=bgStats or WoWStatusFlavour.text(item)
     if item.combo and not item.preview then flavour = item.combo.names:gsub("|", "||") end
     toast.detail:SetText(flavour)
     toast.detail:SetShown(flavour~="")
@@ -1869,9 +1871,7 @@ local function eventText(event)
     if event.kind == "death" then return data.total_deaths and ("Total deaths: " .. data.total_deaths) or "Died" end
     if event.kind == "session" then return data.state == "addon_loaded" and "Started a session" or "Ended a session" end
     if event.kind == "battleground" then
-        local name = data.name
-        if type(name) ~= "string" or name == "" then return nil end
-        return (data.won and "Won " or "Lost ") .. name
+        return WoWStatusBattlegrounds.text(data)
     end
     if event.kind == "zone" then return "Entered " .. (data.zone or "a new zone") end
     if event.kind == "loot" or event.kind == "equipment" then

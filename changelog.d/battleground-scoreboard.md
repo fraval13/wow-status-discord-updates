@@ -1,0 +1,1 @@
+- Battleground results include your killing blows, honorable kills, deaths, honor, damage and healing when available

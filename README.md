@@ -314,6 +314,13 @@ still comes from the selected reaction voice.
 
 ## Announcements
 
+Finished battlegrounds report one win/loss with your own scoreboard totals when
+available: killing blows, honorable kills, deaths, honor gained, damage and healing.
+The popup and activity card show these on two lines; missing values are shown as
+`-`. The addon waits up to three seconds for the final scoreboard. No scoreboard
+API means a plain result, and match deaths stay out of ordinary death announcements
+and totals. The PvP choice controls both sharing and receiving these results.
+
 Each announcement choice controls both what this character shares and what you
 see from friends, including popups, the activity log and login catch-up. Turn off
 Deaths, for example, to stop sharing your deaths and seeing friends' death

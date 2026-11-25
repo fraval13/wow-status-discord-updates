@@ -322,6 +322,8 @@ W.add({
     -- Main settings page
     ["Set the same group ID as your friends to start sharing."] = "Bruk same gruppe-ID som venene dine for å byrje å dele.",
     ["Activity log"] = "Aktivitetslogg", ["Share my progress"] = "Del framgangen min",
+    ["Killing blows"] = "Drap", ["HK"] = "Æresdrap", ["Honor"] = "Ære",
+    ["Damage"] = "Skade", ["Healing"] = "Læking",
     ["Announcements"] = "Kunngjeringar",
     ["Announcements — share and see"] = "Kunngjeringar – del og sjå",
     ["Share and see session recaps"] = "Del og sjå øktsamandrag",
@@ -824,8 +826,8 @@ W.add({
     ["What is sent"] = "Kva som blir sendt",
     ["A note to each group you join, saying that you joined."] =
         "Ei melding til kvar gruppe du blir med i, om at du har blitt med.",
-    ["The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, and session recaps if you tick them. A death also names what killed you, and where when Location is ticked."] =
-        "Måla kunngjeringsvala dine tillèt: nye nivå, dødsfall, første besøk i eit område, kvart 100. oppdrag, yrkesmål, fangehol- og raidmål, ridedyr, omdøme, klasseevner, PvP-rang, første rustning du tek på, og øktsamandrag om du har kryssa av for dei. Eit dødsfall seier òg kva som drap deg, og kvar, når Stad er kryssa av.",
+    ["The milestones your announcement choices allow: level-ups, deaths, first zone visits, every 100 quests, profession and dungeon milestones, mounts, reputation, class abilities, PvP rank, first armor equips, battleground results with your scoreboard totals when available, and session recaps if you tick them. A death also names what killed you, and where when Location is ticked."] =
+        "Måla kunngjeringsvala dine tillèt: nye nivå, dødsfall, første besøk i eit område, kvart 100. oppdrag, yrkesmål, fangehol- og raidmål, ridedyr, omdøme, klasseevner, PvP-rang, første rustning du tek på, slagmarkresultat med dine eigne poengtal når dei er tilgjengelege, og øktsamandrag om du har kryssa av for dei. Eit dødsfall seier òg kva som drap deg, og kvar, når Stad er kryssa av.",
     ["Your character list: the name, race, sex, class, level and XP progress of each character shown to friends, when it reached each tenth level, the player name you chose, your main in each group once you pick one, a random player ID and your addon version. A hidden character's name is still sent, marked as hidden, so friends' lists leave it out, even after you stop sharing your list."] =
         "Figurlista di: namn, rase, kjønn, klasse, nivå og XP-framgang for kvar figur venene ser, når han nådde kvart tiande nivå, spelarnamnet du valde, hovudfiguren din i kvar gruppe når du har valt ein, ein tilfeldig spelar-ID og versjonen av tillegget. Namnet på ein gøymd figur blir likevel sendt, merkt som gøymd, så lista til venene utelèt han, òg etter at du har slutta å dele lista di.",
     ["The character details you tick: played time, professions with skill levels, completed quests, gold and gold earned, monsters killed, dungeons, mounts and honor kills, total deaths, and the gear you wear with its combat stats. Friends see them change as you play."] =

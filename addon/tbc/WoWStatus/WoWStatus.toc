@@ -19,6 +19,7 @@ CaseFold.lua
 TBC.lua
 Loot.lua
 Progress.lua
+Battlegrounds.lua
 History.lua
 HistoryUI.lua
 Groups.lua

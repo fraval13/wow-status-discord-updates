@@ -20,6 +20,7 @@ CaseFold.lua
 Vanilla.lua
 Loot.lua
 Progress.lua
+Battlegrounds.lua
 History.lua
 HistoryUI.lua
 Groups.lua
