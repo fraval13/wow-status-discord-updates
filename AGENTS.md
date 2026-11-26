@@ -61,8 +61,12 @@ be checked against Git and the environment rather than assumed permanently true.
   `WoWStatusSettings.schema` (`key`, `type`, `default`, `min`, `max`) and read and write
   it with `WoWStatusSettings.get/set`, which keep a saved value in range.
   `tests/fixtures/WoWStatusDB-v1.lua` is data saved before migrations; it must load unchanged.
-- `Groups.lua`, `Popups.lua`, `Journal.lua`: membership, live transport/queue and
-  persistent log/login recovery. Retain bounded payloads, queues and validation.
+- `Groups.lua`, `Popups.lua`, `JournalStore.lua`, `JournalSync.lua`: membership, live
+  transport/queue, the persistent log and its login recovery. Retain bounded payloads,
+  queues and validation. `WoWStatusJournal` is one table filled by `JournalStore.lua`
+  (entries, privacy, reactions), `JournalSync.lua` (catch-up and the `J2` wire format)
+  and `ActivityLogPage.lua` (the Activity page), in that TOC order; they share private
+  state only through `WoWStatusJournal.internal` (#230).
 - `Gamepad.lua`, `Bindings.xml`: controller navigation of open windows (D-pad,
   A/B/X, LB/RB, right stick) and key bindings. `Bindings.xml` ships without a TOC
   line and is mirrored by `sync_addons.py` like shared Lua.
