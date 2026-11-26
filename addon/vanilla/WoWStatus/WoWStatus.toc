@@ -4,7 +4,7 @@
 ## Author: fraval13
 ## X-Wago-ID: mNww12No
 ## IconTexture: Interface\AddOns\WoWStatus\Textures\Logo
-## Version: 1.99.0
+## Version: 1.100.0
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber
 ## X-Client-Support: Vanilla Classic / Classic Era only
