@@ -265,6 +265,7 @@ def test_whisper_invite_and_range_buttons_are_reachable_with_a_controller():
         WoWStatusMainWindow.register=function(key,title,build) __build=build end
     ''')
     runtime.execute((ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8'))
+    runtime.execute((ROOT / 'addon/shared/CharactersPage.lua').read_text(encoding='utf-8'))
     runtime.execute('''
         local R=WoWStatusRoster
         R.collapsed=function() return false end

@@ -77,7 +77,7 @@ def test_the_leaderboard_marks_offline_friends_too_not_only_online_ones_in_green
 
 
 def test_character_cards_use_the_ring_for_offline_characters():
-    source = (ROOT / 'addon/shared/Roster.lua').read_text(encoding='utf-8')
+    source = (ROOT / 'addon/shared/CharactersPage.lua').read_text(encoding='utf-8')
     assert 'c.dot:SetTexture(online and UI.ONLINE_ICON or UI.OFFLINE_ICON)' in source
     assert 'StatusIcon-Offline' not in source
 
