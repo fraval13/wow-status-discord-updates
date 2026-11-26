@@ -51,7 +51,11 @@ Use the addon with a mouse, keyboard or controller. English and Norwegian
 4. Click the minimap book or type `/wstatus` to open WoW Status.
 
 Supports **Retail, Classic Era, TBC Anniversary and WoW Forever**, with a separate
-file for each edition. Game APIs and realm, faction, instance and phase rules
+file for each edition. For spoken reactions on Forever, install the optional
+[voice pack](https://github.com/fraval13/wow-status-discord-updates/releases/download/voice-pack/WoWStatus_Voices.zip)
+alongside the addon. Sharing and text notifications work without it.
+
+Game APIs and realm, faction, instance and phase rules
 can affect which information and deliveries are available.
 
 ## Links and support

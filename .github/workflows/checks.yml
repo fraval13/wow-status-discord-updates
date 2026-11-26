@@ -296,14 +296,13 @@ jobs:
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "::notice::Wago upload skipped; add the WAGO_API_TOKEN repository secret."
-            echo "Wago upload skipped. Add the WAGO_API_TOKEN repository secret, then run with Wago only enabled." >> "$GITHUB_STEP_SUMMARY"
+            echo "Wago upload skipped. Add the WAGO_API_TOKEN repository secret, then run the workflow on main." >> "$GITHUB_STEP_SUMMARY"
           fi
       - name: Build addon packages for this release
         if: steps.wago-config.outputs.ready == 'true'
         run: python3 scripts/build_homepage.py --addon-ref HEAD
-      - name: Put every voice clip into the Forever ZIP
-        if: steps.wago-config.outputs.ready == 'true' && (github.event_name != 'workflow_dispatch' || inputs.wago_edition == 'all' || inputs.wago_edition == 'forever')
-        run: python3 scripts/voices.py bundle --zip dist/homepage/downloads/WoWStatus-forever.zip
+      # Wago rejected the bundled Forever voice ZIP with HTTP 413. Publish the
+      # compact homepage ZIP; the optional voice pack remains a separate download.
       - name: Upload to Wago Addons
         if: steps.wago-config.outputs.ready == 'true'
         env:

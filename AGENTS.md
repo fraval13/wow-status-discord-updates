@@ -117,6 +117,8 @@ be checked against Git and the environment rather than assumed permanently true.
   The independent `wago` job publishes the same verified revision through
   `scripts/upload_wago.py`, once `WAGO_PROJECT_ID` and `WAGO_API_TOKEN` are configured.
   Setup, retry controls and player-facing listing copy are in `docs/WAGO.md`.
+  Wago uses the compact Forever ZIP and separate optional voice pack: it rejected
+  the bundled audio ZIP with HTTP 413. CurseForge keeps the full audio bundle.
 - `deploy/SERVER.md`: current dedicated server deployment architecture, the private
   group configuration, and how to render the Caddyfile and rotate a group name.
   `deploy/README.md` also contains historical single-instance setup instructions.

@@ -19,9 +19,9 @@ or CurseForge upload.
 4. Set the repository variable `WAGO_PROJECT_ID` to `mNww12No`. All four TOCs
    declare this public ID as `X-Wago-ID`.
 5. Merge the next release, or run **Actions → Checks and addon packages → Run
-   workflow** on `main`. For the first Wago upload, turn **Skip CurseForge
-   uploads** on and leave **Wago editions to upload** at `all`. This still runs
-   validation, deployment and public verification; it reuses an already prepared
+   workflow** on `main`. Leave **Skip CurseForge uploads** unchecked to keep both
+   publishers enabled, and **Wago editions to upload** at `all`. This runs
+   validation, deployment and public verification and reuses an already prepared
    release rather than bumping it again.
 
 Without the project variable, the Wago job is skipped. Without the token, it
@@ -30,11 +30,16 @@ packages. A green workflow with that notice does not establish a Wago upload.
 
 ## What is uploaded
 
-The job rebuilds the four homepage ZIPs from the verified release commit. The
-Forever file also receives every spoken-reaction clip from the published
-`voice-pack` release, just like CurseForge; homepage downloads stay small. There
-is one top-level `WoWStatus/` folder per ZIP. Missing clips fail the job before
-uploading files.
+The job rebuilds the four compact homepage ZIPs from the verified release commit,
+with one top-level `WoWStatus/` folder per ZIP. Wago rejected the Forever ZIP with
+all spoken-reaction clips bundled inside it (HTTP 413), so its Forever download
+uses the compact addon too. CurseForge keeps its bundled Forever download.
+
+For spoken reactions on Forever, install the optional
+[WoW Status voice pack](https://github.com/fraval13/wow-status-discord-updates/releases/download/voice-pack/WoWStatus_Voices.zip)
+beside `WoWStatus` in `Interface/AddOns`. In-game sharing and text reactions work
+without this pack. The pack is the same separate download used by the homepage;
+no audio enters Git or the static-site deployment.
 
 `scripts/upload_wago.py` checks every selected ZIP before its first upload:
 

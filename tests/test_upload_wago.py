@@ -171,10 +171,11 @@ def test_workflow_uploads_only_the_verified_revision_and_keeps_tokens_out_of_che
     assert 'persist-credentials: false' in job
     assert 'cancel-in-progress: false' in job
     assert 'character-status-wago' in job
-    assert job.count("if: steps.wago-config.outputs.ready == 'true'") == 3
+    assert job.count("if: steps.wago-config.outputs.ready == 'true'") == 2
     assert 'WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}' in job
     assert 'WAGO_PROJECT_ID: ${{ vars.WAGO_PROJECT_ID }}' in job
-    assert 'scripts/voices.py bundle' in job
+    assert 'scripts/voices.py bundle' not in job
     curseforge = text.split('\n  curseforge:\n')[1].split('\n  wago:\n')[0]
     assert '!inputs.wago_only' in curseforge
+    assert 'scripts/voices.py bundle' in curseforge
     assert 'WAGO_EDITION: ${{ inputs.wago_edition || \'all\' }}' in job
