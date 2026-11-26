@@ -62,6 +62,8 @@ def call(request: Request, opener=OPEN, token: str = ''):
         }
         # Do not print server bodies: they can repeat credentials or private data.
         message = f'Wago HTTP {error.code}. {hints.get(error.code, "Check the project dashboard before retrying.")}'
+        if request.get_method() == 'GET':
+            message = f'Wago catalogue HTTP {error.code}. Check public service access before uploading.'
     except (URLError, OSError, ValueError) as error:
         message = f'Wago request failed ({type(error).__name__}); check connectivity and the dashboard before retrying.'
     if token:
@@ -108,7 +110,9 @@ def packages(downloads: Path, project: str, changelog: str, catalogue: dict, edi
 def upload(downloads: Path, project: str, token: str, changelog: str, *, editions=None,
            dry_run: bool = False, opener=OPEN) -> int:
     try:
-        catalogue = call(Request(f'{API}/data/game', headers={'Accept': 'application/json'}), opener)
+        catalogue = call(Request(f'{API}/data/game', headers={
+            'Accept': 'application/json', 'User-Agent': 'wow-status-release',
+        }), opener)
         selected = packages(downloads, project, changelog, catalogue, editions or EDITIONS)
     except UploadError as error:
         print(f'::error::{error}')

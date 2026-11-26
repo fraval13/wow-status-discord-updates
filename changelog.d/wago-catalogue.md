@@ -1,0 +1,1 @@
+- Wago publishing checks the correct game versions before uploading each edition

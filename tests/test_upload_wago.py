@@ -40,6 +40,7 @@ class Server:
         if request.get_method() == 'GET':
             assert request.full_url == f'{wago.API}/data/game'
             assert not request.has_header('Authorization')
+            assert request.headers['User-agent'] == 'wow-status-release'
             return io.BytesIO(json.dumps(self.catalogue).encode('utf-8'))
         assert request.full_url == f'{wago.API}/projects/{PROJECT}/version'
         assert request.headers['Authorization'] == f'Bearer {TOKEN}'
