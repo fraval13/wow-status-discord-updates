@@ -1,1 +1,0 @@
-- Wago's Forever download uses the compact addon; install the optional voice pack for spoken reactions
