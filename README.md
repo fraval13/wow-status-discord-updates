@@ -23,6 +23,9 @@ records the published version and exact source revision
 `project.version` in `pyproject.toml`; release notes are in `CHANGELOG.md`.
 The homepage uses its original still artwork.
 
+Wago Addons publishing setup and player-facing listing text are in
+[docs/WAGO.md](docs/WAGO.md).
+
 Superseded plans and dated audits are kept in [docs/history](docs/history/README.md);
 the current source and this README take precedence over them.
 

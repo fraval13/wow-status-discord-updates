@@ -1,0 +1,1 @@
+- Release automation supports Wago Addons alongside CurseForge for all four editions

@@ -2,6 +2,7 @@
 ## Title: WoW Status — Vanilla Classic
 ## Notes: Friend progress, armor loot, activity log and automatic login sync.
 ## Author: fraval13
+## X-Wago-ID: mNww12No
 ## IconTexture: Interface\AddOns\WoWStatus\Textures\Logo
 ## Version: 1.99.0
 ## SavedVariables: WoWStatusDB

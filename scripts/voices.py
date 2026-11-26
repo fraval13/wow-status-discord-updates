@@ -640,7 +640,7 @@ def pack(cfg: dict, version: int) -> list[Path]:
 
 
 def bundle(cfg: dict, archive: Path, pack_file: Path | None = None) -> int:
-    """Put every clip the addon lists into an edition ZIP (the CurseForge Forever build).
+    """Put every clip the addon lists into an edition ZIP (Forever builds for CurseForge and Wago).
 
     The clips come from the published voice pack (or pack_file), so audio never
     enters Git or the homepage deploy. VoiceData.lua in the ZIP is marked
@@ -791,7 +791,7 @@ def main(argv: list[str] | None = None) -> int:
     published = sub.add_parser('publish', help='publish a draft and make it the current pack')
     published.add_argument('version', type=int)
     sub.add_parser('restore', help='fetch the current pack audio into dist/voices/')
-    bundled = sub.add_parser('bundle', help='put every clip into an edition ZIP (the CurseForge Forever build)')
+    bundled = sub.add_parser('bundle', help='put every clip into an edition ZIP (Forever builds for CurseForge and Wago)')
     bundled.add_argument('--zip', type=Path, required=True, help='the built WoWStatus-forever.zip, changed in place')
     bundled.add_argument('--pack', type=Path, help='a local WoWStatus_Voices.zip instead of the published one')
     args = parser.parse_args(argv)

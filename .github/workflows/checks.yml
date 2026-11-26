@@ -9,6 +9,15 @@ on:
         description: Test on Windows too (about 15 minutes)
         type: boolean
         default: false
+      wago_only:
+        description: Skip CurseForge uploads (use for Wago setup or retries)
+        type: boolean
+        default: false
+      wago_edition:
+        description: Wago editions to upload (select one for a partial retry)
+        type: choice
+        default: all
+        options: [all, retail, vanilla, tbc, forever]
 permissions:
   contents: read
 # Third-party actions are pinned to a full commit SHA (the comment names its tag), and
@@ -243,7 +252,7 @@ jobs:
     # nothing until the CURSEFORGE_PROJECT_ID variable is set. Re-running a successful
     # upload uploads the files again, so re-run only after a failed upload.
     needs: [deploy-gate, deploy]
-    if: needs.deploy.result == 'success' && vars.CURSEFORGE_PROJECT_ID != ''
+    if: needs.deploy.result == 'success' && vars.CURSEFORGE_PROJECT_ID != '' && !inputs.wago_only
     runs-on: ubuntu-latest
     concurrency:
       group: character-status-curseforge
@@ -264,3 +273,41 @@ jobs:
           CURSEFORGE_API_TOKEN: ${{ secrets.CURSEFORGE_API_TOKEN }}
           CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
         run: python3 scripts/upload_curseforge.py --downloads dist/homepage/downloads
+
+  wago:
+    # Independent of CurseForge, but only the release verified by deploy may upload.
+    needs: [deploy-gate, deploy]
+    if: needs.deploy.result == 'success' && vars.WAGO_PROJECT_ID != ''
+    runs-on: ubuntu-latest
+    concurrency:
+      group: character-status-wago
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ needs.deploy-gate.outputs.revision }}
+      - name: Check Wago token is configured
+        id: wago-config
+        env:
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+        run: |
+          if [ -n "$WAGO_API_TOKEN" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Wago upload skipped; add the WAGO_API_TOKEN repository secret."
+            echo "Wago upload skipped. Add the WAGO_API_TOKEN repository secret, then run with Wago only enabled." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - name: Build addon packages for this release
+        if: steps.wago-config.outputs.ready == 'true'
+        run: python3 scripts/build_homepage.py --addon-ref HEAD
+      - name: Put every voice clip into the Forever ZIP
+        if: steps.wago-config.outputs.ready == 'true' && (github.event_name != 'workflow_dispatch' || inputs.wago_edition == 'all' || inputs.wago_edition == 'forever')
+        run: python3 scripts/voices.py bundle --zip dist/homepage/downloads/WoWStatus-forever.zip
+      - name: Upload to Wago Addons
+        if: steps.wago-config.outputs.ready == 'true'
+        env:
+          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          WAGO_PROJECT_ID: ${{ vars.WAGO_PROJECT_ID }}
+          WAGO_EDITION: ${{ inputs.wago_edition || 'all' }}
+        run: python3 scripts/upload_wago.py --downloads dist/homepage/downloads --edition "$WAGO_EDITION"

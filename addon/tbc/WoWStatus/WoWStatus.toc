@@ -2,6 +2,7 @@
 ## Title: WoW Status — TBC Anniversary
 ## Notes: Friend progress, armor loot, activity log and automatic login sync.
 ## Author: fraval13
+## X-Wago-ID: mNww12No
 ## Version: 1.99.0
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber

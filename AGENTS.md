@@ -114,6 +114,9 @@ be checked against Git and the environment rather than assumed permanently true.
   After a successful deploy, the `curseforge` job uploads the release's ZIPs with
   `scripts/upload_curseforge.py`; it is skipped until the `CURSEFORGE_PROJECT_ID`
   variable is set (setup and listing text in `docs/CURSEFORGE.md`).
+  The independent `wago` job publishes the same verified revision through
+  `scripts/upload_wago.py`, once `WAGO_PROJECT_ID` and `WAGO_API_TOKEN` are configured.
+  Setup, retry controls and player-facing listing copy are in `docs/WAGO.md`.
 - `deploy/SERVER.md`: current dedicated server deployment architecture, the private
   group configuration, and how to render the Caddyfile and rotate a group name.
   `deploy/README.md` also contains historical single-instance setup instructions.
