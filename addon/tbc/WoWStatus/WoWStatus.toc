@@ -3,7 +3,7 @@
 ## Notes: Friend progress, armor loot, activity log and automatic login sync.
 ## Author: fraval13
 ## X-Wago-ID: mNww12No
-## Version: 1.100.0
+## Version: 1.101.0
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber
 ## X-Client-Support: Burning Crusade Classic Anniversary 2.5.x only

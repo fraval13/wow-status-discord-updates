@@ -3,7 +3,7 @@
 ## Notes: Retail adapter authored from client API docs. In-game validation pending.
 ## Author: fraval13
 ## X-Wago-ID: mNww12No
-## Version: 1.100.0
+## Version: 1.101.0
 ## SavedVariables: WoWStatusDB
 ## OptionalDeps: !BugGrabber
 ## X-Client-Support: Retail/Mainline only; verify installed build metadata
